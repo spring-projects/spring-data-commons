@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import org.springframework.util.Assert;
 /**
  * {@link IsNewStrategyFactory} that handles {@link Persistable} implementations directly by returning a
  * {@link PersistableIsNewStrategy} and delegating to {@link #doGetIsNewStrategy(Class)} for all other types.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.5
  */
 public abstract class IsNewStrategyFactorySupport implements IsNewStrategyFactory {
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.support.IsNewStrategyFactory#getIsNewStrategy(java.lang.Class)
 	 */
@@ -52,7 +52,7 @@ public abstract class IsNewStrategyFactorySupport implements IsNewStrategyFactor
 
 	/**
 	 * Determine the actual {@link IsNewStrategy} to be used for the given type.
-	 * 
+	 *
 	 * @param type will never be {@literal null}.
 	 * @return the {@link IsNewStrategy} to be used for the given type or {@literal null} in case none can be resolved.
 	 */

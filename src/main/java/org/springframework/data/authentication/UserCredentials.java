@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Class used to provide credentials for username/password authentication
- * 
+ *
  * @author Thomas Risberg
  * @author Oliver Gierke
  */
@@ -34,7 +34,7 @@ public class UserCredentials {
 	/**
 	 * Creates a new {@link UserCredentials} instance from the given username and password. Empty {@link String}s provided
 	 * will be treated like no username or password set.
-	 * 
+	 *
 	 * @param username
 	 * @param password
 	 */
@@ -45,7 +45,7 @@ public class UserCredentials {
 
 	/**
 	 * Get the username to use for authentication.
-	 * 
+	 *
 	 * @return the username
 	 */
 	@Nullable
@@ -55,7 +55,7 @@ public class UserCredentials {
 
 	/**
 	 * Get the password to use for authentication.
-	 * 
+	 *
 	 * @return the password
 	 */
 	@Nullable
@@ -65,7 +65,7 @@ public class UserCredentials {
 
 	/**
 	 * Returns whether the credentials contain a username.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasUsername() {
@@ -74,7 +74,7 @@ public class UserCredentials {
 
 	/**
 	 * Returns whether the credentials contain a password.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasPassword() {
@@ -84,7 +84,7 @@ public class UserCredentials {
 	/**
 	 * Returns the password in obfuscated fashion which means everything except the first and last character replaced by
 	 * stars. If the password is one or two characters long we'll obfuscate it entirely.
-	 * 
+	 *
 	 * @return the obfuscated password
 	 */
 	@Nullable
@@ -116,7 +116,7 @@ public class UserCredentials {
 		return builder.append(password.substring(password.length() - 1)).toString();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 
 	/**
 	 * Creates a new {@link JsonProjectingMethodInterceptorFactory} using the given {@link ObjectMapper}.
-	 * 
+	 *
 	 * @param mapper must not be {@literal null}.
 	 */
 	public JsonProjectingMethodInterceptorFactory(MappingProvider mappingProvider) {
@@ -77,7 +77,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		this.context = JsonPath.using(build);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.projection.MethodInterceptorFactory#createMethodInterceptor(java.lang.Object, java.lang.Class)
 	 */
@@ -90,7 +90,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		return new InputMessageProjecting(context);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.projection.MethodInterceptorFactory#supports(java.lang.Object, java.lang.Class)
 	 */
@@ -107,7 +107,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 
 	/**
 	 * Returns whether the given type contains a method with a {@link org.springframework.data.web.JsonPath} annotation.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -127,7 +127,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 
 		private final DocumentContext context;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
@@ -175,7 +175,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 
 		/**
 		 * Returns the JSONPath expression to be used for the given method.
-		 * 
+		 *
 		 * @param method
 		 * @return
 		 */
@@ -196,7 +196,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 
 			private final ResolvableType type;
 
-			/* 
+			/*
 			 * (non-Javadoc)
 			 * @see com.jayway.jsonpath.TypeRef#getType()
 			 */

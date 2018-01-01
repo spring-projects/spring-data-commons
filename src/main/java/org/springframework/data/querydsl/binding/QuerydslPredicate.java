@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation to customize the binding of HTTP request parameters to a Querydsl {@link com.mysema.query.types.Predicate}
  * in Spring MVC handler methods.
- * 
+ *
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @since 1.11
@@ -35,7 +35,7 @@ public @interface QuerydslPredicate {
 	/**
 	 * The root type to create the {@link com.mysema.query.types.Predicate}. Specify this explicitly if the type is not
 	 * contained in the controller method's return type.
-	 * 
+	 *
 	 * @return
 	 */
 	Class<?> root() default Object.class;
@@ -45,7 +45,7 @@ public @interface QuerydslPredicate {
 	 * {@link QuerydslBinderCustomizer} can be specified here. We'll try to obtain a Spring bean of this type but fall
 	 * back to a plain instantiation if no bean is found in the current
 	 * {@link org.springframework.beans.factory.BeanFactory}.
-	 * 
+	 *
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")

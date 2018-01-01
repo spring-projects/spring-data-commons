@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return Streamable.of(ClassUtils.getPackageName(getRepositoryInterface()));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryInterface()
 	 */
@@ -89,7 +89,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return ConfigurationUtils.getRequiredBeanClassName(definition);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getConfigSource()
 	 */
@@ -105,7 +105,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return configurationSource.getNamedQueryLocation();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationClassName()
 	 */
@@ -114,7 +114,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 				configurationSource.getRepositoryImplementationPostfix().orElse(DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationBeanName()
 	 */
@@ -123,7 +123,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 				+ configurationSource.getRepositoryImplementationPostfix().orElse("Impl");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getSource()
 	 */
@@ -133,7 +133,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return configurationSource.getSource();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getConfigurationSource()
 	 */
@@ -142,7 +142,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return configurationSource;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryBaseClassName()
 	 */

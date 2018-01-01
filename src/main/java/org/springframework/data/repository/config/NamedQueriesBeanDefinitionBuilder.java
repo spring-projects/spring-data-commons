@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Builder to create a {@link BeanDefinition} for a {@link NamedQueries} instance.
- * 
+ *
  * @author Oliver Gierke
  */
 public class NamedQueriesBeanDefinitionBuilder {
@@ -37,7 +37,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 
 	/**
 	 * Creates a new {@link NamedQueriesBeanDefinitionBuilder} using the given default location.
-	 * 
+	 *
 	 * @param defaultLocation must not be {@literal null} or empty.
 	 */
 	@SuppressWarnings("null")
@@ -49,7 +49,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 
 	/**
 	 * Sets the (comma-separated) locations to load the properties files from to back the {@link NamedQueries} instance.
-	 * 
+	 *
 	 * @param locations must not be {@literal null} or empty.
 	 */
 	public void setLocations(String locations) {
@@ -61,7 +61,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 
 	/**
 	 * Builds a new {@link BeanDefinition} from the given source.
-	 * 
+	 *
 	 * @param source
 	 * @return
 	 */

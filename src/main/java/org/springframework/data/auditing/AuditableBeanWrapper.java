@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Optional;
 
 /**
  * Interface to abstract the ways setting the auditing information can be implemented.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.5
  */
@@ -28,28 +28,28 @@ public interface AuditableBeanWrapper {
 
 	/**
 	 * Set the creator of the object.
-	 * 
+	 *
 	 * @param value
 	 */
 	Object setCreatedBy(Object value);
 
 	/**
 	 * Set the date the object was created.
-	 * 
+	 *
 	 * @param value
 	 */
 	TemporalAccessor setCreatedDate(TemporalAccessor value);
 
 	/**
 	 * Set the last modifier of the object.
-	 * 
+	 *
 	 * @param value
 	 */
 	Object setLastModifiedBy(Object value);
 
 	/**
 	 * Returns the date of the last modification date of the backing bean.
-	 * 
+	 *
 	 * @return the date of the last modification.
 	 * @since 1.10
 	 */
@@ -57,7 +57,7 @@ public interface AuditableBeanWrapper {
 
 	/**
 	 * Set the last modification date.
-	 * 
+	 *
 	 * @param value
 	 */
 	TemporalAccessor setLastModifiedDate(TemporalAccessor value);

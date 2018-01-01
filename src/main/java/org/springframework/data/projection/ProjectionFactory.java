@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.springframework.lang.Nullable;
 /**
  * A factory to create projecting instances for other objects usually used to allow easy creation of representation
  * projections to define which properties of a domain objects shall be exported in which way.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.10
  */
@@ -29,7 +29,7 @@ public interface ProjectionFactory {
 	/**
 	 * Creates a projection of the given type for the given source object. The individual mapping strategy is defined by
 	 * the implementations.
-	 * 
+	 *
 	 * @param projectionType the type to create, must not be {@literal null}.
 	 * @param source the object to create a projection for, must not be {@literal null}.
 	 * @return
@@ -38,7 +38,7 @@ public interface ProjectionFactory {
 
 	/**
 	 * Creates a projection to the given type for the given nullable source.
-	 * 
+	 *
 	 * @param projectionType must not be {@literal null}.
 	 * @param source can be {@literal null}.
 	 * @return
@@ -50,7 +50,7 @@ public interface ProjectionFactory {
 
 	/**
 	 * Creates a projection instance for the given type.
-	 * 
+	 *
 	 * @param projectionType the type to create, must not be {@literal null}.
 	 * @return
 	 */
@@ -58,7 +58,7 @@ public interface ProjectionFactory {
 
 	/**
 	 * Returns the {@link ProjectionInformation} for the given projection type.
-	 * 
+	 *
 	 * @param projectionType must not be {@literal null}.
 	 * @return
 	 * @since 1.12

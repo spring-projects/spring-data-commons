@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.Iterator;
  * A {@link CloseableIterator} serves as a bridging data structure for the underlying data store specific results that
  * can be wrapped in a Java 8 {@link java.util.stream.Stream}. This allows implementations to clean up any resources
  * they need to keep open to iterate over elements.
- * 
+ *
  * @author Thomas Darimont
  * @param <T>
  * @since 1.10

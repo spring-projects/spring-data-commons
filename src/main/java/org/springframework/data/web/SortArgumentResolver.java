@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public interface SortArgumentResolver extends HandlerMethodArgumentResolver {
 
 	/**
 	 * Resolves a {@link Sort} method parameter into an argument value from a given request.
-	 * 
+	 *
 	 * @param parameter the method parameter to resolve. This parameter must have previously been passed to
 	 *          {@link #supportsParameter} which must have returned {@code true}.
 	 * @param mavContainer the ModelAndViewContainer for the current request

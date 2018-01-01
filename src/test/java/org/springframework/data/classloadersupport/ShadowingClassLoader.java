@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2017 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 
 	/**
 	 * Create a new ShadowingClassLoader, decorating the given ClassLoader.
-	 * 
+	 *
 	 * @param enclosingClassLoader the ClassLoader to decorate
 	 */
 	public ShadowingClassLoader(ClassLoader enclosingClassLoader) {
@@ -67,7 +67,7 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 
 	/**
 	 * Add the given ClassFileTransformer to the list of transformers that this ClassLoader will apply.
-	 * 
+	 *
 	 * @param transformer the ClassFileTransformer
 	 */
 	public void addTransformer(ClassFileTransformer transformer) {
@@ -78,7 +78,7 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 	/**
 	 * Copy all ClassFileTransformers from the given ClassLoader to the list of transformers that this ClassLoader will
 	 * apply.
-	 * 
+	 *
 	 * @param other the ClassLoader to copy from
 	 */
 	public void copyTransformers(ShadowingClassLoader other) {
@@ -102,7 +102,7 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 
 	/**
 	 * Determine whether the given class should be excluded from shadowing.
-	 * 
+	 *
 	 * @param className the name of the class
 	 * @return whether the specified class should be shadowed
 	 */
@@ -113,7 +113,7 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 
 	/**
 	 * Determine whether the specified class is eligible for shadowing by this class loader.
-	 * 
+	 *
 	 * @param className the class name to check
 	 * @return whether the specified class is eligible
 	 * @see #isExcluded

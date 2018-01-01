@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
 
 /**
  * Utility methods for {@link BeanDefinitionParser} implementations.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  */
@@ -41,7 +41,7 @@ public abstract class ParsingUtils {
 	/**
 	 * Configures a property value for the given property name reading the attribute of the given name from the given
 	 * {@link Element} if the attribute is configured.
-	 * 
+	 *
 	 * @param builder must not be {@literal null}.
 	 * @param element must not be {@literal null}.
 	 * @param attrName must not be {@literal null} or empty.
@@ -65,7 +65,7 @@ public abstract class ParsingUtils {
 	/**
 	 * Sets the property with the given attribute name on the given {@link BeanDefinitionBuilder} to the value of the
 	 * attribute with the given name if the attribute is configured.
-	 * 
+	 *
 	 * @param builder must not be {@literal null}.
 	 * @param element must not be {@literal null}.
 	 * @param attribute must not be {@literal null} or empty.
@@ -76,7 +76,7 @@ public abstract class ParsingUtils {
 
 	/**
 	 * Configures a bean property reference with the value of the attribute of the given name if it is configured.
-	 * 
+	 *
 	 * @param builder must not be {@literal null}.
 	 * @param element must not be {@literal null}.
 	 * @param attribute must not be {@literal null} or empty.
@@ -100,7 +100,7 @@ public abstract class ParsingUtils {
 	/**
 	 * Returns the {@link BeanDefinition} built by the given {@link BeanDefinitionBuilder} enriched with source
 	 * information derived from the given {@link Element}.
-	 * 
+	 *
 	 * @param builder must not be {@literal null}.
 	 * @param context must not be {@literal null}.
 	 * @param element must not be {@literal null}.
@@ -117,7 +117,7 @@ public abstract class ParsingUtils {
 
 	/**
 	 * Returns the {@link AbstractBeanDefinition} built by the given builder with the given extracted source applied.
-	 * 
+	 *
 	 * @param builder must not be {@literal null}.
 	 * @param source
 	 * @return
@@ -134,7 +134,7 @@ public abstract class ParsingUtils {
 	/**
 	 * Returns a {@link BeanDefinition} for an {@link ObjectFactoryCreatingFactoryBean} pointing to the bean with the
 	 * given name.
-	 * 
+	 *
 	 * @param targetBeanName must not be {@literal null} or empty.
 	 * @param source
 	 * @return

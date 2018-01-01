@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import com.querydsl.core.types.Predicate;
 
 /**
  * Builder assembling {@link Predicate} out of {@link PropertyValues}.
- * 
+ *
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @since 1.11
@@ -58,7 +58,7 @@ public class QuerydslPredicateBuilder {
 	/**
 	 * Creates a new {@link QuerydslPredicateBuilder} for the given {@link ConversionService} and
 	 * {@link EntityPathResolver}.
-	 * 
+	 *
 	 * @param conversionService must not be {@literal null}.
 	 * @param resolver can be {@literal null}.
 	 */
@@ -75,7 +75,7 @@ public class QuerydslPredicateBuilder {
 	/**
 	 * Creates a Querydsl {@link Predicate} for the given values, {@link QuerydslBindings} on the given
 	 * {@link TypeInformation}.
-	 * 
+	 *
 	 * @param type the type to create a predicate for.
 	 * @param values the values to bind.
 	 * @param bindings the {@link QuerydslBindings} for the predicate.
@@ -122,7 +122,7 @@ public class QuerydslPredicateBuilder {
 
 	/**
 	 * Invokes the binding of the given values, for the given {@link PropertyPath} and {@link QuerydslBindings}.
-	 * 
+	 *
 	 * @param dotPath must not be {@literal null}.
 	 * @param bindings must not be {@literal null}.
 	 * @param values must not be {@literal null}.
@@ -140,7 +140,7 @@ public class QuerydslPredicateBuilder {
 	 * Returns the {@link Path} for the given {@link PropertyPath} and {@link QuerydslBindings}. Will try to obtain the
 	 * {@link Path} from the bindings first but fall back to reifying it from the PropertyPath in case no specific binding
 	 * has been configured.
-	 * 
+	 *
 	 * @param path must not be {@literal null}.
 	 * @param bindings must not be {@literal null}.
 	 * @return
@@ -156,7 +156,7 @@ public class QuerydslPredicateBuilder {
 	 * Converts the given source values into a collection of elements that are of the given {@link PropertyPath}'s type.
 	 * Considers a single element list with an empty {@link String} an empty collection because this basically indicates
 	 * the property having been submitted but no value provided.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param path must not be {@literal null}.
 	 * @return
@@ -184,7 +184,7 @@ public class QuerydslPredicateBuilder {
 	/**
 	 * Returns the target {@link TypeDescriptor} for the given {@link PathInformation} by either inspecting the field or
 	 * property (the latter preferred) to pick up annotations potentially defined for formatting purposes.
-	 * 
+	 *
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
@@ -211,7 +211,7 @@ public class QuerydslPredicateBuilder {
 	/**
 	 * Returns whether the given collection has exactly one element that doesn't contain any text. This is basically an
 	 * indicator that a request parameter has been submitted but no value for it.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */

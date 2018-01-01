@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.Optional;
 /**
  * Interface for auditable entities. Allows storing and retrieving creation and modification information. The changing
  * instance (typically some user) is to be defined by a generics definition.
- * 
+ *
  * @param <U> the auditing type. Typically some kind of user.
  * @param <ID> the type of the audited type's identifier
  * @author Oliver Gierke
@@ -30,56 +30,56 @@ public interface Auditable<U, ID, T extends TemporalAccessor> extends Persistabl
 
 	/**
 	 * Returns the user who created this entity.
-	 * 
+	 *
 	 * @return the createdBy
 	 */
 	Optional<U> getCreatedBy();
 
 	/**
 	 * Sets the user who created this entity.
-	 * 
+	 *
 	 * @param createdBy the creating entity to set
 	 */
 	void setCreatedBy(U createdBy);
 
 	/**
 	 * Returns the creation date of the entity.
-	 * 
+	 *
 	 * @return the createdDate
 	 */
 	Optional<T> getCreatedDate();
 
 	/**
 	 * Sets the creation date of the entity.
-	 * 
+	 *
 	 * @param creationDate the creation date to set
 	 */
 	void setCreatedDate(T creationDate);
 
 	/**
 	 * Returns the user who modified the entity lastly.
-	 * 
+	 *
 	 * @return the lastModifiedBy
 	 */
 	Optional<U> getLastModifiedBy();
 
 	/**
 	 * Sets the user who modified the entity lastly.
-	 * 
+	 *
 	 * @param lastModifiedBy the last modifying entity to set
 	 */
 	void setLastModifiedBy(U lastModifiedBy);
 
 	/**
 	 * Returns the date of the last modification.
-	 * 
+	 *
 	 * @return the lastModifiedDate
 	 */
 	Optional<T> getLastModifiedDate();
 
 	/**
 	 * Sets the date of the last modification.
-	 * 
+	 *
 	 * @param lastModifiedDate the date of the last modification to set
 	 */
 	void setLastModifiedDate(T lastModifiedDate);

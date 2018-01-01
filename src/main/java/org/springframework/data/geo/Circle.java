@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014 the original author or authors.
+ * Copyright 2010-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
 
 /**
  * Represents a geospatial circle value
- * 
+ *
  * @author Mark Pollack
  * @author Oliver Gierke
  * @author Thomas Darimont
@@ -38,7 +38,7 @@ public class Circle implements Shape {
 
 	/**
 	 * Creates a new {@link Circle} from the given {@link Point} and radius.
-	 * 
+	 *
 	 * @param center must not be {@literal null}.
 	 * @param radius must not be {@literal null} and it's value greater or equal to zero.
 	 */
@@ -55,7 +55,7 @@ public class Circle implements Shape {
 
 	/**
 	 * Creates a new {@link Circle} from the given {@link Point} and radius.
-	 * 
+	 *
 	 * @param center must not be {@literal null}.
 	 * @param radius's value must be greater or equal to zero.
 	 */
@@ -66,7 +66,7 @@ public class Circle implements Shape {
 	/**
 	 * Creates a new {@link Circle} from the given coordinates and radius as {@link Distance} with a
 	 * {@link Metrics#NEUTRAL}.
-	 * 
+	 *
 	 * @param centerX
 	 * @param centerY
 	 * @param radius must be greater or equal to zero.
@@ -77,7 +77,7 @@ public class Circle implements Shape {
 
 	/**
 	 * Returns the center of the {@link Circle}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	public Point getCenter() {
@@ -86,7 +86,7 @@ public class Circle implements Shape {
 
 	/**
 	 * Returns the radius of the {@link Circle}.
-	 * 
+	 *
 	 * @return
 	 */
 	public Distance getRadius() {

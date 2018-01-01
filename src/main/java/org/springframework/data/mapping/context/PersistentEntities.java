@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 
 /**
  * Value object to access {@link PersistentEntity} instances managed by {@link MappingContext}s.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.8
  */
@@ -37,7 +37,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 	/**
 	 * Creates a new {@link PersistentEntities} for the given {@link MappingContext}s.
-	 * 
+	 *
 	 * @param contexts
 	 */
 	public PersistentEntities(Iterable<? extends MappingContext<?, ?>> contexts) {
@@ -50,7 +50,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 * Returns the {@link PersistentEntity} for the given type. Will consider all {@link MappingContext}s registered but
 	 * return {@literal Optional#empty()} in case none of the registered ones already have a {@link PersistentEntity}
 	 * registered for the given type.
-	 * 
+	 *
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
@@ -65,7 +65,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 * Returns the {@link PersistentEntity} for the given type. Will consider all {@link MappingContext}s registered but
 	 * throw an {@link IllegalArgumentException} in case none of the registered ones already have a
 	 * {@link PersistentEntity} registered for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return the {@link PersistentEntity} for the given domain type.
 	 * @throws IllegalArgumentException in case no {@link PersistentEntity} can be found for the given type.
@@ -80,7 +80,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 	/**
 	 * Returns all {@link TypeInformation} exposed by the registered {@link MappingContext}s.
-	 * 
+	 *
 	 * @return
 	 */
 	public Streamable<TypeInformation<?>> getManagedTypes() {
@@ -90,7 +90,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 				.collect(Collectors.toSet()));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */

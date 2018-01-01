@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import org.springframework.util.ClassUtils;
 
 /**
  * Wrapper class to access repository instances obtained from a {@link ListableBeanFactory}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Thomas Eizinger
@@ -68,7 +68,7 @@ public class Repositories implements Iterable<Class<?>> {
 	/**
 	 * Creates a new {@link Repositories} instance by looking up the repository instances and meta information from the
 	 * given {@link ListableBeanFactory}.
-	 * 
+	 *
 	 * @param factory must not be {@literal null}.
 	 */
 	public Repositories(ListableBeanFactory factory) {
@@ -114,7 +114,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns whether we have a repository instance registered to manage instances of the given domain class.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return
 	 */
@@ -129,7 +129,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns the repository managing the given domain class.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return
 	 */
@@ -146,7 +146,7 @@ public class Repositories implements Iterable<Class<?>> {
 	/**
 	 * Returns the {@link RepositoryFactoryInformation} for the given domain class. The given <code>code</code> is
 	 * converted to the actual user class if necessary, @see ClassUtils#getUserClass.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return the {@link RepositoryFactoryInformation} for the given domain class or {@literal null} if no repository
 	 *         registered for this domain class.
@@ -171,7 +171,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns the {@link EntityInformation} for the given domain class.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return
 	 */
@@ -185,7 +185,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns the {@link RepositoryInformation} for the given domain class.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return the {@link RepositoryInformation} for the given domain class or {@literal Optional#empty()} if no
 	 *         repository registered for this domain class.
@@ -201,7 +201,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns the {@link RepositoryInformation} for the given domain type.
-	 * 
+	 *
 	 * @param domainType must not be {@literal null}.
 	 * @return the {@link RepositoryInformation} for the given domain type.
 	 * @throws IllegalArgumentException in case no {@link RepositoryInformation} could be found for the given domain type.
@@ -214,7 +214,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns the {@link RepositoryInformation} for the given repository interface.
-	 * 
+	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 * @return the {@link RepositoryInformation} for the given repository interface or {@literal null} there's no
 	 *         repository instance registered for the given interface.
@@ -231,7 +231,7 @@ public class Repositories implements Iterable<Class<?>> {
 	/**
 	 * Returns the {@link PersistentEntity} for the given domain class. Might return {@literal null} in case the module
 	 * storing the given domain class does not support the mapping subsystem.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return the {@link PersistentEntity} for the given domain class or {@literal null} if no repository is registered
 	 *         for the domain class or the repository is not backed by a {@link MappingContext} implementation.
@@ -244,7 +244,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns the {@link QueryMethod}s contained in the repository managing the given domain class.
-	 * 
+	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return
 	 */
@@ -254,7 +254,7 @@ public class Repositories implements Iterable<Class<?>> {
 		return getRepositoryFactoryInfoFor(domainClass).getQueryMethods();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
@@ -264,7 +264,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Null-object to avoid nasty {@literal null} checks in cache lookups.
-	 * 
+	 *
 	 * @author Thomas Darimont
 	 */
 	private static enum EmptyRepositoryFactoryInformation implements RepositoryFactoryInformation<Object, Object> {

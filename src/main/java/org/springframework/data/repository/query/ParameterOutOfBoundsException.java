@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.springframework.data.repository.query;
 /**
  * Exception to be thrown when trying to access a {@link Parameter} with an invalid index inside a {@link Parameters}
  * instance.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ParameterOutOfBoundsException extends RuntimeException {
@@ -27,7 +27,7 @@ public class ParameterOutOfBoundsException extends RuntimeException {
 
 	/**
 	 * Creates a new {@link ParameterOutOfBoundsException} with the given exception as cause.
-	 * 
+	 *
 	 * @param message
 	 * @param cause
 	 */

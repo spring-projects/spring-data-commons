@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Converter implementations to map from and to Vavr collections.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 2.0
@@ -51,7 +51,7 @@ class VavrCollections {
 			return WrapperType.multiValue(io.vavr.collection.Traversable.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -79,7 +79,7 @@ class VavrCollections {
 
 		INSTANCE {
 
-			/* 
+			/*
 			 * (non-Javadoc)
 			 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 			 */
@@ -89,7 +89,7 @@ class VavrCollections {
 				return CONVERTIBLE_PAIRS;
 			}
 
-			/* 
+			/*
 			 * (non-Javadoc)
 			 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 			 */
@@ -110,7 +110,7 @@ class VavrCollections {
 				return true;
 			}
 
-			/* 
+			/*
 			* (non-Javadoc)
 			* @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 			*/

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Exception being thrown when creating {@link PropertyPath} instances.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PropertyReferenceException extends RuntimeException {
@@ -45,7 +45,7 @@ public class PropertyReferenceException extends RuntimeException {
 
 	/**
 	 * Creates a new {@link PropertyReferenceException}.
-	 * 
+	 *
 	 * @param propertyName the name of the property not found on the given type, must not be {@literal null} or empty.
 	 * @param type the type the property could not be found on, must not be {@literal null}.
 	 * @param alreadyResolvedPah the previously calculated {@link PropertyPath}s, must not be {@literal null}.
@@ -65,7 +65,7 @@ public class PropertyReferenceException extends RuntimeException {
 
 	/**
 	 * Returns the name of the property not found.
-	 * 
+	 *
 	 * @return will not be {@literal null} or empty.
 	 */
 	public String getPropertyName() {
@@ -74,7 +74,7 @@ public class PropertyReferenceException extends RuntimeException {
 
 	/**
 	 * Returns the type the property could not be found on.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	public TypeInformation<?> getType() {
@@ -83,14 +83,14 @@ public class PropertyReferenceException extends RuntimeException {
 
 	/**
 	 * Returns the properties that the invalid property might have been meant to be referred to.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	Collection<String> getPropertyMatches() {
 		return propertyMatches;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Throwable#getMessage()
 	 */
@@ -116,7 +116,7 @@ public class PropertyReferenceException extends RuntimeException {
 
 	/**
 	 * Returns the {@link PropertyPath} which could be resolved so far.
-	 * 
+	 *
 	 * @return
 	 */
 	@Nullable
@@ -127,7 +127,7 @@ public class PropertyReferenceException extends RuntimeException {
 	/**
 	 * Returns whether the given {@link PropertyReferenceException} has a deeper resolution depth (i.e. a longer path of
 	 * already resolved properties) than the current exception.
-	 * 
+	 *
 	 * @param exception must not be {@literal null}.
 	 * @return
 	 */
@@ -137,7 +137,7 @@ public class PropertyReferenceException extends RuntimeException {
 
 	/**
 	 * Detects all potential matches for the given property name and type.
-	 * 
+	 *
 	 * @param propertyName must not be {@literal null} or empty.
 	 * @param type must not be {@literal null}.
 	 * @return

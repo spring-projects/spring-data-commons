@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * {@link TypeInformation} for a plain {@link Class}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -58,7 +58,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	/**
 	 * Simple factory method to easily create new instances of {@link ClassTypeInformation}.
-	 * 
+	 *
 	 * @param <S>
 	 * @param type must not be {@literal null}.
 	 * @return
@@ -72,7 +72,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	/**
 	 * Creates a {@link TypeInformation} from the given method's return type.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @return
 	 */
@@ -85,7 +85,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	/**
 	 * Creates {@link ClassTypeInformation} for the given type.
-	 * 
+	 *
 	 * @param type
 	 */
 	ClassTypeInformation(Class<S> type) {
@@ -95,7 +95,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	/**
 	 * Little helper to allow us to create a generified map, actually just to satisfy the compiler.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -141,7 +141,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		return type;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#getRawTypeInformation()
 	 */
@@ -150,7 +150,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		return this;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#isAssignableFrom(org.springframework.data.util.TypeInformation)
 	 */
@@ -168,7 +168,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		return (TypeInformation<? extends S>) type;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

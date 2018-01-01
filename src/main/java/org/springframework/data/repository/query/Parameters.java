@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2017 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
 
 /**
  * Abstracts method parameters that have to be bound to query parameters or applied to the query independently.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -56,7 +56,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Creates a new instance of {@link Parameters}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 */
 	public Parameters(Method method) {
@@ -94,7 +94,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Creates a new {@link Parameters} instance with the given {@link Parameter}s put into new context.
-	 * 
+	 *
 	 * @param originals
 	 */
 	protected Parameters(List<T> originals) {
@@ -122,7 +122,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Creates a {@link Parameter} instance for the given {@link MethodParameter}.
-	 * 
+	 *
 	 * @param parameter will never be {@literal null}.
 	 * @return
 	 */
@@ -130,7 +130,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns whether the method the {@link Parameters} was created for contains a {@link Pageable} argument.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasPageableParameter() {
@@ -140,7 +140,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	/**
 	 * Returns the index of the {@link Pageable} {@link Method} parameter if available. Will return {@literal -1} if there
 	 * is no {@link Pageable} argument in the {@link Method}'s parameter list.
-	 * 
+	 *
 	 * @return the pageableIndex
 	 */
 	public int getPageableIndex() {
@@ -150,7 +150,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	/**
 	 * Returns the index of the {@link Sort} {@link Method} parameter if available. Will return {@literal -1} if there is
 	 * no {@link Sort} argument in the {@link Method}'s parameter list.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getSortIndex() {
@@ -159,7 +159,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns whether the method the {@link Parameters} was created for contains a {@link Sort} argument.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasSortParameter() {
@@ -169,7 +169,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	/**
 	 * Returns the index of the parameter that represents the dynamic projection type. Will return {@literal -1} if no
 	 * such parameter exists.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getDynamicProjectionIndex() {
@@ -178,7 +178,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns whether a parameter expressing a dynamic projection exists.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasDynamicProjection() {
@@ -187,7 +187,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns whether we potentially find a {@link Sort} parameter in the parameters.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean potentiallySortsDynamically() {
@@ -196,7 +196,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns the parameter with the given index.
-	 * 
+	 *
 	 * @param index
 	 * @return
 	 */
@@ -212,7 +212,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns whether we have a parameter at the given position.
-	 * 
+	 *
 	 * @param position
 	 * @return
 	 */
@@ -227,7 +227,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns whether the method signature contains one of the special parameters ({@link Pageable}, {@link Sort}).
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasSpecialParameter() {
@@ -236,7 +236,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns the number of parameters.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getNumberOfParameters() {
@@ -245,7 +245,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns a {@link Parameters} instance with effectively all special parameters removed.
-	 * 
+	 *
 	 * @return
 	 * @see Parameter#TYPES
 	 * @see Parameter#isSpecialParameter()
@@ -270,7 +270,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * Returns a bindable parameter with the given index. So for a method with a signature of
 	 * {@code (Pageable pageable, String name)} a call to {@code #getBindableParameter(0)} will return the {@link String}
 	 * parameter.
-	 * 
+	 *
 	 * @param bindableIndex
 	 * @return
 	 */
@@ -281,7 +281,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	/**
 	 * Asserts that either all of the non special parameters ({@link Pageable}, {@link Sort}) are annotated with
 	 * {@link Param} or none of them is.
-	 * 
+	 *
 	 * @param method
 	 */
 	private void assertEitherAllParamAnnotatedOrNone() {
@@ -304,7 +304,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns whether the given type is a bindable parameter.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */

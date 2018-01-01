@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014 the original author or authors.
+ * Copyright 2010-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.w3c.dom.NodeList;
 /**
  * Parser to populate the given {@link ClassPathScanningCandidateComponentProvider} with {@link TypeFilter}s parsed from
  * the given {@link Element}'s children.
- * 
+ *
  * @author Oliver Gierke
  */
 public class TypeFilterParser {
@@ -52,7 +52,7 @@ public class TypeFilterParser {
 
 	/**
 	 * Creates a new {@link TypeFilterParser} with the given {@link ReaderContext}.
-	 * 
+	 *
 	 * @param readerContext must not be {@literal null}.
 	 */
 	public TypeFilterParser(XmlReaderContext readerContext) {
@@ -62,7 +62,7 @@ public class TypeFilterParser {
 	/**
 	 * Constructor to ease testing as {@link XmlReaderContext#getBeanClassLoader()} is final and thus cannot be mocked
 	 * easily.
-	 * 
+	 *
 	 * @param readerContext must not be {@literal null}.
 	 * @param classLoader must not be {@literal null}.
 	 */
@@ -78,7 +78,7 @@ public class TypeFilterParser {
 	/**
 	 * Returns all {@link TypeFilter} declared in nested elements of the given {@link Element}. Allows to selectively
 	 * retrieve including or excluding filters based on the given {@link Type}.
-	 * 
+	 *
 	 * @param element must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return
@@ -109,7 +109,7 @@ public class TypeFilterParser {
 
 	/**
 	 * Creates a {@link TypeFilter} instance from the given {@link Element} and {@link ClassLoader}.
-	 * 
+	 *
 	 * @param element must not be {@literal null}.
 	 * @param classLoader must not be {@literal null}.
 	 * @return
@@ -132,7 +132,7 @@ public class TypeFilterParser {
 	/**
 	 * Enum representing all the filter types available for {@code include} and {@code exclude} elements. This acts as
 	 * factory for {@link TypeFilter} instances.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @see #getFilter(String, ClassLoader)
 	 */
@@ -182,7 +182,7 @@ public class TypeFilterParser {
 
 		/**
 		 * Returns the {@link TypeFilter} for the given expression and {@link ClassLoader}.
-		 * 
+		 *
 		 * @param expression
 		 * @param classLoader
 		 * @return
@@ -192,7 +192,7 @@ public class TypeFilterParser {
 
 		/**
 		 * Returns the {@link FilterType} for the given type as {@link String}.
-		 * 
+		 *
 		 * @param typeString
 		 * @return
 		 * @throws IllegalArgumentException if no {@link FilterType} could be found for the given argument.
@@ -222,7 +222,7 @@ public class TypeFilterParser {
 		/**
 		 * Returns the {@link Element} if the given {@link Node} is an {@link Element} and it's name equals the one of the
 		 * type.
-		 * 
+		 *
 		 * @param node
 		 * @return
 		 */

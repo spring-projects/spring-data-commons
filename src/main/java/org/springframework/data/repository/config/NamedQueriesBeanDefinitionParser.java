@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
 /**
  * {@link BeanDefinitionParser} to create {@link BeanDefinition}s of {@link NamedQueries} instances looking up a
  * {@link Properties} file fom the given location.
- * 
+ *
  * @author Oliver Gierke
  */
 public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
@@ -44,7 +44,7 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 
 	/**
 	 * Creates a new {@link NamedQueriesBeanDefinitionParser} using the given default location.
-	 * 
+	 *
 	 * @param defaultLocation must be non-empty
 	 */
 	public NamedQueriesBeanDefinitionParser(String defaultLocation) {
@@ -52,7 +52,7 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 		this.defaultLocation = defaultLocation;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.BeanDefinitionParser#parse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)
 	 */
@@ -80,7 +80,7 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 
 	/**
 	 * Returns whether we should use the default location.
-	 * 
+	 *
 	 * @param element
 	 * @return
 	 */
@@ -90,7 +90,7 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 
 	/**
 	 * Returns the location to look for {@link Properties} if configured or the default one if not.
-	 * 
+	 *
 	 * @param element
 	 * @return
 	 */

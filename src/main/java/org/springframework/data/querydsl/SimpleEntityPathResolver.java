@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import com.querydsl.core.types.EntityPath;
 /**
  * Simple implementation of {@link EntityPathResolver} to lookup a query class by reflection and using the static field
  * of the same type.
- * 
+ *
  * @author Oliver Gierke
  */
 public enum SimpleEntityPathResolver implements EntityPathResolver {
@@ -41,7 +41,7 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 	 * Creates an {@link EntityPath} instance for the given domain class. Tries to lookup a class matching the naming
 	 * convention (prepend Q to the simple name of the class, same package) and find a static field of the same type in
 	 * it.
-	 * 
+	 *
 	 * @param domainClass
 	 * @return
 	 */
@@ -66,7 +66,7 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 
 	/**
 	 * Returns the first static field of the given type inside the given type.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -88,7 +88,7 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 
 	/**
 	 * Returns the name of the query class for the given domain class.
-	 * 
+	 *
 	 * @param domainClass
 	 * @return
 	 */
@@ -101,7 +101,7 @@ public enum SimpleEntityPathResolver implements EntityPathResolver {
 
 	/**
 	 * Analyzes the short class name and potentially returns the outer class.
-	 * 
+	 *
 	 * @param shortName
 	 * @return
 	 */

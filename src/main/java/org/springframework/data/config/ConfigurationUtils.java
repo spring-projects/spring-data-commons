@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.springframework.util.Assert;
 /**
  * Helper class to centralize common functionality that needs to be used in various places of the configuration
  * implementation.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.0
  * @soundtrack Richard Spaven - The Self (feat. Jordan Rakei)
@@ -32,7 +32,7 @@ public interface ConfigurationUtils {
 
 	/**
 	 * Returns the {@link ResourceLoader} from the given {@link XmlReaderContext}.
-	 * 
+	 *
 	 * @param context must not be {@literal null}.
 	 * @return
 	 * @throws IllegalArgumentException if no {@link ResourceLoader} can be obtained from the {@link XmlReaderContext}.
@@ -52,7 +52,7 @@ public interface ConfigurationUtils {
 
 	/**
 	 * Returns the {@link ClassLoader} used by the given {@link XmlReaderContext}.
-	 * 
+	 *
 	 * @param context must not be {@literal null}.
 	 * @return
 	 * @throws IllegalArgumentException if no {@link ClassLoader} can be obtained from the given {@link XmlReaderContext}.
@@ -63,7 +63,7 @@ public interface ConfigurationUtils {
 
 	/**
 	 * Returns the {@link ClassLoader} used by the given {@link ResourceLoader}.
-	 * 
+	 *
 	 * @param resourceLoader must not be {@literal null}.
 	 * @return
 	 * @throws IllegalArgumentException if the given {@link ResourceLoader} does not expose a {@link ClassLoader}.
@@ -83,7 +83,7 @@ public interface ConfigurationUtils {
 
 	/**
 	 * Returns the bean class name of the given {@link BeanDefinition}.
-	 * 
+	 *
 	 * @param beanDefinition must not be {@literal null}.
 	 * @return
 	 * @throws IllegalArgumentException if the given {@link BeanDefinition} does not contain a bean class name.

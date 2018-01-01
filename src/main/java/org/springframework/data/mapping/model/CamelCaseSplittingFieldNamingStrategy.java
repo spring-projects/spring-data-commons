@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.util.StringUtils;
 /**
  * Configurable {@link FieldNamingStrategy} that splits up camel-case property names and reconcatenates them using a
  * configured delimiter. Individual parts of the name can be manipulated using {@link #preparePart(String)}.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.9
  */
@@ -36,7 +36,7 @@ public class CamelCaseSplittingFieldNamingStrategy implements FieldNamingStrateg
 
 	/**
 	 * Creates a new {@link CamelCaseSplittingFieldNamingStrategy}.
-	 * 
+	 *
 	 * @param delimiter must not be {@literal null}.
 	 */
 	public CamelCaseSplittingFieldNamingStrategy(String delimiter) {
@@ -70,7 +70,7 @@ public class CamelCaseSplittingFieldNamingStrategy implements FieldNamingStrateg
 	/**
 	 * Callback to prepare the uncapitalized part obtained from the split up of the camel case source. Default
 	 * implementation returns the part as is.
-	 * 
+	 *
 	 * @param part
 	 * @return
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Optional;
 
 /**
  * Interface for components that are aware of the application's current auditor. This will be some kind of user mostly.
- * 
+ *
  * @param <T> the type of the auditing instance
  * @author Oliver Gierke
  */
@@ -27,7 +27,7 @@ public interface AuditorAware<T> {
 
 	/**
 	 * Returns the current auditor of the application.
-	 * 
+	 *
 	 * @return the current auditor
 	 */
 	Optional<T> getCurrentAuditor();

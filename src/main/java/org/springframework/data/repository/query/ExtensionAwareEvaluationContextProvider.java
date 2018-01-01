@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ import org.springframework.util.StringUtils;
 /**
  * An {@link EvaluationContextProvider} that assembles an {@link EvaluationContext} from a list of
  * {@link EvaluationContextExtension} instances.
- * 
+ *
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -82,7 +82,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	/**
 	 * Creates a new {@link ExtensionAwareEvaluationContextProvider} for the given {@link EvaluationContextExtension}s.
-	 * 
+	 *
 	 * @param extensions must not be {@literal null}.
 	 */
 	public ExtensionAwareEvaluationContextProvider(List<? extends EvaluationContextExtension> extensions) {
@@ -91,7 +91,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		this.extensions = Lazy.of(() -> extensions);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
 	 */
@@ -127,7 +127,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	/**
 	 * Exposes variables for all named parameters for the given arguments. Also exposes non-bindable parameters under the
 	 * names of their types.
-	 * 
+	 *
 	 * @param parameters must not be {@literal null}.
 	 * @param arguments must not be {@literal null}.
 	 * @return
@@ -153,7 +153,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	/**
 	 * Looks up all {@link EvaluationContextExtension} instances from the given {@link ListableBeanFactory}.
-	 * 
+	 *
 	 * @param beanFactory must not be {@literal null}.
 	 * @return
 	 */
@@ -170,7 +170,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	/**
 	 * Looks up the {@link EvaluationContextExtensionInformation} for the given {@link EvaluationContextExtension} from
 	 * the cache or creates a new one and caches that for later lookup.
-	 * 
+	 *
 	 * @param extension must not be {@literal null}.
 	 * @return
 	 */
@@ -184,7 +184,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	/**
 	 * Creates {@link EvaluationContextExtensionAdapter}s for the given {@link EvaluationContextExtension}s.
-	 * 
+	 *
 	 * @param extensions
 	 * @return
 	 */
@@ -208,7 +208,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		/**
 		 * Creates a new {@link ExtensionAwarePropertyAccessor} for the given {@link EvaluationContextExtension}s.
-		 * 
+		 *
 		 * @param extensions must not be {@literal null}.
 		 */
 		public ExtensionAwarePropertyAccessor(List<? extends EvaluationContextExtension> extensions) {
@@ -309,7 +309,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		/**
 		 * Returns a {@link MethodExecutor} wrapping a function from the adapter passed in as an argument.
-		 * 
+		 *
 		 * @param adapter the source of functions to consider.
 		 * @param name the name of the function
 		 * @param argumentTypes the types of the arguments that the function must accept.
@@ -323,7 +323,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		/**
 		 * Looks up the property value for the property of the given name from the given extension. Takes care of resolving
 		 * {@link Function} values transitively.
-		 * 
+		 *
 		 * @param extension must not be {@literal null}.
 		 * @param name must not be {@literal null} or empty.
 		 * @return a {@link TypedValue} matching the given parameters.
@@ -358,7 +358,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		private final @NonNull Function function;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.expression.MethodExecutor#execute(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.Object[])
 		 */
@@ -378,7 +378,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * Adapter to expose a unified view on {@link EvaluationContextExtension} based on some reflective inspection of the
 	 * extension (see {@link EvaluationContextExtensionInformation}) as well as the values exposed by the extension
 	 * itself.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @since 1.9
 	 */
@@ -392,7 +392,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		/**
 		 * Creates a new {@link EvaluationContextExtensionAdapter} for the given {@link EvaluationContextExtension} and
 		 * {@link EvaluationContextExtensionInformation}.
-		 * 
+		 *
 		 * @param extension must not be {@literal null}.
 		 * @param information must not be {@literal null}.
 		 */
@@ -420,7 +420,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		/**
 		 * Returns the extension identifier.
-		 * 
+		 *
 		 * @return the id of the extension
 		 */
 		String getExtensionId() {
@@ -429,7 +429,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		/**
 		 * Returns all functions exposed.
-		 * 
+		 *
 		 * @return all exposed functions.
 		 */
 		Functions getFunctions() {
@@ -438,7 +438,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		/**
 		 * Returns all properties exposed. Note, the value of a property can be a {@link Function} in turn
-		 * 
+		 *
 		 * @return a map from property name to property value.
 		 */
 		public Map<String, Object> getProperties() {

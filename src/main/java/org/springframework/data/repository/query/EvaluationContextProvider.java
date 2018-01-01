@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 /**
  * Provides a way to access a centrally defined potentially shared {@link StandardEvaluationContext}.
- * 
+ *
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -30,7 +30,7 @@ public interface EvaluationContextProvider {
 
 	/**
 	 * Returns an {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
-	 * 
+	 *
 	 * @param parameters the {@link Parameters} instance obtained from the query method the context is built for.
 	 * @param parameterValues the values for the parameters.
 	 * @return

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import org.threeten.bp.ZoneId;
 /**
  * Helper class to register {@link Converter} implementations for the ThreeTen Backport project in case it's present on
  * the classpath.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @see <a href="http://www.threeten.org/threetenbp">http://www.threeten.org/threetenbp</a>
@@ -53,7 +53,7 @@ public abstract class ThreeTenBackPortConverters {
 
 	/**
 	 * Returns the converters to be registered. Will only return converters in case we're running on Java 8.
-	 * 
+	 *
 	 * @return
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
@@ -93,7 +93,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */

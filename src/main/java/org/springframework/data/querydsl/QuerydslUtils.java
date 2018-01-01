@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import com.querydsl.core.types.PathType;
 
 /**
  * Utility class for Querydsl.
- * 
+ *
  * @author Oliver Gierke
  */
 @UtilityClass
@@ -37,7 +37,7 @@ public class QuerydslUtils {
 
 	/**
 	 * Returns the property path for the given {@link Path}.
-	 * 
+	 *
 	 * @param path can be {@literal null}.
 	 * @return
 	 */
@@ -48,7 +48,7 @@ public class QuerydslUtils {
 	/**
 	 * Recursively builds up the dot path for the given {@link Path} instance by walking up the individual segments until
 	 * the root.
-	 * 
+	 *
 	 * @param path can be {@literal null}.
 	 * @param tail must not be {@literal null}.
 	 * @return

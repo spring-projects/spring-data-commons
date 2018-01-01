@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Wrapper to contain {@link RevisionMetadata} as well as the revisioned entity.
- * 
+ *
  * @author Oliver Gierke
  * @author Philipp Huegelmeyer
  * @author Christoph Strobl
@@ -50,7 +50,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 
 	/**
 	 * Creates a new {@link Revision} for the given {@link RevisionMetadata} and entity.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 * @return
@@ -61,7 +61,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 
 	/**
 	 * Returns the revision number of the revision.
-	 * 
+	 *
 	 * @return the revision number.
 	 */
 	public Optional<N> getRevisionNumber() {
@@ -70,7 +70,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 
 	/**
 	 * Returns the revision number of the revision, immediately failing on absence.
-	 * 
+	 *
 	 * @return the revision number.
 	 */
 	public N getRequiredRevisionNumber() {
@@ -79,7 +79,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 
 	/**
 	 * Returns the revision date of the revision.
-	 * 
+	 *
 	 * @return
 	 */
 	public Optional<LocalDateTime> getRevisionDate() {
@@ -88,7 +88,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 
 	/**
 	 * Returns the revision date of the revision, immediately failing on absence.
-	 * 
+	 *
 	 * @return the revision date.
 	 */
 	public LocalDateTime getRequiredRevisionDate() {
@@ -109,7 +109,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 				(left, right) -> left.compareTo(right)).orElse(-1);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

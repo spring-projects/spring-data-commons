@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Indexed;
 /**
  * Annotation to demarcate interfaces a repository proxy shall be created for. Annotating an interface with
  * {@link RepositoryDefinition} will cause the same behaviour as extending {@link Repository}.
- * 
+ *
  * @see Repository
  * @author Oliver Gierke
  */
@@ -40,7 +40,7 @@ public @interface RepositoryDefinition {
 
 	/**
 	 * The domain class the repository manages. Equivalent to the T type parameter in {@link Repository}.
-	 * 
+	 *
 	 * @see Repository
 	 * @return
 	 */
@@ -48,7 +48,7 @@ public @interface RepositoryDefinition {
 
 	/**
 	 * The id class of the entity the repository manages. Equivalent to the ID type parameter in {@link Repository}.
-	 * 
+	 *
 	 * @see Repository
 	 * @return
 	 */

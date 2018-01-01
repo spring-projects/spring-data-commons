@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import org.springframework.util.StringUtils;
  * Base implementation of {@link RepositoryConfigurationExtension} to ease the implementation of the interface. Will
  * default the default named query location based on a module prefix provided by implementors (see
  * {@link #getModulePrefix()}). Stubs out the post-processing methods as they might not be needed by default.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -53,7 +53,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s.";
 	private static final String MULTI_STORE_DROPPED = "Spring Data {} - Could not safely identify store assignment for repository candidate {}.";
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getModuleName()
 	 */
@@ -72,7 +72,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	/*
-	 * 
+	 *
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryConfigurations(org.springframework.data.repository.config.RepositoryConfigurationSource, org.springframework.core.io.ResourceLoader, boolean)
 	 */
@@ -130,7 +130,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	/**
 	 * Returns the prefix of the module to be used to create the default location for Spring Data named queries.
-	 * 
+	 *
 	 * @return must not be {@literal null}.
 	 */
 	protected abstract String getModulePrefix();
@@ -156,7 +156,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	/**
 	 * Return the annotations to scan domain types for when evaluating repository interfaces for store assignment. Modules
 	 * should return the annotations that identify a domain type as managed by the store explicitly.
-	 * 
+	 *
 	 * @return
 	 * @since 1.9
 	 */
@@ -166,7 +166,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	/**
 	 * Returns the types that indicate a store match when inspecting repositories for strict matches.
-	 * 
+	 *
 	 * @return
 	 * @since 1.9
 	 */
@@ -180,7 +180,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * configuration elements (annotation or XML), prefer calling
 	 * {@link #registerIfNotAlreadyRegistered(AbstractBeanDefinition, BeanDefinitionRegistry, String, Object)} with a
 	 * dedicated bean name to avoid the bead definition being registered multiple times. *
-	 * 
+	 *
 	 * @param registry must not be {@literal null}.
 	 * @param bean must not be {@literal null}.
 	 * @param source must not be {@literal null}.
@@ -200,7 +200,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	/**
 	 * Registers the given {@link AbstractBeanDefinition} with the given registry with the given bean name unless the
 	 * registry already contains a bean with that name.
-	 * 
+	 *
 	 * @param bean must not be {@literal null}.
 	 * @param registry must not be {@literal null}.
 	 * @param beanName must not be {@literal null} or empty.
@@ -220,7 +220,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	/**
 	 * Returns whether the given {@link BeanDefinitionRegistry} already contains a bean of the given type assuming the
 	 * bean name has been auto-generated.
-	 * 
+	 *
 	 * @param type
 	 * @param registry
 	 * @return
@@ -235,7 +235,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * Creates a actual {@link RepositoryConfiguration} instance for the given {@link RepositoryConfigurationSource} and
 	 * interface name. Defaults to the {@link DefaultRepositoryConfiguration} but allows sub-classes to override this to
 	 * customize the behavior.
-	 * 
+	 *
 	 * @param definition will never be {@literal null} or empty.
 	 * @param configSource will never be {@literal null}.
 	 * @return
@@ -251,7 +251,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * (see {@link #getIdentifyingAnnotations()}). If none of them is found, the candidate is discarded. Implementations
 	 * should make sure, the only return {@literal true} if they're really sure the interface handed to the method is
 	 * really a store interface.
-	 * 
+	 *
 	 * @param repositoryInterface
 	 * @return
 	 * @since 1.9
@@ -287,7 +287,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	/**
 	 * Return whether to use the configuration for the repository with the given metadata. Defaults to {@literal true}.
-	 * 
+	 *
 	 * @param metadata will never be {@literal null}.
 	 * @return
 	 */
@@ -298,7 +298,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	/**
 	 * Loads the repository interface contained in the given {@link RepositoryConfiguration} using the given
 	 * {@link ResourceLoader}.
-	 * 
+	 *
 	 * @param configuration must not be {@literal null}.
 	 * @param loader must not be {@literal null}.
 	 * @return the repository interface or {@literal null} if it can't be loaded.

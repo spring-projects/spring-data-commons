@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.util.ObjectUtils;
 /**
  * Helper class to ease sharing code between legacy {@link PageableArgumentResolver} and
  * {@link PageableHandlerMethodArgumentResolver}.
- * 
+ *
  * @author Oliver Gierke
  */
 abstract class SpringDataAnnotationUtils {
@@ -39,7 +39,7 @@ abstract class SpringDataAnnotationUtils {
 
 	/**
 	 * Asserts uniqueness of all {@link Pageable} parameters of the method of the given {@link MethodParameter}.
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 */
 	public static void assertPageableUniqueness(MethodParameter parameter) {
@@ -58,7 +58,7 @@ abstract class SpringDataAnnotationUtils {
 
 	/**
 	 * Returns whether the given {@link Method} has more than one {@link Pageable} parameter.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @return
 	 */
@@ -83,7 +83,7 @@ abstract class SpringDataAnnotationUtils {
 	/**
 	 * Returns the value of the given specific property of the given annotation. If the value of that property is the
 	 * properties default, we fall back to the value of the {@code value} attribute.
-	 * 
+	 *
 	 * @param annotation must not be {@literal null}.
 	 * @param property must not be {@literal null} or empty.
 	 * @return
@@ -108,7 +108,7 @@ abstract class SpringDataAnnotationUtils {
 	/**
 	 * Asserts that every {@link Pageable} parameter of the given parameters carries an {@link Qualifier} annotation to
 	 * distinguish them from each other.
-	 * 
+	 *
 	 * @param parameterTypes must not be {@literal null}.
 	 * @param annotations must not be {@literal null}.
 	 */
@@ -139,7 +139,7 @@ abstract class SpringDataAnnotationUtils {
 	/**
 	 * Returns a {@link Qualifier} annotation from the given array of {@link Annotation}s. Returns {@literal null} if the
 	 * array does not contain a {@link Qualifier} annotation.
-	 * 
+	 *
 	 * @param annotations must not be {@literal null}.
 	 * @return
 	 */

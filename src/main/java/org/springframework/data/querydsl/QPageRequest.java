@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.querydsl.core.types.OrderSpecifier;
 
 /**
  * Basic Java Bean implementation of {@link Pageable} with support for QueryDSL.
- * 
+ *
  * @author Thomas Darimont
  */
 public class QPageRequest extends AbstractPageRequest {
@@ -35,7 +35,7 @@ public class QPageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return the first
 	 * page.
-	 * 
+	 *
 	 * @param page
 	 * @param size
 	 */
@@ -45,7 +45,7 @@ public class QPageRequest extends AbstractPageRequest {
 
 	/**
 	 * Creates a new {@link QPageRequest} with the given {@link OrderSpecifier}s applied.
-	 * 
+	 *
 	 * @param page
 	 * @param size
 	 * @param orderSpecifiers must not be {@literal null} or empty;
@@ -56,7 +56,7 @@ public class QPageRequest extends AbstractPageRequest {
 
 	/**
 	 * Creates a new {@link QPageRequest} with sort parameters applied.
-	 * 
+	 *
 	 * @param page
 	 * @param size
 	 * @param sort
@@ -67,7 +67,7 @@ public class QPageRequest extends AbstractPageRequest {
 		this.sort = sort;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#getSort()
 	 */
@@ -76,7 +76,7 @@ public class QPageRequest extends AbstractPageRequest {
 		return sort;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.AbstractPageRequest#next()
 	 */
@@ -85,7 +85,7 @@ public class QPageRequest extends AbstractPageRequest {
 		return new QPageRequest(getPageNumber() + 1, getPageSize(), sort);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.AbstractPageRequest#previous()
 	 */
@@ -94,7 +94,7 @@ public class QPageRequest extends AbstractPageRequest {
 		return new QPageRequest(getPageNumber() - 1, getPageSize(), sort);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.AbstractPageRequest#first()
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.util.MultiValueMap;
  * API to invoke (CRUD) methods on Spring Data repository instances independently of the base interface they expose.
  * Clients should check the availability of the methods before invoking them by using the methods of
  * {@link RepositoryInvocationInformation}.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.10
  */
@@ -35,7 +35,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	/**
 	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#save(Object)} on the
 	 * repository.
-	 * 
+	 *
 	 * @param object
 	 * @return the result of the invocation of the save method
 	 * @throws IllegalStateException if the repository does not expose a save method.
@@ -44,7 +44,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 
 	/**
 	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#findById(Object)}.
-	 * 
+	 *
 	 * @param id must not be {@literal null}.
 	 * @return the entity with the given id.
 	 * @throws IllegalStateException if the repository does not expose a find-one-method.
@@ -59,7 +59,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	 * {@link org.springframework.data.repository.PagingAndSortingRepository#findAll(Sort)} by extracting the {@link Sort}
 	 * contained in the given {@link Pageable}) or the plain equivalent to
 	 * {@link org.springframework.data.repository.CrudRepository#findAll()}.
-	 * 
+	 *
 	 * @param pageable can be {@literal null}.
 	 * @return the result of the invocation of the find-all method.
 	 * @throws IllegalStateException if the repository does not expose a find-all-method.
@@ -71,7 +71,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	 * available (i.e. the equivalent to
 	 * {@link org.springframework.data.repository.PagingAndSortingRepository#findAll(Sort)}) or the plain equivalent to
 	 * {@link org.springframework.data.repository.CrudRepository#findAll()}.
-	 * 
+	 *
 	 * @param pageable can be {@literal null}.
 	 * @return the result of the invocation of the find-all method.
 	 * @throws IllegalStateException if the repository does not expose a find-all-method.
@@ -81,7 +81,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	/**
 	 * Invokes the method equivalent to {@link org.springframework.data.repository.CrudRepository#deleteById(Object)}. The
 	 * given id is assumed to be of a type convertible into the actual identifier type of the backing repository.
-	 * 
+	 *
 	 * @param id must not be {@literal null}.
 	 * @throws {@link IllegalStateException} if the repository does not expose a delete-method.
 	 */
@@ -90,7 +90,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	/**
 	 * Invokes the query method backed by the given {@link Method} using the given parameters, {@link Pageable} and
 	 * {@link Sort}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param parameters must not be {@literal null}.
 	 * @param pageable must not be {@literal null}.

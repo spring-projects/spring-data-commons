@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  * Meta-information about the CRUD methods of a repository.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.6
  */
@@ -34,7 +34,7 @@ public interface CrudMethods {
 	/**
 	 * Returns the method to be used for saving entities. Usually signature compatible to
 	 * {@link CrudRepository#save(Object)}.
-	 * 
+	 *
 	 * @return the method to save entities or {@link Optional#empty()} if none exposed.
 	 * @see #hasSaveMethod()
 	 */
@@ -42,7 +42,7 @@ public interface CrudMethods {
 
 	/**
 	 * Returns whether the repository exposes a save method at all.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean hasSaveMethod();
@@ -50,7 +50,7 @@ public interface CrudMethods {
 	/**
 	 * Returns the find all method of the repository. Implementations should prefer more detailed methods like
 	 * {@link PagingAndSortingRepository}'s taking a {@link Pageable} or {@link Sort} instance.
-	 * 
+	 *
 	 * @return the find all method of the repository or {@link Optional#empty()} if not available.
 	 * @see #hasFindAllMethod()
 	 */
@@ -58,7 +58,7 @@ public interface CrudMethods {
 
 	/**
 	 * Returns whether the repository exposes a find all method at all.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean hasFindAllMethod();
@@ -66,7 +66,7 @@ public interface CrudMethods {
 	/**
 	 * Returns the find one method of the repository. Usually signature compatible to
 	 * {@link CrudRepository#findById(Object)}
-	 * 
+	 *
 	 * @return the find one method of the repository or {@link Optional#empty()} if not available.
 	 * @see #hasFindOneMethod()
 	 */
@@ -74,14 +74,14 @@ public interface CrudMethods {
 
 	/**
 	 * Returns whether the repository exposes a find one method.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean hasFindOneMethod();
 
 	/**
 	 * Returns the delete method of the repository. Will prefer a delete-by-entity method over a delete-by-id method.
-	 * 
+	 *
 	 * @return the delete method of the repository or {@link Optional#empty()} if not available.
 	 * @see #hasDelete()
 	 */
@@ -89,7 +89,7 @@ public interface CrudMethods {
 
 	/**
 	 * Returns whether the repository exposes a delete method.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean hasDelete();

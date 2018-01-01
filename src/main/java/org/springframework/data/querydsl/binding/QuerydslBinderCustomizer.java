@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import com.querydsl.core.types.EntityPath;
 
 /**
  * A component that will customize {@link QuerydslBindings} for the given entity path.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.11
  */
@@ -27,7 +27,7 @@ public interface QuerydslBinderCustomizer<T extends EntityPath<?>> {
 
 	/**
 	 * Customize the {@link QuerydslBindings} for the given root.
-	 * 
+	 *
 	 * @param bindings the {@link QuerydslBindings} to customize, will never be {@literal null}.
 	 * @param root the entity root, will never be {@literal null}.
 	 */

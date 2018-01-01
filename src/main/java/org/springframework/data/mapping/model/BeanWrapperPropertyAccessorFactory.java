@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 
 /**
  * PersistentPropertyAccessorFactory that uses a {@link BeanWrapper}.
- * 
+ *
  * @author Oliver Gierke
  */
 enum BeanWrapperPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
 	INSTANCE;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.PersistentPropertyAccessorFactory#getPropertyAccessor(org.springframework.data.mapping.PersistentEntity, java.lang.Object)
 	 */
@@ -36,7 +36,7 @@ enum BeanWrapperPropertyAccessorFactory implements PersistentPropertyAccessorFac
 		return new BeanWrapper<>(bean);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.PersistentPropertyAccessorFactory#isSupported(org.springframework.data.mapping.PersistentEntity)
 	 */

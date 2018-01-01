@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * custom repository base class to implement methods declared in that intermediate interface. In this case you typically
  * derive your concrete repository interfaces from the intermediate one but don't want to create a Spring bean for the
  * intermediate interface.
- * 
+ *
  * @author Oliver Gierke
  */
 @Retention(RetentionPolicy.RUNTIME)

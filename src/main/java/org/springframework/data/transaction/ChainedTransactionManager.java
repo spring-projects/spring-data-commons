@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import org.springframework.util.Assert;
  * which means the {@link PlatformTransactionManager} most likely to break the transaction should be the <em>last</em>
  * in the list configured. A {@link PlatformTransactionManager} throwing an exception during commit will automatically
  * cause the remaining transaction managers to roll back instead of committing.
- * 
+ *
  * @author Michael Hunger
  * @author Oliver Gierke
  * @since 1.6
@@ -58,7 +58,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 
 	/**
 	 * Creates a new {@link ChainedTransactionManager} delegating to the given {@link PlatformTransactionManager}s.
-	 * 
+	 *
 	 * @param transactionManagers must not be {@literal null} or empty.
 	 */
 	public ChainedTransactionManager(PlatformTransactionManager... transactionManagers) {
@@ -68,7 +68,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 	/**
 	 * Creates a new {@link ChainedTransactionManager} using the given {@link SynchronizationManager} and
 	 * {@link PlatformTransactionManager}s.
-	 * 
+	 *
 	 * @param synchronizationManager must not be {@literal null}.
 	 * @param transactionManagers must not be {@literal null} or empty.
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 
 /**
  * Default implementation for {@link AuditingConfiguration}.
- * 
+ *
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
  * @author Oliver Gierke
@@ -38,7 +38,7 @@ public class AnnotationAuditingConfiguration implements AuditingConfiguration {
 	/**
 	 * Creates a new instance of {@link AnnotationAuditingConfiguration} for the given {@link AnnotationMetadata} and
 	 * annotation type.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param annotation must not be {@literal null}.
 	 */
@@ -65,7 +65,7 @@ public class AnnotationAuditingConfiguration implements AuditingConfiguration {
 		return attributes.getString("auditorAwareRef");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.auditing.config.AuditingConfiguration#isSetDates()
 	 */
@@ -74,7 +74,7 @@ public class AnnotationAuditingConfiguration implements AuditingConfiguration {
 		return attributes.getBoolean("setDates");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.auditing.config.AuditingConfiguration#getDateTimeProviderRef()
 	 */
@@ -83,7 +83,7 @@ public class AnnotationAuditingConfiguration implements AuditingConfiguration {
 		return attributes.getString("dateTimeProviderRef");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.auditing.config.AuditingConfiguration#isModifyOnCreate()
 	 */

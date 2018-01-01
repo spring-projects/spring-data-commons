@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 /**
  * Configuration class to register a {@link BeanPostProcessor} to augment {@link RequestMappingHandlerAdapter} with a
  * {@link ProxyingHandlerMethodArgumentResolver}.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Apparat With Soap & Skin - Goodbye (Dark Theme Song - https://www.youtube.com/watch?v=66VnOdk6oto)
  */
@@ -47,7 +47,7 @@ public class ProjectingArgumentResolverRegistrar {
 	 * Registers a {@link BeanPostProcessor} to modify {@link RequestMappingHandlerAdapter} beans in the application
 	 * context to get a {@link ProxyingHandlerMethodArgumentResolver} configured as first
 	 * {@link HandlerMethodArgumentResolver}.
-	 * 
+	 *
 	 * @param conversionService the Spring MVC {@link ConversionService} in a lazy fashion, so that its initialization is
 	 *          not triggered yet.
 	 * @return
@@ -73,7 +73,7 @@ public class ProjectingArgumentResolverRegistrar {
 		/**
 		 * A {@link BeanPostProcessor} to modify {@link RequestMappingHandlerAdapter} beans in the application context to
 		 * get a {@link ProxyingHandlerMethodArgumentResolver} configured as first {@link HandlerMethodArgumentResolver}.
-		 * 
+		 *
 		 * @param conversionService the Spring MVC {@link ConversionService} in a lazy fashion, so that its initialization
 		 *          is not triggered yet.
 		 */
@@ -82,7 +82,7 @@ public class ProjectingArgumentResolverRegistrar {
 			this.resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, false);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
 		 */
@@ -91,7 +91,7 @@ public class ProjectingArgumentResolverRegistrar {
 			this.resolver.setBeanFactory(beanFactory);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
 		 */
@@ -100,7 +100,7 @@ public class ProjectingArgumentResolverRegistrar {
 			this.resolver.setBeanClassLoader(classLoader);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessBeforeInitialization(java.lang.Object, java.lang.String)
 		 */
@@ -110,7 +110,7 @@ public class ProjectingArgumentResolverRegistrar {
 			return bean;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization(java.lang.Object, java.lang.String)
 		 */

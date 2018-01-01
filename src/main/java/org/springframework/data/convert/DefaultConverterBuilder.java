@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import org.springframework.lang.Nullable;
 /**
  * Builder to easily set up (bi-directional) {@link Converter} instances for Spring Data type mapping using Lambdas. Use
  * factory methods on {@link ConverterBuilder} to create instances of this class.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.0
  * @see ConverterBuilder#writing(Class, Class, Function)
@@ -58,7 +58,7 @@ class DefaultConverterBuilder<S, T>
 	private final @NonNull Optional<Function<? super S, ? extends T>> writing;
 	private final @NonNull Optional<Function<? super T, ? extends S>> reading;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.WritingConverterBuilder#andReading(java.util.function.Function)
 	 */
@@ -67,7 +67,7 @@ class DefaultConverterBuilder<S, T>
 		return withReading(Optional.of(function));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.ReadingConverterBuilder#andWriting(java.util.function.Function)
 	 */
@@ -76,7 +76,7 @@ class DefaultConverterBuilder<S, T>
 		return withWriting(Optional.of(function));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.ReadingConverterBuilder#getRequiredReadingConverter()
 	 */
@@ -86,7 +86,7 @@ class DefaultConverterBuilder<S, T>
 				.orElseThrow(() -> new IllegalStateException("No reading converter specified!"));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.convert.WritingConverterBuilder#getRequiredWritingConverter()
 	 */
@@ -127,7 +127,7 @@ class DefaultConverterBuilder<S, T>
 		private final ConvertiblePair convertiblePair;
 		private final Function<? super S, ? extends T> function;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 		 */
@@ -138,7 +138,7 @@ class DefaultConverterBuilder<S, T>
 			return function.apply((S) source);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */

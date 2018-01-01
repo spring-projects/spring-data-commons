@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 
 /**
  * Simple interface to ease streamability of {@link Iterable}s.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -36,7 +36,7 @@ public interface Streamable<T> extends Iterable<T> {
 
 	/**
 	 * Returns an empty {@link Streamable}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	static <T> Streamable<T> empty() {
@@ -45,7 +45,7 @@ public interface Streamable<T> extends Iterable<T> {
 
 	/**
 	 * Returns a {@link Streamable} with the given elements.
-	 * 
+	 *
 	 * @param t the elements to return.
 	 * @return
 	 */
@@ -56,7 +56,7 @@ public interface Streamable<T> extends Iterable<T> {
 
 	/**
 	 * Returns a {@link Streamable} for the given {@link Iterable}.
-	 * 
+	 *
 	 * @param iterable must not be {@literal null}.
 	 * @return
 	 */
@@ -73,7 +73,7 @@ public interface Streamable<T> extends Iterable<T> {
 
 	/**
 	 * Creates a non-parallel {@link Stream} of the underlying {@link Iterable}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	default Stream<T> stream() {
@@ -82,7 +82,7 @@ public interface Streamable<T> extends Iterable<T> {
 
 	/**
 	 * Returns a new {@link Streamable} that will apply the given {@link Function} to the current one.
-	 * 
+	 *
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 * @see Stream#map(Function)
@@ -96,7 +96,7 @@ public interface Streamable<T> extends Iterable<T> {
 
 	/**
 	 * Returns a new {@link Streamable} that will apply the given {@link Function} to the current one.
-	 * 
+	 *
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 * @see Stream#flatMap(Function)
@@ -110,7 +110,7 @@ public interface Streamable<T> extends Iterable<T> {
 
 	/**
 	 * Returns a new {@link Streamable} that will apply the given filter {@link Predicate} to the current one.
-	 * 
+	 *
 	 * @param predicate must not be {@literal null}.
 	 * @return
 	 * @see Stream#filter(Predicate)

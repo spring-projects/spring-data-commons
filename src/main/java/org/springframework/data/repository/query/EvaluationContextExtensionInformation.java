@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ import org.springframework.util.ReflectionUtils.MethodFilter;
  * The type basically allows us to cache the type based information within
  * {@link ExtensionAwareEvaluationContextProvider} to avoid repeated reflection lookups for every creation of an
  * {@link org.springframework.expression.EvaluationContext}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
@@ -67,7 +67,7 @@ class EvaluationContextExtensionInformation {
 
 	/**
 	 * Creates a new {@link EvaluationContextExtension} for the given extension type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 */
 	public EvaluationContextExtensionInformation(Class<? extends EvaluationContextExtension> type) {
@@ -84,7 +84,7 @@ class EvaluationContextExtensionInformation {
 
 	/**
 	 * Returns the {@link ExtensionTypeInformation} for the extension.
-	 * 
+	 *
 	 * @return
 	 */
 	public ExtensionTypeInformation getExtensionTypeInformation() {
@@ -94,7 +94,7 @@ class EvaluationContextExtensionInformation {
 	/**
 	 * Returns the {@link RootObjectInformation} for the given target object. If the information has been pre-computed
 	 * earlier, the existing one will be used.
-	 * 
+	 *
 	 * @param target
 	 * @return
 	 */
@@ -115,21 +115,21 @@ class EvaluationContextExtensionInformation {
 
 		/**
 		 * The statically defined properties of the extension type.
-		 * 
+		 *
 		 * @return the properties will never be {@literal null}.
 		 */
 		private final Map<String, Object> properties;
 
 		/**
 		 * The statically exposed functions of the extension type.
-		 * 
+		 *
 		 * @return the functions will never be {@literal null}.
 		 */
 		private final MultiValueMap<NameAndArgumentCount, Function> functions;
 
 		/**
 		 * Creates a new {@link ExtensionTypeInformation} fir the given type.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 */
 		public ExtensionTypeInformation(Class<? extends EvaluationContextExtension> type) {
@@ -159,7 +159,7 @@ class EvaluationContextExtensionInformation {
 
 			private final boolean staticOnly;
 
-			/* 
+			/*
 			 * (non-Javadoc)
 			 * @see org.springframework.util.ReflectionUtils.MethodFilter#matches(java.lang.reflect.Method)
 			 */
@@ -176,7 +176,7 @@ class EvaluationContextExtensionInformation {
 				return Modifier.isPublic(method.getModifiers()) && staticMatch;
 			}
 
-			/* 
+			/*
 			 * (non-Javadoc)
 			 * @see org.springframework.util.ReflectionUtils.FieldFilter#matches(java.lang.reflect.Field)
 			 */
@@ -207,7 +207,7 @@ class EvaluationContextExtensionInformation {
 		/**
 		 * Creates a new {@link RootObjectInformation} for the given type. Inspects public methods and fields to register
 		 * them as {@link Function}s and properties.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 */
 		public RootObjectInformation(Class<?> type) {
@@ -239,7 +239,7 @@ class EvaluationContextExtensionInformation {
 
 		/**
 		 * Returns {@link Function} instances that wrap method invocations on the given target object.
-		 * 
+		 *
 		 * @param target can be {@literal null}.
 		 * @return the methods
 		 */
@@ -254,7 +254,7 @@ class EvaluationContextExtensionInformation {
 		/**
 		 * Returns the properties of the target object. This will also include {@link Function} instances for all properties
 		 * with accessor methods that need to be resolved downstream.
-		 * 
+		 *
 		 * @return the properties
 		 */
 		public Map<String, Object> getProperties(Optional<Object> target) {

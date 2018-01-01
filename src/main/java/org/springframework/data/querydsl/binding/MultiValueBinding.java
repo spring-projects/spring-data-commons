@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.querydsl.core.types.Predicate;
 /**
  * {@link MultiValueBinding} creates a {@link Predicate} out of given {@link Path} and collection value. Used for
  * specific parameter treatment in {@link QuerydslBindings}.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.11
  */
@@ -35,7 +35,7 @@ public interface MultiValueBinding<T extends Path<? extends S>, S> {
 	 * Returns the predicate to be applied to the given {@link Path} for the given collection value, which will contain
 	 * all values submitted for the path bind. If a single value was provided only the collection will consist of exactly
 	 * one element.
-	 * 
+	 *
 	 * @param path {@link Path} to the property. Will not be {@literal null}.
 	 * @param value the value that should be bound. Will not be {@literal null} or empty.
 	 * @return can be {@literal null}, in which case the binding will not be incorporated in the overall

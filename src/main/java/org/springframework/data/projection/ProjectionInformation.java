@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * Information about a projection type.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.12
  */
@@ -28,14 +28,14 @@ public interface ProjectionInformation {
 
 	/**
 	 * Returns the projection type.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	Class<?> getType();
 
 	/**
 	 * Returns the properties that will be consumed by the projection type.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	List<PropertyDescriptor> getInputProperties();
@@ -44,7 +44,7 @@ public interface ProjectionInformation {
 	 * Returns whether supplying values for the properties returned via {@link #getInputProperties()} is sufficient to
 	 * create a working proxy instance. This will usually be used to determine whether the projection uses any dynamically
 	 * resolved properties.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isClosed();

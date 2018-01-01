@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.data.domain.Sort;
 /**
  * Extension of {@link CrudRepository} to provide additional methods to retrieve entities using the pagination and
  * sorting abstraction.
- * 
+ *
  * @author Oliver Gierke
  * @see Sort
  * @see Pageable
@@ -33,7 +33,7 @@ public interface PagingAndSortingRepository<T, ID> extends CrudRepository<T, ID>
 
 	/**
 	 * Returns all entities sorted by the given options.
-	 * 
+	 *
 	 * @param sort
 	 * @return all entities sorted by the given options
 	 */
@@ -41,7 +41,7 @@ public interface PagingAndSortingRepository<T, ID> extends CrudRepository<T, ID>
 
 	/**
 	 * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
-	 * 
+	 *
 	 * @param pageable
 	 * @return a page of entities
 	 */

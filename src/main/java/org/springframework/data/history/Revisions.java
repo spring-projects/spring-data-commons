@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 /**
  * Simple wrapper class for a {@link List} of {@link Revisions} allowing to canonically access the latest revision.
  * Allows iterating over the underlying {@link Revisions} starting with older revisions.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -41,7 +41,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Streamabl
 	/**
 	 * Creates a new {@link Revisions} instance containing the given revisions. Will make sure they are ordered
 	 * ascendingly.
-	 * 
+	 *
 	 * @param revisions must not be {@literal null}.
 	 */
 	private Revisions(List<? extends Revision<N, T>> revisions) {
@@ -50,7 +50,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Streamabl
 
 	/**
 	 * Creates a new {@link Revisions} instance using the given revisions.
-	 * 
+	 *
 	 * @param revisions must not be {@literal null}.
 	 * @param latestLast
 	 */
@@ -67,7 +67,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Streamabl
 
 	/**
 	 * Creates a new {@link Revisions} instance for the given {@link Revision}s.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	public static <N extends Number & Comparable<N>, T> Revisions<N, T> of(List<? extends Revision<N, T>> revisions) {
@@ -76,7 +76,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Streamabl
 
 	/**
 	 * Creates a new empty {@link Revisions} instance.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	public static <N extends Number & Comparable<N>, T> Revisions<N, T> none() {
@@ -85,7 +85,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Streamabl
 
 	/**
 	 * Returns the latest revision of the revisions backing the wrapper independently of the order.
-	 * 
+	 *
 	 * @return
 	 */
 	public Revision<N, T> getLatestRevision() {
@@ -95,14 +95,14 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Streamabl
 
 	/**
 	 * Reverses the current {@link Revisions}. By default this will return the revisions with the latest revision first.
-	 * 
+	 *
 	 * @return
 	 */
 	public Revisions<N, T> reverse() {
 		return new Revisions<>(revisions, !latestLast);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
@@ -112,7 +112,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Streamabl
 
 	/**
 	 * Returns the content of the {@link Revisions} instance.
-	 * 
+	 *
 	 * @return
 	 */
 	public List<Revision<N, T>> getContent() {

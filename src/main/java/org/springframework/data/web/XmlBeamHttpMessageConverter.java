@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.xmlbeam.XBProjector;
 
 /**
  * A read-only {@link HttpMessageConverter} to create XMLBeam-based projection instances for interfaces.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @see <a href="http://www.xmlbeam.org">http://www.xmlbeam.org</a>
@@ -76,7 +76,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 		return result;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
 	 */
@@ -85,7 +85,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.AbstractHttpMessageConverter#readInternal(java.lang.Class, org.springframework.http.HttpInputMessage)
 	 */
@@ -95,7 +95,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 		return projectionFactory.io().stream(inputMessage.getBody()).read(clazz);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.AbstractHttpMessageConverter#writeInternal(java.lang.Object, org.springframework.http.HttpOutputMessage)
 	 */

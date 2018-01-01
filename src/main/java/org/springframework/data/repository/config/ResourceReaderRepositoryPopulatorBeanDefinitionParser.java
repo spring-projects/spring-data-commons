@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,12 @@ import org.w3c.dom.Element;
 
 /**
  * {@link BeanDefinitionParser} to parse repository initializers.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClassName(org.w3c.dom.Element)
 	 */
@@ -73,7 +73,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 
 	/**
 	 * Populates the {@link BeanDefinitionBuilder} for a Jackson reader.
-	 * 
+	 *
 	 * @param element
 	 * @param builder
 	 */
@@ -88,7 +88,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 
 	/**
 	 * Populate the {@link BeanDefinitionBuilder} for XML reader.
-	 * 
+	 *
 	 * @param element
 	 * @param builder
 	 */
@@ -101,7 +101,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#shouldGenerateIdAsFallback()
 	 */

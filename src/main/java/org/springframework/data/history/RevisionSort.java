@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 /**
  * A dedicated {@link Sort} implementation that allows the definition of the ordering of revisions independently of the
  * property name the revision number is held in.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.13
  * @soundtrack Benny Greb's Moving Parts - Soulfood (Live)
@@ -36,7 +36,7 @@ public class RevisionSort extends Sort {
 
 	/**
 	 * Creates a new {@link RevisionSort} using the given direction for sorting by revision number.
-	 * 
+	 *
 	 * @param direction must not be {@literal null}.
 	 */
 	private RevisionSort(Direction direction) {
@@ -46,7 +46,7 @@ public class RevisionSort extends Sort {
 	/**
 	 * Creates a {@link RevisionSort} with ascending order for the revision number property, i.e. more recent revisions
 	 * will come last.
-	 * 
+	 *
 	 * @return
 	 */
 	public static RevisionSort asc() {
@@ -56,7 +56,7 @@ public class RevisionSort extends Sort {
 	/**
 	 * Creates a {@link RevisionSort} with descending order for the revision number property, i.e. more recent revisions
 	 * will come first.
-	 * 
+	 *
 	 * @return
 	 */
 	public static RevisionSort desc() {
@@ -66,7 +66,7 @@ public class RevisionSort extends Sort {
 	/**
 	 * Returns in which direction to sort revisions for the given {@link Sort} instance. Defaults to
 	 * {@link Direction#ASC}.
-	 * 
+	 *
 	 * @param sort must not be {@literal null}.
 	 * @return
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.lang.Nullable;
 /**
  * Custom extension of {@link BeanWrapperImpl} that falls back to direct field access in case the object or type being
  * wrapped does not use accessor methods.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DirectFieldAccessFallbackBeanWrapper extends BeanWrapperImpl {
@@ -40,7 +40,7 @@ public class DirectFieldAccessFallbackBeanWrapper extends BeanWrapperImpl {
 		super(type);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.BeanWrapperImpl#getPropertyValue(java.lang.String)
 	 */
@@ -64,7 +64,7 @@ public class DirectFieldAccessFallbackBeanWrapper extends BeanWrapperImpl {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.BeanWrapperImpl#setPropertyValue(java.lang.String, java.lang.Object)
 	 */

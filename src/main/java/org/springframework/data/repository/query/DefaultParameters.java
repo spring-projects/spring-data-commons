@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ import org.springframework.core.MethodParameter;
 
 /**
  * Default implementation of {@link Parameters}.
- * 
+ *
  * @author Oliver Gierke
  */
 public final class DefaultParameters extends Parameters<DefaultParameters, Parameter> {
 
 	/**
 	 * Creates a new {@link DefaultParameters} instance from the given {@link Method}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 */
 	public DefaultParameters(Method method) {
@@ -40,7 +40,7 @@ public final class DefaultParameters extends Parameters<DefaultParameters, Param
 		super(parameters);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.Parameters#createParameter(org.springframework.core.MethodParameter)
 	 */
@@ -49,7 +49,7 @@ public final class DefaultParameters extends Parameters<DefaultParameters, Param
 		return new Parameter(parameter);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.Parameters#createFrom(java.util.List)
 	 */

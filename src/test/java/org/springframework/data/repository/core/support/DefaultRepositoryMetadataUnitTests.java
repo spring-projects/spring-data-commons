@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.google.common.base.Optional;
 
 /**
  * Unit tests for {@link DefaultRepositoryMetadata}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
@@ -145,7 +145,7 @@ public class DefaultRepositoryMetadataUnitTests {
 	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} skips non {@link GenericDao} interfaces</li>
 	 * <li>Check that {@link ClassUtils#getDomainClass(Class)} traverses interface hierarchy</li>
 	 * </ol>
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private interface SomeDao extends Serializable, UserRepository {
@@ -155,7 +155,7 @@ public class DefaultRepositoryMetadataUnitTests {
 
 	/**
 	 * Sample interface to test recursive lookup of domain class.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	static interface ExtensionOfUserCustomExtendedDao extends UserCustomExtendedRepository {
@@ -175,7 +175,7 @@ public class DefaultRepositoryMetadataUnitTests {
 
 	/**
 	 * Helper class to reproduce #256.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	static class GenericEntity<T> {}

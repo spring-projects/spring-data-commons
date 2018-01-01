@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return createInfo(type.getActualTypeArguments()[0]);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#specialize(org.springframework.data.util.ClassTypeInformation)
 	 */
@@ -246,7 +246,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	/**
 	 * Resolves the type variables to be used. Uses the parent's type variable map but overwrites variables locally
 	 * declared.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param parent must not be {@literal null}.
 	 * @return will never be {@literal null}.
@@ -269,7 +269,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	/**
 	 * Recursively resolves the type bound to the given {@link Type} in case it's a {@link TypeVariable} and there's an
 	 * entry in the given type variables.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param variables must not be {@literal null}.
 	 * @return will never be {@literal null}.

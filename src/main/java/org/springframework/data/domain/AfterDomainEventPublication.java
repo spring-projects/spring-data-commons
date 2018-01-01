@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation to be used on a method of a Spring Data managed aggregate to get invoked after the events of an aggregate
  * have been published.
- * 
+ *
  * @author Oliver Gierke
  * @see DomainEvents
  * @since 1.13

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
 
 /**
  * Base implementation of an {@link ApplicationEvent} refering to a {@link PersistentEntity}.
- * 
+ *
  * @author Oliver Gierke
  * @author Jon Brisbin
  * @param <E> the {@link PersistentEntity} the context was created for
@@ -38,7 +38,7 @@ public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends Per
 
 	/**
 	 * Creates a new {@link MappingContextEvent} for the given {@link MappingContext} and {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 */
@@ -55,7 +55,7 @@ public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends Per
 
 	/**
 	 * Returns the {@link PersistentEntity} the event was created for.
-	 * 
+	 *
 	 * @return
 	 */
 	public E getPersistentEntity() {
@@ -64,7 +64,7 @@ public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends Per
 
 	/**
 	 * Returns whether the {@link MappingContextEvent} was triggered by the given {@link MappingContext}.
-	 * 
+	 *
 	 * @param context the {@link MappingContext} that potentially created the event.
 	 * @return
 	 */

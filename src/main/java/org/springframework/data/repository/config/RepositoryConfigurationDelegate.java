@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class RepositoryConfigurationDelegate {
 	/**
 	 * Creates a new {@link RepositoryConfigurationDelegate} for the given {@link RepositoryConfigurationSource} and
 	 * {@link ResourceLoader} and {@link Environment}.
-	 * 
+	 *
 	 * @param configurationSource must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
 	 * @param environment must not be {@literal null}.
@@ -85,7 +85,7 @@ public class RepositoryConfigurationDelegate {
 	/**
 	 * Defaults the environment in case the given one is null. Used as fallback, in case the legacy constructor was
 	 * invoked.
-	 * 
+	 *
 	 * @param environment can be {@literal null}.
 	 * @param resourceLoader can be {@literal null}.
 	 * @return
@@ -103,7 +103,7 @@ public class RepositoryConfigurationDelegate {
 
 	/**
 	 * Registers the found repositories in the given {@link BeanDefinitionRegistry}.
-	 * 
+	 *
 	 * @param registry
 	 * @param extension
 	 * @return {@link BeanComponentDefinition}s for all repository bean definitions found.
@@ -151,7 +151,7 @@ public class RepositoryConfigurationDelegate {
 	 * Scans {@code repository.support} packages for implementations of {@link RepositoryFactorySupport}. Finding more
 	 * than a single type is considered a multi-store configuration scenario which will trigger stricter repository
 	 * scanning.
-	 * 
+	 *
 	 * @return
 	 */
 	private boolean multipleStoresDetected() {

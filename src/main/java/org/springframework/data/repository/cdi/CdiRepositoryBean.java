@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Base class for {@link Bean} wrappers.
- * 
+ *
  * @author Dirk Mahler
  * @author Oliver Gierke
  * @author Mark Paluch
@@ -78,7 +78,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates a new {@link CdiRepositoryBean}.
-	 * 
+	 *
 	 * @param qualifiers must not be {@literal null}.
 	 * @param repositoryType has to be an interface must not be {@literal null}.
 	 * @param beanManager the CDI {@link BeanManager}, must not be {@literal null}.
@@ -89,7 +89,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates a new {@link CdiRepositoryBean}.
-	 * 
+	 *
 	 * @param qualifiers must not be {@literal null}.
 	 * @param repositoryType has to be an interface must not be {@literal null}.
 	 * @param beanManager the CDI {@link BeanManager}, must not be {@literal null}.
@@ -113,7 +113,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates a unique identifier for the given repository type and the given annotations.
-	 * 
+	 *
 	 * @param qualifiers must not be {@literal null} or contain {@literal null} values.
 	 * @param repositoryType must not be {@literal null}.
 	 * @return
@@ -147,7 +147,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Returns an instance of an the given {@link Bean}.
-	 * 
+	 *
 	 * @param bean the {@link Bean} about to create an instance for.
 	 * @return the actual component instance.
 	 * @see Bean#getTypes()
@@ -159,7 +159,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	/**
 	 * Returns an instance of an the given {@link Bean} and allows to be specific about the type that is about to be
 	 * created.
-	 * 
+	 *
 	 * @param bean the {@link Bean} about to create an instance for.
 	 * @param type the expected type of the component instance created for that {@link Bean}. We need to hand this
 	 *          parameter explicitly as the {@link Bean} might carry multiple types but the primary one might not be the
@@ -218,7 +218,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	/**
 	 * Looks up an instance of a {@link CdiRepositoryConfiguration}. In case the instance cannot be found within the CDI
 	 * scope, a default configuration is used.
-	 * 
+	 *
 	 * @return an available CdiRepositoryConfiguration instance or a default configuration.
 	 */
 	protected CdiRepositoryConfiguration lookupConfiguration(BeanManager beanManager, Set<Annotation> qualifiers) {
@@ -231,7 +231,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	/**
 	 * Try to lookup a custom implementation for a {@link org.springframework.data.repository.Repository}. Can only be
 	 * used when a {@code CustomRepositoryImplementationDetector} is provided.
-	 * 
+	 *
 	 * @param repositoryType
 	 * @param beanManager
 	 * @param qualifiers
@@ -252,7 +252,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	/**
 	 * Retrieves a custom repository interfaces from a repository type. This works for the whole class hierarchy and can
 	 * find also a custom repository which is inherited over many levels.
-	 * 
+	 *
 	 * @param repositoryType The class representing the repository.
 	 * @param cdiRepositoryConfiguration The configuration for CDI usage.
 	 * @return the interface class or {@literal null}.
@@ -376,7 +376,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates the actual component instance.
-	 * 
+	 *
 	 * @param creationalContext will never be {@literal null}.
 	 * @param repositoryType will never be {@literal null}.
 	 * @return
@@ -394,7 +394,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates the actual component instance.
-	 * 
+	 *
 	 * @param creationalContext will never be {@literal null}.
 	 * @param repositoryType will never be {@literal null}.
 	 * @param customImplementation can be {@literal null}.

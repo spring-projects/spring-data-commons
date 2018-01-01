@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class ExampleMatcherAccessor {
 
 	/**
 	 * Returns the {@link PropertySpecifier}s of the underlying {@link ExampleMatcher}.
-	 * 
+	 *
 	 * @return unmodifiable {@link Collection} of {@link ExampleMatcher.PropertySpecifier}s.
 	 */
 	public Collection<ExampleMatcher.PropertySpecifier> getPropertySpecifiers() {
@@ -49,7 +49,7 @@ public class ExampleMatcherAccessor {
 
 	/**
 	 * Returns whether the underlying {@link ExampleMatcher} contains a {@link PropertySpecifier} for the given path.
-	 * 
+	 *
 	 * @param path the dot-path identifying a property.
 	 * @return {@literal true} in case {@link ExampleMatcher.PropertySpecifier} defined for given path.
 	 */

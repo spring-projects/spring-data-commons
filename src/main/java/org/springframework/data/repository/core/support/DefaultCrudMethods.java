@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.springframework.util.ReflectionUtils;
  * Default implementation to discover CRUD methods based on the given {@link RepositoryMetadata}. Will detect methods
  * exposed in {@link CrudRepository} but also hand crafted CRUD methods that are signature compatible with the ones on
  * {@link CrudRepository}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @since 1.6
@@ -60,7 +60,7 @@ public class DefaultCrudMethods implements CrudMethods {
 
 	/**
 	 * Creates a new {@link DefaultCrudMethods} using the given {@link RepositoryMetadata}.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 */
 	public DefaultCrudMethods(RepositoryMetadata metadata) {
@@ -79,7 +79,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * <li>a {@link RepositoryMetadata#getDomainType()} as first parameter over</li>
 	 * <li>an {@link Object} as first parameter.</li>
 	 * </ol>
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
@@ -99,7 +99,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * <li>a {@link Object} as first parameter over</li>
 	 * <li>an {@link Iterable} as first parameter.</li>
 	 * </ol>
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
@@ -127,7 +127,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * <li>a {@link Sort} as first parameter over</li>
 	 * <li>no parameters.</li>
 	 * </ol>
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
@@ -152,7 +152,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 * <li>a {@link RepositoryMetadata#getIdType()} as first parameter over</li>
 	 * <li>a {@link Object} as first parameter</li>
 	 * </ol>
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @return the most suitable method or {@literal null} if no method could be found.
 	 */
@@ -167,7 +167,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	/**
 	 * Looks up the most specific method for the given method and type and returns an accessible version of discovered
 	 * {@link Method} if found.
-	 * 
+	 *
 	 * @param method
 	 * @param type
 	 * @see ClassUtils#getMostSpecificMethod(Method, Class)
@@ -181,7 +181,7 @@ public class DefaultCrudMethods implements CrudMethods {
 				.findFirst();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getSaveMethod()
 	 */
@@ -190,7 +190,7 @@ public class DefaultCrudMethods implements CrudMethods {
 		return saveMethod;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#hasSaveMethod()
 	 */
@@ -199,7 +199,7 @@ public class DefaultCrudMethods implements CrudMethods {
 		return saveMethod.isPresent();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getFindAllMethod()
 	 */
@@ -208,7 +208,7 @@ public class DefaultCrudMethods implements CrudMethods {
 		return findAllMethod;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#hasFindAllMethod()
 	 */
@@ -217,7 +217,7 @@ public class DefaultCrudMethods implements CrudMethods {
 		return findAllMethod.isPresent();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getFindOneMethod()
 	 */
@@ -226,7 +226,7 @@ public class DefaultCrudMethods implements CrudMethods {
 		return findOneMethod;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#hasFindOneMethod()
 	 */
@@ -235,7 +235,7 @@ public class DefaultCrudMethods implements CrudMethods {
 		return findOneMethod.isPresent();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#hasDelete()
 	 */
@@ -244,7 +244,7 @@ public class DefaultCrudMethods implements CrudMethods {
 		return this.deleteMethod.isPresent();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.CrudMethods#getDeleteMethod()
 	 */

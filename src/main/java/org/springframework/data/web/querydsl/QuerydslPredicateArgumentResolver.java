@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import com.querydsl.core.types.Predicate;
 /**
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.mysema.query.types.Predicate} into Spring MVC
  * controller methods.
- * 
+ *
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @since 1.11
@@ -55,7 +55,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 
 	/**
 	 * Creates a new {@link QuerydslPredicateArgumentResolver} using the given {@link ConversionService}.
-	 * 
+	 *
 	 * @param factory
 	 * @param conversionService defaults to {@link DefaultConversionService} if {@literal null}.
 	 */
@@ -117,7 +117,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	/**
 	 * Obtains the domain type information from the given method parameter. Will favor an explicitly registered on through
 	 * {@link QuerydslPredicate#root()} but use the actual type of the method's return type as fallback.
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */

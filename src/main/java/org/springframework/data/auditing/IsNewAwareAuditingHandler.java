@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  * {@link AuditingHandler} extension that uses an {@link IsNewStrategyFactory} to expose a generic
  * {@link #markAudited(Optional)} method that will route calls to {@link #markCreated(Optional)} or
  * {@link #markModified(Optional)} based on the {@link IsNewStrategy} determined from the factory.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.5
@@ -42,7 +42,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 
 	/**
 	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
-	 * 
+	 *
 	 * @param mappingContext must not be {@literal null}.
 	 * @since 1.8
 	 * @deprecated use {@link IsNewAwareAuditingHandler(PersistentEntities)} instead.
@@ -55,7 +55,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 
 	/**
 	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
-	 * 
+	 *
 	 * @param entities must not be {@literal null}.
 	 * @since 1.10
 	 */
@@ -70,7 +70,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 * Marks the given object created or modified based on the {@link IsNewStrategy} returned by the
 	 * {@link IsNewStrategyFactory} configured. Will rout the calls to {@link #markCreated(Optional)} and
 	 * {@link #markModified(Optional)} accordingly.
-	 * 
+	 *
 	 * @param object
 	 */
 	public void markAudited(Object object) {

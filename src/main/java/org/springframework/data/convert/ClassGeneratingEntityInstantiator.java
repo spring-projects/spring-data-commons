@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -447,7 +447,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		/**
 		 * Insert not-{@literal null} assertion for a parameter.
-		 * 
+		 *
 		 * @param mv the method visitor into which instructions should be inserted
 		 * @param parameterName name of the parameter to create the appropriate assertion message.
 		 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014 the original author or authors.
+ * Copyright 2010-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 
 /**
  * Represents a geospatial point value.
- * 
+ *
  * @author Mark Pollack
  * @author Oliver Gierke
  * @author Thomas Darimont
@@ -39,7 +39,7 @@ public class Point implements Serializable {
 
 	/**
 	 * Creates a {@link Point} from the given {@code x}, {@code y} coordinate.
-	 * 
+	 *
 	 * @param x
 	 * @param y
 	 */
@@ -51,7 +51,7 @@ public class Point implements Serializable {
 
 	/**
 	 * Creates a {@link Point} from the given {@link Point} coordinate.
-	 * 
+	 *
 	 * @param point must not be {@literal null}.
 	 */
 	public Point(Point point) {
@@ -64,7 +64,7 @@ public class Point implements Serializable {
 
 	/**
 	 * Returns the x-coordinate of the {@link Point}.
-	 * 
+	 *
 	 * @return
 	 */
 	public double getX() {
@@ -73,7 +73,7 @@ public class Point implements Serializable {
 
 	/**
 	 * Returns the y-coordinate of the {@link Point}.
-	 * 
+	 *
 	 * @return
 	 */
 	public double getY() {

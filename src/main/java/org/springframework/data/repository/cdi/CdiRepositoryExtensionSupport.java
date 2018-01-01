@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import org.springframework.data.repository.config.CustomRepositoryImplementation
 
 /**
  * Base class for {@link Extension} implementations that create instances for Spring Data repositories.
- * 
+ *
  * @author Dirk Mahler
  * @author Oliver Gierke
  * @author Mark Paluch
@@ -76,7 +76,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	/**
 	 * Implementation of a an observer which checks for Spring Data repository types and stores them in
 	 * {@link #repositoryTypes} for later registration as bean type.
-	 * 
+	 *
 	 * @param <X> The type.
 	 * @param processAnnotatedType The annotated type as defined by CDI.
 	 */
@@ -101,7 +101,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 	/**
 	 * Returns whether the given type is a repository type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -141,7 +141,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 	/**
 	 * Triggers the eager initialization of beans registered for that behavior.
-	 * 
+	 *
 	 * @param event must not be {@literal null}.
 	 * @param manager must not be {@literal null}.
 	 * @see #registerBean(CdiRepositoryBean)
@@ -157,7 +157,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 	/**
 	 * Provides access to all repository types as well as their qualifiers.
-	 * 
+	 *
 	 * @return
 	 */
 	protected Iterable<Entry<Class<?>, Set<Annotation>>> getRepositoryTypes() {
@@ -167,7 +167,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	/**
 	 * Registers the given {@link CdiRepositoryBean} for further general treatment by the infrastructure. In particular,
 	 * this will cause repositories to be instantiated eagerly if marked as such.
-	 * 
+	 *
 	 * @param bean must not be {@literal null}.
 	 * @see #afterDeploymentValidation(AfterDeploymentValidation, BeanManager)
 	 */

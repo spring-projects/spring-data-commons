@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2017 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Basic {@code Page} implementation.
- * 
+ *
  * @param <T> the type of which the page consists.
  * @author Oliver Gierke
  */
@@ -35,7 +35,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 
 	/**
 	 * Constructor of {@code PageImpl}.
-	 * 
+	 *
 	 * @param content the content of this page, must not be {@literal null}.
 	 * @param pageable the paging information, can be {@literal null}.
 	 * @param total the total amount of items available. The total might be adapted considering the length of the content
@@ -55,7 +55,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	/**
 	 * Creates a new {@link PageImpl} with the given content. This will result in the created {@link Page} being identical
 	 * to the entire {@link List}.
-	 * 
+	 *
 	 * @param content must not be {@literal null}.
 	 */
 	public PageImpl(List<T> content) {
@@ -80,7 +80,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		return total;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Slice#hasNext()
 	 */
@@ -89,7 +89,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		return getNumber() + 1 < getTotalPages();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Slice#isLast()
 	 */
@@ -98,7 +98,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		return !hasNext();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Slice#transform(org.springframework.core.convert.converter.Converter)
 	 */

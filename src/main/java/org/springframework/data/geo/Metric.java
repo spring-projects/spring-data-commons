@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 /**
  * Interface for {@link Metric}s that can be applied to a base scale.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @since 1.8
@@ -28,14 +28,14 @@ public interface Metric extends Serializable {
 
 	/**
 	 * Returns the multiplier to calculate metrics values from a base scale.
-	 * 
+	 *
 	 * @return
 	 */
 	double getMultiplier();
 
 	/**
 	 * Returns the scientific abbreviation of the unit the {@link Metric} is in.
-	 * 
+	 *
 	 * @return
 	 */
 	String getAbbreviation();

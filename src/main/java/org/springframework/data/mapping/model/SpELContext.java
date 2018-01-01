@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 
 /**
  * Simple factory to create {@link SpelExpressionParser} and {@link EvaluationContext} instances.
- * 
+ *
  * @author Oliver Gierke
  */
 public class SpELContext {
@@ -39,7 +39,7 @@ public class SpELContext {
 	/**
 	 * Creates a new {@link SpELContext} with the given {@link PropertyAccessor}. Defaults the
 	 * {@link SpelExpressionParser}.
-	 * 
+	 *
 	 * @param accessor
 	 */
 	public SpELContext(PropertyAccessor accessor) {
@@ -49,7 +49,7 @@ public class SpELContext {
 	/**
 	 * Creates a new {@link SpELContext} using the given {@link SpelExpressionParser} and {@link PropertyAccessor}. Will
 	 * default the {@link SpelExpressionParser} in case the given value for it is {@literal null}.
-	 * 
+	 *
 	 * @param parser
 	 * @param accessor
 	 */
@@ -60,7 +60,7 @@ public class SpELContext {
 	/**
 	 * Copy constructor to create a {@link SpELContext} using the given one's {@link PropertyAccessor} and
 	 * {@link SpelExpressionParser} as well as the given {@link BeanFactory}.
-	 * 
+	 *
 	 * @param source
 	 * @param factory
 	 */
@@ -72,7 +72,7 @@ public class SpELContext {
 	 * Creates a new {@link SpELContext} using the given {@link SpelExpressionParser}, {@link PropertyAccessor} and
 	 * {@link BeanFactory}. Will default the {@link SpelExpressionParser} in case the given value for it is
 	 * {@literal null}.
-	 * 
+	 *
 	 * @param accessor
 	 * @param parser
 	 * @param factory

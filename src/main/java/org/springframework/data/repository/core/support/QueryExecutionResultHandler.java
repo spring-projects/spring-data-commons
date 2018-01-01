@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ class QueryExecutionResultHandler {
 
 	/**
 	 * Post-processes the given result of a query invocation to the given type.
-	 * 
+	 *
 	 * @param result can be {@literal null}.
 	 * @param returnTypeDescriptor can be {@literal null}, if so, no conversion is performed.
 	 * @return
@@ -116,7 +116,7 @@ class QueryExecutionResultHandler {
 
 	/**
 	 * Unwraps the given value if it's a JDK 8 {@link Optional}.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return
 	 */

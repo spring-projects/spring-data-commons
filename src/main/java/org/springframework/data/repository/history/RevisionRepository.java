@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.data.repository.Repository;
 
 /**
  * A repository which can access entities held in a variety of {@link Revisions}.
- * 
+ *
  * @author Oliver Gierke
  * @author Philipp Huegelmeyer
  */
@@ -36,7 +36,7 @@ public interface RevisionRepository<T, ID, N extends Number & Comparable<N>> ext
 
 	/**
 	 * Returns the revision of the entity it was last changed in.
-	 * 
+	 *
 	 * @param id must not be {@literal null}.
 	 * @return
 	 */
@@ -44,7 +44,7 @@ public interface RevisionRepository<T, ID, N extends Number & Comparable<N>> ext
 
 	/**
 	 * Returns all {@link Revisions} of an entity with the given id.
-	 * 
+	 *
 	 * @param id must not be {@literal null}.
 	 * @return
 	 */
@@ -53,7 +53,7 @@ public interface RevisionRepository<T, ID, N extends Number & Comparable<N>> ext
 	/**
 	 * Returns a {@link Page} of revisions for the entity with the given id. Note, that it's not guaranteed that
 	 * implementations have to support sorting by all properties.
-	 * 
+	 *
 	 * @param id must not be {@literal null}.
 	 * @param pageable
 	 * @see RevisionSort
@@ -63,7 +63,7 @@ public interface RevisionRepository<T, ID, N extends Number & Comparable<N>> ext
 
 	/**
 	 * Returns the entity with the given ID in the given revision number.
-	 * 
+	 *
 	 * @param id must not be {@literal null}.
 	 * @param revisionNumber must not be {@literal null}.
 	 * @return the {@link Revision} of the entity with the given ID in the given revision number.

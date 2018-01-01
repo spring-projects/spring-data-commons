@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.util.ReflectionUtils;
 /**
  * A {@link ProxyProjectionFactory} that adds support to use {@link Value}-annotated methods on a projection interface
  * to evaluate the contained SpEL expression to define the outcome of the method call.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
@@ -49,7 +49,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 
 	private @Nullable BeanFactory beanFactory;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
 	 */
@@ -70,7 +70,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 	/**
 	 * Inspects the given target type for methods with {@link Value} annotations and caches the result. Will create a
 	 * {@link SpelEvaluatingMethodInterceptor} if an annotation was found or return the delegate as is if not.
-	 * 
+	 *
 	 * @param interceptor the root {@link MethodInterceptor}.
 	 * @param source The backing source object.
 	 * @param projectionType the proxy target type.
@@ -87,7 +87,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 
 	/**
 	 * Returns whether the given type as a method annotated with {@link Value}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */

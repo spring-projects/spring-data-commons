@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
 
 /**
  * Exception to indicate a source path couldn't be resolved into a {@link PersistentPropertyPath} completely.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack John Mayer - Slow Dancing In A Burning Room (Acoustic, The Village Sessions)
  */
@@ -35,7 +35,7 @@ public class InvalidPersistentPropertyPath extends MappingException {
 
 	/**
 	 * Creates a new {@link InvalidPersistentPropertyPath} for the given resolved path and message.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param unresolvableSegment must not be {@literal null} or empty.
 	 * @param resolvedPath
@@ -58,7 +58,7 @@ public class InvalidPersistentPropertyPath extends MappingException {
 
 	/**
 	 * Returns the source property path.
-	 * 
+	 *
 	 * @return the source will never be {@literal null}.
 	 */
 	public String getSource() {
@@ -67,7 +67,7 @@ public class InvalidPersistentPropertyPath extends MappingException {
 
 	/**
 	 * Returns the type the source property path was attempted to be resolved on.
-	 * 
+	 *
 	 * @return the type will never be {@literal null}.
 	 */
 	public TypeInformation<?> getType() {
@@ -76,7 +76,7 @@ public class InvalidPersistentPropertyPath extends MappingException {
 
 	/**
 	 * Returns the segment of the source property path that could not be resolved.
-	 * 
+	 *
 	 * @return the unresolvableSegment
 	 */
 	public String getUnresolvableSegment() {
@@ -85,7 +85,7 @@ public class InvalidPersistentPropertyPath extends MappingException {
 
 	/**
 	 * Returns the part of the source path until which the source property path could be resolved.
-	 * 
+	 *
 	 * @return the resolvedPath
 	 */
 	public String getResolvedPath() {

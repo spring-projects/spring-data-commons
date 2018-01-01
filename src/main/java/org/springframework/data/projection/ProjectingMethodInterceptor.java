@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import org.springframework.util.ObjectUtils;
 /**
  * {@link MethodInterceptor} to delegate the invocation to a different {@link MethodInterceptor} but creating a
  * projecting proxy in case the returned value is not of the return type of the invoked method.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.10
  */
@@ -53,7 +53,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	private final @NonNull MethodInterceptor delegate;
 	private final @NonNull ConversionService conversionService;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 	 */
@@ -84,7 +84,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	/**
 	 * Creates projections of the given {@link Collection}'s elements if necessary and returns a new collection containing
 	 * the projection results.
-	 * 
+	 *
 	 * @param sources must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return
@@ -109,7 +109,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	/**
 	 * Creates projections of the given {@link Map}'s values if necessary and returns an new {@link Map} with the handled
 	 * values.
-	 * 
+	 *
 	 * @param sources must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return
@@ -134,7 +134,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	/**
 	 * Returns whether the source object needs to be converted to the given target type and whether we can convert it at
 	 * all.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param targetType must not be {@literal null}.
 	 * @return
@@ -151,7 +151,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	/**
 	 * Turns the given value into a {@link Collection}. Will turn an array into a collection an wrap all other values into
 	 * a single-element collection.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */

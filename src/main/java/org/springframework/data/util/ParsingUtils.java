@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Utility methods for {@link String} parsing.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.5
  */
@@ -43,7 +43,7 @@ public class ParsingUtils {
 
 	/**
 	 * Splits up the given camel-case {@link String}.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
@@ -53,7 +53,7 @@ public class ParsingUtils {
 
 	/**
 	 * Splits up the given camel-case {@link String} and returns the parts in lower case.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
@@ -64,7 +64,7 @@ public class ParsingUtils {
 	/**
 	 * Reconcatenates the given camel-case source {@link String} using the given delimiter. Will split up the camel-case
 	 * {@link String} and use an uncapitalized version of the parts.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param delimiter must not be {@literal null}.
 	 * @return

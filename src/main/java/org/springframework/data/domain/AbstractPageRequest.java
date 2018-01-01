@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Abstract Java Bean implementation of {@code Pageable}.
- * 
+ *
  * @author Thomas Darimont
  * @author Oliver Gierke
  */
@@ -35,7 +35,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	/**
 	 * Creates a new {@link AbstractPageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return
 	 * the first page.
-	 * 
+	 *
 	 * @param page must not be less than zero.
 	 * @param size must not be less than one.
 	 */
@@ -53,7 +53,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		this.size = size;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#getPageSize()
 	 */
@@ -61,7 +61,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		return size;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#getPageNumber()
 	 */
@@ -69,7 +69,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		return page;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#getOffset()
 	 */
@@ -77,7 +77,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		return page * size;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#hasPrevious()
 	 */
@@ -85,7 +85,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		return page > 0;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#previousOrFirst()
 	 */
@@ -93,7 +93,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		return hasPrevious() ? previous() : first();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#next()
 	 */
@@ -101,18 +101,18 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 
 	/**
 	 * Returns the {@link Pageable} requesting the previous {@link Page}.
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract Pageable previous();
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#first()
 	 */
 	public abstract Pageable first();
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -128,7 +128,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		return result;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Utility class to work with classes.
- * 
+ *
  * @author Oliver Gierke
  */
 public abstract class ClassUtils {
@@ -42,7 +42,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Returns whether the given class contains a property with the given name.
-	 * 
+	 *
 	 * @param type
 	 * @param property
 	 * @return
@@ -58,7 +58,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Returns wthere the given type is the {@link Repository} interface.
-	 * 
+	 *
 	 * @param interfaze
 	 * @return
 	 */
@@ -69,7 +69,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Returns whether the given type name is a repository interface name.
-	 * 
+	 *
 	 * @param interfaceName
 	 * @return
 	 */
@@ -79,7 +79,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Returns the number of occurences of the given type in the given {@link Method}s parameters.
-	 * 
+	 *
 	 * @param method
 	 * @param type
 	 * @return
@@ -99,7 +99,7 @@ public abstract class ClassUtils {
 	/**
 	 * Asserts the given {@link Method}'s return type to be one of the given types. Will unwrap known wrapper types before
 	 * the assignment check (see {@link QueryExecutionConverters}).
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param types must not be {@literal null} or empty.
 	 */
@@ -118,7 +118,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Returns whether the given object is of one of the given types. Will return {@literal false} for {@literal null}.
-	 * 
+	 *
 	 * @param object
 	 * @param types
 	 * @return
@@ -134,7 +134,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Returns whether the given {@link Method} has a parameter of the given type.
-	 * 
+	 *
 	 * @param method
 	 * @param type
 	 * @return
@@ -145,7 +145,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Helper method to extract the original exception that can possibly occur during a reflection call.
-	 * 
+	 *
 	 * @param ex
 	 * @throws Throwable
 	 */

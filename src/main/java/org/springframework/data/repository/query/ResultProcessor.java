@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class ResultProcessor {
 
 	/**
 	 * Creates a new {@link ResultProcessor} from the given {@link QueryMethod} and {@link ProjectionFactory}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
 	 */
@@ -69,7 +69,7 @@ public class ResultProcessor {
 
 	/**
 	 * Creates a new {@link ResultProcessor} for the given {@link QueryMethod}, {@link ProjectionFactory} and type.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
 	 * @param type must not be {@literal null}.
@@ -88,7 +88,7 @@ public class ResultProcessor {
 
 	/**
 	 * Returns a new {@link ResultProcessor} with a new projection type obtained from the given {@link ParameterAccessor}.
-	 * 
+	 *
 	 * @param accessor must not be {@literal null}.
 	 * @return
 	 */
@@ -101,7 +101,7 @@ public class ResultProcessor {
 
 	/**
 	 * Returns the {@link ReturnedType}.
-	 * 
+	 *
 	 * @return
 	 */
 	public ReturnedType getReturnedType() {
@@ -110,7 +110,7 @@ public class ResultProcessor {
 
 	/**
 	 * Post-processes the given query result.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
@@ -122,7 +122,7 @@ public class ResultProcessor {
 	/**
 	 * Post-processes the given query result using the given preparing {@link Converter} to potentially prepare collection
 	 * elements.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param preparingConverter must not be {@literal null}.
 	 * @return
@@ -175,7 +175,7 @@ public class ResultProcessor {
 	/**
 	 * Creates a new {@link Collection} for the given source. Will try to create an instance of the source collection's
 	 * type first falling back to creating an approximate collection if the former fails.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
@@ -197,7 +197,7 @@ public class ResultProcessor {
 		/**
 		 * Returns a new {@link ChainingConverter} that hands the elements resulting from the current conversion to the
 		 * given {@link Converter}.
-		 * 
+		 *
 		 * @param converter must not be {@literal null}.
 		 * @return
 		 */
@@ -214,7 +214,7 @@ public class ResultProcessor {
 			});
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -235,7 +235,7 @@ public class ResultProcessor {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -255,7 +255,7 @@ public class ResultProcessor {
 
 		/**
 		 * Creates a new {@link ProjectingConverter} for the given {@link ReturnedType} and {@link ProjectionFactory}.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 * @param factory must not be {@literal null}.
 		 */
@@ -265,7 +265,7 @@ public class ResultProcessor {
 
 		/**
 		 * Creates a new {@link ProjectingConverter} for the given {@link ReturnedType}.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 * @return
 		 */
@@ -276,7 +276,7 @@ public class ResultProcessor {
 			return new ProjectingConverter(type, factory, conversionService);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */

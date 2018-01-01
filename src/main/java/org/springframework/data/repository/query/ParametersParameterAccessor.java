@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link ParameterAccessor} implementation using a {@link Parameters} instance to find special parameters.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ParametersParameterAccessor implements ParameterAccessor {
@@ -38,7 +38,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 	/**
 	 * Creates a new {@link ParametersParameterAccessor}.
-	 * 
+	 *
 	 * @param parameters must not be {@literal null}.
 	 * @param values must not be {@literal null}.
 	 */
@@ -57,7 +57,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 	/**
 	 * Returns the {@link Parameters} instance backing the accessor.
-	 * 
+	 *
 	 * @return the parameters will never be {@literal null}.
 	 */
 	public Parameters<?, ?> getParameters() {
@@ -100,7 +100,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 	/**
 	 * Returns the dynamic projection type if available, {@literal null} otherwise.
-	 * 
+	 *
 	 * @return
 	 */
 	public Optional<Class<?>> getDynamicProjection() {
@@ -110,7 +110,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 	/**
 	 * Returns the value with the given index.
-	 * 
+	 *
 	 * @param index
 	 * @return
 	 */
@@ -147,7 +147,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 	/**
 	 * Iterator class to allow traversing all bindable parameters inside the accessor.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class BindableParameterIterator implements Iterator<Object> {
@@ -159,7 +159,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 		/**
 		 * Creates a new {@link BindableParameterIterator}.
-		 * 
+		 *
 		 * @param accessor must not be {@literal null}.
 		 */
 		public BindableParameterIterator(ParametersParameterAccessor accessor) {
@@ -172,7 +172,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 		/**
 		 * Returns the next bindable parameter.
-		 * 
+		 *
 		 * @return
 		 */
 		public Object next() {

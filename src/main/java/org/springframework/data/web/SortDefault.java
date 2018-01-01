@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.data.domain.Sort.Direction;
 /**
  * Annotation to define the default {@link Sort} options to be used when injecting a {@link Sort} instance into a
  * controller handler method.
- * 
+ *
  * @since 1.6
  * @author Oliver Gierke
  */
@@ -38,28 +38,28 @@ public @interface SortDefault {
 
 	/**
 	 * Alias for {@link #sort()} to make a declaration configuring fields only more concise.
-	 * 
+	 *
 	 * @return
 	 */
 	String[] value() default {};
 
 	/**
 	 * The properties to sort by by default. If unset, no sorting will be applied at all.
-	 * 
+	 *
 	 * @return
 	 */
 	String[] sort() default {};
 
 	/**
 	 * The direction to sort by. Defaults to {@link Direction#ASC}.
-	 * 
+	 *
 	 * @return
 	 */
 	Direction direction() default Direction.ASC;
 
 	/**
 	 * Wrapper annotation to allow declaring multiple {@link SortDefault} annotations on a method parameter.
-	 * 
+	 *
 	 * @since 1.6
 	 * @author Oliver Gierke
 	 */
@@ -70,7 +70,7 @@ public @interface SortDefault {
 
 		/**
 		 * The individual {@link SortDefault} declarations to be sorted by.
-		 * 
+		 *
 		 * @return
 		 */
 		SortDefault[] value();

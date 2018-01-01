@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Declares a field as the one representing the principal that created the entity containing the field.
- * 
+ *
  * @author Ranie Jade Ramiso
  * @author Oliver Gierke
  * @since 1.5

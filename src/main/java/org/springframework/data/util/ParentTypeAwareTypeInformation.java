@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Base class for {@link TypeInformation} implementations that need parent type awareness.
- * 
+ *
  * @author Oliver Gierke
  */
 public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S> {
@@ -33,7 +33,7 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 
 	/**
 	 * Creates a new {@link ParentTypeAwareTypeInformation}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param parent must not be {@literal null}.
 	 */
@@ -47,7 +47,7 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 		this.parent = parent;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#createInfo(java.lang.reflect.Type)
 	 */
@@ -61,7 +61,7 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 		return super.createInfo(fieldType);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#equals(java.lang.Object)
 	 */
@@ -84,7 +84,7 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 		return this.parent == null ? that.parent == null : this.parent.equals(that.parent);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#hashCode()
 	 */

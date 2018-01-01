@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.transaction.interceptor.TransactionAttribute;
 
 /**
  * Unit tests for {@link CustomAnnotationTransactionAttributeSource}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class CustomAnnotationTransactionAttributeSourceUnitTests {
@@ -44,7 +44,7 @@ public class CustomAnnotationTransactionAttributeSourceUnitTests {
 
 	/**
 	 * Basic interface.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	interface Foo<T> {
@@ -56,7 +56,7 @@ public class CustomAnnotationTransactionAttributeSourceUnitTests {
 
 	/**
 	 * Implementation defining transaction configuration.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@Transactional(readOnly = true)
@@ -74,7 +74,7 @@ public class CustomAnnotationTransactionAttributeSourceUnitTests {
 
 	/**
 	 * Interface reconfiguring transactions.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	interface Bar extends Foo<Object> {

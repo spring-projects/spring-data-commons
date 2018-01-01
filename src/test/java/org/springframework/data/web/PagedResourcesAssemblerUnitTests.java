@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Unit tests for {@link PagedResourcesAssembler}.
- * 
+ *
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Marcel Overdijk
@@ -282,7 +282,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 	static class PersonResourceAssembler implements ResourceAssembler<Person, PersonResource> {
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.hateoas.ResourceAssembler#toResource(java.lang.Object)
 		 */

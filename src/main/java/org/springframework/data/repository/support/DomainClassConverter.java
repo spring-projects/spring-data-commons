@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2016 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.springframework.util.StringUtils;
  * by Spring Data {@link CrudRepository}s. The implementation uses a {@link ConversionService} in turn to convert the
  * source type into the domain class' id type which is then converted into a domain class object by using a
  * {@link CrudRepository}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
@@ -53,7 +53,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 	/**
 	 * Creates a new {@link DomainClassConverter} for the given {@link ConversionService}.
-	 * 
+	 *
 	 * @param conversionService must not be {@literal null}.
 	 */
 	public DomainClassConverter(T conversionService) {
@@ -83,7 +83,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		return getConverter(targetType).map(it -> it.convert(source, sourceType, targetType)).orElse(source);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 	 */
@@ -127,7 +127,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 		/**
 		 * Creates a new {@link ToEntityConverter} for the given {@link Repositories} and {@link ConversionService}.
-		 * 
+		 *
 		 * @param repositories must not be {@literal null}.
 		 * @param conversionService must not be {@literal null}.
 		 */

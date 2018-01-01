@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
  * matching {@link RepositoryInvoker} that suits the repository best. That means, the more concrete the base interface
  * of the repository is, the more concrete will the actual invoker become - which means it will favor concrete method
  * invocations over reflection ones.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.10
@@ -46,7 +46,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 
 	/**
 	 * Creates a new {@link DefaultRepositoryInvokerFactory} for the given {@link Repositories}.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 */
 	public DefaultRepositoryInvokerFactory(Repositories repositories) {
@@ -56,7 +56,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 	/**
 	 * Creates a new {@link DefaultRepositoryInvokerFactory} for the given {@link Repositories} and
 	 * {@link ConversionService}.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
 	 */
@@ -70,7 +70,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 		this.invokers = new HashMap<>();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvokerFactory#getInvokerFor(java.lang.Class)
 	 */
@@ -81,7 +81,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 
 	/**
 	 * Creates a {@link RepositoryInvoker} for the repository managing the given domain type.
-	 * 
+	 *
 	 * @param domainType
 	 * @return
 	 */

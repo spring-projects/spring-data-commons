@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 /**
  * {@link HttpMessageConverter} implementation to enable projected JSON binding to interfaces annotated with
  * {@link ProjectedPayload}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @soundtrack Richard Spaven - Ice Is Nice (Spaven's 5ive)
@@ -62,7 +62,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 
 	/**
 	 * Creates a new {@link ProjectingJackson2HttpMessageConverter} for the given {@link ObjectMapper}.
-	 * 
+	 *
 	 * @param mapper must not be {@literal null}.
 	 */
 	public ProjectingJackson2HttpMessageConverter(ObjectMapper mapper) {
@@ -75,7 +75,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 	/**
 	 * Creates a new {@link SpelAwareProxyProjectionFactory} with the {@link JsonProjectingMethodInterceptorFactory}
 	 * registered for the given {@link ObjectMapper}.
-	 * 
+	 *
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 */
@@ -90,7 +90,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		return projectionFactory;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
 	 */
@@ -99,7 +99,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		projectionFactory.setBeanClassLoader(classLoader);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
 	 */
@@ -108,7 +108,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		projectionFactory.setBeanFactory(beanFactory);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canRead(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
 	 */
@@ -133,7 +133,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		return result;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
 	 */
@@ -142,7 +142,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#read(java.lang.reflect.Type, java.lang.Class, org.springframework.http.HttpInputMessage)
 	 */

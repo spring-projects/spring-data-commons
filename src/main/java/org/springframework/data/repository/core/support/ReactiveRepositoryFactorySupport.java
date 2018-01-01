@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,14 @@ import org.springframework.util.ClassUtils;
 /**
  * Base class for repository factories to use reactive support. Centralizes the validation of the classpath setup in
  * case a repository uses reactive types.
- * 
+ *
  * @author Mark Paluch
  * @author Oliver Gierke
  * @since 2.0
  */
 public abstract class ReactiveRepositoryFactorySupport extends RepositoryFactorySupport {
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#validate(org.springframework.data.repository.core.RepositoryMetadata)
 	 */

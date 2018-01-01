@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		this.conversionService = conversionService;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
 	 */
@@ -189,7 +189,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	/**
 	 * Returns the uniquely available bean of the given type from the given {@link ApplicationContext} or the one provided
 	 * by the given {@link Supplier} in case the initial lookup fails.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param context must not be {@literal null}.
 	 * @param fallback must not be {@literal null}.

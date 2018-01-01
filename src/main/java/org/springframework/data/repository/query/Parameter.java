@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2017 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
 
 /**
  * Class to abstract a single parameter of a query method. It is held in the context of a {@link Parameters} instance.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Jens Schauder
@@ -51,7 +51,7 @@ public class Parameter {
 
 	/**
 	 * Creates a new {@link Parameter} for the given {@link MethodParameter}.
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 */
 	protected Parameter(MethodParameter parameter) {
@@ -65,7 +65,7 @@ public class Parameter {
 
 	/**
 	 * Returns whether the parameter is a special parameter.
-	 * 
+	 *
 	 * @return
 	 * @see #TYPES
 	 */
@@ -75,7 +75,7 @@ public class Parameter {
 
 	/**
 	 * Returns whether the {@link Parameter} is to be bound to a query.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isBindable() {
@@ -84,7 +84,7 @@ public class Parameter {
 
 	/**
 	 * Returns whether the current {@link Parameter} is the one used for dynamic projections.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isDynamicProjectionParameter() {
@@ -93,7 +93,7 @@ public class Parameter {
 
 	/**
 	 * Returns the placeholder to be used for the parameter. Can either be a named one or positional.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getPlaceholder() {
@@ -107,7 +107,7 @@ public class Parameter {
 
 	/**
 	 * Returns the position index the parameter is bound to in the context of its surrounding {@link Parameters}.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getIndex() {
@@ -116,7 +116,7 @@ public class Parameter {
 
 	/**
 	 * Returns whether the parameter is annotated with {@link Param}.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isNamedParameter() {
@@ -125,7 +125,7 @@ public class Parameter {
 
 	/**
 	 * Returns the name of the parameter (through {@link Param} annotation).
-	 * 
+	 *
 	 * @return
 	 */
 	public Optional<String> getName() {
@@ -136,7 +136,7 @@ public class Parameter {
 
 	/**
 	 * Returns the type of the {@link Parameter}.
-	 * 
+	 *
 	 * @return the type
 	 */
 	public Class<?> getType() {
@@ -145,7 +145,7 @@ public class Parameter {
 
 	/**
 	 * Returns whether the parameter is named explicitly, i.e. annotated with {@link Param}.
-	 * 
+	 *
 	 * @return
 	 * @since 1.11
 	 */
@@ -164,7 +164,7 @@ public class Parameter {
 
 	/**
 	 * Returns whether the {@link Parameter} is a {@link Pageable} parameter.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isPageable() {
@@ -173,7 +173,7 @@ public class Parameter {
 
 	/**
 	 * Returns whether the {@link Parameter} is a {@link Sort} parameter.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isSort() {
@@ -187,7 +187,7 @@ public class Parameter {
 	 * <code>
 	 * <T> Collection<T> findBy…(…, Class<T> type);
 	 * </code>
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */
@@ -237,7 +237,7 @@ public class Parameter {
 	/**
 	 * Returns the component type if the given {@link MethodParameter} is a wrapper type and the wrapper should be
 	 * unwrapped.
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */

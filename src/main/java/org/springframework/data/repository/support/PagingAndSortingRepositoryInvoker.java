@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 /**
  * A special {@link RepositoryInvoker} that shortcuts invocations to methods on {@link PagingAndSortingRepository} to
  * avoid reflection overhead introduced by the superclass.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.10
  */
@@ -40,7 +40,7 @@ class PagingAndSortingRepositoryInvoker extends CrudRepositoryInvoker {
 	/**
 	 * Creates a new {@link PagingAndSortingRepositoryInvoker} using the given repository, {@link RepositoryMetadata} and
 	 * {@link ConversionService}.
-	 * 
+	 *
 	 * @param repository must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.

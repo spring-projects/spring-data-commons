@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
 /**
  * Default implementation of {@link RepositoryMetadata}. Will inspect generic types of {@link Repository} to find out
  * about domain and id class.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
@@ -44,7 +44,7 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 
 	/**
 	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository interface.
-	 * 
+	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
 	public DefaultRepositoryMetadata(Class<?> repositoryInterface) {

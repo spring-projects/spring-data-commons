@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,21 +27,21 @@ import org.springframework.data.repository.query.QueryMethod;
  * Interface for components that can provide meta-information about a repository factory, the backing
  * {@link EntityInformation} and {@link RepositoryInformation} as well as the {@link QueryMethod}s exposed by the
  * repository.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface RepositoryFactoryInformation<T, ID> {
 
 	/**
 	 * Returns {@link EntityInformation} the repository factory is using.
-	 * 
+	 *
 	 * @return
 	 */
 	EntityInformation<T, ID> getEntityInformation();
 
 	/**
 	 * Returns the {@link RepositoryInformation} to determine meta-information about the repository being used.
-	 * 
+	 *
 	 * @return
 	 */
 	RepositoryInformation getRepositoryInformation();
@@ -49,14 +49,14 @@ public interface RepositoryFactoryInformation<T, ID> {
 	/**
 	 * Returns the {@link PersistentEntity} managed by the underlying repository. Can be {@literal null} in case the
 	 * underlying persistence mechanism does not expose a {@link MappingContext}.
-	 * 
+	 *
 	 * @return
 	 */
 	PersistentEntity<?, ?> getPersistentEntity();
 
 	/**
 	 * Returns all {@link QueryMethod}s declared for that repository.
-	 * 
+	 *
 	 * @return
 	 */
 	List<QueryMethod> getQueryMethods();

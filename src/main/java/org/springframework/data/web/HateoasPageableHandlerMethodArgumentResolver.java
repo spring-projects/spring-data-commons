@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * Extension of {@link PageableHandlerMethodArgumentResolver} that also supports enhancing URIs using Spring HATEOAS
  * support.
- * 
+ *
  * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams
@@ -58,7 +58,7 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 	/**
 	 * Creates a new {@link HateoasPageableHandlerMethodArgumentResolver} using the given
 	 * {@link HateoasSortHandlerMethodArgumentResolver}..
-	 * 
+	 *
 	 * @param sortResolver
 	 */
 	public HateoasPageableHandlerMethodArgumentResolver(@Nullable HateoasSortHandlerMethodArgumentResolver sortResolver) {
@@ -69,7 +69,7 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 
 	/**
 	 * Returns the template variable for the pagination parameters.
-	 * 
+	 *
 	 * @param parameter can be {@literal null}.
 	 * @return
 	 * @since 1.7

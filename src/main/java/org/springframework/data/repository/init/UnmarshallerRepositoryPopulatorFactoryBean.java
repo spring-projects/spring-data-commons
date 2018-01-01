@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link FactoryBean} to create a {@link ResourceReaderRepositoryPopulator} using an {@link Unmarshaller}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -32,7 +32,7 @@ public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractReposito
 
 	/**
 	 * Configures the {@link Unmarshaller} to be used.
-	 * 
+	 *
 	 * @param unmarshaller the unmarshaller to set
 	 */
 	public void setUnmarshaller(Unmarshaller unmarshaller) {
@@ -54,7 +54,7 @@ public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractReposito
 		return new UnmarshallingResourceReader(unmarshaller);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#afterPropertiesSet()
 	 */

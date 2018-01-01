@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.aop.framework.ProxyFactory;
 /**
  * Utility methods to create {@link RepositoryInvoker} instances that get a verifying proxy attached so that the
  * invocation of a given target methods or type can be verified.
- * 
+ *
  * @author Oliver Gierke
  */
 class RepositoryInvocationTestUtils {
@@ -54,7 +54,7 @@ class RepositoryInvocationTestUtils {
 
 	/**
 	 * {@link MethodInterceptor} to verify the invocation was triggered on the given type.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@SuppressWarnings("rawtypes")

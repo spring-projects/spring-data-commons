@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
 /**
  * Special {@link TypeDiscoverer} to determine the actual type for a {@link TypeVariable}. Will consider the context the
  * {@link TypeVariable} is being used in.
- * 
+ *
  * @author Oliver Gierke
  */
 class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
@@ -36,7 +36,7 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 	/**
 	 * Creates a new {@link TypeVariableTypeInformation} for the given {@link TypeVariable} owning {@link Type} and parent
 	 * {@link TypeDiscoverer}.
-	 * 
+	 *
 	 * @param variable must not be {@literal null}
 	 * @param owningType must not be {@literal null}
 	 * @param parent

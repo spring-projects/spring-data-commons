@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link PagedResourcesAssembler} into Spring MVC
  * controller methods.
- * 
+ *
  * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams
@@ -58,7 +58,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	/**
 	 * Creates a new {@link PagedResourcesAssemblerArgumentResolver} using the given
 	 * {@link PageableHandlerMethodArgumentResolver} and {@link MethodLinkBuilderFactory}.
-	 * 
+	 *
 	 * @param resolver can be {@literal null}.
 	 * @param linkBuilderFactory can be {@literal null}, will be defaulted to a {@link ControllerLinkBuilderFactory}.
 	 */
@@ -69,7 +69,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 		this.linkBuilderFactory = linkBuilderFactory == null ? new ControllerLinkBuilderFactory() : linkBuilderFactory;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
 	 */
@@ -78,7 +78,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 		return PagedResourcesAssembler.class.equals(parameter.getParameterType());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
@@ -99,7 +99,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 
 	/**
 	 * Eagerly resolve a base URI for the given {@link MethodParameter} to be handed to the assembler.
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 * @return the {@link UriComponents} representing the base URI, or {@literal null} if it can't be resolved eagerly.
 	 */
@@ -117,7 +117,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	/**
 	 * Returns finds the {@link MethodParameter} for a {@link Pageable} instance matching the given
 	 * {@link MethodParameter} requesting a {@link PagedResourcesAssembler}.
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */

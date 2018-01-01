@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2017 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,7 +36,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
 
 /**
  * Unit tests for {@link PartTree}.
- * 
+ *
  * @author Oliver Gierke
  * @author Phillip Webb
  * @author Thomas Darimont

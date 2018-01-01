@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 the original author or authors.
+ * Copyright 2010-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
 
 /**
  * Value object to represent distances in a given metric.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @since 1.8
@@ -48,7 +48,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 
 	/**
 	 * Creates a new {@link Distance} with a neutral metric. This means the provided value needs to be in normalized form.
-	 * 
+	 *
 	 * @param value
 	 */
 	public Distance(double value) {
@@ -57,7 +57,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 
 	/**
 	 * Creates a new {@link Distance} with the given {@link Metric}.
-	 * 
+	 *
 	 * @param value
 	 * @param metric must not be {@literal null}.
 	 */
@@ -71,7 +71,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 
 	/**
 	 * Creates a {@link Range} between the given {@link Distance}.
-	 * 
+	 *
 	 * @param min can be {@literal null}.
 	 * @param max can be {@literal null}.
 	 * @return will never be {@literal null}.
@@ -82,7 +82,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 
 	/**
 	 * Creates a new {@link Range} by creating minimum and maximum {@link Distance} from the given values.
-	 * 
+	 *
 	 * @param minValue
 	 * @param minMetric can be {@literal null}.
 	 * @param maxValue
@@ -95,7 +95,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 
 	/**
 	 * Returns the normalized value regarding the underlying {@link Metric}.
-	 * 
+	 *
 	 * @return
 	 */
 	public double getNormalizedValue() {
@@ -104,7 +104,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 
 	/**
 	 * Returns a {@link String} representation of the unit the distance is in.
-	 * 
+	 *
 	 * @return the unit
 	 * @see Metric#getAbbreviation()
 	 */
@@ -115,7 +115,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 	/**
 	 * Adds the given distance to the current one. The resulting {@link Distance} will be in the same metric as the
 	 * current one.
-	 * 
+	 *
 	 * @param other must not be {@literal null}.
 	 * @return
 	 */
@@ -130,7 +130,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 
 	/**
 	 * Adds the given {@link Distance} to the current one and forces the result to be in a given {@link Metric}.
-	 * 
+	 *
 	 * @param other must not be {@literal null}.
 	 * @param metric must not be {@literal null}.
 	 * @return
@@ -149,7 +149,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 	/**
 	 * Returns a new {@link Distance} in the given {@link Metric}. This means that the returned instance will have the
 	 * same normalized value as the original instance.
-	 * 
+	 *
 	 * @param metric must not be {@literal null}.
 	 * @return
 	 */
@@ -160,7 +160,7 @@ public class Distance implements Serializable, Comparable<Distance> {
 		return this.metric.equals(metric) ? this : new Distance(getNormalizedValue() * metric.getMultiplier(), metric);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */

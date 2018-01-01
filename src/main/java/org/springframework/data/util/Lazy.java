@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class Lazy<T> implements Supplier<T> {
 	/**
 	 * Returns the value of the lazy computation or the given default value in case the computation yields
 	 * {@literal null}.
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 */
@@ -84,7 +84,7 @@ public class Lazy<T> implements Supplier<T> {
 	/**
 	 * Returns the value of the lazy computation or the value produced by the given {@link Supplier} in case the original
 	 * value is {@literal null}.
-	 * 
+	 *
 	 * @param supplier must not be {@literal null}.
 	 * @return
 	 */
@@ -126,7 +126,7 @@ public class Lazy<T> implements Supplier<T> {
 
 	/**
 	 * Returns the value of the lazy evaluation.
-	 * 
+	 *
 	 * @return
 	 */
 	@Nullable

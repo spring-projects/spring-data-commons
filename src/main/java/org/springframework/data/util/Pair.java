@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 /**
  * A tuple of things.
- * 
+ *
  * @author Tobias Trelle
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -46,7 +46,7 @@ public final class Pair<S, T> {
 
 	/**
 	 * Creates a new {@link Pair} for the given elements.
-	 * 
+	 *
 	 * @param first must not be {@literal null}.
 	 * @param second must not be {@literal null}.
 	 * @return
@@ -57,7 +57,7 @@ public final class Pair<S, T> {
 
 	/**
 	 * Returns the first element of the {@link Pair}.
-	 * 
+	 *
 	 * @return
 	 */
 	public S getFirst() {
@@ -66,7 +66,7 @@ public final class Pair<S, T> {
 
 	/**
 	 * Returns the second element of the {@link Pair}.
-	 * 
+	 *
 	 * @return
 	 */
 	public T getSecond() {

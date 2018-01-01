@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.springframework.util.StringUtils;
  * A {@link ImportBeanDefinitionRegistrar} that serves as a base class for store specific implementations for
  * configuring audit support. Registers a {@link AuditingHandler} based on the provided configuration(
  * {@link AuditingConfiguration}).
- * 
+ *
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
  * @author Oliver Gierke
@@ -65,7 +65,7 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 
 	/**
 	 * Registers an appropriate BeanDefinition for an {@link AuditingHandler}.
-	 * 
+	 *
 	 * @param registry must not be {@literal null}.
 	 * @param configuration must not be {@literal null}.
 	 * @return
@@ -84,7 +84,7 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	/**
 	 * Creates a {@link BeanDefinitionBuilder} to ease the definition of store specific {@link AuditingHandler}
 	 * implementations.
-	 * 
+	 *
 	 * @param configuration must not be {@literal null}.
 	 * @return
 	 */
@@ -99,7 +99,7 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	/**
 	 * Configures the given {@link BeanDefinitionBuilder} with the default attributes from the given
 	 * {@link AuditingConfiguration}.
-	 * 
+	 *
 	 * @param configuration must not be {@literal null}.
 	 * @param builder must not be {@literal null}.
 	 * @return the builder with the audit attributes configured.
@@ -130,7 +130,7 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 
 	/**
 	 * Retrieve auditing configuration from the given {@link AnnotationMetadata}.
-	 * 
+	 *
 	 * @param annotationMetadata will never be {@literal null}.
 	 * @return
 	 */
@@ -140,14 +140,14 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 
 	/**
 	 * Return the annotation type to lookup configuration values from.
-	 * 
+	 *
 	 * @return must not be {@literal null}.
 	 */
 	protected abstract Class<? extends Annotation> getAnnotation();
 
 	/**
 	 * Register the listener to eventually trigger the {@link AuditingHandler}.
-	 * 
+	 *
 	 * @param auditingHandlerDefinition will never be {@literal null}.
 	 * @param registry will never be {@literal null}.
 	 */
@@ -156,14 +156,14 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 
 	/**
 	 * Return the name to be used to register the {@link AuditingHandler} under.
-	 * 
+	 *
 	 * @return
 	 */
 	protected abstract String getAuditingHandlerBeanName();
 
 	/**
 	 * Registers the given {@link AbstractBeanDefinition} as infrastructure bean under the given id.
-	 * 
+	 *
 	 * @param definition must not be {@literal null}.
 	 * @param id must not be {@literal null} or empty.
 	 * @param registry must not be {@literal null}.

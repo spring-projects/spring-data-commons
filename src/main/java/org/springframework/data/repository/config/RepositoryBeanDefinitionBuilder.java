@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -264,7 +264,7 @@ class RepositoryBeanDefinitionBuilder {
 
 		/**
 		 * Returns whether the given interface is a fragment candidate.
-		 * 
+		 *
 		 * @param interfaceName must not be {@literal null} or empty.
 		 * @param factory must not be {@literal null}.
 		 * @return
@@ -281,7 +281,7 @@ class RepositoryBeanDefinitionBuilder {
 
 		/**
 		 * Returns the exclusions to be used when scanning for fragment implementations.
-		 * 
+		 *
 		 * @return
 		 */
 		public List<TypeFilter> getExclusions() {
@@ -294,7 +294,7 @@ class RepositoryBeanDefinitionBuilder {
 
 		/**
 		 * Returns the name of the implementation class to be detected for the fragment interface.
-		 * 
+		 *
 		 * @return
 		 */
 		public String getFragmentImplementationClassName() {
@@ -307,7 +307,7 @@ class RepositoryBeanDefinitionBuilder {
 
 		/**
 		 * Returns the base packages to be scanned to find implementations of the current fragment interface.
-		 * 
+		 *
 		 * @return
 		 */
 		public Iterable<String> getBasePackages() {
@@ -316,7 +316,7 @@ class RepositoryBeanDefinitionBuilder {
 
 		/**
 		 * Returns the bean name generating function to be used for the fragment.
-		 * 
+		 *
 		 * @return
 		 */
 		public Function<BeanDefinition, String> getBeanNameGenerator() {

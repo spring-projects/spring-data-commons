@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Default implementation of {@link Slice}.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.8
  */
@@ -35,7 +35,7 @@ public class SliceImpl<T> extends Chunk<T> {
 
 	/**
 	 * Creates a new {@link Slice} with the given content and {@link Pageable}.
-	 * 
+	 *
 	 * @param content the content of this {@link Slice}, must not be {@literal null}.
 	 * @param pageable the paging information, can be {@literal null}.
 	 * @param hasNext whether there's another slice following the current one.
@@ -51,7 +51,7 @@ public class SliceImpl<T> extends Chunk<T> {
 	/**
 	 * Creates a new {@link SliceImpl} with the given content. This will result in the created {@link Slice} being
 	 * identical to the entire {@link List}.
-	 * 
+	 *
 	 * @param content must not be {@literal null}.
 	 */
 	public SliceImpl(List<T> content) {
@@ -66,7 +66,7 @@ public class SliceImpl<T> extends Chunk<T> {
 		return hasNext;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Slice#transform(org.springframework.core.convert.converter.Converter)
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.web.util.UriComponents;
 
 /**
  * Custom {@link PagedResourcesAssembler} that is aware of the {@link MethodParameter} it shall create links for.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.7
  */
@@ -35,7 +35,7 @@ class MethodParameterAwarePagedResourcesAssembler<T> extends PagedResourcesAssem
 	/**
 	 * Creates a new {@link MethodParameterAwarePagedResourcesAssembler} using the given {@link MethodParameter},
 	 * {@link HateoasPageableHandlerMethodArgumentResolver} and base URI.
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 * @param resolver can be {@literal null}.
 	 * @param baseUri can be {@literal null}.
@@ -49,7 +49,7 @@ class MethodParameterAwarePagedResourcesAssembler<T> extends PagedResourcesAssem
 		this.parameter = parameter;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.web.PagedResourcesAssembler#getMethodParameter()
 	 */

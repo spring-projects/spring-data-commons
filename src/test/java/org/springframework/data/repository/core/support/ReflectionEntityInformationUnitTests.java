@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may
@@ -27,7 +27,7 @@ import org.springframework.data.repository.core.EntityInformation;
 
 /**
  * Unit tests for {@link ReflectionEntityInformation}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ReflectionEntityInformationUnitTests {

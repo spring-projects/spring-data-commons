@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ class MapDataBinder extends WebDataBinder {
 
 	/**
 	 * Creates a new {@link MapDataBinder} for the given type and {@link ConversionService}.
-	 * 
+	 *
 	 * @param type target type to detect property that need to be bound.
 	 * @param conversionService the {@link ConversionService} to be used to preprocess values.
 	 */
@@ -76,7 +76,7 @@ class MapDataBinder extends WebDataBinder {
 		this.conversionService = conversionService;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.validation.DataBinder#getTarget()
 	 */
@@ -94,7 +94,7 @@ class MapDataBinder extends WebDataBinder {
 		return (Map<String, Object>) target;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.validation.DataBinder#getPropertyAccessor()
 	 */
@@ -120,7 +120,7 @@ class MapDataBinder extends WebDataBinder {
 		private final @NonNull Map<String, Object> map;
 		private final @NonNull ConversionService conversionService;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.PropertyAccessor#isReadableProperty(java.lang.String)
 		 */
@@ -129,7 +129,7 @@ class MapDataBinder extends WebDataBinder {
 			throw new UnsupportedOperationException();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.PropertyAccessor#isWritableProperty(java.lang.String)
 		 */
@@ -143,7 +143,7 @@ class MapDataBinder extends WebDataBinder {
 			}
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.PropertyAccessor#getPropertyTypeDescriptor(java.lang.String)
 		 */
@@ -153,7 +153,7 @@ class MapDataBinder extends WebDataBinder {
 			throw new UnsupportedOperationException();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.AbstractPropertyAccessor#getPropertyValue(java.lang.String)
 		 */
@@ -163,7 +163,7 @@ class MapDataBinder extends WebDataBinder {
 			throw new UnsupportedOperationException();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.beans.AbstractPropertyAccessor#setPropertyValue(java.lang.String, java.lang.Object)
 		 */
@@ -229,7 +229,7 @@ class MapDataBinder extends WebDataBinder {
 		/**
 		 * A special {@link MapAccessor} that traverses properties on the configured type to automatically create nested Map
 		 * and collection values as necessary.
-		 * 
+		 *
 		 * @author Oliver Gierke
 		 * @since 1.10
 		 */
@@ -240,7 +240,7 @@ class MapDataBinder extends WebDataBinder {
 
 			/**
 			 * Creates a new {@link PropertyTraversingMapAccessor} for the given type and {@link ConversionService}.
-			 * 
+			 *
 			 * @param type must not be {@literal null}.
 			 * @param conversionService must not be {@literal null}.
 			 */
@@ -262,7 +262,7 @@ class MapDataBinder extends WebDataBinder {
 				return true;
 			}
 
-			/* 
+			/*
 			 * (non-Javadoc)
 			 * @see org.springframework.context.expression.MapAccessor#read(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 			 */
@@ -293,7 +293,7 @@ class MapDataBinder extends WebDataBinder {
 
 			/**
 			 * Returns the type descriptor for the given {@link PropertyPath} and empty value for that path.
-			 * 
+			 *
 			 * @param path must not be {@literal null}.
 			 * @param emptyValue must not be {@literal null}.
 			 * @return

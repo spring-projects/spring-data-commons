@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import org.springframework.util.Assert;
 
 /**
  * Exception to represent a failed attempt to convert a source value into a query method parameter.
- * 
+ *
  * @author Oliver Gierke
- * @soundtrack Dave Matthews Band - The Dreaming Tree (DMB 2009 Europe)
+ * @soundtrack Dave Matthews Band - The Dreaming Tree (DMB 2009-2018 Europe)
  * @since 1.11
  */
 public class QueryMethodParameterConversionException extends RuntimeException {
@@ -36,7 +36,7 @@ public class QueryMethodParameterConversionException extends RuntimeException {
 	/**
 	 * Creates a new {@link QueryMethodParameterConversionException} for the given source object, {@link MethodParameter}
 	 * and root cause {@link ConversionException}.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param parameter the {@link MethodParameter} the value should've been converted for, must not be {@literal null}..
 	 * @param cause the original {@link ConversionException}, must not be {@literal null}.
@@ -54,7 +54,7 @@ public class QueryMethodParameterConversionException extends RuntimeException {
 
 	/**
 	 * Returns the source value that we failed converting.
-	 * 
+	 *
 	 * @return the source can be {@literal null}.
 	 */
 	public Object getSource() {
@@ -63,7 +63,7 @@ public class QueryMethodParameterConversionException extends RuntimeException {
 
 	/**
 	 * Returns the {@link MethodParameter} we tried to convert the source value for.
-	 * 
+	 *
 	 * @return the parameter will never be {@literal null}.
 	 * @see #getSource()
 	 */

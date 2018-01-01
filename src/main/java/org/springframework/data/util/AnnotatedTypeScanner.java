@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.ClassUtils;
 
 /**
  * Scanner to find types with annotations on the classpath.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -47,7 +47,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 
 	/**
 	 * Creates a new {@link AnnotatedTypeScanner} for the given annotation types.
-	 * 
+	 *
 	 * @param annotationTypes the annotation types to scan for.
 	 */
 	@SafeVarargs
@@ -57,7 +57,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 
 	/**
 	 * Creates a new {@link AnnotatedTypeScanner} for the given annotation types.
-	 * 
+	 *
 	 * @param considerInterfaces whether to consider interfaces as well.
 	 * @param annotationTypes the annotations to scan for.
 	 */
@@ -68,7 +68,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 		this.considerInterfaces = considerInterfaces;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
 	 */
@@ -77,7 +77,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 		this.resourceLoader = resourceLoader;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.EnvironmentAware#setEnvironment(org.springframework.core.env.Environment)
 	 */
@@ -136,7 +136,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 	/**
 	 * Custom extension of {@link ClassPathScanningCandidateComponentProvider} to make sure interfaces to not get dropped
 	 * from scanning results.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class InterfaceAwareScanner extends ClassPathScanningCandidateComponentProvider {
@@ -148,7 +148,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 			this.considerInterfaces = considerInterfaces;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider#isCandidateComponent(org.springframework.beans.factory.annotation.AnnotatedBeanDefinition)
 		 */

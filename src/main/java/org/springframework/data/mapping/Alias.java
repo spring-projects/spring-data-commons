@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class Alias {
 
 	/**
 	 * Returns whether the the current alias is present and has the same value as the given {@link Alias}.
-	 * 
+	 *
 	 * @param other the other {@link Alias}
 	 * @return {@literal true} if there's an alias value present and its equal to the one in the given {@link Alias}.
 	 */

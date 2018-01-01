@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 
 /**
  * A chunk of data restricted by the configured {@link Pageable}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.8
@@ -44,7 +44,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 
 	/**
 	 * Creates a new {@link Chunk} with the given content and the given governing {@link Pageable}.
-	 * 
+	 *
 	 * @param content must not be {@literal null}.
 	 * @param pageable must not be {@literal null}.
 	 */
@@ -105,7 +105,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 		return !hasNext();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Slice#nextPageable()
 	 */
@@ -156,7 +156,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 
 	/**
 	 * Applies the given {@link Function} to the content of the {@link Chunk}.
-	 * 
+	 *
 	 * @param converter must not be {@literal null}.
 	 * @return
 	 */

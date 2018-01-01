@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Optional;
 
 /**
  * SPI to calculate the current time to be used when auditing.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.5
  */
@@ -28,7 +28,7 @@ public interface DateTimeProvider {
 
 	/**
 	 * Returns the current time to be used as modification or creation date.
-	 * 
+	 *
 	 * @return
 	 */
 	Optional<TemporalAccessor> getNow();

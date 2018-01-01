@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ import org.springframework.util.ClassUtils;
  * <li>{@link org.springframework.data.web.SortHandlerMethodArgumentResolver} - for injection of
  * {@link org.springframework.data.web.PagedResourcesAssembler} into controller methods</li>
  * <ul>
- * 
+ *
  * @since 1.6
  * @see SpringDataWebConfiguration
  * @see HateoasAwareSpringDataWebConfiguration
@@ -77,7 +77,7 @@ public @interface EnableSpringDataWebSupport {
 	 * classpath. We need to register the HATEOAS specific class first as apparently only the first class implementing
 	 * {@link org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport} gets callbacks invoked (see
 	 * https://jira.springsource.org/browse/SPR-10565).
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @author Jens Schauder
 	 */
@@ -85,7 +85,7 @@ public @interface EnableSpringDataWebSupport {
 
 		private Optional<ClassLoader> resourceLoader = Optional.empty();
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
 		 */
@@ -94,7 +94,7 @@ public @interface EnableSpringDataWebSupport {
 			this.resourceLoader = Optional.of(resourceLoader).map(ResourceLoader::getClassLoader);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.context.annotation.ImportSelector#selectImports(org.springframework.core.type.AnnotationMetadata)
 		 */
@@ -129,7 +129,7 @@ public @interface EnableSpringDataWebSupport {
 	 */
 	static class QuerydslActivator implements ImportSelector {
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.context.annotation.ImportSelector#selectImports(org.springframework.core.type.AnnotationMetadata)
 		 */

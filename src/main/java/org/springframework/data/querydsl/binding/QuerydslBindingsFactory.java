@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.querydsl.core.types.EntityPath;
 
 /**
  * Factory to create {@link QuerydslBindings} using an {@link EntityPathResolver}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.11
@@ -51,7 +51,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 
 	/**
 	 * Creates a new {@link QuerydslBindingsFactory} using the given {@link EntityPathResolver}.
-	 * 
+	 *
 	 * @param entityPathResolver must not be {@literal null}.
 	 */
 	public QuerydslBindingsFactory(EntityPathResolver entityPathResolver) {
@@ -64,7 +64,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		this.repositories = Optional.empty();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
 	 */
@@ -77,7 +77,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 
 	/**
 	 * Returns the {@link EntityPathResolver} used by the factory.
-	 * 
+	 *
 	 * @return the entityPathResolver
 	 */
 	public EntityPathResolver getEntityPathResolver() {
@@ -87,7 +87,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	/**
 	 * Creates the {@link QuerydslBindings} to be used using for the given domain type. A {@link QuerydslBinderCustomizer}
 	 * will be auto-detected.
-	 * 
+	 *
 	 * @param domainType must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
@@ -98,7 +98,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	/**
 	 * Creates the {@link QuerydslBindings} to be used using for the given domain type and a pre-defined
 	 * {@link QuerydslBinderCustomizer}.
-	 * 
+	 *
 	 * @param domainType must not be {@literal null}.
 	 * @param customizer the {@link QuerydslBinderCustomizer} to use, must not be {@literal null}.
 	 * @return will never be {@literal null}.
@@ -111,7 +111,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	/**
 	 * Creates the {@link QuerydslBindings} to be used using for the given domain type and a pre-defined
 	 * {@link QuerydslBinderCustomizer}. If no customizer is given, auto-detection will be applied.
-	 * 
+	 *
 	 * @param domainType must not be {@literal null}.
 	 * @param customizer the {@link QuerydslBinderCustomizer} to use. If an empty {@link Optional} is given customizer
 	 *          detection for the given domain type will be applied.
@@ -134,7 +134,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	/**
 	 * Tries to detect a Querydsl query type for the given domain type candidate via the configured
 	 * {@link EntityPathResolver}.
-	 * 
+	 *
 	 * @param candidate must not be {@literal null}.
 	 * @throws IllegalStateException to indicate the query type can't be found and manual configuration is necessary.
 	 */
@@ -154,7 +154,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	/**
 	 * Obtains the {@link QuerydslBinderCustomizer} for the given domain type. Will inspect the given annotation for a
 	 * dedicatedly configured one or consider the domain types's repository.
-	 * 
+	 *
 	 * @param annotation
 	 * @param domainType
 	 * @return
@@ -176,7 +176,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	 * {@link org.springframework.beans.factory.BeanFactory} first or fall back to create a fresh instance through the
 	 * {@link org.springframework.beans.factory.BeanFactory} or finally falling back to a plain instantiation if no
 	 * {@link org.springframework.beans.factory.BeanFactory} is present.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */

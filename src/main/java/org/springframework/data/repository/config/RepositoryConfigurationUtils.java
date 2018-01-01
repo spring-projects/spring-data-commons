@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.springframework.util.Assert;
 /**
  * Helper class to centralize common functionality that needs to be used in various places of the configuration
  * implementation.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface RepositoryConfigurationUtils {
@@ -35,7 +35,7 @@ public interface RepositoryConfigurationUtils {
 	 * particular store (expressed through the extension's concrete type) has appened. Useful for downstream components
 	 * that need to detect exactly that case. The bean definition is marked as lazy-init so that it doesn't get
 	 * instantiated if no one really cares.
-	 * 
+	 *
 	 * @param extension must not be {@literal null}.
 	 * @param registry must not be {@literal null}.
 	 * @param configurationSource must not be {@literal null}.

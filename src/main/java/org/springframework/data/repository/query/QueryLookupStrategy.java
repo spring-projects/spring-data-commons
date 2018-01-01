@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Strategy interface for which way to lookup {@link RepositoryQuery}s.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface QueryLookupStrategy {
@@ -37,7 +37,7 @@ public interface QueryLookupStrategy {
 
 		/**
 		 * Returns a strategy key from the given XML value.
-		 * 
+		 *
 		 * @param xml
 		 * @return a strategy key from the given XML value
 		 */
@@ -54,7 +54,7 @@ public interface QueryLookupStrategy {
 
 	/**
 	 * Resolves a {@link RepositoryQuery} from the given {@link QueryMethod} that can be executed afterwards.
-	 * 
+	 *
 	 * @param method will never be {@literal null}.
 	 * @param metadata will never be {@literal null}.
 	 * @param factory will never be {@literal null}.

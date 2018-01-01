@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
 
 /**
  * Simple value object to work with ranges and boundaries.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  * @since 1.10
@@ -50,7 +50,7 @@ public class Range<T extends Comparable<T>> {
 	/**
 	 * Creates a new {@link Range} with the given lower and upper bound. Treats the given values as inclusive bounds. Use
 	 * {@link #Range(Comparable, Comparable, boolean, boolean)} to configure different bound behavior.
-	 * 
+	 *
 	 * @see Range#of(Bound, Bound)
 	 * @param lowerBound can be {@literal null} in case upperBound is not {@literal null}.
 	 * @param upperBound can be {@literal null} in case lowerBound is not {@literal null}.
@@ -64,7 +64,7 @@ public class Range<T extends Comparable<T>> {
 	/**
 	 * Creates a new {@link Range} with the given lower and upper bound as well as the given inclusive/exclusive
 	 * semantics.
-	 * 
+	 *
 	 * @param lowerBound can be {@literal null}.
 	 * @param upperBound can be {@literal null}.
 	 * @param lowerInclusive
@@ -84,7 +84,7 @@ public class Range<T extends Comparable<T>> {
 
 	/**
 	 * Returns an unbounded {@link Range}.
-	 * 
+	 *
 	 * @return
 	 * @since 2.0
 	 */
@@ -95,7 +95,7 @@ public class Range<T extends Comparable<T>> {
 
 	/**
 	 * Create a {@link RangeBuilder} given the lower {@link Bound}.
-	 * 
+	 *
 	 * @param lower must not be {@literal null}.
 	 * @return
 	 * @since 2.0
@@ -108,7 +108,7 @@ public class Range<T extends Comparable<T>> {
 
 	/**
 	 * Creates a new {@link Range} with the given lower and upper bound.
-	 * 
+	 *
 	 * @param lowerBound must not be {@literal null}.
 	 * @param upperBound must not be {@literal null}.
 	 * @since 2.0
@@ -137,7 +137,7 @@ public class Range<T extends Comparable<T>> {
 
 	/**
 	 * Returns whether the {@link Range} contains the given value.
-	 * 
+	 *
 	 * @param value must not be {@literal null}.
 	 * @return
 	 */
@@ -156,7 +156,7 @@ public class Range<T extends Comparable<T>> {
 		return greaterThanLowerBound && lessThanUpperBound;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -168,7 +168,7 @@ public class Range<T extends Comparable<T>> {
 	/**
 	 * Value object representing a boundary. A boundary can either be {@link #unbounded() unbounded},
 	 * {@link #inclusive(Comparable) including its value} or {@link #exclusive(Comparable) its value}.
-	 * 
+	 *
 	 * @author Mark Paluch
 	 * @since 2.0
 	 * @soundtrack Mohamed Ragab - Excelsior Sessions (March 2017)
@@ -193,7 +193,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Returns whether this boundary is bounded.
-		 * 
+		 *
 		 * @return
 		 */
 		public boolean isBounded() {
@@ -202,7 +202,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary including {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -214,7 +214,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary including {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -224,7 +224,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary including {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -234,7 +234,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary including {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -244,7 +244,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary including {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -254,7 +254,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary excluding {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -266,7 +266,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary excluding {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -276,7 +276,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary excluding {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -286,7 +286,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary excluding {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -296,7 +296,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Creates a boundary excluding {@code value}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -320,7 +320,7 @@ public class Range<T extends Comparable<T>> {
 					.orElse("unbounded");
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
@@ -348,7 +348,7 @@ public class Range<T extends Comparable<T>> {
 
 		/**
 		 * Create a {@link Range} given the upper {@link Bound}.
-		 * 
+		 *
 		 * @param upper must not be {@literal null}.
 		 * @return
 		 */

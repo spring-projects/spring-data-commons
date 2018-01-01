@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Value object to capture {@link GeoResult}s as well as the average distance they have.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @since 1.8
@@ -44,7 +44,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	/**
 	 * Creates a new {@link GeoResults} instance manually calculating the average distance from the distance values of the
 	 * given {@link GeoResult}s.
-	 * 
+	 *
 	 * @param results must not be {@literal null}.
 	 */
 	public GeoResults(List<? extends GeoResult<T>> results) {
@@ -54,7 +54,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	/**
 	 * Creates a new {@link GeoResults} instance manually calculating the average distance in the given {@link Metric}
 	 * from the distance values of the given {@link GeoResult}s.
-	 * 
+	 *
 	 * @param results must not be {@literal null}.
 	 * @param metric must not be {@literal null}.
 	 */
@@ -64,7 +64,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	/**
 	 * Creates a new {@link GeoResults} instance from the given {@link GeoResult}s and average distance.
-	 * 
+	 *
 	 * @param results must not be {@literal null}.
 	 * @param averageDistance must not be {@literal null}.
 	 */
@@ -80,7 +80,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	/**
 	 * Returns the average distance of all {@link GeoResult}s in this list.
-	 * 
+	 *
 	 * @return the averageDistance
 	 */
 	public Distance getAverageDistance() {
@@ -89,7 +89,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	/**
 	 * Returns the actual content of the {@link GeoResults}.
-	 * 
+	 *
 	 * @return
 	 */
 	public List<GeoResult<T>> getContent() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Base {@link RepositoryInvoker} using reflection to invoke methods on Spring Data Repositories.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.10
  */
@@ -56,7 +56,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	/**
 	 * Creates a new {@link ReflectionRepositoryInvoker} for the given repository, {@link RepositoryMetadata} and
 	 * {@link ConversionService}.
-	 * 
+	 *
 	 * @param repository must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
@@ -74,7 +74,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		this.conversionService = conversionService;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasFindAllMethod()
 	 */
@@ -101,7 +101,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return invokeFindAllReflectively(pageable);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasSaveMethod()
 	 */
@@ -123,7 +123,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return invokeForNonNullResult(method, object);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasFindOneMethod()
 	 */
@@ -145,7 +145,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return returnAsOptional(invoke(method, convertId(id)));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasDeleteMethod()
 	 */
@@ -247,7 +247,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	/**
 	 * Invokes the given method with the given arguments on the backing repository.
-	 * 
+	 *
 	 * @param method
 	 * @param arguments
 	 * @return
@@ -280,7 +280,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	/**
 	 * Converts the given id into the id type of the backing repository.
-	 * 
+	 *
 	 * @param id must not be {@literal null}.
 	 * @return
 	 */
@@ -329,7 +329,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	/**
 	 * Unwraps the first item if the given source has exactly one element.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return
 	 */

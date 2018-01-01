@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ public class Property {
 	/**
 	 * Returns whether the given {@link PropertyDescriptor} is supported in for standalone creation of a {@link Property}
 	 * instance.
-	 * 
+	 *
 	 * @param descriptor
 	 * @return
 	 */
@@ -229,7 +229,7 @@ public class Property {
 
 	/**
 	 * Maps the backing {@link Field} or {@link PropertyDescriptor} using the given {@link Function}.
-	 * 
+	 *
 	 * @param function must not be {@literal null}.
 	 * @return
 	 */
@@ -239,7 +239,7 @@ public class Property {
 
 	/**
 	 * Maps the backing {@link Field} or {@link PropertyDescriptor} using the given functions.
-	 * 
+	 *
 	 * @param field must not be {@literal null}.
 	 * @param descriptor must not be {@literal null}.
 	 * @return

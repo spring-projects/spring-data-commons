@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2017 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -326,7 +326,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 	/**
 	 * Returns the {@link ProjectionFactory} to be used with the repository instances created.
-	 * 
+	 *
 	 * @param classLoader will never be {@literal null}.
 	 * @param beanFactory will never be {@literal null}.
 	 * @return will never be {@literal null}.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import com.querydsl.core.types.Path;
 
 /**
  * {@link PathInformation} based on a Querydsl {@link Path}.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.13
  */
@@ -41,7 +41,7 @@ class QuerydslPathInformation implements PathInformation {
 
 	private final Path<?> path;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.querydsl.binding.MappedPath#getLeafType()
 	 */
@@ -50,7 +50,7 @@ class QuerydslPathInformation implements PathInformation {
 		return path.getType();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.querydsl.binding.MappedPath#getLeafParentType()
 	 */
@@ -66,7 +66,7 @@ class QuerydslPathInformation implements PathInformation {
 		return parent.getType();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.querydsl.binding.MappedPath#getLeafProperty()
 	 */
@@ -75,7 +75,7 @@ class QuerydslPathInformation implements PathInformation {
 		return path.getMetadata().getElement().toString();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.querydsl.binding.MappedPath#getLeafPropertyDescriptor()
 	 */
@@ -85,7 +85,7 @@ class QuerydslPathInformation implements PathInformation {
 		return BeanUtils.getPropertyDescriptor(getLeafParentType(), getLeafProperty());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.querydsl.binding.MappedPath#toDotPath()
 	 */
@@ -94,7 +94,7 @@ class QuerydslPathInformation implements PathInformation {
 		return QuerydslUtils.toDotPath(path);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.querydsl.binding.PathInformation#reifyPath(org.springframework.data.querydsl.EntityPathResolver)
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,7 +193,7 @@ public interface Optionals {
 
 	/**
 	 * Invokes the given {@link Consumer} if the {@link Optional} is present or the {@link Runnable} if not.
-	 * 
+	 *
 	 * @param optional must not be {@literal null}.
 	 * @param consumer must not be {@literal null}.
 	 * @param runnable must not be {@literal null}.

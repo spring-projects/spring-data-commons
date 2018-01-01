@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.format.Formatter;
 
 /**
  * Converter to parse two comma-separated doubles into a {@link Point}.
- * 
+ *
  * @author Oliver Gierke
  */
 public enum PointFormatter implements Converter<String, Point>, Formatter<Point> {
@@ -38,7 +38,7 @@ public enum PointFormatter implements Converter<String, Point>, Formatter<Point>
 
 	private static final String INVALID_FORMAT = "Expected two doubles separated by a comma but got '%s'!";
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 	 */

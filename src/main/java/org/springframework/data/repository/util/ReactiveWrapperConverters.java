@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import org.springframework.util.ClassUtils;
  * <p>
  * This class discovers reactive wrapper availability and their conversion support based on the class path. Reactive
  * wrapper types might be supported/on the class path but conversion may require additional dependencies.
- * 
+ *
  * @author Mark Paluch
  * @author Oliver Gierke
  * @since 2.0
@@ -167,7 +167,7 @@ public class ReactiveWrapperConverters {
 	 * NOTE: A reactive wrapper type might be supported in general by {@link ReactiveWrappers#supports(Class)} but not
 	 * necessarily for conversion using this method.
 	 * </p>
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return {@literal true} if the {@code type} is a supported reactive wrapper type.
 	 */
@@ -178,7 +178,7 @@ public class ReactiveWrapperConverters {
 
 	/**
 	 * Casts or adopts the given wrapper type to a target wrapper type.
-	 * 
+	 *
 	 * @param reactiveObject the stream, must not be {@literal null}.
 	 * @param targetWrapperType must not be {@literal null}.
 	 * @return
@@ -199,7 +199,7 @@ public class ReactiveWrapperConverters {
 
 	/**
 	 * Maps elements of a reactive element stream to other elements.
-	 * 
+	 *
 	 * @param reactiveObject must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 * @return
@@ -234,7 +234,7 @@ public class ReactiveWrapperConverters {
 
 	/**
 	 * Returns the {@link ReactiveAdapter} for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 * @throws IllegalStateException if no adapter registry could be found.

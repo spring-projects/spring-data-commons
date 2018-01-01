@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
 
 /**
  * Helper to create {@link BeanComponentDefinition} more easily.
- * 
+ *
  * @author Oliver Gierke
  */
 public class BeanComponentDefinitionBuilder {
@@ -37,7 +37,7 @@ public class BeanComponentDefinitionBuilder {
 	/**
 	 * Creates a new {@link BeanComponentDefinitionBuilder} using the given {@link Element} as default source and the
 	 * given {@link ParserContext}.
-	 * 
+	 *
 	 * @param defaultSource must not be {@literal null}.
 	 * @param context must not be {@literal null}.
 	 */
@@ -52,7 +52,7 @@ public class BeanComponentDefinitionBuilder {
 
 	/**
 	 * Creates a {@link BeanComponentDefinition} from the given {@link BeanDefinitionBuilder}. Will generate a bean name.
-	 * 
+	 *
 	 * @param builder must not be {@literal null}.
 	 * @return
 	 */
@@ -69,7 +69,7 @@ public class BeanComponentDefinitionBuilder {
 	/**
 	 * Creates a {@link BeanComponentDefinition} from the given {@link BeanDefinitionBuilder} and inspects the backing
 	 * {@link Element}s id attribute for a name. It will use this one if found or the given fallback if not.
-	 * 
+	 *
 	 * @param builder must not be {@literal null}.
 	 * @param fallback must not be {@literal null} or empty.
 	 * @return
@@ -84,7 +84,7 @@ public class BeanComponentDefinitionBuilder {
 
 	/**
 	 * Creates a {@link BeanComponentDefinition} from the given {@link BeanDefinitionBuilder} using the given name.
-	 * 
+	 *
 	 * @param builder must not be {@literal null}.
 	 * @param name must not be {@literal null} or empty.
 	 * @return
@@ -96,7 +96,7 @@ public class BeanComponentDefinitionBuilder {
 	/**
 	 * Creates a new {@link BeanComponentDefinition} from the given {@link BeanDefinitionBuilder} using the given name and
 	 * raw source object.
-	 * 
+	 *
 	 * @param builder must not be {@literal null}.
 	 * @param name must not be {@literal null}.
 	 * @param rawSource

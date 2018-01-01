@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import com.querydsl.core.types.Predicate;
 /**
  * Querydsl-specific web configuration for Spring Data. Registers a {@link HandlerMethodArgumentResolver} that builds up
  * {@link Predicate}s from web requests.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.11
  * @soundtrack Anika Nilles - Alter Ego
@@ -49,7 +49,7 @@ public class QuerydslWebConfiguration implements WebMvcConfigurer {
 	/**
 	 * Default {@link QuerydslPredicateArgumentResolver} to create Querydsl {@link Predicate} instances for Spring MVC
 	 * controller methods.
-	 * 
+	 *
 	 * @return
 	 */
 	@Lazy
@@ -64,7 +64,7 @@ public class QuerydslWebConfiguration implements WebMvcConfigurer {
 		return new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addArgumentResolvers(java.util.List)
 	 */

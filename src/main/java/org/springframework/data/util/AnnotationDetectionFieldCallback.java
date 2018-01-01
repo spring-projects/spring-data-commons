@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 /**
  * A {@link FieldCallback} that will inspect each field for a given annotation. This field's type can then be accessed
  * afterwards.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -38,7 +38,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 
 	/**
 	 * Creates a new {@link AnnotationDetectionFieldCallback} scanning for an annotation of the given type.
-	 * 
+	 *
 	 * @param annotationType must not be {@literal null}.
 	 */
 	public AnnotationDetectionFieldCallback(Class<? extends Annotation> annotationType) {
@@ -67,7 +67,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 
 	/**
 	 * Returns the detected field.
-	 * 
+	 *
 	 * @return the field
 	 */
 	@Nullable
@@ -77,7 +77,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 
 	/**
 	 * Returns the field that was detected.
-	 * 
+	 *
 	 * @return
 	 * @throws IllegalStateException in case no field with the configured annotation was found.
 	 */
@@ -94,7 +94,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 
 	/**
 	 * Returns the type of the field.
-	 * 
+	 *
 	 * @return
 	 */
 	@Nullable
@@ -107,7 +107,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 
 	/**
 	 * Returns the type of the field or throws an {@link IllegalArgumentException} if no field could be found.
-	 * 
+	 *
 	 * @return
 	 * @throws IllegalStateException in case no field with the configured annotation was found.
 	 */
@@ -117,7 +117,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 
 	/**
 	 * Retrieves the value of the field by reflection.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */

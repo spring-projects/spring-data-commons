@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public final class Accessor {
 
 	/**
 	 * Creates an {@link Accessor} for the given {@link Method}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given method is not an accessor method.
 	 */
@@ -56,7 +56,7 @@ public final class Accessor {
 
 	/**
 	 * Returns whether the accessor is a getter.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isGetter() {
@@ -65,7 +65,7 @@ public final class Accessor {
 
 	/**
 	 * Returns whether the accessor is a setter.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isSetter() {
@@ -74,7 +74,7 @@ public final class Accessor {
 
 	/**
 	 * Returns the name of the property this accessor handles.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	public String getPropertyName() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Annotation based {@link RepositoryConfigurationSource}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Peter Rietzler
@@ -75,7 +75,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	/**
 	 * Creates a new {@link AnnotationRepositoryConfigurationSource} from the given {@link AnnotationMetadata} and
 	 * annotation.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param annotation must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
@@ -106,7 +106,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/**
 	 * Returns whether there's explicit configuration of include- or exclude filters.
-	 * 
+	 *
 	 * @param attributes must not be {@literal null}.
 	 * @return
 	 */
@@ -211,7 +211,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	/**
 	 * Returns the {@link String} attribute with the given name and defaults it to {@literal Optional#empty()} in case
 	 * it's empty.
-	 * 
+	 *
 	 * @param attributeName
 	 * @return
 	 */
@@ -220,7 +220,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryFactoryBeanClassName()
 	 */
@@ -229,7 +229,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return Optional.of(attributes.getClass(REPOSITORY_FACTORY_BEAN_CLASS).getName());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryBaseClassName()
 	 */
@@ -247,7 +247,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/**
 	 * Returns the {@link AnnotationAttributes} of the annotation configured.
-	 * 
+	 *
 	 * @return the attributes will never be {@literal null}.
 	 */
 	public AnnotationAttributes getAttributes() {
@@ -256,7 +256,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/**
 	 * Returns the {@link AnnotationMetadata} for the {@code @Enable} annotation that triggered the configuration.
-	 * 
+	 *
 	 * @return the enableAnnotationMetadata
 	 */
 	public AnnotationMetadata getEnableAnnotationMetadata() {
@@ -265,7 +265,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	/**
 	 * Copy of {@code ComponentScanAnnotationParser#typeFiltersFor}.
-	 * 
+	 *
 	 * @param filterAttributes
 	 * @return
 	 */
@@ -321,7 +321,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return attributes.containsKey(CONSIDER_NESTED_REPOSITORIES) && attributes.getBoolean(CONSIDER_NESTED_REPOSITORIES);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String)
 	 */
@@ -332,7 +332,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#usesExplicitFilters()
 	 */
@@ -344,7 +344,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	/**
 	 * Safely reads the {@code pattern} attribute from the given {@link AnnotationAttributes} and returns an empty list if
 	 * the attribute is not present.
-	 * 
+	 *
 	 * @param filterAttributes must not be {@literal null}.
 	 * @return
 	 */

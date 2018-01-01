@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marks a field to be {@literal read-only} for the mapping framework and therefore will not be persisted.
- * 
+ *
  * @author Christoph Strobl
  * @since 1.9
  */

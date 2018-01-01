@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * {@link Pageable} method parameters. Expects the {@link HandlerMethodArgumentResolver} to be tested returned from
  * {@link #getResolver()} and expects methods to be present in the controller class returned from
  * {@link #getControllerClass()}. For sample usage see {@link PageableHandlerMethodArgumentResolver}.
- * 
+ *
  * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams

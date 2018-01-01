@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.aopalliance.intercept.MethodInterceptor;
  * SPI to create {@link MethodInterceptor} instances based on the given source object and the target type to produce. To
  * be registered with a {@link ProxyProjectionFactory} to customize the way method executions on projection proxies are
  * handled.
- * 
+ *
  * @author Oliver Gierke
  * @see ProxyProjectionFactory
  * @soundtrack Henrik Freischlader Trio - Nobody Else To Blame (Openness)
@@ -31,7 +31,7 @@ public interface MethodInterceptorFactory {
 
 	/**
 	 * Returns the {@link MethodInterceptor} to be used for the given source object and target type.
-	 * 
+	 *
 	 * @param source will never be {@literal null}.
 	 * @param targetType will never be {@literal null}.
 	 * @return
@@ -41,7 +41,7 @@ public interface MethodInterceptorFactory {
 	/**
 	 * Returns whether the current factory is supposed to be used to create a {@link MethodInterceptor} for proxy of the
 	 * given target type.
-	 * 
+	 *
 	 * @param source will never be {@literal null}.
 	 * @param targetType will never be {@literal null}.
 	 * @return

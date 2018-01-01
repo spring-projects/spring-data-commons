@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.data.web.SortDefault.SortDefaults;
  * Annotation to set defaults when injecting a {@link org.springframework.data.domain.Pageable} into a controller
  * method. Instead of configuring {@link #sort()} and {@link #direction()} you can also use {@link SortDefault} or
  * {@link SortDefaults}.
- * 
+ *
  * @since 1.6
  * @author Oliver Gierke
  */
@@ -40,7 +40,7 @@ public @interface PageableDefault {
 	/**
 	 * Alias for {@link #size()}. Prefer to use the {@link #size()} method as it makes the annotation declaration more
 	 * expressive and you'll probably want to configure the {@link #page()} anyway.
-	 * 
+	 *
 	 * @return
 	 */
 	int value() default 10;
@@ -59,14 +59,14 @@ public @interface PageableDefault {
 
 	/**
 	 * The properties to sort by by default. If unset, no sorting will be applied at all.
-	 * 
+	 *
 	 * @return
 	 */
 	String[] sort() default {};
 
 	/**
 	 * The direction to sort by. Defaults to {@link Direction#ASC}.
-	 * 
+	 *
 	 * @return
 	 */
 	Direction direction() default Direction.ASC;

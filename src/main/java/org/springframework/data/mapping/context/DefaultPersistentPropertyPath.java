@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Abstraction of a path of {@link PersistentProperty}s.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -41,7 +41,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 
 	/**
 	 * Creates a new {@link DefaultPersistentPropertyPath} for the given {@link PersistentProperty}s.
-	 * 
+	 *
 	 * @param properties must not be {@literal null}.
 	 */
 	public DefaultPersistentPropertyPath(List<P> properties) {
@@ -53,7 +53,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 
 	/**
 	 * Creates an empty {@link DefaultPersistentPropertyPath}.
-	 * 
+	 *
 	 * @return
 	 */
 	public static <T extends PersistentProperty<T>> DefaultPersistentPropertyPath<T> empty() {
@@ -62,7 +62,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 
 	/**
 	 * Appends the given {@link PersistentProperty} to the current {@link PersistentPropertyPath}.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return a new {@link DefaultPersistentPropertyPath} with the given property appended to the current one.
 	 * @throws IllegalArgumentException in case the property is not a property of the type of the current leaf property.
@@ -87,7 +87,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return new DefaultPersistentPropertyPath<>(properties);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toDotPath()
 	 */
@@ -96,7 +96,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return toPath(DEFAULT_DELIMITER, DEFAULT_CONVERTER);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toDotPath(org.springframework.core.convert.converter.Converter)
 	 */
@@ -105,7 +105,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return toPath(DEFAULT_DELIMITER, converter);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toPath(java.lang.String)
 	 */
@@ -114,7 +114,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return toPath(delimiter, DEFAULT_CONVERTER);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toPath(java.lang.String, org.springframework.core.convert.converter.Converter)
 	 */
@@ -138,7 +138,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return result.isEmpty() ? null : StringUtils.collectionToDelimitedString(result, delimiter);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getLeafProperty()
 	 */
@@ -147,7 +147,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return properties.get(properties.size() - 1);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getBaseProperty()
 	 */
@@ -156,7 +156,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return properties.get(0);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#isBasePathOf(org.springframework.data.mapping.context.PersistentPropertyPath)
 	 */
@@ -182,7 +182,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return true;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getExtensionForBaseOf(org.springframework.data.mapping.context.PersistentPropertyPath)
 	 */
@@ -229,7 +229,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return properties.size();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
@@ -245,7 +245,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return properties.isEmpty();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -265,7 +265,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return this.properties.equals(that.properties);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

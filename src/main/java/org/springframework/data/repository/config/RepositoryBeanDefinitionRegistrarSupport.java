@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 
 /**
  * Base class to implement {@link ImportBeanDefinitionRegistrar}s to enable repository
- * 
+ *
  * @author Oliver Gierke
  */
 public abstract class RepositoryBeanDefinitionRegistrarSupport
@@ -40,7 +40,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 	private @SuppressWarnings("null") @Nonnull ResourceLoader resourceLoader;
 	private @SuppressWarnings("null") @Nonnull Environment environment;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
 	 */
@@ -49,7 +49,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 		this.resourceLoader = resourceLoader;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.EnvironmentAware#setEnvironment(org.springframework.core.env.Environment)
 	 */
@@ -89,7 +89,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 	 * Return the annotation to obtain configuration information from. Will be wrappen into an
 	 * {@link AnnotationRepositoryConfigurationSource} so have a look at the constants in there for what annotation
 	 * attributes it expects.
-	 * 
+	 *
 	 * @return
 	 */
 	protected abstract Class<? extends Annotation> getAnnotation();
@@ -97,7 +97,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 	/**
 	 * Returns the {@link RepositoryConfigurationExtension} for store specific callbacks and {@link BeanDefinition}
 	 * post-processing.
-	 * 
+	 *
 	 * @see RepositoryConfigurationExtensionSupport
 	 * @return
 	 */

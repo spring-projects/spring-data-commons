@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.springframework.util.StringUtils;
 /**
  * {@link MethodInterceptor} to invoke a SpEL expression to compute the method result. Will forward the resolution to a
  * delegate {@link MethodInterceptor} if no {@link Value} annotation is found.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
@@ -58,7 +58,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	 * Creates a new {@link SpelEvaluatingMethodInterceptor} delegating to the given {@link MethodInterceptor} as fallback
 	 * and exposing the given target object via {@code target} to the SpEl expressions. If a {@link BeanFactory} is given,
 	 * bean references in SpEl expressions can be resolved as well.
-	 * 
+	 *
 	 * @param delegate must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param beanFactory can be {@literal null}.
@@ -94,7 +94,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	 * Eagerly parses {@link Expression} defined on {@link Value} annotations. Returns a map with
 	 * {@code method.hashCode()} as key and the parsed {@link Expression} or an {@link Collections#emptyMap()} if no
 	 * {@code Expressions} were found.
-	 * 
+	 *
 	 * @param parser must not be {@literal null}.
 	 * @param targetInterface must not be {@literal null}.
 	 * @return
@@ -122,7 +122,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 		return Collections.unmodifiableMap(expressions);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 	 */
@@ -141,7 +141,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 
 	/**
 	 * Wrapper class to expose an object to the SpEL expression as {@code target}.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@lombok.Value(staticConstructor = "of")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
 
 /**
  * A factory class to {@link AuditableBeanWrapper} instances.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.5
@@ -48,7 +48,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 	/**
 	 * Returns an {@link AuditableBeanWrapper} if the given object is capable of being equipped with auditing information.
-	 * 
+	 *
 	 * @param source the auditing candidate.
 	 * @return
 	 */
@@ -75,7 +75,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 	/**
 	 * An {@link AuditableBeanWrapper} that works with objects implementing
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@RequiredArgsConstructor
@@ -92,7 +92,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 					.getGeneric(2).resolve(TemporalAccessor.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
 		 */
@@ -103,7 +103,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return value;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Optional)
 		 */
@@ -116,7 +116,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return value;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper#setLastModifiedBy(java.util.Optional)
 		 */
@@ -128,7 +128,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return value;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getLastModifiedDate()
 		 */
@@ -137,7 +137,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return getAsTemporalAccessor(auditable.getLastModifiedDate(), TemporalAccessor.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Optional)
 		 */
@@ -154,7 +154,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	/**
 	 * Base class for {@link AuditableBeanWrapper} implementations that might need to convert {@link Calendar} values into
 	 * compatible types when setting date/time information.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @since 1.8
 	 */
@@ -178,7 +178,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		/**
 		 * Returns the {@link Calendar} in a type, compatible to the given field.
-		 * 
+		 *
 		 * @param value can be {@literal null}.
 		 * @param targetType must not be {@literal null}.
 		 * @param source must not be {@literal null}.
@@ -213,7 +213,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		/**
 		 * Returns the given object as {@link Calendar}.
-		 * 
+		 *
 		 * @param source can be {@literal null}.
 		 * @param target must not be {@literal null}.
 		 * @return
@@ -243,7 +243,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 	/**
 	 * An {@link AuditableBeanWrapper} implementation that sets values on the target object using reflection.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	static class ReflectionAuditingBeanWrapper extends DateConvertingAuditableBeanWrapper {
@@ -253,7 +253,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		/**
 		 * Creates a new {@link ReflectionAuditingBeanWrapper} to set auditing data on the given target object.
-		 * 
+		 *
 		 * @param target must not be {@literal null}.
 		 */
 		public ReflectionAuditingBeanWrapper(Object target) {
@@ -264,7 +264,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			this.target = target;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
 		 */
@@ -273,7 +273,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return setField(metadata.getCreatedByField(), value);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Optional)
 		 */
@@ -283,7 +283,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return setDateField(metadata.getCreatedDateField(), value);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedBy(java.util.Optional)
 		 */
@@ -292,7 +292,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return setField(metadata.getLastModifiedByField(), value);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getLastModifiedDate()
 		 */
@@ -307,7 +307,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			}), TemporalAccessor.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Optional)
 		 */
@@ -318,7 +318,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		/**
 		 * Sets the given field to the given value if present.
-		 * 
+		 *
 		 * @param field
 		 * @param value
 		 */
@@ -331,7 +331,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		/**
 		 * Sets the given field to the given value if the field is not {@literal null}.
-		 * 
+		 *
 		 * @param field
 		 * @param value
 		 */

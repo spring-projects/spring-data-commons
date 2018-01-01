@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
 
 /**
  * {@link BeanDefinitionParser} that parses an {@link AuditingHandler} {@link BeanDefinition}
- * 
+ *
  * @author Oliver Gierke
  * @since 1.5
  */
@@ -50,7 +50,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	/**
 	 * Creates a new {@link AuditingHandlerBeanDefinitionParser} to point to a {@link MappingContext} with the given bean
 	 * name.
-	 * 
+	 *
 	 * @param mappingContextBeanName must not be {@literal null} or empty.
 	 */
 	@SuppressWarnings("null")
@@ -62,14 +62,14 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 
 	/**
 	 * Returns the name of the bean definition the {@link AuditingHandler} was registered under.
-	 * 
+	 *
 	 * @return the resolvedBeanName
 	 */
 	public String getResolvedBeanName() {
 		return resolvedBeanName;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)
 	 */
@@ -79,7 +79,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 		return AuditingHandler.class;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#shouldGenerateId()
 	 */
@@ -88,7 +88,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 		return true;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#doParse(org.w3c.dom.Element, org.springframework.beans.factory.support.BeanDefinitionBuilder)
 	 */
@@ -108,7 +108,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 		ParsingUtils.setPropertyValue(builder, element, "modify-on-creation", "modifyOnCreation");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
 	 */

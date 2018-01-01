@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.util.StringUtils;
  * Converter to create {@link Distance} instances from {@link String} representations. The supported format is a decimal
  * followed by whitespace and a metric abbreviation. We currently support the following abbreviations:
  * {@value #SUPPORTED_METRICS}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -57,7 +57,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 		SUPPORTED_METRICS = Collections.unmodifiableMap(metrics);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 	 */
@@ -88,7 +88,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 	/**
 	 * Converts the given {@link String} source into a distance. Expects the source to reflect the {@link Metric} as held
 	 * in the {@link #SUPPORTED_METRICS} map.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
@@ -110,7 +110,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 
 	/**
 	 * Creates a {@link Distance} from the given source String and the {@link Metric} detected.
-	 * 
+	 *
 	 * @param source the raw source {@link String}, must not be {@literal null} or empty.
 	 * @param metric the {@link Metric} detected keyed by the keyword it was detected for, must not be {@literal null}.
 	 * @return

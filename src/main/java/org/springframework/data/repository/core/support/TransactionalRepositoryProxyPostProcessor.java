@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2017 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ import org.springframework.util.ObjectUtils;
  * {@link RepositoryProxyPostProcessor} to add transactional behaviour to repository proxies. Adds a
  * {@link PersistenceExceptionTranslationInterceptor} as well as an annotation based {@link TransactionInterceptor} to
  * the proxy.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -63,7 +63,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	/**
 	 * Creates a new {@link TransactionalRepositoryProxyPostProcessor} using the given {@link ListableBeanFactory} and
 	 * transaction manager bean name.
-	 * 
+	 *
 	 * @param beanFactory must not be {@literal null}.
 	 * @param transactionManagerName must not be {@literal null} or empty.
 	 * @param enableDefaultTransaction
@@ -153,7 +153,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		/**
 		 * Create a custom CustomAnnotationTransactionAttributeSource, supporting public methods that carry the
 		 * {@code Transactional} annotation or the EJB3 {@link javax.ejb.TransactionAttribute} annotation.
-		 * 
+		 *
 		 * @param publicMethodsOnly whether to support public methods that carry the {@code Transactional} annotation only
 		 *          (typically for use with proxy-based AOP), or protected/private methods as well (typically used with
 		 *          AspectJ class weaving)
@@ -172,7 +172,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 
 		/**
 		 * Create a custom CustomAnnotationTransactionAttributeSource.
-		 * 
+		 *
 		 * @param annotationParser the TransactionAnnotationParser to use
 		 */
 		public CustomAnnotationTransactionAttributeSource(TransactionAnnotationParser annotationParser) {
@@ -183,7 +183,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 
 		/**
 		 * Create a custom CustomAnnotationTransactionAttributeSource.
-		 * 
+		 *
 		 * @param annotationParsers the TransactionAnnotationParsers to use
 		 */
 		public CustomAnnotationTransactionAttributeSource(TransactionAnnotationParser... annotationParsers) {
@@ -196,7 +196,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 
 		/**
 		 * Create a custom CustomAnnotationTransactionAttributeSource.
-		 * 
+		 *
 		 * @param annotationParsers the TransactionAnnotationParsers to use
 		 */
 		public CustomAnnotationTransactionAttributeSource(Set<TransactionAnnotationParser> annotationParsers) {
@@ -222,7 +222,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		 * parsing known annotations into Spring's metadata attribute class. Returns {@code null} if it's not transactional.
 		 * <p>
 		 * Can be overridden to support custom annotations that carry transaction metadata.
-		 * 
+		 *
 		 * @param ae the annotated method or class
 		 * @return TransactionAttribute the configured transaction attribute, or {@code null} if none was found
 		 */
@@ -275,7 +275,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 * This implementation caches attributes by method after they are first used. If it is ever desirable to allow dynamic
 	 * changing of transaction attributes (which is very unlikely), caching could be made configurable. Caching is
 	 * desirable because of the cost of evaluating rollback rules.
-	 * 
+	 *
 	 * @author Rod Johnson
 	 * @author Juergen Hoeller
 	 * @since 1.1
@@ -326,7 +326,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		 * Determine the transaction attribute for this method invocation.
 		 * <p>
 		 * Defaults to the class's transaction attribute if no method attribute is found.
-		 * 
+		 *
 		 * @param method the method for the current invocation (never <code>null</code>)
 		 * @param targetClass the target class for this invocation (may be <code>null</code>)
 		 * @return TransactionAttribute for this method, or <code>null</code> if the method is not transactional
@@ -364,7 +364,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		 * <p>
 		 * Must not produce same key for overloaded methods. Must produce same key for different instances of the same
 		 * method.
-		 * 
+		 *
 		 * @param method the method (never <code>null</code>)
 		 * @param targetClass the target class (may be <code>null</code>)
 		 * @return the cache key (never <code>null</code>)
@@ -376,7 +376,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		/**
 		 * Same signature as {@link #getTransactionAttribute}, but doesn't cache the result.
 		 * {@link #getTransactionAttribute} is effectively a caching decorator for this method.
-		 * 
+		 *
 		 * @see #getTransactionAttribute
 		 */
 		private TransactionAttribute computeTransactionAttribute(Method method, Class<?> targetClass) {
@@ -451,7 +451,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 
 		/**
 		 * Subclasses need to implement this to return the transaction attribute for the given method, if any.
-		 * 
+		 *
 		 * @param method the method to retrieve the attribute for
 		 * @return all transaction attribute associated with this method (or <code>null</code> if none)
 		 */
@@ -459,7 +459,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 
 		/**
 		 * Subclasses need to implement this to return the transaction attribute for the given class, if any.
-		 * 
+		 *
 		 * @param clazz the class to retrieve the attribute for
 		 * @return all transaction attribute associated with this class (or <code>null</code> if none)
 		 */

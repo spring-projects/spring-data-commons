@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.springframework.data.geo;
 
 /**
  * Commonly used {@link Metric}s.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @since 1.8
@@ -31,7 +31,7 @@ public enum Metrics implements Metric {
 
 	/**
 	 * Creates a new {@link Metrics} using the given multiplier.
-	 * 
+	 *
 	 * @param multiplier the earth radius at equator, must not be {@literal null}.
 	 * @param abbreviation the abbreviation to use for this {@link Metric}, must not be {@literal null}.
 	 */
@@ -49,7 +49,7 @@ public enum Metrics implements Metric {
 		return multiplier;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.geo.Metric#getAbbreviation()
 	 */

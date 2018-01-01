@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
  * API to easily set up {@link GenericConverter} instances using Java 8 lambdas, mostly in bidirectional fashion for
  * easy registration as custom type converters of the Spring Data mapping subsystem. The registration starts either with
  * the definition of a reading or writing converter that can then be completed.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.0
  * @see #reading(Class, Class, Function)
@@ -39,7 +39,7 @@ public interface ConverterBuilder {
 	/**
 	 * Creates a new {@link ReadingConverterBuilder} to produce a converter to read values of the given source (the store
 	 * type) into the given target (the domain type).
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param function must not be {@literal null}.
@@ -58,7 +58,7 @@ public interface ConverterBuilder {
 	/**
 	 * Creates a new {@link WritingConverterBuilder} to produce a converter to write values of the given source (the
 	 * domain type) into the given target (the store type).
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param function must not be {@literal null}.
@@ -76,7 +76,7 @@ public interface ConverterBuilder {
 
 	/**
 	 * Returns all {@link GenericConverter} instances to be registered for the current {@link ConverterBuilder}.
-	 * 
+	 *
 	 * @return
 	 */
 	Set<GenericConverter> getConverters();
@@ -91,7 +91,7 @@ public interface ConverterBuilder {
 
 		/**
 		 * Returns the writing converter already created.
-		 * 
+		 *
 		 * @return
 		 */
 		GenericConverter getWritingConverter();
@@ -107,7 +107,7 @@ public interface ConverterBuilder {
 
 		/**
 		 * Returns the reading converter already created.
-		 * 
+		 *
 		 * @return
 		 */
 		GenericConverter getReadingConverter();
@@ -123,7 +123,7 @@ public interface ConverterBuilder {
 
 		/**
 		 * Creates a new {@link ConverterAware} by registering the given {@link Function} to add a write converter.
-		 * 
+		 *
 		 * @param function must not be {@literal null}.
 		 * @return
 		 */
@@ -140,7 +140,7 @@ public interface ConverterBuilder {
 
 		/**
 		 * Creates a new {@link ConverterAware} by registering the given {@link Function} to add a write converter.
-		 * 
+		 *
 		 * @param function must not be {@literal null}.
 		 * @return
 		 */

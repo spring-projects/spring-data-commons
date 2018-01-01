@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import org.springframework.util.ClassUtils;
  * <p>
  * Supported types are discovered by their availability on the class path. This class is typically used to determine
  * multiplicity and whether a reactive wrapper type is acceptable for a specific operation.
- * 
+ *
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Oliver Gierke
@@ -74,7 +74,7 @@ public class ReactiveWrappers {
 
 	/**
 	 * Enumeration of supported reactive libraries.
-	 * 
+	 *
 	 * @author Mark Paluch
 	 */
 	static enum ReactiveLibrary {
@@ -149,7 +149,7 @@ public class ReactiveWrappers {
 
 	/**
 	 * Returns {@literal true} if the {@code type} is a supported reactive wrapper type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return {@literal true} if the {@code type} is a supported reactive wrapper type.
 	 */
@@ -159,7 +159,7 @@ public class ReactiveWrappers {
 
 	/**
 	 * Returns whether the given type uses any reactive wrapper type in its method signatures.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -174,7 +174,7 @@ public class ReactiveWrappers {
 
 	/**
 	 * Returns {@literal true} if {@code type} is a reactive wrapper type that contains no value.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return {@literal true} if {@code type} is a reactive wrapper type that contains no value.
 	 */
@@ -187,7 +187,7 @@ public class ReactiveWrappers {
 
 	/**
 	 * Returns {@literal true} if {@code type} is a reactive wrapper type for a single value.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return {@literal true} if {@code type} is a reactive wrapper type for a single value.
 	 */
@@ -256,7 +256,7 @@ public class ReactiveWrappers {
 
 	/**
 	 * Returns whether the given type is a reactive wrapper type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -269,7 +269,7 @@ public class ReactiveWrappers {
 
 	/**
 	 * Looks up a {@link ReactiveTypeDescriptor} for the given wrapper type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */

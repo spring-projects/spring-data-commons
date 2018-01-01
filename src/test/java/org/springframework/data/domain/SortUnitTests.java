@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2017 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.data.domain.Sort.Order;
 
 /**
  * Unit test for {@link Sort}.
- * 
+ *
  * @author Oliver Gierke
  * @author Kevin Raymond
  * @author Thomas Darimont
@@ -34,7 +34,7 @@ public class SortUnitTests {
 
 	/**
 	 * Asserts that the class applies the default sort order if no order or {@code null} was provided.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -44,7 +44,7 @@ public class SortUnitTests {
 
 	/**
 	 * Asserts that the class rejects {@code null} as properties array.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@SuppressWarnings("null")
@@ -56,7 +56,7 @@ public class SortUnitTests {
 
 	/**
 	 * Asserts that the class rejects {@code null} values in the properties array.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test(expected = IllegalArgumentException.class)
@@ -67,7 +67,7 @@ public class SortUnitTests {
 
 	/**
 	 * Asserts that the class rejects empty strings in the properties array.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test(expected = IllegalArgumentException.class)
@@ -78,7 +78,7 @@ public class SortUnitTests {
 
 	/**
 	 * Asserts that the class rejects no properties given at all.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test(expected = IllegalArgumentException.class)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.springframework.data.repository.config;
  * Placeholder class to be used in {@code @Enable} annotation's {@code repositoryBaseClass} attribute. The configuration
  * evaluation infrastructure can use this type to find out no special repository base class was configured and apply
  * defaults.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Elen - Sink like a stone (Elen)
  * @since 1.11

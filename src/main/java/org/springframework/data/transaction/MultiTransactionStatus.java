@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
 /**
  * {@link TransactionStatus} implementation to orchestrate {@link TransactionStatus} instances for multiple
  * {@link PlatformTransactionManager} instances.
- * 
+ *
  * @author Michael Hunger
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -44,7 +44,7 @@ class MultiTransactionStatus implements TransactionStatus {
 
 	/**
 	 * Creates a new {@link MultiTransactionStatus} for the given {@link PlatformTransactionManager}.
-	 * 
+	 *
 	 * @param mainTransactionManager must not be {@literal null}.
 	 */
 	public MultiTransactionStatus(PlatformTransactionManager mainTransactionManager) {
@@ -76,7 +76,7 @@ class MultiTransactionStatus implements TransactionStatus {
 
 	/**
 	 * Rolls back the {@link TransactionStatus} registered for the given {@link PlatformTransactionManager}.
-	 * 
+	 *
 	 * @param transactionManager must not be {@literal null}.
 	 */
 	public void rollback(PlatformTransactionManager transactionManager) {

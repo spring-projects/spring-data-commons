@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,14 @@ import org.springframework.lang.Nullable;
 
 /**
  * XmlAdapter to convert {@link Order} instances into {@link OrderDto}s and vice versa.
- * 
+ *
  * @author Oliver Gierke
  */
 public class OrderAdapter extends XmlAdapter<OrderDto, Order> {
 
 	public static final OrderAdapter INSTANCE = new OrderAdapter();
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */
@@ -49,7 +49,7 @@ public class OrderAdapter extends XmlAdapter<OrderDto, Order> {
 		return dto;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */

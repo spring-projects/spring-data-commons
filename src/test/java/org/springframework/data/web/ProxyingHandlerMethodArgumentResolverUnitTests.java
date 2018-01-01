@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTe
 
 /**
  * Unit tests for {@link ProxyingHandlerMethodArgumentResolver}.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Karlijn Langendijk & Sönke Meinen - Englishman In New York (Sting,
  *             https://www.youtube.com/watch?v=O7LZsqrnaaA)

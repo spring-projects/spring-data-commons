@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Interface containing the configurable options for the Spring Data repository subsystem.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Peter Rietzler
@@ -44,21 +44,21 @@ public interface RepositoryConfigurationSource {
 
 	/**
 	 * Returns the base packages the repository interfaces shall be found under.
-	 * 
+	 *
 	 * @return must not be {@literal null}.
 	 */
 	Streamable<String> getBasePackages();
 
 	/**
 	 * Returns the {@link QueryLookupStrategy.Key} to define how query methods shall be resolved.
-	 * 
+	 *
 	 * @return
 	 */
 	Optional<Object> getQueryLookupStrategyKey();
 
 	/**
 	 * Returns the configured postfix to be used for looking up custom implementation classes.
-	 * 
+	 *
 	 * @return the postfix to use or {@link Optional#empty()} in case none is configured.
 	 */
 	Optional<String> getRepositoryImplementationPostfix();
@@ -71,7 +71,7 @@ public interface RepositoryConfigurationSource {
 	/**
 	 * Returns the name of the repository base class to be used or {@link Optional#empty()} if the store specific defaults
 	 * shall be applied.
-	 * 
+	 *
 	 * @return
 	 * @since 1.11
 	 */
@@ -79,14 +79,14 @@ public interface RepositoryConfigurationSource {
 
 	/**
 	 * Returns the name of the repository factory bean class or {@link Optional#empty()} if not defined in the source.
-	 * 
+	 *
 	 * @return
 	 */
 	Optional<String> getRepositoryFactoryBeanClassName();
 
 	/**
 	 * Returns the source {@link BeanDefinition}s of the repository interfaces to create repository instances for.
-	 * 
+	 *
 	 * @param loader
 	 * @return
 	 */
@@ -95,7 +95,7 @@ public interface RepositoryConfigurationSource {
 	/**
 	 * Returns the value for the {@link String} attribute with the given name. The name is expected to be handed in
 	 * camel-case.
-	 * 
+	 *
 	 * @param name must not be {@literal null} or empty.
 	 * @return the attribute with the given name or {@link Optional#empty()} if not configured or empty.
 	 * @since 1.8
@@ -104,7 +104,7 @@ public interface RepositoryConfigurationSource {
 
 	/**
 	 * Returns whether the configuration uses explicit filtering to scan for repository types.
-	 * 
+	 *
 	 * @return whether the configuration uses explicit filtering to scan for repository types.
 	 * @since 1.9
 	 */

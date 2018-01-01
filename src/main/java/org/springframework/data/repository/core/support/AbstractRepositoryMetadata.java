@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
 
 /**
  * Base class for {@link RepositoryMetadata} implementations.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Jens Schauder
@@ -46,7 +46,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 	/**
 	 * Creates a new {@link AbstractRepositoryMetadata}.
-	 * 
+	 *
 	 * @param repositoryInterface must not be {@literal null} and must be an interface.
 	 */
 	public AbstractRepositoryMetadata(Class<?> repositoryInterface) {
@@ -61,7 +61,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 	/**
 	 * Creates a new {@link RepositoryMetadata} for the given repository interface.
-	 * 
+	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 * @since 1.9
 	 * @return
@@ -74,7 +74,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 				: new AnnotationRepositoryMetadata(repositoryInterface);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
 	 */
@@ -82,7 +82,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		return QueryExecutionConverters.unwrapWrapperTypes(typeInformation.getReturnType(method)).getType();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getRepositoryInterface()
 	 */
@@ -90,7 +90,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		return this.repositoryInterface;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getCrudMethods()
 	 */
@@ -99,7 +99,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		return this.crudMethods.get();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#isPagingRepository()
 	 */
@@ -111,7 +111,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 				.orElse(false);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getAlternativeDomainTypes()
 	 */
@@ -120,7 +120,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		return Collections.emptySet();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#isReactiveRepository()
 	 */

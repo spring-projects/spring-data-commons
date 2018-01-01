@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.springframework.util.Assert;
 /**
  * {@link ApplicationEvent} being thrown after a {@link RepositoryPopulator} has finished populating the
  * {@link Repositories} available in the {@link ApplicationContext}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class RepositoriesPopulatedEvent extends ApplicationEvent {
@@ -37,7 +37,7 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 	/**
 	 * Creates a new {@link RepositoriesPopulatedEvent} using the given {@link RepositoryPopulator} and
 	 * {@link Repositories}.
-	 * 
+	 *
 	 * @param populator the {@link RepositoryPopulator} that threw the event, must not be {@literal null}.
 	 * @param repositories the {@link Repositories} that were populated, must not be {@literal null}.
 	 */
@@ -51,7 +51,7 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 		this.repositories = repositories;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.EventObject#getSource()
 	 */
@@ -62,14 +62,14 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 
 	/**
 	 * Returns the {@link Repositories} that were populated.
-	 * 
+	 *
 	 * @return the repositories will never be {@literal null}.
 	 */
 	public Repositories getRepositories() {
 		return repositories;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -88,7 +88,7 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 		return this.source.equals(that.source) && this.repositories.equals(that.repositories);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.util.TypeUtils;
 /**
  * Value object to represent a function. Can either be backed by a static {@link Method} invocation (see
  * {@link #Function(Method)}) or a method invocation on an instance (see {@link #Function(Method, Object)}.
- * 
+ *
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Jens Schauder
@@ -41,7 +41,7 @@ public class Function {
 
 	/**
 	 * Creates a new {@link Function} to statically invoke the given {@link Method}.
-	 * 
+	 *
 	 * @param method
 	 */
 	public Function(Method method) {
@@ -53,7 +53,7 @@ public class Function {
 
 	/**
 	 * Creates a new {@link Function} for the given method on the given target instance.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param target can be {@literal null}, if so, the method
 	 */
@@ -69,7 +69,7 @@ public class Function {
 
 	/**
 	 * Invokes the function with the given arguments.
-	 * 
+	 *
 	 * @param arguments must not be {@literal null}.
 	 * @return
 	 * @throws Exception
@@ -80,7 +80,7 @@ public class Function {
 
 	/**
 	 * Returns the name of the function.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getName() {
@@ -89,7 +89,7 @@ public class Function {
 
 	/**
 	 * Returns the type declaring the {@link Function}.
-	 * 
+	 *
 	 * @return
 	 */
 	public Class<?> getDeclaringClass() {
@@ -98,7 +98,7 @@ public class Function {
 
 	/**
 	 * Returns {@literal true} if the function can be called with the given {@code argumentTypes}.
-	 * 
+	 *
 	 * @param argumentTypes
 	 * @return
 	 */

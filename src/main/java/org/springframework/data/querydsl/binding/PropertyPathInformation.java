@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import com.querydsl.core.types.dsl.CollectionPathBase;
 
 /**
  * {@link PropertyPath} based implementation of {@link PathInformation}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.13
@@ -50,7 +50,7 @@ class PropertyPathInformation implements PathInformation {
 
 	/**
 	 * Creates a new {@link PropertyPathInformation} for the given path and type.
-	 * 
+	 *
 	 * @param path must not be {@literal null} or empty.
 	 * @param type must not be {@literal null}.
 	 * @return
@@ -61,7 +61,7 @@ class PropertyPathInformation implements PathInformation {
 
 	/**
 	 * Creates a new {@link PropertyPathInformation} for the given path and {@link TypeInformation}.
-	 * 
+	 *
 	 * @param path must not be {@literal null} or empty.
 	 * @param type must not be {@literal null}.
 	 * @return

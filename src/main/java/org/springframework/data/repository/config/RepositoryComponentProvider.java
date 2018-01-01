@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import org.springframework.util.Assert;
 /**
  * Custom {@link ClassPathScanningCandidateComponentProvider} scanning for interfaces extending the given base
  * interface. Skips interfaces annotated with {@link NoRepositoryBean}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
@@ -53,7 +53,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	/**
 	 * Creates a new {@link RepositoryComponentProvider} using the given {@link TypeFilter} to include components to be
 	 * picked up.
-	 * 
+	 *
 	 * @param includeFilters the {@link TypeFilter}s to select repository interfaces to consider, must not be
 	 *          {@literal null}.
 	 */
@@ -82,7 +82,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	 * Custom extension of {@link #addIncludeFilter(TypeFilter)} to extend the added {@link TypeFilter}. For the
 	 * {@link TypeFilter} handed we'll have two filters registered: one additionally enforcing the
 	 * {@link RepositoryDefinition} annotation, the other one forcing the extension of {@link Repository}.
-	 * 
+	 *
 	 * @see ClassPathScanningCandidateComponentProvider#addIncludeFilter(TypeFilter)
 	 */
 	@Override
@@ -152,7 +152,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	/**
 	 * Controls whether nested inner-class {@link Repository} interface definitions should be considered for automatic
 	 * discovery. This defaults to {@literal false}.
-	 * 
+	 *
 	 * @param considerNestedRepositoryInterfaces
 	 */
 	public void setConsiderNestedRepositoryInterfaces(boolean considerNestedRepositoryInterfaces) {
@@ -162,14 +162,14 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	/**
 	 * {@link org.springframework.core.type.filter.TypeFilter} that only matches interfaces. Thus setting this up makes
 	 * only sense providing an interface type as {@code targetType}.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class InterfaceTypeFilter extends AssignableTypeFilter {
 
 		/**
 		 * Creates a new {@link InterfaceTypeFilter}.
-		 * 
+		 *
 		 * @param targetType
 		 */
 		public InterfaceTypeFilter(Class<?> targetType) {
@@ -190,7 +190,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 
 	/**
 	 * Helper class to create a {@link TypeFilter} that matches if all the delegates match.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class AllTypeFilter implements TypeFilter {
@@ -199,7 +199,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 
 		/**
 		 * Creates a new {@link AllTypeFilter} to match if all the given delegates match.
-		 * 
+		 *
 		 * @param delegates must not be {@literal null}.
 		 */
 		public AllTypeFilter(List<TypeFilter> delegates) {
@@ -208,7 +208,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 			this.delegates = delegates;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.type.filter.TypeFilter#match(org.springframework.core.type.classreading.MetadataReader, org.springframework.core.type.classreading.MetadataReaderFactory)
 		 */

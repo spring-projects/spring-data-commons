@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * {@link MethodCallback} to find annotations of a given type.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -41,7 +41,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 
 	/**
 	 * Creates a new {@link AnnotationDetectionMethodCallback} for the given annotation type.
-	 * 
+	 *
 	 * @param annotationType must not be {@literal null}.
 	 */
 	public AnnotationDetectionMethodCallback(Class<A> annotationType) {
@@ -50,7 +50,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 
 	/**
 	 * Creates a new {@link AnnotationDetectionMethodCallback} for the given annotation type.
-	 * 
+	 *
 	 * @param annotationType must not be {@literal null}.
 	 * @param enforceUniqueness whether to fail if multiple methods with the annotation are found.
 	 */
@@ -72,7 +72,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 
 	/**
 	 * Returns the method with the configured annotation.
-	 * 
+	 *
 	 * @return
 	 * @throws IllegalStateException in case no method with the configured annotation was found.
 	 */
@@ -97,14 +97,14 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 
 	/**
 	 * Returns whether an annotation was found.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasFoundAnnotation() {
 		return annotation != null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.util.ReflectionUtils.MethodCallback#doWith(java.lang.reflect.Method)
 	 */

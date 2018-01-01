@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.MultiValueMap;
 
 /**
  * Spring Data specific Java {@link Stream} utility methods and classes.
- * 
+ *
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @since 1.10
@@ -42,7 +42,7 @@ public interface StreamUtils {
 
 	/**
 	 * Returns a {@link Stream} backed by the given {@link Iterator}
-	 * 
+	 *
 	 * @param iterator must not be {@literal null}.
 	 * @return
 	 */
@@ -55,7 +55,7 @@ public interface StreamUtils {
 	/**
 	 * Returns a {@link Stream} backed by the given {@link CloseableIterator} and forwarding calls to
 	 * {@link Stream#close()} to the iterator.
-	 * 
+	 *
 	 * @param iterator must not be {@literal null}.
 	 * @return
 	 * @since 2.0
@@ -69,7 +69,7 @@ public interface StreamUtils {
 
 	/**
 	 * Returns a {@link Collector} to create an unmodifiable {@link List}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	public static <T> Collector<T, ?, List<T>> toUnmodifiableList() {
@@ -78,7 +78,7 @@ public interface StreamUtils {
 
 	/**
 	 * Returns a {@link Collector} to create an unmodifiable {@link Set}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	public static <T> Collector<T, ?, Set<T>> toUnmodifiableSet() {

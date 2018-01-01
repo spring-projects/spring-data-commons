@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 /**
  * Base class for {@link FactoryBean}s creating {@link ResourceReaderRepositoryPopulator}s. Sub-classes have to provide
  * a {@link ResourceReader} to hand into the {@link RepositoryPopulator} instance created.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
@@ -45,7 +45,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 
 	/**
 	 * Configures the {@link Resource}s to be used to load objects from and initialize the repositories eventually.
-	 * 
+	 *
 	 * @param resources must not be {@literal null}.
 	 */
 	public void setResources(Resource[] resources) {
@@ -54,7 +54,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 		this.resources = resources.clone();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
 	 */
@@ -62,7 +62,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 		this.context = applicationContext;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#getObjectType()
 	 */
@@ -72,7 +72,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 		return ResourceReaderRepositoryPopulator.class;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#createInstance()
 	 */
@@ -91,7 +91,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 		return initializer;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
 	 */

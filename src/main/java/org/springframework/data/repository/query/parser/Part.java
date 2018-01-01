@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2017 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
  * A single part of a method name that has to be transformed into a query part. The actual transformation is defined by
  * a {@link Type} that is determined from inspecting the given part. The query part can then be looked up via
  * {@link #getProperty()}.
- * 
+ *
  * @author Oliver Gierke
  * @author Martin Baumgartner
  */
@@ -50,7 +50,7 @@ public class Part {
 	/**
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param clazz must not be {@literal null}.
 	 */
@@ -61,7 +61,7 @@ public class Part {
 	/**
 	 * Creates a new {@link Part} from the given method name part, the {@link Class} the part originates from and the
 	 * start parameter index.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param clazz must not be {@literal null}.
 	 * @param alwaysIgnoreCase
@@ -100,7 +100,7 @@ public class Part {
 
 	/**
 	 * Returns how many method parameters are bound by this part.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getNumberOfArguments() {
@@ -123,7 +123,7 @@ public class Part {
 
 	/**
 	 * Returns whether the {@link PropertyPath} referenced should be matched ignoring case.
-	 * 
+	 *
 	 * @return
 	 */
 	public IgnoreCaseType shouldIgnoreCase() {
@@ -141,7 +141,7 @@ public class Part {
 
 	/**
 	 * The type of a method name part. Used to create query parts in various ways.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @author Thomas Darimont
 	 * @author Michael Cramer
@@ -184,7 +184,7 @@ public class Part {
 		/**
 		 * Creates a new {@link Type} using the given keyword, number of arguments to be bound and operator. Keyword and
 		 * operator can be {@literal null}.
-		 * 
+		 *
 		 * @param numberOfArguments
 		 * @param keywords
 		 */
@@ -202,7 +202,7 @@ public class Part {
 		 * Returns the {@link Type} of the {@link Part} for the given raw propertyPath. This will try to detect e.g.
 		 * keywords contained in the raw propertyPath that trigger special query creation. Returns {@link #SIMPLE_PROPERTY}
 		 * by default.
-		 * 
+		 *
 		 * @param rawProperty
 		 * @return
 		 */
@@ -219,7 +219,7 @@ public class Part {
 
 		/**
 		 * Returns all keywords supported by the current {@link Type}.
-		 * 
+		 *
 		 * @return
 		 */
 		public Collection<String> getKeywords() {
@@ -229,7 +229,7 @@ public class Part {
 		/**
 		 * Returns whether the the type supports the given raw property. Default implementation checks whether the property
 		 * ends with the registered keyword. Does not support the keyword if the property is a valid field as is.
-		 * 
+		 *
 		 * @param property
 		 * @return
 		 */
@@ -246,7 +246,7 @@ public class Part {
 
 		/**
 		 * Returns the number of arguments the propertyPath binds. By default this exactly one argument.
-		 * 
+		 *
 		 * @return
 		 */
 		public int getNumberOfArguments() {
@@ -256,7 +256,7 @@ public class Part {
 		/**
 		 * Callback method to extract the actual propertyPath to be bound from the given part. Strips the keyword from the
 		 * part's end if available.
-		 * 
+		 *
 		 * @param part
 		 * @return
 		 */
@@ -285,7 +285,7 @@ public class Part {
 
 	/**
 	 * The various types of ignore case that are supported.
-	 * 
+	 *
 	 * @author Phillip Webb
 	 */
 	public enum IgnoreCaseType {

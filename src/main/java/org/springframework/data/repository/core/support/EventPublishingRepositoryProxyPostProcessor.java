@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import org.springframework.util.ReflectionUtils;
  * {@link DomainEvents}. If no such method can be detected on the aggregate root, no interceptor is added. Additionally,
  * the aggregate root can expose a method annotated with {@link AfterDomainEventPublication}. If present, the method
  * will be invoked after all events have been published.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Yuki Yoshida
@@ -56,7 +56,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 	private final ApplicationEventPublisher publisher;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryProxyPostProcessor#postProcess(org.springframework.aop.framework.ProxyFactory, org.springframework.data.repository.core.RepositoryInformation)
 	 */
@@ -84,7 +84,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		private final EventPublishingMethod eventMethod;
 		private final ApplicationEventPublisher publisher;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
@@ -123,7 +123,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 		/**
 		 * Creates an {@link EventPublishingMethod} for the given type.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 * @return an {@link EventPublishingMethod} for the given type or {@literal null} in case the given type does not
 		 *         expose an event publishing method.
@@ -149,7 +149,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 		/**
 		 * Publishes all events in the given aggregate root using the given {@link ApplicationEventPublisher}.
-		 * 
+		 *
 		 * @param object can be {@literal null}.
 		 * @param publisher must not be {@literal null}.
 		 */
@@ -173,7 +173,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 		/**
 		 * Returns the current {@link EventPublishingMethod} or {@literal null} if it's the default value.
-		 * 
+		 *
 		 * @return
 		 */
 		@Nullable
@@ -193,7 +193,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		/**
 		 * Creates a new {@link EventPublishingMethod} using the given pre-populated
 		 * {@link AnnotationDetectionMethodCallback} looking up an optional clearing method from the given callback.
-		 * 
+		 *
 		 * @param publishing must not be {@literal null}.
 		 * @param clearing must not be {@literal null}.
 		 * @return
@@ -213,7 +213,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 		/**
 		 * Returns the {@link Method} supposed to be invoked for event clearing or {@literal null} if none is found.
-		 * 
+		 *
 		 * @param clearing must not be {@literal null}.
 		 * @return
 		 */
@@ -233,7 +233,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		/**
 		 * Returns the given source object as collection, i.e. collections are returned as is, objects are turned into a
 		 * one-element collection, {@literal null} will become an empty collection.
-		 * 
+		 *
 		 * @param source can be {@literal null}.
 		 * @return
 		 */

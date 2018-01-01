@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import com.querydsl.core.types.Path;
 
 /**
  * Sort option for queries that wraps a Querydsl {@link OrderSpecifier}.
- * 
+ *
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
@@ -44,7 +44,7 @@ public class QSort extends Sort implements Serializable {
 
 	/**
 	 * Creates a new {@link QSort} instance with the given {@link OrderSpecifier}s.
-	 * 
+	 *
 	 * @param orderSpecifiers must not be {@literal null} .
 	 */
 	public QSort(OrderSpecifier<?>... orderSpecifiers) {
@@ -53,7 +53,7 @@ public class QSort extends Sort implements Serializable {
 
 	/**
 	 * Creates a new {@link QSort} instance with the given {@link OrderSpecifier}s.
-	 * 
+	 *
 	 * @param orderSpecifiers must not be {@literal null}.
 	 */
 	@SuppressWarnings("deprecation")
@@ -74,7 +74,7 @@ public class QSort extends Sort implements Serializable {
 
 	/**
 	 * Converts the given {@link OrderSpecifier}s into a list of {@link Order}s.
-	 * 
+	 *
 	 * @param orderSpecifiers must not be {@literal null} or empty.
 	 * @return
 	 */
@@ -87,7 +87,7 @@ public class QSort extends Sort implements Serializable {
 
 	/**
 	 * Converts the given {@link OrderSpecifier} into an {@link Order}.
-	 * 
+	 *
 	 * @param orderSpecifier must not be {@literal null}.
 	 * @return
 	 */
@@ -114,7 +114,7 @@ public class QSort extends Sort implements Serializable {
 	/**
 	 * Returns a new {@link QSort} consisting of the {@link OrderSpecifier}s of the current {@code QSort} combined with
 	 * the ones from the given {@code QSort}.
-	 * 
+	 *
 	 * @param sort can be {@literal null}.
 	 * @return
 	 */
@@ -125,7 +125,7 @@ public class QSort extends Sort implements Serializable {
 	/**
 	 * Returns a new {@link QSort} consisting of the {@link OrderSpecifier}s of the current {@link QSort} combined with
 	 * the given ones.
-	 * 
+	 *
 	 * @param orderSpecifiers must not be {@literal null} or empty.
 	 * @return
 	 */
@@ -142,7 +142,7 @@ public class QSort extends Sort implements Serializable {
 	/**
 	 * Returns a new {@link QSort} consisting of the {@link OrderSpecifier}s of the current {@link QSort} combined with
 	 * the given ones.
-	 * 
+	 *
 	 * @param orderSpecifiers must not be {@literal null} or empty.
 	 * @return
 	 */
@@ -154,7 +154,7 @@ public class QSort extends Sort implements Serializable {
 
 	/**
 	 * Recursively creates a dot-separated path for the property path.
-	 * 
+	 *
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */

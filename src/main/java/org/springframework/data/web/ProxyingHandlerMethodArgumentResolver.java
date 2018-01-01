@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 /**
  * {@link HandlerMethodArgumentResolver} to create Proxy instances for interface based controller method parameters.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.10
  */
@@ -53,7 +53,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	/**
 	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService} and the
 	 * {@link ModelAttribute} annotation not required.
-	 * 
+	 *
 	 * @param conversionService must not be {@literal null}.
 	 * @deprecated use {@link #ProxyingHandlerMethodArgumentResolver(ObjectFactory, boolean)} instead.
 	 */
@@ -64,7 +64,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 	/**
 	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService}.
-	 * 
+	 *
 	 * @param conversionService must not be {@literal null}.
 	 */
 	public ProxyingHandlerMethodArgumentResolver(ObjectFactory<ConversionService> conversionService,
@@ -76,7 +76,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		this.conversionService = conversionService;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
 	 */
@@ -85,7 +85,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		this.proxyFactory.setBeanFactory(beanFactory);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
 	 */
@@ -94,7 +94,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		this.proxyFactory.setBeanClassLoader(classLoader);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
 	 */
@@ -127,7 +127,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		return !IGNORED_PACKAGES.stream().anyMatch(it -> packageName.startsWith(it));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.annotation.ModelAttributeMethodProcessor#createAttribute(java.lang.String, org.springframework.core.MethodParameter, org.springframework.web.bind.support.WebDataBinderFactory, org.springframework.web.context.request.NativeWebRequest)
 	 */
@@ -141,7 +141,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		return proxyFactory.createProjection(parameter.getParameterType(), binder.getTarget());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.annotation.ModelAttributeMethodProcessor#bindRequestParameters(org.springframework.web.bind.WebDataBinder, org.springframework.web.context.request.NativeWebRequest)
 	 */
