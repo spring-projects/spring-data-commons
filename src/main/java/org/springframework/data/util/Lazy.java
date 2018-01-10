@@ -18,6 +18,7 @@ package org.springframework.data.util;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -37,7 +38,7 @@ import org.springframework.util.Assert;
 @EqualsAndHashCode
 public class Lazy<T> implements Supplier<T> {
 
-	private final Supplier<T> supplier;
+	private final Supplier<? extends T> supplier;
 	private @Nullable T value = null;
 	private boolean resolved = false;
 
@@ -48,8 +49,22 @@ public class Lazy<T> implements Supplier<T> {
 	 * @param supplier the {@link Supplier} to create the object lazily.
 	 * @return
 	 */
-	public static <T> Lazy<T> of(Supplier<T> supplier) {
+	public static <T> Lazy<T> of(Supplier<? extends T> supplier) {
 		return new Lazy<>(supplier);
+	}
+
+	/**
+	 * Creates a new {@link Lazy} to return the given value.
+	 *
+	 * @param <T> the type of the value to return eventually.
+	 * @param value the value to return.
+	 * @return
+	 */
+	public static <T> Lazy<T> of(T value) {
+
+		Assert.notNull(value, "Value must not be null!");
+
+		return new Lazy<>(() -> value);
 	}
 
 	/**
@@ -70,6 +85,42 @@ public class Lazy<T> implements Supplier<T> {
 	}
 
 	/**
+	 * Returns the {@link Optional} value created by the configured {@link Supplier}, allowing the absence of values in
+	 * contrast to {@link #get()}. Will return the calculated instance for subsequent lookups.
+	 * 
+	 * @return
+	 */
+	public Optional<T> getOptional() {
+		return Optional.ofNullable(getNullable());
+	}
+
+	/**
+	 * Returns a new Lazy that will consume the given supplier in case the current one does not yield in a result.
+	 * 
+	 * @param supplier must not be {@literal null}.
+	 * @return
+	 */
+	public Lazy<T> or(Supplier<? extends T> supplier) {
+
+		Assert.notNull(supplier, "Supplier must not be null!");
+
+		return Lazy.of(() -> orElseGet(supplier));
+	}
+
+	/**
+	 * Returns a new Lazy that will return the given value in case the current one does not yield in a result.
+	 * 
+	 * @param supplier must not be {@literal null}.
+	 * @return
+	 */
+	public Lazy<T> or(T value) {
+
+		Assert.notNull(value, "Value must not be null!");
+
+		return Lazy.of(() -> orElse(value));
+	}
+
+	/**
 	 * Returns the value of the lazy computation or the given default value in case the computation yields
 	 * {@literal null}.
 	 *
@@ -78,7 +129,10 @@ public class Lazy<T> implements Supplier<T> {
 	 */
 	@Nullable
 	public T orElse(@Nullable T value) {
-		return orElseGet(() -> value);
+
+		T nullable = getNullable();
+
+		return nullable == null ? value : nullable;
 	}
 
 	/**
@@ -89,13 +143,13 @@ public class Lazy<T> implements Supplier<T> {
 	 * @return
 	 */
 	@Nullable
-	public T orElseGet(Supplier<T> supplier) {
+	private T orElseGet(Supplier<? extends T> supplier) {
 
 		Assert.notNull(supplier, "Default value supplier must not be null!");
 
-		T nullable = getNullable();
+		T value = getNullable();
 
-		return nullable == null ? supplier.get() : nullable;
+		return value == null ? supplier.get() : value;
 	}
 
 	/**
@@ -104,7 +158,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @param function must not be {@literal null}.
 	 * @return
 	 */
-	public <S> Lazy<S> map(Function<T, S> function) {
+	public <S> Lazy<S> map(Function<? super T, ? extends S> function) {
 
 		Assert.notNull(function, "Function must not be null!");
 
@@ -117,7 +171,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @param function must not be {@literal null}.
 	 * @return
 	 */
-	public <S> Lazy<S> flatMap(Function<T, Lazy<S>> function) {
+	public <S> Lazy<S> flatMap(Function<? super T, Lazy<? extends S>> function) {
 
 		Assert.notNull(function, "Function must not be null!");
 

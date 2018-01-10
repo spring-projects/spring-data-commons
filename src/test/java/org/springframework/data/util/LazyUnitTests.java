@@ -27,6 +27,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
+ * Unit tests for {@link Lazy}.
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -36,23 +38,76 @@ public class LazyUnitTests {
 	@Mock Supplier<Optional<String>> optionalSupplier;
 
 	@Test
-	public void invokesSupplierOnFirstAccess() {
-
-		doReturn("foo").when(supplier).get();
-
-		Lazy<String> lazy = Lazy.of(supplier);
-
-		assertThat(lazy.get()).isEqualTo("foo");
-		assertThat(lazy.get()).isEqualTo("foo");
-
-		verify(supplier, times(1)).get();
-	}
-
-	@Test
 	public void createsLazyOptional() {
 
 		doReturn(Optional.empty()).when(optionalSupplier).get();
 
 		assertThat(Lazy.of(optionalSupplier).get()).isEmpty();
+	}
+
+	@Test
+	public void createsLazyFromValue() {
+
+		Object value = new Object();
+
+		assertThat(Lazy.of(value).get()).isEqualTo(value);
+	}
+
+	@Test
+	public void returnsLastValueInChain() {
+
+		Object reference = new Object();
+
+		Object foo = Lazy.of(() -> null) //
+				.or(() -> null) //
+				.or(() -> reference) //
+				.get();
+
+		assertThat(foo).isEqualTo(reference);
+	}
+
+	@Test
+	public void returnsCachedInstanceOnMultipleAccesses() {
+
+		Lazy<Object> lazy = Lazy.of(() -> new Object());
+
+		assertThat(lazy.get()).isSameAs(lazy.get());
+	}
+
+	@Test
+	public void rejectsNullValueLookup() {
+
+		assertThatExceptionOfType(IllegalStateException.class) //
+				.isThrownBy(() -> Lazy.of(() -> null).get());
+	}
+
+	@Test
+	public void allowsNullableValueLookupViaOptional() {
+		assertThat(Lazy.of(() -> null).getOptional()).isEmpty();
+	}
+
+	@Test
+	public void ignoresElseIfValuePresent() {
+
+		Object first = new Object();
+		Object second = new Object();
+
+		Lazy<Object> nonEmpty = Lazy.of(() -> first);
+
+		assertThat(nonEmpty.orElse(second)).isEqualTo(first);
+		assertThat(nonEmpty.or(second).get()).isEqualTo(first);
+		assertThat(nonEmpty.or(() -> second).get()).isEqualTo(first);
+	}
+
+	@Test
+	public void returnsElseValue() {
+
+		Object reference = new Object();
+
+		Lazy<Object> empty = Lazy.of(() -> null);
+
+		assertThat(empty.orElse(reference)).isEqualTo(reference);
+		assertThat(empty.or(reference).get()).isEqualTo(reference);
+		assertThat(empty.or(() -> reference).get()).isEqualTo(reference);
 	}
 }
