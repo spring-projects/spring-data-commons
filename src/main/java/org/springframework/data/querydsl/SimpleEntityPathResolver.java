@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Optional;
 
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -40,7 +41,15 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 
 	private final String querySuffix;
 
+	/**
+	 * Creates a new {@link SimpleEntityPathResolver} with the given query package suffix.
+	 * 
+	 * @param querySuffix must not be {@literal null}.
+	 */
 	public SimpleEntityPathResolver(String querySuffix) {
+
+		Assert.notNull(querySuffix, "Query suffix must not be null!");
+
 		this.querySuffix = querySuffix;
 	}
 
@@ -102,7 +111,9 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	private String getQueryClassName(Class<?> domainClass) {
 
 		String simpleClassName = ClassUtils.getShortName(domainClass);
-		return String.format("%s%s.Q%s%s", domainClass.getPackage().getName(), querySuffix, getClassBase(simpleClassName),
+		String packageName = domainClass.getPackage().getName();
+
+		return String.format("%s%s.Q%s%s", packageName, querySuffix, getClassBase(simpleClassName),
 				domainClass.getSimpleName());
 	}
 
@@ -116,10 +127,6 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 
 		String[] parts = shortName.split("\\.");
 
-		if (parts.length < 2) {
-			return "";
-		}
-
-		return parts[0] + "_";
+		return parts.length < 2 ? "" : parts[0] + "_";
 	}
 }
