@@ -66,7 +66,7 @@ public class DefaultProjectionInformationUnitTests {
 	}
 
 	@Test // DATACMNS-967
-	public void doesNotConsiderDefaultMethodInputProperties() throws Exception {
+	public void doesNotConsiderDefaultMethodInputProperties() {
 
 		ProjectionInformation information = new DefaultProjectionInformation(WithDefaultMethod.class);
 
