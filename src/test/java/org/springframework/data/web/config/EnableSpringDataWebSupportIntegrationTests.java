@@ -30,6 +30,9 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
+import org.springframework.data.querydsl.EntityPathResolver;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
@@ -85,6 +88,18 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		@Bean
 		public SortHandlerMethodArgumentResolverCustomizer testSortResolverCustomizer() {
 			return sortResolver -> sortResolver.setSortParameter("foo");
+		}
+	}
+
+	@Configuration
+	@EnableSpringDataWebSupport
+	static class CustomEntityPathResolver {
+
+		static SimpleEntityPathResolver resolver = new SimpleEntityPathResolver("suffix");
+
+		@Bean
+		SimpleEntityPathResolver entityPathResolver() {
+			return resolver;
 		}
 	}
 
@@ -213,6 +228,16 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		RequestMappingHandlerAdapter adapter = context.getBean(RequestMappingHandlerAdapter.class);
 
 		assertThat(adapter.getArgumentResolvers().get(0)).isInstanceOf(ProxyingHandlerMethodArgumentResolver.class);
+	}
+
+	@Test // DATACMNS-1235
+	public void picksUpEntityPathResolverIfRegistered() {
+
+		WebApplicationContext context = WebTestUtils.createApplicationContext(CustomEntityPathResolver.class);
+
+		assertThat(context.getBean(EntityPathResolver.class)).isEqualTo(CustomEntityPathResolver.resolver);
+		assertThat(context.getBean(QuerydslBindingsFactory.class).getEntityPathResolver())
+				.isEqualTo(CustomEntityPathResolver.resolver);
 	}
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {

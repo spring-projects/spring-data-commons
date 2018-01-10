@@ -19,12 +19,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
@@ -45,6 +47,7 @@ import com.querydsl.core.types.Predicate;
 public class QuerydslWebConfiguration implements WebMvcConfigurer {
 
 	@Autowired @Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService;
+	@Autowired ObjectProvider<EntityPathResolver> resolver;
 
 	/**
 	 * Default {@link QuerydslPredicateArgumentResolver} to create Querydsl {@link Predicate} instances for Spring MVC
@@ -61,7 +64,7 @@ public class QuerydslWebConfiguration implements WebMvcConfigurer {
 	@Lazy
 	@Bean
 	public QuerydslBindingsFactory querydslBindingsFactory() {
-		return new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
+		return new QuerydslBindingsFactory(resolver.getIfUnique(() -> SimpleEntityPathResolver.INSTANCE));
 	}
 
 	/*
