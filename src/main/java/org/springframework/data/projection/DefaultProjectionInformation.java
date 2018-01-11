@@ -117,7 +117,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 		Method method = descriptor.getReadMethod();
 
-		return method == null ? false : method.isDefault();
+		return method != null && method.isDefault();
 	}
 
 	/**
@@ -136,10 +136,10 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 		/**
 		 * Creates a new {@link PropertyDescriptorSource} for the given type.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 */
-		public PropertyDescriptorSource(Class<?> type) {
+		PropertyDescriptorSource(Class<?> type) {
 
 			Assert.notNull(type, "Type must not be null!");
 
@@ -152,7 +152,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		 *
 		 * @return
 		 */
-		public List<PropertyDescriptor> getDescriptors() {
+		List<PropertyDescriptor> getDescriptors() {
 			return collectDescriptors().distinct().collect(StreamUtils.toUnmodifiableList());
 		}
 
@@ -178,9 +178,9 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		}
 
 		/**
-		 * Returns a Stream of {@link PropertyDescriptor} ordered following the given {@link MethodsMetadata} only returning
-		 * methods seen by the given {@link MethodsMetadata}.
-		 * 
+		 * Returns a {@link Stream} of {@link PropertyDescriptor} ordered following the given {@link MethodsMetadata} only
+		 * returning methods seen by the given {@link MethodsMetadata}.
+		 *
 		 * @param source must not be {@literal null}.
 		 * @param metadata must not be {@literal null}.
 		 * @return
@@ -194,13 +194,14 @@ class DefaultProjectionInformation implements ProjectionInformation {
 				return source;
 			}
 
-			return source.filter(descriptor -> orderedMethods.containsKey(descriptor.getReadMethod().getName()))
+			return source.filter(descriptor -> descriptor.getReadMethod() != null)
+					.filter(descriptor -> orderedMethods.containsKey(descriptor.getReadMethod().getName()))
 					.sorted(Comparator.comparingInt(left -> orderedMethods.get(left.getReadMethod().getName())));
 		}
 
 		/**
 		 * Returns a {@link Stream} of interfaces using the given {@link MethodsMetadata} as primary source for ordering.
-		 * 
+		 *
 		 * @param metadata must not be {@literal null}.
 		 * @return
 		 */
@@ -209,8 +210,8 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		}
 
 		/**
-		 * Returns a Stream of interfaces using the given type as primary source for ordering.
-		 * 
+		 * Returns a {@link Stream} of interfaces using the given type as primary source for ordering.
+		 *
 		 * @return
 		 */
 		private Stream<Class<?>> fromType() {
@@ -243,7 +244,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 		/**
 		 * Find the type with the given name in the given array of {@link Class}.
-		 * 
+		 *
 		 * @param name must not be {@literal null} or empty.
 		 * @param types must not be {@literal null}.
 		 * @return
@@ -253,7 +254,8 @@ class DefaultProjectionInformation implements ProjectionInformation {
 			return Arrays.stream(types) //
 					.filter(it -> name.equals(it.getName())) //
 					.findFirst()
-					.orElseThrow(() -> new IllegalStateException(String.format("Did not find type %s in %s!", name, types)));
+					.orElseThrow(() -> new IllegalStateException(
+							String.format("Did not find type %s in %s!", name, Arrays.toString(types))));
 		}
 
 		/**

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Unit tests for {@link DefaultProjectionInformation}.
@@ -38,6 +39,14 @@ public class DefaultProjectionInformationUnitTests {
 		ProjectionInformation information = new DefaultProjectionInformation(CustomerProjection.class);
 
 		assertThat(toNames(information.getInputProperties())).contains("firstname", "lastname");
+	}
+
+	@Test // DATACMNS-1206
+	public void omitsInputPropertiesAcceptingArguments() {
+
+		ProjectionInformation information = new DefaultProjectionInformation(ProjectionAcceptingArguments.class);
+
+		assertThat(toNames(information.getInputProperties())).containsOnly("lastname");
 	}
 
 	@Test // DATACMNS-89
@@ -66,7 +75,7 @@ public class DefaultProjectionInformationUnitTests {
 	}
 
 	@Test // DATACMNS-967
-	public void doesNotConsiderDefaultMethodInputProperties() throws Exception {
+	public void doesNotConsiderDefaultMethodInputProperties() {
 
 		ProjectionInformation information = new DefaultProjectionInformation(WithDefaultMethod.class);
 
@@ -85,6 +94,14 @@ public class DefaultProjectionInformationUnitTests {
 	interface CustomerProjection {
 
 		String getFirstname();
+
+		String getLastname();
+	}
+
+	interface ProjectionAcceptingArguments {
+
+		@Value("foo")
+		String getFirstname(int i);
 
 		String getLastname();
 	}
