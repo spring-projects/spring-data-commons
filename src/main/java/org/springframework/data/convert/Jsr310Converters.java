@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,6 +68,8 @@ public abstract class Jsr310Converters {
 		converters.add(LocalTimeToDateConverter.INSTANCE);
 		converters.add(DateToInstantConverter.INSTANCE);
 		converters.add(InstantToDateConverter.INSTANCE);
+		converters.add(LocalDateTimeToInstantConverter.INSTANCE);
+		converters.add(InstantToLocalDateTimeConverter.INSTANCE);
 		converters.add(ZoneIdToStringConverter.INSTANCE);
 		converters.add(StringToZoneIdConverter.INSTANCE);
 		converters.add(DurationToStringConverter.INSTANCE);
@@ -164,6 +167,26 @@ public abstract class Jsr310Converters {
 		@Override
 		public Date convert(Instant source) {
 			return source == null ? null : Date.from(source.atZone(systemDefault()).toInstant());
+		}
+	}
+
+	public static enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, Instant> {
+
+		INSTANCE;
+
+		@Override
+		public Instant convert(LocalDateTime source) {
+			return source.atZone(systemDefault()).toInstant();
+		}
+	}
+
+	public static enum InstantToLocalDateTimeConverter implements Converter<Instant, LocalDateTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalDateTime convert(Instant source) {
+			return LocalDateTime.ofInstant(source, systemDefault());
 		}
 	}
 
