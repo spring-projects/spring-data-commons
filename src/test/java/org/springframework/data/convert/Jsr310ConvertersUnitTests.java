@@ -145,6 +145,17 @@ public class Jsr310ConvertersUnitTests {
 			}
 		}
 
+		@Test // DATACMNS-1243
+		public void convertsLocalDateTimeToInstantAndBack() {
+
+			LocalDateTime dateTime = LocalDateTime.now();
+
+			Instant instant = CONVERSION_SERVICE.convert(dateTime, Instant.class);
+			LocalDateTime convertedDateTime = CONVERSION_SERVICE.convert(dateTime, LocalDateTime.class);
+
+			assertThat(convertedDateTime).isEqualTo(dateTime);
+		}
+
 		private static Predicate<Date> formatted(Temporal expected, String format) {
 
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
