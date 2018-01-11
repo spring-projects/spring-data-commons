@@ -43,6 +43,7 @@ import org.springframework.util.Assert;
  * {@link MethodsMetadataReader} implementation based on an ASM {@link org.springframework.asm.ClassReader}.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @since 2.1
  */
 @Getter
