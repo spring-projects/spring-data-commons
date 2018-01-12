@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.type;
+package org.springframework.data.type.classreading;
 
 import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.data.type.MethodsMetadata;
 
 /**
  * Extension to {@link MetadataReader} for accessing class metadata and method metadata as read by an ASM
@@ -27,7 +28,7 @@ import org.springframework.core.type.classreading.MetadataReader;
 public interface MethodsMetadataReader extends MetadataReader {
 
 	/**
-	 * @return the metadata for methods in the class file.
+	 * @return the {@link MethodsMetadata} for methods in the class file.
 	 */
 	MethodsMetadata getMethodsMetadata();
 }

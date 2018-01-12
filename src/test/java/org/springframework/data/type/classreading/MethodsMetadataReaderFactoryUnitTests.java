@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.type;
+package org.springframework.data.type.classreading;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -24,6 +24,7 @@ import java.net.URLClassLoader;
 
 import org.junit.Test;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.data.type.classreading.MethodsMetadataReader;
 import org.springframework.data.type.classreading.MethodsMetadataReaderFactory;
 
 /**
