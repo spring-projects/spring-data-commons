@@ -28,6 +28,7 @@ import org.junit.Test;
  * Unit tests for {@link DefaultProjectionInformation}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class DefaultProjectionInformationUnitTests {
 
@@ -47,8 +48,25 @@ public class DefaultProjectionInformationUnitTests {
 		assertThat(toNames(information.getInputProperties())).containsExactly("age", "firstname", "lastname");
 	}
 
+	@Test // DATACMNS-1206
+	public void discoversInputPropertiesInOrder() {
+
+		ProjectionInformation information = new DefaultProjectionInformation(SameMethodNamesInAlternateOrder.class);
+
+		assertThat(toNames(information.getInputProperties())).containsExactly("firstname", "lastname");
+	}
+
+	@Test // DATACMNS-1206
+	public void discoversAllInputPropertiesInOrder() {
+
+		assertThat(toNames(new DefaultProjectionInformation(CompositeProjection.class).getInputProperties()))
+				.containsExactly("firstname", "lastname", "age");
+		assertThat(toNames(new DefaultProjectionInformation(ReorderedCompositeProjection.class).getInputProperties()))
+				.containsExactly("age", "firstname", "lastname");
+	}
+
 	@Test // DATACMNS-967
-	public void doesNotConsiderDefaultMethodInputProperties() throws Exception {
+	public void doesNotConsiderDefaultMethodInputProperties() {
 
 		ProjectionInformation information = new DefaultProjectionInformation(WithDefaultMethod.class);
 
@@ -72,6 +90,24 @@ public class DefaultProjectionInformationUnitTests {
 	}
 
 	interface ExtendedProjection extends CustomerProjection {
+
+		int getAge();
+	}
+
+	interface SameMethodNamesInAlternateOrder {
+
+		String getFirstname();
+
+		String getLastname();
+
+		String getFirstname(String foo);
+	}
+
+	interface CompositeProjection extends CustomerProjection, AgeProjection {}
+
+	interface ReorderedCompositeProjection extends AgeProjection, CustomerProjection {}
+
+	interface AgeProjection {
 
 		int getAge();
 	}
