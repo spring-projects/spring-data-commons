@@ -15,10 +15,11 @@
  */
 package org.springframework.data.projection;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -29,11 +30,11 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.data.type.MethodsMetadata;
-import org.springframework.data.type.MethodsMetadataReader;
+import org.springframework.data.type.classreading.MethodsMetadataReader;
 import org.springframework.data.type.classreading.MethodsMetadataReaderFactory;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -61,7 +62,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		Assert.notNull(type, "Projection type must not be null!");
 
 		this.projectionType = type;
-		this.properties = collectDescriptors(type);
+		this.properties = new PropertyDescriptorSource(type).getDescriptors();
 	}
 
 	/*
@@ -107,95 +108,6 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	}
 
 	/**
-	 * Collects {@link PropertyDescriptor}s for all properties exposed by the given type and all its super interfaces.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @return
-	 */
-	private static List<PropertyDescriptor> collectDescriptors(Class<?> type) {
-
-		List<PropertyDescriptor> result = new ArrayList<>();
-
-		Optional<MethodsMetadata> metadata = getMetadata(type);
-		Stream<PropertyDescriptor> stream = Arrays.stream(BeanUtils.getPropertyDescriptors(type))//
-				.filter(it -> !hasDefaultGetter(it));
-
-		Stream<PropertyDescriptor> streamToUse = metadata.map(DefaultProjectionInformation::getMethodOrder)
-				.filter(it -> !it.isEmpty()) //
-				.map(it -> stream.filter(descriptor -> it.containsKey(descriptor.getReadMethod().getName()))
-						.sorted(Comparator.comparingInt(left -> it.get(left.getReadMethod().getName())))) //
-				.orElse(stream);
-
-		result.addAll(streamToUse.collect(Collectors.toList()));
-
-		if (metadata.isPresent()) {
-
-			Stream<String> interfaceNames = metadata.map(ClassMetadata::getInterfaceNames) //
-					.map(Arrays::stream) //
-					.orElse(Stream.empty());
-
-			result.addAll(interfaceNames.map(it -> loadClass(it, type.getClassLoader())) //
-					.map(DefaultProjectionInformation::collectDescriptors) //
-					.flatMap(List::stream) //
-					.collect(Collectors.toList()));
-		} else {
-
-			for (Class<?> interfaze : type.getInterfaces()) {
-				result.addAll(collectDescriptors(interfaze));
-			}
-		}
-
-		return result.stream().distinct().collect(Collectors.toList());
-	}
-
-	private static Class<?> loadClass(String className, ClassLoader classLoader) {
-
-		try {
-			return ClassUtils.forName(className, classLoader);
-		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException(String.format("Cannot load class %s", className));
-		}
-	}
-
-	/**
-	 * Returns a {@link Map} containing method name to its positional index according to {@link MethodsMetadata}.
-	 *
-	 * @param metadata
-	 * @return
-	 */
-	private static Map<String, Integer> getMethodOrder(MethodsMetadata metadata) {
-
-		List<String> methods = metadata.getMethods() //
-				.stream() //
-				.map(MethodMetadata::getMethodName) //
-				.distinct() //
-				.collect(Collectors.toList());
-
-		return IntStream.range(0, methods.size()) //
-				.boxed() //
-				.collect(Collectors.toMap(methods::get, i -> i));
-	}
-
-	/**
-	 * Attempts to obtain {@link MethodsMetadata} from {@link Class}. Returns {@link Optional} containing
-	 * {@link MethodsMetadata} if metadata was read successfully, {@link Optional#empty()} otherwise.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @return the optional {@link MethodsMetadata}.
-	 */
-	private static Optional<MethodsMetadata> getMetadata(Class<?> type) {
-
-		try {
-
-			MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory(type.getClassLoader());
-			MethodsMetadataReader metadataReader = factory.getMetadataReader(ClassUtils.getQualifiedName(type));
-			return Optional.of(metadataReader.getMethodsMetadata());
-		} catch (IOException e) {
-			return Optional.empty();
-		}
-	}
-
-	/**
 	 * Returns whether the given {@link PropertyDescriptor} has a getter that is a Java 8 default method.
 	 *
 	 * @param descriptor must not be {@literal null}.
@@ -204,6 +116,163 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	private static boolean hasDefaultGetter(PropertyDescriptor descriptor) {
 
 		Method method = descriptor.getReadMethod();
+
 		return method == null ? false : method.isDefault();
+	}
+
+	/**
+	 * Internal helper to detect {@link PropertyDescriptor} instances for a given type.
+	 *
+	 * @author Mark Paluch
+	 * @author Oliver Gierke
+	 * @since 2.1
+	 * @soundtrack The Meters - Cissy Strut (Here Comes The Meter Man)
+	 */
+	@Slf4j
+	private static class PropertyDescriptorSource {
+
+		private final Class<?> type;
+		private final Optional<MethodsMetadata> metadata;
+
+		/**
+		 * Creates a new {@link PropertyDescriptorSource} for the given type.
+		 * 
+		 * @param type must not be {@literal null}.
+		 */
+		public PropertyDescriptorSource(Class<?> type) {
+
+			Assert.notNull(type, "Type must not be null!");
+
+			this.type = type;
+			this.metadata = getMetadata(type);
+		}
+
+		/**
+		 * Returns {@link PropertyDescriptor}s for all properties exposed by the given type and all its super interfaces.
+		 *
+		 * @return
+		 */
+		public List<PropertyDescriptor> getDescriptors() {
+			return collectDescriptors().distinct().collect(StreamUtils.toUnmodifiableList());
+		}
+
+		/**
+		 * Recursively collects {@link PropertyDescriptor}s for all properties exposed by the given type and all its super
+		 * interfaces.
+		 *
+		 * @return
+		 */
+		private Stream<PropertyDescriptor> collectDescriptors() {
+
+			Stream<PropertyDescriptor> allButDefaultGetters = Arrays.stream(BeanUtils.getPropertyDescriptors(type)) //
+					.filter(it -> !hasDefaultGetter(it));
+
+			Stream<PropertyDescriptor> ownDescriptors = metadata.map(it -> filterAndOrder(allButDefaultGetters, it))
+					.orElse(allButDefaultGetters);
+
+			Stream<PropertyDescriptor> superTypeDescriptors = metadata.map(this::fromMetadata) //
+					.orElseGet(this::fromType) //
+					.flatMap(it -> new PropertyDescriptorSource(it).collectDescriptors());
+
+			return Stream.concat(ownDescriptors, superTypeDescriptors);
+		}
+
+		/**
+		 * Returns a Stream of {@link PropertyDescriptor} ordered following the given {@link MethodsMetadata} only returning
+		 * methods seen by the given {@link MethodsMetadata}.
+		 * 
+		 * @param source must not be {@literal null}.
+		 * @param metadata must not be {@literal null}.
+		 * @return
+		 */
+		private static Stream<PropertyDescriptor> filterAndOrder(Stream<PropertyDescriptor> source,
+				MethodsMetadata metadata) {
+
+			Map<String, Integer> orderedMethods = getMethodOrder(metadata);
+
+			if (orderedMethods.isEmpty()) {
+				return source;
+			}
+
+			return source.filter(descriptor -> orderedMethods.containsKey(descriptor.getReadMethod().getName()))
+					.sorted(Comparator.comparingInt(left -> orderedMethods.get(left.getReadMethod().getName())));
+		}
+
+		/**
+		 * Returns a {@link Stream} of interfaces using the given {@link MethodsMetadata} as primary source for ordering.
+		 * 
+		 * @param metadata must not be {@literal null}.
+		 * @return
+		 */
+		private Stream<Class<?>> fromMetadata(MethodsMetadata metadata) {
+			return Arrays.stream(metadata.getInterfaceNames()).map(it -> findType(it, type.getInterfaces()));
+		}
+
+		/**
+		 * Returns a Stream of interfaces using the given type as primary source for ordering.
+		 * 
+		 * @return
+		 */
+		private Stream<Class<?>> fromType() {
+			return Arrays.stream(type.getInterfaces());
+		}
+
+		/**
+		 * Attempts to obtain {@link MethodsMetadata} from {@link Class}. Returns {@link Optional} containing
+		 * {@link MethodsMetadata} if metadata was read successfully, {@link Optional#empty()} otherwise.
+		 *
+		 * @param type must not be {@literal null}.
+		 * @return the optional {@link MethodsMetadata}.
+		 */
+		private static Optional<MethodsMetadata> getMetadata(Class<?> type) {
+
+			try {
+
+				MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory(type.getClassLoader());
+				MethodsMetadataReader metadataReader = factory.getMetadataReader(ClassUtils.getQualifiedName(type));
+
+				return Optional.of(metadataReader.getMethodsMetadata());
+
+			} catch (IOException e) {
+
+				LOG.info("Couldn't read class metadata for {}. Input property calculation might fail!", type);
+
+				return Optional.empty();
+			}
+		}
+
+		/**
+		 * Find the type with the given name in the given array of {@link Class}.
+		 * 
+		 * @param name must not be {@literal null} or empty.
+		 * @param types must not be {@literal null}.
+		 * @return
+		 */
+		private static Class<?> findType(String name, Class<?>[] types) {
+
+			return Arrays.stream(types) //
+					.filter(it -> name.equals(it.getName())) //
+					.findFirst()
+					.orElseThrow(() -> new IllegalStateException(String.format("Did not find type %s in %s!", name, types)));
+		}
+
+		/**
+		 * Returns a {@link Map} containing method name to its positional index according to {@link MethodsMetadata}.
+		 *
+		 * @param metadata
+		 * @return
+		 */
+		private static Map<String, Integer> getMethodOrder(MethodsMetadata metadata) {
+
+			List<String> methods = metadata.getMethods() //
+					.stream() //
+					.map(MethodMetadata::getMethodName) //
+					.distinct() //
+					.collect(Collectors.toList());
+
+			return IntStream.range(0, methods.size()) //
+					.boxed() //
+					.collect(Collectors.toMap(methods::get, i -> i));
+		}
 	}
 }
