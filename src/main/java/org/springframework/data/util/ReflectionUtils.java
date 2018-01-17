@@ -23,8 +23,6 @@ import kotlin.reflect.KMutableProperty;
 import kotlin.reflect.KProperty;
 import kotlin.reflect.KType;
 import kotlin.reflect.jvm.ReflectJvmMapping;
-import kotlin.reflect.jvm.internal.impl.load.kotlin.header.KotlinClassHeader.Kind;
-import kotlin.reflect.jvm.internal.impl.load.kotlin.reflect.ReflectKotlinClass;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
@@ -63,6 +61,7 @@ public class ReflectionUtils {
 
 	private static final boolean KOTLIN_IS_PRESENT = ClassUtils.isPresent("kotlin.Unit",
 			BeanUtils.class.getClassLoader());
+	private static final int KOTLIN_KIND_CLASS = 1;
 
 	/**
 	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
@@ -368,9 +367,8 @@ public class ReflectionUtils {
 	}
 
 	/**
-	 * Return {@literal true} if the specified class is a supported Kotlin class. Currently supported are only
-	 * {@link Kind#CLASS regular Kotlin classes}. Other class types (synthetic, SAM, lambdas) are not supported via
-	 * reflection.
+	 * Return {@literal true} if the specified class is a supported Kotlin class. Currently supported are only regular
+	 * Kotlin classes. Other class types (synthetic, SAM, lambdas) are not supported via reflection.
 	 *
 	 * @return {@literal true} if {@code type} is a supported Kotlin class.
 	 * @since 2.0
@@ -381,9 +379,10 @@ public class ReflectionUtils {
 			return false;
 		}
 
-		ReflectKotlinClass kotlinClass = ReflectKotlinClass.Factory.create(type);
-
-		return kotlinClass == null ? false : kotlinClass.getClassHeader().getKind() == Kind.CLASS;
+		return Arrays.stream(type.getDeclaredAnnotations()) //
+				.filter(annotation -> annotation.annotationType().getName().equals("kotlin.Metadata")) //
+				.map(annotation -> AnnotationUtils.getValue(annotation, "k")) //
+				.anyMatch(it -> Integer.valueOf(KOTLIN_KIND_CLASS).equals(it));
 	}
 
 	/**
