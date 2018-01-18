@@ -15,14 +15,17 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.springframework.core.CollectionFactory;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.repository.util.NullableWrapper;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.util.Assert;
 
 /**
  * Simple domain service to convert query results into a dedicated type.
@@ -47,13 +50,34 @@ class QueryExecutionResultHandler {
 	}
 
 	/**
+	 * Post-processes the given result of a query invocation to match the return type of the given method.
+	 * 
+	 * @param result can be {@literal null}.
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	public Object postProcessInvocationResult(Object result, Method method) {
+
+		Assert.notNull(method, "Method must not be null!");
+
+		if (method.getReturnType().isInstance(result)) {
+			return result;
+		}
+
+		MethodParameter parameter = new MethodParameter(method, -1);
+		TypeDescriptor methodReturnTypeDescriptor = TypeDescriptor.nested(parameter, 0);
+
+		return postProcessInvocationResult(result, methodReturnTypeDescriptor);
+	}
+
+	/**
 	 * Post-processes the given result of a query invocation to the given type.
 	 * 
 	 * @param result can be {@literal null}.
 	 * @param returnTypeDesciptor can be {@literal null}, if so, no conversion is performed.
 	 * @return
 	 */
-	public Object postProcessInvocationResult(Object result, TypeDescriptor returnTypeDesciptor) {
+	Object postProcessInvocationResult(Object result, TypeDescriptor returnTypeDesciptor) {
 
 		if (returnTypeDesciptor == null) {
 			return result;
@@ -73,7 +97,8 @@ class QueryExecutionResultHandler {
 
 		if (result != null) {
 			return conversionService.canConvert(result.getClass(), expectedReturnType)
-					? conversionService.convert(result, expectedReturnType) : result;
+					? conversionService.convert(result, expectedReturnType)
+					: result;
 		}
 
 		if (Map.class.equals(expectedReturnType)) {

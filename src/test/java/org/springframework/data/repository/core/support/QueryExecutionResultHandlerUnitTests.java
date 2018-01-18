@@ -26,8 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
-import org.springframework.core.MethodParameter;
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.repository.Repository;
 
 /**
@@ -42,16 +40,16 @@ public class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-610
 	public void convertsListsToSet() throws Exception {
 
-		TypeDescriptor descriptor = getTypeDescriptorFor("set");
+		Method method = getMethod("set");
 		List<Entity> source = Collections.singletonList(new Entity());
 
-		assertThat(handler.postProcessInvocationResult(source, descriptor), is(instanceOf(Set.class)));
+		assertThat(handler.postProcessInvocationResult(source, method), is(instanceOf(Set.class)));
 	}
 
 	@Test // DATACMNS-483
 	public void turnsNullIntoJdk8Optional() throws Exception {
 
-		Object result = handler.postProcessInvocationResult(null, getTypeDescriptorFor("jdk8Optional"));
+		Object result = handler.postProcessInvocationResult(null, getMethod("jdk8Optional"));
 		assertThat(result, is((Object) Optional.empty()));
 	}
 
@@ -61,7 +59,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Entity entity = new Entity();
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("jdk8Optional"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("jdk8Optional"));
 		assertThat(result, is(instanceOf(Optional.class)));
 
 		Optional<Entity> optional = (Optional<Entity>) result;
@@ -71,7 +69,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-483
 	public void turnsNullIntoGuavaOptional() throws Exception {
 
-		Object result = handler.postProcessInvocationResult(null, getTypeDescriptorFor("guavaOptional"));
+		Object result = handler.postProcessInvocationResult(null, getMethod("guavaOptional"));
 		assertThat(result, is((Object) com.google.common.base.Optional.absent()));
 	}
 
@@ -81,7 +79,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Entity entity = new Entity();
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("guavaOptional"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("guavaOptional"));
 		assertThat(result, is(instanceOf(com.google.common.base.Optional.class)));
 
 		com.google.common.base.Optional<Entity> optional = (com.google.common.base.Optional<Entity>) result;
@@ -90,15 +88,11 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-917
 	public void defaultsNullToEmptyMap() throws Exception {
-		assertThat(handler.postProcessInvocationResult(null, getTypeDescriptorFor("map")), is(instanceOf(Map.class)));
+		assertThat(handler.postProcessInvocationResult(null, getMethod("map")), is(instanceOf(Map.class)));
 	}
 
-	private static TypeDescriptor getTypeDescriptorFor(String methodName) throws Exception {
-
-		Method method = Sample.class.getMethod(methodName);
-		MethodParameter parameter = new MethodParameter(method, -1);
-
-		return TypeDescriptor.nested(parameter, 0);
+	private static Method getMethod(String methodName) throws Exception {
+		return Sample.class.getMethod(methodName);
 	}
 
 	static interface Sample extends Repository<Entity, Long> {
