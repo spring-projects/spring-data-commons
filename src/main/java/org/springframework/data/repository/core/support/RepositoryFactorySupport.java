@@ -41,9 +41,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -579,12 +577,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			Object result = doInvoke(invocation);
 
-			// Looking up the TypeDescriptor for the return type - yes, this way o.O
-			Method method = invocation.getMethod();
-			MethodParameter parameter = new MethodParameter(method, -1);
-			TypeDescriptor methodReturnTypeDescriptor = TypeDescriptor.nested(parameter, 0);
-
-			return resultHandler.postProcessInvocationResult(result, methodReturnTypeDescriptor);
+			return resultHandler.postProcessInvocationResult(result, invocation.getMethod());
 		}
 
 		@Nullable

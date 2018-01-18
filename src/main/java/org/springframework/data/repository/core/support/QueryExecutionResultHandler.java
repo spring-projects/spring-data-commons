@@ -15,10 +15,12 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.CollectionFactory;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -51,6 +53,26 @@ class QueryExecutionResultHandler {
 	}
 
 	/**
+	 * Post-processes the given result of a query invocation to match the return type of the given method.
+	 *
+	 * @param result can be {@literal null}.
+	 * @param metho must not be {@literal null}.
+	 * @return
+	 */
+	@Nullable
+	public Object postProcessInvocationResult(@Nullable Object result, Method method) {
+
+		if (method.getReturnType().isInstance(result)) {
+			return result;
+		}
+
+		MethodParameter parameter = new MethodParameter(method, -1);
+		TypeDescriptor methodReturnTypeDescriptor = TypeDescriptor.nested(parameter, 0);
+
+		return postProcessInvocationResult(result, methodReturnTypeDescriptor);
+	}
+
+	/**
 	 * Post-processes the given result of a query invocation to the given type.
 	 *
 	 * @param result can be {@literal null}.
@@ -58,7 +80,7 @@ class QueryExecutionResultHandler {
 	 * @return
 	 */
 	@Nullable
-	public Object postProcessInvocationResult(@Nullable Object result, @Nullable TypeDescriptor returnTypeDescriptor) {
+	Object postProcessInvocationResult(@Nullable Object result, @Nullable TypeDescriptor returnTypeDescriptor) {
 
 		if (returnTypeDescriptor == null) {
 			return result;

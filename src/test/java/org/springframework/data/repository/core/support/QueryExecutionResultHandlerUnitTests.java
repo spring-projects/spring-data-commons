@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.reactivestreams.Publisher;
-import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
@@ -54,16 +53,16 @@ public class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-610
 	public void convertsListsToSet() throws Exception {
 
-		TypeDescriptor descriptor = getTypeDescriptorFor("set");
+		Method method = getMethod("set");
 		List<Entity> source = Collections.singletonList(new Entity());
 
-		assertThat(handler.postProcessInvocationResult(source, descriptor)).isInstanceOf(Set.class);
+		assertThat(handler.postProcessInvocationResult(source, method)).isInstanceOf(Set.class);
 	}
 
 	@Test // DATACMNS-483
 	public void turnsNullIntoJdk8Optional() throws Exception {
 
-		Object result = handler.postProcessInvocationResult(null, getTypeDescriptorFor("jdk8Optional"));
+		Object result = handler.postProcessInvocationResult(null, getMethod("jdk8Optional"));
 		assertThat(result).isEqualTo(Optional.empty());
 	}
 
@@ -73,7 +72,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Entity entity = new Entity();
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("jdk8Optional"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("jdk8Optional"));
 		assertThat(result).isInstanceOf(Optional.class);
 
 		Optional<Entity> optional = (Optional<Entity>) result;
@@ -83,7 +82,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-483
 	public void turnsNullIntoGuavaOptional() throws Exception {
 
-		Object result = handler.postProcessInvocationResult(null, getTypeDescriptorFor("guavaOptional"));
+		Object result = handler.postProcessInvocationResult(null, getMethod("guavaOptional"));
 		assertThat(result).isEqualTo(com.google.common.base.Optional.absent());
 	}
 
@@ -93,7 +92,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Entity entity = new Entity();
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("guavaOptional"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("guavaOptional"));
 		assertThat(result).isInstanceOf(com.google.common.base.Optional.class);
 
 		com.google.common.base.Optional<Entity> optional = (com.google.common.base.Optional<Entity>) result;
@@ -102,7 +101,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-917
 	public void defaultsNullToEmptyMap() throws Exception {
-		assertThat(handler.postProcessInvocationResult(null, getTypeDescriptorFor("map"))).isInstanceOf(Map.class);
+		assertThat(handler.postProcessInvocationResult(null, getMethod("map"))).isInstanceOf(Map.class);
 	}
 
 	@Test // DATACMNS-836
@@ -111,7 +110,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Single<Entity> entity = Single.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("publisher"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("publisher"));
 		assertThat(result).isInstanceOf(Publisher.class);
 
 		Mono<Entity> mono = Mono.from((Publisher<Entity>) result);
@@ -124,7 +123,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Single<Entity> entity = Single.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono<Entity> mono = (Mono<Entity>) result;
@@ -137,7 +136,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Single<Entity> entity = Single.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("flux"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("flux"));
 		assertThat(result).isInstanceOf(Flux.class);
 
 		Flux<Entity> flux = (Flux<Entity>) result;
@@ -150,7 +149,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Observable<Entity> entity = Observable.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("publisher"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("publisher"));
 		assertThat(result).isInstanceOf(Publisher.class);
 
 		Mono<Entity> mono = Mono.from((Publisher<Entity>) result);
@@ -163,7 +162,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Observable<Entity> entity = Observable.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono<Entity> mono = (Mono<Entity>) result;
@@ -176,7 +175,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Observable<Entity> entity = Observable.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("flux"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("flux"));
 		assertThat(result).isInstanceOf(Flux.class);
 
 		Flux<Entity> flux = (Flux<Entity>) result;
@@ -189,7 +188,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Observable<Entity> entity = Observable.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("single"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("single"));
 		assertThat(result).isInstanceOf(Single.class);
 
 		Single<Entity> single = (Single<Entity>) result;
@@ -202,7 +201,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Single<Entity> entity = Single.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("observable"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("observable"));
 		assertThat(result).isInstanceOf(Observable.class);
 
 		Observable<Entity> observable = (Observable<Entity>) result;
@@ -215,7 +214,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Mono<Entity> entity = Mono.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("single"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("single"));
 		assertThat(result).isInstanceOf(Single.class);
 
 		Single<Entity> single = (Single<Entity>) result;
@@ -228,7 +227,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Mono<Entity> entity = Mono.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("completable"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("completable"));
 		assertThat(result).isInstanceOf(Completable.class);
 
 		Completable completable = (Completable) result;
@@ -241,7 +240,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Mono<Entity> entity = Mono.error(new InvalidDataAccessApiUsageException("err"));
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("completable"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("completable"));
 		assertThat(result).isInstanceOf(Completable.class);
 
 		Completable completable = (Completable) result;
@@ -254,7 +253,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Completable entity = Completable.complete();
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono mono = (Mono) result;
@@ -267,7 +266,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Completable entity = Completable.error(new InvalidDataAccessApiUsageException("err"));
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono mono = (Mono) result;
@@ -281,7 +280,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Mono<Entity> entity = Mono.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("observable"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("observable"));
 		assertThat(result).isInstanceOf(Observable.class);
 
 		Observable<Entity> observable = (Observable<Entity>) result;
@@ -294,7 +293,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Flux<Entity> entity = Flux.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("single"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("single"));
 		assertThat(result).isInstanceOf(Single.class);
 
 		Single<Entity> single = (Single<Entity>) result;
@@ -307,7 +306,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Flux<Entity> entity = Flux.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("observable"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("observable"));
 		assertThat(result).isInstanceOf(Observable.class);
 
 		Observable<Entity> observable = (Observable<Entity>) result;
@@ -320,7 +319,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Flux<Entity> entity = Flux.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("mono"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono<Entity> mono = (Mono<Entity>) result;
@@ -333,7 +332,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		Mono<Entity> entity = Mono.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getTypeDescriptorFor("flux"));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("flux"));
 		assertThat(result).isInstanceOf(Flux.class);
 
 		Flux<Entity> flux = (Flux<Entity>) result;
@@ -363,12 +362,8 @@ public class QueryExecutionResultHandlerUnitTests {
 				it -> assertThat(it.stream().collect(Collectors.toList())).isEqualTo(source));
 	}
 
-	private static TypeDescriptor getTypeDescriptorFor(String methodName) throws Exception {
-
-		Method method = Sample.class.getMethod(methodName);
-		MethodParameter parameter = new MethodParameter(method, -1);
-
-		return TypeDescriptor.nested(parameter, 0);
+	private static Method getMethod(String methodName) throws Exception {
+		return Sample.class.getMethod(methodName);
 	}
 
 	static interface Sample extends Repository<Entity, Long> {
