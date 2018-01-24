@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.10.RELEASE (2018-01-24)
+-----------------------------------------------
+* DATACMNS-1246 - Investigate optimizing the happy path in QueryExecutorMethodInterceptor.invoke(…).
+* DATACMNS-1242 - Reduce log output in test execution.
+* DATACMNS-1238 - Use Environment specific ClassPathScanningCandidateComponentProvider constructor.
+* DATACMNS-1237 - Projecting form binding does not work with @ModelAttribute.
+* DATACMNS-1229 - Upgrade to XmlBeam 1.4.14.
+* DATACMNS-1227 - Document web projection binding mechanism.
+* DATACMNS-1219 - Release 1.13.10 (Ingalls SR10).
+* DATACMNS-563 - When true setOneIndexedParameters still behaves as false in the links of the json response.
+
+
 Changes in version 2.0.2.RELEASE (2017-11-27)
 ---------------------------------------------
 * DATACMNS-1218 - Upgrade to Vavr 0.9.2.
