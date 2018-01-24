@@ -1,6 +1,22 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.3.RELEASE (2018-01-24)
+---------------------------------------------
+* DATACMNS-1249 - Fix line endings.
+* DATACMNS-1246 - Investigate optimizing the happy path in QueryExecutorMethodInterceptor.invoke(…).
+* DATACMNS-1245 - Consider Kotlin metadata annotation for Kotlin class kind retrieval.
+* DATACMNS-1242 - Reduce log output in test execution.
+* DATACMNS-1238 - Use Environment specific ClassPathScanningCandidateComponentProvider constructor.
+* DATACMNS-1237 - Projecting form binding does not work with @ModelAttribute.
+* DATACMNS-1236 - Inconsistent nullability constraints in PageImpl Javadoc.
+* DATACMNS-1229 - Upgrade to XmlBeam 1.4.14.
+* DATACMNS-1227 - Document web projection binding mechanism.
+* DATACMNS-1224 - Nullable polishing.
+* DATACMNS-1220 - Release 2.0.3 (Kay SR3).
+* DATACMNS-563 - When true setOneIndexedParameters still behaves as false in the links of the json response.
+
+
 Changes in version 1.13.10.RELEASE (2018-01-24)
 -----------------------------------------------
 * DATACMNS-1246 - Investigate optimizing the happy path in QueryExecutorMethodInterceptor.invoke(…).
