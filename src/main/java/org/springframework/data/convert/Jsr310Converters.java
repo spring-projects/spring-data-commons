@@ -26,7 +26,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +44,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Barak Schoster
  * @author Christoph Strobl
+ * @author Jens Schauder
  */
 public abstract class Jsr310Converters {
 
