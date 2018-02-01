@@ -17,8 +17,11 @@ package org.springframework.data.history;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Reference;
@@ -27,8 +30,11 @@ import org.springframework.data.annotation.Reference;
  * Unit tests for {@link AnnotationRevisionMetadata}.
  *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class AnnotationRevisionMetadataUnitTests {
+
+	SoftAssertions softly = new SoftAssertions();
 
 	@Test // DATACMNS-1173
 	public void exposesNoInformationOnEmptyProbe() {
@@ -40,10 +46,14 @@ public class AnnotationRevisionMetadataUnitTests {
 		assertThat(metadata.getRevisionDate()).isEmpty();
 
 		assertThatExceptionOfType(IllegalStateException.class) //
-				.isThrownBy(() -> metadata.getRequiredRevisionNumber());
+				.isThrownBy(metadata::getRequiredRevisionNumber);
 
 		assertThatExceptionOfType(IllegalStateException.class) //
-				.isThrownBy(() -> metadata.getRequiredRevisionDate());
+				.isThrownBy(metadata::getRequiredRevisionDate);
+
+		assertThatExceptionOfType(IllegalStateException.class) //
+				.isThrownBy(metadata::getRequiredRevisionInstant);
+
 	}
 
 	@Test // DATACMNS-1173
@@ -54,23 +64,49 @@ public class AnnotationRevisionMetadataUnitTests {
 
 		RevisionMetadata<Long> metadata = getMetadata(sample);
 
-		assertThat(metadata.getRevisionNumber()).hasValue(1L);
-		assertThat(metadata.getRequiredRevisionNumber()).isEqualTo(1L);
+		softly.assertThat(metadata.getRevisionNumber()).hasValue(1L);
+		softly.assertThat(metadata.getRequiredRevisionNumber()).isEqualTo(1L);
+
+		softly.assertAll();
 	}
 
 	@Test // DATACMNS-1173
-	public void exposesRevisionDate() {
+	public void exposesRevisionDateAndInstantForLocalDateTime() {
 
 		Sample sample = new Sample();
 		sample.revisionDate = LocalDateTime.now();
+		Instant expectedInstant = sample.revisionDate.atZone(ZoneOffset.systemDefault()).toInstant();
 
 		RevisionMetadata<Long> metadata = getMetadata(sample);
 
-		assertThat(metadata.getRevisionDate()).hasValue(sample.revisionDate);
-		assertThat(metadata.getRequiredRevisionDate()).isEqualTo(sample.revisionDate);
+		softly.assertThat(metadata.getRevisionDate()).hasValue(sample.revisionDate);
+		softly.assertThat(metadata.getRequiredRevisionDate()).isEqualTo(sample.revisionDate);
+
+		softly.assertThat(metadata.getRevisionInstant()).hasValue(expectedInstant);
+		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(expectedInstant);
+
+		softly.assertAll();
 	}
 
-	private static RevisionMetadata<Long> getMetadata(Sample sample) {
+	@Test // DATACMNS-1251
+	public void exposesRevisionDateAndInstantForInstant() {
+
+		SampleWithInstant sample = new SampleWithInstant();
+		sample.revisionInstant = Instant.now();
+		LocalDateTime expectedLocalDateTime = LocalDateTime.ofInstant(sample.revisionInstant, ZoneOffset.systemDefault());
+
+		RevisionMetadata<Long> metadata = getMetadata(sample);
+
+		softly.assertThat(metadata.getRevisionDate()).hasValue(expectedLocalDateTime);
+		softly.assertThat(metadata.getRequiredRevisionDate()).isEqualTo(expectedLocalDateTime);
+
+		softly.assertThat(metadata.getRevisionInstant()).hasValue(sample.revisionInstant);
+		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(sample.revisionInstant);
+
+		softly.assertAll();
+	}
+
+	private static RevisionMetadata<Long> getMetadata(Object sample) {
 		return new AnnotationRevisionMetadata<>(sample, Autowired.class, Reference.class);
 	}
 
@@ -78,5 +114,11 @@ public class AnnotationRevisionMetadataUnitTests {
 
 		@Autowired Long revisionNumber;
 		@Reference LocalDateTime revisionDate;
+	}
+
+	static class SampleWithInstant {
+
+		@Autowired Long revisionNumber;
+		@Reference Instant revisionInstant;
 	}
 }

@@ -16,7 +16,10 @@
 package org.springframework.data.history;
 
 import java.lang.annotation.Annotation;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
 import org.springframework.data.util.AnnotationDetectionFieldCallback;
@@ -26,15 +29,17 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * A {@link RevisionMetadata} implementation that inspects the given object for fields with the configured annotations
- * and returns the field's values on calls to {@link #getRevisionDate()} and {@link #getRevisionNumber()}.
+ * and returns the field's values on calls to {@link #getRevisionDate()}, {@link #getRevisionInstant()} and
+ * {@link #getRevisionNumber()}.
  *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implements RevisionMetadata<N> {
 
 	private final Object entity;
 	private final Lazy<Optional<N>> revisionNumber;
-	private final Lazy<Optional<LocalDateTime>> revisionDate;
+	private final Lazy<Optional<TemporalAccessor>> revisionDate;
 
 	/**
 	 * Creates a new {@link AnnotationRevisionMetadata} inspecting the given entity for the given annotations. If no
@@ -68,8 +73,44 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	 * (non-Javadoc)
 	 * @see org.springframework.data.history.RevisionMetadata#getRevisionDate()
 	 */
+	@Deprecated
 	public Optional<LocalDateTime> getRevisionDate() {
-		return revisionDate.get();
+
+		return revisionDate.get().map(this::convertToLocalDateTime);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.history.RevisionMetadata#getRevisionDate()
+	 */
+	public Optional<Instant> getRevisionInstant() {
+		return revisionDate.get().map(this::convertToInstant);
+	}
+
+	private LocalDateTime convertToLocalDateTime(TemporalAccessor temporalAccessor) {
+
+		if (temporalAccessor instanceof LocalDateTime) {
+			return (LocalDateTime) temporalAccessor;
+		}
+
+		if (temporalAccessor instanceof Instant) {
+			return LocalDateTime.ofInstant((Instant) temporalAccessor, ZoneOffset.systemDefault());
+		}
+
+		throw new IllegalArgumentException(String.format("Can't convert %s to LocalDateTime", temporalAccessor));
+	}
+
+	private Instant convertToInstant(TemporalAccessor temporalAccessor) {
+
+		if (temporalAccessor instanceof Instant) {
+			return (Instant) temporalAccessor;
+		}
+
+		if (temporalAccessor instanceof LocalDateTime) {
+			return ((LocalDateTime) temporalAccessor).atZone(ZoneOffset.systemDefault()).toInstant();
+		}
+
+		throw new IllegalArgumentException(String.format("Can't convert %s to LocalDateTime", temporalAccessor));
 	}
 
 	/*

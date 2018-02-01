@@ -15,6 +15,7 @@
  */
 package org.springframework.data.history;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ import java.util.Optional;
  *
  * @author Philipp Huegelmeyer
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public interface RevisionMetadata<N extends Number & Comparable<N>> {
 
@@ -48,17 +50,40 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 	 * Returns the date of the revision.
 	 *
 	 * @return will never be {@literal null}.
+	 * @deprecated use {@link #getRevisionInstant()} instead.
 	 */
+	@Deprecated
 	Optional<LocalDateTime> getRevisionDate();
+
+	/**
+	 * Returns the timestamp of the revision.
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	Optional<Instant> getRevisionInstant();
 
 	/**
 	 * Returns the revision date of the revision, immediately failing on absence.
 	 *
 	 * @return will never be {@literal null}.
-	 * @throw IllegalStateException if no revision date is available.
+	 * @throws IllegalStateException if no revision date is available.
+	 * @deprecated Use {@link #getRevisionInstant()} instead.
 	 */
+	@Deprecated
 	default LocalDateTime getRequiredRevisionDate() {
 		return getRevisionDate().orElseThrow(
+				() -> new IllegalStateException(String.format("No revision date found on %s!", (Object) getDelegate())));
+	}
+
+
+	/**
+	 * Returns the timestamp of the revision, immediately failing on absence.
+	 *
+	 * @return will never be {@literal null}.
+	 * @throws IllegalStateException if no revision date is available.
+	 */
+	default Instant getRequiredRevisionInstant() {
+		return getRevisionInstant().orElseThrow(
 				() -> new IllegalStateException(String.format("No revision date found on %s!", (Object) getDelegate())));
 	}
 
