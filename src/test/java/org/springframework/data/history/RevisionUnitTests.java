@@ -18,6 +18,7 @@ package org.springframework.data.history;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * Unit tests for {@link RevisionMetadata}.
  *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RevisionUnitTests {
@@ -70,6 +72,15 @@ public class RevisionUnitTests {
 		when(firstMetadata.getRevisionDate()).thenReturn(reference);
 
 		assertThat(Revision.of(firstMetadata, new Object()).getRevisionDate()).isEqualTo(reference);
+	}
+
+	@Test // DATACMNS-1251
+	public void returnsRevisionInstant() {
+
+		Optional<Instant> reference = Optional.of(Instant.now());
+		when(firstMetadata.getRevisionInstant()).thenReturn(reference);
+
+		assertThat(Revision.of(firstMetadata, new Object()).getRevisionInstant()).isEqualTo(reference);
 	}
 
 	@Test // DATACMNS-218
