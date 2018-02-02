@@ -116,18 +116,35 @@ class VavrCollections {
 			*/
 			@Nullable
 			@Override
-			public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+			public Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {
+
+				Class<?> targetType = targetDescriptor.getType();
+
+				if (io.vavr.collection.Seq.class.isAssignableFrom(targetType)) {
+					return io.vavr.collection.List.ofAll((Iterable<?>) source);
+				}
+
+				if (io.vavr.collection.Set.class.isAssignableFrom(targetType)) {
+					return LinkedHashSet.ofAll((Iterable<?>) source);
+				}
+
+				if (io.vavr.collection.Map.class.isAssignableFrom(targetType)) {
+					return LinkedHashMap.ofAll((Map<?, ?>) source);
+				}
+
+				// No dedicated type asked for, probably Traversable.
+				// Try to stay as close to the source value.
 
 				if (source instanceof List) {
 					return io.vavr.collection.List.ofAll((Iterable<?>) source);
 				}
 
-				if (source instanceof java.util.Set) {
+				if (source instanceof Set) {
 					return LinkedHashSet.ofAll((Iterable<?>) source);
 				}
 
-				if (source instanceof java.util.Map) {
-					return LinkedHashMap.ofAll((java.util.Map<?, ?>) source);
+				if (source instanceof Map) {
+					return LinkedHashMap.ofAll((Map<?, ?>) source);
 				}
 
 				return source;
