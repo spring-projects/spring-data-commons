@@ -338,4 +338,13 @@ public class QueryExecutionConvertersUnitTests {
 		Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
 		assertThat(allowedPageableTypes).contains(io.vavr.collection.Seq.class);
 	}
+
+	@Test // DATAJPA-1258
+	public void convertsJavaListsToVavrSet() {
+
+		List<String> source = Collections.singletonList("foo");
+
+		assertThat(conversionService.convert(source, io.vavr.collection.Set.class)) //
+				.isInstanceOf(io.vavr.collection.Set.class);
+	}
 }
