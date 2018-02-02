@@ -109,17 +109,34 @@ class JavaslangCollections {
 			* @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 			*/
 			@Override
-			public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+			public Object convert(Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {
+
+				Class<?> targetType = targetDescriptor.getType();
+
+				if (javaslang.collection.Seq.class.isAssignableFrom(targetType)) {
+					return ReflectionUtils.invokeMethod(LIST_FACTORY_METHOD, null, source);
+				}
+
+				if (javaslang.collection.Set.class.isAssignableFrom(targetType)) {
+					return ReflectionUtils.invokeMethod(SET_FACTORY_METHOD, null, source);
+				}
+
+				if (javaslang.collection.Map.class.isAssignableFrom(targetType)) {
+					return ReflectionUtils.invokeMethod(MAP_FACTORY_METHOD, null, source);
+				}
+
+				// No dedicated type asked for, probably Traversable.
+				// Try to stay as close to the source value.
 
 				if (source instanceof List) {
 					return ReflectionUtils.invokeMethod(LIST_FACTORY_METHOD, null, source);
 				}
 
-				if (source instanceof java.util.Set) {
+				if (source instanceof Set) {
 					return ReflectionUtils.invokeMethod(SET_FACTORY_METHOD, null, source);
 				}
 
-				if (source instanceof java.util.Map) {
+				if (source instanceof Map) {
 					return ReflectionUtils.invokeMethod(MAP_FACTORY_METHOD, null, source);
 				}
 

@@ -323,6 +323,24 @@ public class QueryExecutionConvertersUnitTests {
 		assertThat(result, is(vavrOptionNone()));
 	}
 
+	@Test // DATAJPA-1258
+	public void convertsJavaListsToVavrSet() {
+
+		List<String> source = Collections.singletonList("foo");
+
+		assertThat(conversionService.convert(source, io.vavr.collection.Set.class),
+				is(instanceOf(io.vavr.collection.Set.class)));
+	}
+
+	@Test // DATAJPA-1258
+	public void convertsJavaListsToJavaslangSet() {
+
+		List<String> source = Collections.singletonList("foo");
+
+		assertThat(conversionService.convert(source, javaslang.collection.Set.class),
+				is(instanceOf(javaslang.collection.Set.class)));
+	}
+
 	// Vavr
 
 	@SuppressWarnings("unchecked")
