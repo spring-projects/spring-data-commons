@@ -41,7 +41,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		implements RepositoryConfiguration<T> {
 
 	public static final String DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX = "Impl";
-	private static final Key DEFAULT_QUERY_LOOKUP_STRATEGY = Key.CREATE_IF_NOT_FOUND;
+	public static final Key DEFAULT_QUERY_LOOKUP_STRATEGY = Key.CREATE_IF_NOT_FOUND;
 
 	private final @NonNull T configurationSource;
 	private final @NonNull BeanDefinition definition;
