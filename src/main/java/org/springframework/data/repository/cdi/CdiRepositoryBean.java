@@ -44,7 +44,6 @@ import org.springframework.data.repository.config.CustomRepositoryImplementation
 import org.springframework.data.repository.config.DefaultRepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryBeanNameGenerator;
 import org.springframework.data.repository.config.SpringDataAnnotationBeanNameGenerator;
-import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -430,11 +429,5 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		public String getRepositoryImplementationPostfix() {
 			return DefaultRepositoryConfiguration.DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX;
 		}
-
-		@Override
-		public QueryLookupStrategy.Key getQueryLookupStrategy() {
-			return DefaultRepositoryConfiguration.DEFAULT_QUERY_LOOKUP_STRATEGY;
-		}
-
 	}
 }

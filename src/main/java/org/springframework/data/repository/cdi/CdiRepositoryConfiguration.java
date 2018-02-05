@@ -16,12 +16,14 @@
 
 package org.springframework.data.repository.cdi;
 
+import org.springframework.data.repository.config.DefaultRepositoryConfiguration;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 
 /**
  * Interface containing the configurable options for the Spring Data repository subsystem using CDI.
  *
  * @author Mark Paluch
+ * @author Fabian Henniges
  */
 public interface CdiRepositoryConfiguration {
 
@@ -32,12 +34,13 @@ public interface CdiRepositoryConfiguration {
 	 */
 	String getRepositoryImplementationPostfix();
 
-
 	/**
-	 * Return the strategy to lookup queries
+	 * Return the strategy to lookup queries.
 	 *
-	 * @return the lookup strategy to use
+	 * @return the lookup strategy to use.
+	 * @since 2.1
 	 */
-	QueryLookupStrategy.Key getQueryLookupStrategy();
-
+	default QueryLookupStrategy.Key getQueryLookupStrategy() {
+		return DefaultRepositoryConfiguration.DEFAULT_QUERY_LOOKUP_STRATEGY;
+	}
 }
