@@ -41,9 +41,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
-import org.springframework.data.repository.config.DefaultRepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryBeanNameGenerator;
 import org.springframework.data.repository.config.SpringDataAnnotationBeanNameGenerator;
+import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -407,6 +407,34 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 						+ "in order to use custom repository implementations");
 	}
 
+	/**
+	 * Applies the configuration from {@link CdiRepositoryConfiguration} to {@link RepositoryFactorySupport} by looking up
+	 * the actual configuration.
+	 *
+	 * @param repositoryFactory will never be {@literal null}.
+	 * @since 2.1
+	 */
+	protected void applyConfiguration(RepositoryFactorySupport repositoryFactory) {
+		applyConfiguration(repositoryFactory, lookupConfiguration(beanManager, qualifiers));
+	}
+
+	/**
+	 * Applies the configuration from {@link CdiRepositoryConfiguration} to {@link RepositoryFactorySupport} by looking up
+	 * the actual configuration.
+	 *
+	 * @param repositoryFactory will never be {@literal null}.
+	 * @param configuration will never be {@literal null}.
+	 * @since 2.1
+	 */
+	protected static void applyConfiguration(RepositoryFactorySupport repositoryFactory,
+			CdiRepositoryConfiguration configuration) {
+
+		configuration.getEvaluationContextProvider().ifPresent(repositoryFactory::setEvaluationContextProvider);
+		configuration.getNamedQueries().ifPresent(repositoryFactory::setNamedQueries);
+		configuration.getQueryLookupStrategy().ifPresent(repositoryFactory::setQueryLookupStrategyKey);
+		configuration.getRepositoryBeanClass().ifPresent(repositoryFactory::setRepositoryBaseClass);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -417,17 +445,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 				qualifiers.toString());
 	}
 
-	static enum DefaultCdiRepositoryConfiguration implements CdiRepositoryConfiguration {
-
+	enum DefaultCdiRepositoryConfiguration implements CdiRepositoryConfiguration {
 		INSTANCE;
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.cdi.CdiRepositoryConfiguration#getRepositoryImplementationPostfix()
-		 */
-		@Override
-		public String getRepositoryImplementationPostfix() {
-			return DefaultRepositoryConfiguration.DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX;
-		}
 	}
 }

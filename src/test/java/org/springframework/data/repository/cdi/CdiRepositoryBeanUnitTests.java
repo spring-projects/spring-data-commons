@@ -39,11 +39,18 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
+import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
+import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
+import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
 /**
  * Unit tests for {@link CdiRepositoryBean}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CdiRepositoryBeanUnitTests {
@@ -55,6 +62,7 @@ public class CdiRepositoryBeanUnitTests {
 			.singleton((Annotation) new CdiRepositoryExtensionSupport.DefaultAnnotationLiteral());
 
 	@Mock BeanManager beanManager;
+	@Mock RepositoryFactorySupport repositoryFactory;
 
 	@Test(expected = IllegalArgumentException.class)
 	public void voidRejectsNullQualifiers() {
@@ -154,6 +162,25 @@ public class CdiRepositoryBeanUnitTests {
 		);
 	}
 
+	@Test // DATACMNS-1255
+	public void appliesRepositoryConfiguration() {
+
+		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
+				SampleRepository.class, beanManager) {
+			@Override
+			protected CdiRepositoryConfiguration lookupConfiguration(BeanManager beanManager, Set qualifiers) {
+				return RepositoryConfiguration.INSTANCE;
+			}
+		};
+
+		bean.applyConfiguration(repositoryFactory);
+
+		verify(repositoryFactory).setEvaluationContextProvider(DefaultEvaluationContextProvider.INSTANCE);
+		verify(repositoryFactory).setNamedQueries(PropertiesBasedNamedQueries.EMPTY);
+		verify(repositoryFactory).setRepositoryBaseClass(String.class);
+		verify(repositoryFactory).setQueryLookupStrategyKey(Key.CREATE);
+	}
+
 	static class DummyCdiRepositoryBean<T> extends CdiRepositoryBean<T> {
 
 		DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager) {
@@ -168,12 +195,37 @@ public class CdiRepositoryBeanUnitTests {
 	}
 
 	@Named("namedRepository")
-	static interface SampleRepository extends Repository<Object, Serializable> {
+	interface SampleRepository extends Repository<Object, Serializable> {
 
 	}
 
 	@StereotypeAnnotation
-	static interface StereotypedSampleRepository {
+	interface StereotypedSampleRepository {
 
+	}
+
+	enum RepositoryConfiguration implements CdiRepositoryConfiguration {
+
+		INSTANCE;
+
+		@Override
+		public Optional<EvaluationContextProvider> getEvaluationContextProvider() {
+			return Optional.of(DefaultEvaluationContextProvider.INSTANCE);
+		}
+
+		@Override
+		public Optional<NamedQueries> getNamedQueries() {
+			return Optional.of(PropertiesBasedNamedQueries.EMPTY);
+		}
+
+		@Override
+		public Optional<Key> getQueryLookupStrategy() {
+			return Optional.of(Key.CREATE);
+		}
+
+		@Override
+		public Optional<Class<?>> getRepositoryBeanClass() {
+			return Optional.of(String.class);
+		}
 	}
 }
