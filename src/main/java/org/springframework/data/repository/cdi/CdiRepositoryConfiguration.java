@@ -16,7 +16,10 @@
 
 package org.springframework.data.repository.cdi;
 
-import org.springframework.data.repository.config.DefaultRepositoryConfiguration;
+import java.util.Optional;
+
+import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 
 /**
@@ -28,19 +31,52 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 public interface CdiRepositoryConfiguration {
 
 	/**
+	 * Return the {@link EvaluationContextProvider} to use. Can be {@link Optional#empty()} .
+	 *
+	 * @return the optional {@link EvaluationContextProvider} base to use, can be {@link Optional#empty()}, must not be
+	 *         {@literal null}.
+	 * @since 2.1
+	 */
+	default Optional<EvaluationContextProvider> getEvaluationContextProvider() {
+		return Optional.empty();
+	}
+
+	/**
+	 * Return the {@link NamedQueries} to use. Can be {@link Optional#empty()}.
+	 *
+	 * @return the optional named queries to use, can be {@link Optional#empty()}, must not be {@literal null}.
+	 * @since 2.1
+	 */
+	default Optional<NamedQueries> getNamedQueries() {
+		return Optional.empty();
+	}
+
+	/**
+	 * Return the {@link QueryLookupStrategy.Key} to lookup queries. Can be {@link Optional#empty()}.
+	 *
+	 * @return the lookup strategy to use, can be {@link Optional#empty()}, must not be {@literal null}.
+	 * @since 2.1
+	 */
+	default Optional<QueryLookupStrategy.Key> getQueryLookupStrategy() {
+		return Optional.empty();
+	}
+
+	/**
+	 * Return the {@link Class repository base class} to use. Can be {@link Optional#empty()} .
+	 *
+	 * @return the optional repository base to use, can be {@link Optional#empty()}, must not be {@literal null}.
+	 * @since 2.1
+	 */
+	default Optional<Class<?>> getRepositoryBeanClass() {
+		return Optional.empty();
+	}
+
+	/**
 	 * Returns the configured postfix to be used for looking up custom implementation classes.
 	 *
 	 * @return the postfix to use, must not be {@literal null}.
 	 */
-	String getRepositoryImplementationPostfix();
-
-	/**
-	 * Return the strategy to lookup queries.
-	 *
-	 * @return the lookup strategy to use.
-	 * @since 2.1
-	 */
-	default QueryLookupStrategy.Key getQueryLookupStrategy() {
-		return DefaultRepositoryConfiguration.DEFAULT_QUERY_LOOKUP_STRATEGY;
+	default String getRepositoryImplementationPostfix() {
+		return "Impl";
 	}
 }
