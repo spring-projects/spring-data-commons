@@ -36,12 +36,6 @@ import javax.inject.Qualifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.StandardEnvironment;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
@@ -61,16 +55,10 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 	private final Map<Class<?>, Set<Annotation>> repositoryTypes = new HashMap<>();
 	private final Set<CdiRepositoryBean<?>> eagerRepositories = new HashSet<>();
-	private final CustomRepositoryImplementationDetector customImplementationDetector;
+	private final CdiRepositoryContext context;
 
 	protected CdiRepositoryExtensionSupport() {
-
-		Environment environment = new StandardEnvironment();
-		ResourceLoader resourceLoader = new PathMatchingResourcePatternResolver(getClass().getClassLoader());
-		MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
-
-		this.customImplementationDetector = new CustomRepositoryImplementationDetector(metadataReaderFactory, environment,
-				resourceLoader);
+		context = new CdiRepositoryContext(getClass().getClassLoader());
 	}
 
 	/**
@@ -91,8 +79,8 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 			Set<Annotation> qualifiers = getQualifiers(repositoryType);
 
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(String.format("Discovered repository type '%s' with qualifiers %s.", repositoryType.getName(),
-						qualifiers));
+				LOGGER.debug(
+						String.format("Discovered repository type '%s' with qualifiers %s.", repositoryType.getName(), qualifiers));
 			}
 			// Store the repository type using its qualifiers.
 			repositoryTypes.put(repositoryType, qualifiers);
@@ -184,7 +172,15 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	 * @return the {@link CustomRepositoryImplementationDetector} to scan for the custom implementation
 	 */
 	protected CustomRepositoryImplementationDetector getCustomImplementationDetector() {
-		return customImplementationDetector;
+		return context.getCustomRepositoryImplementationDetector();
+	}
+
+	/**
+	 * @return the {@link CdiRepositoryContext} encapsulating the CDI-specific class loaders and fragment scanning.
+	 * @since 2.1
+	 */
+	protected CdiRepositoryContext getRepositoryContext() {
+		return context;
 	}
 
 	@SuppressWarnings("all")

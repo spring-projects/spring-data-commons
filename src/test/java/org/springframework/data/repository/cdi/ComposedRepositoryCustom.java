@@ -18,10 +18,12 @@ package org.springframework.data.repository.cdi;
 /**
  * @author Mark Paluch
  */
-class AnotherRepositoryImpl implements AnotherRepositoryCustom {
+public interface ComposedRepositoryCustom {
 
-	@Override
-	public int returnZero() {
-		return 0;
-	}
+	int returnFourtyTwo();
+
+	// duplicate method shadowed by AnotherFragmentInterfaceImpl. The legacy custom implementation comes last, after all
+	// other
+	// fragments.
+	int getShadowed();
 }

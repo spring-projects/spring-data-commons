@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.cdi;
+package org.springframework.data.repository.cdi.isolated;
+
+import org.springframework.data.repository.cdi.CdiRepositoryConfiguration;
 
 /**
  * @author Mark Paluch
  */
-class AnotherRepositoryImpl implements AnotherRepositoryCustom {
+public class MyCdiConfiguration implements CdiRepositoryConfiguration {
 
 	@Override
-	public int returnZero() {
-		return 0;
+	public String getRepositoryImplementationPostfix() {
+		return "Foo";
 	}
 }

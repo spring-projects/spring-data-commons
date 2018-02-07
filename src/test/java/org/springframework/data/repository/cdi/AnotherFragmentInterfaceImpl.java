@@ -18,10 +18,15 @@ package org.springframework.data.repository.cdi;
 /**
  * @author Mark Paluch
  */
-class AnotherRepositoryImpl implements AnotherRepositoryCustom {
+class AnotherFragmentInterfaceImpl implements AnotherFragmentInterface {
 
 	@Override
-	public int returnZero() {
-		return 0;
+	public int getPriority() {
+		return 2;
+	}
+
+	@Override
+	public int getShadowed() {
+		return 2;
 	}
 }

@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.cdi;
+package org.springframework.data.repository.cdi.isolated;
 
 /**
  * @author Mark Paluch
  */
-class AnotherRepositoryImpl implements AnotherRepositoryCustom {
+public interface FragmentInterface {
 
-	@Override
-	public int returnZero() {
-		return 0;
-	}
+	int getPriority();
 }

@@ -155,14 +155,14 @@ public class CdiRepositoryBeanUnitTests {
 
 		verify(detector).detectCustomImplementation( //
 				eq("CdiRepositoryBeanUnitTests.SampleRepositoryImpl"), //
-				eq("namedRepositoryImpl"), //
+				eq("CdiRepositoryBeanUnitTests.SampleRepositoryImpl"), //
 				anySet(), //
 				anySet(), //
 				Mockito.any(Function.class) //
 		);
 	}
 
-	@Test // DATACMNS-1255
+	@Test // DATACMNS-1233
 	public void appliesRepositoryConfiguration() {
 
 		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
