@@ -15,13 +15,17 @@
  */
 package org.springframework.data.repository.cdi;
 
+import java.io.Serializable;
+
+import org.springframework.data.repository.Repository;
+
 /**
  * @author Mark Paluch
  */
-class AnotherRepositoryImpl implements AnotherRepositoryCustom {
+public interface ComposedRepository
+		extends Repository<Object, Serializable>, FragmentInterface, AnotherFragmentInterface {
 
-	@Override
-	public int returnZero() {
-		return 0;
-	}
+	// duplicate method shadowed by AnotherFragmentInterfaceImpl. The legacy custom implementation comes last, after all
+	// other fragments.
+	int getShadowed();
 }

@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.cdi;
+package org.springframework.data.repository.cdi.isolated;
+
+import java.io.Serializable;
+
+import org.springframework.data.repository.Repository;
 
 /**
  * @author Mark Paluch
  */
-class AnotherRepositoryImpl implements AnotherRepositoryCustom {
-
-	@Override
-	public int returnZero() {
-		return 0;
-	}
-}
+public interface IsolatedComposedRepository extends Repository<Object, Serializable>, FragmentInterface {}

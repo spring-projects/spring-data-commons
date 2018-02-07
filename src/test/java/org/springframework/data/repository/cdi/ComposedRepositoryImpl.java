@@ -18,10 +18,15 @@ package org.springframework.data.repository.cdi;
 /**
  * @author Mark Paluch
  */
-class AnotherRepositoryImpl implements AnotherRepositoryCustom {
+class ComposedRepositoryImpl implements ComposedRepositoryCustom {
 
 	@Override
-	public int returnZero() {
-		return 0;
+	public int returnFourtyTwo() {
+		return 42;
+	}
+
+	@Override
+	public int getShadowed() {
+		return 1;
 	}
 }

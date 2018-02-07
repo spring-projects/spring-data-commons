@@ -24,16 +24,15 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.NormalScope;
-import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.apache.webbeans.context.AbstractContext;
-import org.apache.webbeans.context.creational.BeanInstanceBag;
 import org.mockito.Mockito;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
+import org.springframework.data.repository.core.support.DummyRepositoryFactory;
 
 /**
  * Dummy extension of {@link CdiRepositoryExtensionSupport} to allow integration tests. Will create mocks for repository
@@ -74,9 +73,12 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		}
 
 		@Override
-		protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
-				Optional<Object> customImplementation) {
-			return Mockito.mock(repositoryType);
+		protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
+
+			T mock = Mockito.mock(repositoryType);
+			DummyRepositoryFactory repositoryFactory = new DummyRepositoryFactory(mock);
+
+			return create(repositoryFactory, repositoryType, getRepositoryFragments(repositoryType));
 		}
 	}
 
