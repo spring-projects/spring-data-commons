@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Field;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
@@ -42,6 +43,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @since 1.5
  */
 class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory {
@@ -207,8 +209,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 				return conversionService.convert(date, targetType);
 			}
 
-			throw new IllegalArgumentException(String.format("Invalid date type for member %s! Supported types are %s.",
-					source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
+			throw new IllegalArgumentException(createUnsupportedTypeErrorMessage(source));
 		}
 
 		/**
@@ -228,17 +229,22 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 					return (T) it;
 				}
 
-				Class<?> typeToConvertTo = Stream.of(target, LocalDateTime.class)//
+				Class<?> typeToConvertTo = Stream.of(target, Instant.class)//
 						.filter(type -> target.isAssignableFrom(type))//
 						.filter(type -> conversionService.canConvert(it.getClass(), type))//
 						.findFirst()
 						.orElseThrow(() -> new IllegalArgumentException(
-								String.format("Invalid date type for member %s! Supported types are %s.", source,
-										AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES)));
+								createUnsupportedTypeErrorMessage(((Optional<Object>)source).orElseGet(() -> source))));
 
 				return (T) conversionService.convert(it, typeToConvertTo);
 			});
 		}
+	}
+
+	private static String createUnsupportedTypeErrorMessage(Object source) {
+
+		return String.format("Invalid date type %s for member %s! Supported types are %s.", source.getClass(), source,
+				AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES);
 	}
 
 	/**

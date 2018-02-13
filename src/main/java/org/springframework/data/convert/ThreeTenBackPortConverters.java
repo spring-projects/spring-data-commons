@@ -36,6 +36,7 @@ import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.LocalTime;
 import org.threeten.bp.ZoneId;
+import org.threeten.bp.ZoneOffset;
 
 /**
  * Helper class to register {@link Converter} implementations for the ThreeTen Backport project in case it's present on
@@ -43,6 +44,7 @@ import org.threeten.bp.ZoneId;
  * 
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @see <a href="http://www.threeten.org/threetenbp">http://www.threeten.org/threetenbp</a>
  * @since 1.10
  */
@@ -74,6 +76,8 @@ public abstract class ThreeTenBackPortConverters {
 		converters.add(ZoneIdToStringConverter.INSTANCE);
 		converters.add(StringToZoneIdConverter.INSTANCE);
 		converters.add(LocalDateTimeToJsr310LocalDateTimeConverter.INSTANCE);
+		converters.add(LocalDateTimeToJavaTimeInstantConverter.INSTANCE);
+		converters.add(JavaTimeInstantToLocalDateTimeConverter.INSTANCE);
 
 		return converters;
 	}
@@ -84,7 +88,7 @@ public abstract class ThreeTenBackPortConverters {
 			return false;
 		}
 
-		return Arrays.<Class<?>> asList(LocalDateTime.class, LocalDate.class, LocalTime.class, Instant.class)
+		return Arrays.<Class<?>> asList(LocalDateTime.class, LocalDate.class, LocalTime.class, Instant.class, java.time.Instant.class)
 				.contains(type);
 	}
 
@@ -192,6 +196,28 @@ public abstract class ThreeTenBackPortConverters {
 		@Override
 		public Date convert(Instant source) {
 			return toDate(source.atZone(systemDefault()).toInstant());
+		}
+	}
+
+	public static enum LocalDateTimeToJavaTimeInstantConverter implements Converter<LocalDateTime, java.time.Instant> {
+
+		INSTANCE;
+
+		@Nonnull
+		@Override
+		public java.time.Instant convert(LocalDateTime source) {
+			return java.time.Instant.ofEpochMilli(source.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli());
+		}
+	}
+
+	public static enum JavaTimeInstantToLocalDateTimeConverter implements Converter<java.time.Instant, LocalDateTime> {
+
+		INSTANCE;
+
+		@Nonnull
+		@Override
+		public LocalDateTime convert(java.time.Instant source) {
+			return LocalDateTime.ofInstant(Instant.ofEpochMilli(source.toEpochMilli()), ZoneOffset.systemDefault());
 		}
 	}
 
