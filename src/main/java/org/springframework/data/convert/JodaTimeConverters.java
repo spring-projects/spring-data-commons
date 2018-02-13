@@ -15,16 +15,19 @@
  */
 package org.springframework.data.convert;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.annotation.Nonnull;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.springframework.core.convert.converter.Converter;
@@ -65,6 +68,9 @@ public abstract class JodaTimeConverters {
 		converters.add(LocalDateTimeToJodaLocalDateTime.INSTANCE);
 		converters.add(LocalDateTimeToJodaDateTime.INSTANCE);
 
+		converters.add(InstantToJodaLocalDateTime.INSTANCE);
+		converters.add(JodaLocalDateTimeToInstant.INSTANCE);
+
 		converters.add(LocalDateTimeToJsr310Converter.INSTANCE);
 
 		return converters;
@@ -77,7 +83,7 @@ public abstract class JodaTimeConverters {
 		@Nonnull
 		@Override
 		public java.time.LocalDateTime convert(LocalDateTime source) {
-			return java.time.LocalDateTime.ofInstant(source.toDate().toInstant(), ZoneId.of("UTC"));
+			return java.time.LocalDateTime.ofInstant(source.toDate().toInstant(), ZoneId.systemDefault());
 		}
 	}
 
@@ -155,6 +161,28 @@ public abstract class JodaTimeConverters {
 		@Override
 		public LocalDateTime convert(java.time.LocalDateTime source) {
 			return LocalDateTime.fromDateFields(Jsr310Converters.LocalDateTimeToDateConverter.INSTANCE.convert(source));
+		}
+	}
+
+	public enum InstantToJodaLocalDateTime implements Converter<java.time.Instant, LocalDateTime> {
+
+		INSTANCE;
+
+		@Nonnull
+		@Override
+		public LocalDateTime convert(java.time.Instant source) {
+			return LocalDateTime.fromDateFields(new Date(source.toEpochMilli()));
+		}
+	}
+
+	public enum JodaLocalDateTimeToInstant implements Converter<LocalDateTime, Instant> {
+
+		INSTANCE;
+
+		@Nonnull
+		@Override
+		public Instant convert(LocalDateTime source) {
+			return Instant.ofEpochMilli(source.toDateTime().getMillis());
 		}
 	}
 

@@ -18,18 +18,27 @@ package org.springframework.data.auditing;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalField;
 import java.util.Optional;
 
 import org.junit.Test;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper;
 import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.ReflectionAuditingBeanWrapper;
+import org.springframework.data.domain.Auditable;
 
 /**
  * Unit tests for {@link DefaultAuditableBeanWrapperFactory}.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @since 1.5
  */
 public class DefaultAuditableBeanWrapperFactoryUnitTests {
@@ -87,5 +96,71 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(user);
 
 		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(zonedDateTime));
+	}
+
+	@Test // DATACMNS-1259
+	public void lastModifiedDateAsLongIsAvailableViaWrapper() {
+
+		LongBasedAuditable source = new LongBasedAuditable();
+		source.dateModified = 42000L;
+
+		Optional<AuditableBeanWrapper> beanWrapper = factory.getBeanWrapperFor(source);
+		assertThat(beanWrapper).isPresent();
+
+		assertThat(beanWrapper.flatMap(AuditableBeanWrapper::getLastModifiedDate).get()) //
+				.extracting(ta -> ta.getLong(ChronoField.INSTANT_SECONDS)) //
+				.containsExactly(42L);
+	}
+
+
+	@Test // DATACMNS-1259
+	public void canSetLastModifiedDateAsInstantViaWrapperOnLongField() {
+
+		LongBasedAuditable source = new LongBasedAuditable();
+
+		Optional<AuditableBeanWrapper> beanWrapper = factory.getBeanWrapperFor(source);
+		assertThat(beanWrapper).isPresent();
+
+		beanWrapper.get().setLastModifiedDate(Instant.ofEpochMilli(42L));
+
+		assertThat(source.dateModified).isEqualTo(42L);
+	}
+
+	@Test // DATACMNS-1259
+	public void canSetLastModifiedDateAsLocalDateTimeViaWrapperOnLongField() {
+
+		LongBasedAuditable source = new LongBasedAuditable();
+
+		Optional<AuditableBeanWrapper> beanWrapper = factory.getBeanWrapperFor(source);
+		assertThat(beanWrapper).isPresent();
+
+		beanWrapper.get().setLastModifiedDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(42L), ZoneOffset.systemDefault()));
+
+		assertThat(source.dateModified).isEqualTo(42L);
+	}
+
+
+	@Test // DATACMNS-1259
+	public void lastModifiedAsLocalDateTimeDateIsAvailableViaWrapperAsLocalDateTime() {
+
+		LocalDateTime now = LocalDateTime.now();
+
+		AuditedUser source = new AuditedUser();
+		source.setLastModifiedDate(now);
+
+		Optional<AuditableBeanWrapper> beanWrapper = factory.getBeanWrapperFor(source);
+		assertThat(beanWrapper).isPresent();
+
+		assertThat(beanWrapper.flatMap(AuditableBeanWrapper::getLastModifiedDate).get()) //
+				.isEqualTo(now);
+	}
+
+	public static class LongBasedAuditable {
+
+		@CreatedDate
+		public Long dateCreated;
+
+		@LastModifiedDate
+		public Long dateModified;
 	}
 }
