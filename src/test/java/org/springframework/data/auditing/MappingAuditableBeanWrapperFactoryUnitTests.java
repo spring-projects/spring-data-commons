@@ -20,6 +20,8 @@ import static org.mockito.Mockito.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Collections;
@@ -27,6 +29,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Optional;
 
+import org.assertj.core.api.AbstractLongAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.CreatedBy;
@@ -45,6 +48,7 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  * Unit tests for {@link MappingAuditableBeanWrapperFactory}.
  *
  * @author Oliver Gierke
+ * @author Jens Schauder
  * @since 1.8
  */
 public class MappingAuditableBeanWrapperFactoryUnitTests {
@@ -159,7 +163,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 				ThreeTenBackPortConverters.LocalDateTimeToJsr310LocalDateTimeConverter.INSTANCE.convert(reference));
 	}
 
-	@Test
+	@Test // DATACMNS-1109
 	public void exposesInstantAsModificationDate() {
 
 		SampleWithInstant sample = new SampleWithInstant();
@@ -169,6 +173,14 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		assertThat(wrapper.flatMap(it -> it.getLastModifiedDate())).hasValue(sample.modified);
 	}
 
+	@Test // DATACMNS-1259
+	public void exposesLongAsModificationDate() {
+
+		Long reference = new Date().getTime();
+
+		assertLastModificationDate(reference, Instant.ofEpochMilli(reference));
+	}
+
 	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
 
 		Sample sample = new Sample();
@@ -176,7 +188,27 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
 
-		assertThat(wrapper.flatMap(it -> it.getLastModifiedDate())).hasValue(expected);
+		assertThat(wrapper.flatMap(it -> it.getLastModifiedDate())).hasValueSatisfying(ta -> {
+			compareTemporalAccessors(expected, ta);
+		});
+	}
+
+	private AbstractLongAssert<?> compareTemporalAccessors(TemporalAccessor expected, TemporalAccessor actual) {
+
+		long actualSeconds = getInstantSeconds(actual);
+		long expectedSeconds = getInstantSeconds(expected);
+
+		return assertThat(actualSeconds).describedAs("Difference is %s", actualSeconds - expectedSeconds)
+				.isEqualTo(expectedSeconds);
+	}
+
+	private long getInstantSeconds(TemporalAccessor actual) {
+
+		if (actual instanceof LocalDateTime) {
+			return getInstantSeconds(((LocalDateTime) actual).atZone(ZoneOffset.systemDefault()));
+		}
+
+		return actual.getLong(ChronoField.INSTANT_SECONDS);
 	}
 
 	static class Sample {
