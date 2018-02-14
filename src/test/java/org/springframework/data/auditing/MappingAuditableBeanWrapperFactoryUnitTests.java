@@ -163,7 +163,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 				ThreeTenBackPortConverters.LocalDateTimeToJsr310LocalDateTimeConverter.INSTANCE.convert(reference));
 	}
 
-	@Test
+	@Test // DATACMNS-1109
 	public void exposesInstantAsModificationDate() {
 
 		SampleWithInstant sample = new SampleWithInstant();
