@@ -13,32 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.query;
+package org.springframework.data.spel;
 
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.util.ObjectUtils;
 
 /**
- * Default implementation of {@link EvaluationContextProvider} that always creates a new {@link EvaluationContext}.
+ * Provides a way to access a centrally defined potentially shared {@link StandardEvaluationContext}.
  *
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Christoph Strobl
- * @since 1.9
+ * @since 2.1
  */
-public enum DefaultEvaluationContextProvider implements EvaluationContextProvider {
+public interface EvaluationContextProvider {
 
-	INSTANCE;
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.EvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[])
+	/**
+	 * A simple default {@link EvaluationContextProvider} returning a {@link StandardEvaluationContext} with the given
+	 * root object.
 	 */
-	@Override
-	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
+	static EvaluationContextProvider DEFAULT = rootObject -> rootObject == null //
+			? new StandardEvaluationContext() //
+			: new StandardEvaluationContext(rootObject);
 
-		return ObjectUtils.isEmpty(parameterValues) ? new StandardEvaluationContext() : new StandardEvaluationContext(
-				parameterValues);
-	}
+	/**
+	 * Returns an {@link EvaluationContext} built using the given parameter values.
+	 *
+	 * @param rootObject the root object to set in the {@link EvaluationContext}.
+	 * @return
+	 */
+	EvaluationContext getEvaluationContext(Object rootObject);
 }

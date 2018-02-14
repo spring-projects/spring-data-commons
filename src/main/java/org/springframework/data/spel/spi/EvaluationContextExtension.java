@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.query.spi;
+package org.springframework.data.spel.spi;
 
 import java.util.Collections;
 import java.util.Map;
@@ -29,9 +29,7 @@ import org.springframework.lang.Nullable;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @since 1.9
- * @deprecated since 2.1. Switch to same types in {@code org.springframework.data.spel.spi}.
  */
-@Deprecated
 public interface EvaluationContextExtension {
 
 	/**

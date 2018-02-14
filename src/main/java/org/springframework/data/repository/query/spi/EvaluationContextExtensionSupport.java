@@ -26,7 +26,9 @@ import org.springframework.lang.Nullable;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @see 1.9
+ * @deprecated since 2.1. Implement {@link EvaluationContextExtension} directly.
  */
+@Deprecated
 public abstract class EvaluationContextExtensionSupport implements EvaluationContextExtension {
 
 	/*

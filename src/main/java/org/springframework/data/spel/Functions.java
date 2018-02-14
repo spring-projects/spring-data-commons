@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.query;
+package org.springframework.data.spel;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.repository.query.spi.Function;
+import org.springframework.data.spel.spi.Function;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -39,7 +39,7 @@ import org.springframework.util.MultiValueMap;
  *
  * @author Jens Schauder
  * @author Oliver Gierke
- * @since 2.0
+ * @since 2.1
  */
 class Functions {
 

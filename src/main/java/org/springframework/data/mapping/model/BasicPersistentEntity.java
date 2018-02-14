@@ -47,8 +47,10 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
+import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -84,6 +86,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private @Nullable P idProperty;
 	private @Nullable P versionProperty;
 	private PersistentPropertyAccessorFactory propertyAccessorFactory;
+	private EvaluationContextProvider evaluationContextProvider = EvaluationContextProvider.DEFAULT;
 
 	private final Lazy<Alias> typeAlias;
 
@@ -238,6 +241,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 			this.versionProperty = property;
 		}
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.MutablePersistentEntity#setEvaluationContextProvider(org.springframework.data.spel.EvaluationContextProvider)
+	 */
+	@Override
+	public void setEvaluationContextProvider(EvaluationContextProvider provider) {
+		this.evaluationContextProvider = provider;
 	}
 
 	/**
@@ -464,9 +476,17 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : new AbsentIdentifierAccessor(bean);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
 	@Override
 	public Iterator<P> iterator() {
 		return Collections.unmodifiableList(properties).iterator();
+	}
+
+	protected EvaluationContext getEvaluationContext(Object rootObject) {
+		return evaluationContextProvider.getEvaluationContext(rootObject);
 	}
 
 	/**

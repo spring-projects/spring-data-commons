@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.MappingException;
@@ -50,6 +52,8 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
 import org.springframework.data.mapping.model.PersistentPropertyAccessorFactory;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.spel.EvaluationContextProvider;
+import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Streamable;
@@ -79,7 +83,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Christoph Strobl
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
-		implements MappingContext<E, P>, ApplicationEventPublisherAware, InitializingBean {
+		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, InitializingBean {
 
 	private final Optional<E> NONE = Optional.empty();
 	private final Map<TypeInformation<?>, Optional<E>> persistentEntities = new HashMap<>();
@@ -87,6 +91,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private final PersistentPropertyPathFactory<E, P> persistentPropertyPathFactory;
 
 	private @Nullable ApplicationEventPublisher applicationEventPublisher;
+	private EvaluationContextProvider evaluationContextProvider = EvaluationContextProvider.DEFAULT;
 
 	private Set<? extends Class<?>> initialEntitySet = new HashSet<>();
 	private boolean strict = false;
@@ -107,6 +112,20 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.applicationEventPublisher = applicationEventPublisher;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 */
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
+		this.evaluationContextProvider = new ExtensionAwareEvaluationContextProvider(applicationContext);
+
+		if (applicationEventPublisher == null) {
+			this.applicationEventPublisher = applicationContext;
+		}
 	}
 
 	/**
@@ -345,6 +364,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			write.lock();
 
 			entity = createPersistentEntity(typeInformation);
+
+			entity.setEvaluationContextProvider(evaluationContextProvider);
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
 			persistentEntities.put(typeInformation, Optional.of(entity));

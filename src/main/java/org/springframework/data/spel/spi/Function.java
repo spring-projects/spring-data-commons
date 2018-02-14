@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.query.spi;
+package org.springframework.data.spel.spi;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -33,9 +33,7 @@ import org.springframework.util.TypeUtils;
  * @author Oliver Gierke
  * @author Jens Schauder
  * @since 1.9
- * @deprecated since 2.1. Switch to same types in {@code org.springframework.data.spel.spi}.
  */
-@Deprecated
 public class Function {
 
 	private final Method method;
@@ -67,15 +65,6 @@ public class Function {
 
 		this.method = method;
 		this.target = target;
-	}
-
-	/**
-	 * Helper method to create a {@link org.springframework.data.spel.spi.Function} from the legacy instance.
-	 * 
-	 * @return will never be {@literal null}.
-	 */
-	public org.springframework.data.spel.spi.Function toNewFunction() {
-		return new org.springframework.data.spel.spi.Function(method, target);
 	}
 
 	/**
@@ -163,10 +152,10 @@ public class Function {
 	}
 
 	/**
-	 * Checks wether this {@code Function} has the same signature as another {@code Function}.
+	 * Checks whether this {@code Function} has the same signature as another {@code Function}.
 	 *
 	 * @param other the {@code Function} to compare {@code this} with.
-	 * @return {@code true} iff name and argument list are the same.
+	 * @return {@code true} if name and argument list are the same.
 	 */
 	public boolean isSignatureEqual(Function other) {
 

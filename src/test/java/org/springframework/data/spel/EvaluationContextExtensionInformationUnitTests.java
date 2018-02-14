@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.query;
+package org.springframework.data.spel;
 
 import java.util.Optional;
 
 import org.junit.Test;
-import org.springframework.data.repository.query.spi.EvaluationContextExtension;
+import org.springframework.data.spel.spi.EvaluationContextExtension;
 
 /**
  * Unit tests for {@link EvaluationContextExtensionInformation}.

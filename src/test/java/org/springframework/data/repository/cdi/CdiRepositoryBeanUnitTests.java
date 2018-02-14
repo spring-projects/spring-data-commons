@@ -16,6 +16,7 @@
 package org.springframework.data.repository.cdi;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -42,9 +43,8 @@ import org.springframework.data.repository.config.CustomRepositoryImplementation
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
-import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 
 /**
  * Unit tests for {@link CdiRepositoryBean}.
@@ -175,7 +175,7 @@ public class CdiRepositoryBeanUnitTests {
 
 		bean.applyConfiguration(repositoryFactory);
 
-		verify(repositoryFactory).setEvaluationContextProvider(DefaultEvaluationContextProvider.INSTANCE);
+		verify(repositoryFactory).setEvaluationContextProvider(QueryMethodEvaluationContextProvider.DEFAULT);
 		verify(repositoryFactory).setNamedQueries(PropertiesBasedNamedQueries.EMPTY);
 		verify(repositoryFactory).setRepositoryBaseClass(String.class);
 		verify(repositoryFactory).setQueryLookupStrategyKey(Key.CREATE);
@@ -209,8 +209,8 @@ public class CdiRepositoryBeanUnitTests {
 		INSTANCE;
 
 		@Override
-		public Optional<EvaluationContextProvider> getEvaluationContextProvider() {
-			return Optional.of(DefaultEvaluationContextProvider.INSTANCE);
+		public Optional<QueryMethodEvaluationContextProvider> getEvaluationContextProvider() {
+			return Optional.of(QueryMethodEvaluationContextProvider.DEFAULT);
 		}
 
 		@Override

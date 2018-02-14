@@ -35,14 +35,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.repository.query.spi.EvaluationContextExtension;
-import org.springframework.data.repository.query.spi.EvaluationContextExtensionSupport;
-import org.springframework.data.repository.query.spi.Function;
+import org.springframework.data.spel.spi.EvaluationContextExtension;
+import org.springframework.data.spel.spi.Function;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
- * Unit tests {@link ExtensionAwareEvaluationContextProvider}.
+ * Unit tests {@link ExtensionAwareQueryMethodEvaluationContextProvider}.
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
@@ -51,19 +50,19 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 public class ExtensionAwareEvaluationContextProviderUnitTests {
 
 	Method method;
-	EvaluationContextProvider provider;
+	QueryMethodEvaluationContextProvider provider;
 
 	@Before
 	public void setUp() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class);
-		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.emptyList());
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(Collections.emptyList());
 	}
 
 	@Test // DATACMNS-533
 	public void usesPropertyDefinedByExtension() {
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(
 				Collections.singletonList(new DummyExtension("_first", "first")));
 
 		assertThat(evaluateExpression("key")).isEqualTo("first");
@@ -76,7 +75,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		extensions.add(new DummyExtension("_first", "first"));
 		extensions.add(new DummyExtension("_second", "second"));
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(extensions);
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(extensions);
 
 		assertThat(evaluateExpression("key")).isEqualTo("second");
 	}
@@ -88,7 +87,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		extensions.add(new DummyExtension("_first", "first"));
 		extensions.add(new DummyExtension("_second", "second"));
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(extensions);
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(extensions);
 		assertThat(evaluateExpression("_first.key")).isEqualTo("first");
 	}
 
@@ -100,7 +99,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-533
 	public void exposesMethodDefinedByExtension() {
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(
 				Collections.singletonList(new DummyExtension("_first", "first")));
 
 		assertThat(evaluateExpression("aliasedMethod()")).isEqualTo("methodResult");
@@ -112,7 +111,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-533
 	public void exposesPropertiesDefinedByExtension() {
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(
 				Collections.singletonList(new DummyExtension("_first", "first")));
 
 		assertThat(evaluateExpression("DUMMY_KEY")).isEqualTo("dummy");
@@ -151,7 +150,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-533
 	public void shouldBeAbleToAccessCustomRootObjectPropertiesAndFunctions() {
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList( //
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(Collections.singletonList( //
 				new DummyExtension("_first", "first") {
 					@Override
 					public CustomExtensionRootObject1 getRootObject() {
@@ -173,7 +172,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-533
 	public void shouldBeAbleToAccessCustomRootObjectPropertiesAndFunctionsInMultipleExtensions() {
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(Arrays.asList( //
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(Arrays.asList( //
 				new DummyExtension("_first", "first") {
 					@Override
 					public CustomExtensionRootObject1 getRootObject() {
@@ -201,7 +200,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 
 		final AtomicInteger counter = new AtomicInteger();
 
-		this.provider = new ExtensionAwareEvaluationContextProvider(Collections.singletonList( //
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(Collections.singletonList( //
 				new DummyExtension("_first", "first") {
 
 					@Override
@@ -272,9 +271,9 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 				.withMessageContaining("(java.lang.Integer)");
 	}
 
-	private static ExtensionAwareEvaluationContextProvider createContextProviderWithOverloads() {
+	private static ExtensionAwareQueryMethodEvaluationContextProvider createContextProviderWithOverloads() {
 
-		return new ExtensionAwareEvaluationContextProvider(Collections.singletonList( //
+		return new ExtensionAwareQueryMethodEvaluationContextProvider(Collections.singletonList( //
 				new DummyExtension("_first", "first") {
 					@Override
 					public Object getRootObject() {
@@ -284,7 +283,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	}
 
 	@RequiredArgsConstructor
-	public static class DummyExtension extends EvaluationContextExtensionSupport {
+	public static class DummyExtension implements org.springframework.data.spel.spi.EvaluationContextExtension {
 
 		public static String DUMMY_KEY = "dummy";
 
@@ -306,7 +305,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		@Override
 		public Map<String, Object> getProperties() {
 
-			Map<String, Object> properties = new HashMap<>(super.getProperties());
+			Map<String, Object> properties = new HashMap<>();
 
 			properties.put("key", value);
 
@@ -320,7 +319,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		@Override
 		public Map<String, Function> getFunctions() {
 
-			Map<String, Function> functions = new HashMap<>(super.getFunctions());
+			Map<String, Function> functions = new HashMap<>();
 
 			try {
 				functions.put("aliasedMethod", new Function(getClass().getMethod("extensionMethod")));

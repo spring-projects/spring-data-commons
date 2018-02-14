@@ -26,6 +26,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.PersistentEntity;
@@ -36,11 +37,11 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
-import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
-import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 
@@ -69,7 +70,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private ClassLoader classLoader;
 	private BeanFactory beanFactory;
 	private boolean lazyInit = false;
-	private EvaluationContextProvider evaluationContextProvider = DefaultEvaluationContextProvider.INSTANCE;
+	private Optional<QueryMethodEvaluationContextProvider> evaluationContextProvider = Optional.empty();
 	private ApplicationEventPublisher publisher;
 
 	private Lazy<T> repository;
@@ -145,14 +146,13 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	}
 
 	/**
-	 * Sets the {@link EvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined queries.
+	 * Sets the {@link QueryMethodEvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined
+	 * queries.
 	 *
-	 * @param evaluationContextProvider can be {@literal null}, defaults to
-	 *          {@link DefaultEvaluationContextProvider#INSTANCE}.
+	 * @param evaluationContextProvider must not be {@literal null}.
 	 */
-	public void setEvaluationContextProvider(EvaluationContextProvider evaluationContextProvider) {
-		this.evaluationContextProvider = evaluationContextProvider == null ? DefaultEvaluationContextProvider.INSTANCE
-				: evaluationContextProvider;
+	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
+		this.evaluationContextProvider = Optional.of(evaluationContextProvider);
 	}
 
 	/**
@@ -179,7 +179,13 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+
 		this.beanFactory = beanFactory;
+
+		if (!this.evaluationContextProvider.isPresent() && ListableBeanFactory.class.isInstance(beanFactory)) {
+			this.evaluationContextProvider = Optional
+					.of(new ExtensionAwareQueryMethodEvaluationContextProvider((ListableBeanFactory) beanFactory));
+		}
 	}
 
 	/*
@@ -265,7 +271,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.factory = createRepositoryFactory();
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
-		this.factory.setEvaluationContextProvider(evaluationContextProvider);
+		this.factory.setEvaluationContextProvider(
+				evaluationContextProvider.orElseGet(() -> QueryMethodEvaluationContextProvider.DEFAULT));
 		this.factory.setBeanClassLoader(classLoader);
 		this.factory.setBeanFactory(beanFactory);
 

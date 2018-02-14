@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.query;
+package org.springframework.data.spel;
 
 import static org.springframework.data.util.StreamUtils.*;
 
@@ -33,10 +33,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.repository.query.EvaluationContextExtensionInformation.ExtensionTypeInformation.PublicMethodAndFieldFilter;
-import org.springframework.data.repository.query.Functions.NameAndArgumentCount;
-import org.springframework.data.repository.query.spi.EvaluationContextExtension;
-import org.springframework.data.repository.query.spi.Function;
+import org.springframework.data.spel.EvaluationContextExtensionInformation.ExtensionTypeInformation.PublicMethodAndFieldFilter;
+import org.springframework.data.spel.Functions.NameAndArgumentCount;
+import org.springframework.data.spel.spi.EvaluationContextExtension;
+import org.springframework.data.spel.spi.Function;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -58,7 +58,7 @@ import org.springframework.util.ReflectionUtils.MethodFilter;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
- * @since 1.9
+ * @since 2.1
  */
 class EvaluationContextExtensionInformation {
 

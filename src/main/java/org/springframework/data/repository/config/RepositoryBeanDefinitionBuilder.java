@@ -30,7 +30,6 @@ import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.ClassMetadata;
@@ -40,7 +39,6 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.ParsingUtils;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.core.support.RepositoryFragmentsFactoryBean;
-import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
@@ -133,12 +131,6 @@ class RepositoryBeanDefinitionBuilder {
 
 		builder.addPropertyValue("repositoryFragments",
 				ParsingUtils.getSourceBeanDefinition(fragmentsBuilder, configuration.getSource()));
-
-		RootBeanDefinition evaluationContextProviderDefinition = new RootBeanDefinition(
-				ExtensionAwareEvaluationContextProvider.class);
-		evaluationContextProviderDefinition.setSource(configuration.getSource());
-
-		builder.addPropertyValue("evaluationContextProvider", evaluationContextProviderDefinition);
 
 		return builder;
 	}

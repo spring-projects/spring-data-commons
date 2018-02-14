@@ -44,6 +44,7 @@ import org.springframework.data.repository.config.RepositoryFragmentConfiguratio
 import org.springframework.data.repository.config.RepositoryFragmentDiscovery;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -159,7 +160,7 @@ public class CdiRepositoryContext {
 				Collections.emptySet(), //
 				BeanDefinition::getBeanClassName);
 
-		return beanDefinition.map(it -> loadClass(it.getBeanClassName()));
+		return beanDefinition.map(this::loadBeanClass);
 	}
 
 	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(
@@ -171,6 +172,14 @@ public class CdiRepositoryContext {
 				configuration.getBasePackages(), configuration.getExclusions(), BeanDefinition::getBeanClassName);
 
 		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(configuration.getFragmentInterfaceName(), bd));
+	}
+
+	@Nullable
+	private Class<?> loadBeanClass(AbstractBeanDefinition definition) {
+
+		String beanClassName = definition.getBeanClassName();
+
+		return beanClassName == null ? null : loadClass(beanClassName);
 	}
 
 	private static ClassMetadata getClassMetadata(MetadataReaderFactory metadataReaderFactory, String className) {

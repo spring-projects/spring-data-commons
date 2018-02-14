@@ -44,6 +44,7 @@ import org.springframework.data.repository.config.RepositoryFragmentConfiguratio
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.util.Optionals;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -53,7 +54,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Dirk Mahler
  * @author Oliver Gierke
- * @author Mark Paluch
+ * @author Mark Paluchs
  * @author Peter Rietzler
  * @author Jens Schauder
  * @author Christoph Strobl
@@ -392,14 +393,13 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 		return fragmentConfigurations.flatMap(it -> {
 
-			Class<Object> interfaceClass = (Class) lookupFragmentInterface(repositoryType, it.getInterfaceName());
+			Class<Object> interfaceClass = (Class<Object>) lookupFragmentInterface(repositoryType, it.getInterfaceName());
 			Class<?> implementationClass = context.loadClass(it.getClassName());
 			Optional<Bean<?>> bean = getBean(implementationClass, beanManager, qualifiers);
 
-			return bean.map(this::getDependencyInstance) //
-					.map(implementation -> RepositoryFragment.implemented(interfaceClass, implementation)) //
-					.map(Stream::of) //
-					.orElse(Stream.empty());
+			return Optionals.toStream(bean.map(this::getDependencyInstance) //
+					.map(implementation -> RepositoryFragment.implemented(interfaceClass, implementation))); //
+
 		}).collect(Collectors.toList());
 	}
 

@@ -20,6 +20,7 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.spel.EvaluationContextProvider;
 
 /**
  * Interface capturing mutator methods for {@link PersistentEntity}s.
@@ -58,4 +59,11 @@ public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> ext
 	 * @param factory must not be {@literal null}.
 	 */
 	void setPersistentPropertyAccessorFactory(PersistentPropertyAccessorFactory factory);
+
+	/**
+	 * Sets the {@link EvaluationContextProvider} to be used by the entity.
+	 * 
+	 * @param provider must not be {@literal null}.
+	 */
+	void setEvaluationContextProvider(EvaluationContextProvider provider);
 }
