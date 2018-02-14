@@ -113,7 +113,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
 
 			auditable.setCreatedDate(
-					getAsTemporalAccessor(Optional.of(value), type).orElseThrow(() -> new IllegalStateException()));
+					getAsTemporalAccessor(Optional.of(value), type).orElseThrow(IllegalStateException::new));
 
 			return value;
 		}
@@ -147,7 +147,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		public TemporalAccessor setLastModifiedDate(TemporalAccessor value) {
 
 			auditable.setLastModifiedDate(
-					getAsTemporalAccessor(Optional.of(value), type).orElseThrow(() -> new IllegalStateException()));
+					getAsTemporalAccessor(Optional.of(value), type).orElseThrow(IllegalStateException::new));
 
 			return value;
 		}
@@ -220,7 +220,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
-		protected <T extends TemporalAccessor> Optional<T> getAsTemporalAccessor(Optional<? extends Object> source,
+		protected <T extends TemporalAccessor> Optional<T> getAsTemporalAccessor(Optional<?> source,
 				Class<? extends T> target) {
 
 			return source.map(it -> {
