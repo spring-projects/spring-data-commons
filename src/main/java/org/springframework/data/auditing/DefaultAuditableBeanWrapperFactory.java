@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Field;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Date;
@@ -112,8 +111,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Override
 		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
 
-			auditable.setCreatedDate(
-					getAsTemporalAccessor(Optional.of(value), type).orElseThrow(IllegalStateException::new));
+			auditable.setCreatedDate(getAsTemporalAccessor(Optional.of(value), type).orElseThrow(IllegalStateException::new));
 
 			return value;
 		}
@@ -146,8 +144,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Override
 		public TemporalAccessor setLastModifiedDate(TemporalAccessor value) {
 
-			auditable.setLastModifiedDate(
-					getAsTemporalAccessor(Optional.of(value), type).orElseThrow(IllegalStateException::new));
+			auditable
+					.setLastModifiedDate(getAsTemporalAccessor(Optional.of(value), type).orElseThrow(IllegalStateException::new));
 
 			return value;
 		}
@@ -209,7 +207,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 				return conversionService.convert(date, targetType);
 			}
 
-			throw new IllegalArgumentException(createUnsupportedTypeErrorMessage(source));
+			throw rejectUnsupportedType(source);
 		}
 
 		/**
@@ -232,19 +230,17 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 				Class<?> typeToConvertTo = Stream.of(target, Instant.class)//
 						.filter(type -> target.isAssignableFrom(type))//
 						.filter(type -> conversionService.canConvert(it.getClass(), type))//
-						.findFirst()
-						.orElseThrow(() -> new IllegalArgumentException(
-								createUnsupportedTypeErrorMessage(((Optional<Object>)source).orElseGet(() -> source))));
+						.findFirst() //
+						.orElseThrow(() -> rejectUnsupportedType(source.map(Object.class::cast).orElseGet(() -> source)));
 
 				return (T) conversionService.convert(it, typeToConvertTo);
 			});
 		}
 	}
 
-	private static String createUnsupportedTypeErrorMessage(Object source) {
-
-		return String.format("Invalid date type %s for member %s! Supported types are %s.", source.getClass(), source,
-				AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES);
+	private static IllegalArgumentException rejectUnsupportedType(Object source) {
+		return new IllegalArgumentException(String.format("Invalid date type %s for member %s! Supported types are %s.",
+				source.getClass(), source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
 	}
 
 	/**
