@@ -193,22 +193,21 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		});
 	}
 
-	private AbstractLongAssert<?> compareTemporalAccessors(TemporalAccessor expected, TemporalAccessor actual) {
+	private static AbstractLongAssert<?> compareTemporalAccessors(TemporalAccessor expected, TemporalAccessor actual) {
 
 		long actualSeconds = getInstantSeconds(actual);
 		long expectedSeconds = getInstantSeconds(expected);
 
-		return assertThat(actualSeconds).describedAs("Difference is %s", actualSeconds - expectedSeconds)
+		return assertThat(actualSeconds) //
+				.describedAs("Difference is %s", actualSeconds - expectedSeconds) //
 				.isEqualTo(expectedSeconds);
 	}
 
-	private long getInstantSeconds(TemporalAccessor actual) {
+	private static long getInstantSeconds(TemporalAccessor actual) {
 
-		if (actual instanceof LocalDateTime) {
-			return getInstantSeconds(((LocalDateTime) actual).atZone(ZoneOffset.systemDefault()));
-		}
-
-		return actual.getLong(ChronoField.INSTANT_SECONDS);
+		return actual instanceof LocalDateTime //
+				? getInstantSeconds(((LocalDateTime) actual).atZone(ZoneOffset.systemDefault())) //
+				: actual.getLong(ChronoField.INSTANT_SECONDS);
 	}
 
 	static class Sample {
