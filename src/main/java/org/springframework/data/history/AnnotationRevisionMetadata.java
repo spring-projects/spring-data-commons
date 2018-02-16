@@ -76,7 +76,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	@Deprecated
 	public Optional<LocalDateTime> getRevisionDate() {
 
-		return revisionDate.get().map(this::convertToLocalDateTime);
+		return revisionDate.get().map(AnnotationRevisionMetadata::convertToLocalDateTime);
 	}
 
 	/*
@@ -84,33 +84,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	 * @see org.springframework.data.history.RevisionMetadata#getRevisionDate()
 	 */
 	public Optional<Instant> getRevisionInstant() {
-		return revisionDate.get().map(this::convertToInstant);
-	}
-
-	private LocalDateTime convertToLocalDateTime(TemporalAccessor temporalAccessor) {
-
-		if (temporalAccessor instanceof LocalDateTime) {
-			return (LocalDateTime) temporalAccessor;
-		}
-
-		if (temporalAccessor instanceof Instant) {
-			return LocalDateTime.ofInstant((Instant) temporalAccessor, ZoneOffset.systemDefault());
-		}
-
-		throw new IllegalArgumentException(String.format("Can't convert %s to LocalDateTime", temporalAccessor));
-	}
-
-	private Instant convertToInstant(TemporalAccessor temporalAccessor) {
-
-		if (temporalAccessor instanceof Instant) {
-			return (Instant) temporalAccessor;
-		}
-
-		if (temporalAccessor instanceof LocalDateTime) {
-			return ((LocalDateTime) temporalAccessor).atZone(ZoneOffset.systemDefault()).toInstant();
-		}
-
-		throw new IllegalArgumentException(String.format("Can't convert %s to LocalDateTime", temporalAccessor));
+		return revisionDate.get().map(AnnotationRevisionMetadata::convertToInstant);
 	}
 
 	/*
@@ -130,5 +104,31 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 			ReflectionUtils.doWithFields(entity.getClass(), callback);
 			return Optional.ofNullable(callback.getValue(entity));
 		});
+	}
+
+	private static LocalDateTime convertToLocalDateTime(TemporalAccessor temporalAccessor) {
+
+		if (temporalAccessor instanceof LocalDateTime) {
+			return (LocalDateTime) temporalAccessor;
+		}
+
+		if (temporalAccessor instanceof Instant) {
+			return LocalDateTime.ofInstant((Instant) temporalAccessor, ZoneOffset.systemDefault());
+		}
+
+		throw new IllegalArgumentException(String.format("Can't convert %s to LocalDateTime!", temporalAccessor));
+	}
+
+	private static Instant convertToInstant(TemporalAccessor temporalAccessor) {
+
+		if (temporalAccessor instanceof Instant) {
+			return (Instant) temporalAccessor;
+		}
+
+		if (temporalAccessor instanceof LocalDateTime) {
+			return ((LocalDateTime) temporalAccessor).atZone(ZoneOffset.systemDefault()).toInstant();
+		}
+
+		throw new IllegalArgumentException(String.format("Can't convert %s to LocalDateTime!", temporalAccessor));
 	}
 }
