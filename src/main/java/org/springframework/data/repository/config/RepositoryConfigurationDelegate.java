@@ -31,6 +31,7 @@ import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
 
@@ -69,12 +70,13 @@ public class RepositoryConfigurationDelegate {
 	public RepositoryConfigurationDelegate(RepositoryConfigurationSource configurationSource,
 			ResourceLoader resourceLoader, Environment environment) {
 
-		this.isXml = configurationSource instanceof XmlRepositoryConfigurationSource;
-		boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
-
-		Assert.isTrue(isXml || isAnnotation,
-				"Configuration source must either be an Xml- or an AnnotationBasedConfigurationSource!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+
+		boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
+		this.isXml = configurationSource instanceof XmlRepositoryConfigurationSource;
+
+		Assert.isTrue(this.isXml || isAnnotation,
+				"Configuration source must either be an XML-based or an Annotation-based RepositoryConfigurationSource!");
 
 		this.configurationSource = configurationSource;
 		this.resourceLoader = resourceLoader;
@@ -83,12 +85,14 @@ public class RepositoryConfigurationDelegate {
 	}
 
 	/**
-	 * Defaults the environment in case the given one is null. Used as fallback, in case the legacy constructor was
-	 * invoked.
+	 * Defaults the {@link Environment} in case the given one is {@literal null}.
+	 *
+	 * Used as fallback in case the legacy constructor was invoked.
 	 *
 	 * @param environment can be {@literal null}.
 	 * @param resourceLoader can be {@literal null}.
-	 * @return
+	 * @return the given {@link Environment} if not {@literal null} or an {@link Environment} obtained
+	 * from the {@link ResourceLoader} if {@link ResourceLoader} is {@link EnvironmentCapable}.
 	 */
 	private static Environment defaultEnvironment(@Nullable Environment environment,
 			@Nullable ResourceLoader resourceLoader) {
@@ -104,21 +108,22 @@ public class RepositoryConfigurationDelegate {
 	/**
 	 * Registers the found repositories in the given {@link BeanDefinitionRegistry}.
 	 *
-	 * @param registry
-	 * @param extension
-	 * @return {@link BeanComponentDefinition}s for all repository bean definitions found.
+	 * @param registry {@link BeanDefinitionRegistry} used to register {@link Repository Repositories}.
+	 * @param extension {@link RepositoryConfigurationExtension} containing store specific configuration meta-data.
+	 * @return {@link BeanComponentDefinition}s for all {@link Repository} bean definitions found.
 	 */
 	public List<BeanComponentDefinition> registerRepositoriesIn(BeanDefinitionRegistry registry,
 			RepositoryConfigurationExtension extension) {
 
 		extension.registerBeansForRoot(registry, configurationSource);
 
-		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader,
-				environment);
+		RepositoryBeanDefinitionBuilder builder =
+				new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader, environment);
+
 		List<BeanComponentDefinition> definitions = new ArrayList<>();
 
-		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : extension
-				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode)) {
+		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration
+				: extension.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode)) {
 
 			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
 
@@ -152,7 +157,7 @@ public class RepositoryConfigurationDelegate {
 	 * than a single type is considered a multi-store configuration scenario which will trigger stricter repository
 	 * scanning.
 	 *
-	 * @return
+	 * @return a boolean value indicating if multiple Spring Data store implementations are present on the classpath.
 	 */
 	private boolean multipleStoresDetected() {
 

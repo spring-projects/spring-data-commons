@@ -36,6 +36,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.util.ClassUtils;
+import org.springframework.data.util.IterableUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -61,15 +62,12 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 
 		super(false);
 
-		Assert.notNull(includeFilters, "Include filters must not be null!");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
 		this.registry = registry;
 
-		if (includeFilters.iterator().hasNext()) {
-			for (TypeFilter filter : includeFilters) {
-				addIncludeFilter(filter);
-			}
+		if (IterableUtils.isNotEmpty(includeFilters)) {
+			includeFilters.forEach(this::addIncludeFilter);
 		} else {
 			super.addIncludeFilter(new InterfaceTypeFilter(Repository.class));
 			super.addIncludeFilter(new AnnotationTypeFilter(RepositoryDefinition.class, true, true));
@@ -79,9 +77,11 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	}
 
 	/**
-	 * Custom extension of {@link #addIncludeFilter(TypeFilter)} to extend the added {@link TypeFilter}. For the
-	 * {@link TypeFilter} handed we'll have two filters registered: one additionally enforcing the
-	 * {@link RepositoryDefinition} annotation, the other one forcing the extension of {@link Repository}.
+	 * Custom extension of {@link ClassPathScanningCandidateComponentProvider#addIncludeFilter(TypeFilter)}
+	 * to extend the added {@link TypeFilter}.
+	 *
+	 * For the {@link TypeFilter} handed we will have two filters registered: one additionally enforcing the
+	 * {@link RepositoryDefinition} annotation and the other forcing the extension of {@link Repository}.
 	 *
 	 * @see ClassPathScanningCandidateComponentProvider#addIncludeFilter(TypeFilter)
 	 */
@@ -123,11 +123,8 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 
 		Set<BeanDefinition> candidates = super.findCandidateComponents(basePackage);
 
-		for (BeanDefinition candidate : candidates) {
-			if (candidate instanceof AnnotatedBeanDefinition) {
-				AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
-			}
-		}
+		candidates.stream().filter(bd -> bd instanceof AnnotatedBeanDefinition).forEach(bd ->
+				AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) bd));
 
 		return candidates;
 	}
@@ -153,7 +150,8 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	 * Controls whether nested inner-class {@link Repository} interface definitions should be considered for automatic
 	 * discovery. This defaults to {@literal false}.
 	 *
-	 * @param considerNestedRepositoryInterfaces
+	 * @param considerNestedRepositoryInterfaces boolean value indicating whether nested inner-class {@link Repository}
+	 * interface definitions should be considered for automatic discovery.
 	 */
 	public void setConsiderNestedRepositoryInterfaces(boolean considerNestedRepositoryInterfaces) {
 		this.considerNestedRepositoryInterfaces = considerNestedRepositoryInterfaces;
@@ -170,9 +168,9 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		/**
 		 * Creates a new {@link InterfaceTypeFilter}.
 		 *
-		 * @param targetType
+		 * @param targetType {@link Class type} of the interface.
 		 */
-		public InterfaceTypeFilter(Class<?> targetType) {
+		private InterfaceTypeFilter(Class<?> targetType) {
 			super(targetType);
 		}
 
@@ -202,7 +200,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		 *
 		 * @param delegates must not be {@literal null}.
 		 */
-		public AllTypeFilter(List<TypeFilter> delegates) {
+		private AllTypeFilter(List<TypeFilter> delegates) {
 
 			Assert.notNull(delegates, "TypeFilter deleages must not be null!");
 			this.delegates = delegates;

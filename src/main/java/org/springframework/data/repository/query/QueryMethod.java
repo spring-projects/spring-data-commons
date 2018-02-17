@@ -69,10 +69,11 @@ public class QueryMethod {
 
 		Parameters.TYPES.stream()//
 				.filter(type -> getNumberOfOccurences(method, type) > 1)//
-				.findFirst().ifPresent(type -> {
+				.findFirst()
+				.ifPresent(type -> {
 					throw new IllegalStateException(
-							String.format("Method must only one argument of type %s! Offending method: %s", type.getSimpleName(),
-									method.toString()));
+							String.format("Method must only have one argument of type %s! Offending method: %s",
+									type.getSimpleName(), method.toString()));
 				});
 
 		this.method = method;
