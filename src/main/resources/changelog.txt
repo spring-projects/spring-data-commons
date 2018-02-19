@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.4.RELEASE (2018-02-19)
+---------------------------------------------
+* DATACMNS-1259 - Invalid date type for member Long when using @LastModifiedDate and @CreatedDate.
+* DATACMNS-1252 - Repository method returning Vavr Set results in cast exception if source value is not a Set.
+* DATACMNS-1250 - Release 2.0.4 (Kay SR4).
+* DATACMNS-1243 - Add converters Instant <-> LocalDateTime.
+
+
 Changes in version 2.1.0.M1 (2018-02-06)
 ----------------------------------------
 * DATACMNS-1252 - Repository method returning Vavr Set results in cast exception if source value is not a Set.
