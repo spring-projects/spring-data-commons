@@ -114,19 +114,6 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		return result;
 	}
 
-	/**
-	 * Returns the {@link ClassLoader} to load repository interfaces for configuration inspection. Subclasses may override
-	 * this method to provide a customized class loader.
-	 *
-	 * @param loader must not be {@literal null}.
-	 * @return the {@link ClassLoader} for repository interfaces configuration inspection.
-	 * @since 2.1
-	 */
-	@Nullable
-	protected ClassLoader getConfigurationInspectionClassLoader(ResourceLoader loader) {
-		return loader.getClassLoader();
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getDefaultNamedQueryLocation()
@@ -189,8 +176,21 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	/**
+	 * Returns the {@link ClassLoader} to load repository interfaces for configuration inspection. Subclasses may override
+	 * this method to provide a customized class loader.
+	 *
+	 * @param loader must not be {@literal null}.
+	 * @return the {@link ClassLoader} for repository interfaces configuration inspection.
+	 * @since 2.1
+	 */
+	@Nullable
+	protected ClassLoader getConfigurationInspectionClassLoader(ResourceLoader loader) {
+		return loader.getClassLoader();
+	}
+
+	/**
 	 * Sets the given source on the given {@link AbstractBeanDefinition} and registers it inside the given
-	 * {@link BeanDefinitionRegistry}. For {@link BeanDefinition}s to be registerd once-and-only-once for all
+	 * {@link BeanDefinitionRegistry}. For {@link BeanDefinition}s to be registered once-and-only-once for all
 	 * configuration elements (annotation or XML), prefer calling
 	 * {@link #registerIfNotAlreadyRegistered(AbstractBeanDefinition, BeanDefinitionRegistry, String, Object)} with a
 	 * dedicated bean name to avoid the bead definition being registered multiple times. *
@@ -314,11 +314,12 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * {@link ClassLoader}.
 	 *
 	 * @param configuration must not be {@literal null}.
-	 * @param classLoader must not be {@literal null}.
+	 * @param classLoader can be {@literal null}.
 	 * @return the repository interface or {@literal null} if it can't be loaded.
 	 */
 	@Nullable
-	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ClassLoader classLoader) {
+	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration,
+			@Nullable ClassLoader classLoader) {
 
 		String repositoryInterface = configuration.getRepositoryInterface();
 
