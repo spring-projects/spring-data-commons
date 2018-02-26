@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.springframework.beans.ConfigurablePropertyAccessor;
 import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.NotWritablePropertyException;
 import org.springframework.beans.PropertyValues;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -41,6 +47,8 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  * @author Oliver Gierke
  */
 public class MapDataBinderUnitTests {
+
+	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Test // DATACMNS-630
 	public void honorsFormattingAnnotationOnAccessor() {
@@ -93,6 +101,30 @@ public class MapDataBinderUnitTests {
 		values.add("somethingWeird", "Value");
 
 		assertThat(bind(values), is(Collections.<String, Object> emptyMap()));
+	}
+
+	@Test // DATACMNS-1264
+	public void dropsMapExpressionsForCollectionReferences() {
+
+		ConfigurablePropertyAccessor accessor = new MapDataBinder(Bar.class, new DefaultFormattingConversionService())
+				.getPropertyAccessor();
+
+		exception.expect(NotWritablePropertyException.class);
+		exception.expectCause(is(Matchers.<Throwable> instanceOf(SpelEvaluationException.class)));
+
+		accessor.setPropertyValue("fooBar['foo']", null);
+	}
+
+	@Test // DATACMNS-1264
+	public void rejectsExpressionContainingTypeExpression() {
+
+		ConfigurablePropertyAccessor accessor = new MapDataBinder(Bar.class, new DefaultFormattingConversionService())
+				.getPropertyAccessor();
+
+		exception.expect(NotWritablePropertyException.class);
+		exception.expectCause(is(Matchers.<Throwable> instanceOf(SpelEvaluationException.class)));
+
+		accessor.setPropertyValue("fooBar[T(java.lang.String)]", null);
 	}
 
 	private static Map<String, Object> bind(PropertyValues values) {

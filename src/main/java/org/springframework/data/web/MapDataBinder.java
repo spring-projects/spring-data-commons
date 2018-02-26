@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,12 @@ import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
+import org.springframework.expression.TypeLocator;
 import org.springframework.expression.TypedValue;
+import org.springframework.expression.spel.SpelEvaluationException;
+import org.springframework.expression.spel.SpelMessage;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -104,6 +108,13 @@ class MapDataBinder extends WebDataBinder {
 
 		private static final SpelExpressionParser PARSER = new SpelExpressionParser(
 				new SpelParserConfiguration(false, true));
+		private static final TypeLocator REJECTING_LOCATOR = new TypeLocator() {
+
+			@Override
+			public Class<?> findType(String typeName) throws EvaluationException {
+				throw new SpelEvaluationException(SpelMessage.TYPE_NOT_FOUND, typeName);
+			}
+		};
 
 		private final @NonNull Class<?> type;
 		private final @NonNull Map<String, Object> map;
@@ -164,6 +175,7 @@ class MapDataBinder extends WebDataBinder {
 			StandardEvaluationContext context = new StandardEvaluationContext();
 			context.addPropertyAccessor(new PropertyTraversingMapAccessor(type, conversionService));
 			context.setTypeConverter(new StandardTypeConverter(conversionService));
+			context.setTypeLocator(REJECTING_LOCATOR);
 			context.setRootObject(map);
 
 			Expression expression = PARSER.parseExpression(propertyName);
@@ -176,20 +188,24 @@ class MapDataBinder extends WebDataBinder {
 
 			if (conversionRequired(value, propertyType.getType())) {
 
-				PropertyDescriptor descriptor = BeanUtils
-						.getPropertyDescriptor(owningType.getType(), leafProperty.getSegment());
+				PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(owningType.getType(),
+						leafProperty.getSegment());
 				MethodParameter methodParameter = new MethodParameter(descriptor.getReadMethod(), -1);
 				TypeDescriptor typeDescriptor = TypeDescriptor.nested(methodParameter, 0);
 
 				value = conversionService.convert(value, TypeDescriptor.forObject(value), typeDescriptor);
 			}
 
-			expression.setValue(context, value);
+			try {
+				expression.setValue(context, value);
+			} catch (SpelEvaluationException o_O) {
+				throw new NotWritablePropertyException(type, propertyName, "Could not write property!", o_O);
+			}
 		}
 
 		private boolean conversionRequired(Object source, Class<?> targetType) {
 
-			if (targetType.isInstance(source)) {
+			if (source == null || targetType.isInstance(source)) {
 				return false;
 			}
 
@@ -274,11 +290,12 @@ class MapDataBinder extends WebDataBinder {
 
 				Class<?> actualPropertyType = path.getType();
 
-				TypeDescriptor valueDescriptor = conversionService.canConvert(String.class, actualPropertyType) ? TypeDescriptor
-						.valueOf(String.class) : TypeDescriptor.valueOf(HashMap.class);
+				TypeDescriptor valueDescriptor = conversionService.canConvert(String.class, actualPropertyType)
+						? TypeDescriptor.valueOf(String.class)
+						: TypeDescriptor.valueOf(HashMap.class);
 
-				return path.isCollection() ? TypeDescriptor.collection(emptyValue.getClass(), valueDescriptor) : TypeDescriptor
-						.map(emptyValue.getClass(), TypeDescriptor.valueOf(String.class), valueDescriptor);
+				return path.isCollection() ? TypeDescriptor.collection(emptyValue.getClass(), valueDescriptor)
+						: TypeDescriptor.map(emptyValue.getClass(), TypeDescriptor.valueOf(String.class), valueDescriptor);
 
 			}
 		}
