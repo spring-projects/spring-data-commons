@@ -43,6 +43,8 @@ import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.TypedValue;
+import org.springframework.expression.spel.SpelEvaluationException;
+import org.springframework.expression.spel.SpelMessage;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -177,6 +179,9 @@ class MapDataBinder extends WebDataBinder {
 			StandardEvaluationContext context = new StandardEvaluationContext();
 			context.addPropertyAccessor(new PropertyTraversingMapAccessor(type, conversionService));
 			context.setTypeConverter(new StandardTypeConverter(conversionService));
+			context.setTypeLocator(typeName -> {
+				throw new SpelEvaluationException(SpelMessage.TYPE_NOT_FOUND, typeName);
+			});
 			context.setRootObject(map);
 
 			Expression expression = PARSER.parseExpression(propertyName);
@@ -208,7 +213,11 @@ class MapDataBinder extends WebDataBinder {
 				value = conversionService.convert(value, TypeDescriptor.forObject(value), typeDescriptor);
 			}
 
-			expression.setValue(context, value);
+			try {
+				expression.setValue(context, value);
+			} catch (SpelEvaluationException o_O) {
+				throw new NotWritablePropertyException(type, propertyName, "Could not write property!", o_O);
+			}
 		}
 
 		private boolean conversionRequired(@Nullable Object source, Class<?> targetType) {
