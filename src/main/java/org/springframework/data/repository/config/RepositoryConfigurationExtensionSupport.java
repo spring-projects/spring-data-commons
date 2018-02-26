@@ -87,7 +87,8 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		for (BeanDefinition candidate : configSource.getCandidates(loader)) {
 
 			RepositoryConfiguration<T> configuration = getRepositoryConfiguration(candidate, configSource);
-			Class<?> repositoryInterface = loadRepositoryInterface(configuration, loader);
+			Class<?> repositoryInterface = loadRepositoryInterface(configuration,
+					getConfigurationInspectionClassLoader(loader));
 
 			if (repositoryInterface == null) {
 				result.add(configuration);
@@ -111,6 +112,19 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		}
 
 		return result;
+	}
+
+	/**
+	 * Returns the {@link ClassLoader} to load repository interfaces for configuration inspection. Subclasses may override
+	 * this method to provide a customized class loader.
+	 *
+	 * @param loader must not be {@literal null}.
+	 * @return the {@link ClassLoader} for repository interfaces configuration inspection.
+	 * @since 2.1
+	 */
+	@Nullable
+	protected ClassLoader getConfigurationInspectionClassLoader(ResourceLoader loader) {
+		return loader.getClassLoader();
 	}
 
 	/*
@@ -297,17 +311,16 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	/**
 	 * Loads the repository interface contained in the given {@link RepositoryConfiguration} using the given
-	 * {@link ResourceLoader}.
-	 * 
+	 * {@link ClassLoader}.
+	 *
 	 * @param configuration must not be {@literal null}.
-	 * @param loader must not be {@literal null}.
+	 * @param classLoader must not be {@literal null}.
 	 * @return the repository interface or {@literal null} if it can't be loaded.
 	 */
 	@Nullable
-	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
+	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ClassLoader classLoader) {
 
 		String repositoryInterface = configuration.getRepositoryInterface();
-		ClassLoader classLoader = loader.getClassLoader();
 
 		try {
 			return org.springframework.util.ClassUtils.forName(repositoryInterface, classLoader);
