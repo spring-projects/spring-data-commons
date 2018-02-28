@@ -41,8 +41,11 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
+import org.springframework.aop.framework.Advised;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.ResultPostProcessor;
 import org.springframework.data.util.Streamable;
 
 /**
@@ -368,14 +371,41 @@ public class QueryExecutionResultHandlerUnitTests {
 				it -> assertThat(it.stream().collect(Collectors.toList())).isEqualTo(source));
 	}
 
-	@Test // DATACMNS-938
-	public void resolvesNestedWrapperIfOuterDoesntNeedConversion() throws Exception {
+	@Test
+	public void invokesPostProcessorForSingleResult() throws Exception {
 
-		Entity entity = new Entity();
+		ResultPostProcessor.ForAggregate processor = it -> {
+			ProxyFactory factory = new ProxyFactory(it);
+			return factory.getProxy();
+		};
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("tryOfOption"));
+		QueryExecutionResultHandler handler = new QueryExecutionResultHandler(
+				new ResultPostProcessorInvoker(Object.class, Collections.singleton(processor)));
 
-		assertThat(result).isInstanceOfSatisfying(Option.class, it -> assertThat(it.get()).isEqualTo(entity));
+		Object result = handler.postProcessInvocationResult(Optional.of(new Entity()), getMethod("jdk8Optional"));
+
+		assertThat(result).isInstanceOf(Optional.class);
+		assertThat((Optional<?>) result).hasValueSatisfying(it -> {
+			assertThat(it).isInstanceOf(Advised.class);
+		});
+	}
+
+	@Test
+	public void invokesPostProcessorForCollectionResult() throws Exception {
+
+		ResultPostProcessor.ForAggregate processor = it -> {
+			ProxyFactory factory = new ProxyFactory(it);
+			return factory.getProxy();
+		};
+
+		QueryExecutionResultHandler handler = new QueryExecutionResultHandler(
+				new ResultPostProcessorInvoker(Object.class, Collections.singleton(processor)));
+
+		Object result = handler.postProcessInvocationResult(Arrays.asList(new Entity(), new Entity()),
+				getMethod("streamable"));
+
+		assertThat(result).isInstanceOf(Streamable.class);
+		assertThat((Streamable<?>) result).allMatch(Advised.class::isInstance);
 	}
 
 	@Test // DATACMNS-1430

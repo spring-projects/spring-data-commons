@@ -23,6 +23,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.Immutable;
 import org.springframework.data.annotation.TypeAlias;
@@ -448,11 +449,14 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(java.lang.Object)
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public <B> PersistentPropertyAccessor<B> getPropertyAccessor(B bean) {
 
 		verifyBeanType(bean);
 
-		return propertyAccessorFactory.getPropertyAccessor(this, bean);
+		B proxyTarget = (B) AopProxyUtils.getSingletonTarget(bean);
+
+		return propertyAccessorFactory.getPropertyAccessor(this, proxyTarget != null ? proxyTarget : bean);
 	}
 
 	/*

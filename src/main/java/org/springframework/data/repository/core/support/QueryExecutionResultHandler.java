@@ -41,17 +41,23 @@ class QueryExecutionResultHandler {
 	private static final TypeDescriptor WRAPPER_TYPE = TypeDescriptor.valueOf(NullableWrapper.class);
 
 	private final GenericConversionService conversionService;
+	private final ResultPostProcessorInvoker invoker;
+
+	public QueryExecutionResultHandler() {
+		this(ResultPostProcessorInvoker.NONE);
+	}
 
 	/**
 	 * Creates a new {@link QueryExecutionResultHandler}.
 	 */
-	public QueryExecutionResultHandler() {
+	public QueryExecutionResultHandler(ResultPostProcessorInvoker invoker) {
 
 		GenericConversionService conversionService = new DefaultConversionService();
 		QueryExecutionConverters.registerConvertersIn(conversionService);
 		conversionService.removeConvertible(Object.class, Object.class);
 
 		this.conversionService = conversionService;
+		this.invoker = invoker;
 	}
 
 	/**
@@ -64,10 +70,10 @@ class QueryExecutionResultHandler {
 	@Nullable
 	public Object postProcessInvocationResult(@Nullable Object result, Method method) {
 
+		Object processedResult = invoker.postProcess(result);
 		MethodParameter parameter = new MethodParameter(method, -1);
 
-		return postProcessInvocationResult(result, 0, parameter);
-
+		return postProcessInvocationResult(processedResult, 0, parameter);
 	}
 
 	/**
@@ -136,12 +142,10 @@ class QueryExecutionResultHandler {
 	 */
 	@Nullable
 	@SuppressWarnings("unchecked")
-	private static Object unwrapOptional(@Nullable Object source) {
+	static Object unwrapOptional(@Nullable Object source) {
 
-		if (source == null) {
-			return null;
-		}
-
-		return Optional.class.isInstance(source) ? Optional.class.cast(source).orElse(null) : source;
+		return source == null //
+				? null //
+				: Optional.class.isInstance(source) ? Optional.class.cast(source).orElse(null) : source;
 	}
 }

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -48,7 +49,8 @@ public class QueryExecutorMethodInterceptorUnitTests {
 		when(information.hasQueryMethods()).thenReturn(true);
 		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.empty());
 
-		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory());
+		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(),
+				ResultPostProcessorInvoker.NONE);
 	}
 
 	@Test
@@ -57,7 +59,8 @@ public class QueryExecutorMethodInterceptorUnitTests {
 		when(information.getQueryMethods()).thenReturn(Streamable.empty());
 		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.of(strategy));
 
-		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory());
+		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(),
+				ResultPostProcessorInvoker.NONE);
 
 		verify(strategy, times(0)).resolveQuery(any(), any(), any(), any());
 	}
