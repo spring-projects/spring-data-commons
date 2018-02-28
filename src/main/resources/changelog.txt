@@ -1,6 +1,12 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.5.RELEASE (2018-02-28)
+---------------------------------------------
+* DATACMNS-1264 - MapDataBinder should reject type expressions in SpEL expressions.
+* DATACMNS-1262 - Release 2.0.5 (Kay SR5).
+
+
 Changes in version 2.0.4.RELEASE (2018-02-19)
 ---------------------------------------------
 * DATACMNS-1259 - Invalid date type for member Long when using @LastModifiedDate and @CreatedDate.
