@@ -17,6 +17,7 @@ package org.springframework.data.util;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.Collection;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -24,6 +25,7 @@ import javax.annotation.Nullable;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.util.Assert;
 
 /**
@@ -53,6 +55,18 @@ public class BeanLookup {
 		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
 
 		return Lazy.of(() -> lookupBean(type, (ListableBeanFactory) beanFactory));
+	}
+
+	public static <T> Collection<? extends T> orderedBeansOfType(Class<T> type, BeanFactory beanFactory) {
+
+		Assert.notNull(type, "Type must not be null!");
+		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
+
+		Collection<T> result = ((ListableBeanFactory) beanFactory).getBeansOfType(type, false, false).values();
+
+		AnnotationAwareOrderComparator.sortIfNecessary(result);
+
+		return result;
 	}
 
 	/**
