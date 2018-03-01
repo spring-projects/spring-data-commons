@@ -15,8 +15,13 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.WeakHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
 
@@ -26,23 +31,38 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.core.OrderComparator;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
+import org.springframework.data.repository.query.AbstractRepositoryQuery;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.QueryPostProcessor;
+import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 /**
  * Adapter for Springs {@link FactoryBean} interface to allow easy setup of repository factories via Spring
@@ -52,6 +72,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author John Blum
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID>
 		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware,
@@ -263,15 +284,20 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	public void afterPropertiesSet() {
 
 		this.factory = createRepositoryFactory();
-		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
-		this.factory.setNamedQueries(namedQueries);
-		this.factory.setEvaluationContextProvider(evaluationContextProvider);
-		this.factory.setBeanClassLoader(classLoader);
-		this.factory.setBeanFactory(beanFactory);
+		this.factory.setQueryLookupStrategyKey(this.queryLookupStrategyKey);
+		this.factory.setNamedQueries(this.namedQueries);
+		this.factory.setEvaluationContextProvider(this.evaluationContextProvider);
+		this.factory.setBeanClassLoader(this.classLoader);
+		this.factory.setBeanFactory(this.beanFactory);
 
-		if (publisher != null) {
-			this.factory.addRepositoryProxyPostProcessor(new EventPublishingRepositoryProxyPostProcessor(publisher));
-		}
+		Optional.ofNullable(this.beanFactory)
+			.filter(it -> it instanceof ListableBeanFactory)
+			.map(it -> (ListableBeanFactory) it)
+			.ifPresent(it -> this.factory.addQueryCreationListener(
+				new QueryPostProcessorRegistrationOnQueryCreationListener(it)));
+
+		Optional.ofNullable(this.publisher).ifPresent(it ->
+			this.factory.addRepositoryProxyPostProcessor(new EventPublishingRepositoryProxyPostProcessor(it)));
 
 		repositoryBaseClass.ifPresent(this.factory::setRepositoryBaseClass);
 
@@ -297,4 +323,113 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @return
 	 */
 	protected abstract RepositoryFactorySupport createRepositoryFactory();
+
+	protected class QueryPostProcessorRegistrationOnQueryCreationListener
+			implements QueryCreationListener<RepositoryQuery> {
+
+		private Iterable<QueryPostProcessorMetadata> queryPostProcessorsMetadata;
+
+		protected QueryPostProcessorRegistrationOnQueryCreationListener(@NonNull ListableBeanFactory beanFactory) {
+
+			Assert.notNull(beanFactory, "BeanFactory must not be null");
+
+			List<QueryPostProcessor> queryPostProcessors =
+				new ArrayList<>(beanFactory.getBeansOfType(QueryPostProcessor.class).values());
+
+			queryPostProcessors.sort(OrderComparator.INSTANCE);
+
+			this.queryPostProcessorsMetadata = queryPostProcessors.stream()
+				.map(QueryPostProcessorMetadata::from)
+				.collect(Collectors.toList());
+		}
+
+		@NonNull
+		protected Iterable<QueryPostProcessorMetadata> getQueryPostProcessorsMetadata() {
+			return this.queryPostProcessorsMetadata;
+		}
+
+		@Override
+		public void onCreation(@Nullable RepositoryQuery repositoryQuery) {
+
+			Optional.ofNullable(repositoryQuery)
+				.filter(AbstractRepositoryQuery.class::isInstance)
+				.map(it -> (AbstractRepositoryQuery) it)
+				.ifPresent(it -> {
+
+					Class<?> repositoryInterface = getRepositoryInformation().getRepositoryInterface();
+
+					StreamSupport.stream(getQueryPostProcessorsMetadata().spliterator(), false)
+						.filter(queryPostProcessorMetadata -> queryPostProcessorMetadata.isMatch(repositoryInterface))
+						.forEach(queryPostProcessorMetadata -> queryPostProcessorMetadata.register(it));
+				});
+		}
+	}
+
+	protected static class QueryPostProcessorMetadata {
+
+		private static final Map<QueryPostProcessorKey, QueryPostProcessorMetadata> cache = new WeakHashMap<>();
+
+		private final Class<?> declaredRepositoryType;
+
+		private final QueryPostProcessor<?, ?> queryPostProcessor;
+
+		static QueryPostProcessorMetadata from(@NonNull QueryPostProcessor<?, ?> queryPostProcessor) {
+
+			return cache.computeIfAbsent(QueryPostProcessorKey.of(queryPostProcessor),
+				key -> new QueryPostProcessorMetadata(key.getQueryPostProcessor()));
+		}
+
+		@SuppressWarnings("unchecked")
+		QueryPostProcessorMetadata(@NonNull QueryPostProcessor<?, ?> queryPostProcessor) {
+
+			Assert.notNull(queryPostProcessor, "QueryPostProcessor must not be null");
+
+			this.queryPostProcessor = queryPostProcessor;
+
+			List<TypeInformation<?>> typeArguments = ClassTypeInformation.from(queryPostProcessor.getClass())
+				.getRequiredSuperTypeInformation(QueryPostProcessor.class)
+				.getTypeArguments();
+
+			this.declaredRepositoryType = Optional.of(typeArguments)
+				.filter(list -> !list.isEmpty())
+				.map(list -> list.get(0))
+				.map(TypeInformation::getType)
+				.orElse((Class) Repository.class);
+		}
+
+		@NonNull
+		protected Class<?> getDeclaredRepositoryType() {
+			return this.declaredRepositoryType;
+		}
+
+		@NonNull
+		protected QueryPostProcessor<?, ?> getQueryPostProcessor() {
+			return this.queryPostProcessor;
+		}
+
+		boolean isMatch(@Nullable Class<?> repositoryInterface) {
+
+			return repositoryInterface != null
+				&& (getDeclaredRepositoryType().isAssignableFrom(repositoryInterface)
+					|| repositoryInterface.isAnnotationPresent(RepositoryDefinition.class));
+		}
+
+		@SuppressWarnings("unchecked")
+		AbstractRepositoryQuery register(@NonNull AbstractRepositoryQuery repositoryQuery) {
+
+			repositoryQuery.register(getQueryPostProcessor());
+
+			return repositoryQuery;
+		}
+
+		@Value
+		@EqualsAndHashCode
+		@RequiredArgsConstructor(staticName = "of")
+		private static class QueryPostProcessorKey {
+
+			@lombok.NonNull @Getter
+			private final QueryPostProcessor<?, ?> queryPostProcessor;
+
+		}
+	}
 }
