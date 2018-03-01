@@ -22,8 +22,15 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.mapping.context.SampleMappingContext;
 
 /**
  * Unit test for {@code AuditingHandler}.
@@ -32,10 +39,23 @@ import org.springframework.data.mapping.context.PersistentEntities;
  * @since 1.5
  */
 @SuppressWarnings("unchecked")
+@RunWith(MockitoJUnitRunner.class)
 public class AuditingHandlerUnitTests {
 
+	static class AuditedUserAuditorAware implements AuditorAware<AuditedUser> {
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.domain.AuditorAware#getCurrentAuditor()
+		 */
+		@Override
+		public Optional<AuditedUser> getCurrentAuditor() {
+			return Optional.empty();
+		}
+	}
+
 	AuditingHandler handler;
-	AuditorAware<AuditedUser> auditorAware;
+	@Mock AuditedUserAuditorAware auditorAware;
 
 	AuditedUser user;
 
@@ -45,12 +65,16 @@ public class AuditingHandlerUnitTests {
 		handler = getHandler();
 		user = new AuditedUser();
 
-		auditorAware = mock(AuditorAware.class);
 		when(auditorAware.getCurrentAuditor()).thenReturn(Optional.of(user));
 	}
 
 	protected AuditingHandler getHandler() {
-		return new AuditingHandler(PersistentEntities.of());
+
+		SampleMappingContext context = new SampleMappingContext();
+		context.getPersistentEntity(MixedAuditors.class);
+		context.afterPropertiesSet();
+
+		return new AuditingHandler(PersistentEntities.of(context));
 	}
 
 	/**
@@ -151,5 +175,73 @@ public class AuditingHandlerUnitTests {
 		handler.markCreated(user);
 
 		verify(provider, times(1)).getNow();
+	}
+
+	@Test // DATACMNS-1269
+	public void detectsAuditorAwareBeansFromBeanFactory() {
+
+		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+		factory.registerSingleton("first", new LongAuditorAware());
+		factory.registerSingleton("second", new StringAuditorAware());
+
+		handler.setBeanFactory(factory);
+
+		MixedAuditors probe = new MixedAuditors();
+
+		handler.markCreated(probe);
+
+		assertThat(probe.creator).isEqualTo(1L);
+		assertThat(probe.modifier).isEqualTo("foo");
+	}
+
+	@Test // DATACMNS-1269
+	public void manuallyConfiguredAuditorAwareTrumpsBeanFactory() {
+
+		// Given a manually configured AuditorAware
+		handler.setAuditorAware(auditorAware);
+
+		// and other implementations present in a BeanFactory
+		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+		factory.registerSingleton("first", new LongAuditorAware());
+		factory.registerSingleton("second", new StringAuditorAware());
+
+		handler.setBeanFactory(factory);
+
+		MixedAuditors probe = new MixedAuditors();
+
+		// when auditing is triggered
+		handler.markCreated(probe);
+
+		// the beans in the BeanFactory do not get applied
+		assertThat(probe.creator).isNull();
+		assertThat(probe.modifier).isNull();
+
+		handler.markCreated(user);
+
+		// but only the configured instance
+		assertThat(user.createdBy).isEqualTo(user);
+		assertThat(user.modifiedBy).isEqualTo(user);
+	}
+
+	static class LongAuditorAware implements AuditorAware<Long> {
+
+		@Override
+		public Optional<Long> getCurrentAuditor() {
+			return Optional.of(1L);
+		}
+	}
+
+	static class StringAuditorAware implements AuditorAware<String> {
+
+		@Override
+		public Optional<String> getCurrentAuditor() {
+			return Optional.of("foo");
+		}
+	}
+
+	static class MixedAuditors {
+
+		@CreatedBy Long creator;
+		@LastModifiedBy String modifier;
 	}
 }

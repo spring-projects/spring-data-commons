@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -36,18 +35,15 @@ import org.springframework.data.mapping.context.SampleMappingContext;
 @RunWith(MockitoJUnitRunner.class)
 public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
 
-	SampleMappingContext mappingContext;
-
-	@Before
-	public void init() {
-
-		this.mappingContext = new SampleMappingContext();
-		this.mappingContext.getPersistentEntity(AuditedUser.class);
-		this.mappingContext.afterPropertiesSet();
-	}
-
 	@Override
 	protected IsNewAwareAuditingHandler getHandler() {
+
+		SampleMappingContext mappingContext = new SampleMappingContext();
+
+		mappingContext.getPersistentEntity(AuditedUser.class);
+		mappingContext.getPersistentEntity(MixedAuditors.class);
+		mappingContext.afterPropertiesSet();
+
 		return new IsNewAwareAuditingHandler(PersistentEntities.of(mappingContext));
 	}
 

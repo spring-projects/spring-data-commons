@@ -70,4 +70,20 @@ public interface AuditableBeanWrapper<T> {
 	 * @since 2.1
 	 */
 	T getBean();
+
+	/**
+	 * Return the type used as creator.
+	 * 
+	 * @return
+	 * @since 2.1
+	 */
+	Optional<Class<?>> getCreatorType();
+
+	/**
+	 * Return the used as modifier.
+	 * 
+	 * @return
+	 * @since 2.1
+	 */
+	Optional<Class<?>> getModifierType();
 }
