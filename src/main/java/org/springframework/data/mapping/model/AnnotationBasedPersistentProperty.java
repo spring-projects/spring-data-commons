@@ -39,6 +39,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -229,22 +230,13 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@SuppressWarnings("unchecked")
 	private <A extends Annotation> Optional<A> doFindAnnotation(Class<A> annotationType) {
 
-		if (annotationCache != null && annotationCache.containsKey(annotationType)) {
-			return (Optional<A>) annotationCache.get(annotationType);
-		}
+		return (Optional<A>) annotationCache.computeIfAbsent(annotationType, type -> {
 
-		return cacheAndReturn(annotationType, getAccessors()//
-				.flatMap(it -> {
-
-					A mergedAnnotation = AnnotatedElementUtils.findMergedAnnotation(it, annotationType);
-
-					if (mergedAnnotation == null) {
-						return Stream.empty();
-					}
-
-					return Stream.of(mergedAnnotation);
-				})//
-				.findFirst());
+			return getAccessors() //
+					.map(it -> AnnotatedElementUtils.findMergedAnnotation(it, type)) //
+					.flatMap(StreamUtils::fromNullable) //
+					.findFirst();
+		});
 	}
 
 	/*
@@ -258,18 +250,6 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		A annotation = findAnnotation(annotationType);
 
 		return annotation != null ? annotation : getOwner().findAnnotation(annotationType);
-	}
-
-	/**
-	 * Puts the given annotation into the local cache and returns it.
-	 *
-	 * @param annotation
-	 * @return
-	 */
-	private <A extends Annotation> Optional<A> cacheAndReturn(Class<? extends A> type, Optional<A> annotation) {
-
-		annotationCache.put(type, annotation);
-		return annotation;
 	}
 
 	/**
