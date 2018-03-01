@@ -28,6 +28,7 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 
@@ -94,5 +95,16 @@ public interface StreamUtils {
 	public static <T, K, V> Collector<T, MultiValueMap<K, V>, MultiValueMap<K, V>> toMultiMap(Function<T, K> keyFunction,
 			Function<T, V> valueFunction) {
 		return MultiValueMapCollector.of(keyFunction, valueFunction);
+	}
+
+	/**
+	 * Creates a new {@link Stream} for the given value returning an empty {@link Stream} if the value is {@literal null}.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return a new {@link Stream} for the given value returning an empty {@link Stream} if the value is {@literal null}.
+	 * @since 2.0.6
+	 */
+	public static <T> Stream<T> fromNullable(@Nullable T source) {
+		return source == null ? Stream.empty() : Stream.of(source);
 	}
 }
