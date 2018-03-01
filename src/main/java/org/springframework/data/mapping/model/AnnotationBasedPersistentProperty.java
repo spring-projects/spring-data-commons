@@ -17,9 +17,9 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,7 +56,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	private static final String SPRING_DATA_PACKAGE = "org.springframework.data";
 
 	private final @Nullable String value;
-	private final Map<Class<? extends Annotation>, Optional<? extends Annotation>> annotationCache = new HashMap<>();
+	private final Map<Class<? extends Annotation>, Optional<? extends Annotation>> annotationCache = new ConcurrentHashMap<>();
 
 	private final Lazy<Boolean> usePropertyAccess = Lazy.of(() -> {
 
@@ -229,6 +229,12 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	@SuppressWarnings("unchecked")
 	private <A extends Annotation> Optional<A> doFindAnnotation(Class<A> annotationType) {
+
+		Optional<? extends Annotation> annotation = annotationCache.get(annotationType);
+
+		if (annotation != null) {
+			return (Optional<A>) annotation;
+		}
 
 		return (Optional<A>) annotationCache.computeIfAbsent(annotationType, type -> {
 
