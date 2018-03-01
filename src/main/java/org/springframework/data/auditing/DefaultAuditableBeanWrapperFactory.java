@@ -32,6 +32,7 @@ import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.domain.Auditable;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.lang.Nullable;
@@ -85,13 +86,16 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		private final @NonNull Auditable<Object, ?, TemporalAccessor> auditable;
 		private final Class<? extends TemporalAccessor> type;
+		private final Class<?> auditorType;
 
 		@SuppressWarnings("unchecked")
 		public AuditableInterfaceBeanWrapper(Auditable<Object, ?, TemporalAccessor> auditable) {
 
 			this.auditable = auditable;
-			this.type = (Class<? extends TemporalAccessor>) ResolvableType.forClass(Auditable.class, auditable.getClass())
-					.getGeneric(2).resolve(TemporalAccessor.class);
+
+			ResolvableType auditableType = ResolvableType.forClass(Auditable.class, auditable.getClass());
+			this.type = (Class<? extends TemporalAccessor>) auditableType.getGeneric(2).resolve(TemporalAccessor.class);
+			this.auditorType = auditableType.getGeneric(0).resolve(Object.class);
 		}
 
 		/*
@@ -158,6 +162,24 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Override
 		public Auditable<Object, ?, TemporalAccessor> getBean() {
 			return auditable;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getCreatorType()
+		 */
+		@Override
+		public Optional<Class<?>> getCreatorType() {
+			return Optional.of(auditorType);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getModifierType()
+		 */
+		@Override
+		public Optional<Class<?>> getModifierType() {
+			return Optional.of(auditorType);
 		}
 	}
 
@@ -335,6 +357,31 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Override
 		public T getBean() {
 			return target;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getCreatorType()
+		 */
+		@Override
+		public Optional<Class<?>> getCreatorType() {
+			return metadata.getCreatedByField().map(this::getFieldType);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getModifierType()
+		 */
+		@Override
+		public Optional<Class<?>> getModifierType() {
+			return metadata.getLastModifiedByField().map(this::getFieldType);
+		}
+
+		private Class<?> getFieldType(Field field) {
+
+			return ClassTypeInformation.from(target.getClass()) //
+					.getRequiredProperty(field.getName()) //
+					.getType();
 		}
 
 		/**

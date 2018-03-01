@@ -229,6 +229,29 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return accessor.getBean();
 		}
 
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getCreatorType()
+		 */
+		@Override
+		public Optional<Class<?>> getCreatorType() {
+
+			return metadata.createdByPaths.getFirst() //
+					.map(path -> path.getLeafProperty()) //
+					.map(PersistentProperty::getType);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getModifierType()
+		 */
+		@Override
+		public Optional<Class<?>> getModifierType() {
+			return metadata.lastModifiedByPaths.getFirst() //
+					.map(path -> path.getLeafProperty()) //
+					.map(PersistentProperty::getType);
+		}
+
 		private <S, P extends PersistentProperty<?>> S setProperty(
 				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, S value) {
 
