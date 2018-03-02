@@ -20,8 +20,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,13 +44,14 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>> extends
-		AbstractPersistentProperty<P> {
+public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>>
+		extends AbstractPersistentProperty<P> {
 
 	private static final String SPRING_DATA_PACKAGE = "org.springframework.data";
 
 	private final Value value;
-	private final Map<Class<? extends Annotation>, Annotation> annotationCache = new HashMap<Class<? extends Annotation>, Annotation>();
+	private final Map<Class<? extends Annotation>, CachedValue<? extends Annotation>> annotationCache = //
+			new ConcurrentHashMap<Class<? extends Annotation>, CachedValue<? extends Annotation>>();
 
 	private Boolean isTransient;
 	private boolean usePropertyAccess;
@@ -93,11 +94,12 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 				Class<? extends Annotation> annotationType = annotation.annotationType();
 
-				validateAnnotation(annotation, "Ambiguous mapping! Annotation %s configured "
-						+ "multiple times on accessor methods of property %s in class %s!", annotationType.getSimpleName(),
-						getName(), getOwner().getType().getSimpleName());
+				validateAnnotation(annotation,
+						"Ambiguous mapping! Annotation %s configured "
+								+ "multiple times on accessor methods of property %s in class %s!",
+						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
 
-				annotationCache.put(annotationType, annotation);
+				cacheAndReturn(annotationType, annotation);
 			}
 		}
 
@@ -109,11 +111,11 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 			Class<? extends Annotation> annotationType = annotation.annotationType();
 
-			validateAnnotation(annotation, "Ambiguous mapping! Annotation %s configured "
-					+ "on field %s and one of its accessor methods in class %s!", annotationType.getSimpleName(),
-					field.getName(), getOwner().getType().getSimpleName());
+			validateAnnotation(annotation,
+					"Ambiguous mapping! Annotation %s configured " + "on field %s and one of its accessor methods in class %s!",
+					annotationType.getSimpleName(), field.getName(), getOwner().getType().getSimpleName());
 
-			annotationCache.put(annotationType, annotation);
+			cacheAndReturn(annotationType, annotation);
 		}
 	}
 
@@ -133,7 +135,9 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			return;
 		}
 
-		if (annotationCache.containsKey(annotationType) && !annotationCache.get(annotationType).equals(candidate)) {
+		CachedValue<? extends Annotation> cachedValue = annotationCache.get(annotationType);
+
+		if (cachedValue != null && !annotationCache.get(annotationType).value.equals(candidate)) {
 			throw new MappingException(String.format(message, arguments));
 		}
 	}
@@ -151,7 +155,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	/**
 	 * Considers plain transient fields, fields annotated with {@link Transient}, {@link Value} or {@link Autowired} as
-	 * transien.
+	 * transient.
 	 * 
 	 * @see org.springframework.data.mapping.BasicPersistentProperty#isTransient()
 	 */
@@ -213,8 +217,11 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 		Assert.notNull(annotationType, "Annotation type must not be null!");
 
-		if (annotationCache != null && annotationCache.containsKey(annotationType)) {
-			return (A) annotationCache.get(annotationType);
+		CachedValue<? extends Annotation> cachedAnnotation = annotationCache == null ? null
+				: annotationCache.get(annotationType);
+
+		if (cachedAnnotation != null) {
+			return (A) cachedAnnotation.getValue();
 		}
 
 		for (Method method : Arrays.asList(getGetter(), getSetter())) {
@@ -254,7 +261,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	private <A extends Annotation> A cacheAndReturn(Class<? extends A> type, A annotation) {
 
 		if (annotationCache != null) {
-			annotationCache.put(type, annotation);
+			annotationCache.put(type, CachedValue.of(annotation));
 		}
 
 		return annotation;
@@ -292,12 +299,17 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 		StringBuilder builder = new StringBuilder();
 
-		for (Annotation annotation : annotationCache.values()) {
-			if (annotation != null) {
-				builder.append(annotation.toString()).append(" ");
+		for (CachedValue<? extends Annotation> annotation : annotationCache.values()) {
+			if (annotation.value != null) {
+				builder.append(annotation.value.toString()).append(" ");
 			}
 		}
 
 		return builder.toString() + super.toString();
+	}
+
+	@lombok.Value(staticConstructor = "of")
+	static class CachedValue<T> {
+		T value;
 	}
 }

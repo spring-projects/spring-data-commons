@@ -38,6 +38,7 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
+import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty.CachedValue;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -168,7 +169,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		Map<Class<?>, ?> field = (Map<Class<?>, ?>) ReflectionTestUtils.getField(property, "annotationCache");
 
 		assertThat(field.containsKey(MyAnnotation.class), is(true));
-		assertThat(field.get(MyAnnotation.class), is(nullValue()));
+		assertThat(field.get(MyAnnotation.class), is((Object) CachedValue.of(null)));
 	}
 
 	@Test // DATACMNS-825
