@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Data;
 import org.junit.Test;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.TargetClassAware;
@@ -80,11 +81,6 @@ public class ProxyProjectionFactoryUnitTests {
 
 		assertThat(proxy).isInstanceOf(TargetClassAware.class);
 		assertThat(((TargetClassAware) proxy).getTargetClass()).isEqualTo(HashMap.class);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATAREST-221, DATACMNS-630
-	public void rejectsNonInterfacesAsProjectionTarget() {
-		factory.createProjection(Object.class, new Object());
 	}
 
 	@Test // DATACMNS-630
@@ -216,6 +212,24 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(factory.createProjection(Contact.class, customer)).isSameAs(customer);
 	}
 
+	@Test // DATAJPA-1003
+	public void createsProjectingClassProxy() {
+
+		Employeer employeer = new Employeer();
+		employeer.setName("Company x");
+
+		Employee employee = new Employee();
+		employee.firstname = "Dave";
+		employee.lastname = "Matthews";
+
+		employeer.setEmployee(employee);
+
+		EmployeerExpect employeerExpect = factory.createProjection(EmployeerExpect.class, employeer);
+
+		assertThat(employeerExpect.getName()).isEqualTo("Company x");
+		assertThat(employeerExpect.getEmployee().getFirstname()).isEqualTo("Dave");
+	}
+
 	interface Contact {}
 
 	static class Customer implements Contact {
@@ -258,5 +272,27 @@ public class ProxyProjectionFactoryUnitTests {
 		String getFirstname();
 
 		void setFirstname(String firstname);
+	}
+
+	@Data
+	public class Employee {
+		String firstname, lastname;
+	}
+
+	@Data
+	public class EmployeeExpect {
+		String firstname, lastname;
+	}
+
+	@Data
+	public class Employeer {
+		String name;
+		Employee employee;
+	}
+
+	@Data
+	public class EmployeerExpect {
+		String name;
+		Employee employee;
 	}
 }

@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.reactivex.Flowable;
+import lombok.Data;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Observable;
@@ -308,6 +309,18 @@ public class ResultProcessorUnitTests {
 		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
 	}
 
+	@Test // DATAJPA-1003
+	public void createsListOfProjectionsClassFromEntity() throws Exception {
+
+		ResultProcessor information = getProcessor("findAllProjectionClass");
+
+		List<Sample> source = new ArrayList<>(Collections.singletonList(new Sample("Dave", "Matthews")));
+		List<SampleProjectionClass> result = information.processResult(source);
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getLastname()).isEqualTo("Matthews");
+	}
+
 	private static ResultProcessor getProcessor(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor();
 	}
@@ -326,6 +339,8 @@ public class ResultProcessorUnitTests {
 		List<SampleDto> findAllDtos();
 
 		List<SampleProjection> findAllProjection();
+
+		List<SampleProjectionClass> findAllProjectionClass();
 
 		Sample findOne();
 
@@ -385,6 +400,11 @@ public class ResultProcessorUnitTests {
 
 		@Value("#{target.firstname + ' ' + target.lastname}")
 		String getFullName();
+	}
+
+	@Data
+	public class SampleProjectionClass {
+		String firstname, lastname;
 	}
 
 	static class SpecialList<E> extends ArrayList<E> {

@@ -96,7 +96,6 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 
 		Assert.notNull(projectionType, "Projection type must not be null!");
 		Assert.notNull(source, "Source must not be null!");
-		Assert.isTrue(projectionType.isInterface(), "Projection type must be an interface!");
 
 		if (projectionType.isInstance(source)) {
 			return (T) source;
@@ -105,7 +104,13 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		ProxyFactory factory = new ProxyFactory();
 		factory.setTarget(source);
 		factory.setOpaque(true);
-		factory.setInterfaces(projectionType, TargetAware.class);
+
+		if (projectionType.isInterface()) {
+			factory.setInterfaces(projectionType, TargetAware.class);
+		} else {
+			factory.setTargetClass(projectionType);
+			factory.setProxyTargetClass(true);
+		}
 
 		factory.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		factory.addAdvice(new TargetAwareMethodInterceptor(source.getClass()));

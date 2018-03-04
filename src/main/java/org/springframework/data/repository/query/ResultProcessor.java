@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
+import org.springframework.cglib.core.TypeUtils;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
@@ -286,7 +287,7 @@ public class ResultProcessor {
 
 			Class<?> targetType = type.getReturnedType();
 
-			if (targetType.isInterface()) {
+			if (targetType.isInterface() || !TypeUtils.isFinal(targetType.getModifiers())) {
 				return factory.createProjection(targetType, getProjectionTarget(source));
 			}
 
