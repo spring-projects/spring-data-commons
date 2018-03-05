@@ -35,6 +35,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Unit tests for {@link ProxyProjectionFactory}.
  *
  * @author Oliver Gierke
+ * @author Bernardo Maia
  */
 public class ProxyProjectionFactoryUnitTests {
 

@@ -51,6 +51,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Bernardo Maia
  */
 public class ResultProcessorUnitTests {
 

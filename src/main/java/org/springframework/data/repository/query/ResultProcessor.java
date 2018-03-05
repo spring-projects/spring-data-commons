@@ -48,6 +48,7 @@ import org.springframework.util.Assert;
  * @author John Blum
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Bernardo Maia
  * @since 1.12
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

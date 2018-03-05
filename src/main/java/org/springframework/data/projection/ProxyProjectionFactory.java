@@ -41,6 +41,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Bernardo Maia
  * @see SpelAwareProxyProjectionFactory
  * @since 1.10
  */
