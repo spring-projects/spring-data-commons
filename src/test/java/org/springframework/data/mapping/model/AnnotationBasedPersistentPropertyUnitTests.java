@@ -29,7 +29,6 @@ import javax.annotation.Nullable;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -44,7 +43,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link AnnotationBasedPersistentProperty}.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
@@ -204,7 +203,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		SamplePersistentProperty setter = entity.getPersistentProperty("setter");
 		RevisedAnnnotationWithAliasFor annotation = setter.findAnnotation(RevisedAnnnotationWithAliasFor.class);
-		
+
 		assertThat(annotation.name(), is(equalTo("my-value")));
 		assertThat(annotation.value(), is(equalTo("my-value")));
 	}

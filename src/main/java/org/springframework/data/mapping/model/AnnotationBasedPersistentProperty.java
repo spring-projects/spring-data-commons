@@ -40,7 +40,7 @@ import org.springframework.util.Assert;
 
 /**
  * Special {@link PersistentProperty} that takes annotations at a property into account.
- * 
+ *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
@@ -59,7 +59,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
-	 * 
+	 *
 	 * @param field must not be {@literal null}.
 	 * @param propertyDescriptor can be {@literal null}.
 	 * @param owner must not be {@literal null}.
@@ -79,7 +79,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	/**
 	 * Populates the annotation cache by eagerly accessing the annotations directly annotated to the accessors (if
 	 * available) and the backing field. Annotations override annotations found on field.
-	 * 
+	 *
 	 * @param field
 	 * @throws MappingException in case we find an ambiguous mapping on the accessor methods
 	 */
@@ -123,7 +123,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	/**
 	 * Verifies the given annotation candidate detected. Will be rejected if it's a Spring Data annotation and we already
 	 * found another one with a different configuration setup (i.e. other attribute values).
-	 * 
+	 *
 	 * @param candidate must not be {@literal null}.
 	 * @param message must not be {@literal null}.
 	 * @param arguments must not be {@literal null}.
@@ -146,7 +146,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	/**
 	 * Inspects a potentially available {@link Value} annotation at the property and returns the {@link String} value of
 	 * it.
-	 * 
+	 *
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getSpelExpression()
 	 */
 	@Override
@@ -157,7 +157,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	/**
 	 * Considers plain transient fields, fields annotated with {@link Transient}, {@link Value} or {@link Autowired} as
 	 * transient.
-	 * 
+	 *
 	 * @see org.springframework.data.mapping.BasicPersistentProperty#isTransient()
 	 */
 	@Override
@@ -180,7 +180,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return isAnnotationPresent(Id.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#isVersionProperty()
 	 */
@@ -196,7 +196,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return !isTransient() && isAnnotationPresent(Reference.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#isWritable()
 	 */
@@ -209,7 +209,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * Returns the annotation found for the current {@link AnnotationBasedPersistentProperty}. Will prefer getters or
 	 * setters annotations over ones found at the backing field as the former can be used to reconfigure the metadata in
 	 * subclasses.
-	 * 
+	 *
 	 * @param annotationType must not be {@literal null}.
 	 * @return
 	 */
@@ -242,7 +242,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 				field == null ? null : AnnotatedElementUtils.findMergedAnnotation(field, annotationType));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#findPropertyOrOwnerAnnotation(java.lang.Class)
 	 */
@@ -255,7 +255,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	/**
 	 * Puts the given annotation into the local cache and returns it.
-	 * 
+	 *
 	 * @param annotation
 	 * @return
 	 */
@@ -270,7 +270,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	/**
 	 * Returns whether the property carries the an annotation of the given type.
-	 * 
+	 *
 	 * @param annotationType the annotation type to look up.
 	 * @return
 	 */
@@ -278,7 +278,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return findAnnotation(annotationType) != null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#usePropertyAccess()
 	 */
@@ -287,7 +287,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return super.usePropertyAccess() || usePropertyAccess;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#toString()
 	 */
