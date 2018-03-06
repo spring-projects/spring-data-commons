@@ -72,7 +72,6 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test // DATACMNS-101
 	public void returnsNestedEntityTypeCorrectly() {
 		assertThat(getProperty(TestClassComplex.class, "testClassSet").getPersistentEntityTypes()).isEmpty();
-		assertThat(getProperty(TestClassComplex.class, "testClassSet").getPersistentEntityType()).isEmpty();
 	}
 
 	@Test // DATACMNS-132
@@ -198,7 +197,6 @@ public class AbstractPersistentPropertyUnitTests {
 
 		SamplePersistentProperty property = getProperty(TreeMapWrapper.class, "map");
 		assertThat(property.getPersistentEntityTypes()).isEmpty();
-		assertThat(property.getPersistentEntityType()).isEmpty();
 		assertThat(property.isEntity()).isFalse();
 	}
 

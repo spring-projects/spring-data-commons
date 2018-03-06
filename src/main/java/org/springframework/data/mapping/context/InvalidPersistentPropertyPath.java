@@ -15,10 +15,18 @@
  */
 package org.springframework.data.mapping.context;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.springframework.beans.PropertyMatches;
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Exception to indicate a source path couldn't be resolved into a {@link PersistentPropertyPath} completely.
@@ -29,6 +37,7 @@ import org.springframework.util.Assert;
 public class InvalidPersistentPropertyPath extends MappingException {
 
 	private static final long serialVersionUID = 2805815643641094488L;
+	private static final String DEFAULT_MESSAGE = "No property '%s' found on %s! Did you mean: %s?";
 
 	private final String source, unresolvableSegment, resolvedPath;
 	private final TypeInformation<?> type;
@@ -41,10 +50,11 @@ public class InvalidPersistentPropertyPath extends MappingException {
 	 * @param resolvedPath
 	 * @param message must not be {@literal null} or empty.
 	 */
-	InvalidPersistentPropertyPath(String source, TypeInformation<?> type, String unresolvableSegment,
-			@Nullable String resolvedPath, String message) {
+	public InvalidPersistentPropertyPath(String source, TypeInformation<?> type, String unresolvableSegment,
+			PersistentPropertyPath<? extends PersistentProperty<?>> resolvedPath) {
 
-		super(message);
+		super(createMessage(resolvedPath.isEmpty() ? type : resolvedPath.getRequiredLeafProperty().getTypeInformation(),
+				unresolvableSegment));
 
 		Assert.notNull(source, "Source property path must not be null!");
 		Assert.notNull(type, "Type must not be null!");
@@ -53,7 +63,7 @@ public class InvalidPersistentPropertyPath extends MappingException {
 		this.source = source;
 		this.type = type;
 		this.unresolvableSegment = unresolvableSegment;
-		this.resolvedPath = resolvedPath == null ? "" : resolvedPath;
+		this.resolvedPath = toDotPathOrEmpty(resolvedPath);
 	}
 
 	/**
@@ -90,5 +100,33 @@ public class InvalidPersistentPropertyPath extends MappingException {
 	 */
 	public String getResolvedPath() {
 		return resolvedPath;
+	}
+
+	private static String toDotPathOrEmpty(@Nullable PersistentPropertyPath<? extends PersistentProperty<?>> path) {
+
+		if (path == null) {
+			return "";
+		}
+
+		String dotPath = path.toDotPath();
+
+		return dotPath == null ? "" : dotPath;
+	}
+
+	private static String createMessage(TypeInformation<?> type, String unresolvableSegment) {
+
+		Set<String> potentialMatches = detectPotentialMatches(unresolvableSegment, type.getType());
+		Object match = StringUtils.collectionToCommaDelimitedString(potentialMatches);
+
+		return String.format(DEFAULT_MESSAGE, unresolvableSegment, type.getType(), match);
+	}
+
+	private static Set<String> detectPotentialMatches(String propertyName, Class<?> type) {
+
+		Set<String> result = new HashSet<>();
+		result.addAll(Arrays.asList(PropertyMatches.forField(propertyName, type).getPossibleMatches()));
+		result.addAll(Arrays.asList(PropertyMatches.forProperty(propertyName, type).getPossibleMatches()));
+
+		return result;
 	}
 }

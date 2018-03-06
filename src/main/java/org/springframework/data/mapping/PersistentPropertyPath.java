@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping.context;
+package org.springframework.data.mapping;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 
 /**
@@ -24,7 +24,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Oliver Gierke
  */
-public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends Iterable<T> {
+public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends Streamable<P> {
 
 	/**
 	 * Returns the dot based path notation using {@link PersistentProperty#getName()}.
@@ -42,7 +42,7 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * @return
 	 */
 	@Nullable
-	String toDotPath(Converter<? super T, String> converter);
+	String toDotPath(Converter<? super P, String> converter);
 
 	/**
 	 * Returns a {@link String} path with the given delimiter based on the {@link PersistentProperty#getName()}.
@@ -62,7 +62,7 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * @return
 	 */
 	@Nullable
-	String toPath(String delimiter, Converter<? super T, String> converter);
+	String toPath(String delimiter, Converter<? super P, String> converter);
 
 	/**
 	 * Returns the last property in the {@link PersistentPropertyPath}. So for {@code foo.bar} it will return the
@@ -72,7 +72,18 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * @return
 	 */
 	@Nullable
-	T getLeafProperty();
+	P getLeafProperty();
+
+	default P getRequiredLeafProperty() {
+
+		P property = getLeafProperty();
+
+		if (property == null) {
+			throw new IllegalStateException("No leaf property found!");
+		}
+
+		return property;
+	}
 
 	/**
 	 * Returns the first property in the {@link PersistentPropertyPath}. So for {@code foo.bar} it will return the
@@ -82,7 +93,7 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * @return
 	 */
 	@Nullable
-	T getBaseProperty();
+	P getBaseProperty();
 
 	/**
 	 * Returns whether the given {@link PersistentPropertyPath} is a base path of the current one. This means that the
@@ -91,7 +102,7 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
-	boolean isBasePathOf(PersistentPropertyPath<T> path);
+	boolean isBasePathOf(PersistentPropertyPath<P> path);
 
 	/**
 	 * Returns the sub-path of the current one as if it was based on the given base path. So for a current path
@@ -101,7 +112,7 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * @param base must not be {@literal null}.
 	 * @return
 	 */
-	PersistentPropertyPath<T> getExtensionForBaseOf(PersistentPropertyPath<T> base);
+	PersistentPropertyPath<P> getExtensionForBaseOf(PersistentPropertyPath<P> base);
 
 	/**
 	 * Returns the parent path of the current {@link PersistentPropertyPath}, i.e. the path without the leaf property.
@@ -110,7 +121,7 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 *
 	 * @return
 	 */
-	PersistentPropertyPath<T> getParentPath();
+	PersistentPropertyPath<P> getParentPath();
 
 	/**
 	 * Returns the length of the {@link PersistentPropertyPath}.
@@ -118,12 +129,4 @@ public interface PersistentPropertyPath<T extends PersistentProperty<T>> extends
 	 * @return
 	 */
 	int getLength();
-
-	/**
-	 * Returns whether the path is empty.
-	 *
-	 * @return
-	 * @since 1.11
-	 */
-	boolean isEmpty();
 }

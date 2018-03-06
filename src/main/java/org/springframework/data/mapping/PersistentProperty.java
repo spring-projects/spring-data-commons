@@ -21,9 +21,11 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * @author Graeme Rocher
@@ -67,21 +69,9 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * {@literal null} in case it refers to a simple type. Will return {@link Collection}'s component type or the
 	 * {@link Map}'s value type transparently.
 	 *
-	 * @deprecated Use getPersistentEntityTypes instead.
-	 */
-	@Deprecated
-	Iterable<? extends TypeInformation<?>> getPersistentEntityType();
-
-	/**
-	 * Returns the {@link TypeInformation} if the property references a {@link PersistentEntity}. Will return
-	 * {@literal null} in case it refers to a simple type. Will return {@link Collection}'s component type or the
-	 * {@link Map}'s value type transparently.
-	 *
 	 * @return
 	 */
-	default Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
-		return getPersistentEntityType();
-	};
+	Iterable<? extends TypeInformation<?>> getPersistentEntityTypes();
 
 	/**
 	 * Returns the getter method to access the property value if available. Might return {@literal null} in case there is
@@ -328,4 +318,19 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return
 	 */
 	boolean usePropertyAccess();
+
+	/**
+	 * Returns whether the actual type of the property carries the given annotation.
+	 * 
+	 * @param annotationType must not be {@literal null}.
+	 * @return
+	 * @since 2.1
+	 * @see #getActualType()
+	 */
+	default boolean hasActualTypeAnnotation(Class<? extends Annotation> annotationType) {
+
+		Assert.notNull(annotationType, "Annotation type must not be null!");
+
+		return AnnotatedElementUtils.hasAnnotation(getActualType(), annotationType);
+	}
 }

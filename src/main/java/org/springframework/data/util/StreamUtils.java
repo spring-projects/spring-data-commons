@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
@@ -106,5 +109,40 @@ public interface StreamUtils {
 	 */
 	public static <T> Stream<T> fromNullable(@Nullable T source) {
 		return source == null ? Stream.empty() : Stream.of(source);
+	}
+
+	/**
+	 * Zips the given {@link Stream}s using the given {@link BiFunction}. The resulting {@link Stream} will have the
+	 * length of the shorter of the two, abbreviating the zipping when the shorter of the two {@link Stream}s is
+	 * exhausted.
+	 * 
+	 * @param left must not be {@literal null}.
+	 * @param right must not be {@literal null}.
+	 * @param combiner must not be {@literal null}.
+	 * @return
+	 * @since 2.1
+	 */
+	public static <L, R, T> Stream<T> zip(Stream<L> left, Stream<R> right, BiFunction<L, R, T> combiner) {
+
+		Assert.notNull(left, "Left stream must not be null!");
+		Assert.notNull(right, "Right must not be null!");
+		Assert.notNull(combiner, "Combiner must not be null!");
+
+		Spliterator<L> lefts = left.spliterator();
+		Spliterator<R> rights = right.spliterator();
+
+		long size = Long.min(lefts.estimateSize(), rights.estimateSize());
+		int characteristics = lefts.characteristics() & rights.characteristics();
+		boolean parallel = left.isParallel() || right.isParallel();
+
+		return StreamSupport.stream(new AbstractSpliterator<T>(size, characteristics) {
+
+			@Override
+			@SuppressWarnings("null")
+			public boolean tryAdvance(Consumer<? super T> action) {
+				return lefts.tryAdvance(left -> rights.tryAdvance(right -> action.accept(combiner.apply(left, right))));
+			}
+
+		}, parallel);
 	}
 }
