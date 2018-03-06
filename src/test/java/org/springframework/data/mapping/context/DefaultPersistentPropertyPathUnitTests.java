@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.context;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyPath;
 
 /**
  * Unit tests for {@link DefaultPersistentPropertyPath}.
@@ -35,14 +37,14 @@ import org.springframework.data.mapping.PersistentProperty;
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<T>> {
+public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty<P>> {
 
-	@Mock T first, second;
+	@Mock P first, second;
 
-	@Mock Converter<T, String> converter;
+	@Mock Converter<P, String> converter;
 
-	PersistentPropertyPath<T> oneLeg;
-	PersistentPropertyPath<T> twoLegs;
+	PersistentPropertyPath<P> oneLeg;
+	PersistentPropertyPath<P> twoLegs;
 
 	@Before
 	public void setUp() {
@@ -96,7 +98,7 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 	@Test
 	public void calculatesExtensionCorrectly() {
 
-		PersistentPropertyPath<T> extension = twoLegs.getExtensionForBaseOf(oneLeg);
+		PersistentPropertyPath<P> extension = twoLegs.getExtensionForBaseOf(oneLeg);
 
 		assertThat(extension).isEqualTo(new DefaultPersistentPropertyPath<>(Collections.singletonList(second)));
 	}
@@ -107,8 +109,18 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 	}
 
 	@Test
-	public void returnsItselfAsParentPathIfSizeOne() {
-		assertThat(oneLeg.getParentPath()).isEqualTo(oneLeg);
+	public void returnsEmptyPathForRootLevelProperty() {
+		assertThat(oneLeg.getParentPath()).isEmpty();
+	}
+
+	@Test
+	public void returnItselfForEmptyPath() {
+
+		PersistentPropertyPath<P> parent = oneLeg.getParentPath();
+		PersistentPropertyPath<P> parentsParent = parent.getParentPath();
+
+		assertThat(parentsParent).isEmpty();
+		assertThat(parentsParent).isSameAs(parent);
 	}
 
 	@Test

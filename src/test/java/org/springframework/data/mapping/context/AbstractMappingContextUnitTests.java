@@ -34,12 +34,10 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.util.StringUtils;
 
 /**
  * Unit test for {@link AbstractMappingContext}.
@@ -54,15 +52,9 @@ public class AbstractMappingContextUnitTests {
 
 	@Before
 	public void setUp() {
+
 		context = new SampleMappingContext();
 		context.setSimpleTypeHolder(new SimpleTypeHolder(Collections.singleton(LocalDateTime.class), true));
-	}
-
-	@Test
-	public void doesNotTryToLookupPersistentEntityForLeafProperty() {
-		PersistentPropertyPath<SamplePersistentProperty> path = context
-				.getPersistentPropertyPath(PropertyPath.from("name", Person.class));
-		assertThat(path).isNotNull();
 	}
 
 	@Test(expected = MappingException.class) // DATACMNS-92
@@ -158,22 +150,6 @@ public class AbstractMappingContextUnitTests {
 						.satisfies(inner -> assertThat(((PersistentEntity) inner).getType()).isEqualTo(Person.class)));
 	}
 
-	@Test // DATACMNS-380
-	public void returnsPersistentPropertyPathForDotPath() {
-
-		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath("persons.name",
-				Sample.class);
-
-		assertThat(path.getLength()).isEqualTo(2);
-		assertThat(path.getBaseProperty().getName()).isEqualTo("persons");
-		assertThat(path.getLeafProperty().getName()).isEqualTo("name");
-	}
-
-	@Test(expected = MappingException.class) // DATACMNS-380
-	public void rejectsInvalidPropertyReferenceWithMappingException() {
-		context.getPersistentPropertyPath("foo", Sample.class);
-	}
-
 	@Test // DATACMNS-390
 	public void exposesCopyOfPersistentEntitiesToAvoidConcurrentModificationException() {
 
@@ -218,29 +194,6 @@ public class AbstractMappingContextUnitTests {
 	@Test // DATACMNS-1171
 	public void shouldNotCreateEntityForSyntheticKotlinClass() {
 		assertThat(context.getPersistentEntity(TypeCreatingSyntheticClass.class)).isNotNull();
-	}
-
-	@Test // DATACMNS-695
-	public void persistentPropertyPathTraversesGenericTypesCorrectly() {
-		assertThat(context.getPersistentPropertyPath("field.wrapped.field", Outer.class)).hasSize(3);
-	}
-
-	@Test // DATACMNS-727
-	public void exposesContextForFailingPropertyPathLookup() {
-
-		assertThatExceptionOfType(InvalidPersistentPropertyPath.class)//
-				.isThrownBy(() -> context.getPersistentPropertyPath("persons.firstname", Sample.class))//
-				.matches(e -> StringUtils.hasText(e.getMessage()))//
-				.matches(e -> e.getResolvedPath().equals("persons"))//
-				.matches(e -> e.getUnresolvableSegment().equals("firstname"))//
-				.matches(e -> context.getPersistentPropertyPath(e) != null);
-	}
-
-	@Test // DATACMNS-1116
-	public void cachesPersistentPropertyPaths() {
-
-		assertThat(context.getPersistentPropertyPath("persons.name", Sample.class)) //
-				.isSameAs(context.getPersistentPropertyPath("persons.name", Sample.class));
 	}
 
 	@Test // DATACMNS-1208
@@ -298,18 +251,5 @@ public class AbstractMappingContextUnitTests {
 
 	static class Extension extends Base {
 		@Id String foo;
-	}
-
-	static class Outer {
-
-		Wrapper<Inner> field;
-	}
-
-	static class Wrapper<T> {
-		T wrapped;
-	}
-
-	static class Inner {
-		String field;
 	}
 }

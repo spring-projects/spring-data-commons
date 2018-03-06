@@ -121,4 +121,13 @@ public interface Streamable<T> extends Iterable<T> {
 
 		return Streamable.of(() -> stream().filter(predicate));
 	}
+
+	/**
+	 * Returns whether the current {@link Streamable} is empty.
+	 * 
+	 * @return
+	 */
+	default boolean isEmpty() {
+		return !iterator().hasNext();
+	}
 }

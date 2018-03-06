@@ -15,13 +15,18 @@
  */
 package org.springframework.data.mapping.context;
 
+import lombok.EqualsAndHashCode;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyPath;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -32,6 +37,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
+@EqualsAndHashCode
 class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements PersistentPropertyPath<P> {
 
 	private static final Converter<PersistentProperty<?>, String> DEFAULT_CONVERTER = (source) -> source.getName();
@@ -79,7 +85,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		Class<?> leafPropertyType = getLeafProperty().getActualType();
 
 		Assert.isTrue(property.getOwner().getType().equals(leafPropertyType),
-				String.format("Cannot append property %s to type %s!", property.getName(), leafPropertyType.getName()));
+				() -> String.format("Cannot append property %s to type %s!", property.getName(), leafPropertyType.getName()));
 
 		List<P> properties = new ArrayList<>(this.properties);
 		properties.add(property);
@@ -124,18 +130,12 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		Assert.hasText(delimiter, "Delimiter must not be null or empty!");
 		Assert.notNull(converter, "Converter must not be null!");
 
-		List<String> result = new ArrayList<>();
+		String result = properties.stream() //
+				.map(converter::convert) //
+				.filter(StringUtils::hasText) //
+				.collect(Collectors.joining(delimiter));
 
-		for (P property : properties) {
-
-			String convert = converter.convert(property);
-
-			if (StringUtils.hasText(convert)) {
-				result.add(convert);
-			}
-		}
-
-		return result.isEmpty() ? null : StringUtils.collectionToDelimitedString(result, delimiter);
+		return result.isEmpty() ? null : result;
 	}
 
 	/*
@@ -214,11 +214,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 
 		int size = properties.size();
 
-		if (size <= 1) {
-			return this;
-		}
-
-		return new DefaultPersistentPropertyPath<>(properties.subList(0, size - 1));
+		return size == 0 ? this : new DefaultPersistentPropertyPath<>(properties.subList(0, size - 1));
 	}
 
 	/*
@@ -237,41 +233,18 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return properties.iterator();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#isEmpty()
+	/**
+	 * Returns whether the current path contains a property of the given type.
+	 * 
+	 * @param type can be {@literal null}.
+	 * @return
 	 */
-	public boolean isEmpty() {
-		return properties.isEmpty();
-	}
+	public boolean containsPropertyOfType(@Nullable TypeInformation<?> type) {
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(@Nullable Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-
-		if (obj == null || !getClass().equals(obj.getClass())) {
-			return false;
-		}
-
-		DefaultPersistentPropertyPath<?> that = (DefaultPersistentPropertyPath<?>) obj;
-
-		return this.properties.equals(that.properties);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return properties.hashCode();
+		return type == null //
+				? false //
+				: properties.stream() //
+						.anyMatch(property -> type.equals(property.getTypeInformation().getActualType()));
 	}
 
 	/*

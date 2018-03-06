@@ -17,6 +17,7 @@ package org.springframework.data.mapping.context;
 
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -33,7 +34,7 @@ import org.springframework.util.Assert;
  */
 public class PersistentEntities implements Streamable<PersistentEntity<?, ? extends PersistentProperty<?>>> {
 
-	private final Streamable<? extends MappingContext<?, ?>> contexts;
+	private final Streamable<? extends MappingContext<?, ? extends PersistentProperty<?>>> contexts;
 
 	/**
 	 * Creates a new {@link PersistentEntities} for the given {@link MappingContext}s.
@@ -76,6 +77,26 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 		return getPersistentEntity(type).orElseThrow(
 				() -> new IllegalArgumentException(String.format("Couldn't find PersistentEntity for type %s!", type)));
+	}
+
+	/**
+	 * Executes the given {@link BiFunction} on the given {@link MappingContext} and {@link PersistentEntity} based on the
+	 * given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param combiner must not be {@literal null}.
+	 * @return
+	 */
+	public <T> Optional<T> mapOnContext(Class<?> type,
+			BiFunction<MappingContext<?, ? extends PersistentProperty<?>>, PersistentEntity<?, ?>, T> combiner) {
+
+		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(combiner, "Combining BiFunction must not be null!");
+
+		return contexts.stream() //
+				.filter(it -> it.hasPersistentEntityFor(type)) //
+				.map(it -> combiner.apply(it, it.getRequiredPersistentEntity(type))) //
+				.findFirst();
 	}
 
 	/**

@@ -217,10 +217,9 @@ public class RepositoryComposition {
 	 */
 	public void validateImplementation() {
 
-		fragments.stream()
-				.forEach(it -> it.getImplementation() //
-						.orElseThrow(() -> new IllegalStateException(String.format("Fragment %s has no implementation.",
-								ClassUtils.getQualifiedName(it.getSignatureContributor())))));
+		fragments.stream().forEach(it -> it.getImplementation() //
+				.orElseThrow(() -> new IllegalStateException(String.format("Fragment %s has no implementation.",
+						ClassUtils.getQualifiedName(it.getSignatureContributor())))));
 	}
 
 	/**
@@ -320,15 +319,6 @@ public class RepositoryComposition {
 			return from(Stream.concat(left, right).collect(Collectors.toList()));
 		}
 
-		/**
-		 * Return {@literal true} if this {@link RepositoryFragments} contains no {@link RepositoryFragment fragments}.
-		 *
-		 * @return {@literal true} if this {@link RepositoryFragments} contains no {@link RepositoryFragment fragments}.
-		 */
-		public boolean isEmpty() {
-			return fragments.isEmpty();
-		}
-
 		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Iterable#iterator()
@@ -336,14 +326,6 @@ public class RepositoryComposition {
 		@Override
 		public Iterator<RepositoryFragment<?>> iterator() {
 			return fragments.iterator();
-		}
-
-		/**
-		 * @return {@link Stream} of {@link RepositoryFragment fragments}.
-		 */
-		@Override
-		public Stream<RepositoryFragment<?>> stream() {
-			return fragments.stream();
 		}
 
 		/**
