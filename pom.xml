@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>2.1.0.BUILD-SNAPSHOT</version>
+	<version>2.1.0.DATACMNS-1275-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 
