@@ -272,6 +272,28 @@ public class ReflectionRepositoryInvokerUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1277
+	public void invokesFindByIdBeforeDeletingOnOverride() {
+
+		DeleteByEntityOverrideSubRepository mock = mock(DeleteByEntityOverrideSubRepository.class);
+		doReturn(Optional.of(new Domain())).when(mock).findById(any());
+
+		getInvokerFor(mock).invokeDeleteById(1L);
+
+		verify(mock).findById(1L);
+		verify(mock).delete(any(Domain.class));
+	}
+
+	@Test // DATACMNS-1277
+	public void invokesDeleteByIdOnOverride() {
+
+		DeleteByIdOverrideSubRepository mock = mock(DeleteByIdOverrideSubRepository.class);
+
+		getInvokerFor(mock).invokeDeleteById(1L);
+
+		verify(mock).deleteById(1L);
+	}
+
 	private static RepositoryInvoker getInvokerFor(Object repository) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repository.getClass().getInterfaces()[0]);
@@ -336,4 +358,19 @@ public class ReflectionRepositoryInvokerUnitTests {
 
 		com.google.common.base.Optional<Domain> findById(Long id);
 	}
+
+	// DATACMNS-1277
+	interface DeleteByEntityOverrideRepository<T, ID> extends CrudRepository<T, ID> {
+		@Override
+		void delete(T entity);
+	}
+
+	interface DeleteByEntityOverrideSubRepository extends DeleteByEntityOverrideRepository<Domain, Long> {}
+
+	// DATACMNS-1277
+	interface DeleteByIdOverrideRepository<T, ID> extends Repository<T, ID> {
+		void deleteById(ID entity);
+	}
+
+	interface DeleteByIdOverrideSubRepository extends DeleteByIdOverrideRepository<Domain, Long> {}
 }

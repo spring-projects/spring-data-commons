@@ -165,10 +165,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 		Method method = methods.getDeleteMethod()
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a delete-method declared!"));
-		Class<?> parameterType = method.getParameterTypes()[0];
-		List<Class<?>> idTypes = Arrays.asList(idType, Object.class);
 
-		if (idTypes.contains(parameterType)) {
+		if (method.getName().endsWith("ById")) {
 			invoke(method, convertId(id));
 		} else {
 			invoke(method, this.<Object> invokeFindById(id).orElse(null));
