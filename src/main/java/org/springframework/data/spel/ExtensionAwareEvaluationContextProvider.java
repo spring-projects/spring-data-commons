@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -58,24 +59,35 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Mark Paluch
  * @since 2.1
  */
-@RequiredArgsConstructor
 public class ExtensionAwareEvaluationContextProvider implements EvaluationContextProvider {
 
-	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new HashMap<>();
-
+	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache;
 	private final Supplier<? extends Collection<? extends EvaluationContextExtension>> extensions;
+
 	private ListableBeanFactory beanFactory;
 
-	ExtensionAwareEvaluationContextProvider() {
-		this(Collections.emptyList());
+	/**
+	 * Creates a new {@link ExtensionAwareEvaluationContextProvider} with a {@link Supplier} of
+	 * {@link EvaluationContextExtension extensions}.
+	 *
+	 * @param extensions must not be {@literal null}.
+	 */
+	public ExtensionAwareEvaluationContextProvider(
+			Supplier<? extends Collection<? extends EvaluationContextExtension>> extensions) {
+
+		Assert.notNull(extensions, "Extension Supplier must not be null!");
+
+		this.extensionInformationCache = new ConcurrentHashMap<>();
+		this.extensions = extensions;
 	}
 
 	/**
 	 * Creates a new {@link ExtensionAwareEvaluationContextProvider} with extensions looked up lazily from the given
 	 * {@link BeanFactory}.
-	 * 
+	 *
 	 * @param beanFactory the {@link ListableBeanFactory} to lookup extensions from.
 	 */
 	public ExtensionAwareEvaluationContextProvider(ListableBeanFactory beanFactory) {
@@ -93,9 +105,28 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		this(() -> extensions);
 	}
 
+	ExtensionAwareEvaluationContextProvider() {
+		this(Collections.emptyList());
+	}
+
+	/**
+	 * Creates a new {@link ExtensionAwareEvaluationContextProvider} from a parent
+	 * {@link ExtensionAwareEvaluationContextProvider} that copies all references.
+	 *
+	 * @param parent must not be {@literal null}.
+	 */
+	ExtensionAwareEvaluationContextProvider(ExtensionAwareEvaluationContextProvider parent) {
+
+		Assert.notNull(parent, "ExtensionAwareEvaluationContextProvider must not be null!");
+
+		this.extensionInformationCache = parent.extensionInformationCache;
+		this.extensions = parent.extensions;
+		this.beanFactory = parent.beanFactory;
+	}
+
 	/**
 	 * Sets the {@link ListableBeanFactory} to be used on the {@link EvaluationContext} to be created.
-	 * 
+	 *
 	 * @param beanFactory
 	 * @deprecated only exists to temporarily mitigate from the old APIs. Do not use!
 	 */
@@ -116,7 +147,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			ec.setBeanResolver(new BeanFactoryResolver(beanFactory));
 		}
 
-		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(extensions.get());
+		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(getExtensions());
 
 		ec.addPropertyAccessor(accessor);
 		ec.addPropertyAccessor(new ReflectivePropertyAccessor());
@@ -127,6 +158,13 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		}
 
 		return ec;
+	}
+
+	/**
+	 * @return a {@link List} of configured {@link EvaluationContextExtension}s.
+	 */
+	protected Collection<? extends EvaluationContextExtension> getExtensions() {
+		return extensions.get();
 	}
 
 	/**

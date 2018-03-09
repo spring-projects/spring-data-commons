@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import java.util.Collections;
-
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
@@ -30,8 +28,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
  */
 public interface QueryMethodEvaluationContextProvider {
 
-	static QueryMethodEvaluationContextProvider DEFAULT = new ExtensionAwareQueryMethodEvaluationContextProvider(
-			Collections.emptyList());
+	QueryMethodEvaluationContextProvider DEFAULT = ExtensionAwareQueryMethodEvaluationContextProviderFactory.create();
 
 	/**
 	 * Returns an {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
