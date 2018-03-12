@@ -35,6 +35,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider.ParameterContext;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.expression.EvaluationContext;
@@ -357,7 +358,7 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 	private Object evaluateExpression(String expression, Object[] args) {
 
 		DefaultParameters parameters = new DefaultParameters(method);
-		EvaluationContext evaluationContext = provider.getEvaluationContext(parameters, args);
+		EvaluationContext evaluationContext = provider.getEvaluationContext(ParameterContext.of(parameters, args));
 		return new SpelExpressionParser().parseExpression(expression).getValue(evaluationContext);
 	}
 

@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider.ParameterContext;
 import org.springframework.data.repository.query.SpelQueryContext.SpelExtractor;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -56,7 +57,8 @@ public class SpelEvaluator {
 
 		Assert.notNull(values, "Values must not be null.");
 
-		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, values);
+		ParameterContext<?> context = ParameterContext.of(parameters, values);
+		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(context);
 
 		return extractor.getParameters().collect(Collectors.toMap(//
 				it -> it.getKey(), //

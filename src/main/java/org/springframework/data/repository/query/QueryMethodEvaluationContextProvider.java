@@ -15,8 +15,11 @@
  */
 package org.springframework.data.repository.query;
 
+import java.util.function.Supplier;
+
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.util.Assert;
 
 /**
  * Provides a way to access a centrally defined potentially shared {@link StandardEvaluationContext}.
@@ -24,18 +27,67 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Christoph Strobl
- * @since 1.9
+ * @author Mark Paluch
+ * @since 2.1
  */
 public interface QueryMethodEvaluationContextProvider {
 
 	QueryMethodEvaluationContextProvider DEFAULT = ExtensionAwareQueryMethodEvaluationContextProviderFactory.create();
 
 	/**
-	 * Returns an {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
+	 * Returns an {@link EvaluationContext} built using the given {@link ParameterContext}.
 	 *
-	 * @param parameters the {@link Parameters} instance obtained from the query method the context is built for.
-	 * @param parameterValues the values for the parameters.
+	 * @param parameterContext
 	 * @return
 	 */
-	<T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues);
+	<T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(ParameterContext<T> parameterContext);
+
+	/**
+	 * Interface declaring methods object obtain {@link Parameters} and their actual values for a query method invocation.
+	 * 
+	 * @author Mark Paluch
+	 * @since 2.1
+	 */
+	interface ParameterContext<T extends Parameters<?, ?>> {
+
+		/**
+		 * @return the {@link Parameters}.
+		 */
+		T getParameters();
+
+		/**
+		 * @return the actual parameter values.
+		 */
+		Object[] getParameterValues();
+
+		/**
+		 * Creates a new {@link ParameterContext} given {@link Parameters} and their {@code parameterValues}.
+		 *
+		 * @param parameters the {@link Parameters} instance obtained from the query method the context is built for.
+		 * @param parameterValues must not be {@literal null}.
+		 * @return
+		 */
+		static <T extends Parameters<?, ?>> ParameterContext<T> of(T parameters, Object[] parameterValues) {
+
+			Assert.notNull(parameters, "Parameters must not be null!");
+			Assert.notNull(parameterValues, "Parameter values must not be null!");
+
+			return new DefaultParameterContext<>(parameters, parameterValues);
+		}
+
+		/**
+		 * Creates a new {@link ParameterContext} given {@link Parameters} and a supplier for {@code parameterValues}.
+		 *
+		 * @param parameters the {@link Parameters} instance obtained from the query method the context is built for.
+		 * @param parameterValues must not be {@literal null}.
+		 * @return
+		 */
+		static <T extends Parameters<?, ?>> ParameterContext<T> of(T parameters, Supplier<Object[]> parameterValues) {
+
+			Assert.notNull(parameters, "Parameters must not be null!");
+			Assert.notNull(parameterValues, "Parameter values supplier must not be null!");
+
+			return new DefaultParameterContext<>(parameters, parameterValues);
+		}
+	}
 }

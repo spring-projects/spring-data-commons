@@ -50,6 +50,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Mark Paluch
  * @since 1.9
  */
 public class ExtensionAwareQueryMethodEvaluationContextProvider implements QueryMethodEvaluationContextProvider {
@@ -91,16 +92,6 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	}
 
 	/**
-	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider} using the given
-	 * {@link ExtensionAwareEvaluationContextProvider} delegate.
-	 *
-	 * @param delegate must not be {@literal null}.
-	 */
-	ExtensionAwareQueryMethodEvaluationContextProvider(Lazy<? extends ExtensionAwareEvaluationContextProvider> delegate) {
-		this.delegate = delegate;
-	}
-
-	/**
 	 * Create a {@link ExtensionAwareEvaluationContextProvider} given {@link Supplier} of
 	 * {@link EvaluationContextExtension}s.
 	 *
@@ -114,23 +105,30 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[])
+	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.QueryMethodEvaluationContextProvider.ParameterContext)
 	 */
 	@Override
-	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
+	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(ParameterContext<T> parameterContext) {
 
-		StandardEvaluationContext evaluationContext = getExtensionProvider().getEvaluationContext(parameterValues);
+		StandardEvaluationContext evaluationContext = getEvaluationContext(delegate.get(), parameterContext);
 
-		evaluationContext.setVariables(collectVariables(parameters, parameterValues));
+		evaluationContext
+				.setVariables(collectVariables(parameterContext.getParameters(), parameterContext.getParameterValues()));
 
 		return evaluationContext;
 	}
 
 	/**
-	 * @return the actual {@link ExtensionAwareEvaluationContextProvider}.
+	 * Retrieve the {@link StandardEvaluationContext} from {@link ExtensionAwareEvaluationContextProvider}. Subclasses may
+	 * override this method to extend functionality.
+	 *
+	 * @param provider
+	 * @param parameterContext
+	 * @return
 	 */
-	ExtensionAwareEvaluationContextProvider getExtensionProvider() {
-		return delegate.get();
+	protected <T extends Parameters<?, ?>> StandardEvaluationContext getEvaluationContext(
+			ExtensionAwareEvaluationContextProvider provider, ParameterContext<T> parameterContext) {
+		return provider.getEvaluationContext(parameterContext.getParameterValues());
 	}
 
 	/**

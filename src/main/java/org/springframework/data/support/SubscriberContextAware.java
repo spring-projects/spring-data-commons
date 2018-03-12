@@ -32,6 +32,8 @@ import org.springframework.beans.factory.Aware;
  *
  * @author Mark Paluch
  * @since 2.1
+ * @see Context
+ * @see reactor.core.publisher.Mono#subscriberContext()
  */
 public interface SubscriberContextAware<T> extends Aware {
 

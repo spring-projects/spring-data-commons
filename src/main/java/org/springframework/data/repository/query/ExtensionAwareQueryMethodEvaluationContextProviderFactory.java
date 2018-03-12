@@ -23,12 +23,12 @@ import org.springframework.data.repository.util.ReactiveWrappers.ReactiveLibrary
 
 /**
  * Factory for {@link ExtensionAwareQueryMethodEvaluationContextProvider}. Considers availability of Project Reactor and
- * returns {@link ContextAwareQueryMethodEvaluationContextProvider} if Project Reactor is on the class path.
+ * returns {@link ReactiveQueryMethodEvaluationContextProvider} if Project Reactor is on the class path.
  *
  * @author Mark Paluch
  * @since 2.1
  * @see ExtensionAwareQueryMethodEvaluationContextProvider
- * @see ContextAwareQueryMethodEvaluationContextProvider
+ * @see ReactiveQueryMethodEvaluationContextProvider
  */
 public class ExtensionAwareQueryMethodEvaluationContextProviderFactory {
 
@@ -58,7 +58,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProviderFactory {
 	}
 
 	private static ExtensionAwareQueryMethodEvaluationContextProvider createContextAwareEvaluationContextProvider() {
-		return new ContextAwareQueryMethodEvaluationContextProvider(Collections.emptyList());
+		return new ReactiveQueryMethodEvaluationContextProvider(Collections.emptyList());
 	}
 
 	private static ExtensionAwareQueryMethodEvaluationContextProvider createEvaluationContextProvider(
@@ -68,6 +68,6 @@ public class ExtensionAwareQueryMethodEvaluationContextProviderFactory {
 
 	private static ExtensionAwareQueryMethodEvaluationContextProvider createContextAwareEvaluationContextProvider(
 			ListableBeanFactory beanFactory) {
-		return new ContextAwareQueryMethodEvaluationContextProvider(beanFactory);
+		return new ReactiveQueryMethodEvaluationContextProvider(beanFactory);
 	}
 }

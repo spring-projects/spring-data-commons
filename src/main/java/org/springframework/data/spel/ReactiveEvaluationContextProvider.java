@@ -34,37 +34,38 @@ import org.springframework.data.util.Lazy;
  *
  * @author Mark Paluch
  * @since 2.1
+ * @see Context
  */
-public class ContextAwareEvaluationContextProvider extends ExtensionAwareEvaluationContextProvider
-		implements SubscriberContextAware<ContextAwareEvaluationContextProvider> {
+public class ReactiveEvaluationContextProvider extends ExtensionAwareEvaluationContextProvider
+		implements SubscriberContextAware<ExtensionAwareEvaluationContextProvider> {
 
 	/**
-	 * Creates a new {@link ContextAwareEvaluationContextProvider}. Extensions are being looked up lazily from the
+	 * Creates a new {@link ReactiveEvaluationContextProvider}. Extensions are being looked up lazily from the
 	 * {@link org.springframework.beans.factory.BeanFactory} configured.
 	 */
-	public ContextAwareEvaluationContextProvider() {}
+	public ReactiveEvaluationContextProvider() {}
 
 	/**
-	 * Creates a new {@link ContextAwareEvaluationContextProvider} with a {@link Supplier} of
+	 * Creates a new {@link ReactiveEvaluationContextProvider} with a {@link Supplier} of
 	 * {@link EvaluationContextExtension extensions}.
 	 *
 	 * @param extensions must not be {@literal null}.
 	 */
-	public ContextAwareEvaluationContextProvider(
+	public ReactiveEvaluationContextProvider(
 			Supplier<? extends Collection<? extends EvaluationContextExtension>> extensions) {
 		super(extensions);
 	}
 
 	/**
-	 * Creates a new {@link ContextAwareEvaluationContextProvider} for the given {@link EvaluationContextExtension}s.
+	 * Creates a new {@link ReactiveEvaluationContextProvider} for the given {@link EvaluationContextExtension}s.
 	 *
 	 * @param extensions must not be {@literal null}.
 	 */
-	public ContextAwareEvaluationContextProvider(Collection<? extends EvaluationContextExtension> extensions) {
+	public ReactiveEvaluationContextProvider(Collection<? extends EvaluationContextExtension> extensions) {
 		super(extensions);
 	}
 
-	private ContextAwareEvaluationContextProvider(ExtensionAwareEvaluationContextProvider parent) {
+	private ReactiveEvaluationContextProvider(ExtensionAwareEvaluationContextProvider parent) {
 		super(parent);
 	}
 
@@ -73,7 +74,7 @@ public class ContextAwareEvaluationContextProvider extends ExtensionAwareEvaluat
 	 * @see org.springframework.data.support.SubscriberContextAware#withSubscriberContext(reactor.util.context.Context)
 	 */
 	@Override
-	public ContextAwareEvaluationContextProvider withSubscriberContext(Context context) {
+	public ReactiveEvaluationContextProvider withSubscriberContext(Context context) {
 
 		Lazy<List<EvaluationContextExtension>> extensions = Lazy.of(() -> {
 
@@ -87,7 +88,7 @@ public class ContextAwareEvaluationContextProvider extends ExtensionAwareEvaluat
 			}).collect(Collectors.toList());
 		});
 
-		return new ContextAwareEvaluationContextProvider(this) {
+		return new ReactiveEvaluationContextProvider(this) {
 
 			/*
 			 * (non-Javadoc)

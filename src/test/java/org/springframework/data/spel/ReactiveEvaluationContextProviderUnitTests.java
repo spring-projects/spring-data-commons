@@ -32,18 +32,18 @@ import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.SubscriberContextAwareExtension;
 
 /**
- * Unit tests for {@link ContextAwareEvaluationContextProvider}.
+ * Unit tests for {@link ReactiveEvaluationContextProvider}.
  *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ContextAwareEvaluationContextProviderUnitTests {
+public class ReactiveEvaluationContextProviderUnitTests {
 
 	@Test // DATACMNS-1108
 	public void shouldContextualizeExtension() {
 
 		ContextualExtension extension = new ContextualExtension(null);
-		ContextAwareEvaluationContextProvider provider = new ContextAwareEvaluationContextProvider(
+		ReactiveEvaluationContextProvider provider = new ReactiveEvaluationContextProvider(
 				Collections.singleton(extension));
 
 		Context context = Context.of("foo", "bar");
