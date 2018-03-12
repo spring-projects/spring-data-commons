@@ -131,6 +131,15 @@ public class SimpleTypeHolderUnitTests {
 		assertThat(holder.isSimpleType(ExtendedPerson.class)).isFalse();
 	}
 
+	@Test // DATACMNS-1278
+	public void alwaysConsidersEnumsSimple() {
+
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
+
+		assertThat(holder.isSimpleType(SomeInterface.class)).isFalse();
+		assertThat(holder.isSimpleType(InterfacedEnum.class)).isTrue();
+	}
+
 	enum SimpleEnum {
 
 		FOO;
@@ -155,4 +164,8 @@ public class SimpleTypeHolderUnitTests {
 	static class ExtendedPerson extends Person {
 
 	}
+
+	interface SomeInterface {}
+
+	enum InterfacedEnum implements SomeInterface {}
 }
