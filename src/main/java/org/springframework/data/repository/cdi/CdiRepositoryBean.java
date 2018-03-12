@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -327,8 +328,30 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	}
 
 	/**
+	 * Creates the actual component instance given a {@link RepositoryFactorySupport repository factory supplier} and the
+	 * repository {@link Class type}. This method is an utility for to create a repository. This method will obtain a
+	 * {@link RepositoryFactorySupport repository factory} and configure it with {@link CdiRepositoryConfiguration}.
+	 *
+	 * @param factorySupplier must not be {@literal null}.
+	 * @param repositoryType must not be {@literal null}.
+	 * @return
+	 * @since 2.1
+	 */
+	protected T create(Supplier<? extends RepositoryFactorySupport> factorySupplier, Class<T> repositoryType) {
+
+		CdiRepositoryConfiguration configuration = lookupConfiguration(beanManager, qualifiers);
+		RepositoryFragments repositoryFragments = getRepositoryFragments(repositoryType, configuration);
+
+		RepositoryFactorySupport factory = factorySupplier.get();
+
+		applyConfiguration(factory, configuration);
+
+		return create(factory, repositoryType, repositoryFragments);
+	}
+
+	/**
 	 * Lookup repository fragments for a {@link Class repository interface}.
-	 * 
+	 *
 	 * @param repositoryType must not be {@literal null}.
 	 * @return the {@link RepositoryFragments}.
 	 * @since 2.1
@@ -339,11 +362,17 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 		CdiRepositoryConfiguration cdiRepositoryConfiguration = lookupConfiguration(beanManager, qualifiers);
 
+		return getRepositoryFragments(repositoryType, cdiRepositoryConfiguration);
+	}
+
+	private RepositoryFragments getRepositoryFragments(Class<T> repositoryType,
+			CdiRepositoryConfiguration cdiRepositoryConfiguration) {
+
 		Optional<Bean<?>> customImplementationBean = getCustomImplementationBean(repositoryType,
 				cdiRepositoryConfiguration);
 		Optional<Object> customImplementation = customImplementationBean.map(this::getDependencyInstance);
 
-		List<RepositoryFragment<?>> repositoryFragments = getRepositoryFragments(repositoryType,
+		List<RepositoryFragment<?>> repositoryFragments = findRepositoryFragments(repositoryType,
 				cdiRepositoryConfiguration);
 
 		RepositoryFragments customImplementationFragment = customImplementation //
@@ -355,7 +384,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<RepositoryFragment<?>> getRepositoryFragments(Class<T> repositoryType,
+	private List<RepositoryFragment<?>> findRepositoryFragments(Class<T> repositoryType,
 			CdiRepositoryConfiguration cdiRepositoryConfiguration) {
 
 		Stream<RepositoryFragmentConfiguration> fragmentConfigurations = context
@@ -419,8 +448,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * used when a {@code CustomRepositoryImplementationDetector} is provided.
 	 *
 	 * @param repositoryType
-	 * @param beanManager
-	 * @param qualifiers
+	 * @param cdiRepositoryConfiguration
 	 * @return the custom implementation instance or null
 	 */
 	private Optional<Bean<?>> getCustomImplementationBean(Class<?> repositoryType,

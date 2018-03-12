@@ -76,9 +76,8 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
 
 			T mock = Mockito.mock(repositoryType);
-			DummyRepositoryFactory repositoryFactory = new DummyRepositoryFactory(mock);
 
-			return create(repositoryFactory, repositoryType, getRepositoryFragments(repositoryType));
+			return create(() -> new DummyRepositoryFactory(mock), repositoryType);
 		}
 	}
 
