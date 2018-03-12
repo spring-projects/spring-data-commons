@@ -147,7 +147,7 @@ public class SimpleTypeHolder {
 		Map<Class<?>, Boolean> localSimpleTypes = this.simpleTypes;
 		Boolean isSimpleType = localSimpleTypes.get(type);
 
-		if (Object.class.equals(type)) {
+		if (Object.class.equals(type) || Enum.class.isAssignableFrom(type)) {
 			return true;
 		}
 
