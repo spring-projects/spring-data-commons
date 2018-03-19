@@ -968,13 +968,13 @@ This section documents a set of Spring Data extensions that enable Spring Data u
 
 http://www.querydsl.com/[Querydsl] is a framework which enables the construction of statically typed SQL-like queries via its fluent API.
 
-Several Spring Data modules offer integration with Querydsl via `QueryDslPredicateExecutor`.
+Several Spring Data modules offer integration with Querydsl via `QuerydslPredicateExecutor`.
 
-.QueryDslPredicateExecutor interface
+.QuerydslPredicateExecutor interface
 ====
 [source, java]
 ----
-public interface QueryDslPredicateExecutor<T> {
+public interface QuerydslPredicateExecutor<T> {
 
   Optional<T> findById(Predicate predicate);  <1>
 
@@ -993,13 +993,13 @@ public interface QueryDslPredicateExecutor<T> {
 <4> Returns if an entity that matches the `Predicate` exists.
 ====
 
-To make use of Querydsl support simply extend `QueryDslPredicateExecutor` on your repository interface.
+To make use of Querydsl support simply extend `QuerydslPredicateExecutor` on your repository interface.
 
 .Querydsl integration on repositories
 ====
 [source, java]
 ----
-interface UserRepository extends CrudRepository<User, Long>, QueryDslPredicateExecutor<User> {
+interface UserRepository extends CrudRepository<User, Long>, QuerydslPredicateExecutor<User> {
 
 }
 ----
@@ -1254,7 +1254,7 @@ using the `QuerydslPredicateArgumentResolver`.
 
 NOTE: The feature will be automatically enabled along `@EnableSpringDataWebSupport` when Querydsl is found on the classpath.
 
-Adding a `@QuerydslPredicate` to the method signature will provide a ready to use `Predicate` which can be executed via the `QueryDslPredicateExecutor`.
+Adding a `@QuerydslPredicate` to the method signature will provide a ready to use `Predicate` which can be executed via the `QuerydslPredicateExecutor`.
 
 TIP: Type information is typically resolved from the methods return type. Since those information does not necessarily match the domain type it might be a good idea to use the `root` attribute of `QuerydslPredicate`.
 
@@ -1291,7 +1291,7 @@ Those bindings can be customized via the `bindings` attribute of `@QuerydslPredi
 [source,java]
 ----
 interface UserRepository extends CrudRepository<User, String>,
-                                 QueryDslPredicateExecutor<User>,                <1>
+                                 QuerydslPredicateExecutor<User>,                <1>
                                  QuerydslBinderCustomizer<QUser> {               <2>
 
   @Override
@@ -1304,7 +1304,7 @@ interface UserRepository extends CrudRepository<User, String>,
   }
 }
 ----
-<1> `QueryDslPredicateExecutor` provides access to specific finder methods for `Predicate`.
+<1> `QuerydslPredicateExecutor` provides access to specific finder methods for `Predicate`.
 <2> `QuerydslBinderCustomizer` defined on the repository interface will be automatically picked up and shortcuts `@QuerydslPredicate(bindings=...)`.
 <3> Define the binding for the `username` property to be a simple contains binding.
 <4> Define the default binding for `String` properties to be a case insensitive contains match.
