@@ -16,7 +16,6 @@
 package org.springframework.data.auditing;
 
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.annotation.CreatedBy;
@@ -30,6 +29,7 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * {@link AuditableBeanWrapperFactory} that will create am {@link AuditableBeanWrapper} using mapping information
@@ -54,7 +54,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		Assert.notNull(entities, "PersistentEntities must not be null!");
 
 		this.entities = entities;
-		this.metadataCache = new HashMap<Class<?>, MappingAuditingMetadata>();
+		this.metadataCache = new ConcurrentReferenceHashMap<Class<?>, MappingAuditingMetadata>();
 	}
 
 	/* 
