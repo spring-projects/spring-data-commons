@@ -16,7 +16,6 @@
 package org.springframework.data.auditing;
 
 import java.time.temporal.TemporalAccessor;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,6 +31,7 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * {@link AuditableBeanWrapperFactory} that will create am {@link AuditableBeanWrapper} using mapping information
@@ -57,7 +57,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		Assert.notNull(entities, "PersistentEntities must not be null!");
 
 		this.entities = entities;
-		this.metadataCache = new HashMap<>();
+		this.metadataCache = new ConcurrentReferenceHashMap<>();
 	}
 
 	/*
