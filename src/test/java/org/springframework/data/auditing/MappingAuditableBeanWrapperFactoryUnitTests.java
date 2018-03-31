@@ -61,6 +61,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		SampleMappingContext context = new SampleMappingContext();
 		context.getPersistentEntity(Sample.class);
 		context.getPersistentEntity(SampleWithInstant.class);
+		context.getPersistentEntity(WithEmbedded.class);
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(context));
 		factory = new MappingAuditableBeanWrapperFactory(entities);
@@ -181,6 +182,35 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		assertLastModificationDate(reference, Instant.ofEpochMilli(reference));
 	}
 
+	@Test // DATACMNS-1274
+	public void writesNestedAuditingData() {
+
+		WithEmbedded target = new WithEmbedded();
+		target.embedded = new Embedded();
+
+		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(target);
+
+		assertThat(wrapper).hasValueSatisfying(it -> {
+
+			Instant now = Instant.now();
+			String user = "user";
+
+			it.setCreatedBy(user);
+			it.setLastModifiedBy(user);
+			it.setLastModifiedDate(now);
+			it.setCreatedDate(now);
+
+			Embedded embedded = target.embedded;
+
+			assertThat(embedded.created).isEqualTo(now);
+			assertThat(embedded.creator).isEqualTo(user);
+			assertThat(embedded.modified).isEqualTo(now);
+			assertThat(embedded.modifier).isEqualTo(user);
+
+			assertThat(it.getLastModifiedDate()).hasValue(now);
+		});
+	}
+
 	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
 
 		Sample sample = new Sample();
@@ -231,4 +261,18 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 	static class NoAuditing {}
 
 	static abstract class ExtendingAuditable implements Auditable<Object, Long, LocalDateTime> {}
+
+	// DATACMNS-1274
+
+	static class Embedded {
+
+		@CreatedDate Instant created;
+		@CreatedBy String creator;
+		@LastModifiedDate Instant modified;
+		@LastModifiedBy String modifier;
+	}
+
+	static class WithEmbedded {
+		Embedded embedded;
+	}
 }
