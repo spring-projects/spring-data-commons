@@ -122,7 +122,14 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		final Map<String, Integer> orders = getMethodOrder(metadata);
 
 		for (PropertyDescriptor descriptor : filterDefaultMethods(BeanUtils.getPropertyDescriptors(type))) {
-			if (metadata == null || orders.containsKey(descriptor.getReadMethod().getName())) {
+
+			Method readMethod = descriptor.getReadMethod();
+
+			if (readMethod == null) {
+				continue;
+			}
+
+			if (metadata == null || orders.containsKey(readMethod.getName())) {
 				result.add(descriptor);
 			}
 		}
@@ -237,6 +244,6 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 		Method method = descriptor.getReadMethod();
 
-		return method == null ? false : ReflectionUtils.isDefaultMethod(method);
+		return method != null && ReflectionUtils.isDefaultMethod(method);
 	}
 }
