@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.MethodMetadata;
+import org.springframework.data.type.classreading.MethodsMetadataReader;
 
 /**
  * Interface that defines abstract metadata of a specific class, in a form that does not require that class to be loaded

@@ -21,7 +21,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.data.type.MethodsMetadata;
-import org.springframework.data.type.MethodsMetadataReader;
 
 /**
  * Extension of {@link SimpleMetadataReaderFactory} that reads {@link MethodsMetadata}, creating a new ASM

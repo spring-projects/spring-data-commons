@@ -27,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.data.type.classreading.MethodsMetadataReader;
 import org.springframework.data.type.classreading.MethodsMetadataReaderFactory;
 
 /**

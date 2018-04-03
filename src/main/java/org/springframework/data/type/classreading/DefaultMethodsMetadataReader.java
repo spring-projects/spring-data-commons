@@ -15,17 +15,28 @@
  */
 package org.springframework.data.type.classreading;
 
+import lombok.Getter;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.springframework.asm.ClassReader;
+import org.springframework.asm.MethodVisitor;
+import org.springframework.asm.Opcodes;
+import org.springframework.asm.Type;
 import org.springframework.core.NestedIOException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.ClassMetadata;
+import org.springframework.core.type.MethodMetadata;
+import org.springframework.core.type.classreading.AnnotationMetadataReadingVisitor;
+import org.springframework.core.type.classreading.MethodMetadataReadingVisitor;
 import org.springframework.data.type.MethodsMetadata;
-import org.springframework.data.type.MethodsMetadataReader;
+import org.springframework.util.Assert;
 
 /**
  * {@link MethodsMetadataReader} implementation based on an ASM {@link org.springframework.asm.ClassReader}.
@@ -35,6 +46,7 @@ import org.springframework.data.type.MethodsMetadataReader;
  * @since 2.1
  * @since 1.11.11
  */
+@Getter
 class DefaultMethodsMetadataReader implements MethodsMetadataReader {
 
 	private final Resource resource;
@@ -74,38 +86,80 @@ class DefaultMethodsMetadataReader implements MethodsMetadataReader {
 		methodsMetadata = visitor;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.type.classreading.MetadataReader#getResource()
+	/**
+	 * ASM class visitor which looks for the class name and implemented types as well as for the methods defined in the
+	 * class, exposing them through the {@link MethodsMetadata} interface.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.1
+	 * @since 1.11.11
+	 * @see ClassMetadata
+	 * @see MethodMetadata
+	 * @see MethodMetadataReadingVisitor
 	 */
-	@Override
-	public Resource getResource() {
-		return resource;
-	}
+	static class MethodsMetadataReadingVisitor extends AnnotationMetadataReadingVisitor implements MethodsMetadata {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.type.classreading.MetadataReader#getClassMetadata()
-	 */
-	@Override
-	public ClassMetadata getClassMetadata() {
-		return classMetadata;
-	}
+		/**
+		 * Construct a new {@link MethodsMetadataReadingVisitor} given {@link ClassLoader}.
+		 *
+		 * @param classLoader may be {@literal null}.
+		 */
+		MethodsMetadataReadingVisitor(ClassLoader classLoader) {
+			super(classLoader);
+		}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.type.classreading.MetadataReader#getAnnotationMetadata()
-	 */
-	@Override
-	public AnnotationMetadata getAnnotationMetadata() {
-		return annotationMetadata;
-	}
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.classreading.AnnotationMetadataReadingVisitor#visitMethod(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String[])
+		 */
+		@Override
+		public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.util.ClassMetadataReader#getMethodsMetadata()
-	 */
-	@Override
-	public MethodsMetadata getMethodsMetadata() {
-		return methodsMetadata;
+			// Skip bridge methods - we're only interested in original user methods.
+			// On JDK 8, we'd otherwise run into double detection of the same method...
+			if ((access & Opcodes.ACC_BRIDGE) != 0) {
+				return super.visitMethod(access, name, desc, signature, exceptions);
+			}
+
+			// Skip constructors
+			if (name.equals("<init>")) {
+				return super.visitMethod(access, name, desc, signature, exceptions);
+			}
+
+			MethodMetadataReadingVisitor visitor = new MethodMetadataReadingVisitor(name, access, getClassName(),
+					Type.getReturnType(desc).getClassName(), this.classLoader, this.methodMetadataSet);
+
+			this.methodMetadataSet.add(visitor);
+			return visitor;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.MethodsMetadata#getMethods()
+		 */
+		@Override
+		public Set<MethodMetadata> getMethods() {
+			return Collections.unmodifiableSet(methodMetadataSet);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.MethodsMetadata#getMethods(String)
+		 */
+		@Override
+		public Set<MethodMetadata> getMethods(String name) {
+
+			Assert.hasText(name, "Method name must not be null or empty");
+
+			Set<MethodMetadata> result = new LinkedHashSet<MethodMetadata>(4);
+
+			for (MethodMetadata metadata : methodMetadataSet) {
+				if (metadata.getMethodName().equals(name)) {
+					result.add(metadata);
+				}
+			}
+
+			return Collections.unmodifiableSet(result);
+		}
 	}
 }

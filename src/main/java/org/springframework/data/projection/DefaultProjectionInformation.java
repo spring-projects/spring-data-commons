@@ -30,7 +30,7 @@ import java.util.Set;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.data.type.MethodsMetadata;
-import org.springframework.data.type.MethodsMetadataReader;
+import org.springframework.data.type.classreading.MethodsMetadataReader;
 import org.springframework.data.type.classreading.MethodsMetadataReaderFactory;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;

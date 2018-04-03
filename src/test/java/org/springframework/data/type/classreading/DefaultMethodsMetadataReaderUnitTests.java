@@ -25,7 +25,6 @@ import java.util.Set;
 import org.junit.Test;
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.data.type.MethodsMetadata;
-import org.springframework.data.type.MethodsMetadataReader;
 
 /**
  * Unit tests for {@link DefaultMethodsMetadataReader}.
