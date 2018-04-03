@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -346,6 +346,24 @@ public class PropertyPathUnitTests {
 		from("userAme", Foo.class);
 	}
 
+	@Test // DATACMNS-1285
+	public void rejectsTooLongPath() {
+
+		String source = "foo.bar";
+
+		for (int i = 0; i < 9; i++) {
+			source = source + "." + source;
+		}
+
+		assertThat(source.split("\\.").length, is(greaterThan(1000)));
+
+		final String path = source;
+
+		exception.expect(IllegalArgumentException.class);
+
+		PropertyPath.from(path, Left.class);
+	}
+
 	private class Foo {
 
 		String userName;
@@ -378,5 +396,15 @@ public class PropertyPathUnitTests {
 		private String userNameWhatever;
 		private FooBar user;
 		private Foo _foo;
+	}
+
+	// DATACMNS-1285
+
+	private class Left {
+		Right foo;
+	}
+
+	private class Right {
+		Left bar;
 	}
 }
