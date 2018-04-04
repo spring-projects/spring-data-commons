@@ -1,6 +1,21 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.11.RELEASE (2018-04-04)
+-----------------------------------------------
+* DATACMNS-1284 - Backport ASM-based property detection for projections.
+* DATACMNS-1283 - Remove explicit declaration of Jackson libraries.
+* DATACMNS-1282 - Use SimpleEvaluationContext in MapDataBinder.
+* DATACMNS-1281 - ConcurrentModificationException in MappingAuditableBeanWrapperFactory.
+* DATACMNS-1273 - AnnotationBasedPersistentProperty does not consider @AliasFor with own, revised annotations.
+* DATACMNS-1271 - NPE in AnnotationBasedPersistentProperty.isAnnotationPresent() because the annotation cache is not thread-safe.
+* DATACMNS-1264 - MapDataBinder should reject type expressions in SpEL expressions.
+* DATACMNS-1252 - Repository method returning Vavr Set results in cast exception if source value is not a Set.
+* DATACMNS-1249 - Fix line endings.
+* DATACMNS-1248 - Release 1.13.11 (Ingalls SR11).
+* DATACMNS-1243 - Add converters Instant <-> LocalDateTime.
+
+
 Changes in version 2.0.5.RELEASE (2018-02-28)
 ---------------------------------------------
 * DATACMNS-1264 - MapDataBinder should reject type expressions in SpEL expressions.
