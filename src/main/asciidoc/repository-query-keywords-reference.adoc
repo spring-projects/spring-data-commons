@@ -3,7 +3,7 @@
 = Repository query keywords
 
 == Supported query keywords
-The following table lists the keywords generally supported by the Spring Data repository query derivation mechanism. However, consult the store-specific documentation for the exact list of supported keywords, because some listed here might not be supported in a particular store.
+The following table lists the keywords generally supported by the Spring Data repository query derivation mechanism. However, consult the store-specific documentation for the exact list of supported keywords, because some keywords listed here might not be supported in a particular store.
 
 .Query keywords
 [options="header", cols="1,3"]
@@ -38,4 +38,3 @@ The following table lists the keywords generally supported by the Spring Data re
 |`TRUE`|`True`, `IsTrue`
 |`WITHIN`|`Within`, `IsWithin`
 |===============
-

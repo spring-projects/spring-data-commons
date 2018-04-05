@@ -2,10 +2,10 @@
 = Projections
 
 Spring Data query methods usually return one or multiple instances of the aggregate root managed by the repository.
-However, it might sometimes be desirable to rather project on certain attributes of those types.
-Spring Data allows to model dedicated return types to more selectively retrieve partial views onto the managed aggregates.
+However, it might sometimes be desirable to create projections based on certain attributes of those types.
+Spring Data allows modeling dedicated return types, to more selectively retrieve partial views of the managed aggregates.
 
-Imagine a sample repository and aggregate root type like this:
+Imagine a repository and aggregate root type such as the following example:
 
 .A sample aggregate and repository
 ====
@@ -29,13 +29,13 @@ interface PersonRepository extends Repository<Person, UUID> {
 ----
 ====
 
-Now imagine we'd want to retrieve the person's name attributes only.
-What means does Spring Data offer to achieve this?
+Now imagine that we want to retrieve the person's name attributes only.
+What means does Spring Data offer to achieve this? The rest of this chapter answers that question.
 
 [[projections.interfaces]]
-== Interface-based projections
+== Interface-based Projections
 
-The easiest way to limit the result of the queries to expose the name attributes only is by declaring an interface that will expose accessor methods for the properties to be read:
+The easiest way to limit the result of the queries to only the name attributes is by declaring an interface that exposes accessor methods for the properties to be read, as shown in the following example:
 
 .A projection interface to retrieve a subset of attributes
 ====
@@ -50,7 +50,7 @@ interface NamesOnly {
 ====
 
 The important bit here is that the properties defined here exactly match properties in the aggregate root.
-This allows a query method to be added like this:
+Doing so lets a query method be added as follows:
 
 .A repository using an interface based projection with a query method
 ====
@@ -63,10 +63,10 @@ interface PersonRepository extends Repository<Person, UUID> {
 ----
 ====
 
-The query execution engine will create proxy instances of that interface at runtime for each element returned and forward calls to the exposed methods to the target object.
+The query execution engine creates proxy instances of that interface at runtime for each element returned and forwards calls to the exposed methods to the target object.
 
 [[projections.interfaces.nested]]
-Projections can be used recursively. If you wanted to include some of the `Address` information as well, create a projection interface for that and return that interface from the declaration of `getAddress()`.
+Projections can be used recursively. If you want to include some of the `Address` information as well, create a projection interface for that and return that interface from the declaration of `getAddress()`, as shown in the following example:
 
 .A projection interface to retrieve a subset of attributes
 ====
@@ -85,12 +85,12 @@ interface PersonSummary {
 ----
 ====
 
-On method invocation, the `address` property of the target instance will be obtained and wrapped into a projecting proxy in turn.
+On method invocation, the `address` property of the target instance is obtained and wrapped into a projecting proxy in turn.
 
 [[projections.interfaces.closed]]
-=== Closed projections
+=== Closed Projections
 
-A projection interface whose accessor methods all match properties of the target aggregate are considered closed projections.
+A projection interface whose accessor methods all match properties of the target aggregate is considered to be a closed projection. The following example (which we used earlier in this chapter, too) is a closed projection:
 
 .A closed projection
 ====
@@ -104,13 +104,13 @@ interface NamesOnly {
 ----
 ====
 
-If a closed projection is used, Spring Data modules can even optimize the query execution as we exactly know about all attributes that are needed to back the projection proxy.
-For more details on that, please refer to the module specific part of the reference documentation.
+If you use a closed projection, Spring Data can optimize the query execution, because we know about all the attributes that are needed to back the projection proxy.
+For more details on that, see the module-specific part of the reference documentation.
 
 [[projections.interfaces.open]]
-=== Open projections
+=== Open Projections
 
-Accessor methods in projection interfaces can also be used to compute new values by using the `@Value` annotation on it:
+Accessor methods in projection interfaces can also be used to compute new values by using the `@Value` annotation, as shown in the following example:
 
 [[projections.interfaces.open.simple]]
 .An Open Projection
@@ -126,12 +126,12 @@ interface NamesOnly {
 ----
 ====
 
-The aggregate root backing the projection is available via the `target` variable.
-A projection interface using `@Value` an open projection.
-Spring Data won't be able to apply query execution optimizations in this case as the SpEL expression could use any attributes of the aggregate root.
+The aggregate root backing the projection is available in the `target` variable.
+A projection interface using `@Value` is an open projection.
+Spring Data cannot apply query execution optimizations in this case, because the SpEL expression could use any attribute of the aggregate root.
 
-The expressions used in `@Value` shouldn't become too complex as you'd want to avoid programming in ``String``s.
-For very simple expressions, one option might be to resort to default methods:
+The expressions used in `@Value` should not be too complex -- you want to avoid programming in `String` variables.
+For very simple expressions, one option might be to resort to default methods (introduced in Java 8), as shown in the following example:
 
 [[projections.interfaces.open.default]]
 .A projection interface using a default method for custom logic
@@ -151,7 +151,7 @@ interface NamesOnly {
 ====
 
 This approach requires you to be able to implement logic purely based on the other accessor methods exposed on the projection interface.
-A second, more flexible option is to implement the custom logic in a Spring bean and then simply invoke that from the SpEL expression:
+A second, more flexible, option is to implement the custom logic in a Spring bean and then invoke that from the SpEL expression, as shown in the following example:
 
 [[projections.interfaces.open.bean-reference]]
 .Sample Person object
@@ -175,9 +175,9 @@ interface NamesOnly {
 ----
 ====
 
-Note, how the SpEL expression refers to `myBean` and invokes the `getFullName(…)` method forwarding the projection target as method parameter.
-Methods backed by SpEL expression evaluation can also use method parameters which can then be referred to from the expression.
-The method parameters are available via an `Object` array named `args`.
+Notice how the SpEL expression refers to `myBean` and invokes the `getFullName(…)` method and forwards the projection target as a method parameter.
+Methods backed by SpEL expression evaluation can also use method parameters, which can then be referred to from the expression.
+The method parameters are available through an `Object` array named `args`. The following example shows how to get a method parameter from the `args` array:
 
 .Sample Person object
 ====
@@ -191,15 +191,17 @@ interface NamesOnly {
 ----
 ====
 
-Again, for more complex expressions rather use a Spring bean and let the expression just invoke a method as described  <<projections.interfaces.open.bean-reference, above>>.
+Again, for more complex expressions, you should use a Spring bean and let the expression invoke a method, as described  <<projections.interfaces.open.bean-reference,earlier>>.
 
 [[projections.dtos]]
-== Class-based projections (DTOs)
+== Class-based Projections (DTOs)
 
-Another way of defining projections is using value type DTOs that hold properties for the fields that are supposed to be retrieved.
-These DTO types can be used exactly the same way projection interfaces are used, except that no proxying is going on here and no nested projections can be applied.
+Another way of defining projections is by using value type DTOs (Data Transfer Objects) that hold properties for the fields that are supposed to be retrieved.
+These DTO types can be used in exactly the same way projection interfaces are used, except that no proxying happens and no nested projections can be applied.
 
-In case the store optimizes the query execution by limiting the fields to be loaded, the ones to be loaded are determined from the parameter names of the constructor that is exposed.
+If the store optimizes the query execution by limiting the fields to be loaded, the fields to be loaded are determined from the parameter names of the constructor that is exposed.
+
+The following example shows a projecting DTO:
 
 .A projecting DTO
 ====
@@ -229,10 +231,10 @@ class NamesOnly {
 ====
 
 [TIP]
-.Avoiding boilerplate code for projection DTOs
+.Avoid boilerplate code for projection DTOs
 ====
-The code that needs to be written for a DTO can be dramatically simplified using https://projectlombok.org[Project Lombok], which provides an `@Value` annotation (not to mix up with Spring's `@Value` annotation shown in the interface examples above).
-The sample DTO above would become this:
+You can dramatically simplify the code for a DTO by using https://projectlombok.org[Project Lombok], which provides an `@Value` annotation (not to be confused with Spring's `@Value` annotation shown in the earlier interface examples).
+If you use Project Lombok's `@Value` annotation, the sample DTO shown earlier would become the following:
 
 [source, java]
 ----
@@ -241,16 +243,16 @@ class NamesOnly {
 	String firstname, lastname;
 }
 ----
-Fields are private final by default, the class exposes a constructor taking all fields and automatically gets `equals(…)` and `hashCode()` methods implemented.
+Fields are `private final` by default, and the class exposes a constructor that takes all fields and automatically gets `equals(…)` and `hashCode()` methods implemented.
 
 ====
 
 [[projection.dynamic]]
-== Dynamic projections
+== Dynamic Projections
 
-So far we have used the projection type as the return type or element type of a collection.
-However, it might be desirable to rather select the type to be used at invocation time.
-To apply dynamic projections, use a query method like this:
+So far, we have used the projection type as the return type or element type of a collection.
+However, you might want to select the type to be used at invocation time (which makes it dynamic).
+To apply dynamic projections, use a query method such as the one shown in the following example:
 
 .A repository using a dynamic projection parameter
 ====
@@ -263,7 +265,7 @@ interface PersonRepository extends Repository<Person, UUID> {
 ----
 ====
 
-This way the method can be used to obtain the aggregates as is, or with a projection applied:
+This way, the method can be used to obtain the aggregates as is or with a projection applied, as shown in the following example:
 
 .Using a repository with dynamic projections
 ====
