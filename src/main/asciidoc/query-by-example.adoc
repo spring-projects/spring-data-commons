@@ -4,33 +4,31 @@
 [[query-by-example.introduction]]
 == Introduction
 
-This chapter will give you an introduction to Query by Example and explain how to use Examples.
+This chapter provides an introduction to Query by Example and explains how to use the Examples.
 
-Query by Example (QBE) is a user-friendly querying technique with a simple interface. It allows dynamic query creation and does not require to write queries containing field names. In fact, Query by Example does not require to write queries using store-specific query languages at all.
+Query by Example (QBE) is a user-friendly querying technique with a simple interface. It allows dynamic query creation and does not require you to write queries that contain field names. In fact, Query by Example does not require you to write queries by using store-specific query languages at all.
 
 [[query-by-example.usage]]
 == Usage
 
 The Query by Example API consists of three parts:
 
-* Probe: That is the actual example of a domain object with populated fields.
+* Probe: The actual example of a domain object with populated fields.
 * `ExampleMatcher`: The `ExampleMatcher` carries details on how to match particular fields. It can be reused across multiple Examples.
 * `Example`: An `Example` consists of the probe and the `ExampleMatcher`. It is used to create the query.
 
-Query by Example is suited for several use-cases but also comes with limitations:
+Query by Example is well suited for several use cases:
 
-**When to use**
+* Querying your data store with a set of static or dynamic constraints.
+* Frequent refactoring of the domain objects without worrying about breaking existing queries.
+* Working independently from the underlying data store API.
 
-* Querying your data store with a set of static or dynamic constraints
-* Frequent refactoring of the domain objects without worrying about breaking existing queries
-* Works independently from the underlying data store API
+Query by Example also has several limitations:
 
-**Limitations**
+* No support for nested or grouped property constraints, such as `firstname = ?0 or (firstname = ?1 and lastname = ?2)`.
+* Only supports starts/contains/ends/regex matching for strings and exact matching for other property types.
 
-* No support for nested/grouped property constraints like `firstname = ?0 or (firstname = ?1 and lastname = ?2)`
-* Only supports starts/contains/ends/regex matching for strings and exact matching for other property types
-
-Before getting started with Query by Example, you need to have a domain object. To get started, simply create an interface for your repository:
+Before getting started with Query by Example, you need to have a domain object. To get started, create an interface for your repository, as shown in the following example:
 
 .Sample Person object
 ====
@@ -49,7 +47,7 @@ public class Person {
 ----
 ====
 
-This is a simple domain object. You can use it to create an `Example`. By default, fields having `null` values are ignored, and strings are matched using the store specific defaults. Examples can be built by either using the `of` factory method or by using <<query-by-example.matchers,`ExampleMatcher`>>. `Example` is immutable.
+The preceding example shows a simple domain object. You can use it to create an `Example`. By default, fields having `null` values are ignored, and strings are matched by using the store specific defaults. Examples can be built by either using the `of` factory method or by using <<query-by-example.matchers,`ExampleMatcher`>>. `Example` is immutable. The following listing shows a simple Example:
 
 .Simple Example
 ====
@@ -60,12 +58,12 @@ person.setFirstname("Dave");                          <2>
 
 Example<Person> example = Example.of(person);         <3>
 ----
-<1> Create a new instance of the domain object
-<2> Set the properties to query
-<3> Create the `Example`
+<1> Create a new instance of the domain object.
+<2> Set the properties to query.
+<3> Create the `Example`.
 ====
 
-Examples are ideally be executed with repositories. To do so, let your repository interface extend `QueryByExampleExecutor<T>`. Here's an excerpt from the `QueryByExampleExecutor` interface:
+Examples are ideally be executed with repositories. To do so, let your repository interface extend `QueryByExampleExecutor<T>`. The following listing shows an excerpt from the `QueryByExampleExecutor` interface:
 
 .The `QueryByExampleExecutor`
 ====
@@ -83,9 +81,9 @@ public interface QueryByExampleExecutor<T> {
 ====
 
 [[query-by-example.matchers]]
-== Example matchers
+== Example Matchers
 
-Examples are not limited to default settings. You can specify own defaults for string matching, null handling and property-specific settings using the `ExampleMatcher`.
+Examples are not limited to default settings. You can specify your own defaults for string matching, null handling, and property-specific settings by using the `ExampleMatcher`, as shown in the following example:
 
 .Example matcher with customized matching
 ====
@@ -104,16 +102,16 @@ Example<Person> example = Example.of(person, matcher); <7>
 ----
 <1> Create a new instance of the domain object.
 <2> Set properties.
-<3> Create an `ExampleMatcher` to expect all values to match. It's usable at this stage even without further configuration.
-<4> Construct a new `ExampleMatcher` to ignore the property path `lastname`.
-<5> Construct a new `ExampleMatcher` to ignore the property path `lastname` and to include null values.
-<6> Construct a new `ExampleMatcher` to ignore the property path `lastname`, to include null values, and use perform suffix string matching.
+<3> Create an `ExampleMatcher` to expect all values to match. It is usable at this stage even without further configuration.
+<4> Construct a new `ExampleMatcher` to ignore the `lastname` property path.
+<5> Construct a new `ExampleMatcher` to ignore the `lastname` property path and to include null values.
+<6> Construct a new `ExampleMatcher` to ignore the `lastname` property path, to include null values, and to perform suffix string matching.
 <7> Create a new `Example` based on the domain object and the configured `ExampleMatcher`.
 ====
 
-By default the `ExampleMatcher` will expect all values set on the probe to match. If you want to get results matching any of the predicates defined implicitly, use `ExampleMatcher.matchingAny()`.
+By default, the `ExampleMatcher` expect alls values set on the probe to match. If you want to get results matching any of the predicates defined implicitly, use `ExampleMatcher.matchingAny()`.
 
-You can specify behavior for individual properties (e.g. "firstname" and "lastname", "address.city" for nested properties). You can tune it with matching options and case sensitivity.
+You can specify behavior for individual properties (such as "firstname" and "lastname" or, for nested properties, "address.city"). You can tune it with matching options and case sensitivity, as shown in the following example:
 
 .Configuring matcher options
 ====
@@ -126,7 +124,7 @@ ExampleMatcher matcher = ExampleMatcher.matching()
 ----
 ====
 
-Another style to configure matcher options is by using Java 8 lambdas. This approach is a callback that asks the implementor to modify the matcher. It's not required to return the matcher because configuration options are held within the matcher instance.
+Another way to configure matcher options is to use lambdas (introduced in Java 8). This approach creates a callback that asks the implementor to modify the matcher. You need not return the matcher, because configuration options are held within the matcher instance. The following example shows a matcher that uses lambdas:
 
 .Configuring matcher options with lambdas
 ====
@@ -139,7 +137,7 @@ ExampleMatcher matcher = ExampleMatcher.matching()
 ----
 ====
 
-Queries created by `Example` use a merged view of the configuration. Default matching settings can be set at `ExampleMatcher` level while individual settings can be applied to particular property paths. Settings that are set on `ExampleMatcher` are inherited by property path settings unless they are defined explicitly. Settings on a property patch have higher precedence than default settings.
+Queries created by `Example` use a merged view of the configuration. Default matching settings can be set at the `ExampleMatcher` level, while individual settings can be applied to particular property paths. Settings that are set on `ExampleMatcher` are inherited by property path settings unless they are defined explicitly. Settings on a property patch have higher precedence than default settings. The following table describes the scope of the various `ExampleMatcher` settings:
 
 [cols="1,2", options="header"]
 .Scope of `ExampleMatcher` settings

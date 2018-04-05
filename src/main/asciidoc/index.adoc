@@ -1,15 +1,12 @@
 = Spring Data Commons - Reference Documentation
-Oliver Gierke; Thomas Darimont; Christoph Strobl; Mark Pollack; Thomas Risberg; Mark Paluch;
+Oliver Gierke; Thomas Darimont; Christoph Strobl; Mark Pollack; Thomas Risberg; Mark Paluch; Jay Bryant
 :revnumber: {version}
 :revdate: {localdate}
-:toc:
-:toc-placement!:
+:toc: left
 
 (C) 2008-2017 The original authors.
 
 NOTE: Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically.
-
-toc::[]
 
 include::preface.adoc[]
 
@@ -34,4 +31,3 @@ include::repository-populator-namespace-reference.adoc[]
 include::repository-query-keywords-reference.adoc[]
 include::repository-query-return-types-reference.adoc[]
 :leveloffset: -1
-
