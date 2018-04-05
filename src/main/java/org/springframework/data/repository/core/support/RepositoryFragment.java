@@ -155,12 +155,27 @@ public interface RepositoryFragment<T> {
 		}
 	}
 
-	@RequiredArgsConstructor
 	@EqualsAndHashCode(callSuper = false)
 	static class ImplementedRepositoryFragment<T> implements RepositoryFragment<T> {
 
-		private final @NonNull Optional<Class<T>> interfaceClass;
-		private final @NonNull T implementation;
+		private final Optional<Class<T>> interfaceClass;
+		private final T implementation;
+
+		public ImplementedRepositoryFragment(Optional<Class<T>> interfaceClass, T implementation) {
+
+			Assert.notNull(interfaceClass, "Interface class must not be null!");
+			Assert.notNull(implementation, "Implementation object must not be null!");
+
+			interfaceClass.ifPresent(it -> {
+
+				Assert.isTrue(ClassUtils.isAssignableValue(it, implementation),
+						() -> String.format("Fragment implementation %s does not implement %s!", ClassUtils.getQualifiedName(it),
+								ClassUtils.getQualifiedName(implementation.getClass())));
+			});
+
+			this.interfaceClass = interfaceClass;
+			this.implementation = implementation;
+		}
 
 		/*
 		 * (non-Javadoc)
