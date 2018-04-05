@@ -1,0 +1,48 @@
+/*
+ * Copyright 2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.repository.core.support;
+
+import static org.assertj.core.api.Assertions.*;
+
+import org.junit.Test;
+
+/**
+ * Unit tests for {@link RepositoryFragment}.
+ *
+ * @author Mark Paluch
+ */
+public class RepositoryFragmentUnitTests {
+
+	@SuppressWarnings("unchecked")
+	@Test // DATACMNS-1289
+	public void fragmentCreationFromUnrelatedTypesShouldFail() {
+
+		assertThatThrownBy(() -> RepositoryFragment.implemented((Class) CustomFragment.class, new UnrelatedImpl()))
+				.hasMessageMatching("Fragment implementation .* does not implement .*UnrelatedImpl!")
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test // DATACMNS-1289
+	public void fragmentCreationFromRelatedTypesShouldCreateNewFragment() {
+		assertThat(RepositoryFragment.implemented(CustomFragment.class, new CustomFragmentImpl())).isNotNull();
+	}
+
+	interface CustomFragment {}
+
+	private static class CustomFragmentImpl implements CustomFragment {}
+
+	private static class UnrelatedImpl {}
+}
