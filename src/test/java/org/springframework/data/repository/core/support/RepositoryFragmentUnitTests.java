@@ -26,8 +26,8 @@ import org.junit.Test;
  */
 public class RepositoryFragmentUnitTests {
 
-	@SuppressWarnings("unchecked")
 	@Test // DATACMNS-1289
+	@SuppressWarnings("unchecked")
 	public void fragmentCreationFromUnrelatedTypesShouldFail() {
 
 		assertThatThrownBy(() -> RepositoryFragment.implemented((Class) CustomFragment.class, new UnrelatedImpl()))
