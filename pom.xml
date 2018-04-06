@@ -324,6 +324,16 @@
 	</dependencies>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.projectlombok</groupId>
+					<artifactId>lombok-maven-plugin</artifactId>
+					<version>1.16.20.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
 		<plugins>
 
 			<plugin> <!-- forcing a more recent version of the javadoc plugin since the default version does not work with jdk9. See https://issues.apache.org/jira/browse/MJAVADOC-441-->
