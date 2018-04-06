@@ -17,18 +17,24 @@ package org.springframework.data.history;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Reference;
 
 /**
  * Unit tests for {@link AnnotationRevisionMetadata}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class AnnotationRevisionMetadataUnitTests {
+
+	SoftAssertions softly = new SoftAssertions();
 
 	@Test // DATACMNS-1173
 	public void exposesNoInformationOnEmptyProbe() {
@@ -70,7 +76,39 @@ public class AnnotationRevisionMetadataUnitTests {
 		assertThat(metadata.getRequiredRevisionDate()).isEqualTo(sample.revisionDate);
 	}
 
-	private static RevisionMetadata<Long> getMetadata(Sample sample) {
+	@Test // DATACMNS-1251
+	public void exposesRevisionDateForInstant() {
+
+		SampleWithInstant sample = new SampleWithInstant();
+		sample.revisionInstant = Instant.now();
+		LocalDateTime expectedLocalDateTime = LocalDateTime.ofInstant(sample.revisionInstant, ZoneOffset.systemDefault());
+
+		RevisionMetadata<Long> metadata = getMetadata(sample);
+
+		softly.assertThat(metadata.getRevisionDate()).hasValue(expectedLocalDateTime);
+		softly.assertThat(metadata.getRequiredRevisionDate()).isEqualTo(expectedLocalDateTime);
+
+		softly.assertAll();
+	}
+
+	@Test // DATACMNS-1290
+	public void exposesRevisionDateForLong() {
+
+		SampleWithLong sample = new SampleWithLong();
+		sample.revisionLong = 4711L;
+
+		Instant expectedInstant = Instant.ofEpochMilli(sample.revisionLong);
+		LocalDateTime expectedLocalDateTime = LocalDateTime.ofInstant(expectedInstant, ZoneOffset.systemDefault());
+
+		RevisionMetadata<Long> metadata = getMetadata(sample);
+
+		softly.assertThat(metadata.getRevisionDate()).hasValue(expectedLocalDateTime);
+		softly.assertThat(metadata.getRequiredRevisionDate()).isEqualTo(expectedLocalDateTime);
+
+		softly.assertAll();
+	}
+
+	private static RevisionMetadata<Long> getMetadata(Object sample) {
 		return new AnnotationRevisionMetadata<>(sample, Autowired.class, Reference.class);
 	}
 
@@ -78,5 +116,17 @@ public class AnnotationRevisionMetadataUnitTests {
 
 		@Autowired Long revisionNumber;
 		@Reference LocalDateTime revisionDate;
+	}
+
+	static class SampleWithInstant {
+
+		@Autowired Long revisionNumber;
+		@Reference Instant revisionInstant;
+	}
+
+	static class SampleWithLong {
+
+		@Autowired Long revisionNumber;
+		@Reference long revisionLong;
 	}
 }

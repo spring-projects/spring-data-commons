@@ -16,7 +16,9 @@
 package org.springframework.data.history;
 
 import java.lang.annotation.Annotation;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import org.springframework.data.util.AnnotationDetectionFieldCallback;
@@ -29,12 +31,13 @@ import org.springframework.util.ReflectionUtils;
  * and returns the field's values on calls to {@link #getRevisionDate()} and {@link #getRevisionNumber()}.
  *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implements RevisionMetadata<N> {
 
 	private final Object entity;
 	private final Lazy<Optional<N>> revisionNumber;
-	private final Lazy<Optional<LocalDateTime>> revisionDate;
+	private final Lazy<Optional<Object>> revisionDate;
 
 	/**
 	 * Creates a new {@link AnnotationRevisionMetadata} inspecting the given entity for the given annotations. If no
@@ -69,7 +72,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	 * @see org.springframework.data.history.RevisionMetadata#getRevisionDate()
 	 */
 	public Optional<LocalDateTime> getRevisionDate() {
-		return revisionDate.get();
+		return revisionDate.get().map(AnnotationRevisionMetadata::convertToLocalDateTime);
 	}
 
 	/*
@@ -89,5 +92,31 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 			ReflectionUtils.doWithFields(entity.getClass(), callback);
 			return Optional.ofNullable(callback.getValue(entity));
 		});
+	}
+
+	private static LocalDateTime convertToLocalDateTime(Object timestamp) {
+
+		if (timestamp instanceof LocalDateTime) {
+			return (LocalDateTime) timestamp;
+		}
+
+		return LocalDateTime.ofInstant(convertToInstant(timestamp), ZoneOffset.systemDefault());
+	}
+
+	private static Instant convertToInstant(Object timestamp) {
+
+		if (timestamp instanceof Instant) {
+			return (Instant) timestamp;
+		}
+
+		if (timestamp instanceof LocalDateTime) {
+			return ((LocalDateTime) timestamp).atZone(ZoneOffset.systemDefault()).toInstant();
+		}
+
+		if (timestamp instanceof Long) {
+			return Instant.ofEpochMilli((Long) timestamp);
+		}
+
+		throw new IllegalArgumentException(String.format("Can't convert %s to Instant!", timestamp));
 	}
 }
