@@ -19,7 +19,6 @@ import java.lang.annotation.Annotation;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
 import org.springframework.data.util.AnnotationDetectionFieldCallback;
@@ -39,7 +38,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 
 	private final Object entity;
 	private final Lazy<Optional<N>> revisionNumber;
-	private final Lazy<Optional<TemporalAccessor>> revisionDate;
+	private final Lazy<Optional<Object>> revisionDate;
 
 	/**
 	 * Creates a new {@link AnnotationRevisionMetadata} inspecting the given entity for the given annotations. If no
@@ -106,29 +105,29 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 		});
 	}
 
-	private static LocalDateTime convertToLocalDateTime(TemporalAccessor temporalAccessor) {
+	private static LocalDateTime convertToLocalDateTime(Object timestamp) {
 
-		if (temporalAccessor instanceof LocalDateTime) {
-			return (LocalDateTime) temporalAccessor;
+		if (timestamp instanceof LocalDateTime) {
+			return (LocalDateTime) timestamp;
 		}
 
-		if (temporalAccessor instanceof Instant) {
-			return LocalDateTime.ofInstant((Instant) temporalAccessor, ZoneOffset.systemDefault());
-		}
-
-		throw new IllegalArgumentException(String.format("Can't convert %s to LocalDateTime!", temporalAccessor));
+		return LocalDateTime.ofInstant(convertToInstant(timestamp), ZoneOffset.systemDefault());
 	}
 
-	private static Instant convertToInstant(TemporalAccessor temporalAccessor) {
+	private static Instant convertToInstant(Object timestamp) {
 
-		if (temporalAccessor instanceof Instant) {
-			return (Instant) temporalAccessor;
+		if (timestamp instanceof Instant) {
+			return (Instant) timestamp;
 		}
 
-		if (temporalAccessor instanceof LocalDateTime) {
-			return ((LocalDateTime) temporalAccessor).atZone(ZoneOffset.systemDefault()).toInstant();
+		if (timestamp instanceof LocalDateTime) {
+			return ((LocalDateTime) timestamp).atZone(ZoneOffset.systemDefault()).toInstant();
 		}
 
-		throw new IllegalArgumentException(String.format("Can't convert %s to LocalDateTime!", temporalAccessor));
+		if (timestamp instanceof Long) {
+			return Instant.ofEpochMilli((Long) timestamp);
+		}
+
+		throw new IllegalArgumentException(String.format("Can't convert %s to Instant!", timestamp));
 	}
 }

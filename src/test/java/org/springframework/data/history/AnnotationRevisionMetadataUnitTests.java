@@ -106,6 +106,26 @@ public class AnnotationRevisionMetadataUnitTests {
 		softly.assertAll();
 	}
 
+	@Test // DATACMNS-1290
+	public void exposesRevisionDateAndInstantForLong() {
+
+		SampleWithLong sample = new SampleWithLong();
+		sample.revisionLong = 4711L;
+
+		Instant expectedInstant = Instant.ofEpochMilli(sample.revisionLong);
+		LocalDateTime expectedLocalDateTime = LocalDateTime.ofInstant(expectedInstant, ZoneOffset.systemDefault());
+
+		RevisionMetadata<Long> metadata = getMetadata(sample);
+
+		softly.assertThat(metadata.getRevisionDate()).hasValue(expectedLocalDateTime);
+		softly.assertThat(metadata.getRequiredRevisionDate()).isEqualTo(expectedLocalDateTime);
+
+		softly.assertThat(metadata.getRevisionInstant()).hasValue(expectedInstant);
+		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(expectedInstant);
+
+		softly.assertAll();
+	}
+
 	private static RevisionMetadata<Long> getMetadata(Object sample) {
 		return new AnnotationRevisionMetadata<>(sample, Autowired.class, Reference.class);
 	}
@@ -120,5 +140,11 @@ public class AnnotationRevisionMetadataUnitTests {
 
 		@Autowired Long revisionNumber;
 		@Reference Instant revisionInstant;
+	}
+
+	static class SampleWithLong {
+
+		@Autowired Long revisionNumber;
+		@Reference long revisionLong;
 	}
 }
