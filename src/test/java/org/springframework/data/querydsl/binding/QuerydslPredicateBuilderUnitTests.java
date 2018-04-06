@@ -87,15 +87,15 @@ public class QuerydslPredicateBuilderUnitTests {
 	@Test(expected = CodegenException.class) // DATACMNS-669
 	public void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
 
-			values.add("firstname", "Oliver");
+		values.add("firstname", "Oliver");
 
-			Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-			assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("Oliver"));
+		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("Oliver"));
 
-			List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
+		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
 
-			assertThat(result).containsExactly(Users.OLIVER);
+		assertThat(result).containsExactly(Users.OLIVER);
 	}
 
 	// this currently throws a CodgenException due to a problem of QueryDsl with Jdk9.
