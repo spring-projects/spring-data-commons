@@ -161,6 +161,12 @@ public interface RepositoryFragment<T> {
 		private final Optional<Class<T>> interfaceClass;
 		private final T implementation;
 
+		/**
+		 * Creates a new {@link ImplementedRepositoryFragment} for the given interface class and implementation.
+		 * 
+		 * @param interfaceClass must not be {@literal null}.
+		 * @param implementation must not be {@literal null}.
+		 */
 		public ImplementedRepositoryFragment(Optional<Class<T>> interfaceClass, T implementation) {
 
 			Assert.notNull(interfaceClass, "Interface class must not be null!");
