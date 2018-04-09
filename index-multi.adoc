@@ -1,0 +1,11 @@
+= Spring Data Commons Reference Guide
+
+The reference documentation consists of the following sections:
+
+[horizontal]
+link:preface.html[Preface] :: Project metadata (version control, bug tracker, and so on).
+link:dependencies.html[Dependencies] :: Dependency Management with Spring Boot, Spring Framework.
+link:repositories.html[Repositories] :: Core concepts, defining queries, repository interfaces, and more.
+link:repository-projections.html[Projections] :: Interface-based projections, class-based projections, dynamic projections.
+link:query-by-example.html[Query by Example] :: Usage, `Example`, `ExampleMatcher`.
+link:auditing.html[Auditing] :: Annotation-based auditing metadata, interface-based auditing metadata, `AuditorAware`.

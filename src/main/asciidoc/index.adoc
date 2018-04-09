@@ -2,7 +2,16 @@
 Oliver Gierke; Thomas Darimont; Christoph Strobl; Mark Pollack; Thomas Risberg; Mark Paluch; Jay Bryant
 :revnumber: {version}
 :revdate: {localdate}
+:linkcss:
+:doctype: book
+:docinfo: shared
 :toc: left
+:toclevels: 4
+:source-highlighter: prettify
+:icons: font
+:stylesdir: ./stylesheets
+:stylesheet: spring.css
+
 
 (C) 2008-2017 The original authors.
 
@@ -11,7 +20,7 @@ NOTE: Copies of this document may be made for your own use and for distribution 
 include::preface.adoc[]
 
 [[reference-documentation]]
-= Reference documentation
+= Reference Documentation
 
 :leveloffset: +1
 include::dependencies.adoc[]

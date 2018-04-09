@@ -3,7 +3,7 @@
 The Spring Data Commons project applies core Spring concepts to the development of solutions using many relational and non-relational data stores.
 
 [[project]]
-== Project metadata
+== Project Metadata
 
 * Version control: http://github.com/spring-projects/spring-data-commons
 * Bugtracker: https://jira.spring.io/browse/DATACMNS
