@@ -46,10 +46,10 @@ public class AnnotationRevisionMetadataUnitTests {
 		assertThat(metadata.getRevisionDate()).isEmpty();
 
 		assertThatExceptionOfType(IllegalStateException.class) //
-				.isThrownBy(() -> metadata.getRequiredRevisionNumber());
+				.isThrownBy(metadata::getRequiredRevisionNumber);
 
 		assertThatExceptionOfType(IllegalStateException.class) //
-				.isThrownBy(() -> metadata.getRequiredRevisionDate());
+				.isThrownBy(metadata::getRequiredRevisionDate);
 	}
 
 	@Test // DATACMNS-1173
