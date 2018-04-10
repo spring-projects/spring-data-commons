@@ -19,7 +19,7 @@ NOTE: Geospatial types (such as `GeoResult`, `GeoResults`, and `GeoPage`) are av
 |`Collection<T>`|A `Collection`.
 |`List<T>`|A `List`.
 |`Optional<T>`|A Java 8 or Guava `Optional`. Expects the query method to return one result at most. If no result is found, `Optional.empty()` or `Optional.absent()` is returned. More than one result triggers an `IncorrectResultSizeDataAccessException`.
-|`Option<T>`|Either a Scala or JavaSlang `Option` type. Semantically the same behavior as Java 8's `Optional`, described earlier.
+|`Option<T>`|Either a Scala or Javaslang `Option` type. Semantically the same behavior as Java 8's `Optional`, described earlier.
 |`Stream<T>`|A Java 8 `Stream`.
 |`Future<T>`|A `Future`. Expects a method to be annotated with `@Async` and requires Spring's asynchronous method execution capability to be enabled.
 |`CompletableFuture<T>`|A Java 8 `CompletableFuture`. Expects a method to be annotated with `@Async` and requires Spring's asynchronous method execution capability to be enabled.

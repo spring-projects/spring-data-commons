@@ -4,7 +4,7 @@
 [[query-by-example.introduction]]
 == Introduction
 
-This chapter provides an introduction to Query by Example and explains how to use the Examples.
+This chapter provides an introduction to Query by Example and explains how to use it.
 
 Query by Example (QBE) is a user-friendly querying technique with a simple interface. It allows dynamic query creation and does not require you to write queries that contain field names. In fact, Query by Example does not require you to write queries by using store-specific query languages at all.
 
@@ -109,7 +109,7 @@ Example<Person> example = Example.of(person, matcher); <7>
 <7> Create a new `Example` based on the domain object and the configured `ExampleMatcher`.
 ====
 
-By default, the `ExampleMatcher` expect alls values set on the probe to match. If you want to get results matching any of the predicates defined implicitly, use `ExampleMatcher.matchingAny()`.
+By default, the `ExampleMatcher` expects all values set on the probe to match. If you want to get results matching any of the predicates defined implicitly, use `ExampleMatcher.matchingAny()`.
 
 You can specify behavior for individual properties (such as "firstname" and "lastname" or, for nested properties, "address.city"). You can tune it with matching options and case sensitivity, as shown in the following example:
 

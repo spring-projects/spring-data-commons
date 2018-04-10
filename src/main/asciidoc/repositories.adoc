@@ -48,7 +48,7 @@ public interface CrudRepository<T, ID extends Serializable>
 <6> Indicates whether an entity with the given ID exists.
 ====
 
-NOTE: We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`. Those interfaces extend    `CrudRepository` and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces such as `CrudRepository`.
+NOTE: We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`. Those interfaces extend `CrudRepository` and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces such as `CrudRepository`.
 
 On top of the `CrudRepository`, there is a `PagingAndSortingRepository` abstraction that adds additional methods to ease paginated access to entities:
 
@@ -66,7 +66,7 @@ public interface PagingAndSortingRepository<T, ID extends Serializable>
 ----
 ====
 
-To access the second page of `User` by a page size of 20, you could  do something like the following:
+To access the second page of `User` by a page size of 20, you could do something like the following:
 
 [source, java]
 ----
@@ -1059,7 +1059,7 @@ userRepository.findAll(predicate);
 [[core.web]]
 === Web support
 
-NOTE: This section contains the documentation for the Spring Data web support as it is implemented in the Spring Data Commons version (and later versions). As the newly introduced support changes many things, we kept the documentation of the former behavior in <<web.legacy>>.
+NOTE: This section contains the documentation for the Spring Data web support as it is implemented in the current (and later) versions of Spring Data Commons. As the newly introduced support changes many things, we kept the documentation of the former behavior in <<web.legacy>>.
 
 Spring Data modules that support the repository programming model ship with a variety of web support. The web related components require Spring MVC JARs to be on the classpath. Some of them even provide integration with https://github.com/SpringSource/spring-hateoas[Spring HATEOAS]. In general, the integration support is enabled by using the `@EnableSpringDataWebSupport` annotation in your JavaConfig configuration class, as shown in the following example:
 
@@ -1238,7 +1238,7 @@ You see that the assembler produced the correct URI and also picked up the defau
 [[core.web.binding]]
 ==== Web Databinding Support
 
-Spring Data projections (described in <<projections>>) can be used to bind incoming request payloads by either using http://goessner.net/articles/JsonPath/[JSONPath] expressions (requires https://github.com/json-path/JsonPath[Jayway JasonPath] or https://www.w3.org/TR/xpath-31/[XPath] expressions (requires https://xmlbeam.org/[XmlBeam]), as shown in the following example:
+Spring Data projections (described in <<projections>>) can be used to bind incoming request payloads by either using http://goessner.net/articles/JsonPath/[JSONPath] expressions (requires https://github.com/json-path/JsonPath[Jayway JsonPath] or https://www.w3.org/TR/xpath-31/[XPath] expressions (requires https://xmlbeam.org/[XmlBeam]), as shown in the following example:
 
 .HTTP payload binding using JSONPath or XPath expressions
 ====
@@ -1423,76 +1423,3 @@ To instead use XML to define the data the repositories should be populated with,
 </beans>
 ----
 ====
-
-[[web.legacy]]
-=== Legacy Web Support
-
-This section documents the legacy (prior to version 1.6) web support within Spring Data Commons, for the sake of those projects that may still rely on the older behavior.
-
-[[web-domain-class-binding]]
-==== Domain Class Web Binding for Spring MVC
-
-If you are developing a Spring MVC web application, you typically have to resolve domain class IDs from URLs. By default, your task is to transform that request parameter or URL part into the domain class, so that other objects can perform business logic on the entities directly. The result often looks something like the following:
-
-[source, java]
-----
-@Controller
-@RequestMapping("/users")
-class UserController {
-
-  private final UserRepository userRepository;
-
-  UserController(UserRepository userRepository) {
-    Assert.notNull(repository, "Repository must not be null!");
-    this.userRepository = userRepository;
-  }
-
-  @RequestMapping("/{id}")
-  String showUserForm(@PathVariable("id") Long id, Model model) {
-
-    // Do null check for id
-    User user = userRepository.findById(id);
-    // Do null check for user
-
-    model.addAttribute("user", user);
-    return "user";
-  }
-}
-----
-
-First, you declare a repository dependency for each controller to look up the entity managed by the controller or repository, respectively. Looking up the entity is boilerplate as well, as it is always a `findById(…)` call. Fortunately, Spring provides the means to register custom components that allow conversion from a `String` value to an arbitrary type.
-
-[[web.legacy.property-editors]]
-===== `PropertyEditors`
-
-For Spring versions before 3.0, simple Java `PropertyEditors` had to be used. To integrate with that, Spring Data offers a `DomainClassPropertyEditorRegistrar`, which looks up all Spring Data repositories registered in the `ApplicationContext` and registers a custom `PropertyEditor` for the managed domain class. The following example shows how to include a bean of type `DomainClassPropertyEditorRegistrar`:
-
-[source, xml]
-----
-<bean class="….web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
-  <property name="webBindingInitializer">
-    <bean class="….web.bind.support.ConfigurableWebBindingInitializer">
-      <property name="propertyEditorRegistrars">
-        <bean class="org.springframework.data.repository.support.DomainClassPropertyEditorRegistrar" />
-      </property>
-    </bean>
-  </property>
-</bean>
-----
-
-If you have configured Spring MVC as shown in the preceding example, you can reduce a lot of the clutter and boilerplate by configuring your controller as shown in the following example:
-
-[source, java]
-----
-@Controller
-@RequestMapping("/users")
-class UserController {
-
-  @RequestMapping("/{id}")
-  String showUserForm(@PathVariable("id") User user, Model model) {
-
-    model.addAttribute("user", user);
-    return "userForm";
-  }
-}
-----
