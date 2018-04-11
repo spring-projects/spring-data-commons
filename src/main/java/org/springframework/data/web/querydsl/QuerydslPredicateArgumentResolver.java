@@ -41,7 +41,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import com.querydsl.core.types.Predicate;
 
 /**
- * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.mysema.query.types.Predicate} into Spring MVC
+ * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.querydsl.core.types.Predicate} into Spring MVC
  * controller methods.
  * 
  * @author Christoph Strobl
