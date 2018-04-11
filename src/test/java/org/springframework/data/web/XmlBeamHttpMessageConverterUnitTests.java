@@ -28,6 +28,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTests.UnannotatedInterface;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.xml.sax.SAXParseException;
 import org.xmlbeam.annotation.XBRead;
 
 /**
@@ -85,6 +87,19 @@ public class XmlBeamHttpMessageConverterUnitTests {
 
 		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_JSON)).isFalse();
 		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML)).isTrue();
+	}
+
+	@Test // DATACMNS-1292
+	public void doesNotSupportEntityExpansion() throws Exception {
+
+		preparePayload("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" //
+				+ "<!DOCTYPE foo [\n" //
+				+ "<!ELEMENT foo ANY >\n" //
+				+ "<!ENTITY xxe \"Bar\" >]><user><firstname>&xxe;</firstname><lastname>Matthews</lastname></user>");
+
+		assertThatExceptionOfType(HttpMessageNotReadableException.class) //
+				.isThrownBy(() -> converter.read(Customer.class, message)) //
+				.withCauseInstanceOf(SAXParseException.class);
 	}
 
 	private void preparePayload(String payload) throws IOException {

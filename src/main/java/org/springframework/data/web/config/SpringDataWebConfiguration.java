@@ -65,6 +65,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 
 	private @Autowired Optional<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
 	private @Autowired Optional<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
+	private @Autowired Optional<XmlBeamHttpMessageConverter> xmlBeamHttpMessageConverter;
 
 	public SpringDataWebConfiguration(ApplicationContext context,
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
@@ -167,7 +168,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		}
 
 		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
-			converters.add(0, new XmlBeamHttpMessageConverter());
+			converters.add(0, xmlBeamHttpMessageConverter.orElseGet(() -> new XmlBeamHttpMessageConverter()));
 		}
 	}
 

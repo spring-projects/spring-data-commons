@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -29,8 +30,11 @@ import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.xml.sax.SAXParseException;
 import org.xmlbeam.XBProjector;
+import org.xmlbeam.config.DefaultXMLFactoriesConfig;
 
 /**
  * A read-only {@link HttpMessageConverter} to create XMLBeam-based projection instances for interfaces.
@@ -50,9 +54,39 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 	 */
 	public XmlBeamHttpMessageConverter() {
 
+		this(new XBProjector(new DefaultXMLFactoriesConfig() {
+
+			private static final long serialVersionUID = -1324345769124477493L;
+
+			/* 
+			 * (non-Javadoc)
+			 * @see org.xmlbeam.config.DefaultXMLFactoriesConfig#createDocumentBuilderFactory()
+			 */
+			@Override
+			public DocumentBuilderFactory createDocumentBuilderFactory() {
+
+				DocumentBuilderFactory factory = super.createDocumentBuilderFactory();
+
+				factory.setAttribute("http://apache.org/xml/features/disallow-doctype-decl", true);
+				factory.setAttribute("http://xml.org/sax/features/external-general-entities", false);
+
+				return factory;
+			}
+		}));
+	}
+
+	/**
+	 * Creates a new {@link XmlBeamHttpMessageConverter} using the given {@link XBProjector}.
+	 * 
+	 * @param projector must not be {@literal null}.
+	 */
+	public XmlBeamHttpMessageConverter(XBProjector projector) {
+
 		super(MediaType.APPLICATION_XML, MediaType.parseMediaType("application/*+xml"));
 
-		this.projectionFactory = new XBProjector();
+		Assert.notNull(projector, "XBProjector must not be null!");
+
+		this.projectionFactory = projector;
 	}
 
 	/*
@@ -92,7 +126,21 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 	@Override
 	protected Object readInternal(Class<? extends Object> clazz, HttpInputMessage inputMessage)
 			throws IOException, HttpMessageNotReadableException {
-		return projectionFactory.io().stream(inputMessage.getBody()).read(clazz);
+
+		try {
+
+			return projectionFactory.io().stream(inputMessage.getBody()).read(clazz);
+
+		} catch (RuntimeException o_O) {
+
+			Throwable cause = o_O.getCause();
+
+			if (SAXParseException.class.isInstance(cause)) {
+				throw new HttpMessageNotReadableException("Cannot read input message!", cause);
+			} else {
+				throw o_O;
+			}
+		}
 	}
 
 	/*
