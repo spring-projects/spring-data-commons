@@ -51,7 +51,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	private final ObjectFactory<ConversionService> conversionService;
 
 	/**
-	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService} and the
+	 * Creates a new {@link ProxyingHandlerMethodArgumentResolver} using the given {@link ConversionService} and the
 	 * {@link ModelAttribute} annotation not required.
 	 *
 	 * @param conversionService must not be {@literal null}.
@@ -63,9 +63,12 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	}
 
 	/**
-	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService}.
+	 * Creates a new {@link ProxyingHandlerMethodArgumentResolver} using the given {@link ConversionService}.
 	 *
 	 * @param conversionService must not be {@literal null}.
+	 * @param annotationNotRequired if "true", non-simple method arguments and
+	 * return values are considered model attributes with or without a
+	 * {@code @ModelAttribute} annotation.
 	 */
 	public ProxyingHandlerMethodArgumentResolver(ObjectFactory<ConversionService> conversionService,
 			boolean annotationNotRequired) {
