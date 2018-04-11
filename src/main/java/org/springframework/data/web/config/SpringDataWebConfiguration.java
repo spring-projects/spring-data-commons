@@ -53,8 +53,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
-	@Autowired private ApplicationContext context;
-	@Autowired @Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService;
+	private @Autowired ApplicationContext context;
+	private @Autowired @Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService;
+	private @Autowired(required = false) XmlBeamHttpMessageConverter xmlBeamHttpMessageConverter;
 
 	/*
 	 * (non-Javadoc)
@@ -133,7 +134,12 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 		}
 
 		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
-			converters.add(0, new XmlBeamHttpMessageConverter());
+
+			XmlBeamHttpMessageConverter converter = xmlBeamHttpMessageConverter == null //
+					? new XmlBeamHttpMessageConverter() //
+					: xmlBeamHttpMessageConverter;
+
+			converters.add(0, converter);
 		}
 	}
 
