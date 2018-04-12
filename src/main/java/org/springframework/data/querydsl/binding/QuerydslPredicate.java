@@ -21,8 +21,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to customize the binding of HTTP request parameters to a Querydsl {@link com.mysema.query.types.Predicate}
- * in Spring MVC handler methods.
+ * Annotation to customize the binding of HTTP request parameters to a Querydsl
+ * {@link com.querydsl.core.types.Predicate} in Spring MVC handler methods.
  *
  * @author Christoph Strobl
  * @author Oliver Gierke
@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
 public @interface QuerydslPredicate {
 
 	/**
-	 * The root type to create the {@link com.mysema.query.types.Predicate}. Specify this explicitly if the type is not
+	 * The root type to create the {@link com.querydsl.core.types.Predicate}. Specify this explicitly if the type is not
 	 * contained in the controller method's return type.
 	 *
 	 * @return
