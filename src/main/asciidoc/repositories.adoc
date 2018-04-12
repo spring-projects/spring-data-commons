@@ -161,7 +161,7 @@ class Config {}
 +
 The JPA namespace is used in this example. If you use the repository abstraction for any other store, you need to change this to the appropriate namespace declaration of your store module. In other words, you should exchange `jpa` in favor of, for example, `mongodb`.
 +
-Also, note that the JavaConfig variant does not configure a package explicitly, because the package of the annotated class is used by default. To customize the package to scan, use one of the `basePackage…` attributes of the data-store-specific repository's `@Enable…`-annotation.
+Also, note that the JavaConfig variant does not configure a package explicitly, because the package of the annotated class is used by default. To customize the package to scan, use one of the `basePackage…` attributes of the data-store-specific repository's `@Enable${store}Repositories`-annotation.
 
 . Inject the repository instance and use it, as shown in the following example:
 +
@@ -478,7 +478,7 @@ NOTE: Limiting the results in combination with dynamic sorting by using a `Sort`
 [[repositories.query-streaming]]
 === Streaming query results
 
-The results of query methods can be processed incrementally by using a Java 8 `Stream<T>` as return type. Instead of wrapping the query results in a `Stream` data store, specific methods are used to perform the streaming, as shown in the following example:
+The results of query methods can be processed incrementally by using a Java 8 `Stream<T>` as return type. Instead of wrapping the query results in a `Stream` data store-specific methods are used to perform the streaming, as shown in the following example:
 
 .Stream the result of a query with Java 8 `Stream<T>`
 ====
@@ -509,7 +509,7 @@ NOTE: Not all Spring Data modules currently support `Stream<T>` as a return type
 [[repositories.query-async]]
 === Async query results
 
-Repository queries can be run asynchronously by using link:{spring-framework-docs}#scheduling[Spring's asynchronous method execution capability]. This means the method returns immediately upon invocation while the actual query execution occurs in a task that has been submitted to a Spring `TaskExecutor`. The following example shows a number of asynchronous queries:
+Repository queries can be run asynchronously by using link:{spring-framework-docs}#scheduling[Spring's asynchronous method execution capability]. This means the method returns immediately upon invocation while the actual query execution occurs in a task that has been submitted to a Spring `TaskExecutor`. Asynchronous query execution is different from reactive query execution and should not be mixed. Refer to store-specific documentation for more details on reactive support. The following example shows a number of asynchronous queries:
 
 ====
 [source, java]
@@ -743,7 +743,7 @@ CAUTION: The class needs to have a constructor of the super class which the stor
 
 The default behavior of the Spring `<repositories />` namespace is to provide an implementation for all interfaces that fall under the `base-package`. This means that if left in its current state, an implementation instance of `MyRepository` will be created by Spring. This is of course not desired as it is just supposed to act as an intermediary between `Repository` and the actual repository interfaces you want to define for each entity. To exclude an interface that extends `Repository` from being instantiated as a repository instance, you can either annotate it with `@NoRepositoryBean` (as seen above) or move it outside of the configured `base-package`.
 
-The final step is to make the Spring Data infrastructure aware of the customized repository base class. In Java configuration, you can do so by using the `repositoryBaseClass` attribute of the `@Enable…Repositories` annotation, as shown in the following example:
+The final step is to make the Spring Data infrastructure aware of the customized repository base class. In Java configuration, you can do so by using the `repositoryBaseClass` attribute of the `@Enable${store}Repositories` annotation, as shown in the following example:
 
 .Configuring a custom repository base class using JavaConfig
 ====
@@ -838,7 +838,6 @@ To make use of Querydsl support, extend `QueryDslPredicateExecutor` on your repo
 [source, java]
 ----
 interface UserRepository extends CrudRepository<User, Long>, QueryDslPredicateExecutor<User> {
-
 }
 ----
 ====
