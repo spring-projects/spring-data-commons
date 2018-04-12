@@ -258,7 +258,7 @@ To apply dynamic projections, use a query method like this:
 ----
 interface PersonRepository extends Repository<Person, UUID> {
 
-  Collection<T> findByLastname(String lastname, Class<T> type);
+  <T> Collection<T> findByLastname(String lastname, Class<T> type);
 }
 ----
 ====
