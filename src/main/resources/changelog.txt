@@ -1,6 +1,31 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.0.M2 (2018-04-13)
+----------------------------------------
+* DATACMNS-1293 - QuerydslPredicateArgumentResolver Javadoc points to outdated Querydsl package.
+* DATACMNS-1291 - Editing pass on documentation.
+* DATACMNS-1290 - AnnotationRevisionMetadata assumes field with revisionTimeStampAnnotation is of type TemporalAccessor.
+* DATACMNS-1289 - Call to save(…) on customized intermediate repository fails with "Object is not an instance of declaring class.".
+* DATACMNS-1285 - PropertyPath should limit the depth of its input parsing.
+* DATACMNS-1283 - Remove explicit declaration of Jackson libraries.
+* DATACMNS-1282 - Use SimpleEvaluationContext in MapDataBinder.
+* DATACMNS-1281 - ConcurrentModificationException in MappingAuditableBeanWrapperFactory.
+* DATACMNS-1280 - Fix letter-casing in documentation of Querydsl Extension.
+* DATACMNS-1278 - SimpleTypeHolder.isSimpleType(…) returns different results for enums implementing interfaces.
+* DATACMNS-1277 - ReflectionRepositoryInvoker does not properly trigger delete(T) for invokeDeleteById(…).
+* DATACMNS-1275 - Add ability to find PersistentPropertyPaths based on arbitrary filter.
+* DATACMNS-1274 - Allow the usage of auditing annotation in nested types.
+* DATACMNS-1271 - NPE in AnnotationBasedPersistentProperty.isAnnotationPresent() because the annotation cache is not thread-safe.
+* DATACMNS-1264 - MapDataBinder should reject type expressions in SpEL expressions.
+* DATACMNS-1263 - Allow configuration inspection-classloader customization.
+* DATACMNS-1259 - Invalid date type for member Long when using @LastModifiedDate and @CreatedDate.
+* DATACMNS-1257 - Release 2.1 M2 (Lovelace).
+* DATACMNS-1255 - Extend configuration of CDI repository settings.
+* DATACMNS-1251 - Wrong usage of LocalDateTime.
+* DATACMNS-1233 - Add CDI support for repository fragments (mixins).
+
+
 Changes in version 2.0.6.RELEASE (2018-04-04)
 ---------------------------------------------
 * DATACMNS-1284 - Backport ASM-based property detection for projections.
