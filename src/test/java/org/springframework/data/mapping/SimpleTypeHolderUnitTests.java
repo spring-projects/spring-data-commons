@@ -18,6 +18,7 @@ package org.springframework.data.mapping;
 import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Type;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.UUID;
@@ -112,6 +113,14 @@ public class SimpleTypeHolderUnitTests {
 		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
 
 		assertThat(holder.isSimpleType(Type.class)).isTrue();
+	}
+
+	@Test // DATACMNS-1294
+	public void considersJavaTimeTypesSimple() {
+
+		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
+
+		assertThat(holder.isSimpleType(Instant.class)).isTrue();
 	}
 
 	@Test // DATACMNS-1101

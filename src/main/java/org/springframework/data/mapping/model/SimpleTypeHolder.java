@@ -155,7 +155,9 @@ public class SimpleTypeHolder {
 			return isSimpleType;
 		}
 
-		if (type.getName().startsWith("java.lang")) {
+		String typeName = type.getName();
+
+		if (typeName.startsWith("java.lang") || type.getName().startsWith("java.time")) {
 			return true;
 		}
 
@@ -170,6 +172,7 @@ public class SimpleTypeHolder {
 		}
 
 		this.simpleTypes = put(localSimpleTypes, type, false);
+
 		return false;
 	}
 
