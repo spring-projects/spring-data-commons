@@ -40,6 +40,8 @@ import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -339,6 +341,21 @@ public class QueryExecutionConvertersUnitTests {
 
 		assertThat(conversionService.convert(source, javaslang.collection.Set.class),
 				is(instanceOf(javaslang.collection.Set.class)));
+	}
+
+	@Test // DATACMNS-1299
+	public void unwrapsPages() throws Exception {
+
+		Method method = Sample.class.getMethod("pages");
+		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+
+		assertThat(QueryExecutionConverters.unwrapWrapperTypes(returnType), //
+				is((TypeInformation) ClassTypeInformation.from(String.class)));
+	}
+
+	interface Sample {
+
+		Page<String> pages();
 	}
 
 	// Vavr

@@ -101,6 +101,16 @@ public class AbstractRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(User.class)));
 	}
 
+	@Test // DATACMNS-1299
+	public void doesNotUnwrapCustomTypeImplementingIterable() throws Exception {
+
+		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ContainerRepository.class);
+
+		Method method = ContainerRepository.class.getMethod("someMethod");
+
+		assertThat(metadata.getReturnedDomainClass(method), is(typeCompatibleWith(Container.class)));
+	}
+
 	interface UserRepository extends Repository<User, Long> {
 
 		User findSingle();
@@ -148,4 +158,13 @@ public class AbstractRepositoryMetadataUnitTests {
 		}
 	}
 
+	// DATACMNS-1299
+
+	class Element {}
+
+	abstract class Container implements Iterable<Element> {}
+
+	interface ContainerRepository extends Repository<Container, Long> {
+		Container someMethod();
+	}
 }
