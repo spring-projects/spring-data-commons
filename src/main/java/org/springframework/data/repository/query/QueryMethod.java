@@ -181,13 +181,11 @@ public class QueryMethod {
 			return true;
 		}
 
-		if (QueryExecutionConverters.supports(unwrappedReturnType)
-				&& QueryExecutionConverters.isSingleValue(unwrappedReturnType)) {
-			return false;
+		if (QueryExecutionConverters.supports(unwrappedReturnType)) {
+			return !QueryExecutionConverters.isSingleValue(unwrappedReturnType);
 		}
 
-		return org.springframework.util.ClassUtils.isAssignable(Iterable.class, unwrappedReturnType)
-				|| unwrappedReturnType.isArray();
+		return ClassTypeInformation.from(unwrappedReturnType).isCollectionLike();
 	}
 
 	/**
@@ -289,7 +287,9 @@ public class QueryMethod {
 		Assert.notEmpty(types, "Types must not be null or empty!");
 
 		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
-		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) ? returnType.getRequiredComponentType()
+
+		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) //
+				? returnType.getRequiredComponentType() //
 				: returnType;
 
 		for (Class<?> type : types) {
