@@ -38,6 +38,7 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.util.Version;
 
@@ -230,6 +231,15 @@ public class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
 
+	@Test // DATACMNS-1300
+	public void doesNotConsiderMethodForIterableAggregateACollectionQuery() throws Exception {
+
+		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ContainerRepository.class);
+		Method method = ContainerRepository.class.getMethod("someMethod");
+
+		assertThat(new QueryMethod(method, metadata, factory).isCollectionQuery()).isFalse();
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -282,5 +292,15 @@ public class QueryMethodUnitTests {
 
 	class SpecialUser extends User {
 
+	}
+
+	// DATACMNS-1300
+
+	class Element {}
+
+	abstract class Container implements Iterable<Element> {}
+
+	interface ContainerRepository extends Repository<Container, Long> {
+		Container someMethod();
 	}
 }
