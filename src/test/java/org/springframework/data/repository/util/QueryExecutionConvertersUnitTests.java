@@ -29,6 +29,7 @@ import rx.Observable;
 import rx.Single;
 import scala.Option;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +44,8 @@ import org.reactivestreams.Publisher;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -346,5 +349,20 @@ public class QueryExecutionConvertersUnitTests {
 
 		assertThat(conversionService.convert(source, io.vavr.collection.Set.class)) //
 				.isInstanceOf(io.vavr.collection.Set.class);
+	}
+
+	@Test // DATACMNS-1299
+	public void unwrapsPages() throws Exception {
+
+		Method method = Sample.class.getMethod("pages");
+		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+
+		assertThat(QueryExecutionConverters.unwrapWrapperTypes(returnType))
+				.isEqualTo(ClassTypeInformation.from(String.class));
+	}
+
+	interface Sample {
+
+		Page<String> pages();
 	}
 }

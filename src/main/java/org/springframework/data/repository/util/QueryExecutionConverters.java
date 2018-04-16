@@ -300,7 +300,8 @@ public abstract class QueryExecutionConverters {
 
 		Class<?> rawType = type.getType();
 
-		boolean needToUnwrap = Iterable.class.isAssignableFrom(rawType) //
+		boolean needToUnwrap = type.isCollectionLike() //
+				|| Slice.class.isAssignableFrom(rawType) //
 				|| rawType.isArray() //
 				|| supports(rawType) //
 				|| Stream.class.isAssignableFrom(rawType);
