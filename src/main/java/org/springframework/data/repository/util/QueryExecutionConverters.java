@@ -40,6 +40,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
@@ -64,7 +65,7 @@ import com.google.common.base.Optional;
  * 1.13</li>
  * <li>{@code io.vavr.collection.Seq}, {@code io.vavr.collection.Map}, {@code io.vavr.collection.Set} - as of 2.0</li>
  * </ul>
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Maciek Opała
@@ -142,7 +143,7 @@ public abstract class QueryExecutionConverters {
 
 	/**
 	 * Returns whether the given type is a supported wrapper type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -173,7 +174,7 @@ public abstract class QueryExecutionConverters {
 	/**
 	 * Returns the types that are supported on paginating query methods. Will include custom collection types of e.g.
 	 * Javaslang.
-	 * 
+	 *
 	 * @return
 	 */
 	public static Set<Class<?>> getAllowedPageableTypes() {
@@ -182,7 +183,7 @@ public abstract class QueryExecutionConverters {
 
 	/**
 	 * Registers converters for wrapper types found on the classpath.
-	 * 
+	 *
 	 * @param conversionService must not be {@literal null}.
 	 */
 	public static void registerConvertersIn(ConfigurableConversionService conversionService) {
@@ -219,7 +220,7 @@ public abstract class QueryExecutionConverters {
 
 	/**
 	 * Unwraps the given source value in case it's one of the currently supported wrapper types detected at runtime.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
@@ -255,6 +256,7 @@ public abstract class QueryExecutionConverters {
 
 		boolean needToUnwrap = type.isCollectionLike() //
 				|| Slice.class.isAssignableFrom(rawType) //
+				|| GeoResults.class.isAssignableFrom(rawType) //
 				|| rawType.isArray() //
 				|| supports(rawType) //
 				|| org.springframework.data.util.ReflectionUtils.isJava8StreamType(rawType);
@@ -277,7 +279,7 @@ public abstract class QueryExecutionConverters {
 
 		/**
 		 * Creates a new {@link AbstractWrapperTypeConverter} using the given {@link ConversionService} and wrapper type.
-		 * 
+		 *
 		 * @param conversionService must not be {@literal null}.
 		 * @param wrapperTypes must not be {@literal null}.
 		 */
@@ -292,7 +294,7 @@ public abstract class QueryExecutionConverters {
 			this.nullValue = nullValue;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
@@ -308,7 +310,7 @@ public abstract class QueryExecutionConverters {
 			return Collections.unmodifiableSet(pairs);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 		 */
@@ -324,7 +326,7 @@ public abstract class QueryExecutionConverters {
 
 		/**
 		 * Wrap the given, non-{@literal null} value into the wrapper type.
-		 * 
+		 *
 		 * @param source will never be {@literal null}.
 		 * @return must not be {@literal null}.
 		 */
@@ -333,21 +335,21 @@ public abstract class QueryExecutionConverters {
 
 	/**
 	 * A Spring {@link Converter} to support Google Guava's {@link Optional}.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class NullableWrapperToGuavaOptionalConverter extends AbstractWrapperTypeConverter {
 
 		/**
 		 * Creates a new {@link NullableWrapperToGuavaOptionalConverter} using the given {@link ConversionService}.
-		 * 
+		 *
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToGuavaOptionalConverter(ConversionService conversionService) {
 			super(conversionService, Optional.absent(), Optional.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
 		 */
@@ -363,21 +365,21 @@ public abstract class QueryExecutionConverters {
 
 	/**
 	 * A Spring {@link Converter} to support JDK 8's {@link java.util.Optional}.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class NullableWrapperToJdk8OptionalConverter extends AbstractWrapperTypeConverter {
 
 		/**
 		 * Creates a new {@link NullableWrapperToJdk8OptionalConverter} using the given {@link ConversionService}.
-		 * 
+		 *
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToJdk8OptionalConverter(ConversionService conversionService) {
 			super(conversionService, java.util.Optional.empty(), java.util.Optional.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
 		 */
@@ -393,21 +395,21 @@ public abstract class QueryExecutionConverters {
 
 	/**
 	 * A Spring {@link Converter} to support returning {@link Future} instances from repository methods.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class NullableWrapperToFutureConverter extends AbstractWrapperTypeConverter {
 
 		/**
 		 * Creates a new {@link NullableWrapperToFutureConverter} using the given {@link ConversionService}.
-		 * 
+		 *
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToFutureConverter(ConversionService conversionService) {
 			super(conversionService, new AsyncResult<Object>(null), Future.class, ListenableFuture.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
 		 */
@@ -419,21 +421,21 @@ public abstract class QueryExecutionConverters {
 
 	/**
 	 * A Spring {@link Converter} to support returning {@link CompletableFuture} instances from repository methods.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class NullableWrapperToCompletableFutureConverter extends AbstractWrapperTypeConverter {
 
 		/**
 		 * Creates a new {@link NullableWrapperToCompletableFutureConverter} using the given {@link ConversionService}.
-		 * 
+		 *
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToCompletableFutureConverter(ConversionService conversionService) {
 			super(conversionService, CompletableFuture.completedFuture(null), CompletableFuture.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
 		 */
@@ -459,7 +461,7 @@ public abstract class QueryExecutionConverters {
 			super(conversionService, Option.empty(), Option.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
 		 */
@@ -491,7 +493,7 @@ public abstract class QueryExecutionConverters {
 
 		/**
 		 * Creates a new {@link NullableWrapperToJavaslangOptionConverter} using the given {@link ConversionService}.
-		 * 
+		 *
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToJavaslangOptionConverter(ConversionService conversionService) {
@@ -502,7 +504,7 @@ public abstract class QueryExecutionConverters {
 			return WrapperType.singleValue(javaslang.control.Option.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
 		 */
@@ -535,14 +537,14 @@ public abstract class QueryExecutionConverters {
 
 		/**
 		 * Creates a new {@link NullableWrapperToVavrOptionConverter} using the given {@link ConversionService}.
-		 * 
+		 *
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public NullableWrapperToVavrOptionConverter(ConversionService conversionService) {
 			super(conversionService, createEmptyOption(), io.vavr.control.Option.class);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
 		 */
@@ -571,7 +573,7 @@ public abstract class QueryExecutionConverters {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -591,7 +593,7 @@ public abstract class QueryExecutionConverters {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -655,7 +657,7 @@ public abstract class QueryExecutionConverters {
 			}
 		};
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -696,7 +698,7 @@ public abstract class QueryExecutionConverters {
 			}
 		};
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
