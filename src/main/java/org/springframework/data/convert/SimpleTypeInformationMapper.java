@@ -15,6 +15,8 @@
  */
 package org.springframework.data.convert;
 
+import lombok.Value;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,7 +34,7 @@ import org.springframework.util.StringUtils;
  */
 public class SimpleTypeInformationMapper implements TypeInformationMapper {
 
-	private final Map<String, ClassTypeInformation<?>> CACHE = new ConcurrentHashMap<String, ClassTypeInformation<?>>();
+	private final Map<String, CachedTypeInformation> CACHE = new ConcurrentHashMap<String, CachedTypeInformation>();
 
 	/**
 	 * Returns the {@link TypeInformation} that shall be used when the given {@link String} value is found as type hint.
@@ -55,23 +57,24 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 			return null;
 		}
 
-		ClassTypeInformation<?> information = CACHE.get(value);
+		CachedTypeInformation cachedValue = CACHE.get(value);
 
-		if (information != null) {
-			return information;
+		if (cachedValue != null) {
+			return cachedValue.getType();
 		}
 
 		try {
-			information = ClassTypeInformation.from(ClassUtils.forName(value, null));
+			return cacheAndReturn(value, ClassTypeInformation.from(ClassUtils.forName(value, null)));
 		} catch (ClassNotFoundException e) {
-			return null;
+			return cacheAndReturn(value, null);
 		}
+	}
 
-		if (information != null) {
-			CACHE.put(value, information);
-		}
+	private ClassTypeInformation<?> cacheAndReturn(String value, ClassTypeInformation<?> type) {
 
-		return information;
+		CACHE.put(value, CachedTypeInformation.of(type));
+
+		return type;
 	}
 
 	/**
@@ -83,5 +86,10 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 	 */
 	public String createAliasFor(TypeInformation<?> type) {
 		return type.getType().getName();
+	}
+
+	@Value(staticConstructor = "of")
+	static class CachedTypeInformation {
+		ClassTypeInformation<?> type;
 	}
 }

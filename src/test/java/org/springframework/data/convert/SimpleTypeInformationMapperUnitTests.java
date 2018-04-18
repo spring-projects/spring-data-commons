@@ -18,9 +18,13 @@ package org.springframework.data.convert;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Map;
+
 import org.junit.Test;
+import org.springframework.data.convert.SimpleTypeInformationMapper.CachedTypeInformation;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link SimpleTypeInformationMapper}.
@@ -70,5 +74,21 @@ public class SimpleTypeInformationMapperUnitTests {
 
 		assertTrue(alias instanceof String);
 		assertThat(alias, is((Object) String.class.getName()));
+	}
+
+	@Test // DATACMNS-1301
+	public void cachesFailedAttemptToLoadClass() {
+
+		TypeInformationMapper mapper = new SimpleTypeInformationMapper();
+
+		assertThat(mapper.resolveTypeFrom("foo"), is(nullValue()));
+
+		Map<String, CachedTypeInformation> cache = (Map<String, CachedTypeInformation>) ReflectionTestUtils.getField(mapper,
+				"CACHE");
+
+		CachedTypeInformation value = cache.get("foo");
+
+		assertThat(value, is(notNullValue()));
+		assertThat(value.getType(), is(nullValue()));
 	}
 }
