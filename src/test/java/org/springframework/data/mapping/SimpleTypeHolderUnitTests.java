@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Type;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.UUID;
@@ -112,6 +113,14 @@ public class SimpleTypeHolderUnitTests {
 		SimpleTypeHolder holder = new SimpleTypeHolder();
 
 		assertThat(holder.isSimpleType(Type.class), is(true));
+	}
+
+	@Test // DATACMNS-1294
+	public void considersJavaTimeTypesSimple() {
+
+		SimpleTypeHolder holder = new SimpleTypeHolder();
+
+		assertThat(holder.isSimpleType(Instant.class), is(true));
 	}
 
 	enum SimpleEnum {
