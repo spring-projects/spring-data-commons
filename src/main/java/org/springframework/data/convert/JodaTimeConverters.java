@@ -31,8 +31,9 @@ import org.springframework.util.ClassUtils;
 /**
  * Helper class to register JodaTime specific {@link Converter} implementations in case the library is present on the
  * classpath.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @SuppressWarnings("deprecation")
 public abstract class JodaTimeConverters {
@@ -41,7 +42,7 @@ public abstract class JodaTimeConverters {
 
 	/**
 	 * Returns the converters to be registered. Will only return converters in case JodaTime is present on the class.
-	 * 
+	 *
 	 * @return
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
@@ -64,6 +65,7 @@ public abstract class JodaTimeConverters {
 		return converters;
 	}
 
+	@ReadingConverter
 	public static enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
 
 		INSTANCE;
@@ -127,6 +129,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@ReadingConverter
 	public static enum DateToDateMidnightConverter implements Converter<Date, DateMidnight> {
 
 		INSTANCE;

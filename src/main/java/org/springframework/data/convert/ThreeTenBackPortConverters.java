@@ -38,8 +38,9 @@ import org.threeten.bp.ZoneId;
 /**
  * Helper class to register {@link Converter} implementations for the ThreeTen Backport project in case it's present on
  * the classpath.
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @see <a href="http://www.threeten.org/threetenbp">http://www.threeten.org/threetenbp</a>
  * @since 1.10
  */
@@ -50,7 +51,7 @@ public abstract class ThreeTenBackPortConverters {
 
 	/**
 	 * Returns the converters to be registered. Will only return converters in case we're running on Java 8.
-	 * 
+	 *
 	 * @return
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
