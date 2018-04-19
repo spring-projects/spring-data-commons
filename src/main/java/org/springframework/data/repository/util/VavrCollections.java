@@ -60,7 +60,7 @@ class VavrCollections {
 		public Object convert(Object source) {
 
 			if (source instanceof io.vavr.collection.Seq) {
-				return ((io.vavr.collection.Seq<?>) source).toJavaList();
+				return ((io.vavr.collection.Seq<?>) source).asJava();
 			}
 
 			if (source instanceof io.vavr.collection.Map) {
