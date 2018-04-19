@@ -42,7 +42,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 *
 	 * @param event must not be {@literal null}.
 	 * @return the event that has been added.
-	 * @see #andEvent(Object)
+	 * @see #addEvent(Object)
 	 */
 	protected <T> T registerEvent(T event) {
 
@@ -76,7 +76,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 * @return the aggregate
 	 */
 	@SuppressWarnings("unchecked")
-	protected final A andEventsFrom(A aggregate) {
+	protected final A addEventsFrom(A aggregate) {
 
 		Assert.notNull(aggregate, "Aggregate must not be null!");
 
@@ -94,7 +94,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 * @see #registerEvent(Object)
 	 */
 	@SuppressWarnings("unchecked")
-	protected final A andEvent(Object event) {
+	protected final A addEvent(Object event) {
 
 		registerEvent(event);
 

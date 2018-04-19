@@ -58,7 +58,7 @@ public class AbstractAggregateRootUnitTests {
 		SampleAggregate aggregate = new SampleAggregate();
 		aggregate.registerEvent(new Object());
 
-		SampleAggregate result = new SampleAggregate().andEventsFrom(aggregate);
+		SampleAggregate result = new SampleAggregate().addEventsFrom(aggregate);
 
 		assertThat(result.domainEvents()).isEqualTo(aggregate.domainEvents());
 	}
@@ -72,7 +72,7 @@ public class AbstractAggregateRootUnitTests {
 		SampleAggregate aggregate = new SampleAggregate();
 		aggregate.registerEvent(first);
 
-		SampleAggregate result = aggregate.andEvent(second);
+		SampleAggregate result = aggregate.addEvent(second);
 
 		assertThat(result).isSameAs(aggregate);
 		assertThat(result.domainEvents()).containsExactly(first, second);
@@ -83,7 +83,7 @@ public class AbstractAggregateRootUnitTests {
 	public void rejectsNullEvent() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
-				.isThrownBy(() -> new SampleAggregate().andEvent(null));
+				.isThrownBy(() -> new SampleAggregate().addEvent(null));
 	}
 
 	@Test // DATACMNS-928
@@ -99,7 +99,7 @@ public class AbstractAggregateRootUnitTests {
 	public void rejectsNullAggregate() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
-				.isThrownBy(() -> new SampleAggregate().andEventsFrom(null));
+				.isThrownBy(() -> new SampleAggregate().addEventsFrom(null));
 	}
 
 	static class SampleAggregate extends AbstractAggregateRoot<SampleAggregate> {}
