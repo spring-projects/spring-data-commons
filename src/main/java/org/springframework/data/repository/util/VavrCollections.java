@@ -71,7 +71,7 @@ class VavrCollections {
 				return ((io.vavr.collection.Set<?>) source).toJavaSet();
 			}
 
-			throw new IllegalArgumentException("Unsupported Javaslang collection " + source.getClass());
+			throw new IllegalArgumentException("Unsupported Vavr collection " + source.getClass());
 		}
 	}
 
