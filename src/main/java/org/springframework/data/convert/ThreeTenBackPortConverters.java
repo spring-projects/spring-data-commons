@@ -45,6 +45,7 @@ import org.threeten.bp.ZoneOffset;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Mark Paluch
  * @see <a href="http://www.threeten.org/threetenbp">http://www.threeten.org/threetenbp</a>
  * @since 1.10
  */
@@ -92,6 +93,7 @@ public abstract class ThreeTenBackPortConverters {
 				.contains(type);
 	}
 
+	@ReadingConverter
 	public static enum LocalDateTimeToJsr310LocalDateTimeConverter
 			implements Converter<LocalDateTime, java.time.LocalDateTime> {
 

@@ -45,6 +45,7 @@ import org.springframework.util.ClassUtils;
  * @author Barak Schoster
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 public abstract class Jsr310Converters {
 
@@ -93,6 +94,7 @@ public abstract class Jsr310Converters {
 				.contains(type);
 	}
 
+	@ReadingConverter
 	public static enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
 
 		INSTANCE;
@@ -104,6 +106,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
+	@WritingConverter
 	public static enum LocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
 
 		INSTANCE;
@@ -115,6 +118,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
+	@ReadingConverter
 	public static enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
 
 		INSTANCE;
@@ -126,6 +130,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
+	@WritingConverter
 	public static enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
 
 		INSTANCE;
@@ -137,6 +142,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
+	@ReadingConverter
 	public static enum DateToLocalTimeConverter implements Converter<Date, LocalTime> {
 
 		INSTANCE;
@@ -148,6 +154,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
+	@WritingConverter
 	public static enum LocalTimeToDateConverter implements Converter<LocalTime, Date> {
 
 		INSTANCE;
@@ -159,6 +166,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
+	@ReadingConverter
 	public static enum DateToInstantConverter implements Converter<Date, Instant> {
 
 		INSTANCE;
@@ -170,6 +178,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
+	@WritingConverter
 	public static enum InstantToDateConverter implements Converter<Instant, Date> {
 
 		INSTANCE;
@@ -181,6 +190,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
+	@ReadingConverter
 	public static enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, Instant> {
 
 		INSTANCE;
@@ -192,6 +202,7 @@ public abstract class Jsr310Converters {
 		}
 	}
 
+	@ReadingConverter
 	public static enum InstantToLocalDateTimeConverter implements Converter<Instant, LocalDateTime> {
 
 		INSTANCE;

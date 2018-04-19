@@ -38,6 +38,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 public abstract class JodaTimeConverters {
 
@@ -74,6 +75,7 @@ public abstract class JodaTimeConverters {
 		return converters;
 	}
 
+	@ReadingConverter
 	public enum LocalDateTimeToJsr310Converter implements Converter<LocalDateTime, java.time.LocalDateTime> {
 
 		INSTANCE;
@@ -151,6 +153,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@ReadingConverter
 	public enum LocalDateTimeToJodaLocalDateTime implements Converter<java.time.LocalDateTime, LocalDateTime> {
 
 		INSTANCE;
