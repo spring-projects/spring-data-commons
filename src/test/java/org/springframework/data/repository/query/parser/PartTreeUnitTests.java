@@ -44,6 +44,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Michael Cramer
+ * @author Mariusz Mączkowski
  */
 public class PartTreeUnitTests {
 
@@ -600,6 +601,16 @@ public class PartTreeUnitTests {
 		assertThat(tree.hasPredicate()).isFalse();
 	}
 
+    @Test // DATACMNS-1304
+    public void resolvesPropertyPathWithSingleUppercaseLetterPropertyEnding() {
+        assertThat(new PartTree("findByCategoryBId", Product.class)).isNotNull();
+    }
+
+    @Test // DATACMNS-1304
+    public void resolvesPropertyPathWithUppercaseLettersPropertyEnding() {
+        assertThat(new PartTree("findByCategoryABId", Product.class)).isNotNull();
+    }
+
 	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {
 		assertLimiting(methodName, entityType, limiting, maxResults, false);
 	}
@@ -723,6 +734,10 @@ public class PartTreeUnitTests {
 		Anders getAnders(); // constains And keyword
 
 		Category getCategory();
+
+        Category getCategoryB(); // contains single uppercase letter at the end
+
+        Category getCategoryAB(); // contains uppercase letters at the end
 	}
 
 	interface Category {

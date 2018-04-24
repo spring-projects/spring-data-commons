@@ -42,6 +42,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Mariusz Mączkowski
  */
 @EqualsAndHashCode
 public class PropertyPath implements Streamable<PropertyPath> {
@@ -401,7 +402,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			exception = e;
 		}
 
-		Pattern pattern = Pattern.compile("\\p{Lu}+\\p{Ll}*$");
+		Pattern pattern = Pattern.compile("\\p{Lu}\\p{Ll}*$");
 		Matcher matcher = pattern.matcher(source);
 
 		if (matcher.find() && matcher.start() != 0) {
