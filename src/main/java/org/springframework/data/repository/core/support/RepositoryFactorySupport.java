@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2017 the original author or authors.
+ * Copyright 2008-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,12 @@ import org.springframework.util.ObjectUtils;
  * detection strategy can be configured by setting {@link QueryLookupStrategy.Key}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
 	private static final boolean IS_JAVA_8 = org.springframework.util.ClassUtils.isPresent("java.util.Optional",
 			RepositoryFactorySupport.class.getClassLoader());
-	private static final Class<?> TRANSACTION_PROXY_TYPE = getTransactionProxyType();
 
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache = new HashMap<RepositoryInformationCacheKey, RepositoryInformation>();
 	private final List<RepositoryProxyPostProcessor> postProcessors = new ArrayList<RepositoryProxyPostProcessor>();
@@ -205,8 +205,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.addAdvice(SurroundingTransactionDetectorMethodInterceptor.INSTANCE);
 		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 
-		if (TRANSACTION_PROXY_TYPE != null) {
-			result.addInterface(TRANSACTION_PROXY_TYPE);
+		Class<?> transactionProxyType = getTransactionProxyType();
+		if (transactionProxyType != null) {
+			result.addInterface(transactionProxyType);
 		}
 
 		for (RepositoryProxyPostProcessor processor : postProcessors) {
@@ -383,15 +384,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	}
 
 	/**
-	 * Returns the TransactionProxy type or {@literal null} if not on the classpath.
+	 * Returns the TransactionProxy type or {@literal null} if not on the classpath. Use the provided classloader to avoid
+	 * visibility issues.
 	 *
 	 * @return
 	 */
-	private static Class<?> getTransactionProxyType() {
+	private Class<?> getTransactionProxyType() {
 
 		try {
 			return org.springframework.util.ClassUtils
-					.forName("org.springframework.transaction.interceptor.TransactionalProxy", null);
+					.forName("org.springframework.transaction.interceptor.TransactionalProxy", classLoader);
 		} catch (ClassNotFoundException o_O) {
 			return null;
 		}
