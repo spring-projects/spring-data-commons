@@ -5,11 +5,12 @@ Oliver Gierke; Thomas Darimont; Christoph Strobl; Mark Pollack; Thomas Risberg; 
 :linkcss:
 :doctype: book
 :docinfo: shared
-:toc:
+:toc: left
 :toclevels: 4
 :source-highlighter: prettify
 :icons: font
-
+:imagesdir: images
+ifdef::backend-epub3[:front-cover-image: image:epub-cover.png[Front Cover,1050,1600]]
 
 (C) 2008-2018 The original authors.
 
