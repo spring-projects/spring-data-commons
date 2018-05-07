@@ -339,7 +339,7 @@
 			<plugin> <!-- forcing a more recent version of the javadoc plugin since the default version does not work with jdk9. See https://issues.apache.org/jira/browse/MJAVADOC-441-->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0-M1</version>
+				<version>3.0.0</version>
 			</plugin>
 
 			<plugin>
