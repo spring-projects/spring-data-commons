@@ -1,6 +1,21 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.12.RELEASE (2018-05-08)
+-----------------------------------------------
+* DATACMNS-1311 - Upgrade to XMLBeam 1.4.15.
+* DATACMNS-1308 - Application context fails to start when using a custom class loader is used.
+* DATACMNS-1301 - SimpleTypeInformationMapper.resolveTypeFrom(…) should cache type lookup failures to prevent repeated lookups.
+* DATACMNS-1300 - ConverterNotFoundException or ClassCastException if an entity implements Iterable<OtherType>.
+* DATACMNS-1299 - Repository metadata obtains an incorrect return type of repository methods returning Iterables.
+* DATACMNS-1294 - Consider types in java.time to be simple.
+* DATACMNS-1293 - QuerydslPredicateArgumentResolver Javadoc points to outdated Querydsl package.
+* DATACMNS-1292 - Improve projection-based XML request data binding.
+* DATACMNS-1291 - Editing pass on documentation.
+* DATACMNS-1287 - Release 1.13.12 (Ingalls SR12).
+* DATACMNS-1285 - PropertyPath should limit the depth of its input parsing.
+
+
 Changes in version 2.1.0.M2 (2018-04-13)
 ----------------------------------------
 * DATACMNS-1293 - QuerydslPredicateArgumentResolver Javadoc points to outdated Querydsl package.
