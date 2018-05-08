@@ -65,7 +65,6 @@ public abstract class JodaTimeConverters {
 		return converters;
 	}
 
-	@ReadingConverter
 	public static enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
 
 		INSTANCE;
@@ -129,7 +128,6 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
-	@ReadingConverter
 	public static enum DateToDateMidnightConverter implements Converter<Date, DateMidnight> {
 
 		INSTANCE;
