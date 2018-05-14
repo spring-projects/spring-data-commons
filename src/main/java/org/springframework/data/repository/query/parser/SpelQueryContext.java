@@ -44,7 +44,7 @@ public class SpelQueryContext {
 	 * be used in place of the SpEL expression. A typical implementation is expected to look like
 	 * <code>(index, spel) -> "__some_placeholder_" + index</code>
 	 */
-	@NonNull private final BiFunction<Integer, String, String> parameterNameSource;
+	private final @NonNull BiFunction<Integer, String, String> parameterNameSource;
 
 	/**
 	 * A function from a prefix used to demarcate a SpEL expression in a query and a parameter name as returned from
@@ -53,7 +53,7 @@ public class SpelQueryContext {
 	 * typical implementation is expected to look like <code>(prefix, name) -> prefix + name</code> or
 	 * <code>(prefix, name) -> "{" + name + "}"</code>
 	 */
-	@NonNull private final BiFunction<String, String, String> replacementSource;
+	private final @NonNull BiFunction<String, String, String> replacementSource;
 
 	/**
 	 * Parses the query for SpEL expressions using the pattern

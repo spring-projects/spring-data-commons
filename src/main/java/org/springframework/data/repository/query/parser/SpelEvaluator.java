@@ -40,13 +40,14 @@ public class SpelEvaluator {
 
 	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	@NonNull private final EvaluationContextProvider evaluationContextProvider;
-	@NonNull private final Parameters<?, ?> parameters;
+	private final @NonNull EvaluationContextProvider evaluationContextProvider;
+	private final @NonNull Parameters<?, ?> parameters;
 
 	/**
-	 * A map from parameter name to SpEL expression as returned by {@link SpelQueryContext.SpelExtractor#parameterNameToSpelMap()}.
+	 * A map from parameter name to SpEL expression as returned by
+	 * {@link SpelQueryContext.SpelExtractor#parameterNameToSpelMap()}.
 	 */
-	@NonNull private final Map<String, String> parameterNameToSpelMap;
+	private final @NonNull Map<String, String> parameterNameToSpelMap;
 
 	/**
 	 * Evaluate all the SpEL expressions in {@link #parameterNameToSpelMap} based on values provided as an argument.
@@ -60,6 +61,7 @@ public class SpelEvaluator {
 
 		HashMap<String, Object> spelExpressionResults = new HashMap<>();
 		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, values);
+
 		for (Map.Entry<String, String> parameterNameToSpel : parameterNameToSpelMap.entrySet()) {
 
 			Object spElValue = getSpElValue(evaluationContext, parameterNameToSpel.getValue());

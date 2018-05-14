@@ -31,7 +31,7 @@ import org.springframework.lang.Nullable;
  * @author Jens Schauder
  * @since 2.0.3
  */
-public class QuotationMap {
+class QuotationMap {
 
 	private static final Set<Character> QUOTING_CHARACTERS = new HashSet<>(Arrays.asList('"', '\''));
 
