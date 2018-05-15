@@ -41,7 +41,9 @@ public class QuotationMapUnitTests {
 
 	@Test // DATAJPA-1235
 	public void simpleStringDoesNotContainQuotes() {
+
 		String query = "something";
+
 		isNotQuoted(query, "simple String", -1, 0, query.length() - 1, query.length(), query.length() + 1);
 	}
 
@@ -49,6 +51,7 @@ public class QuotationMapUnitTests {
 	public void fullySingleQuotedStringDoesContainQuotes() {
 
 		String query = "'something'";
+
 		isNotQuoted(query, "quoted String", -1, query.length());
 		isQuoted(query, "quoted String", 0, 1, 5, query.length() - 1);
 	}
@@ -57,6 +60,7 @@ public class QuotationMapUnitTests {
 	public void fullyDoubleQuotedStringDoesContainQuotes() {
 
 		String query = "\"something\"";
+
 		isNotQuoted(query, "double quoted String", -1, query.length());
 		isQuoted(query, "double quoted String", 0, 1, 5, query.length() - 1);
 	}
@@ -65,6 +69,7 @@ public class QuotationMapUnitTests {
 	public void stringWithEmptyQuotes() {
 
 		String query = "abc''def";
+
 		isNotQuoted(query, "zero length quote", -1, 0, 1, 2, 5, 6, 7);
 		isQuoted(query, "zero length quote", 3, 4);
 	}
@@ -73,6 +78,7 @@ public class QuotationMapUnitTests {
 	public void doubleInSingleQuotes() {
 
 		String query = "abc'\"'def";
+
 		isNotQuoted(query, "double inside single quote", -1, 0, 1, 2, 6, 7, 8);
 		isQuoted(query, "double inside single quote", 3, 4, 5);
 	}
@@ -81,6 +87,7 @@ public class QuotationMapUnitTests {
 	public void singleQuotesInDoubleQuotes() {
 
 		String query = "abc\"'\"def";
+
 		isNotQuoted(query, "single inside double quote", -1, 0, 1, 2, 6, 7, 8);
 		isQuoted(query, "single inside double quote", 3, 4, 5);
 	}
@@ -95,11 +102,10 @@ public class QuotationMapUnitTests {
 
 	@Test // DATAJPA-1235
 	public void openEndedQuoteThrowsException() {
-
 		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> new QuotationMap("a'b"));
 	}
 
-	private void isNotQuoted(String query, Object label, int... indexes) {
+	private static void isNotQuoted(String query, Object label, int... indexes) {
 
 		QuotationMap quotationMap = new QuotationMap(query);
 
@@ -111,14 +117,15 @@ public class QuotationMapUnitTests {
 		}
 	}
 
-	private void isQuoted(String query, Object label, int... indexes) {
+	private static void isQuoted(String query, Object label, int... indexes) {
 
 		QuotationMap quotationMap = new QuotationMap(query);
 
 		for (int index : indexes) {
 
 			assertThat(quotationMap.isQuoted(index))
-					.describedAs(String.format("(%s) %s does contain a quote at %s", label, query, index)).isTrue();
+					.describedAs(String.format("(%s) %s does contain a quote at %s", label, query, index)) //
+					.isTrue();
 		}
 	}
 }

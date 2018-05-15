@@ -25,59 +25,36 @@ import java.util.function.BiFunction;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.Test;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.parser.SpelQueryContext.SpelExtractor;
 
 /**
- * Unit tests for {@link SpelQueryContext} and
- * {@link org.springframework.data.repository.query.parser.SpelQueryContext.SpelExtractor}
+ * Unit tests for {@link SpelExtractor}.
  * 
  * @author Jens Schauder
+ * @author Oliver Gierke
  */
 public class SpelExtractorUnitTests {
 
-	static final String EXPRESSION_PARAMETER_PREFIX = "EPP";
-	static final BiFunction<Integer, String, String> PARAMETER_NAME_SOURCE = (index, spel) -> EXPRESSION_PARAMETER_PREFIX + index;
+	static final QueryMethodEvaluationContextProvider PROVIDER = QueryMethodEvaluationContextProvider.DEFAULT;
+	static final BiFunction<Integer, String, String> PARAMETER_NAME_SOURCE = (index, spel) -> "EPP" + index;
 	static final BiFunction<String, String, String> REPLACEMENT_SOURCE = (prefix, name) -> prefix + name;
+
 	final SoftAssertions softly = new SoftAssertions();
 
 	@Test // DATACMNS-1258
 	public void nullQueryThrowsException() {
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
-				.isThrownBy(() -> new SpelQueryContext( //
-						PARAMETER_NAME_SOURCE, //
-						REPLACEMENT_SOURCE) //
-								.parse(null) //
-		);
-	}
+		SpelQueryContext context = SpelQueryContext.of(PROVIDER, PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
-	@Test // DATACMNS-1258
-	public void nullParameterNameSourceThrowsException() {
-
-		assertThatExceptionOfType(IllegalArgumentException.class) //
-				.isThrownBy(() -> new SpelQueryContext( //
-						null, //
-						REPLACEMENT_SOURCE) //
-		);
-	}
-
-	@Test // DATACMNS-1258
-	public void nullReplacementSourceThrowsException() {
-
-		assertThatExceptionOfType(IllegalArgumentException.class) //
-				.isThrownBy( //
-						() -> new SpelQueryContext( //
-								PARAMETER_NAME_SOURCE, //
-								null) //
-		);
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> context.parse(null));
 	}
 
 	@Test // DATACMNS-1258
 	public void emptyStringGetsParsedCorrectly() {
 
-		SpelQueryContext.SpelExtractor extractor = new SpelQueryContext( //
-				PARAMETER_NAME_SOURCE, //
-				REPLACEMENT_SOURCE //
-		).parse("");
+		SpelQueryContext context = SpelQueryContext.of(PROVIDER, PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		SpelExtractor extractor = context.parse("");
 
 		softly.assertThat(extractor.query()).isEqualTo("");
 		softly.assertThat(extractor.parameterNameToSpelMap()).isEmpty();
@@ -88,10 +65,8 @@ public class SpelExtractorUnitTests {
 	@Test // DATACMNS-1258
 	public void findsAndReplacesExpressions() {
 
-		SpelQueryContext.SpelExtractor extractor = new SpelQueryContext( //
-				PARAMETER_NAME_SOURCE, //
-				REPLACEMENT_SOURCE //
-		).parse(":#{one} ?#{two}");
+		SpelQueryContext context = SpelQueryContext.of(PROVIDER, PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		SpelExtractor extractor = context.parse(":#{one} ?#{two}");
 
 		softly.assertThat(extractor.query()).isEqualTo(":EPP0 ?EPP1");
 		softly.assertThat(extractor.parameterNameToSpelMap().entrySet()) //
@@ -99,7 +74,7 @@ public class SpelExtractorUnitTests {
 				.containsExactlyInAnyOrder( //
 						Tuple.tuple("EPP0", "one"), //
 						Tuple.tuple("EPP1", "two") //
-		);
+				);
 
 		softly.assertAll();
 	}
@@ -107,10 +82,8 @@ public class SpelExtractorUnitTests {
 	@Test // DATACMNS-1258
 	public void keepsStringWhenNoMatchIsFound() {
 
-		SpelQueryContext.SpelExtractor extractor = new SpelQueryContext( //
-				PARAMETER_NAME_SOURCE, //
-				REPLACEMENT_SOURCE //
-		).parse("abcdef");
+		SpelQueryContext context = SpelQueryContext.of(PROVIDER, PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		SpelExtractor extractor = context.parse("abcdef");
 
 		softly.assertThat(extractor.query()).isEqualTo("abcdef");
 		softly.assertThat(extractor.parameterNameToSpelMap()).isEmpty();
@@ -121,25 +94,25 @@ public class SpelExtractorUnitTests {
 	@Test // DATACMNS-1258
 	public void spelsInQuotesGetIgnored() {
 
-		List<String> queries = Arrays.asList("a'b:#{one}cd'ef", "a'b:#{o'ne}cdef", "ab':#{one}'cdef", "ab:'#{one}cd'ef",
-				"ab:#'{one}cd'ef", "a'b:#{o'ne}cdef");
+		List<String> queries = Arrays.asList(//
+				"a'b:#{one}cd'ef", //
+				"a'b:#{o'ne}cdef", //
+				"ab':#{one}'cdef", //
+				"ab:'#{one}cd'ef", //
+				"ab:#'{one}cd'ef", //
+				"a'b:#{o'ne}cdef");
 
-		for (String query : queries) {
-			checkNoSpelIsFound(query);
-		}
+		queries.forEach(this::checkNoSpelIsFound);
 
 		softly.assertAll();
 	}
 
 	private void checkNoSpelIsFound(String query) {
 
-		SpelQueryContext.SpelExtractor extractor = new SpelQueryContext( //
-				PARAMETER_NAME_SOURCE, //
-				REPLACEMENT_SOURCE //
-		).parse(query);
+		SpelQueryContext context = SpelQueryContext.of(PROVIDER, PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		SpelExtractor extractor = context.parse(query);
 
 		softly.assertThat(extractor.query()).describedAs(query).isEqualTo(query);
 		softly.assertThat(extractor.parameterNameToSpelMap()).describedAs(query).isEmpty();
 	}
-
 }

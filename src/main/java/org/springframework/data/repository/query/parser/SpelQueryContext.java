@@ -21,10 +21,14 @@ import lombok.RequiredArgsConstructor;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
+import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.util.Assert;
 
 /**
@@ -33,11 +37,13 @@ import org.springframework.util.Assert;
  * @author Jens Schauder
  * @author Gerrit Meier
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor(staticName = "of")
 public class SpelQueryContext {
 
 	private final static String SPEL_PATTERN_STRING = "([:?])#\\{([^}]+)}";
 	private final static Pattern SPEL_PATTERN = Pattern.compile(SPEL_PATTERN_STRING);
+
+	private final QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	/**
 	 * A function from the index of a SpEL expression in a query and the actual SpEL expression to the parameter name to
@@ -69,8 +75,15 @@ public class SpelQueryContext {
 	 * @return A {@link SpelExtractor} which makes the query with SpEL expressions replaced by bind parameters and a map
 	 *         from bind parameter to SpEL expression available. Guaranteed to be not {@literal null}.
 	 */
-	public SpelExtractor parse(String query) {
+	SpelExtractor parse(String query) {
 		return new SpelExtractor(query);
+	}
+
+	public SpelEvaluator parse(String query, Parameters<?, ?> parameters) {
+
+		SpelExtractor extractor = parse(query);
+
+		return new SpelEvaluator(evaluationContextProvider, parameters, extractor);
 	}
 
 	/**
@@ -81,8 +94,10 @@ public class SpelQueryContext {
 	 * of the query.
 	 *
 	 * @author Jens Schauder
+	 * @author Oliver Gierke
+	 * @since 2.1
 	 */
-	public class SpelExtractor {
+	class SpelExtractor {
 
 		private static final int PREFIX_GROUP_INDEX = 1;
 		private static final int EXPRESSION_GROUP_INDEX = 2;
@@ -93,18 +108,15 @@ public class SpelQueryContext {
 		/**
 		 * Creates a SpelExtractor from a query String.
 		 * 
-		 * @param query Must not be {@literal null}.
+		 * @param query must not be {@literal null}.
 		 */
-		private SpelExtractor(String query) {
+		SpelExtractor(String query) {
 
 			Assert.notNull(query, "Query must not be null");
 
-			HashMap<String, String> expressions = new HashMap<>();
-
+			Map<String, String> expressions = new HashMap<>();
 			Matcher matcher = SPEL_PATTERN.matcher(query);
-
 			StringBuilder resultQuery = new StringBuilder();
-
 			QuotationMap quotedAreas = new QuotationMap(query);
 
 			int expressionCounter = 0;
@@ -145,7 +157,7 @@ public class SpelQueryContext {
 		 *
 		 * @return Guaranteed to be not {@literal null}.
 		 */
-		public String query() {
+		String query() {
 			return query;
 		}
 
@@ -154,8 +166,12 @@ public class SpelQueryContext {
 		 * 
 		 * @return Guaranteed to be not {@literal null}.
 		 */
-		public Map<String, String> parameterNameToSpelMap() {
+		Map<String, String> parameterNameToSpelMap() {
 			return expressions;
+		}
+
+		Stream<Entry<String, String>> parameters() {
+			return expressions.entrySet().stream();
 		}
 	}
 }

@@ -17,9 +17,8 @@ package org.springframework.data.repository.query.parser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.data.domain.Range;
 import org.springframework.lang.Nullable;
@@ -33,7 +32,7 @@ import org.springframework.lang.Nullable;
  */
 class QuotationMap {
 
-	private static final Set<Character> QUOTING_CHARACTERS = new HashSet<>(Arrays.asList('"', '\''));
+	private static final Collection<Character> QUOTING_CHARACTERS = Arrays.asList('"', '\'');
 
 	private final List<Range<Integer>> quotedRanges = new ArrayList<>();
 
