@@ -368,6 +368,11 @@ public class AbstractPersistentPropertyUnitTests {
 		public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 			return null;
 		}
+
+		@Override
+		public Class<?> getAssociationTargetType() {
+			return null;
+		}
 	}
 
 	static class Sample {

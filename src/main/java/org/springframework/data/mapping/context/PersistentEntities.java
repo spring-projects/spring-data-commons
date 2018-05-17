@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.context;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -24,6 +26,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -44,7 +47,21 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	public PersistentEntities(Iterable<? extends MappingContext<?, ?>> contexts) {
 
 		Assert.notNull(contexts, "MappingContexts must not be null!");
+
 		this.contexts = Streamable.of(contexts);
+	}
+
+	/**
+	 * Creates a new {@link PersistentEntities} for the given {@link MappingContext}s.
+	 * 
+	 * @param contexts must not be {@literal null}.
+	 * @return
+	 */
+	public static PersistentEntities of(MappingContext<?, ?>... contexts) {
+
+		Assert.notNull(contexts, "MappingContexts must not be null!");
+
+		return new PersistentEntities(Arrays.asList(contexts));
 	}
 
 	/**
@@ -121,5 +138,80 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 		return contexts.stream()
 				.<PersistentEntity<?, ? extends PersistentProperty<?>>> flatMap(it -> it.getPersistentEntities().stream())
 				.collect(Collectors.toList()).iterator();
+	}
+
+	/**
+	 * Returns the {@link PersistentEntity} the given {@link PersistentProperty} refers to in case it's an association.
+	 * For direct aggregate references, that's simply the entity for the {@link PersistentProperty}'s actual type. If the
+	 * property type is not an entity - as it might rather refer to the identifier type - we either use the reference's
+	 * defined target type and fall back to trying to find a {@link PersistentEntity} identified by the
+	 * {@link PersistentProperty}'s actual type.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @return
+	 * @since 2.1
+	 */
+	@Nullable
+	public PersistentEntity<?, ?> getEntityUltimatelyReferredToBy(PersistentProperty<?> property) {
+
+		TypeInformation<?> propertyType = property.getTypeInformation().getActualType();
+
+		if (propertyType == null || !property.isAssociation()) {
+			return null;
+		}
+
+		Class<?> associationTargetType = property.getAssociationTargetType();
+
+		return associationTargetType == null //
+				? getEntityIdentifiedBy(propertyType) //
+				: getPersistentEntity(associationTargetType).orElseGet(() -> getEntityIdentifiedBy(propertyType));
+	}
+
+	/**
+	 * Returns the type the given {@link PersistentProperty} ultimately refers to. In case it's of a unique identifier
+	 * type of an entity known it'll return the entity type.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @return
+	 */
+	public TypeInformation<?> getTypeUltimatelyReferredToBy(PersistentProperty<?> property) {
+
+		Assert.notNull(property, "PersistentProperty must not be null!");
+
+		PersistentEntity<?, ?> entity = getEntityUltimatelyReferredToBy(property);
+
+		return entity == null //
+				? property.getTypeInformation().getRequiredActualType() //
+				: entity.getTypeInformation();
+	}
+
+	/**
+	 * Returns the {@link PersistentEntity} identified by the given type.
+	 * 
+	 * @param type
+	 * @return
+	 * @throws IllegalStateException if the entity cannot be detected uniquely as multiple ones might share the same
+	 *           identifier.
+	 */
+	@Nullable
+	private PersistentEntity<?, ?> getEntityIdentifiedBy(TypeInformation<?> type) {
+
+		Collection<PersistentEntity<?, ?>> entities = contexts.stream() //
+				.flatMap(it -> it.getPersistentEntities().stream()) //
+				.map(it -> it.getIdProperty()) //
+				.filter(it -> it != null && type.equals(it.getTypeInformation().getActualType())) //
+				.map(it -> it.getOwner()) //
+				.collect(Collectors.toList());
+
+		if (entities.size() > 1) {
+
+			String message = "Found multiple entities identified by " + type.getType() + ": ";
+			message += entities.stream().map(it -> it.getType().getName()).collect(Collectors.joining(", "));
+			message += "! Introduce dedciated unique identifier types or explicitly define the target type in @Reference!";
+
+			throw new IllegalStateException(message);
+		}
+
+		return entities.isEmpty() ? null : entities.iterator().next();
 	}
 }

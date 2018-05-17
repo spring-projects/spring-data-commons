@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
+
 /**
  * Meta-annotation to be used to annotate annotations that mark references to other objects.
  *
@@ -30,4 +32,22 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 public @interface Reference {
+
+	/**
+	 * Explicitly define the target type of the reference. Used in case the annotated property is not the target type but
+	 * rather an identifier and/or if that identifier type is not uniquely identifying the target entity.
+	 * 
+	 * @return
+	 */
+	@AliasFor(attribute = "to")
+	Class<?> value() default Class.class;
+
+	/**
+	 * Explicitly define the target type of the reference. Used in case the annotated property is not the target type but
+	 * rather an identifier and/or if that identifier type is not uniquely identifying the target entity.
+	 * 
+	 * @return
+	 */
+	@AliasFor(attribute = "value")
+	Class<?> to() default Class.class;
 }

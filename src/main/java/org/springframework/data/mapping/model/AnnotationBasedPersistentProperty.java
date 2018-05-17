@@ -277,6 +277,27 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return usePropertyAccess.get();
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getAssociationTargetType()
+	 */
+	@Nullable
+	@Override
+	public Class<?> getAssociationTargetType() {
+
+		Reference reference = findAnnotation(Reference.class);
+
+		if (reference == null) {
+			return isEntity() ? getActualType() : null;
+		}
+
+		Class<?> targetType = reference.to();
+
+		return Class.class.equals(targetType) //
+				? isEntity() ? getActualType() : null //
+				: targetType;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#toString()

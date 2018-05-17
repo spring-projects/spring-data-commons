@@ -24,6 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +34,7 @@ import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
@@ -239,6 +241,14 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThatThrownBy(() -> property.getRequiredAnnotation(Transient.class)).isInstanceOf(IllegalStateException.class);
 	}
 
+	@Test // DATACMNS-1318
+	public void detectsUltimateAssociationTargetClass() {
+
+		Stream.of("toSample", "toSample2", "sample", "withoutAnnotation").forEach(it -> {
+			assertThat(getProperty(WithReferences.class, it).getAssociationTargetType()).isEqualTo(Sample.class);
+		});
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -409,5 +419,13 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Target(FIELD)
 	@interface CustomReadOnly {
 
+	}
+
+	static class WithReferences {
+
+		@Reference(to = Sample.class) String toSample;
+		@Reference(Sample.class) String toSample2;
+		@Reference Sample sample;
+		Sample withoutAnnotation;
 	}
 }

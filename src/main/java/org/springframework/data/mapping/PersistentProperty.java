@@ -333,4 +333,15 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 		return AnnotatedElementUtils.hasAnnotation(getActualType(), annotationType);
 	}
+
+	/**
+	 * Return the type the property refers to in case it's an association.
+	 * 
+	 * @return the type the property refers to in case it's an association or {@literal null} in case it's not an
+	 *         association, the target entity type is not explicitly defined (either explicitly or through the property
+	 *         type itself).
+	 * @since 2.1
+	 */
+	@Nullable
+	Class<?> getAssociationTargetType();
 }
