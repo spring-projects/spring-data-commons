@@ -15,7 +15,7 @@
  */
 package org.springframework.data.domain;
 
-import org.springframework.util.ClassUtils;
+import org.springframework.data.util.ProxyUtils;
 
 /**
  * Support for query by example (QBE). An {@link Example} takes a {@code probe} to define the example. Matching options
@@ -69,10 +69,10 @@ public interface Example<T> {
 	 * CGLIB-generated subclass.
 	 *
 	 * @return
-	 * @see ClassUtils#getUserClass(Class)
+	 * @see ProxyUtils#getUserClass(Class)
 	 */
 	@SuppressWarnings("unchecked")
 	default Class<T> getProbeType() {
-		return (Class<T>) ClassUtils.getUserClass(getProbe().getClass());
+		return (Class<T>) ProxyUtils.getUserClass(getProbe().getClass());
 	}
 }

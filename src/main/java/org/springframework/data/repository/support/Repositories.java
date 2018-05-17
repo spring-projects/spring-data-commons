@@ -33,6 +33,7 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.util.ProxyUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -122,7 +123,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		Class<?> userClass = ClassUtils.getUserClass(domainClass);
+		Class<?> userClass = ProxyUtils.getUserClass(domainClass);
 
 		return repositoryFactoryInfos.containsKey(userClass);
 	}
@@ -137,7 +138,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		Class<?> userClass = ClassUtils.getUserClass(domainClass);
+		Class<?> userClass = ProxyUtils.getUserClass(domainClass);
 		Optional<String> repositoryBeanName = Optional.ofNullable(repositoryBeanNames.get(userClass));
 
 		return beanFactory.flatMap(it -> repositoryBeanName.map(it::getBean));
@@ -145,7 +146,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns the {@link RepositoryFactoryInformation} for the given domain class. The given <code>code</code> is
-	 * converted to the actual user class if necessary, @see ClassUtils#getUserClass.
+	 * converted to the actual user class if necessary, @see ProxyUtils#getUserClass.
 	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return the {@link RepositoryFactoryInformation} for the given domain class or {@literal null} if no repository
@@ -155,7 +156,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		Class<?> userType = ClassUtils.getUserClass(domainClass);
+		Class<?> userType = ProxyUtils.getUserClass(domainClass);
 		RepositoryFactoryInformation<Object, Object> repositoryInfo = repositoryFactoryInfos.get(userType);
 
 		if (repositoryInfo != null) {

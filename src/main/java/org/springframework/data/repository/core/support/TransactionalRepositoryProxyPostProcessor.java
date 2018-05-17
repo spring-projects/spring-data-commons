@@ -33,6 +33,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.BridgeMethodResolver;
 import org.springframework.dao.support.PersistenceExceptionTranslationInterceptor;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.util.ProxyUtils;
 import org.springframework.transaction.annotation.Ejb3TransactionAnnotationParser;
 import org.springframework.transaction.annotation.JtaTransactionAnnotationParser;
 import org.springframework.transaction.annotation.SpringTransactionAnnotationParser;
@@ -386,7 +387,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 			}
 
 			// Ignore CGLIB subclasses - introspect the actual user class.
-			Class<?> userClass = ClassUtils.getUserClass(targetClass);
+			Class<?> userClass = ProxyUtils.getUserClass(targetClass);
 			// The method may be on an interface, but we need attributes from the target class.
 			// If the target class is null, the method will be unchanged.
 			Method specificMethod = ClassUtils.getMostSpecificMethod(method, userClass);
