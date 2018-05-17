@@ -18,7 +18,6 @@ package org.springframework.data.mapping.context;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 
 import org.junit.Before;
@@ -46,7 +45,7 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 				new HashSet<>(Arrays.asList(Entity.class, VersionedEntity.class, PrimitiveIdEntity.class)));
 		context.afterPropertiesSet();
 
-		factory = new MappingContextIsNewStrategyFactory(new PersistentEntities(Collections.singleton(context)));
+		factory = new MappingContextIsNewStrategyFactory(PersistentEntities.of(context));
 	}
 
 	@Test

@@ -16,7 +16,6 @@
 package org.springframework.data.auditing;
 
 import java.time.temporal.TemporalAccessor;
-import java.util.Collections;
 import java.util.Optional;
 
 import org.joda.time.DateTime;
@@ -61,7 +60,7 @@ public class AuditingHandler implements InitializingBean {
 	@Deprecated
 	public AuditingHandler(
 			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
-		this(new PersistentEntities(Collections.singletonList(mappingContext)));
+		this(PersistentEntities.of(mappingContext));
 	}
 
 	/**

@@ -18,7 +18,6 @@ package org.springframework.data.mapping.context;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Collections;
 import java.util.function.Function;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -50,7 +49,7 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	 */
 	@Deprecated
 	public MappingContextIsNewStrategyFactory(MappingContext<? extends PersistentEntity<?, ?>, ?> context) {
-		this(new PersistentEntities(Collections.singletonList(context)));
+		this(PersistentEntities.of(context));
 	}
 
 	/**

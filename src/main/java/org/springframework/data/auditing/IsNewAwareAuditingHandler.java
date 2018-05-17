@@ -15,7 +15,6 @@
  */
 package org.springframework.data.auditing;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -50,7 +49,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	@Deprecated
 	public IsNewAwareAuditingHandler(
 			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
-		this(new PersistentEntities(Collections.singletonList(mappingContext)));
+		this(PersistentEntities.of(mappingContext));
 	}
 
 	/**

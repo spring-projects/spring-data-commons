@@ -18,7 +18,6 @@ package org.springframework.data.auditing;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import org.junit.Before;
@@ -51,7 +50,7 @@ public class AuditingHandlerUnitTests {
 	}
 
 	protected AuditingHandler getHandler() {
-		return new AuditingHandler(new PersistentEntities(Collections.emptySet()));
+		return new AuditingHandler(PersistentEntities.of());
 	}
 
 	/**

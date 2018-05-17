@@ -24,7 +24,6 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Optional;
@@ -63,7 +62,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		context.getPersistentEntity(SampleWithInstant.class);
 		context.getPersistentEntity(WithEmbedded.class);
 
-		PersistentEntities entities = new PersistentEntities(Collections.singleton(context));
+		PersistentEntities entities = PersistentEntities.of(context);
 		factory = new MappingAuditableBeanWrapperFactory(entities);
 	}
 

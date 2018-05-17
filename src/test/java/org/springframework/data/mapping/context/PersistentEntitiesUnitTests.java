@@ -18,7 +18,6 @@ package org.springframework.data.mapping.context;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
@@ -52,7 +51,7 @@ public class PersistentEntitiesUnitTests {
 		when(first.hasPersistentEntityFor(Sample.class)).thenReturn(false);
 		when(second.hasPersistentEntityFor(Sample.class)).thenReturn(true);
 
-		new PersistentEntities(Arrays.asList(first, second)).getPersistentEntity(Sample.class);
+		PersistentEntities.of(first, second).getPersistentEntity(Sample.class);
 
 		verify(first, times(1)).hasPersistentEntityFor(Sample.class);
 		verify(first, times(0)).getRequiredPersistentEntity(Sample.class);
@@ -68,7 +67,7 @@ public class PersistentEntitiesUnitTests {
 		context.setInitialEntitySet(Collections.singleton(Sample.class));
 		context.initialize();
 
-		PersistentEntities entities = new PersistentEntities(Collections.singletonList(context));
+		PersistentEntities entities = PersistentEntities.of(context);
 
 		assertThat(entities.getPersistentEntity(Sample.class)).isPresent();
 		assertThat(entities.getPersistentEntity(Object.class)).isNotPresent();
