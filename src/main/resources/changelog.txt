@@ -1,6 +1,19 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.0.M3 (2018-05-17)
+----------------------------------------
+* DATACMNS-1315 - Add coverpage for epub documentation output.
+* DATACMNS-1311 - Upgrade to XMLBeam 1.4.15.
+* DATACMNS-1300 - ConverterNotFoundException or ClassCastException if an entity implements Iterable<OtherType>.
+* DATACMNS-1299 - Repository metadata obtains an incorrect return type of repository methods returning Iterables.
+* DATACMNS-1295 - Release 2.1 M3 (Lovelace).
+* DATACMNS-1294 - Consider types in java.time to be simple.
+* DATACMNS-1292 - Improve projection-based XML request data binding.
+* DATACMNS-1260 - Extract EvaluationContextProvider and SPIs into dedicated package.
+* DATACMNS-1258 - Provide API to detect SpEL expression in repository query strings.
+
+
 Changes in version 2.0.7.RELEASE (2018-05-08)
 ---------------------------------------------
 * DATACMNS-1311 - Upgrade to XMLBeam 1.4.15.
