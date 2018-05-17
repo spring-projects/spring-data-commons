@@ -57,6 +57,7 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ClassUtils;
+import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.Pair;
@@ -575,9 +576,11 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		@Nullable
 		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
-			Object result = doInvoke(invocation);
+			Method method = invocation.getMethod();
 
-			return resultHandler.postProcessInvocationResult(result, invocation.getMethod());
+			return QueryExecutionConverters //
+					.getExecutionAdapter(method.getReturnType()) //
+					.apply(() -> resultHandler.postProcessInvocationResult(doInvoke(invocation), method));
 		}
 
 		@Nullable

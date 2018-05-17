@@ -48,6 +48,7 @@ class QueryExecutionResultHandler {
 
 		GenericConversionService conversionService = new DefaultConversionService();
 		QueryExecutionConverters.registerConvertersIn(conversionService);
+		conversionService.removeConvertible(Object.class, Object.class);
 
 		this.conversionService = conversionService;
 	}
@@ -67,9 +68,9 @@ class QueryExecutionResultHandler {
 		}
 
 		MethodParameter parameter = new MethodParameter(method, -1);
-		TypeDescriptor methodReturnTypeDescriptor = TypeDescriptor.nested(parameter, 0);
 
-		return postProcessInvocationResult(result, methodReturnTypeDescriptor);
+		return postProcessInvocationResult(result, 0, parameter);
+
 	}
 
 	/**
@@ -80,7 +81,9 @@ class QueryExecutionResultHandler {
 	 * @return
 	 */
 	@Nullable
-	Object postProcessInvocationResult(@Nullable Object result, @Nullable TypeDescriptor returnTypeDescriptor) {
+	Object postProcessInvocationResult(@Nullable Object result, int nestingLevel, MethodParameter parameter) {
+
+		TypeDescriptor returnTypeDescriptor = TypeDescriptor.nested(parameter, nestingLevel);
 
 		if (returnTypeDescriptor == null) {
 			return result;
@@ -103,6 +106,9 @@ class QueryExecutionResultHandler {
 		}
 
 		if (QueryExecutionConverters.supports(expectedReturnType)) {
+
+			// For a wrapper type, try nested resolution first
+			result = postProcessInvocationResult(result, nestingLevel + 1, parameter);
 
 			TypeDescriptor targetType = TypeDescriptor.valueOf(expectedReturnType);
 

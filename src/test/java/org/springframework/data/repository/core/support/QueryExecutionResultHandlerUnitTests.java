@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
+import io.vavr.control.Try;
 import javaslang.control.Option;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,7 +36,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.reactivestreams.Publisher;
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.util.Streamable;
@@ -345,21 +345,31 @@ public class QueryExecutionResultHandlerUnitTests {
 		Entity value = new Entity();
 		Optional<Entity> entity = Optional.of(value);
 
-		Object result = handler.postProcessInvocationResult(entity, TypeDescriptor.valueOf(Option.class));
+		Object result = handler.postProcessInvocationResult(entity, getMethod("option"));
 
 		assertThat(result).isInstanceOfSatisfying(Option.class, it -> assertThat(it.get()).isEqualTo(value));
 	}
 
 	@Test // DATACMNS-1165
 	@SuppressWarnings("unchecked")
-	public void convertsIterableIntoStreamable() {
+	public void convertsIterableIntoStreamable() throws Exception {
 
 		Iterable<?> source = Arrays.asList(new Object());
 
-		Object result = handler.postProcessInvocationResult(source, TypeDescriptor.valueOf(Streamable.class));
+		Object result = handler.postProcessInvocationResult(source, getMethod("streamable"));
 
 		assertThat(result).isInstanceOfSatisfying(Streamable.class,
 				it -> assertThat(it.stream().collect(Collectors.toList())).isEqualTo(source));
+	}
+
+	@Test // DATACMNS-938
+	public void resolvesNestedWrapperIfOuterDoesntNeedConversion() throws Exception {
+
+		Entity entity = new Entity();
+
+		Object result = handler.postProcessInvocationResult(entity, getMethod("tryOfOption"));
+
+		assertThat(result).isInstanceOfSatisfying(Option.class, it -> assertThat(it.get()).isEqualTo(entity));
 	}
 
 	private static Method getMethod(String methodName) throws Exception {
@@ -387,6 +397,15 @@ public class QueryExecutionResultHandlerUnitTests {
 		Single<Entity> single();
 
 		Completable completable();
+
+		// DATACMNS-1056
+		Option<Entity> option();
+
+		// DATACMNS-1165
+		Streamable<Entity> streamable();
+
+		// DATACMNS-938
+		Try<Option<Entity>> tryOfOption();
 	}
 
 	static class Entity {}

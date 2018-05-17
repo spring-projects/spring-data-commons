@@ -17,6 +17,7 @@ package org.springframework.data.repository.util;
 
 import javaslang.collection.Seq;
 import javaslang.collection.Traversable;
+import javaslang.control.Try;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -29,8 +30,10 @@ import scala.runtime.AbstractFunction0;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -100,6 +103,7 @@ public abstract class QueryExecutionConverters {
 	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>();
 	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
 	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<Class<?>>();
+	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>();
 
 	static {
 
@@ -142,6 +146,10 @@ public abstract class QueryExecutionConverters {
 
 			UNWRAPPERS.add(JavaslangOptionUnwrapper.INSTANCE);
 
+			// Try support
+			WRAPPER_TYPES.add(WrapperType.singleValue(Try.class));
+			EXECUTION_ADAPTER.put(Try.class, it -> Try.of(it::get));
+
 			ALLOWED_PAGEABLE_TYPES.add(Seq.class);
 		}
 
@@ -151,6 +159,10 @@ public abstract class QueryExecutionConverters {
 			WRAPPER_TYPES.add(VavrCollections.ToJavaConverter.INSTANCE.getWrapperType());
 
 			UNWRAPPERS.add(VavrOptionUnwrapper.INSTANCE);
+
+			// Try support
+			WRAPPER_TYPES.add(WrapperType.singleValue(io.vavr.control.Try.class));
+			EXECUTION_ADAPTER.put(io.vavr.control.Try.class, it -> io.vavr.control.Try.of(it::get));
 
 			ALLOWED_PAGEABLE_TYPES.add(io.vavr.collection.Seq.class);
 		}
@@ -309,6 +321,27 @@ public abstract class QueryExecutionConverters {
 				|| Stream.class.isAssignableFrom(rawType);
 
 		return needToUnwrap ? unwrapWrapperTypes(type.getRequiredComponentType()) : type;
+	}
+
+	/**
+	 * Returns the {@link ExecutionAdapter} to be used for the given return type.
+	 * 
+	 * @param returnType must not be {@literal null}.
+	 * @return
+	 */
+	public static ExecutionAdapter getExecutionAdapter(Class<?> returnType) {
+
+		Assert.notNull(returnType, "Return type must not be null!");
+
+		return EXECUTION_ADAPTER.getOrDefault(returnType, ThrowingSupplier::get);
+	}
+
+	public interface ThrowingSupplier {
+		Object get() throws Throwable;
+	}
+
+	public interface ExecutionAdapter {
+		Object apply(ThrowingSupplier supplier) throws Throwable;
 	}
 
 	/**

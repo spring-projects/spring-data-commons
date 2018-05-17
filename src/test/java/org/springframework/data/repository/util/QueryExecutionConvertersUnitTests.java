@@ -22,6 +22,8 @@ import javaslang.collection.LinkedHashMap;
 import javaslang.collection.LinkedHashSet;
 import javaslang.collection.Seq;
 import javaslang.collection.Traversable;
+import javaslang.control.Try;
+import javaslang.control.Try.Failure;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Completable;
@@ -29,6 +31,7 @@ import rx.Observable;
 import rx.Single;
 import scala.Option;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
@@ -361,8 +364,64 @@ public class QueryExecutionConvertersUnitTests {
 				.isEqualTo(ClassTypeInformation.from(String.class));
 	}
 
+	@Test // DATACMNS-983
+	public void exposesExecutionAdapterForJavaslangTry() throws Throwable {
+
+		Object result = getExecutionAdapter(Try.class).apply(() -> {
+			throw new IOException("Some message!");
+		});
+
+		assertThat(result).isInstanceOf(Failure.class);
+	}
+
+	@Test // DATACMNS-983
+	public void unwrapsDomainTypeFromJavaslangTryWrapper() throws Exception {
+
+		for (String methodName : Arrays.asList("tryMethod", "tryForSeqMethod")) {
+
+			Method method = Sample.class.getMethod(methodName);
+
+			TypeInformation<?> type = QueryExecutionConverters
+					.unwrapWrapperTypes(ClassTypeInformation.fromReturnTypeOf(method));
+
+			assertThat(type.getType()).isEqualTo(Sample.class);
+		}
+	}
+
+	@Test // DATACMNS-983
+	public void exposesExecutionAdapterForVavrTry() throws Throwable {
+
+		Object result = getExecutionAdapter(io.vavr.control.Try.class).apply(() -> {
+			throw new IOException("Some message!");
+		});
+
+		assertThat(result).isInstanceOf(io.vavr.control.Try.Failure.class);
+	}
+
+	@Test // DATACMNS-983
+	public void unwrapsDomainTypeFromVavrTryWrapper() throws Exception {
+
+		for (String methodName : Arrays.asList("tryMethod", "tryForSeqMethod")) {
+
+			Method method = Sample.class.getMethod(methodName);
+
+			TypeInformation<?> type = QueryExecutionConverters
+					.unwrapWrapperTypes(ClassTypeInformation.fromReturnTypeOf(method));
+
+			assertThat(type.getType()).isEqualTo(Sample.class);
+		}
+	}
+
 	interface Sample {
 
 		Page<String> pages();
+
+		Try<Sample> tryMethod();
+
+		Try<Seq<Sample>> tryForSeqMethod();
+
+		io.vavr.control.Try<Sample> vavrTryMethod();
+
+		io.vavr.control.Try<io.vavr.collection.Seq<Sample>> vavrTryForSeqMethod();
 	}
 }
