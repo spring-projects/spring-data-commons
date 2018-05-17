@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import org.reactivestreams.Publisher;
 import org.springframework.core.ReactiveTypeDescriptor;
+import org.springframework.data.util.ProxyUtils;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -154,7 +155,7 @@ public class ReactiveWrappers {
 	 * @return {@literal true} if the {@code type} is a supported reactive wrapper type.
 	 */
 	public static boolean supports(Class<?> type) {
-		return isWrapper(ClassUtils.getUserClass(type));
+		return isWrapper(ProxyUtils.getUserClass(type));
 	}
 
 	/**
