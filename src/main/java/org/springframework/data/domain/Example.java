@@ -21,7 +21,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-import org.springframework.util.ClassUtils;
+import org.springframework.data.util.ProxyUtils;
 
 /**
  * Support for query by example (QBE). An {@link Example} takes a {@code probe} to define the example. Matching options
@@ -85,10 +85,10 @@ public class Example<T> {
 	 * CGLIB-generated subclass.
 	 *
 	 * @return
-	 * @see ClassUtils#getUserClass(Class)
+	 * @see ProxyUtils#getUserClass(Class)
 	 */
 	@SuppressWarnings("unchecked")
 	public Class<T> getProbeType() {
-		return (Class<T>) ClassUtils.getUserClass(probe.getClass());
+		return (Class<T>) ProxyUtils.getUserClass(probe.getClass());
 	}
 }
