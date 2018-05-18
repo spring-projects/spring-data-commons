@@ -40,6 +40,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentEntitySpec;
@@ -260,6 +261,14 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		});
 	}
 
+	@Test // DATACMNS-1325
+	public void supportsPersistableViaIdentifierAccessor() {
+
+		PersistentEntity<PersistableEntity, T> entity = createEntity(PersistableEntity.class);
+
+		assertThat(entity.getIdentifierAccessor(new PersistableEntity()).getIdentifier(), is((Object) 4711L));
+	}
+
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
 		return createEntity(type, null);
 	}
@@ -299,4 +308,29 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	static class AliasEntityUsingComposedAnnotation {}
 
 	static class Subtype extends Entity {}
+
+	// DATACMNS-1325
+
+	static class PersistableEntity implements Persistable<Long> {
+
+		private final Long id = 42L;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.domain.Persistable#getId()
+		 */
+		@Override
+		public Long getId() {
+			return 4711L;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.domain.Persistable#isNew()
+		 */
+		@Override
+		public boolean isNew() {
+			return false;
+		}
+	}
 }

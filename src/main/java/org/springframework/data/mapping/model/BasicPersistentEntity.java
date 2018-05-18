@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.IdentifierAccessor;
@@ -434,6 +435,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(bean, "Target bean must not be null!");
 		assertBeanType(bean);
+
+		if (Persistable.class.isAssignableFrom(getType())) {
+			return new PersistableIdentifierAccessor((Persistable<?>) bean);
+		}
 
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : NullReturningIdentifierAccessor.INSTANCE;
 	}
