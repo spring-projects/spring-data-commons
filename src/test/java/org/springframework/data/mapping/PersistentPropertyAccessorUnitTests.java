@@ -17,6 +17,8 @@ package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Value;
 
 import org.junit.Test;
@@ -93,7 +95,8 @@ public class PersistentPropertyAccessorUnitTests {
 		Customer customer;
 	}
 
-	@Value
+	@Data
+	@AllArgsConstructor
 	static class Customer {
 		String firstname;
 	}

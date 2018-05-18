@@ -20,6 +20,7 @@ import lombok.Getter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -65,6 +66,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final @Getter(onMethod = @__(@Nullable)) Method getter;
 	private final @Getter(onMethod = @__(@Nullable)) Method setter;
 	private final @Getter(onMethod = @__(@Nullable)) Field field;
+	private final @Getter(onMethod = @__(@Nullable)) Method wither;
+	private final boolean immutable;
 
 	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,
 			SimpleTypeHolder simpleTypeHolder) {
@@ -90,6 +93,13 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.getter = property.getGetter().orElse(null);
 		this.setter = property.getSetter().orElse(null);
 		this.field = property.getField().orElse(null);
+		this.wither = property.getWither().orElse(null);
+
+		if (setter == null && (field == null || Modifier.isFinal(field.getModifiers()))) {
+			this.immutable = true;
+		} else {
+			this.immutable = false;
+		}
 	}
 
 	protected abstract Association<P> createAssociation();
@@ -130,7 +140,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return information;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getPersistentEntityTypes()
 	 */
@@ -172,6 +182,15 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	@Override
 	public boolean isWritable() {
 		return !isTransient();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#isImmutable()
+	 */
+	@Override
+	public boolean isImmutable() {
+		return immutable;
 	}
 
 	/*

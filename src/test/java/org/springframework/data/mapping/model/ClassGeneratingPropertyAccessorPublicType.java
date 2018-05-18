@@ -30,6 +30,8 @@ public class ClassGeneratingPropertyAccessorPublicType {
 	protected String protectedField;
 	public String publicField;
 	private String backing;
+	private final String immutable = "";
+	private final String wither;
 	private Integer aa;
 	private int bb;
 
@@ -40,6 +42,14 @@ public class ClassGeneratingPropertyAccessorPublicType {
 	@AccessType(Type.PROPERTY) private String protectedProperty;
 
 	@AccessType(Type.PROPERTY) private String publicProperty;
+
+	public ClassGeneratingPropertyAccessorPublicType() {
+		this.wither = "";
+	}
+
+	private ClassGeneratingPropertyAccessorPublicType(String wither) {
+		this.wither = wither;
+	}
 
 	private String getPrivateProperty() {
 		return privateProperty;
@@ -80,6 +90,14 @@ public class ClassGeneratingPropertyAccessorPublicType {
 
 	public void setSyntheticProperty(String syntheticProperty) {
 		backing = syntheticProperty;
+	}
+
+	public String getWither() {
+		return wither;
+	}
+
+	public ClassGeneratingPropertyAccessorPublicType withWither(String wither) {
+		return new ClassGeneratingPropertyAccessorPublicType(wither);
 	}
 
 	public Object set(Object e) {

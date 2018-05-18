@@ -29,6 +29,8 @@ import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Value object to abstract the concept of a property backed by a {@link Field} and / or a {@link PropertyDescriptor}.
@@ -49,6 +51,7 @@ public class Property {
 
 	private final Lazy<String> name;
 	private final Lazy<String> toString;
+	private final Lazy<Optional<Method>> wither;
 
 	private Property(TypeInformation<?> type, Optional<Field> field, Optional<PropertyDescriptor> descriptor) {
 
@@ -73,6 +76,20 @@ public class Property {
 		this.setter = descriptor.map(PropertyDescriptor::getWriteMethod)//
 				.filter(it -> getType() != null)//
 				.filter(it -> type.getParameterTypes(it).get(0).getType().isAssignableFrom(getType()));
+
+		this.wither = Lazy.of(() -> findWither(type, getName(), getType()));
+
+	}
+
+	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
+
+		Method method = ReflectionUtils.findMethod(owner.getType(), "with" + StringUtils.capitalize(propertyName), rawType);
+
+		if (method != null && owner.isAssignableFrom(owner.getReturnType(method))) {
+			return Optional.of(method);
+		}
+
+		return Optional.empty();
 	}
 
 	/**
@@ -160,6 +177,15 @@ public class Property {
 	 */
 	public Optional<Method> getSetter() {
 		return setter;
+	}
+
+	/**
+	 * Returns the wither of the property if available and if its first (only) parameter matches the type of the property.
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	public Optional<Method> getWither() {
+		return wither.get();
 	}
 
 	/**

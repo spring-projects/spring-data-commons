@@ -29,6 +29,8 @@ public class TypeInOtherPackage {
 	protected String protectedField;
 	public String publicField;
 	private String backing;
+	private final String immutable = "";
+	private final String wither;
 
 	@AccessType(Type.PROPERTY) private String privateProperty;
 
@@ -37,6 +39,14 @@ public class TypeInOtherPackage {
 	@AccessType(Type.PROPERTY) private String protectedProperty;
 
 	@AccessType(Type.PROPERTY) private String publicProperty;
+
+	public TypeInOtherPackage() {
+		this.wither = "";
+	}
+
+	private TypeInOtherPackage(String wither) {
+		this.wither = wither;
+	}
 
 	@SuppressWarnings("unused")
 	private String getPrivateProperty() {
@@ -79,5 +89,13 @@ public class TypeInOtherPackage {
 
 	public void setSyntheticProperty(String syntheticProperty) {
 		backing = syntheticProperty;
+	}
+
+	public String getWither() {
+		return wither;
+	}
+
+	public TypeInOtherPackage withWither(String wither) {
+		return new TypeInOtherPackage(wither);
 	}
 }

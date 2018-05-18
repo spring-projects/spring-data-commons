@@ -33,7 +33,7 @@ import org.springframework.util.ReflectionUtils;
  */
 class BeanWrapper<T> implements PersistentPropertyAccessor {
 
-	private final T bean;
+	private T bean;
 
 	/**
 	 * Creates a new {@link BeanWrapper} for the given bean.
@@ -50,11 +50,26 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentProperty, java.util.Optional)
 	 */
+	@SuppressWarnings("unchecked")
 	public void setProperty(PersistentProperty<?> property, @Nullable Object value) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
 		try {
+
+			if (property.isImmutable()) {
+
+				Method wither = property.getWither();
+				if (wither != null) {
+
+					ReflectionUtils.makeAccessible(wither);
+					this.bean = (T) ReflectionUtils.invokeMethod(wither, bean, value);
+					return;
+				}
+
+				throw new UnsupportedOperationException(
+						String.format("Cannot set immutable property %s.%s!", property.getOwner().getName(), property.getName()));
+			}
 
 			if (!property.usePropertyAccess()) {
 

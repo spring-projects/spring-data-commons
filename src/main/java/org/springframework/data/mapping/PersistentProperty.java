@@ -113,6 +113,27 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		return setter;
 	}
 
+	/**
+	 * Returns the wither method to set a property value on a new object instance. Might return {@literal null} in case
+	 * there is no wither available.
+	 *
+	 * @return the wither method to set a property value on a new object instance if available, otherwise {@literal null}.
+	 * @since 2.1
+	 */
+	@Nullable
+	Method getWither();
+
+	default Method getRequiredWither() {
+
+		Method wither = getWither();
+
+		if (wither == null) {
+			throw new IllegalArgumentException("No wither available for this persistent property!");
+		}
+
+		return wither;
+	}
+
 	@Nullable
 	Field getField();
 
@@ -222,6 +243,15 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	boolean isWritable();
 
 	/**
+	 * Returns whether the current property is immutable, i.e. if there is no setter or the backing {@link Field} is
+	 * {@code final}.
+	 *
+	 * @return
+	 * @since 2.1
+	 */
+	boolean isImmutable();
+
+	/**
 	 * Returns whether the property is an {@link Association}.
 	 *
 	 * @return
@@ -321,7 +351,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	/**
 	 * Returns whether the actual type of the property carries the given annotation.
-	 * 
+	 *
 	 * @param annotationType must not be {@literal null}.
 	 * @return
 	 * @since 2.1
