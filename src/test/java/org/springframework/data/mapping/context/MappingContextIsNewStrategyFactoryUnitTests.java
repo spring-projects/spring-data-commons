@@ -27,8 +27,6 @@ import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory.PropertyIsNullIsNewStrategy;
-import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory.PropertyIsNullOrZeroNumberIsNewStrategy;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
 
@@ -45,7 +43,8 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	public void setUp() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.<Class<?>> asList(Entity.class, VersionedEntity.class)));
+		context.setInitialEntitySet(
+				new HashSet<Class<?>>(Arrays.<Class<?>> asList(Entity.class, VersionedEntity.class, PrimitiveIdEntity.class)));
 		context.afterPropertiesSet();
 
 		factory = new MappingContextIsNewStrategyFactory(new PersistentEntities(Collections.singleton(context)));
@@ -55,7 +54,6 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	public void returnsPropertyIsNullOrZeroIsNewStrategyForVersionedEntity() {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(VersionedEntity.class);
-		assertThat(strategy, is(instanceOf(PropertyIsNullOrZeroNumberIsNewStrategy.class)));
 
 		VersionedEntity entity = new VersionedEntity();
 		assertThat(strategy.isNew(entity), is(true));
@@ -74,7 +72,6 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	public void returnsPropertyIsNullOrZeroIsNewStrategyForPrimitiveVersionedEntity() {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(VersionedEntity.class);
-		assertThat(strategy, is(instanceOf(PropertyIsNullOrZeroNumberIsNewStrategy.class)));
 
 		VersionedEntity entity = new VersionedEntity();
 		assertThat(strategy.isNew(entity), is(true));
@@ -90,9 +87,20 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	public void returnsPropertyIsNullIsNewStrategyForEntity() {
 
 		IsNewStrategy strategy = factory.getIsNewStrategy(Entity.class);
-		assertThat(strategy, is(instanceOf(PropertyIsNullIsNewStrategy.class)));
 
 		Entity entity = new Entity();
+		assertThat(strategy.isNew(entity), is(true));
+
+		entity.id = 1L;
+		assertThat(strategy.isNew(entity), is(false));
+	}
+
+	@Test // DATACMNS-1326
+	public void entityWithPrimitiveDefaultIsNotConsideredNew() {
+
+		IsNewStrategy strategy = factory.getIsNewStrategy(PrimitiveIdEntity.class);
+
+		PrimitiveIdEntity entity = new PrimitiveIdEntity();
 		assertThat(strategy.isNew(entity), is(true));
 
 		entity.id = 1L;
@@ -124,7 +132,7 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 		@Id Long id;
 	}
 
-	static class PrimitveVersionedEntity {
+	static class PrimitiveVersionedEntity {
 
 		@Version long version = 0;
 
@@ -134,5 +142,9 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 	static class Entity {
 
 		@Id Long id;
+	}
+
+	static class PrimitiveIdEntity {
+		@Id long id;
 	}
 }

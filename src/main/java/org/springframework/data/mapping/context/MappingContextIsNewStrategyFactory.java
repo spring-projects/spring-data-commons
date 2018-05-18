@@ -78,7 +78,7 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		if (entity.hasVersionProperty()) {
 			return new PropertyIsNullOrZeroNumberIsNewStrategy(entity.getVersionProperty());
 		} else if (entity.hasIdProperty()) {
-			return new PropertyIsNullIsNewStrategy(entity.getIdProperty());
+			return new PropertyIsNullOrZeroNumberIsNewStrategy(entity.getIdProperty());
 		} else {
 			throw new MappingException(String.format("Cannot determine IsNewStrategy for type %s!", type));
 		}
@@ -117,33 +117,6 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		}
 
 		protected abstract boolean decideIsNew(Object property);
-	}
-
-	/**
-	 * {@link IsNewStrategy} that does a check against {@literal null} for the given value and considers the object new if
-	 * the value given is {@literal null}.
-	 * 
-	 * @author Oliver Gierke
-	 */
-	static class PropertyIsNullIsNewStrategy extends PersistentPropertyInspectingIsNewStrategy {
-
-		/**
-		 * Creates a new {@link PropertyIsNullIsNewStrategy} using the given {@link PersistentProperty}.
-		 * 
-		 * @param property must not be {@literal null}.
-		 */
-		public PropertyIsNullIsNewStrategy(PersistentProperty<?> property) {
-			super(property);
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.model.MappingContextIsNewStrategyFactory.PersistentPropertyInspectingIsNewStrategy#decideIsNew(java.lang.Object)
-		 */
-		@Override
-		protected boolean decideIsNew(Object property) {
-			return property == null;
-		}
 	}
 
 	/**
