@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
@@ -472,6 +473,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		Assert.notNull(bean, "Target bean must not be null!");
 		Assert.isTrue(getType().isInstance(bean),
 				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
+
+		if (Persistable.class.isAssignableFrom(getType())) {
+			return new PersistableIdentifierAccessor((Persistable<?>) bean);
+		}
 
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : new AbsentIdentifierAccessor(bean);
 	}
