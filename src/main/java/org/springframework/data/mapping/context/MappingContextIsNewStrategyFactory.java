@@ -85,7 +85,7 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		if (entity.hasIdProperty()) {
 
 			return PersistentPropertyInspectingIsNewStrategy.of(entity.getRequiredIdProperty(),
-					MappingContextIsNewStrategyFactory::propertyIsNull);
+					MappingContextIsNewStrategyFactory::propertyIsNullOrZeroNumber);
 		}
 
 		return null;
@@ -116,11 +116,7 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 		}
 	}
 
-	private static boolean propertyIsNull(Object it) {
-		return it == null;
-	}
-
 	private static boolean propertyIsNullOrZeroNumber(Object value) {
-		return propertyIsNull(value) || value instanceof Number && ((Number) value).longValue() == 0;
+		return value == null || value instanceof Number && ((Number) value).longValue() == 0;
 	}
 }
