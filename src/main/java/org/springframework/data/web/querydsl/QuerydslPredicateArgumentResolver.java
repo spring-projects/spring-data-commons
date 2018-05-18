@@ -24,6 +24,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
@@ -46,6 +47,7 @@ import com.querydsl.core.types.Predicate;
  *
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author MD Sayem Ahmed
  * @since 1.11
  */
 public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentResolver {
@@ -109,9 +111,12 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 				.map(QuerydslPredicate::bindings)//
 				.map(CastUtils::cast);
 
-		return predicateBuilder.getPredicate(domainType, parameters,
-				bindings.map(it -> bindingsFactory.createBindingsFor(domainType, it))
-						.orElseGet(() -> bindingsFactory.createBindingsFor(domainType)));
+		QuerydslBindings queryDslBindings = bindings
+				.map(it -> bindingsFactory.createBindingsFor(domainType, it))
+				.orElseGet(() -> bindingsFactory.createBindingsFor(domainType));
+		return predicateBuilder
+				.getPredicate(domainType, parameters, queryDslBindings)
+				.orElse(null);
 	}
 
 	/**

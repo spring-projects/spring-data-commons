@@ -20,6 +20,7 @@ import static org.springframework.test.util.ReflectionTestUtils.*;
 
 import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -47,6 +48,7 @@ import com.querydsl.core.types.Predicate;
  *
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author MD Sayem Ahmed
  */
 public class QuerydslPredicateBuilderUnitTests {
 
@@ -73,49 +75,49 @@ public class QuerydslPredicateBuilderUnitTests {
 		builder.getPredicate(null, values, null);
 	}
 
-	@Test // DATACMNS-669, DATACMNS-1168
+	@Test // DATACMNS-669, DATACMNS-1168, DATACMNS-1055
 	public void getPredicateShouldReturnEmptyPredicateWhenPropertiesAreEmpty() {
 		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS))
-				.isEqualTo(new BooleanBuilder());
+				.isEmpty();
 	}
 
-	@Test // DATACMNS-669
+	@Test // DATACMNS-669, DATACMNS-1055
 	public void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
 
 		values.add("firstname", "Oliver");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		Optional<Predicate> predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("Oliver"));
+		assertThat(predicate).hasValue(QUser.user.firstname.eq("Oliver"));
 
-		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
+		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate.get()).fetchResults().getResults();
 
 		assertThat(result).containsExactly(Users.OLIVER);
 	}
 
-	@Test // DATACMNS-669
+	@Test // DATACMNS-669, DATACMNS-1055
 	public void resolveArgumentShouldCreateNestedStringParameterPredicateCorrectly() throws Exception {
 
 		values.add("address.city", "Linz");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		Optional<Predicate> predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate).isEqualTo(QUser.user.address.city.eq("Linz"));
+		assertThat(predicate).hasValue(QUser.user.address.city.eq("Linz"));
 
-		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
+		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate.get()).fetchResults().getResults();
 
 		assertThat(result).containsExactly(Users.CHRISTOPH);
 	}
 
-	@Test // DATACMNS-669
+	@Test // DATACMNS-669, DATACMNS-1055
 	public void ignoresNonDomainTypeProperties() {
 
 		values.add("firstname", "rand");
 		values.add("lastname".toUpperCase(), "al'thor");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		Optional<Predicate> predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand"));
+		assertThat(predicate).hasValue(QUser.user.firstname.eq("rand"));
 	}
 
 	@Test // DATACMNS-669
@@ -129,33 +131,33 @@ public class QuerydslPredicateBuilderUnitTests {
 		builder.getPredicate(USER_TYPE, values, bindings);
 	}
 
-	@Test // DATACMNS-734
+	@Test // DATACMNS-734, DATACMNS-1055
 	@SuppressWarnings("unchecked")
 	public void resolvesCommaSeparatedArgumentToArrayCorrectly() {
 
 		values.add("address.lonLat", "40.740337,-73.995146");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		Optional<Predicate> predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
+		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate.get(), "mixin"), "args")).get(1);
 
 		assertThat(constant.getConstant()).isEqualTo(new Double[] { 40.740337D, -73.995146D });
 	}
 
-	@Test // DATACMNS-734
+	@Test // DATACMNS-734, DATACMNS-1055
 	@SuppressWarnings("unchecked")
 	public void leavesCommaSeparatedArgumentUntouchedWhenTargetIsNotAnArray() {
 
 		values.add("address.city", "rivers,two");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		Optional<Predicate> predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
+		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate.get(), "mixin"), "args")).get(1);
 
 		assertThat(constant.getConstant()).isEqualTo("rivers,two");
 	}
 
-	@Test // DATACMNS-734
+	@Test // DATACMNS-734, DATACMNS-1055
 	public void bindsDateCorrectly() throws ParseException {
 
 		DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd");
@@ -163,22 +165,22 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		values.add("dateOfBirth", format.print(new DateTime()));
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		Optional<Predicate> predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate).isEqualTo(QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate()));
+		assertThat(predicate).hasValue(QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate()));
 	}
 
-	@Test // DATACMNS-883
+	@Test // DATACMNS-883, DATACMNS-1055
 	public void automaticallyInsertsAnyStepInCollectionReference() {
 
 		values.add("addresses.street", "VALUE");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		Optional<Predicate> predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate).isEqualTo(QUser.user.addresses.any().street.eq("VALUE"));
+		assertThat(predicate).hasValue(QUser.user.addresses.any().street.eq("VALUE"));
 	}
 
-	@Test // DATACMNS-941
+	@Test // DATACMNS-941, DATACMNS-1055
 	public void buildsPredicateForBindingUsingDowncast() {
 
 		values.add("specialProperty", "VALUE");
@@ -188,10 +190,10 @@ public class QuerydslPredicateBuilderUnitTests {
 				.first(QuerydslBindingsUnitTests.ContainsBinding.INSTANCE);
 
 		assertThat(builder.getPredicate(USER_TYPE, values, bindings))//
-				.isEqualTo(QUser.user.as(QSpecialUser.class).specialProperty.contains("VALUE"));
+				.hasValue(QUser.user.as(QSpecialUser.class).specialProperty.contains("VALUE"));
 	}
 
-	@Test // DATACMNS-941
+	@Test // DATACMNS-941, DATACMNS-1055
 	public void buildsPredicateForBindingUsingNestedDowncast() {
 
 		values.add("user.specialProperty", "VALUE");
@@ -203,6 +205,6 @@ public class QuerydslPredicateBuilderUnitTests {
 				.first(QuerydslBindingsUnitTests.ContainsBinding.INSTANCE);
 
 		assertThat(builder.getPredicate(USER_TYPE, values, bindings))//
-				.isEqualTo($.user.as(QSpecialUser.class).specialProperty.contains("VALUE"));
+				.hasValue($.user.as(QSpecialUser.class).specialProperty.contains("VALUE"));
 	}
 }

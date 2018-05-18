@@ -31,6 +31,7 @@ import com.querydsl.core.types.Predicate;
  * for all flavors of {@code findAll(…)}. All other calls are forwarded to the configured delegate.
  *
  * @author Oliver Gierke
+ * @author MD Sayem Ahmed
  */
 public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 
@@ -44,13 +45,14 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 	 *
 	 * @param delegate must not be {@literal null}.
 	 * @param executor must not be {@literal null}.
-	 * @param predicate can be {@literal null}.
+	 * @param predicate must not be {@literal null}.
 	 */
 	public QuerydslRepositoryInvokerAdapter(RepositoryInvoker delegate, QuerydslPredicateExecutor<Object> executor,
 			Predicate predicate) {
 
 		Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null!");
 		Assert.notNull(executor, "QuerydslPredicateExecutor must not be null!");
+		Assert.notNull(predicate, "Predicate must not be null!");
 
 		this.delegate = delegate;
 		this.executor = executor;

@@ -46,6 +46,7 @@ import com.querydsl.core.types.Predicate;
  *
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author MD Sayem Ahmed
  * @since 1.11
  */
 public class QuerydslPredicateBuilder {
@@ -81,17 +82,16 @@ public class QuerydslPredicateBuilder {
 	 * @param bindings the {@link QuerydslBindings} for the predicate.
 	 * @return
 	 */
-	@Nullable
-	public Predicate getPredicate(TypeInformation<?> type, MultiValueMap<String, String> values,
+	public Optional<Predicate> getPredicate(TypeInformation<?> type, MultiValueMap<String, String> values,
 			QuerydslBindings bindings) {
 
 		Assert.notNull(bindings, "Context must not be null!");
 
-		BooleanBuilder builder = new BooleanBuilder();
-
 		if (values.isEmpty()) {
-			return builder;
+			return Optional.empty();
 		}
+
+		BooleanBuilder builder = new BooleanBuilder();
 
 		for (Entry<String, List<String>> entry : values.entrySet()) {
 
@@ -117,7 +117,7 @@ public class QuerydslPredicateBuilder {
 			predicate.ifPresent(builder::and);
 		}
 
-		return builder.getValue();
+		return Optional.ofNullable(builder.getValue());
 	}
 
 	/**

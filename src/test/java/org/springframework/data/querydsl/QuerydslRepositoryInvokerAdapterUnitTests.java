@@ -15,6 +15,7 @@
  */
 package org.springframework.data.querydsl;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -34,6 +35,7 @@ import com.querydsl.core.types.Predicate;
  * Unit tests for {@link QuerydslRepositoryInvokerAdapter}.
  *
  * @author Oliver Gierke
+ * @author MD Sayem Ahmed
  * @soundtrack Emilie Nicolas - Grown Up
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -98,5 +100,11 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 
 		adapter.invokeSave(any());
 		verify(delegate, times(1)).invokeSave(any());
+	}
+
+	@Test // DATACMNS-1055
+	public void rejectsNullPredicateDuringConstruction() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> new QuerydslRepositoryInvokerAdapter(delegate, executor, null));
 	}
 }
