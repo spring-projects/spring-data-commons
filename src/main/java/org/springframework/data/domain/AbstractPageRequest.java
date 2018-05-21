@@ -24,6 +24,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Alex Bondarev
  */
 public abstract class AbstractPageRequest implements Pageable, Serializable {
 
@@ -74,7 +75,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 * @see org.springframework.data.domain.Pageable#getOffset()
 	 */
 	public long getOffset() {
-		return page * size;
+		return (long) page * (long) size;
 	}
 
 	/*
