@@ -15,8 +15,17 @@
  */
 package org.springframework.data.mapping.model;
 
+import kotlin.jvm.JvmClassMappingKt;
+import kotlin.reflect.KCallable;
+import kotlin.reflect.KClass;
+import kotlin.reflect.KParameter;
+import kotlin.reflect.KParameter.Kind;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
@@ -60,10 +69,17 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 			if (property.isImmutable()) {
 
 				Method wither = property.getWither();
+
 				if (wither != null) {
 
 					ReflectionUtils.makeAccessible(wither);
 					this.bean = (T) ReflectionUtils.invokeMethod(wither, bean, value);
+					return;
+				}
+
+				if (org.springframework.data.util.ReflectionUtils.isKotlinClass(property.getOwner().getType())) {
+
+					this.bean = (T) KotlinCopyUtil.setProperty(property, bean, value);
 					return;
 				}
 
@@ -140,5 +156,41 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 	 */
 	public T getBean() {
 		return bean;
+	}
+
+	/**
+	 * Utility class to leverage Kotlin's copy method for immutable data classes.
+	 */
+	static class KotlinCopyUtil {
+
+		static <T> Object setProperty(PersistentProperty<?> property, T bean, @Nullable Object value) {
+
+			Class<?> type = property.getOwner().getType();
+			KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+
+			Map<KParameter, Object> args = new LinkedHashMap<>(2, 1);
+			for (KCallable<?> kCallable : kotlinClass.getMembers()) {
+
+				List<KParameter> parameters = kCallable.getParameters();
+
+				for (KParameter parameter : parameters) {
+
+					if (parameter.getKind() == Kind.INSTANCE) {
+						args.put(parameter, bean);
+					}
+
+					if (parameter.getKind() == Kind.VALUE && parameter.getName().equals(property.getName())) {
+						args.put(parameter, value);
+					}
+				}
+
+				if (kCallable.getName().equals("copy")) {
+					return kCallable.callBy(args);
+				}
+			}
+
+			throw new UnsupportedOperationException(String.format(
+					"Kotlin class %s has no .copy(…) method. Cannot set property %s!", type.getName(), property.getName()));
+		}
 	}
 }

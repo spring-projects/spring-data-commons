@@ -406,6 +406,49 @@ public class ReflectionUtils {
 	}
 
 	/**
+	 * Get default value for a primitive type.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return boxed primitive default value.
+	 */
+	public static Object getPrimitiveDefault(Class<?> type) {
+
+		if (type == Byte.TYPE || type == Byte.class) {
+			return (byte) 0;
+		}
+
+		if (type == Short.TYPE || type == Short.class) {
+			return (short) 0;
+		}
+
+		if (type == Integer.TYPE || type == Integer.class) {
+			return 0;
+		}
+
+		if (type == Long.TYPE || type == Long.class) {
+			return 0L;
+		}
+
+		if (type == Float.TYPE || type == Float.class) {
+			return 0F;
+		}
+
+		if (type == Double.TYPE || type == Double.class) {
+			return 0D;
+		}
+
+		if (type == Character.TYPE || type == Character.class) {
+			return '\u0000';
+		}
+
+		if (type == Boolean.TYPE) {
+			return Boolean.FALSE;
+		}
+
+		throw new IllegalArgumentException(String.format("Primitive type %s not supported!", type));
+	}
+
+	/**
 	 * Reflection utility methods specific to Kotlin reflection.
 	 */
 	static class KotlinReflectionUtils {

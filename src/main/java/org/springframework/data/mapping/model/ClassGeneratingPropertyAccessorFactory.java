@@ -17,6 +17,12 @@ package org.springframework.data.mapping.model;
 
 import static org.springframework.asm.Opcodes.*;
 
+import kotlin.reflect.KFunction;
+import kotlin.reflect.KParameter;
+import kotlin.reflect.KParameter.Kind;
+import kotlin.reflect.jvm.ReflectJvmMapping;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -27,6 +33,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,7 +43,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.Label;
@@ -252,6 +262,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * 				case 3358:
 	 * 					this.bean = bean.withId(value);
 	 * 					return;
+	 * 				case 3359:
+	 * 					this.bean = bean.copy(value);  // Kotlin
+	 * 				case 3360:
+	 * 					this.bean = PersonWithId.copy$default(bean, value, 0, null);  // Kotlin
 	 * 				// ...
 	 *            }
 	 * 			throw new UnsupportedOperationException(
@@ -611,8 +625,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * Generate property setter/wither initializer.
 		 */
 		private static void visitPropertySetterInitializer(@Nullable Method method, PersistentProperty<?> property,
-				MethodVisitor mv,
-				List<Class<?>> entityClasses, String internalClassName,
+				MethodVisitor mv, List<Class<?>> entityClasses, String internalClassName,
 				Function<PersistentProperty<?>, String> setterNameFunction, int localVariableIndex) {
 
 			// method = <entity>.class.getDeclaredMethod()
@@ -914,6 +927,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * 	 					this.bean = $id_fieldWither.invoke(bean, value);
 		 * 				case 3358:
 		 * 	 				this.bean = bean.withId(value);
+		 * 				case 3359:
+		 * 	 				this.bean = bean.copy(value); // Kotlin
+		 * 				case 3360:
+		 * 	 				this.bean = PersonWithId.copy$default(bean, value, 0, null);  // Kotlin
 		 * 				// ...
 		 *            }
 		 * 			throw new UnsupportedOperationException(
@@ -990,8 +1007,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				mv.visitLabel(propertyStackMap.get(property.getName()).label);
 				mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
-				if ((property.isImmutable() && property.getWither() != null)
-						|| (!property.isImmutable() && (property.getSetter() != null || property.getField() != null))) {
+				if (supportsMutation(property)) {
 					visitSetProperty0(entity, property, mv, internalClassName);
 				} else {
 					mv.visitJumpInsn(GOTO, dfltLabel);
@@ -1013,53 +1029,95 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			Method setter = property.getSetter();
 			Method wither = property.getWither();
 
-			if (property.isImmutable() && wither != null) {
+			if (property.isImmutable()) {
 
-				if (generateMethodHandle(entity, wither)) {
+				if (wither != null) {
+					if (generateMethodHandle(entity, wither)) {
 
-					// this. <- for later PUTFIELD
-					mv.visitVarInsn(ALOAD, 0);
+						// this. <- for later PUTFIELD
+						mv.visitVarInsn(ALOAD, 0);
 
-					// $wither.invoke(bean)
-					mv.visitFieldInsn(GETSTATIC, internalClassName, witherName(property),
-							BytecodeUtil.referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
-					mv.visitVarInsn(ALOAD, 3);
-					mv.visitVarInsn(ALOAD, 2);
-					mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
-							String.format("(%s%s)%s", BytecodeUtil.referenceName(JAVA_LANG_OBJECT),
-									BytecodeUtil.referenceName(JAVA_LANG_OBJECT), getAccessibleTypeReferenceName(entity)),
-							false);
+						// $wither.invoke(bean)
+						mv.visitFieldInsn(GETSTATIC, internalClassName, witherName(property),
+								BytecodeUtil.referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
+						mv.visitVarInsn(ALOAD, 3);
+						mv.visitVarInsn(ALOAD, 2);
+						mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
+								String.format("(%s%s)%s", BytecodeUtil.referenceName(JAVA_LANG_OBJECT),
+										BytecodeUtil.referenceName(JAVA_LANG_OBJECT), getAccessibleTypeReferenceName(entity)),
+								false);
 
-					mv.visitTypeInsn(CHECKCAST, getAccessibleTypeReferenceName(entity));
+						mv.visitTypeInsn(CHECKCAST, getAccessibleTypeReferenceName(entity));
+					} else {
 
-				} else {
+						// this. <- for later PUTFIELD
+						mv.visitVarInsn(ALOAD, 0);
 
-					// this. <- for later PUTFIELD
-					mv.visitVarInsn(ALOAD, 0);
+						// bean.set...(object)
+						mv.visitVarInsn(ALOAD, 3);
+						mv.visitVarInsn(ALOAD, 2);
 
-					// bean.set...(object)
-					mv.visitVarInsn(ALOAD, 3);
-					mv.visitVarInsn(ALOAD, 2);
-
-					Class<?> parameterType = wither.getParameterTypes()[0];
-					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(BytecodeUtil.autoboxType(parameterType)));
-					BytecodeUtil.autoboxIfNeeded(BytecodeUtil.autoboxType(parameterType), parameterType, mv);
-
-					int invokeOpCode = INVOKEVIRTUAL;
-					Class<?> declaringClass = wither.getDeclaringClass();
-					boolean interfaceDefinition = declaringClass.isInterface();
-
-					if (interfaceDefinition) {
-						invokeOpCode = INVOKEINTERFACE;
+						visitInvokeMethodSingleArg(mv, wither);
 					}
 
-					mv.visitMethodInsn(
-							invokeOpCode, Type.getInternalName(wither.getDeclaringClass()), wither.getName(), String.format("(%s)%s",
-									BytecodeUtil.signatureTypeName(parameterType), BytecodeUtil.referenceName(wither.getReturnType())),
-							interfaceDefinition);
+					mv.visitFieldInsn(PUTFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 				}
 
-				mv.visitFieldInsn(PUTFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
+				if (hasKotlinCopyMethod(entity.getType())) {
+
+					// this. <- for later PUTFIELD
+					mv.visitVarInsn(ALOAD, 0);
+
+					Optional<Method> publicCopy = findPublicCopyMethod(entity.getType());
+					Optional<Method> defaultedCopy = findDefaultCopyMethod(entity.getType());
+
+					if (publicCopy.filter(it -> it.getParameterCount() == 1 && !Modifier.isStatic(it.getModifiers()))
+							.isPresent()) {
+
+						// PersonWithId.copy$default..(bean, object, MASK, null)
+						mv.visitVarInsn(ALOAD, 3);
+						mv.visitVarInsn(ALOAD, 2);
+
+						visitInvokeMethodSingleArg(mv, publicCopy.get());
+					} else {
+
+						Method copy = defaultedCopy.get();
+						Class<?>[] parameterTypes = copy.getParameterTypes();
+						// PersonWithId.copy$default...(object)
+						mv.visitVarInsn(ALOAD, 3);
+
+						KotlinDefaultCopyMethod defaultMethod = new KotlinDefaultCopyMethod(entity.getType());
+						KotlinCopyByProperty kotlinCopyByProperty = defaultMethod.forProperty(property);
+						for (int i = 1; i < defaultMethod.getParameterCount(); i++) {
+
+							if (kotlinCopyByProperty.getParameterPosition() == i) {
+
+								mv.visitVarInsn(ALOAD, 2);
+
+								mv.visitTypeInsn(CHECKCAST, Type.getInternalName(BytecodeUtil.autoboxType(parameterTypes[i])));
+								BytecodeUtil.autoboxIfNeeded(BytecodeUtil.autoboxType(parameterTypes[i]), parameterTypes[i], mv);
+
+								continue;
+							}
+
+							visitDefaultValue(mv, parameterTypes[i]);
+						}
+
+						kotlinCopyByProperty.getDefaultMask().forEach(i -> {
+							mv.visitIntInsn(Opcodes.SIPUSH, i);
+						});
+
+						mv.visitInsn(Opcodes.ACONST_NULL);
+
+						int invokeOpCode = getInvokeOp(copy, false);
+
+						mv.visitMethodInsn(invokeOpCode, Type.getInternalName(copy.getDeclaringClass()), copy.getName(),
+								getArgumentSignature(copy), false);
+					}
+
+					mv.visitFieldInsn(PUTFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
+				}
+
 			} else if (property.usePropertyAccess() && setter != null) {
 
 				if (generateMethodHandle(entity, setter)) {
@@ -1077,20 +1135,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					mv.visitVarInsn(ALOAD, 3);
 					mv.visitVarInsn(ALOAD, 2);
 
-					Class<?> parameterType = setter.getParameterTypes()[0];
-					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(BytecodeUtil.autoboxType(parameterType)));
-					BytecodeUtil.autoboxIfNeeded(BytecodeUtil.autoboxType(parameterType), parameterType, mv);
-
-					int invokeOpCode = INVOKEVIRTUAL;
-					Class<?> declaringClass = setter.getDeclaringClass();
-					boolean interfaceDefinition = declaringClass.isInterface();
-
-					if (interfaceDefinition) {
-						invokeOpCode = INVOKEINTERFACE;
-					}
-
-					mv.visitMethodInsn(invokeOpCode, Type.getInternalName(setter.getDeclaringClass()), setter.getName(),
-							String.format("(%s)V", BytecodeUtil.signatureTypeName(parameterType)), interfaceDefinition);
+					visitInvokeMethodSingleArg(mv, setter);
 				}
 			} else {
 
@@ -1120,6 +1165,57 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			}
 
 			mv.visitInsn(RETURN);
+		}
+
+		/**
+		 * Creates the method signature containing parameter types (e.g. (Ljava/lang/Object)I for a method accepting
+		 * {@link Object} and returning a primitive {@code int}).
+		 *
+		 * @param method
+		 * @return
+		 */
+		private static String getArgumentSignature(Method method) {
+
+			StringBuilder result = new StringBuilder("(");
+			List<String> argumentTypes = new ArrayList<>();
+
+			for (Class<?> parameterType : method.getParameterTypes()) {
+
+				result.append("%s");
+				argumentTypes.add(BytecodeUtil.signatureTypeName(parameterType));
+			}
+
+			result.append(")%s");
+			argumentTypes.add(BytecodeUtil.signatureTypeName(method.getReturnType()));
+
+			return String.format(result.toString(), argumentTypes.toArray());
+		}
+
+		private static void visitDefaultValue(MethodVisitor mv, Class<?> parameterType) {
+			if (parameterType.isPrimitive()) {
+
+				if (parameterType == Integer.TYPE || parameterType == Short.TYPE || parameterType == Boolean.TYPE) {
+					mv.visitInsn(Opcodes.ICONST_0);
+				}
+
+				if (parameterType == Long.TYPE) {
+					mv.visitInsn(Opcodes.LCONST_0);
+				}
+
+				if (parameterType == Double.TYPE) {
+					mv.visitInsn(Opcodes.DCONST_0);
+				}
+
+				if (parameterType == Float.TYPE) {
+					mv.visitInsn(Opcodes.FCONST_0);
+				}
+
+				if (parameterType == Character.TYPE || parameterType == Byte.TYPE) {
+					mv.visitIntInsn(Opcodes.BIPUSH, 0);
+				}
+			} else {
+				mv.visitInsn(Opcodes.ACONST_NULL);
+			}
 		}
 
 		private static void visitAssertNotNull(MethodVisitor mv) {
@@ -1175,6 +1271,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		}
 
 		private static String getAccessibleTypeReferenceName(PersistentEntity<?, ?> entity) {
+
 			if (isAccessible(entity)) {
 				return BytecodeUtil.referenceName(entity.getType());
 			}
@@ -1230,6 +1327,34 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		}
 	}
 
+	private static void visitInvokeMethodSingleArg(MethodVisitor mv, Method method) {
+
+		Class<?>[] parameterTypes = method.getParameterTypes();
+		Class<?> parameterType = parameterTypes[0];
+		Class<?> declaringClass = method.getDeclaringClass();
+		boolean interfaceDefinition = declaringClass.isInterface();
+
+		mv.visitTypeInsn(CHECKCAST, Type.getInternalName(BytecodeUtil.autoboxType(parameterType)));
+		BytecodeUtil.autoboxIfNeeded(BytecodeUtil.autoboxType(parameterType), parameterType, mv);
+
+		int invokeOpCode = getInvokeOp(method, interfaceDefinition);
+
+		mv.visitMethodInsn(
+				invokeOpCode, Type.getInternalName(method.getDeclaringClass()), method.getName(), String.format("(%s)%s",
+						BytecodeUtil.signatureTypeName(parameterType), BytecodeUtil.signatureTypeName(method.getReturnType())),
+				interfaceDefinition);
+	}
+
+	private static int getInvokeOp(Method method, boolean interfaceDefinition) {
+
+		int invokeOpCode = Modifier.isStatic(method.getModifiers()) ? INVOKESTATIC : INVOKEVIRTUAL;
+
+		if (interfaceDefinition) {
+			invokeOpCode = INVOKEINTERFACE;
+		}
+		return invokeOpCode;
+	}
+
 	private static Map<String, PropertyStackAddress> createPropertyStackMap(
 			List<PersistentProperty<?>> persistentProperties) {
 
@@ -1259,6 +1384,200 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		@Override
 		public int compareTo(PropertyStackAddress o) {
 			return Integer.compare(hash, o.hash);
+		}
+	}
+
+	/**
+	 * @param property
+	 * @return {@literal true} if object mutation is supported.
+	 */
+	static boolean supportsMutation(PersistentProperty<?> property) {
+
+		if (property.isImmutable()) {
+
+			if (property.getWither() != null) {
+				return true;
+			}
+
+			if (hasKotlinCopyMethod(property.getOwner().getType())) {
+				return true;
+			}
+		}
+
+		return (property.usePropertyAccess() && property.getSetter() != null)
+				|| (property.getField() != null && !Modifier.isFinal(property.getField().getModifiers()));
+	}
+
+	/**
+	 * Find the Kotlin {@literal copy} method or {@literal copy} method with parameter defaulting.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	@Nullable
+	static Method findCopyMethod(Class<?> type) {
+
+		Optional<Method> singleCopy = findPublicCopyMethod(type);
+
+		return singleCopy.orElseGet(() -> findDefaultCopyMethod(type).orElse(null));
+	}
+
+	private static Optional<Method> findPublicCopyMethod(Class<?> type) {
+
+		return Stream.concat(Arrays.stream(type.getDeclaredMethods()), Arrays.stream(type.getMethods()))
+				.filter(it -> it.getName().equals("copy") //
+						&& !it.isSynthetic() //
+						&& !it.isBridge() //
+						&& !Modifier.isStatic(it.getModifiers()) //
+						&& it.getReturnType().equals(type))
+				.findFirst();
+	}
+
+	private static Optional<Method> findDefaultCopyMethod(Class<?> type) {
+
+		return Stream.concat(Arrays.stream(type.getDeclaredMethods()), Arrays.stream(type.getMethods()))
+				.filter(it -> it.getName().equals("copy$default") //
+						&& it.isSynthetic() //
+						&& it.isBridge() //
+						&& Modifier.isStatic(it.getModifiers()) //
+						&& it.getReturnType().equals(type))
+				.findFirst();
+	}
+
+	/**
+	 * Check whether the {@link Class} declares a {@literal copy} method or {@literal copy} method with parameter
+	 * defaulting.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean hasKotlinCopyMethod(Class<?> type) {
+
+		if (BytecodeUtil.isAccessible(type) && org.springframework.data.util.ReflectionUtils.isKotlinClass(type)) {
+			return findCopyMethod(type) != null;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Value object to represent a Kotlin default method.
+	 *
+	 * @author Mark Paluch
+	 */
+	@Getter
+	static class KotlinDefaultCopyMethod {
+
+		private final int parameterCount;
+		private final KFunction<?> copyFunction;
+
+		public KotlinDefaultCopyMethod(Class<?> type) {
+
+			Method copyMethod = findPublicCopyMethod(type)
+					.orElseThrow(() -> new IllegalArgumentException("Cannot resolve public Kotlin copy() method!"));
+
+			this.copyFunction = ReflectJvmMapping.getKotlinFunction(copyMethod);
+			this.parameterCount = copyFunction.getParameters().size();
+		}
+
+		/**
+		 * Create metadata for {@literal copy$default} invocation.
+		 *
+		 * @param property
+		 * @return
+		 */
+		public KotlinCopyByProperty forProperty(PersistentProperty<?> property) {
+			return new KotlinCopyByProperty(copyFunction, property);
+		}
+	}
+
+	/**
+	 * Value object to represent Kotlin {@literal copy$default} invocation metadata.
+	 *
+	 * @author Mark Paluch
+	 */
+	@Getter
+	static class KotlinCopyByProperty {
+
+		private final int parameterPosition;
+		private final int parameterCount;
+		private final KotlinDefaultMask defaultMask;
+
+		KotlinCopyByProperty(KFunction<?> copyFunction, PersistentProperty<?> property) {
+
+			this.parameterPosition = findIndex(copyFunction, property.getName());
+			this.parameterCount = copyFunction.getParameters().size();
+			this.defaultMask = KotlinDefaultMask.from(copyFunction, it -> property.getName().equals(it.getName()));
+		}
+
+		private static int findIndex(KFunction<?> function, String parameterName) {
+
+			for (KParameter parameter : function.getParameters()) {
+				if (parameterName.equals(parameter.getName())) {
+					return parameter.getIndex();
+				}
+			}
+
+			throw new IllegalArgumentException(String.format("Cannot resolve parameter name %s to a index in method %s!",
+					parameterName, function.getName()));
+		}
+	}
+
+	/**
+	 * Value object representing defaulting masks used for Kotlin methods applying parameter defaulting.
+	 */
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	static class KotlinDefaultMask {
+
+		private final int[] defaulting;
+
+		/**
+		 * Callback method to notify {@link IntConsumer} for each defaulting mask.
+		 *
+		 * @param maskCallback must not be {@literal null}.
+		 */
+		public void forEach(IntConsumer maskCallback) {
+
+			for (int i : defaulting) {
+				maskCallback.accept(i);
+			}
+		}
+
+		/**
+		 * Creates defaulting mask(s) used to invoke Kotlin {@literal default} methods that conditionally apply parameter
+		 * values.
+		 *
+		 * @param function the {@link KFunction} that should be invoked.
+		 * @param isPresent {@link Predicate} for the presence/absence of parameters.
+		 * @return {@link KotlinDefaultMask}.
+		 */
+		public static KotlinDefaultMask from(KFunction<?> function, Predicate<KParameter> isPresent) {
+
+			List<Integer> masks = new ArrayList<>();
+			int index = 0;
+			int mask = 0;
+
+			List<KParameter> parameters = function.getParameters();
+
+			for (KParameter parameter : parameters) {
+
+				if (index != 0 && index % Integer.SIZE == 0) {
+					masks.add(mask);
+					mask = 0;
+				}
+
+				if (parameter.isOptional() && !isPresent.test(parameter)) {
+					mask = mask | (1 << (index % Integer.SIZE));
+				}
+
+				if (parameter.getKind() == Kind.VALUE) {
+					index++;
+				}
+			}
+
+			masks.add(mask);
+
+			return new KotlinDefaultMask(masks.stream().mapToInt(i -> i).toArray());
 		}
 	}
 }
