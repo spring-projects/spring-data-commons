@@ -85,6 +85,34 @@ public class PersistentPropertyAccessorTests {
 	}
 
 	@Test // DATACMNS-1322
+	public void shouldSetKotlinDataClassProperty() {
+
+		DataClassKt bean = new DataClassKt("foo");
+		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
+		SamplePersistentProperty property = getProperty(bean, "id");
+
+		accessor.setProperty(property, "value");
+
+		assertThat(accessor.getBean()).hasFieldOrPropertyWithValue("id", "value");
+		assertThat(accessor.getBean()).isNotSameAs(bean);
+		assertThat(accessor.getProperty(property)).isEqualTo("value");
+	}
+
+	@Test // DATACMNS-1322
+	public void shouldSetExtendedKotlinDataClassProperty() {
+
+		ExtendedDataClassKt bean = new ExtendedDataClassKt("foo", "bar");
+		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
+		SamplePersistentProperty property = getProperty(bean, "id");
+
+		accessor.setProperty(property, "value");
+
+		assertThat(accessor.getBean()).hasFieldOrPropertyWithValue("id", "value");
+		assertThat(accessor.getBean()).isNotSameAs(bean);
+		assertThat(accessor.getProperty(property)).isEqualTo("value");
+	}
+
+	@Test // DATACMNS-1322
 	public void shouldWitherProperty() {
 
 		ValueClass bean = new ValueClass("foo", "bar");
@@ -102,6 +130,16 @@ public class PersistentPropertyAccessorTests {
 	public void shouldRejectImmutablePropertyUpdate() {
 
 		ValueClass bean = new ValueClass("foo", "bar");
+		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
+		SamplePersistentProperty property = getProperty(bean, "immutable");
+
+		assertThatThrownBy(() -> accessor.setProperty(property, "value")).isInstanceOf(UnsupportedOperationException.class);
+	}
+
+	@Test // DATACMNS-1322
+	public void shouldRejectImmutableKotlinClassPropertyUpdate() {
+
+		ValueClassKt bean = new ValueClassKt("foo");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
 		SamplePersistentProperty property = getProperty(bean, "immutable");
 

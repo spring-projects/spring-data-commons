@@ -214,7 +214,7 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 				throw new IllegalArgumentException("PreferredConstructor must not be null!");
 			}
 
-			int[] defaulting = new int[(synthetic.getParameterCount() / 32) + 1];
+			int[] defaulting = new int[(synthetic.getParameterCount() / Integer.SIZE) + 1];
 
 			Object[] params = allocateArguments(
 					synthetic.getParameterCount() + defaulting.length + /* DefaultConstructorMarker */1);
@@ -225,8 +225,8 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 			// Prepare user-space arguments
 			for (int i = 0; i < userParameterCount; i++) {
 
-				int slot = i / 32;
-				int offset = slot * 32;
+				int slot = i / Integer.SIZE;
+				int offset = slot * Integer.SIZE;
 
 				Parameter<Object, P> parameter = parameters.get(i);
 				Class<Object> type = parameter.getType().getType();
@@ -240,7 +240,7 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 					defaulting[slot] = defaulting[slot] | (1 << (i - offset));
 
 					if (type.isPrimitive()) {
-						param = getPrimitiveDefault(type);
+						param = ReflectionUtils.getPrimitiveDefault(type);
 					}
 				}
 
@@ -253,43 +253,6 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 			}
 
 			return params;
-		}
-
-		private static Object getPrimitiveDefault(Class<?> type) {
-
-			if (type == Byte.TYPE || type == Byte.class) {
-				return (byte) 0;
-			}
-
-			if (type == Short.TYPE || type == Short.class) {
-				return (short) 0;
-			}
-
-			if (type == Integer.TYPE || type == Integer.class) {
-				return 0;
-			}
-
-			if (type == Long.TYPE || type == Long.class) {
-				return 0L;
-			}
-
-			if (type == Float.TYPE || type == Float.class) {
-				return 0F;
-			}
-
-			if (type == Double.TYPE || type == Double.class) {
-				return 0D;
-			}
-
-			if (type == Character.TYPE || type == Character.class) {
-				return '\u0000';
-			}
-
-			if (type == Boolean.TYPE) {
-				return Boolean.FALSE;
-			}
-
-			throw new IllegalArgumentException(String.format("Primitive type %s not supported!", type));
 		}
 	}
 }
