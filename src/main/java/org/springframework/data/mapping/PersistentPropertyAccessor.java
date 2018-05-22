@@ -23,8 +23,12 @@ import org.springframework.util.Assert;
  * Domain service to allow accessing and setting {@link PersistentProperty}s of an entity. Usually obtained through
  * {@link PersistentEntity#getPropertyAccessor(Object)}. In case type conversion shall be applied on property access,
  * use a {@link ConvertingPropertyAccessor}.
+ * <p />
+ * This service supports mutation for immutable classes by creating new object instances. These are managed as state of
+ * {@link PersistentPropertyAccessor} and must be obtained from {@link #getBean()} after processing all updates.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.10
  * @see PersistentEntity#getPropertyAccessor(Object)
  * @see ConvertingPropertyAccessor
@@ -44,7 +48,7 @@ public interface PersistentPropertyAccessor {
 	/**
 	 * Sets the given value for the {@link PersistentProperty} pointed to by the given {@link PersistentPropertyPath}. The
 	 * lookup of intermediate values must not yield {@literal null}.
-	 * 
+	 *
 	 * @param path must not be {@literal null} or empty.
 	 * @param value can be {@literal null}.
 	 * @since 2.1
@@ -84,7 +88,7 @@ public interface PersistentPropertyAccessor {
 	/**
 	 * Return the value pointed to by the given {@link PersistentPropertyPath}. If the given path is empty, the wrapped
 	 * bean is returned.
-	 * 
+	 *
 	 * @param path must not be {@literal null}.
 	 * @return
 	 * @since 2.1
@@ -119,7 +123,7 @@ public interface PersistentPropertyAccessor {
 	}
 
 	/**
-	 * Returns the underlying bean.
+	 * Returns the underlying bean. May change between {@link #setProperty(PersistentProperty, Object)} calls.
 	 *
 	 * @return will never be {@literal null}.
 	 */

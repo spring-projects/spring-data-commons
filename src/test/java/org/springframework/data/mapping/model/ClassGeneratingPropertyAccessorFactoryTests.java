@@ -46,8 +46,8 @@ import org.springframework.util.StringUtils;
 @RunWith(Parameterized.class)
 public class ClassGeneratingPropertyAccessorFactoryTests {
 
-	private final ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
-	private final SampleMappingContext mappingContext = new SampleMappingContext();
+	private final static ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
+	private final static SampleMappingContext mappingContext = new SampleMappingContext();
 
 	private final Object bean;
 	private final String propertyName;
@@ -67,7 +67,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		List<Object[]> parameters = new ArrayList<>();
 		List<String> propertyNames = Arrays.asList("privateField", "packageDefaultField", "protectedField", "publicField",
-				"privateProperty", "packageDefaultProperty", "protectedProperty", "publicProperty", "syntheticProperty");
+				"privateProperty", "packageDefaultProperty", "protectedProperty", "publicProperty", "syntheticProperty",
+				"immutable", "wither");
 
 		parameters.addAll(parameters(new InnerPrivateType(), propertyNames, Object.class));
 		parameters
@@ -106,7 +107,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		assertThat(factory.isSupported(mappingContext.getRequiredPersistentEntity(bean.getClass()))).isTrue();
 	}
 
-	@Test // DATACMNS-809
+	@Test // DATACMNS-809, // DATACMNS-1322
 	public void shouldSetAndGetProperty() throws Exception {
 
 		assumeTrue(StringUtils.hasText(propertyName));
@@ -114,9 +115,15 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		assertThat(getProperty(bean, propertyName)).satisfies(property -> {
 
 			PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
+			if (property.isImmutable() && property.getWither() == null) {
 
-			persistentPropertyAccessor.setProperty(property, "value");
-			assertThat(persistentPropertyAccessor.getProperty(property)).isEqualTo("value");
+				assertThatThrownBy(() -> persistentPropertyAccessor.setProperty(property, "value"))
+						.isInstanceOf(UnsupportedOperationException.class);
+			} else {
+
+				persistentPropertyAccessor.setProperty(property, "value");
+				assertThat(persistentPropertyAccessor.getProperty(property)).isEqualTo("value");
+			}
 		});
 	}
 
@@ -183,6 +190,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		protected String protectedField;
 		public String publicField;
 		private String backing;
+		private final String immutable = "";
+		private final String wither;
 
 		@AccessType(Type.PROPERTY) private String privateProperty;
 
@@ -191,6 +200,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		@AccessType(Type.PROPERTY) private String protectedProperty;
 
 		@AccessType(Type.PROPERTY) private String publicProperty;
+
+		private InnerPrivateType() {
+			this.wither = "";
+		}
+
+		private InnerPrivateType(String wither) {
+			this.wither = wither;
+		}
 
 		private String getPrivateProperty() {
 			return privateProperty;
@@ -231,6 +248,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		public void setSyntheticProperty(String syntheticProperty) {
 			backing = syntheticProperty;
+		}
+
+		public String getWither() {
+			return wither;
+		}
+
+		public InnerPrivateType withWither(String wither) {
+			return new InnerPrivateType(wither);
 		}
 	}
 
@@ -248,6 +273,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		protected String protectedField;
 		public String publicField;
 		private String backing;
+		private final String immutable = "";
+		private final String wither;
 
 		@AccessType(Type.PROPERTY) private String privateProperty;
 
@@ -256,6 +283,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		@AccessType(Type.PROPERTY) private String protectedProperty;
 
 		@AccessType(Type.PROPERTY) private String publicProperty;
+
+		InnerPackageDefaultType() {
+			this.wither = "";
+		}
+
+		private InnerPackageDefaultType(String wither) {
+			this.wither = wither;
+		}
 
 		private String getPrivateProperty() {
 			return privateProperty;
@@ -296,6 +331,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		public void setSyntheticProperty(String syntheticProperty) {
 			backing = syntheticProperty;
+		}
+
+		public String getWither() {
+			return wither;
+		}
+
+		public InnerPrivateType withWither(String wither) {
+			return new InnerPrivateType(wither);
 		}
 	}
 
@@ -308,6 +351,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		protected String protectedField;
 		public String publicField;
 		private String backing;
+		private final String immutable = "";
+		private final String wither;
 
 		@AccessType(Type.PROPERTY) private String privateProperty;
 
@@ -316,6 +361,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		@AccessType(Type.PROPERTY) private String protectedProperty;
 
 		@AccessType(Type.PROPERTY) private String publicProperty;
+
+		InnerProtectedType() {
+			this.wither = "";
+		}
+
+		private InnerProtectedType(String wither) {
+			this.wither = wither;
+		}
 
 		private String getPrivateProperty() {
 			return privateProperty;
@@ -356,6 +409,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		public void setSyntheticProperty(String syntheticProperty) {
 			backing = syntheticProperty;
+		}
+
+		public String getWither() {
+			return wither;
+		}
+
+		public InnerPrivateType withWither(String wither) {
+			return new InnerPrivateType(wither);
 		}
 	}
 
@@ -368,6 +429,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		protected String protectedField;
 		public String publicField;
 		private String backing;
+		private final String immutable = "";
+		private final String wither;
 
 		@AccessType(Type.PROPERTY) private String privateProperty;
 
@@ -376,6 +439,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		@AccessType(Type.PROPERTY) private String protectedProperty;
 
 		@AccessType(Type.PROPERTY) private String publicProperty;
+
+		InnerPublicType() {
+			this.wither = "";
+		}
+
+		private InnerPublicType(String wither) {
+			this.wither = wither;
+		}
 
 		private String getPrivateProperty() {
 			return privateProperty;
@@ -416,6 +487,14 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		public void setSyntheticProperty(String syntheticProperty) {
 			backing = syntheticProperty;
+		}
+
+		public String getWither() {
+			return wither;
+		}
+
+		public InnerPrivateType withWither(String wither) {
+			return new InnerPrivateType(wither);
 		}
 	}
 

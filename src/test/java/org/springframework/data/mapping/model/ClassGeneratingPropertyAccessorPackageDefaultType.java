@@ -30,6 +30,8 @@ class ClassGeneratingPropertyAccessorPackageDefaultType {
 	protected String protectedField;
 	public String publicField;
 	private String backing;
+	private final String immutable = "";
+	private final String wither;
 
 	@AccessType(Type.PROPERTY) private String privateProperty;
 
@@ -38,6 +40,14 @@ class ClassGeneratingPropertyAccessorPackageDefaultType {
 	@AccessType(Type.PROPERTY) private String protectedProperty;
 
 	@AccessType(Type.PROPERTY) private String publicProperty;
+
+	public ClassGeneratingPropertyAccessorPackageDefaultType() {
+		this.wither = "";
+	}
+
+	private ClassGeneratingPropertyAccessorPackageDefaultType(String wither) {
+		this.wither = wither;
+	}
 
 	private String getPrivateProperty() {
 		return privateProperty;
@@ -78,5 +88,13 @@ class ClassGeneratingPropertyAccessorPackageDefaultType {
 
 	public void setSyntheticProperty(String syntheticProperty) {
 		backing = syntheticProperty;
+	}
+
+	public String getWither() {
+		return wither;
+	}
+
+	public ClassGeneratingPropertyAccessorPackageDefaultType withWither(String wither) {
+		return new ClassGeneratingPropertyAccessorPackageDefaultType(wither);
 	}
 }
