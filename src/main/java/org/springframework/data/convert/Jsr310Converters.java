@@ -27,6 +27,7 @@ import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author John Kelly
  */
 public abstract class Jsr310Converters {
 
@@ -85,6 +87,7 @@ public abstract class Jsr310Converters {
 		converters.add(StringToLocalDateConverter.INSTANCE);
 		converters.add(StringToLocalDateTimeConverter.INSTANCE);
 		converters.add(StringToInstantConverter.INSTANCE);
+		converters.add(ZonedDateTimeToDateConverter.INSTANCE);
 
 		return converters;
 	}
@@ -296,7 +299,7 @@ public abstract class Jsr310Converters {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -312,7 +315,7 @@ public abstract class Jsr310Converters {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -328,7 +331,7 @@ public abstract class Jsr310Converters {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -336,6 +339,18 @@ public abstract class Jsr310Converters {
 		@Override
 		public Instant convert(String source) {
 			return Instant.parse(source);
+		}
+	}
+
+	@WritingConverter
+	public static enum ZonedDateTimeToDateConverter implements Converter<ZonedDateTime, Date> {
+
+		INSTANCE;
+
+		@Nonnull
+		@Override
+		public Date convert(ZonedDateTime source) {
+			return Date.from(source.toInstant());
 		}
 	}
 }

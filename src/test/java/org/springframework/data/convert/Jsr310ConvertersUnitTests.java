@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
@@ -57,6 +58,7 @@ import org.springframework.data.convert.Jsr310ConvertersUnitTests.PeriodConversi
  * @author Barak Schoster
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author John Kelly
  */
 @RunWith(Suite.class)
 @SuiteClasses({ CommonTests.class, DurationConversionTests.class, PeriodConversionTests.class })
@@ -178,6 +180,13 @@ public class Jsr310ConvertersUnitTests {
 			Instant date = Instant.now();
 
 			assertThat(CONVERSION_SERVICE.convert(date.toString(), Instant.class)).isEqualTo(date);
+		}
+
+		@Test // DATACMNS-1331
+		public void convertsZonedDateTimeToDate() {
+
+			ZonedDateTime now = ZonedDateTime.now();
+			assertThat(CONVERSION_SERVICE.convert(now, Date.class)).matches(formatted(now, FORMAT_FULL));
 		}
 
 		private static Predicate<Date> formatted(Temporal expected, String format) {
