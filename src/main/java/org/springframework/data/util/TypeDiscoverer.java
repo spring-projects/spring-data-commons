@@ -54,6 +54,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
@@ -500,8 +501,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 				: createInfo(new SyntheticParamterizedType(type, arguments)));
 	}
 
+	/**
+	 * Provides the type information available for a type parameter specified by the class in which it is defined and by
+	 * it's 0-based index.
+	 *
+	 * @param bound the class defining the type parameter. Must not be {@code null}.
+	 * @param index the 0-based index. Must not be {@code null}.
+	 * @return the {@link TypeInformation} for the specified type argument.
+	 */
 	@Nullable
-	private TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
+	public TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
 
 		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
 
