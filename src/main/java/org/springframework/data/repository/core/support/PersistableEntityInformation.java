@@ -25,7 +25,9 @@ import org.springframework.lang.Nullable;
  * {@link Persistable#isNew()} for the {@link #isNew(Object)} check.
  *
  * @author Oliver Gierke
+ * @deprecated as of 2.1 in favor of {@link PersistentEntityInformation}.
  */
+@Deprecated
 public class PersistableEntityInformation<T extends Persistable<ID>, ID> extends AbstractEntityInformation<T, ID> {
 
 	private Class<ID> idClass;

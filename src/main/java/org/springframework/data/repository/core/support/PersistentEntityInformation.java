@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.EntityInformation;
@@ -27,20 +30,18 @@ import org.springframework.lang.Nullable;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-@SuppressWarnings("unchecked")
-public class PersistentEntityInformation<T, ID> extends AbstractEntityInformation<T, ID> {
+@RequiredArgsConstructor
+public class PersistentEntityInformation<T, ID> implements EntityInformation<T, ID> {
 
-	private final PersistentEntity<T, ? extends PersistentProperty<?>> persistentEntity;
+	private final @NonNull PersistentEntity<T, ? extends PersistentProperty<?>> persistentEntity;
 
-	/**
-	 * Creates a new {@link PersistableEntityInformation} for the given {@link PersistentEntity}.
-	 *
-	 * @param entity must not be {@literal null}.
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.AbstractEntityInformation#isNew(java.lang.Object)
 	 */
-	public PersistentEntityInformation(PersistentEntity<T, ?> entity) {
-
-		super(entity.getType());
-		this.persistentEntity = entity;
+	@Override
+	public boolean isNew(T entity) {
+		return persistentEntity.isNew(entity);
 	}
 
 	/*
@@ -49,8 +50,18 @@ public class PersistentEntityInformation<T, ID> extends AbstractEntityInformatio
 	 */
 	@Nullable
 	@Override
+	@SuppressWarnings("unchecked")
 	public ID getId(T entity) {
 		return (ID) persistentEntity.getIdentifierAccessor(entity).getIdentifier();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
+	 */
+	@Override
+	public Class<T> getJavaType() {
+		return persistentEntity.getType();
 	}
 
 	/*
@@ -58,6 +69,7 @@ public class PersistentEntityInformation<T, ID> extends AbstractEntityInformatio
 	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public Class<ID> getIdType() {
 		return (Class<ID>) persistentEntity.getRequiredIdProperty().getType();
 	}

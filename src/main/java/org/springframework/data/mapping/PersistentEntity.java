@@ -295,4 +295,14 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @since 1.10
 	 */
 	IdentifierAccessor getIdentifierAccessor(Object bean);
+
+	/**
+	 * Returns whether the given bean is considered new according to the static metadata.
+	 * 
+	 * @param bean must not be {@literal null}.
+	 * @throws IllegalArgumentException in case the given bean is not an instance of the typ represented by the
+	 *           {@link PersistentEntity}.
+	 * @return whether the given bean is considered a new instance.
+	 */
+	boolean isNew(Object bean);
 }

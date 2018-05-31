@@ -15,13 +15,7 @@
  */
 package org.springframework.data.mapping.context;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
-import java.util.function.Function;
-
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.IsNewStrategyFactory;
 import org.springframework.data.support.IsNewStrategyFactorySupport;
@@ -36,10 +30,13 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @deprecated as of 2.1 in favor of looking up the {@link PersistentEntity} and calling
+ *             {@link PersistentEntity#isNew(Object)} on it
  */
+@Deprecated
 public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupport {
 
-	private final PersistentEntities context;
+	private final PersistentEntities entities;
 
 	/**
 	 * Creates a new {@link MappingContextIsNewStrategyFactory} using the given {@link MappingContext}.
@@ -61,7 +58,8 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	public MappingContextIsNewStrategyFactory(PersistentEntities entities) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
-		this.context = entities;
+
+		this.entities = entities;
 	}
 
 	/*
@@ -72,50 +70,8 @@ public class MappingContextIsNewStrategyFactory extends IsNewStrategyFactorySupp
 	@Override
 	protected IsNewStrategy doGetIsNewStrategy(Class<?> type) {
 
-		PersistentEntity<?, ? extends PersistentProperty<?>> entity = context.getRequiredPersistentEntity(type);
+		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(type);
 
-		if (entity.hasVersionProperty()) {
-
-			return PersistentPropertyInspectingIsNewStrategy.of(entity.getRequiredVersionProperty(),
-					MappingContextIsNewStrategyFactory::propertyIsNullOrZeroNumber);
-
-		}
-
-		if (entity.hasIdProperty()) {
-
-			return PersistentPropertyInspectingIsNewStrategy.of(entity.getRequiredIdProperty(),
-					MappingContextIsNewStrategyFactory::propertyIsNullOrZeroNumber);
-		}
-
-		return null;
-	}
-
-	/**
-	 * {@link IsNewStrategy} implementation that will inspect a given {@link PersistentProperty} and call
-	 * {@link #isNew(Object)} with the value retrieved by reflection.
-	 *
-	 * @author Oliver Gierke
-	 */
-	@RequiredArgsConstructor(staticName = "of")
-	static class PersistentPropertyInspectingIsNewStrategy implements IsNewStrategy {
-
-		private final @NonNull PersistentProperty<?> property;
-		private final @NonNull Function<Object, Boolean> isNew;
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.support.IsNewStrategy#isNew(java.util.Optional)
-		 */
-		@Override
-		public boolean isNew(Object entity) {
-
-			Assert.notNull(entity, "Entity must not be null!");
-
-			return isNew.apply(property.getOwner().getPropertyAccessor(entity).getProperty(property));
-		}
-	}
-
-	private static boolean propertyIsNullOrZeroNumber(Object value) {
-		return value == null || value instanceof Number && ((Number) value).longValue() == 0;
+		return bean -> entity.isNew(bean);
 	}
 }

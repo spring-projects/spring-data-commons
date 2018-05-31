@@ -27,7 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @deprecated as of 2.1 in favor of {@link org.springframework.data.mapping.PersistentEntity#isNew(Object)}
  */
+@Deprecated
 @RequiredArgsConstructor
 public class CachingIsNewStrategyFactory implements IsNewStrategyFactory {
 

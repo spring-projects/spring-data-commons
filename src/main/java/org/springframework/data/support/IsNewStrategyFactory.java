@@ -20,7 +20,10 @@ package org.springframework.data.support;
  *
  * @author Oliver Gierke
  * @since 1.5
+ * @deprecated since 2.1 in favor of simply calling
+ *             {@link org.springframework.data.mapping.PersistentEntity#isNew(Object)}
  */
+@Deprecated
 public interface IsNewStrategyFactory {
 
 	/**

@@ -20,14 +20,12 @@ import java.util.Optional;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.mapping.context.MappingContextIsNewStrategyFactory;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.support.IsNewStrategy;
-import org.springframework.data.support.IsNewStrategyFactory;
 import org.springframework.util.Assert;
 
 /**
- * {@link AuditingHandler} extension that uses an {@link IsNewStrategyFactory} to expose a generic
+ * {@link AuditingHandler} extension that uses {@link PersistentEntity#isNew(Object)} to expose a generic
  * {@link #markAudited(Optional)} method that will route calls to {@link #markCreated(Optional)} or
  * {@link #markModified(Optional)} based on the {@link IsNewStrategy} determined from the factory.
  *
@@ -37,7 +35,7 @@ import org.springframework.util.Assert;
  */
 public class IsNewAwareAuditingHandler extends AuditingHandler {
 
-	private final IsNewStrategyFactory isNewStrategyFactory;
+	private final PersistentEntities entities;
 
 	/**
 	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
@@ -62,13 +60,12 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 
 		super(entities);
 
-		this.isNewStrategyFactory = new MappingContextIsNewStrategyFactory(entities);
+		this.entities = entities;
 	}
 
 	/**
-	 * Marks the given object created or modified based on the {@link IsNewStrategy} returned by the
-	 * {@link IsNewStrategyFactory} configured. Will rout the calls to {@link #markCreated(Optional)} and
-	 * {@link #markModified(Optional)} accordingly.
+	 * Marks the given object created or modified based on {@link PersistentEntity#isNew(Object)}. Will route the calls to
+	 * {@link #markCreated(Optional)} and {@link #markModified(Optional)} accordingly.
 	 *
 	 * @param object
 	 */
@@ -80,9 +77,10 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 			return;
 		}
 
-		IsNewStrategy strategy = isNewStrategyFactory.getIsNewStrategy(object.getClass());
+		PersistentEntity<?, ? extends PersistentProperty<?>> entity = entities
+				.getRequiredPersistentEntity(object.getClass());
 
-		if (strategy.isNew(object)) {
+		if (entity.isNew(object)) {
 			markCreated(object);
 		} else {
 			markModified(object);
