@@ -16,8 +16,8 @@
 package org.springframework.data.repository.support;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.repository.CrudRepository;
@@ -64,7 +64,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 
 		this.repositories = repositories;
 		this.conversionService = conversionService;
-		this.invokers = new HashMap<Class<?>, RepositoryInvoker>();
+		this.invokers = new ConcurrentHashMap<Class<?>, RepositoryInvoker>();
 	}
 
 	/* 
