@@ -59,9 +59,6 @@ public class MappingContextIsNewStrategyFactoryUnitTests {
 		entity.id = 1L;
 		assertThat(strategy.isNew(entity)).isTrue();
 
-		entity.version = 0L;
-		assertThat(strategy.isNew(entity)).isTrue();
-
 		entity.version = 1L;
 		assertThat(strategy.isNew(entity)).isFalse();
 	}

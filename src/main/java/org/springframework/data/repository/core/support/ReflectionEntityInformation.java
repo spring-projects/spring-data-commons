@@ -31,7 +31,9 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @deprecated since 2.1 in favor of {@link PersistentEntityInformation}
  */
+@Deprecated
 public class ReflectionEntityInformation<T, ID> extends AbstractEntityInformation<T, ID> {
 
 	private static final Class<Id> DEFAULT_ID_ANNOTATION = Id.class;

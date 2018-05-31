@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @since 1.5
+ * @deprecated since 2.1 in favor of {@link org.springframework.data.mapping.PersistentEntity#isNew(Object)}
  */
 public abstract class IsNewStrategyFactorySupport implements IsNewStrategyFactory {
 

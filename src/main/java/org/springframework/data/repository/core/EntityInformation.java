@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @see org.springframework.data.repository.core.support.PersistentEntityInformation
  */
 public interface EntityInformation<T, ID> extends EntityMetadata<T> {
 
