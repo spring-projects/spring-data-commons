@@ -28,17 +28,17 @@ public abstract class AbstractPageRequestUnitTests {
 
 	public abstract AbstractPageRequest newPageRequest(int page, int size);
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-402
 	public void preventsNegativePage() {
 		newPageRequest(-1, 10);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-402
 	public void preventsNegativeSize() {
 		newPageRequest(0, -1);
 	}
 
-	@Test
+	@Test // DATACMNS-402
 	public void navigatesPageablesCorrectly() {
 
 		Pageable request = newPageRequest(1, 10);
@@ -54,7 +54,7 @@ public abstract class AbstractPageRequestUnitTests {
 		assertThat(first.previousOrFirst()).isEqualTo(first);
 	}
 
-	@Test
+	@Test // DATACMNS-402
 	public void equalsHonoursPageAndSize() {
 
 		AbstractPageRequest request = newPageRequest(0, 10);
@@ -77,7 +77,7 @@ public abstract class AbstractPageRequestUnitTests {
 		newPageRequest(0, 0);
 	}
 
-	@Test
+	@Test // DATACMNS-1327
 	public void getOffsetShouldNotCauseOverflow() {
 
 		AbstractPageRequest request = newPageRequest(Integer.MAX_VALUE, Integer.MAX_VALUE);
