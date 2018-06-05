@@ -364,6 +364,21 @@ public class PropertyPathUnitTests {
 		PropertyPath.from(path, Left.class);
 	}
 
+	@Test // DATACMNS-1304
+	public void resolvesPropertyPathWithSingleUppercaseLetterPropertyEnding() {
+		assertThat(from("categoryB", Product.class).toDotPath(), is("categoryB"));
+	}
+
+	@Test // DATACMNS-1304
+	public void resolvesPropertyPathWithUppercaseLettersPropertyEnding() {
+		assertThat(from("categoryABId", Product.class).toDotPath(), is("categoryAB.id"));
+	}
+
+	@Test // DATACMNS-1304
+	public void detectsNestedSingleCharacterProperty() {
+		assertThat(from("category_B", Product.class).toDotPath(), is("category.b"));
+	}
+
 	private class Foo {
 
 		String userName;
@@ -407,4 +422,18 @@ public class PropertyPathUnitTests {
 	private class Right {
 		Left bar;
 	}
+
+	// DATACMNS-1304
+	private class Product {
+		Category category;
+		Category categoryB;
+		Category categoryAB;
+	}
+
+	private class Category {
+		B b;
+		String id;
+	}
+
+	private class B {}
 }
