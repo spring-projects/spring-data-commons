@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
+import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -86,7 +87,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.notNull(owningType, "Owning type must not be null!");
 		Assert.notNull(base, "Perviously found properties must not be null!");
 
-		String propertyName = name.matches(ALL_UPPERCASE) ? name : StringUtils.uncapitalize(name);
+		String propertyName = Introspector.decapitalize(name);
 		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
 
 		if (propertyType == null) {
