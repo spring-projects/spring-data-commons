@@ -53,6 +53,14 @@ public abstract class ThreeTenBackPortConverters {
 
 	private static final boolean THREE_TEN_BACK_PORT_IS_PRESENT = ClassUtils.isPresent("org.threeten.bp.LocalDateTime",
 			ThreeTenBackPortConverters.class.getClassLoader());
+	private static final Collection<Class<?>> SUPPORTED_TYPES;
+
+	static {
+
+		SUPPORTED_TYPES = THREE_TEN_BACK_PORT_IS_PRESENT //
+				? Arrays.asList(LocalDateTime.class, LocalDate.class, LocalTime.class, Instant.class, java.time.Instant.class)
+				: Collections.emptySet();
+	}
 
 	/**
 	 * Returns the converters to be registered. Will only return converters in case we're running on Java 8.
@@ -84,16 +92,9 @@ public abstract class ThreeTenBackPortConverters {
 	}
 
 	public static boolean supports(Class<?> type) {
-
-		if (!THREE_TEN_BACK_PORT_IS_PRESENT) {
-			return false;
-		}
-
-		return Arrays.<Class<?>> asList(LocalDateTime.class, LocalDate.class, LocalTime.class, Instant.class, java.time.Instant.class)
-				.contains(type);
+		return SUPPORTED_TYPES.contains(type);
 	}
 
-	@ReadingConverter
 	public static enum LocalDateTimeToJsr310LocalDateTimeConverter
 			implements Converter<LocalDateTime, java.time.LocalDateTime> {
 

@@ -75,7 +75,6 @@ public abstract class JodaTimeConverters {
 		return converters;
 	}
 
-	@ReadingConverter
 	public enum LocalDateTimeToJsr310Converter implements Converter<LocalDateTime, java.time.LocalDateTime> {
 
 		INSTANCE;

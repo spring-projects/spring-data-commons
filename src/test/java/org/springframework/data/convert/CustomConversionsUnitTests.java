@@ -37,6 +37,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.convert.CustomConversions.StoreConversions;
+import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.threeten.bp.LocalDateTime;
 
 /**
@@ -166,7 +167,9 @@ public class CustomConversionsUnitTests {
 	@Test // DATAMONGO-1302, DATACMNS-1035
 	public void registersConverterFactoryCorrectly() {
 
-		CustomConversions customConversions = new CustomConversions(StoreConversions.NONE,
+		StoreConversions conversions = StoreConversions.of(new SimpleTypeHolder(Collections.singleton(Format.class), true));
+
+		CustomConversions customConversions = new CustomConversions(conversions,
 				Collections.singletonList(new FormatConverterFactory()));
 
 		assertThat(customConversions.getCustomWriteTarget(String.class, SimpleDateFormat.class)).isPresent();
@@ -175,19 +178,20 @@ public class CustomConversionsUnitTests {
 	@Test // DATACMNS-1034
 	public void registersConverterFromConverterAware() {
 
-		ConverterAware converters = ConverterBuilder.reading(Left.class, Right.class, left -> new Right())
-				.andWriting(right -> new Left());
+		ConverterAware converters = ConverterBuilder //
+				.reading(Locale.class, CustomType.class, left -> new CustomType()) //
+				.andWriting(right -> Locale.GERMAN);
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE, Collections.singletonList(converters));
 
-		assertThat(conversions.hasCustomWriteTarget(Right.class)).isTrue();
-		assertThat(conversions.hasCustomReadTarget(Left.class, Right.class)).isTrue();
+		assertThat(conversions.hasCustomWriteTarget(CustomType.class)).isTrue();
+		assertThat(conversions.hasCustomReadTarget(Locale.class, CustomType.class)).isTrue();
 
 		ConfigurableConversionService conversionService = new GenericConversionService();
 		conversions.registerConvertersIn(conversionService);
 
-		assertThat(conversionService.canConvert(Left.class, Right.class)).isTrue();
-		assertThat(conversionService.canConvert(Right.class, Left.class)).isTrue();
+		assertThat(conversionService.canConvert(CustomType.class, Locale.class)).isTrue();
+		assertThat(conversionService.canConvert(Locale.class, CustomType.class)).isTrue();
 	}
 
 	private static Class<?> createProxyTypeFor(Class<?> type) {
@@ -307,7 +311,5 @@ public class CustomConversionsUnitTests {
 		}
 	}
 
-	static class Left {}
-
-	static class Right {}
+	static class CustomType {}
 }
