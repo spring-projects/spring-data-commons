@@ -112,13 +112,12 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 					continue;
 				}
 
-				// with a parameter count greater zero
-				if (constructor.getParameterCount() == 0) {
-					continue;
-				}
+				// candidates must contain at least two additional parameters (int, DefaultConstructorMarker).
+				// Number of defaulting masks derives from the original constructor arg count
+				int syntheticParameters = (constructor.getParameterCount() / Integer.SIZE) + 1
+						+ /* DefaultConstructorMarker */ 1;
 
-				// candidates must contain at least two additional parameters (int, DefaultConstructorMarker)
-				if (constructor.getParameterCount() + 2 > candidate.getParameterCount()) {
+				if (constructor.getParameterCount() + syntheticParameters != candidate.getParameterCount()) {
 					continue;
 				}
 
