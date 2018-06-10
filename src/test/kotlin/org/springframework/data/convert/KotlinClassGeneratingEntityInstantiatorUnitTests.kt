@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
+import org.springframework.data.annotation.PersistenceConstructor
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
 import org.springframework.data.mapping.model.MappingInstantiationException
@@ -117,6 +118,21 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		Assertions.assertThat(instance.aBool).isTrue()
 	}
 
+	@Test // DATACMNS-1338
+	fun `should create instance using @PersistenceConstructor`() {
+
+		val entity = this.entity as PersistentEntity<CustomUser, SamplePersistentProperty>
+		val constructor = PreferredConstructorDiscoverer.discover<CustomUser, SamplePersistentProperty>(CustomUser::class.java)
+
+		doReturn("Walter").`when`(provider).getParameterValue<SamplePersistentProperty>(any())
+		doReturn(constructor).whenever(entity).persistenceConstructor
+		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+
+		val instance: CustomUser = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
+
+		Assertions.assertThat(instance.id).isEqualTo("Walter")
+	}
+
 	data class Contact(val firstname: String, val lastname: String)
 
 	data class ContactWithDefaulting(val prop0: String, val prop1: String = "White", val prop2: String,
@@ -137,5 +153,22 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 	data class WithPrimitiveDefaulting(val aByte: Byte = 0, val aShort: Short = 0, val anInt: Int = 0, val aLong: Long = 0L,
 									   val aFloat: Float = 0.0f, val aDouble: Double = 0.0, val aChar: Char = 'a', val aBool: Boolean = true)
+
+	data class ContactWithPersistenceConstructor(val firstname: String, val lastname: String) {
+
+		@PersistenceConstructor
+		constructor(firstname: String) : this(firstname, "")
+	}
+
+	data class CustomUser(
+			var id: String? = null,
+
+			var organisations: MutableList<Organisation> = mutableListOf()
+	) {
+		@PersistenceConstructor
+		constructor(id: String?) : this(id, mutableListOf())
+	}
+
+	data class Organisation(var id: String? = null)
 }
 
