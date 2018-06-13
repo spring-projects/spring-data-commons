@@ -1,6 +1,20 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.8.RELEASE (2018-06-13)
+---------------------------------------------
+* DATACMNS-1338 - Unable to use secondary @PersistenceConstructor with Kotlin data classes.
+* DATACMNS-1336 - Warning logs for JodaTime converters.
+* DATACMNS-1328 - DefaultRepositoryInvokerFactory throws ConcurrentModificationException with Java9.
+* DATACMNS-1327 - int overflow in AbstractPageRequest#getOffset().
+* DATACMNS-1326 - PersistentPropertyInspectingIsNewStrategy does not consider primitive defaults new.
+* DATACMNS-1325 - Add IdentifierAccessor for Persistable.
+* DATACMNS-1324 - Add extensible proxy detection infrastructure.
+* DATACMNS-1315 - Add coverpage for epub documentation output.
+* DATACMNS-1313 - Release 2.0.8 (Kay SR8).
+* DATACMNS-1304 - PropertyPath is created wrong for property with uppercase letters at the end.
+
+
 Changes in version 1.13.13.RELEASE (2018-06-13)
 -----------------------------------------------
 * DATACMNS-1328 - DefaultRepositoryInvokerFactory throws ConcurrentModificationException with Java9.
