@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.13.RELEASE (2018-06-13)
+-----------------------------------------------
+* DATACMNS-1328 - DefaultRepositoryInvokerFactory throws ConcurrentModificationException with Java9.
+* DATACMNS-1326 - PersistentPropertyInspectingIsNewStrategy does not consider primitive defaults new.
+* DATACMNS-1325 - Add IdentifierAccessor for Persistable.
+* DATACMNS-1324 - Add extensible proxy detection infrastructure.
+* DATACMNS-1315 - Add coverpage for epub documentation output.
+* DATACMNS-1312 - Release 1.13.13 (Ingalls SR13).
+* DATACMNS-1304 - PropertyPath is created wrong for property with uppercase letters at the end.
+
+
 Changes in version 2.1.0.M3 (2018-05-17)
 ----------------------------------------
 * DATACMNS-1315 - Add coverpage for epub documentation output.
