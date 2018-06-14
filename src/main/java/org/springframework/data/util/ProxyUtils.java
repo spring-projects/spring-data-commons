@@ -20,6 +20,7 @@ import lombok.experimental.UtilityClass;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.aop.support.AopUtils;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -75,7 +76,7 @@ public class ProxyUtils {
 
 		Assert.notNull(source, "Source object must not be null!");
 
-		return getUserClass(source.getClass());
+		return getUserClass(AopUtils.getTargetClass(source));
 	}
 
 	/**
