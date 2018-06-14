@@ -17,6 +17,8 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.io.Serializable;
+
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.util.ProxyUtils.ProxyDetector;
@@ -50,6 +52,17 @@ public class ProxyUtilsUnitTests {
 		assertThat(ProxyUtils.getUserClass(proxy)).isEqualTo(UserType.class);
 	}
 
+	@Test // DATACMNS-1341
+	public void detectsTargetTypeOfJdkProxy() {
+
+		ProxyFactory factory = new ProxyFactory();
+		factory.setTarget(new SomeTypeWithInterface());
+		factory.setInterfaces(Serializable.class);
+		Object proxy = factory.getProxy();
+
+		assertThat(ProxyUtils.getUserClass(proxy)).isEqualTo(SomeTypeWithInterface.class);
+	}
+
 	static class SampleProxyDetector implements ProxyDetector {
 
 		/* 
@@ -67,4 +80,6 @@ public class ProxyUtilsUnitTests {
 	static class UserType {}
 
 	static class AnotherSample {}
+
+	static class SomeTypeWithInterface implements Serializable {}
 }
