@@ -16,13 +16,14 @@
 package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.util.ClassTypeInformation.*;
+import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -158,6 +159,15 @@ public class TypeDiscovererUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1342
+	public void considersStreamableToBeCollectionLike() {
+
+		TypeInformation<SomeStreamable> type = from(SomeStreamable.class);
+
+		assertThat(type.isCollectionLike()).isFalse();
+		assertThat(type.getRequiredProperty("streamable").isCollectionLike()).isTrue();
+	}
+
 	class Person {
 
 		Addresses addresses;
@@ -193,6 +203,18 @@ public class TypeDiscovererUnitTests {
 
 		public GenericConstructors(List<String> first, Locale second) {
 
+		}
+	}
+
+	// DATACMNS-1342
+
+	static class SomeStreamable implements Streamable<String> {
+
+		Streamable<String> streamable;
+
+		@Override
+		public Iterator<String> iterator() {
+			return Collections.emptyIterator();
 		}
 	}
 }
