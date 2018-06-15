@@ -410,6 +410,7 @@ public class ReflectionUtils {
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return boxed primitive default value.
+	 * @since 2.1
 	 */
 	public static Object getPrimitiveDefault(Class<?> type) {
 

@@ -123,7 +123,8 @@ public interface PersistentPropertyAccessor {
 	}
 
 	/**
-	 * Returns the underlying bean. May change between {@link #setProperty(PersistentProperty, Object)} calls.
+	 * Returns the underlying bean. The actual instance may change between
+	 * {@link #setProperty(PersistentProperty, Object)} calls.
 	 *
 	 * @return will never be {@literal null}.
 	 */

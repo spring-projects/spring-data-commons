@@ -83,7 +83,8 @@ public class Property {
 
 	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
 
-		Method method = ReflectionUtils.findMethod(owner.getType(), "with" + StringUtils.capitalize(propertyName), rawType);
+		Method method = ReflectionUtils.findMethod(owner.getType(),
+				String.format("with%s", StringUtils.capitalize(propertyName)), rawType);
 
 		if (method != null && owner.isAssignableFrom(owner.getReturnType(method))) {
 			return Optional.of(method);
@@ -147,7 +148,7 @@ public class Property {
 	 */
 	public static boolean supportsStandalone(PropertyDescriptor descriptor) {
 
-		Assert.notNull(descriptor, "PropertDescriptor must not be null!");
+		Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
 
 		return descriptor.getPropertyType() != null;
 	}

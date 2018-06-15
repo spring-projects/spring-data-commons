@@ -114,10 +114,27 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Returns the wither method to set a property value on a new object instance. Might return {@literal null} in case
-	 * there is no wither available.
+	 * Returns the wither {@link Method} to set a property value on a new object instance. Might return {@literal null} in
+	 * case there is no wither available.
+	 * <p/>
+	 * Wither {@link Method methods} are property-bound instance {@link Method methods} that accept a single argument of
+	 * the property type creating a new object instance.
 	 *
-	 * @return the wither method to set a property value on a new object instance if available, otherwise {@literal null}.
+	 * <pre class="code">
+	 * class Person {
+	 * 	final String id;
+	 * 	final String name;
+	 *
+	 * 	// …
+	 *
+	 * 	Person withName(String name) {
+	 * 		return new Person(this.id, name);
+	 * 	}
+	 * }
+	 * </pre>
+	 *
+	 * @return the wither {@link Method} to set a property value on a new object instance if available, otherwise
+	 *         {@literal null}.
 	 * @since 2.1
 	 */
 	@Nullable
@@ -247,6 +264,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * {@code final}.
 	 *
 	 * @return
+	 * @see java.lang.reflect.Modifier#isFinal(int)
 	 * @since 2.1
 	 */
 	boolean isImmutable();
@@ -366,7 +384,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	/**
 	 * Return the type the property refers to in case it's an association.
-	 * 
+	 *
 	 * @return the type the property refers to in case it's an association or {@literal null} in case it's not an
 	 *         association, the target entity type is not explicitly defined (either explicitly or through the property
 	 *         type itself).

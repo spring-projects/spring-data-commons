@@ -160,37 +160,62 @@ class BeanWrapper<T> implements PersistentPropertyAccessor {
 
 	/**
 	 * Utility class to leverage Kotlin's copy method for immutable data classes.
+	 *
+	 * @since 2.1
 	 */
 	static class KotlinCopyUtil {
 
+		/**
+		 * Set a single property by calling {@code copy(…)} on a Kotlin data class. Copying creates a new instance that
+		 * holds all values of the original instance and the newly set {@link PersistentProperty} value.
+		 *
+		 * @see KCallable#callBy(Map)
+		 */
 		static <T> Object setProperty(PersistentProperty<?> property, T bean, @Nullable Object value) {
 
 			Class<?> type = property.getOwner().getType();
 			KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+			KCallable<?> copy = getCopyMethod(kotlinClass);
+
+			if (copy == null) {
+				throw new UnsupportedOperationException(String.format(
+						"Kotlin class %s has no .copy(…) method. Cannot set property %s!", type.getName(), property.getName()));
+			}
+
+			return copy.callBy(getCallArgs(copy, property, bean, value));
+		}
+
+		private static <T> Map<KParameter, Object> getCallArgs(KCallable<?> callable, PersistentProperty<?> property,
+				T bean, @Nullable Object value) {
 
 			Map<KParameter, Object> args = new LinkedHashMap<>(2, 1);
-			for (KCallable<?> kCallable : kotlinClass.getMembers()) {
 
-				List<KParameter> parameters = kCallable.getParameters();
+			List<KParameter> parameters = callable.getParameters();
 
-				for (KParameter parameter : parameters) {
+			for (KParameter parameter : parameters) {
 
-					if (parameter.getKind() == Kind.INSTANCE) {
-						args.put(parameter, bean);
-					}
-
-					if (parameter.getKind() == Kind.VALUE && parameter.getName().equals(property.getName())) {
-						args.put(parameter, value);
-					}
+				if (parameter.getKind() == Kind.INSTANCE) {
+					args.put(parameter, bean);
 				}
 
+				if (parameter.getKind() == Kind.VALUE && parameter.getName().equals(property.getName())) {
+					args.put(parameter, value);
+				}
+			}
+			return args;
+		}
+
+		@Nullable
+		private static KCallable<?> getCopyMethod(KClass<?> kotlinClass) {
+
+			for (KCallable<?> kCallable : kotlinClass.getMembers()) {
+
 				if (kCallable.getName().equals("copy")) {
-					return kCallable.callBy(args);
+					return kCallable;
 				}
 			}
 
-			throw new UnsupportedOperationException(String.format(
-					"Kotlin class %s has no .copy(…) method. Cannot set property %s!", type.getName(), property.getName()));
+			return null;
 		}
 	}
 }
