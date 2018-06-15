@@ -22,12 +22,14 @@ import lombok.experimental.UtilityClass;
 import java.lang.reflect.Modifier;
 
 import org.springframework.asm.MethodVisitor;
+import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
 
 /**
  * Utility methods used for ASM-based class generation during runtime.
  *
  * @author Mark Paluch
+ * @since 2.1
  */
 @UtilityClass
 class BytecodeUtil {
@@ -81,7 +83,7 @@ class BytecodeUtil {
 	 *
 	 * @param in the input type
 	 * @param out the expected output type
-	 * @param visitor
+	 * @param visitor must not be {@literal null}.
 	 */
 	static void autoboxIfNeeded(Class<?> in, Class<?> out, MethodVisitor visitor) {
 
@@ -154,7 +156,7 @@ class BytecodeUtil {
 	 * Checks whether the class is accessible by inspecting modifiers (i.e. whether the class is {@code private}).
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the {@link Class} is accessible.
 	 * @see Modifier#isPrivate(int)
 	 */
 	static boolean isAccessible(Class<?> type) {
@@ -165,7 +167,7 @@ class BytecodeUtil {
 	 * Checks whether the class is accessible by inspecting modifiers (i.e. whether the class is {@code private}).
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the {@code modifiers} do not indicate the private flag.
 	 * @see Modifier#isPrivate(int)
 	 */
 	static boolean isAccessible(int modifiers) {
@@ -177,7 +179,7 @@ class BytecodeUtil {
 	 * {@literal private}/{@literal protected}/{@literal public}).
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the {@code modifiers} indicate {@literal default}.
 	 * @see Modifier#isPrivate(int)
 	 */
 	static boolean isDefault(int modifiers) {
@@ -188,12 +190,18 @@ class BytecodeUtil {
 	 * Create a reference type name in the form of {@literal Ljava/lang/Object;}.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return reference type name in the form of {@literal Ljava/lang/Object;}.
 	 */
 	static String referenceName(Class<?> type) {
 		return type.isArray() ? Type.getInternalName(type) : referenceName(Type.getInternalName(type));
 	}
 
+	/**
+	 * Create a reference type name in the form of {@literal Ljava/lang/Object;}.
+	 *
+	 * @param internalTypeName must not be {@literal null}.
+	 * @return reference type name in the form of {@literal Ljava/lang/Object;}.
+	 */
 	static String referenceName(String internalTypeName) {
 		return String.format("L%s;", internalTypeName);
 	}
@@ -243,5 +251,40 @@ class BytecodeUtil {
 		}
 
 		return referenceName(type);
+	}
+
+	/**
+	 * Create a byte code instruction that puts a default value for {@link Class} on the stack. Primitive types default to
+	 * zero, reference types use {@literal null}.
+	 *
+	 * @param parameterType must not be {@literal null}.
+	 * @param mv must not be {@literal null}.
+	 */
+	static void visitDefaultValue(Class<?> parameterType, MethodVisitor mv) {
+
+		if (parameterType.isPrimitive()) {
+
+			if (parameterType == Integer.TYPE || parameterType == Short.TYPE || parameterType == Boolean.TYPE) {
+				mv.visitInsn(Opcodes.ICONST_0);
+			}
+
+			if (parameterType == Long.TYPE) {
+				mv.visitInsn(Opcodes.LCONST_0);
+			}
+
+			if (parameterType == Double.TYPE) {
+				mv.visitInsn(Opcodes.DCONST_0);
+			}
+
+			if (parameterType == Float.TYPE) {
+				mv.visitInsn(Opcodes.FCONST_0);
+			}
+
+			if (parameterType == Character.TYPE || parameterType == Byte.TYPE) {
+				mv.visitIntInsn(Opcodes.BIPUSH, 0);
+			}
+		} else {
+			mv.visitInsn(Opcodes.ACONST_NULL);
+		}
 	}
 }
