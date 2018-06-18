@@ -69,7 +69,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 	 * @see org.springframework.data.auditing.AuditableBeanWrapperFactory#getBeanWrapperFor(java.lang.Object)
 	 */
 	@Override
-	public Optional<AuditableBeanWrapper> getBeanWrapperFor(Object source) {
+	public <T> Optional<AuditableBeanWrapper<T>> getBeanWrapperFor(T source) {
 
 		return Optional.of(source).flatMap(it -> {
 
@@ -82,8 +82,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 				MappingAuditingMetadata metadata = metadataCache.computeIfAbsent(it.getClass(),
 						key -> new MappingAuditingMetadata(context, it.getClass()));
 
-				return Optional.<AuditableBeanWrapper> ofNullable(metadata.isAuditable() //
-						? new MappingMetadataAuditableBeanWrapper(entity.getPropertyAccessor(it), metadata)
+				return Optional.<AuditableBeanWrapper<T>> ofNullable(metadata.isAuditable() //
+						? new MappingMetadataAuditableBeanWrapper<T>(entity.getPropertyAccessor(it), metadata)
 						: null);
 
 			}).orElseGet(() -> super.getBeanWrapperFor(source));
@@ -146,7 +146,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 	 * @author Oliver Gierke
 	 * @since 1.8
 	 */
-	static class MappingMetadataAuditableBeanWrapper extends DateConvertingAuditableBeanWrapper {
+	static class MappingMetadataAuditableBeanWrapper<T> extends DateConvertingAuditableBeanWrapper<T> {
 
 		private final PersistentPropertyAccessor accessor;
 		private final MappingAuditingMetadata metadata;
@@ -219,8 +219,18 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return setDateProperty(metadata.lastModifiedDatePaths, value);
 		}
 
-		private <T, P extends PersistentProperty<?>> T setProperty(
-				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, T value) {
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
+		 */
+		@Override
+		@SuppressWarnings("unchecked")
+		public T getBean() {
+			return (T) accessor.getBean();
+		}
+
+		private <S, P extends PersistentProperty<?>> S setProperty(
+				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, S value) {
 
 			paths.forEach(it -> this.accessor.setProperty(it, value));
 

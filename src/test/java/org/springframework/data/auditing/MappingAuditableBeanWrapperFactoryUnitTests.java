@@ -71,12 +71,12 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Sample sample = new Sample();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
+		Optional<AuditableBeanWrapper<Sample>> wrapper = factory.getBeanWrapperFor(sample);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
 			it.setCreatedBy(Optional.of("Me!"));
-			assertThat(sample.createdBy).isNotNull();
+			assertThat(it.getBean().createdBy).isNotNull();
 		});
 	}
 
@@ -85,12 +85,12 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Sample sample = new Sample();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
+		Optional<AuditableBeanWrapper<Sample>> wrapper = factory.getBeanWrapperFor(sample);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
 			it.setLastModifiedBy(Optional.of("Me, too!"));
-			assertThat(sample.lastModifiedBy).isNotNull();
+			assertThat(it.getBean().lastModifiedBy).isNotNull();
 		});
 	}
 
@@ -99,7 +99,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		Sample sample = new Sample();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
+		Optional<AuditableBeanWrapper<Sample>> wrapper = factory.getBeanWrapperFor(sample);
 
 		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(Instant.now()));
 	}
@@ -169,8 +169,10 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		SampleWithInstant sample = new SampleWithInstant();
 		sample.modified = Instant.now();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
-		assertThat(wrapper.flatMap(it -> it.getLastModifiedDate())).hasValue(sample.modified);
+		Optional<TemporalAccessor> result = factory.getBeanWrapperFor(sample) //
+				.flatMap(it -> it.getLastModifiedDate());
+
+		assertThat(result).hasValue(sample.modified);
 	}
 
 	@Test // DATACMNS-1259
@@ -187,7 +189,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		WithEmbedded target = new WithEmbedded();
 		target.embedded = new Embedded();
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(target);
+		Optional<AuditableBeanWrapper<WithEmbedded>> wrapper = factory.getBeanWrapperFor(target);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
@@ -199,7 +201,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 			it.setLastModifiedDate(now);
 			it.setCreatedDate(now);
 
-			Embedded embedded = target.embedded;
+			Embedded embedded = it.getBean().embedded;
 
 			assertThat(embedded.created).isEqualTo(now);
 			assertThat(embedded.creator).isEqualTo(user);
@@ -215,11 +217,10 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		Sample sample = new Sample();
 		sample.lastModifiedDate = source;
 
-		Optional<AuditableBeanWrapper> wrapper = factory.getBeanWrapperFor(sample);
+		Optional<TemporalAccessor> result = factory.getBeanWrapperFor(sample) //
+				.flatMap(it -> it.getLastModifiedDate());
 
-		assertThat(wrapper.flatMap(it -> it.getLastModifiedDate())).hasValueSatisfying(ta -> {
-			compareTemporalAccessors(expected, ta);
-		});
+		assertThat(result).hasValueSatisfying(ta -> compareTemporalAccessors(expected, ta));
 	}
 
 	private static AbstractLongAssert<?> compareTemporalAccessors(TemporalAccessor expected, TemporalAccessor actual) {
