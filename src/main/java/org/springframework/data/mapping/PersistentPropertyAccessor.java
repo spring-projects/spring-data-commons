@@ -71,9 +71,21 @@ public interface PersistentPropertyAccessor {
 					getBean().getClass().getName()));
 		}
 
-		PersistentPropertyAccessor accessor = leafProperty.getOwner().getPropertyAccessor(parent);
+		PersistentPropertyAccessor accessor = parent == getBean() //
+				? this //
+				: leafProperty.getOwner().getPropertyAccessor(parent);
 
 		accessor.setProperty(leafProperty, value);
+
+		if (parentPath.isEmpty()) {
+			return;
+		}
+
+		Object bean = accessor.getBean();
+
+		if (bean != parent) {
+			setProperty(parentPath, bean);
+		}
 	}
 
 	/**
