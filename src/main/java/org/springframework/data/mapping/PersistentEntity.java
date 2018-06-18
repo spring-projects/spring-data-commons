@@ -285,7 +285,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @return new {@link PersistentPropertyAccessor}.
 	 * @since 1.10
 	 */
-	PersistentPropertyAccessor getPropertyAccessor(Object bean);
+	<B> PersistentPropertyAccessor<B> getPropertyAccessor(B bean);
 
 	/**
 	 * Returns the {@link IdentifierAccessor} for the given bean.

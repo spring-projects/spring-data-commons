@@ -83,7 +83,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	private final ThreadLocal<Object[]> argumentCache = ThreadLocal.withInitial(() -> new Object[1]);
 
 	private volatile Map<PersistentEntity<?, ?>, Constructor<?>> constructorMap = new HashMap<>(32);
-	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor>> propertyAccessorClasses = new HashMap<>(
+	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor<?>>> propertyAccessorClasses = new HashMap<>(
 			32);
 
 	/*
@@ -91,13 +91,13 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * @see org.springframework.data.mapping.model.PersistentPropertyAccessorFactory#getPropertyAccessor(org.springframework.data.mapping.PersistentEntity, java.lang.Object)
 	 */
 	@Override
-	public PersistentPropertyAccessor getPropertyAccessor(PersistentEntity<?, ?> entity, Object bean) {
+	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {
 
 		Constructor<?> constructor = constructorMap.get(entity);
 
 		if (constructor == null) {
 
-			Class<PersistentPropertyAccessor> accessorClass = potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
+			Class<PersistentPropertyAccessor<?>> accessorClass = potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
 					entity);
 			constructor = accessorClass.getConstructors()[0];
 
@@ -110,7 +110,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		args[0] = bean;
 
 		try {
-			return (PersistentPropertyAccessor) constructor.newInstance(args);
+			return (PersistentPropertyAccessor<T>) constructor.newInstance(args);
 		} catch (Exception e) {
 			throw new IllegalArgumentException(String.format("Cannot create persistent property accessor for %s", entity), e);
 		} finally {
@@ -177,11 +177,11 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	/**
 	 * @param entity must not be {@literal null}.
 	 */
-	private synchronized Class<PersistentPropertyAccessor> potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
+	private synchronized Class<PersistentPropertyAccessor<?>> potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
 			PersistentEntity<?, ?> entity) {
 
-		Map<TypeInformation<?>, Class<PersistentPropertyAccessor>> map = this.propertyAccessorClasses;
-		Class<PersistentPropertyAccessor> propertyAccessorClass = map.get(entity.getTypeInformation());
+		Map<TypeInformation<?>, Class<PersistentPropertyAccessor<?>>> map = this.propertyAccessorClasses;
+		Class<PersistentPropertyAccessor<?>> propertyAccessorClass = map.get(entity.getTypeInformation());
 
 		if (propertyAccessorClass != null) {
 			return propertyAccessorClass;
@@ -198,10 +198,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	}
 
 	@SuppressWarnings("unchecked")
-	private Class<PersistentPropertyAccessor> createAccessorClass(PersistentEntity<?, ?> entity) {
+	private Class<PersistentPropertyAccessor<?>> createAccessorClass(PersistentEntity<?, ?> entity) {
 
 		try {
-			return (Class<PersistentPropertyAccessor>) PropertyAccessorClassGenerator.generateCustomAccessorClass(entity);
+			return (Class<PersistentPropertyAccessor<?>>) PropertyAccessorClassGenerator.generateCustomAccessorClass(entity);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

@@ -148,7 +148,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 	 */
 	static class MappingMetadataAuditableBeanWrapper<T> extends DateConvertingAuditableBeanWrapper<T> {
 
-		private final PersistentPropertyAccessor accessor;
+		private final PersistentPropertyAccessor<T> accessor;
 		private final MappingAuditingMetadata metadata;
 
 		/**
@@ -158,7 +158,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 * @param accessor must not be {@literal null}.
 		 * @param metadata must not be {@literal null}.
 		 */
-		public MappingMetadataAuditableBeanWrapper(PersistentPropertyAccessor accessor, MappingAuditingMetadata metadata) {
+		public MappingMetadataAuditableBeanWrapper(PersistentPropertyAccessor<T> accessor,
+				MappingAuditingMetadata metadata) {
 
 			Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
 			Assert.notNull(metadata, "Auditing metadata must not be null!");
@@ -224,9 +225,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
 		 */
 		@Override
-		@SuppressWarnings("unchecked")
 		public T getBean() {
-			return (T) accessor.getBean();
+			return accessor.getBean();
 		}
 
 		private <S, P extends PersistentProperty<?>> S setProperty(

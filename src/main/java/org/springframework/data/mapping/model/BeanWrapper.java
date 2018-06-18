@@ -40,7 +40,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-class BeanWrapper<T> implements PersistentPropertyAccessor {
+class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 	private T bean;
 

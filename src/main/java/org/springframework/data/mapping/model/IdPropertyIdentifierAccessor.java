@@ -32,7 +32,7 @@ import org.springframework.util.Assert;
  */
 public class IdPropertyIdentifierAccessor extends TargetAwareIdentifierAccessor {
 
-	private final PersistentPropertyAccessor accessor;
+	private final PersistentPropertyAccessor<?> accessor;
 	private final PersistentProperty<?> idProperty;
 
 	/**
