@@ -24,7 +24,7 @@ import java.util.Optional;
  * @author Oliver Gierke
  * @since 1.5
  */
-public interface AuditableBeanWrapper {
+public interface AuditableBeanWrapper<T> {
 
 	/**
 	 * Set the creator of the object.
@@ -61,4 +61,13 @@ public interface AuditableBeanWrapper {
 	 * @param value
 	 */
 	TemporalAccessor setLastModifiedDate(TemporalAccessor value);
+
+	/**
+	 * Returns the underlying bean that potentially has been modified by the setter methods exposed. Client code needs to
+	 * make sure to call this method to see all the changes applied via this {@link AuditableBeanWrapper}.
+	 * 
+	 * @return will never be {@literal null}.
+	 * @since 2.1
+	 */
+	T getBean();
 }

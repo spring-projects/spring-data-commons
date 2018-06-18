@@ -54,20 +54,20 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public Optional<AuditableBeanWrapper> getBeanWrapperFor(Object source) {
+	public <T> Optional<AuditableBeanWrapper<T>> getBeanWrapperFor(T source) {
 
 		Assert.notNull(source, "Source must not be null!");
 
 		return Optional.of(source).map(it -> {
 
 			if (it instanceof Auditable) {
-				return new AuditableInterfaceBeanWrapper((Auditable<Object, ?, TemporalAccessor>) it);
+				return (AuditableBeanWrapper<T>) new AuditableInterfaceBeanWrapper((Auditable<Object, ?, TemporalAccessor>) it);
 			}
 
 			AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(it.getClass());
 
 			if (metadata.isAuditable()) {
-				return new ReflectionAuditingBeanWrapper(it);
+				return new ReflectionAuditingBeanWrapper<T>(it);
 			}
 
 			return null;
@@ -80,7 +80,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 * @author Oliver Gierke
 	 */
 	@RequiredArgsConstructor
-	static class AuditableInterfaceBeanWrapper extends DateConvertingAuditableBeanWrapper {
+	static class AuditableInterfaceBeanWrapper
+			extends DateConvertingAuditableBeanWrapper<Auditable<Object, ?, TemporalAccessor>> {
 
 		private final @NonNull Auditable<Object, ?, TemporalAccessor> auditable;
 		private final Class<? extends TemporalAccessor> type;
@@ -149,6 +150,15 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 			return value;
 		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
+		 */
+		@Override
+		public Auditable<Object, ?, TemporalAccessor> getBean() {
+			return auditable;
+		}
 	}
 
 	/**
@@ -158,7 +168,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 * @author Oliver Gierke
 	 * @since 1.8
 	 */
-	abstract static class DateConvertingAuditableBeanWrapper implements AuditableBeanWrapper {
+	abstract static class DateConvertingAuditableBeanWrapper<T> implements AuditableBeanWrapper<T> {
 
 		private final ConversionService conversionService;
 
@@ -218,13 +228,13 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
-		protected <T extends TemporalAccessor> Optional<T> getAsTemporalAccessor(Optional<?> source,
-				Class<? extends T> target) {
+		protected <S extends TemporalAccessor> Optional<S> getAsTemporalAccessor(Optional<?> source,
+				Class<? extends S> target) {
 
 			return source.map(it -> {
 
 				if (target.isInstance(it)) {
-					return (T) it;
+					return (S) it;
 				}
 
 				Class<?> typeToConvertTo = Stream.of(target, Instant.class)//
@@ -233,7 +243,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 						.findFirst() //
 						.orElseThrow(() -> rejectUnsupportedType(source.map(Object.class::cast).orElseGet(() -> source)));
 
-				return (T) conversionService.convert(it, typeToConvertTo);
+				return (S) conversionService.convert(it, typeToConvertTo);
 			});
 		}
 	}
@@ -248,17 +258,17 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 *
 	 * @author Oliver Gierke
 	 */
-	static class ReflectionAuditingBeanWrapper extends DateConvertingAuditableBeanWrapper {
+	static class ReflectionAuditingBeanWrapper<T> extends DateConvertingAuditableBeanWrapper<T> {
 
 		private final AnnotationAuditingMetadata metadata;
-		private final Object target;
+		private final T target;
 
 		/**
 		 * Creates a new {@link ReflectionAuditingBeanWrapper} to set auditing data on the given target object.
 		 *
 		 * @param target must not be {@literal null}.
 		 */
-		public ReflectionAuditingBeanWrapper(Object target) {
+		public ReflectionAuditingBeanWrapper(T target) {
 
 			Assert.notNull(target, "Target object must not be null!");
 
@@ -318,13 +328,22 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return setDateField(metadata.getLastModifiedDateField(), value);
 		}
 
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
+		 */
+		@Override
+		public T getBean() {
+			return target;
+		}
+
 		/**
 		 * Sets the given field to the given value if present.
 		 *
 		 * @param field
 		 * @param value
 		 */
-		private <T> T setField(Optional<Field> field, T value) {
+		private <S> S setField(Optional<Field> field, S value) {
 
 			field.ifPresent(it -> ReflectionUtils.setField(it, target, value));
 

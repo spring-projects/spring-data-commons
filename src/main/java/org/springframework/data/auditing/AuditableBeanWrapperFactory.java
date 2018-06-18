@@ -31,5 +31,5 @@ public interface AuditableBeanWrapperFactory {
 	 * @param source must not be {@literal null}.
 	 * @return the {@link AuditableBeanWrapper} for the given source object if it's eligible for auditing.
 	 */
-	Optional<AuditableBeanWrapper> getBeanWrapperFor(Object source);
+	<T> Optional<AuditableBeanWrapper<T>> getBeanWrapperFor(T source);
 }

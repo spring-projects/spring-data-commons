@@ -124,11 +124,11 @@ public class AuditingHandler implements InitializingBean {
 	 *
 	 * @param source
 	 */
-	public void markCreated(Object source) {
+	public <T> T markCreated(T source) {
 
 		Assert.notNull(source, "Entity must not be null!");
 
-		touch(source, true);
+		return touch(source, true);
 	}
 
 	/**
@@ -136,11 +136,11 @@ public class AuditingHandler implements InitializingBean {
 	 *
 	 * @param source
 	 */
-	public void markModified(Object source) {
+	public <T> T markModified(T source) {
 
 		Assert.notNull(source, "Entity must not be null!");
 
-		touch(source, false);
+		return touch(source, false);
 	}
 
 	/**
@@ -156,9 +156,11 @@ public class AuditingHandler implements InitializingBean {
 		return factory.getBeanWrapperFor(source).isPresent();
 	}
 
-	private void touch(Object target, boolean isNew) {
+	private <T> T touch(T target, boolean isNew) {
 
-		factory.getBeanWrapperFor(target).ifPresent(it -> {
+		Optional<AuditableBeanWrapper<T>> wrapper = factory.getBeanWrapperFor(target);
+
+		return wrapper.map(it -> {
 
 			Optional<Object> auditor = touchAuditor(it, isNew);
 			Optional<TemporalAccessor> now = dateTimeForNow ? touchDate(it, isNew) : Optional.empty();
@@ -168,10 +170,12 @@ public class AuditingHandler implements InitializingBean {
 				Object defaultedNow = now.map(Object::toString).orElse("not set");
 				Object defaultedAuditor = auditor.map(Object::toString).orElse("unknown");
 
-				LOGGER.debug("Touched {} - Last modification at {} by {}",
-						new Object[] { target, defaultedNow, defaultedAuditor });
+				LOGGER.debug("Touched {} - Last modification at {} by {}", target, defaultedNow, defaultedAuditor);
 			}
-		});
+
+			return it.getBean();
+
+		}).orElse(target);
 	}
 
 	/**
@@ -180,7 +184,7 @@ public class AuditingHandler implements InitializingBean {
 	 * @param auditable
 	 * @return
 	 */
-	private Optional<Object> touchAuditor(AuditableBeanWrapper wrapper, boolean isNew) {
+	private Optional<Object> touchAuditor(AuditableBeanWrapper<?> wrapper, boolean isNew) {
 
 		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null!");
 
@@ -196,7 +200,6 @@ public class AuditingHandler implements InitializingBean {
 
 			return auditor;
 		});
-
 	}
 
 	/**
@@ -205,7 +208,7 @@ public class AuditingHandler implements InitializingBean {
 	 * @param wrapper
 	 * @return
 	 */
-	private Optional<TemporalAccessor> touchDate(AuditableBeanWrapper wrapper, boolean isNew) {
+	private Optional<TemporalAccessor> touchDate(AuditableBeanWrapper<?> wrapper, boolean isNew) {
 
 		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null!");
 

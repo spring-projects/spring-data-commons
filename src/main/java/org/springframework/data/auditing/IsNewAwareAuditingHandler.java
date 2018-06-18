@@ -67,23 +67,19 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 * Marks the given object created or modified based on {@link PersistentEntity#isNew(Object)}. Will route the calls to
 	 * {@link #markCreated(Optional)} and {@link #markModified(Optional)} accordingly.
 	 *
-	 * @param object
+	 * @param object must not be {@literal null}.
 	 */
-	public void markAudited(Object object) {
+	public Object markAudited(Object object) {
 
 		Assert.notNull(object, "Source object must not be null!");
 
 		if (!isAuditable(object)) {
-			return;
+			return object;
 		}
 
 		PersistentEntity<?, ? extends PersistentProperty<?>> entity = entities
 				.getRequiredPersistentEntity(object.getClass());
 
-		if (entity.isNew(object)) {
-			markCreated(object);
-		} else {
-			markModified(object);
-		}
+		return entity.isNew(object) ? markCreated(object) : markModified(object);
 	}
 }
