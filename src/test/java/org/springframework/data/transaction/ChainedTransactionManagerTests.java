@@ -27,6 +27,10 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronization;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Integration tests for {@link ChainedTransactionManager}.
@@ -134,20 +138,30 @@ public class ChainedTransactionManagerTests {
 
 	static class TestSynchronizationManager implements SynchronizationManager {
 
-		private boolean synchronizationActive;
+	    private List<TransactionSynchronization> synchronizations;
 
 		public void initSynchronization() {
-			synchronizationActive = true;
+		    synchronizations = new ArrayList<>();
 		}
 
 		public boolean isSynchronizationActive() {
-			return synchronizationActive;
+			return synchronizations != null;
 		}
 
 		public void clearSynchronization() {
-			synchronizationActive = false;
+		    synchronizations.clear();
+            synchronizations = null;
 		}
-	}
+
+		public List<TransactionSynchronization> getSynchronizations () {
+			return new ArrayList<>(synchronizations);
+		}
+
+        @Override
+        public void registerSynchronization (TransactionSynchronization synchronization) {
+            synchronizations.add(synchronization);
+        }
+    }
 
 	static class TestPlatformTransactionManager implements org.springframework.transaction.PlatformTransactionManager {
 

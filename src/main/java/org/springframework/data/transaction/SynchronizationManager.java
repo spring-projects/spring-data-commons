@@ -16,6 +16,10 @@
 
 package org.springframework.data.transaction;
 
+import org.springframework.transaction.support.TransactionSynchronization;
+
+import java.util.List;
+
 /**
  * Strategy interface to allow providing a dedicated synchronization mechanism.
  *
@@ -31,4 +35,8 @@ interface SynchronizationManager {
 	boolean isSynchronizationActive();
 
 	void clearSynchronization();
+
+	List<TransactionSynchronization> getSynchronizations();
+
+	void registerSynchronization (TransactionSynchronization synchronization);
 }

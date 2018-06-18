@@ -33,6 +33,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.UnexpectedRollbackException;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 /**
@@ -142,7 +144,22 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 		Exception commitException = null;
 		PlatformTransactionManager commitExceptionTransactionManager = null;
 
+        List<TransactionSynchronization> synchronizations = new ArrayList<TransactionSynchronization>();
+        if (multiTransactionStatus.isNewSynchonization()) {
+            synchronizations = synchronizationManager.getSynchronizations();
+            synchronizationManager.clearSynchronization();
+            synchronizationManager.initSynchronization();
+        }
+
+        int i = 1;
 		for (PlatformTransactionManager transactionManager : reverse(transactionManagers)) {
+
+            if (multiTransactionStatus.isNewSynchonization() && i == transactionManagers.size()) {
+                for (TransactionSynchronization synchronization : synchronizations) {
+                    synchronizationManager.registerSynchronization(synchronization);
+                }
+            }
+            i++;
 
 			if (commit) {
 
@@ -189,7 +206,22 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 
 		MultiTransactionStatus multiTransactionStatus = (MultiTransactionStatus) status;
 
+        List<TransactionSynchronization> synchronizations = new ArrayList<TransactionSynchronization>();
+        if (multiTransactionStatus.isNewSynchonization()) {
+            synchronizations = synchronizationManager.getSynchronizations();
+            synchronizationManager.clearSynchronization();
+            synchronizationManager.initSynchronization();
+        }
+
+		int i = 1;
 		for (PlatformTransactionManager transactionManager : reverse(transactionManagers)) {
+            if (multiTransactionStatus.isNewSynchonization() && i == transactionManagers.size()) {
+                for (TransactionSynchronization synchronization : synchronizations) {
+                    synchronizationManager.registerSynchronization(synchronization);
+                }
+            }
+            i++;
+
 			try {
 				multiTransactionStatus.rollback(transactionManager);
 			} catch (Exception ex) {

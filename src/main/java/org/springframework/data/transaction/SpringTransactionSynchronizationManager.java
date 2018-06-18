@@ -15,7 +15,10 @@
  */
 package org.springframework.data.transaction;
 
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.util.List;
 
 /**
  * {@link SynchronizationManager} delegating calls to Spring's {@link TransactionSynchronizationManager}.
@@ -50,5 +53,15 @@ enum SpringTransactionSynchronizationManager implements SynchronizationManager {
 	 */
 	public void clearSynchronization() {
 		TransactionSynchronizationManager.clear();
+	}
+
+	@Override
+	public List<TransactionSynchronization> getSynchronizations () {
+		return TransactionSynchronizationManager.getSynchronizations();
+	}
+
+	@Override
+	public void registerSynchronization (TransactionSynchronization synchronization) {
+		TransactionSynchronizationManager.registerSynchronization(synchronization);
 	}
 }
