@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
  * @see PersistentEntity#getPropertyAccessor(Object)
  * @see ConvertingPropertyAccessor
  */
-public interface PersistentPropertyAccessor {
+public interface PersistentPropertyAccessor<T> {
 
 	/**
 	 * Sets the given {@link PersistentProperty} to the given value. Will do type conversion if a
@@ -71,7 +71,7 @@ public interface PersistentPropertyAccessor {
 					getBean().getClass().getName()));
 		}
 
-		PersistentPropertyAccessor accessor = parent == getBean() //
+		PersistentPropertyAccessor<?> accessor = parent == getBean() //
 				? this //
 				: leafProperty.getOwner().getPropertyAccessor(parent);
 
@@ -126,7 +126,7 @@ public interface PersistentPropertyAccessor {
 			}
 
 			PersistentEntity<?, ? extends PersistentProperty<?>> entity = property.getOwner();
-			PersistentPropertyAccessor accessor = entity.getPropertyAccessor(current);
+			PersistentPropertyAccessor<Object> accessor = entity.getPropertyAccessor(current);
 
 			current = accessor.getProperty(property);
 		}
@@ -140,5 +140,5 @@ public interface PersistentPropertyAccessor {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	Object getBean();
+	T getBean();
 }

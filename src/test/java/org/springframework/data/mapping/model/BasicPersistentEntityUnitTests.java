@@ -193,7 +193,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		Entity value = new Entity();
-		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
+		PersistentPropertyAccessor<Entity> accessor = entity.getPropertyAccessor(value);
 
 		assertThat(accessor).isInstanceOf(BeanWrapper.class);
 		assertThat(accessor.getBean()).isEqualTo(value);

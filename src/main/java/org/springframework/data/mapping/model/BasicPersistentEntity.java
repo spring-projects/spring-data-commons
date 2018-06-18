@@ -461,7 +461,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * @see org.springframework.data.mapping.PersistentEntity#getPropertyAccessor(java.lang.Object)
 	 */
 	@Override
-	public PersistentPropertyAccessor getPropertyAccessor(Object bean) {
+	public <B> PersistentPropertyAccessor<B> getPropertyAccessor(B bean) {
 
 		verifyBeanType(bean);
 

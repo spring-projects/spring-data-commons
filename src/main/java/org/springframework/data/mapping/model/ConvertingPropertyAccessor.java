@@ -30,9 +30,9 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
+public class ConvertingPropertyAccessor<T> implements PersistentPropertyAccessor<T> {
 
-	private final PersistentPropertyAccessor accessor;
+	private final PersistentPropertyAccessor<T> accessor;
 	private final ConversionService conversionService;
 
 	/**
@@ -42,7 +42,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @param accessor must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
 	 */
-	public ConvertingPropertyAccessor(PersistentPropertyAccessor accessor, ConversionService conversionService) {
+	public ConvertingPropertyAccessor(PersistentPropertyAccessor<T> accessor, ConversionService conversionService) {
 
 		Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
 		Assert.notNull(conversionService, "ConversionService must not be null!");
@@ -78,7 +78,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @return
 	 */
 	@Nullable
-	public <T> T getProperty(PersistentProperty<?> property, Class<T> targetType) {
+	public <S> S getProperty(PersistentProperty<?> property, Class<S> targetType) {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 		Assert.notNull(targetType, "Target type must not be null!");
@@ -91,7 +91,7 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getBean()
 	 */
 	@Override
-	public Object getBean() {
+	public T getBean() {
 		return accessor.getBean();
 	}
 
@@ -105,8 +105,8 @@ public class ConvertingPropertyAccessor implements PersistentPropertyAccessor {
 	 */
 	@Nullable
 	@SuppressWarnings("unchecked")
-	private <T> T convertIfNecessary(@Nullable Object source, Class<T> type) {
-		return (T) (source == null ? null
+	private <S> S convertIfNecessary(@Nullable Object source, Class<S> type) {
+		return (S) (source == null ? null
 				: type.isAssignableFrom(source.getClass()) ? source : conversionService.convert(source, type));
 	}
 }

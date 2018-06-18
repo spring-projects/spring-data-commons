@@ -42,11 +42,11 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
 @RunWith(Parameterized.class)
 public class PersistentPropertyAccessorTests {
 
-	private final static SampleMappingContext mappingContext = new SampleMappingContext();
+	private final static SampleMappingContext MAPPING_CONTEXT = new SampleMappingContext();
 
-	private final Function<Object, PersistentPropertyAccessor> propertyAccessorFunction;
+	private final Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction;
 
-	public PersistentPropertyAccessorTests(Function<Object, PersistentPropertyAccessor> propertyAccessor,
+	public PersistentPropertyAccessorTests(Function<Object, PersistentPropertyAccessor<?>> propertyAccessor,
 			String displayName) {
 
 		this.propertyAccessorFunction = propertyAccessor;
@@ -60,9 +60,9 @@ public class PersistentPropertyAccessorTests {
 
 		ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
 
-		Function<Object, PersistentPropertyAccessor> beanWrapper = BeanWrapper::new;
-		Function<Object, PersistentPropertyAccessor> classGenerating = it -> factory
-				.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(it.getClass()), it);
+		Function<Object, PersistentPropertyAccessor<?>> beanWrapper = BeanWrapper::new;
+		Function<Object, PersistentPropertyAccessor<?>> classGenerating = it -> factory
+				.getPropertyAccessor(MAPPING_CONTEXT.getRequiredPersistentEntity(it.getClass()), it);
 
 		parameters.add(new Object[] { beanWrapper, "BeanWrapper" });
 		parameters.add(new Object[] { classGenerating, "ClassGeneratingPropertyAccessorFactory" });
@@ -147,8 +147,7 @@ public class PersistentPropertyAccessorTests {
 	}
 
 	private static SamplePersistentProperty getProperty(Object bean, String propertyName) {
-
-		return mappingContext.getRequiredPersistentEntity(bean.getClass()).getRequiredPersistentProperty(propertyName);
+		return MAPPING_CONTEXT.getRequiredPersistentEntity(bean.getClass()).getRequiredPersistentProperty(propertyName);
 	}
 
 	@Data
