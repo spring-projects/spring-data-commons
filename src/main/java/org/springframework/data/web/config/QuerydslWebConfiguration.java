@@ -73,6 +73,6 @@ public class QuerydslWebConfiguration implements WebMvcConfigurer {
 	 */
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-		argumentResolvers.add(0, querydslPredicateArgumentResolver());
+		argumentResolvers.add(querydslPredicateArgumentResolver());
 	}
 }
