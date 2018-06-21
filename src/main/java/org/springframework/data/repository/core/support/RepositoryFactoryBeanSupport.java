@@ -66,7 +66,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private Optional<Object> customImplementation = Optional.empty();
 	private Optional<RepositoryFragments> repositoryFragments = Optional.empty();
 	private NamedQueries namedQueries;
-	private Optional<MappingContext<?, ?>> mappingContext;
+	private Optional<MappingContext<?, ?>> mappingContext = Optional.empty();
 	private ClassLoader classLoader;
 	private BeanFactory beanFactory;
 	private boolean lazyInit = false;
@@ -82,7 +82,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
-	@SuppressWarnings("null")
 	protected RepositoryFactoryBeanSupport(Class<? extends T> repositoryInterface) {
 
 		Assert.notNull(repositoryInterface, "Repository interface must not be null!");

@@ -72,6 +72,24 @@ public class RepositoryFactoryBeanSupportUnitTests {
 		assertThat(information.getQueryMethods()).isEmpty();
 	}
 
+	@Test // DATACMNS-1345
+	public void reportsMappingContextUnavailableForPersistentEntityLookup() {
+
+		RepositoryFactoryBeanSupport<SampleRepository, Object, Long> bean = new RepositoryFactoryBeanSupport<SampleRepository, Object, Long>(
+				SampleRepository.class) {
+
+			@Override
+			protected RepositoryFactorySupport createRepositoryFactory() {
+				return new DummyRepositoryFactory(mock(SampleRepository.class));
+			}
+		};
+
+		bean.afterPropertiesSet();
+
+		assertThatExceptionOfType(IllegalStateException.class) //
+				.isThrownBy(() -> bean.getPersistentEntity());
+	}
+
 	interface SampleRepository extends Repository<Object, Long> {}
 
 	interface SampleWithQuerydslRepository extends Repository<Object, Long>, QuerydslPredicateExecutor<Object> {}
