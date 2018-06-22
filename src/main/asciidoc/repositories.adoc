@@ -465,7 +465,7 @@ The query builder mechanism built into Spring Data repository infrastructure is 
 ====
 [source, java]
 ----
-interface PersonRepository extends Repository<User, Long> {
+interface PersonRepository extends Repository<Person, Long> {
 
   List<Person> findByEmailAddressAndLastname(EmailAddress emailAddress, String lastname);
 
