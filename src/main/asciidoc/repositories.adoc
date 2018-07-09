@@ -507,7 +507,7 @@ Assume a `Person` has an `Address` with a `ZipCode`. In that case, the method cr
 
 Although this should work for most cases, it is possible for the algorithm to select the wrong property. Suppose the `Person` class has an `addressZip` property as well. The algorithm would match in the first split round already, choose the wrong property, and fail (as the type of `addressZip` probably has no `code` property).
 
-To resolve this ambiguity you can use `\_` inside your method name to manually define traversal points. So our method name would be as follows:
+To resolve this ambiguity you can use `_` inside your method name to manually define traversal points. So our method name would be as follows:
 
 [source, java]
 ----
@@ -1392,7 +1392,7 @@ You can populate your repositories by using the populator elements of the reposi
 The preceding declaration causes the `data.json` file to
 be read and deserialized by a Jackson `ObjectMapper`.
 
-The type to which the JSON object is unmarshalled is determined by inspecting the `\_class` attribute of the JSON document. The infrastructure eventually selects the appropriate repository to handle the object that was deserialized.
+The type to which the JSON object is unmarshalled is determined by inspecting the `_class` attribute of the JSON document. The infrastructure eventually selects the appropriate repository to handle the object that was deserialized.
 
 To instead use XML to define the data the repositories should be populated with, you can use the `unmarshaller-populator` element. You configure it to use one of the XML marshaller options available in Spring OXM. See the link:{spring-framework-docs}/data-access.html#oxm[Spring reference documentation] for details. The following example shows how to unmarshal a repository populator with JAXB:
 
