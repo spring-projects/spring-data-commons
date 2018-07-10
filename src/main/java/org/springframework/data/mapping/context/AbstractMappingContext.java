@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 by the original author(s).
+ * Copyright 2011-2018 by the original author(s).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -269,7 +269,20 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			path = path.append(persistentProperty);
 
 			if (iterator.hasNext()) {
-				current = getPersistentEntity(persistentProperty.getTypeInformation().getActualType());
+
+				TypeInformation<?> actualType = persistentProperty.getTypeInformation().getActualType();
+				current = getPersistentEntity(actualType);
+
+				if (current == null) {
+
+					String source = StringUtils.collectionToDelimitedString(parts, ".");
+					String resolvedPath = path.toDotPath();
+					String unresolved = iterator.next();
+
+					throw new InvalidPersistentPropertyPath(source, persistentProperty.getTypeInformation(), unresolved,
+							resolvedPath, String.format("No entity %s found for property %s on %s !", actualType.getType().getName(),
+									segment, persistentProperty.getOwner().getName()));
+				}
 			}
 		}
 
