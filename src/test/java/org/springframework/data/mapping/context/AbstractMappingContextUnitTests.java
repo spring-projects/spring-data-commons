@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 the original author or authors.
+ * Copyright 2011-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.hamcrest.Matchers;
@@ -44,7 +45,7 @@ import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit test for {@link AbstractMappingContext}.
- * 
+ *
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
@@ -232,6 +233,22 @@ public class AbstractMappingContextUnitTests {
 		}
 	}
 
+	@Test // DATACMNS-1352
+	public void reportsUnresolvablePropertyPathForNonEntities() {
+
+		try {
+
+			context.getPersistentPropertyPath("stringObjectMap.firstname", Sample.class);
+			fail("Expected InvalidPersistentPropertyPath!");
+
+		} catch (InvalidPersistentPropertyPath o_O) {
+
+			assertThat(o_O.getMessage(), not(isEmptyOrNullString()));
+			assertThat(o_O.getResolvedPath(), is("stringObjectMap"));
+			assertThat(o_O.getUnresolvableSegment(), is("firstname"));
+		}
+	}
+
 	@Test // DATACMNS-1214
 	public void doesNotReturnPersistentEntityForCustomSimpleTypeProperty() {
 
@@ -271,6 +288,7 @@ public class AbstractMappingContextUnitTests {
 		MetaClass metaClass;
 		List<Person> persons;
 		TreeMap<String, Person> personMap;
+		Map<String, Object> stringObjectMap;
 	}
 
 	static class Base {
