@@ -41,6 +41,7 @@ import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Immutable;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
@@ -347,6 +348,13 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getIdentifierAccessor(new PersistableEntity()).getRequiredIdentifier()).isEqualTo(4711L);
 	}
 
+	@Test // DATACMNS-1322
+	public void detectsImmutableEntity() {
+
+		assertThat(createEntity(SomeValue.class).isImmutable()).isTrue();
+		assertThat(createEntity(Entity.class).isImmutable()).isFalse();
+	}
+
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
 		return createEntity(type, null);
 	}
@@ -416,4 +424,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 			return false;
 		}
 	}
+
+	@Immutable
+	static class SomeValue {}
 }

@@ -18,6 +18,7 @@ package org.springframework.data.mapping;
 import java.lang.annotation.Annotation;
 import java.util.Iterator;
 
+import org.springframework.data.annotation.Immutable;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -305,4 +306,14 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @return whether the given bean is considered a new instance.
 	 */
 	boolean isNew(Object bean);
+
+	/**
+	 * Returns whether the entity is considered immutable, i.e. clients shouldn't attempt to change instances via the
+	 * {@link PersistentPropertyAccessor} obtained via {@link #getPropertyAccessor(Object)}.
+	 * 
+	 * @return
+	 * @see Immutable
+	 * @since 2.1
+	 */
+	boolean isImmutable();
 }

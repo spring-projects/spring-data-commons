@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.data.annotation.Immutable;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.mapping.Alias;
@@ -93,6 +94,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private final Lazy<Alias> typeAlias;
 	private final Lazy<IsNewStrategy> isNewStrategy;
+	private final Lazy<Boolean> isImmutable;
 
 	/**
 	 * Creates a new {@link BasicPersistentEntity} from the given {@link TypeInformation}.
@@ -130,7 +132,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.isNewStrategy = Lazy.of(() -> Persistable.class.isAssignableFrom(information.getType()) //
 				? PersistableIsNewStrategy.INSTANCE
 				: PersistentEntityIsNewStrategy.of(this));
-
+		this.isImmutable = Lazy.of(() -> isAnnotationPresent(Immutable.class));
 	}
 
 	/*
@@ -494,6 +496,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		verifyBeanType(bean);
 
 		return isNewStrategy.get().isNew(bean);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#isImmutable()
+	 */
+	@Override
+	public boolean isImmutable() {
+		return isImmutable.get();
 	}
 
 	/*
