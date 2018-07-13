@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.lang.Nullable;
@@ -42,6 +43,7 @@ import org.springframework.util.ReflectionUtils;
  */
 class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
+	private final PersistentEntity<T, ?> entity;
 	private T bean;
 
 	/**
@@ -49,10 +51,12 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 	 *
 	 * @param bean must not be {@literal null}.
 	 */
-	protected BeanWrapper(T bean) {
+	protected BeanWrapper(T bean, PersistentEntity<T, ?> entity) {
 
 		Assert.notNull(bean, "Bean must not be null!");
+
 		this.bean = bean;
+		this.entity = entity;
 	}
 
 	/*
@@ -156,6 +160,15 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 	 */
 	public T getBean() {
 		return bean;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getPersistentEntity()
+	 */
+	@Override
+	public PersistentEntity<T, ?> getPersistentEntity() {
+		return entity;
 	}
 
 	/**

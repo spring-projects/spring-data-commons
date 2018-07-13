@@ -141,4 +141,6 @@ public interface PersistentPropertyAccessor<T> {
 	 * @return will never be {@literal null}.
 	 */
 	T getBean();
+
+	PersistentEntity<T, ?> getPersistentEntity();
 }

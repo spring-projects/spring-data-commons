@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
@@ -59,10 +60,15 @@ public class PersistentPropertyAccessorTests {
 		List<Object[]> parameters = new ArrayList<>();
 
 		ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
+		BeanWrapperPropertyAccessorFactory beanWrapperFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 
-		Function<Object, PersistentPropertyAccessor<?>> beanWrapper = BeanWrapper::new;
+		Function<Class<?>, PersistentEntity<Object, SamplePersistentProperty>> entity = it -> MAPPING_CONTEXT
+				.getRequiredPersistentEntity(it);
+
+		Function<Object, PersistentPropertyAccessor<?>> beanWrapper = it -> beanWrapperFactory
+				.getPropertyAccessor(entity.apply(it.getClass()), it);
 		Function<Object, PersistentPropertyAccessor<?>> classGenerating = it -> factory
-				.getPropertyAccessor(MAPPING_CONTEXT.getRequiredPersistentEntity(it.getClass()), it);
+				.getPropertyAccessor(entity.apply(it.getClass()), it);
 
 		parameters.add(new Object[] { beanWrapper, "BeanWrapper" });
 		parameters.add(new Object[] { classGenerating, "ClassGeneratingPropertyAccessorFactory" });

@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.model;
 
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.lang.Nullable;
@@ -93,6 +94,15 @@ public class ConvertingPropertyAccessor<T> implements PersistentPropertyAccessor
 	@Override
 	public T getBean() {
 		return accessor.getBean();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getPersistentEntity()
+	 */
+	@Override
+	public PersistentEntity<T, ?> getPersistentEntity() {
+		return accessor.getPersistentEntity();
 	}
 
 	/**

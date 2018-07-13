@@ -91,14 +91,14 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * @see org.springframework.data.mapping.model.PersistentPropertyAccessorFactory#getPropertyAccessor(org.springframework.data.mapping.PersistentEntity, java.lang.Object)
 	 */
 	@Override
-	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {
+	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<T, ?> entity, T bean) {
 
 		Constructor<?> constructor = constructorMap.get(entity);
 
 		if (constructor == null) {
 
-			Class<PersistentPropertyAccessor<?>> accessorClass = potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
-					entity);
+			Class<PersistentPropertyAccessor<?>> accessorClass = //
+					potentiallyCreateAndRegisterPersistentPropertyAccessorClass(entity);
 			constructor = accessorClass.getConstructors()[0];
 
 			Map<PersistentEntity<?, ?>, Constructor<?>> constructorMap = new HashMap<>(this.constructorMap);

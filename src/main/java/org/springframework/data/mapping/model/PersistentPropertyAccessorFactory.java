@@ -34,7 +34,7 @@ public interface PersistentPropertyAccessorFactory {
 	 * @param bean must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	<T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean);
+	<T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<T, ?> entity, T bean);
 
 	/**
 	 * Returns whether given {@link PersistentEntity} is supported by this {@link PersistentPropertyAccessorFactory}.
