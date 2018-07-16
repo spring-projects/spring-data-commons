@@ -80,7 +80,7 @@ import org.springframework.util.ReflectionUtils;
 public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
 	// Pooling of parameter arrays to prevent excessive object allocation.
-	private final ThreadLocal<Object[]> argumentCache = ThreadLocal.withInitial(() -> new Object[1]);
+	private final ThreadLocal<Object[]> argumentCache = ThreadLocal.withInitial(() -> new Object[2]);
 
 	private volatile Map<PersistentEntity<?, ?>, Constructor<?>> constructorMap = new HashMap<>(32);
 	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor<?>>> propertyAccessorClasses = new HashMap<>(
@@ -107,7 +107,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		}
 
 		Object[] args = argumentCache.get();
-		args[0] = bean;
+		args[0] = entity;
+		args[1] = bean;
 
 		try {
 			return (PersistentPropertyAccessor<T>) constructor.newInstance(args);
@@ -228,12 +229,14 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 *
 	 * <pre class="code">
 	 * public class PersonWithId_Accessor_zd4wnl implements PersistentPropertyAccessor {
-	 * 	private final Object bean;
+	 * 	private final PersistentEntity<PersonWithId, ?> entity;
+	 * 	private Object bean;
 	 * 	private static final MethodHandle $id_fieldGetter;
 	 * 	private static final MethodHandle $id_fieldSetter;
 	 *
 	 * 	// ...
-	 * 	public PersonWithId_Accessor_zd4wnl(Object bean) {
+	 * 	public PersonWithId_Accessor_zd4wnl(PersistentEntity<PersonWithId, ?> entity, Object bean) {
+	 * 		this.entity = entity;
 	 * 		this.bean = bean;
 	 * 	}
 	 *
@@ -250,7 +253,11 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * 		// ...
 	 * 	}
 	 *
-	 * 	public Object getBean() {
+	 * 	public <PersonWithId, ?> getPersistentEntity() {
+	 * 		return this.entity;
+	 * 	}
+	 *
+	 *  public Object getBean() {
 	 * 		return this.bean;
 	 * 	}
 	 *
@@ -305,8 +312,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static final String JAVA_LANG_REFLECT_METHOD = "java/lang/reflect/Method";
 		private static final String JAVA_LANG_INVOKE_METHOD_HANDLE = "java/lang/invoke/MethodHandle";
 		private static final String JAVA_LANG_CLASS = "java/lang/Class";
+		private static final String ENTITY_FIELD = "entity";
 		private static final String BEAN_FIELD = "bean";
 		private static final String THIS_REF = "this";
+		private static final String PERSISTENT_ENTITY = "org/springframework/data/mapping/PersistentEntity";
 		private static final String PERSISTENT_PROPERTY = "org/springframework/data/mapping/PersistentProperty";
 		private static final String SET_ACCESSIBLE = "setAccessible";
 		private static final String JAVA_LANG_REFLECT_FIELD = "java/lang/reflect/Field";
@@ -346,6 +355,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			visitFields(entity, persistentProperties, cw);
 			visitDefaultConstructor(entity, internalClassName, cw);
 			visitStaticInitializer(entity, persistentProperties, internalClassName, cw);
+			visitEntityGetter(entity, internalClassName, cw);
 			visitBeanGetter(entity, internalClassName, cw);
 			visitSetProperty(entity, persistentProperties, internalClassName, cw);
 			visitGetProperty(entity, persistentProperties, internalClassName, cw);
@@ -374,7 +384,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * Generates field declarations for private-visibility properties.
 		 *
 		 * <pre class="code">
-		 * private final Object bean;
+		 * private final PersistentEntity<PersonWithId, ?> bean;
+		 * private Object bean;
 		 * private static final MethodHandle $id_fieldGetter;
 		 * private static final MethodHandle $id_fieldSetter;
 		 * // …
@@ -386,6 +397,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			cw.visitInnerClass(JAVA_LANG_INVOKE_METHOD_HANDLES_LOOKUP, JAVA_LANG_INVOKE_METHOD_HANDLES, "Lookup",
 					ACC_PRIVATE + ACC_FINAL + ACC_STATIC);
 
+			String genericSignature = getPersistentEntitySignature(entity);
+			cw.visitField(ACC_PRIVATE + ACC_FINAL, ENTITY_FIELD, referenceName(PERSISTENT_ENTITY), genericSignature, null)
+					.visitEnd();
 			cw.visitField(ACC_PRIVATE, BEAN_FIELD, getAccessibleTypeReferenceName(entity), null, null).visitEnd();
 
 			for (PersistentProperty<?> property : persistentProperties) {
@@ -424,7 +438,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * Generates the default constructor.
 		 *
 		 * <pre class="code">
-		 * public PersonWithId_Accessor_zd4wnl(PersonWithId bean) {
+		 * public PersonWithId_Accessor_zd4wnl(PersistentEntity<PersonWithId, ?> entity, PersonWithId bean) {
+		 * 	this.entity = entity;
 		 * 	this.bean = bean;
 		 * }
 		 * </pre>
@@ -434,8 +449,11 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			// public EntityAccessor(Entity bean) or EntityAccessor(Object bean)
 			MethodVisitor mv;
+			String persistentEntitySignature = getPersistentEntitySignature(entity);
 
-			mv = cw.visitMethod(ACC_PUBLIC, INIT, String.format("(%s)V", getAccessibleTypeReferenceName(entity)), null, null);
+			mv = cw.visitMethod(ACC_PUBLIC, INIT,
+					String.format("(%s%s)V", referenceName(PERSISTENT_ENTITY), getAccessibleTypeReferenceName(entity)),
+					String.format("(%s%s)V", referenceName(PERSISTENT_ENTITY), persistentEntitySignature), null);
 
 			mv.visitCode();
 			Label l0 = new Label();
@@ -445,13 +463,25 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			// Assert.notNull(bean)
 			mv.visitVarInsn(ALOAD, 1);
+			mv.visitLdcInsn("PersistentEntity must not be null!");
+			mv.visitMethodInsn(INVOKESTATIC, "org/springframework/util/Assert", "notNull",
+					String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_STRING)), false);
+
+			// Assert.notNull(bean)
+			mv.visitVarInsn(ALOAD, 2);
 			mv.visitLdcInsn("Bean must not be null!");
 			mv.visitMethodInsn(INVOKESTATIC, "org/springframework/util/Assert", "notNull",
 					String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_STRING)), false);
 
-			// this.bean = bean
+			// this.entity = entity
 			mv.visitVarInsn(ALOAD, 0);
 			mv.visitVarInsn(ALOAD, 1);
+
+			mv.visitFieldInsn(PUTFIELD, internalClassName, ENTITY_FIELD, referenceName(PERSISTENT_ENTITY));
+
+			// this.bean = bean
+			mv.visitVarInsn(ALOAD, 0);
+			mv.visitVarInsn(ALOAD, 2);
 
 			mv.visitFieldInsn(PUTFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 
@@ -459,9 +489,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			Label l3 = new Label();
 			mv.visitLabel(l3);
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l3, 0);
-			mv.visitLocalVariable(BEAN_FIELD, getAccessibleTypeReferenceName(entity), null, l0, l3, 1);
+			mv.visitLocalVariable(ENTITY_FIELD, referenceName(PERSISTENT_ENTITY), null, l0, l3, 1);
+			mv.visitLocalVariable(BEAN_FIELD, getAccessibleTypeReferenceName(entity), null, l0, l3, 2);
 
-			mv.visitMaxs(2, 2);
+			mv.visitMaxs(2, 3);
 		}
 
 		/**
@@ -707,11 +738,35 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			}
 		}
 
+		private static void visitEntityGetter(PersistentEntity<?, ?> entity, String internalClassName, ClassWriter cw) {
+
+			// public PersistentEntity<T, ?> getPersistentEntity()
+			String genericSignature = getPersistentEntitySignature(entity);
+
+			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getPersistentEntity",
+					String.format("()%s", referenceName(PERSISTENT_ENTITY)), genericSignature, null);
+
+			visitFieldGetter(ENTITY_FIELD, referenceName(PERSISTENT_ENTITY), internalClassName, mv);
+		}
+
 		private static void visitBeanGetter(PersistentEntity<?, ?> entity, String internalClassName, ClassWriter cw) {
 
 			// public Object getBean()
 			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getBean", String.format("()%s", referenceName(JAVA_LANG_OBJECT)),
 					null, null);
+
+			visitFieldGetter(BEAN_FIELD, getAccessibleTypeReferenceName(entity), internalClassName, mv);
+		}
+
+		/**
+		 * Generate method body for a field-getter.
+		 */
+		private static void visitFieldGetter(String fieldName, String refFieldType, String internalClassName,
+				MethodVisitor mv) {
+
+			// {
+			// return this.fieldName;
+			// }
 			mv.visitCode();
 			Label l0 = new Label();
 
@@ -719,7 +774,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitLabel(l0);
 			mv.visitVarInsn(ALOAD, 0);
 
-			mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
+			mv.visitFieldInsn(GETFIELD, internalClassName, fieldName, refFieldType);
 
 			mv.visitInsn(ARETURN);
 
@@ -1255,7 +1310,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitInsn(AASTORE);
 			mv.visitMethodInsn(INVOKESTATIC, JAVA_LANG_STRING, "format",
 					"(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;", false);
-			mv.visitMethodInsn(INVOKESPECIAL, JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION, "<init>", "(Ljava/lang/String;)V",
+			mv.visitMethodInsn(INVOKESPECIAL, JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION, INIT, "(Ljava/lang/String;)V",
 					false);
 			mv.visitInsn(ATHROW);
 		}
@@ -1291,6 +1346,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			}
 
 			return referenceName(JAVA_LANG_OBJECT);
+		}
+
+		private static String getPersistentEntitySignature(PersistentEntity<?, ?> entity) {
+			return String.format("L%s<%s*>;", PERSISTENT_ENTITY, getAccessibleTypeReferenceName(entity));
 		}
 
 		private static boolean generateSetterMethodHandle(PersistentEntity<?, ?> entity, @Nullable Field field) {
@@ -1379,6 +1438,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			stackmap.put(property.getName(), new PropertyStackAddress(new Label(), property.getName().hashCode()));
 		}
 		return stackmap;
+	}
+
+	private static String genericSignature(String baseType, String... args) {
+		return String.format("%s<%s>", baseType, String.join("", args));
 	}
 
 	/**

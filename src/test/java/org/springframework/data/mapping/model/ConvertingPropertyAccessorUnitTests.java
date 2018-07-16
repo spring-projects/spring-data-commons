@@ -42,7 +42,7 @@ public class ConvertingPropertyAccessorUnitTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
 	public void rejectsNullConversionService() {
-		new ConvertingPropertyAccessor(new BeanWrapper<>(new Object()), null);
+		new ConvertingPropertyAccessor(new BeanWrapper<>(new Object(), null), null);
 	}
 
 	@Test // DATACMNS-596
@@ -109,7 +109,7 @@ public class ConvertingPropertyAccessorUnitTests {
 
 	private static ConvertingPropertyAccessor getAccessor(Object entity, ConversionService conversionService) {
 
-		PersistentPropertyAccessor wrapper = new BeanWrapper<>(entity);
+		PersistentPropertyAccessor wrapper = new BeanWrapper<>(entity, null);
 		return new ConvertingPropertyAccessor(wrapper, conversionService);
 	}
 

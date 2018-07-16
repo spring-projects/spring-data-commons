@@ -200,7 +200,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(accessor.getBean()).isEqualTo(value);
 	}
 
-	@Test // DATACMNS-809
+	@Test // DATACMNS-809, DATACMNS-1355
 	public void returnsGeneratedPropertyAccessorForPropertyAccessor() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -212,6 +212,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(accessor).isNotInstanceOf(BeanWrapper.class);
 		assertThat(accessor.getClass().getName()).contains("_Accessor_");
 		assertThat(accessor.getBean()).isEqualTo(value);
+		assertThat(accessor.getPersistentEntity()).isEqualTo(entity);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
@@ -406,7 +407,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 		private final Long id = 42L;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.domain.Persistable#getId()
 		 */
@@ -415,7 +416,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 			return 4711L;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.domain.Persistable#isNew()
 		 */

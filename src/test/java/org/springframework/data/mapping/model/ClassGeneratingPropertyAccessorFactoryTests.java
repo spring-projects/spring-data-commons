@@ -30,6 +30,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -127,7 +128,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		});
 	}
 
-	@Test // DATACMNS-809
+	@Test // DATACMNS-809, DATACMNS-1355
 	@SuppressWarnings("rawtypes")
 	public void accessorShouldDeclareConstructor() throws Exception {
 
@@ -135,8 +136,11 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		Constructor<?>[] declaredConstructors = persistentPropertyAccessor.getClass().getDeclaredConstructors();
 		assertThat(declaredConstructors.length).isEqualTo(1);
-		assertThat(declaredConstructors[0].getParameterCount()).isEqualTo(1);
-		assertThat(declaredConstructors[0].getParameterTypes()[0]).isEqualTo(expectedConstructorType);
+		assertThat(declaredConstructors[0].getParameterCount()).isEqualTo(2);
+
+		Class<?>[] parameterTypes = declaredConstructors[0].getParameterTypes();
+		assertThat(parameterTypes[0]).isAssignableFrom(PersistentEntity.class);
+		assertThat(parameterTypes[1]).isEqualTo(expectedConstructorType);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-809
