@@ -23,6 +23,8 @@ import java.util.function.LongSupplier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.Assert;
 
 /**
@@ -32,6 +34,7 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jack Moore
  * @since 1.13
  */
 @UtilityClass
@@ -67,5 +70,28 @@ public class PageableExecutionUtils {
 		}
 
 		return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
+	}
+
+	/**
+	 * Constructs a {@link Slice} based on the given {@code content} and {@link Pageable}. The construction of the
+	 * {@link Slice} asserts a next page if the result size is greater than the page size.
+	 *
+	 * @param content must not be {@literal null}.
+	 * @param pageable must not be {@literal null}.
+	 * @return the {@link Slice}
+	 */
+	public static <T> Slice<T> getSlice(List<T> content, Pageable pageable) {
+
+		Assert.notNull(content, "Content must not be null!");
+		Assert.notNull(pageable, "Pageable must not be null!");
+
+		if (pageable.isUnpaged()) {
+			return new SliceImpl<>(content, pageable, false);
+		}
+
+		int pageSize = pageable.getPageSize();
+		boolean hasNext = content.size() > pageSize;
+
+		return new SliceImpl<>(hasNext ? content.subList(0, pageSize) : content, pageable, hasNext);
 	}
 }

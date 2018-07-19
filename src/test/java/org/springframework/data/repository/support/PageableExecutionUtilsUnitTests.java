@@ -29,6 +29,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
 /**
  * Unit tests for {@link PageableExecutionUtils}.
@@ -113,5 +114,49 @@ public class PageableExecutionUtilsUnitTests {
 		assertThat(page.getTotalElements()).isEqualTo(7L);
 
 		verify(totalSupplierMock).getAsLong();
+	}
+
+	@Test // DATAMCNS-1356
+	public void sliceRequestIsLessThanOneFullPageDoesNotHaveNext() {
+
+		Slice<Integer> slice = PageableExecutionUtils.getSlice(Arrays.asList(1, 2, 3), PageRequest.of(0, 10));
+
+		assertThat(slice).contains(1, 2, 3);
+		assertThat(slice.hasNext()).isFalse();
+	}
+
+	@Test // DATAMCNS-1356
+	public void noPageableRequestDoesNotHaveNext() {
+
+		Slice<Integer> slice = PageableExecutionUtils.getSlice(Arrays.asList(1, 2, 3), Pageable.unpaged());
+
+		assertThat(slice).contains(1, 2, 3);
+		assertThat(slice.hasNext()).isFalse();
+	}
+
+	@Test // DATAMCNS-1356
+	public void pageRequestHitsUpperBoundDoesNotHaveNext() {
+
+		Slice<Integer> slice = PageableExecutionUtils.getSlice(Arrays.asList(1, 2, 3), PageRequest.of(0, 3));
+
+		assertThat(slice).contains(1, 2, 3);
+		assertThat(slice.hasNext()).isFalse();
+	}
+
+	@Test // DATAMCNS-1356
+	public void pageRequestHitsGreaterThanUpperBoundHasNext() {
+
+		Slice<Integer> slice = PageableExecutionUtils.getSlice(Arrays.asList(1, 2, 3, 4), PageRequest.of(0, 3));
+
+		assertThat(slice).contains(1, 2, 3);
+		assertThat(slice.hasNext()).isTrue();
+	}
+
+	@Test // DATAMCNS-1356
+	public void pageRequestWithoutResultDoesNotHaveNext() {
+
+		Slice<Integer> slice = PageableExecutionUtils.getSlice(Collections.<Integer>emptyList(), PageRequest.of(0, 10));
+
+		assertThat(slice.hasNext()).isFalse();
 	}
 }
