@@ -260,7 +260,7 @@ public class ResultProcessor {
 		 * @param factory must not be {@literal null}.
 		 */
 		ProjectingConverter(ReturnedType type, ProjectionFactory factory) {
-			this(type, factory, new DefaultConversionService());
+			this(type, factory, DefaultConversionService.getSharedInstance());
 		}
 
 		/**
