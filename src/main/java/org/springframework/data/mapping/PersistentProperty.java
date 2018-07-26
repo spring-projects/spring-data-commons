@@ -87,7 +87,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		Method getter = getGetter();
 
 		if (getter == null) {
-			throw new IllegalArgumentException("No getter available for this persistent property!");
+			throw new IllegalArgumentException(String.format("No getter available for persistent property %s!", this));
 		}
 
 		return getter;
@@ -107,7 +107,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		Method setter = getSetter();
 
 		if (setter == null) {
-			throw new IllegalArgumentException("No setter available for this persistent property!");
+			throw new IllegalArgumentException(String.format("No setter available for persistent property %s!", this));
 		}
 
 		return setter;
@@ -145,7 +145,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		Method wither = getWither();
 
 		if (wither == null) {
-			throw new IllegalArgumentException("No wither available for this persistent property!");
+			throw new IllegalArgumentException(String.format("No wither available for persistent property %s!", this));
 		}
 
 		return wither;
@@ -159,7 +159,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		Field field = getField();
 
 		if (field == null) {
-			throw new IllegalArgumentException("No field backing this persistent property!");
+			throw new IllegalArgumentException(String.format("No field backing persistent property %s!", this));
 		}
 
 		return field;

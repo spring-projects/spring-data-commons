@@ -67,7 +67,8 @@ public class Property {
 		);
 		this.hashCode = Lazy.of(() -> withFieldOrDescriptor(Object::hashCode));
 		this.name = Lazy.of(() -> withFieldOrDescriptor(Field::getName, FeatureDescriptor::getName));
-		this.toString = Lazy.of(() -> withFieldOrDescriptor(Object::toString));
+		this.toString = Lazy.of(() -> withFieldOrDescriptor(Object::toString,
+				it -> String.format("%s.%s", type.getType().getName(), it.getDisplayName())));
 
 		this.getter = descriptor.map(PropertyDescriptor::getReadMethod)//
 				.filter(it -> getType() != null)//
