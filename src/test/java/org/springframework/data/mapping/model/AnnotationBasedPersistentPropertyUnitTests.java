@@ -239,6 +239,39 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThatThrownBy(() -> property.getRequiredAnnotation(Transient.class)).isInstanceOf(IllegalStateException.class);
 	}
 
+	@Test // DATACMNS-1359
+	public void missingRequiredGetterThrowsException() {
+
+		SamplePersistentProperty property = getProperty(Sample.class, "field");
+
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> property.getRequiredGetter()) //
+				.withMessageContaining("field") //
+				.withMessageContaining(Sample.class.getName());
+	}
+
+	@Test // DATACMNS-1359
+	public void missingRequiredSetterThrowsException() {
+
+		SamplePersistentProperty property = getProperty(Sample.class, "field");
+
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> property.getRequiredSetter()) //
+				.withMessageContaining("field") //
+				.withMessageContaining(Sample.class.getName());
+	}
+
+	@Test
+	public void missingRequiredFieldThrowsException() {
+
+		SamplePersistentProperty property = getProperty(NoField.class, "firstname");
+
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> property.getRequiredField()) //
+				.withMessageContaining("firstname") //
+				.withMessageContaining(NoField.class.getName());
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -409,5 +442,10 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Target(FIELD)
 	@interface CustomReadOnly {
 
+	}
+
+	interface NoField {
+
+		String getFirstname();
 	}
 }
