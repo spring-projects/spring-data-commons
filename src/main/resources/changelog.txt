@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.9.RELEASE (2018-07-26)
+---------------------------------------------
+* DATACMNS-1357 - Use shared DefaultConversionService in ProxyProjectionFactory and ResultProcessor.
+* DATACMNS-1345 - Nullpointer Exception for optional mappingContext in the RepositoryFactoryBeanSupport.
+* DATACMNS-1342 - TypeInformation.isCollectionLike() does not consider Streamable.
+* DATACMNS-1341 - Detect JDK proxy target class in ProxyUtils.
+* DATACMNS-1340 - Release 2.0.9 (Kay SR9).
+
+
 Changes in version 2.1.0.RC1 (2018-07-26)
 -----------------------------------------
 * DATACMNS-1357 - Use shared DefaultConversionService in ProxyProjectionFactory and ResultProcessor.
