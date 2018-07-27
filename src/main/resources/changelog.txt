@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.14.RELEASE (2018-07-27)
+-----------------------------------------------
+* DATACMNS-1352 - AbstractMappingContext.getPersistentPropertyPath(…) fails on Object typed properties.
+* DATACMNS-1341 - Detect JDK proxy target class in ProxyUtils.
+* DATACMNS-1339 - Release 1.13.14 (Ingalls SR14).
+
+
 Changes in version 2.0.9.RELEASE (2018-07-26)
 ---------------------------------------------
 * DATACMNS-1357 - Use shared DefaultConversionService in ProxyProjectionFactory and ResultProcessor.
