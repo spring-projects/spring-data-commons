@@ -16,21 +16,33 @@
 package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 /**
  * Unit tests for {@link RepositoryConfigurationExtensionSupport}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class RepositoryConfigurationExtensionSupportUnitTests {
@@ -56,6 +68,22 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ExtendingInterface.class);
 		assertThat(extension.isStrictRepositoryCandidate(metadata)).isTrue();
+	}
+
+	@Test // DATACMNS-1174
+	public void rejectsReactiveRepositories() {
+
+		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(ReactiveConfiguration.class, true);
+		Environment environment = new StandardEnvironment();
+		ResourceLoader resourceLoader = new DefaultResourceLoader();
+		BeanDefinitionRegistry registry = mock(BeanDefinitionRegistry.class);
+
+		RepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(annotationMetadata,
+				EnableRepositories.class, resourceLoader, environment, registry);
+
+		assertThatThrownBy(() -> extension.getRepositoryConfigurations(source, resourceLoader))
+				.isInstanceOf(InvalidDataAccessApiUsageException.class)
+				.hasMessageContaining("Reactive Repositories are not supported");
 	}
 
 	static class SampleRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
@@ -90,10 +118,16 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 
 	interface PlainTypeRepository extends Repository<PlainType, Long> {}
 
+	interface ReactiveRepository extends ReactiveCrudRepository<PlainType, Long> {}
+
 	interface StoreInterface {}
 
 	interface ExtendingInterface extends StoreInterface, Repository<PlainType, Long> {}
 
 	@EnableRepositories
 	static class SampleConfiguration {}
+
+	@EnableRepositories(includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = ReactiveRepository.class) },
+			basePackageClasses = ReactiveRepository.class, considerNestedRepositories = true)
+	class ReactiveConfiguration {}
 }

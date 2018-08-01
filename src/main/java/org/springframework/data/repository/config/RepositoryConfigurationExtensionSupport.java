@@ -33,6 +33,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.util.Assert;
@@ -300,12 +301,23 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	/**
-	 * Return whether to use the configuration for the repository with the given metadata. Defaults to {@literal true}.
-	 * 
+	 * Return whether to use the configuration for the repository with the given metadata. Defaults to {@literal true} and
+	 * {@link InvalidDataAccessApiUsageException} for {@link RepositoryMetadata#isReactiveRepository() reactive
+	 * repositories}. Must be overridden by store modules that wish to provide reactive repositories.
+	 *
 	 * @param metadata will never be {@literal null}.
+	 * @throws InvalidDataAccessApiUsageException on {@link RepositoryMetadata#isReactiveRepository() repositories} by
+	 *           default.
 	 * @return
 	 */
 	protected boolean useRepositoryConfiguration(RepositoryMetadata metadata) {
+
+		if (metadata.isReactiveRepository()) {
+			throw new InvalidDataAccessApiUsageException(
+					String.format("Reactive Repositories are not supported by %s. Offending repository is %s!", getModuleName(),
+							metadata.getRepositoryInterface().getName()));
+		}
+
 		return true;
 	}
 
