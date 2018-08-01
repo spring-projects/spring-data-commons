@@ -73,7 +73,6 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	/*
-	 * 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryConfigurations(org.springframework.data.repository.config.RepositoryConfigurationSource, org.springframework.core.io.ResourceLoader, boolean)
 	 */
@@ -266,8 +265,8 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * (see {@link #getIdentifyingAnnotations()}). If none of them is found, the candidate is discarded. Implementations
 	 * should make sure, the only return {@literal true} if they're really sure the interface handed to the method is
 	 * really a store interface.
-	 * 
-	 * @param repositoryInterface
+	 *
+	 * @param metadata
 	 * @return
 	 * @since 1.9
 	 */
