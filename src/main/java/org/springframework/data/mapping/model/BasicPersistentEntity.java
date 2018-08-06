@@ -33,6 +33,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
@@ -96,8 +97,9 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
 		this.propertyCache = new HashMap<>();
-		this.annotationCache = new ConcurrentReferenceHashMap<>();
-		this.propertyAnnotationCache = CollectionUtils.toMultiValueMap(new ConcurrentReferenceHashMap<>());
+		this.annotationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
+		this.propertyAnnotationCache = CollectionUtils
+				.toMultiValueMap(new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK));
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 	}
