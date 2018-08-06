@@ -104,7 +104,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.constructor = PreferredConstructorDiscoverer.discover(this);
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
-		this.propertyCache = new ConcurrentReferenceHashMap<>();
+		this.propertyCache = new HashMap<>();
 		this.annotationCache = new ConcurrentReferenceHashMap<>();
 		this.propertyAnnotationCache = CollectionUtils.toMultiValueMap(new ConcurrentReferenceHashMap<>());
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
@@ -236,7 +236,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.MutablePersistentEntity#setEvaluationContextProvider(org.springframework.data.spel.EvaluationContextProvider)
 	 */
@@ -469,7 +469,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : new AbsentIdentifierAccessor(bean);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#isNew(java.lang.Object)
 	 */
@@ -481,7 +481,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return isNewStrategy.get().isNew(bean);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#isImmutable()
 	 */
@@ -490,7 +490,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return isImmutable.get();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#requiresPropertyPopulation()
 	 */
@@ -516,7 +516,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * Returns the default {@link IsNewStrategy} to be used. Will be a {@link PersistentEntityIsNewStrategy} by default.
 	 * Note, that this strategy only gets used if the entity doesn't implement {@link Persistable} as this indicates the
 	 * user wants to be in control over whether an entity is new or not.
-	 * 
+	 *
 	 * @return
 	 * @since 2.1
 	 */
@@ -526,7 +526,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	/**
 	 * Verifies the given bean type to no be {@literal null} and of the type of the current {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param bean must not be {@literal null}.
 	 */
 	private final void verifyBeanType(Object bean) {

@@ -138,24 +138,27 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(entity.getPersistentProperty("ssn")).isEqualTo(iterator.next());
 	}
 
-	@Test // DATACMNS-186
+	@Test // DATACMNS-18, DATACMNS-1364
 	public void addingAndIdPropertySetsIdPropertyInternally() {
 
 		MutablePersistentEntity<Person, T> entity = createEntity(Person.class);
 		assertThat(entity.getIdProperty()).isNull();
 
+		when(property.getName()).thenReturn("id");
 		when(property.isIdProperty()).thenReturn(true);
 		entity.addPersistentProperty(property);
 		assertThat(entity.getIdProperty()).isEqualTo(property);
 	}
 
-	@Test // DATACMNS-186
+	@Test // DATACMNS-186, DATACMNS-1364
 	public void rejectsIdPropertyIfAlreadySet() {
 
 		MutablePersistentEntity<Person, T> entity = createEntity(Person.class);
 
+		when(property.getName()).thenReturn("id");
 		when(property.isIdProperty()).thenReturn(true);
 		when(anotherProperty.isIdProperty()).thenReturn(true);
+		when(anotherProperty.getName()).thenReturn("another");
 
 		entity.addPersistentProperty(property);
 		exception.expect(MappingException.class);
@@ -429,7 +432,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 		private final Long id = 42L;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.domain.Persistable#getId()
 		 */
@@ -438,7 +441,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 			return 4711L;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.domain.Persistable#isNew()
 		 */
