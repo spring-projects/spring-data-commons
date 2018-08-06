@@ -20,16 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,19 +28,7 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.Immutable;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.mapping.Alias;
-import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.AssociationHandler;
-import org.springframework.data.mapping.IdentifierAccessor;
-import org.springframework.data.mapping.MappingException;
-import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.mapping.SimpleAssociationHandler;
-import org.springframework.data.mapping.SimplePropertyHandler;
-import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
+import org.springframework.data.mapping.*;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.PersistableIsNewStrategy;
@@ -60,6 +39,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
@@ -126,8 +106,9 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
 		this.propertyCache = new ConcurrentHashMap<>();
-		this.annotationCache = new ConcurrentReferenceHashMap<>();
-		this.propertyAnnotationCache = CollectionUtils.toMultiValueMap(new ConcurrentReferenceHashMap<>());
+		this.annotationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
+		this.propertyAnnotationCache = CollectionUtils
+				.toMultiValueMap(new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK));
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 		this.isNewStrategy = Lazy.of(() -> Persistable.class.isAssignableFrom(information.getType()) //
@@ -255,7 +236,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.MutablePersistentEntity#setEvaluationContextProvider(org.springframework.data.spel.EvaluationContextProvider)
 	 */
@@ -488,7 +469,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return hasIdProperty() ? new IdPropertyIdentifierAccessor(this, bean) : new AbsentIdentifierAccessor(bean);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#isNew(java.lang.Object)
 	 */
@@ -500,7 +481,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return isNewStrategy.get().isNew(bean);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#isImmutable()
 	 */
@@ -526,7 +507,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 * Returns the default {@link IsNewStrategy} to be used. Will be a {@link PersistentEntityIsNewStrategy} by default.
 	 * Note, that this strategy only gets used if the entity doesn't implement {@link Persistable} as this indicates the
 	 * user wants to be in control over whether an entity is new or not.
-	 * 
+	 *
 	 * @return
 	 * @since 2.1
 	 */
@@ -536,7 +517,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	/**
 	 * Verifies the given bean type to no be {@literal null} and of the type of the current {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param bean must not be {@literal null}.
 	 */
 	private final void verifyBeanType(Object bean) {
