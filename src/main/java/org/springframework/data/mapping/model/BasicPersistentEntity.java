@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -124,7 +125,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.constructor = PreferredConstructorDiscoverer.discover(this);
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
-		this.propertyCache = new ConcurrentReferenceHashMap<>();
+		this.propertyCache = new ConcurrentHashMap<>();
 		this.annotationCache = new ConcurrentReferenceHashMap<>();
 		this.propertyAnnotationCache = CollectionUtils.toMultiValueMap(new ConcurrentReferenceHashMap<>());
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
