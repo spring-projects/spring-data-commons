@@ -105,7 +105,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.constructor = PreferredConstructorDiscoverer.discover(this);
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
-		this.propertyCache = new HashMap<>();
+		this.propertyCache = new HashMap<>(16, 1f);
 		this.annotationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
 		this.propertyAnnotationCache = CollectionUtils
 				.toMultiValueMap(new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK));
@@ -507,7 +507,21 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	@Override
 	public Iterator<P> iterator() {
-		return Collections.unmodifiableList(properties).iterator();
+
+		Iterator<P> iterator = properties.iterator();
+
+		return new Iterator<P>() {
+
+			@Override
+			public boolean hasNext() {
+				return iterator.hasNext();
+			}
+
+			@Override
+			public P next() {
+				return iterator.next();
+			}
+		};
 	}
 
 	protected EvaluationContext getEvaluationContext(Object rootObject) {

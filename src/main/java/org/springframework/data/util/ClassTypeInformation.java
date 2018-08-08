@@ -30,8 +30,8 @@ import java.util.Set;
 
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 
 /**
  * {@link TypeInformation} for a plain {@link Class}.
@@ -48,7 +48,8 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	public static final ClassTypeInformation<Map> MAP = new ClassTypeInformation(Map.class);
 	public static final ClassTypeInformation<Object> OBJECT = new ClassTypeInformation(Object.class);
 
-	private static final Map<Class<?>, ClassTypeInformation<?>> CACHE = new ConcurrentReferenceHashMap<>();
+	private static final Map<Class<?>, ClassTypeInformation<?>> CACHE = new ConcurrentReferenceHashMap<>(64,
+			ReferenceType.WEAK);
 
 	static {
 		Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT).forEach(it -> CACHE.put(it.getType(), it));
@@ -67,7 +68,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		return (ClassTypeInformation<S>) CACHE.computeIfAbsent(type, it -> new ClassTypeInformation<>(type));
+		return (ClassTypeInformation<S>) CACHE.computeIfAbsent(type, ClassTypeInformation::new);
 	}
 
 	/**
