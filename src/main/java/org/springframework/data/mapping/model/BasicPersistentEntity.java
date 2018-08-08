@@ -95,6 +95,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private final Lazy<Alias> typeAlias;
 	private final Lazy<IsNewStrategy> isNewStrategy;
 	private final Lazy<Boolean> isImmutable;
+	private final Lazy<Boolean> requiresPropertyPopulation;
 
 	/**
 	 * Creates a new {@link BasicPersistentEntity} from the given {@link TypeInformation}.
@@ -134,6 +135,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 				: getFallbackIsNewStrategy());
 
 		this.isImmutable = Lazy.of(() -> isAnnotationPresent(Immutable.class));
+		this.requiresPropertyPopulation = Lazy.of(() -> !isImmutable() && properties.stream() //
+				.anyMatch(it -> !(isConstructorArgument(it) || it.isTransient())));
 	}
 
 	/*
@@ -506,6 +509,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	@Override
 	public boolean isImmutable() {
 		return isImmutable.get();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#requiresPropertyPopulation()
+	 */
+	@Override
+	public boolean requiresPropertyPopulation() {
+		return requiresPropertyPopulation.get();
 	}
 
 	/*

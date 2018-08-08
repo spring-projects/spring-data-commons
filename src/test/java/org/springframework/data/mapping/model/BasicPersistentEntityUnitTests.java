@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
+import lombok.RequiredArgsConstructor;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -27,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
@@ -44,6 +47,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Immutable;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.Persistent;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.mapping.Alias;
@@ -355,12 +359,31 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(createEntity(Entity.class).isImmutable()).isFalse();
 	}
 
+	@Test // DATACMNS-1366
+	public void exposesPropertyPopulationRequired() {
+
+		assertThat(createPopulatedPersistentEntity(PropertyPopulationRequired.class).requiresPropertyPopulation()).isTrue();
+	}
+
+	@Test // DATACMNS-1366
+	public void exposesPropertyPopulationNotRequired() {
+
+		Stream.of(PropertyPopulationNotRequired.class, PropertyPopulationNotRequiredWithTransient.class) //
+				.forEach(it -> assertThat(createPopulatedPersistentEntity(it).requiresPropertyPopulation()).isFalse());
+	}
+
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
 		return createEntity(type, null);
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type, Comparator<T> comparator) {
 		return new BasicPersistentEntity<>(ClassTypeInformation.from(type), comparator);
+	}
+
+	private static PersistentEntity<Object, ?> createPopulatedPersistentEntity(Class<?> type) {
+
+		SampleMappingContext context = new SampleMappingContext();
+		return context.getRequiredPersistentEntity(type);
 	}
 
 	@TypeAlias("foo")
@@ -427,4 +450,26 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 	@Immutable
 	static class SomeValue {}
+
+	// DATACMNS-1366
+
+	@RequiredArgsConstructor
+	static class PropertyPopulationRequired {
+
+		private final String firstname, lastname;
+		private String email;
+	}
+
+	@RequiredArgsConstructor
+	static class PropertyPopulationNotRequired {
+
+		private final String firstname, lastname;
+	}
+
+	@RequiredArgsConstructor
+	static class PropertyPopulationNotRequiredWithTransient {
+
+		private final String firstname, lastname;
+		private @Transient String email;
+	}
 }

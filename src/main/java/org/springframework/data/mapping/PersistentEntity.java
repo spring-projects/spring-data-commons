@@ -316,4 +316,13 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @since 2.1
 	 */
 	boolean isImmutable();
+
+	/**
+	 * Returns whether the entity needs properties to be populated, i.e. if any property exists that's not initialized by
+	 * the constructor.
+	 * 
+	 * @return
+	 * @since 2.1
+	 */
+	boolean requiresPropertyPopulation();
 }
