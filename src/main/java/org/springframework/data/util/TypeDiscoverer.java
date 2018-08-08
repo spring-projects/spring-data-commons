@@ -549,7 +549,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		TypeDiscoverer<?> that = (TypeDiscoverer<?>) obj;
 
-		return this.type.equals(that.type) && this.typeVariableMap.equals(that.typeVariableMap);
+		if (!this.type.equals(that.type)) {
+			return false;
+		}
+
+		if (this.typeVariableMap.isEmpty() && that.typeVariableMap.isEmpty()) {
+			return true;
+		}
+
+		return this.typeVariableMap.equals(that.typeVariableMap);
 	}
 
 	/*
