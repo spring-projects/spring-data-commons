@@ -105,7 +105,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.constructor = PreferredConstructorDiscoverer.discover(this);
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
-		this.propertyCache = new HashMap<>();
+		this.propertyCache = new HashMap<>(16, 1f);
 		this.annotationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
 		this.propertyAnnotationCache = CollectionUtils
 				.toMultiValueMap(new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK));
