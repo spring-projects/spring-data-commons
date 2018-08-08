@@ -507,7 +507,21 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	@Override
 	public Iterator<P> iterator() {
-		return Collections.unmodifiableList(properties).iterator();
+
+		Iterator<P> iterator = properties.iterator();
+
+		return new Iterator<P>() {
+
+			@Override
+			public boolean hasNext() {
+				return iterator.hasNext();
+			}
+
+			@Override
+			public P next() {
+				return iterator.next();
+			}
+		};
 	}
 
 	protected EvaluationContext getEvaluationContext(Object rootObject) {
