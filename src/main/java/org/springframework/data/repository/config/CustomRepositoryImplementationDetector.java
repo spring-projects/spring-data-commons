@@ -16,19 +16,19 @@
 
 package org.springframework.data.repository.config;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -43,7 +43,7 @@ import org.springframework.util.StringUtils;
  */
 public class CustomRepositoryImplementationDetector {
 
-	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
+	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/%s.class";
 
 	private final MetadataReaderFactory metadataReaderFactory;
 	private final Environment environment;
@@ -98,16 +98,13 @@ public class CustomRepositoryImplementationDetector {
 		Assert.notNull(className, "ClassName must not be null!");
 		Assert.notNull(basePackages, "BasePackages must not be null!");
 
-		// Build pattern to lookup implementation class
-		Pattern pattern = Pattern.compile(".*\\." + className);
-
 		// Build classpath scanner and lookup bean definition
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false,
 				environment);
 		provider.setResourceLoader(resourceLoader);
 		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
 		provider.setMetadataReaderFactory(metadataReaderFactory);
-		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
+		provider.addIncludeFilter(AlwaysIncludeFilter.INSTANCE);
 
 		for (TypeFilter excludeFilter : excludeFilters) {
 			provider.addExcludeFilter(excludeFilter);
@@ -135,5 +132,20 @@ public class CustomRepositoryImplementationDetector {
 		throw new IllegalStateException(
 				String.format("Ambiguous custom implementations detected! Found %s but expected a single implementation!",
 						StringUtils.collectionToCommaDelimitedString(implementationClassNames)));
+	}
+
+	private enum AlwaysIncludeFilter implements TypeFilter {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.filter.TypeFilter#match(org.springframework.core.type.classreading.MetadataReader, org.springframework.core.type.classreading.MetadataReaderFactory)
+		 */
+		@Override
+		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
+				throws IOException {
+			return true;
+		}
 	}
 }
