@@ -15,12 +15,16 @@
  */
 package org.springframework.data.repository.config;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Collections;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
@@ -116,5 +120,58 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 */
 	public boolean shouldConsiderNestedRepositories() {
 		return false;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#toImplementationDetectionConfiguration()
+	 */
+	@Override
+	public ImplementationDetectionConfiguration toImplementationDetectionConfiguration(MetadataReaderFactory factory) {
+		return new SpringImplementationDetectionConfiguration(this, factory);
+	}
+
+	@RequiredArgsConstructor
+	private class SpringImplementationDetectionConfiguration implements ImplementationDetectionConfiguration {
+
+		private final RepositoryConfigurationSource source;
+		private final @Getter MetadataReaderFactory metadataReaderFactory;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getImplementationPostfix()
+		 */
+		@Override
+		public String getImplementationPostfix() {
+			return source.getRepositoryImplementationPostfix()
+					.orElse(DefaultRepositoryConfiguration.DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getBasePackages()
+		 */
+		@Override
+		public Streamable<String> getBasePackages() {
+			return source.getBasePackages();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getExcludeFilters()
+		 */
+		@Override
+		public Streamable<TypeFilter> getExcludeFilters() {
+			return source.getExcludeFilters();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#generateBeanName(org.springframework.beans.factory.config.BeanDefinition)
+		 */
+		@Override
+		public String generateBeanName(BeanDefinition definition) {
+			return source.generateBeanName(definition);
+		}
 	}
 }

@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.util.Streamable;
@@ -126,4 +127,14 @@ public interface RepositoryConfigurationSource {
 	 * @since 2.0
 	 */
 	String generateBeanName(BeanDefinition beanDefinition);
+
+	/**
+	 * Returns the {@link ImplementationDetectionConfiguration} to be used to scan for custom implementations of the
+	 * repository instances to be created from this {@link RepositoryConfigurationSource}.
+	 * 
+	 * @param factory
+	 * @return will never be {@literal null}.
+	 * @since 2.1
+	 */
+	ImplementationDetectionConfiguration toImplementationDetectionConfiguration(MetadataReaderFactory factory);
 }

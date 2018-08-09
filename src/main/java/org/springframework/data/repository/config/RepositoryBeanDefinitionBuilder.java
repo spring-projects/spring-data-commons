@@ -15,10 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.RequiredArgsConstructor;
-
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,21 +22,17 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.ParsingUtils;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.core.support.RepositoryFragmentsFactoryBean;
 import org.springframework.data.util.Optionals;
-import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 /**
@@ -60,6 +52,7 @@ class RepositoryBeanDefinitionBuilder {
 	private final ResourceLoader resourceLoader;
 
 	private final MetadataReaderFactory metadataReaderFactory;
+	private final FragmentMetadata fragmentMetadata;
 	private final CustomRepositoryImplementationDetector implementationDetector;
 
 	/**
@@ -72,7 +65,7 @@ class RepositoryBeanDefinitionBuilder {
 	 * @param environment must not be {@literal null}.
 	 */
 	public RepositoryBeanDefinitionBuilder(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
-			ResourceLoader resourceLoader, Environment environment) {
+			RepositoryConfigurationSource configurationSource, ResourceLoader resourceLoader, Environment environment) {
 
 		Assert.notNull(extension, "RepositoryConfigurationExtension must not be null!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
@@ -81,9 +74,12 @@ class RepositoryBeanDefinitionBuilder {
 		this.registry = registry;
 		this.extension = extension;
 		this.resourceLoader = resourceLoader;
+
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
-		this.implementationDetector = new CustomRepositoryImplementationDetector(metadataReaderFactory, environment,
-				resourceLoader);
+
+		this.fragmentMetadata = new FragmentMetadata(metadataReaderFactory);
+		this.implementationDetector = new CustomRepositoryImplementationDetector(environment, resourceLoader,
+				configurationSource.toImplementationDetectionConfiguration(metadataReaderFactory));
 	}
 
 	/**
@@ -135,22 +131,23 @@ class RepositoryBeanDefinitionBuilder {
 		return builder;
 	}
 
-	@SuppressWarnings("deprecation")
 	private Optional<String> registerCustomImplementation(RepositoryConfiguration<?> configuration) {
 
-		String beanName = configuration.getImplementationBeanName();
+		ImplementationLookupConfiguration lookup = configuration.toLookupConfiguration(metadataReaderFactory);
+
+		String beanName = lookup.getImplementationBeanName();
 
 		// Already a bean configured?
 		if (registry.containsBeanDefinition(beanName)) {
 			return Optional.of(beanName);
 		}
 
-		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(configuration);
+		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(lookup);
 
 		return beanDefinition.map(it -> {
 
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Registering custom repository implementation: " + configuration.getImplementationBeanName() + " "
+				LOGGER.debug("Registering custom repository implementation: " + lookup.getImplementationBeanName() + " "
 						+ it.getBeanClassName());
 			}
 
@@ -164,27 +161,23 @@ class RepositoryBeanDefinitionBuilder {
 	private Stream<RepositoryFragmentConfiguration> registerRepositoryFragmentsImplementation(
 			RepositoryConfiguration<?> configuration) {
 
-		ClassMetadata classMetadata = getClassMetadata(configuration.getRepositoryInterface());
-		RepositoryFragmentDiscovery fragmentConfiguration = new DefaultRepositoryFragmentDiscovery(configuration);
+		ImplementationDetectionConfiguration config = configuration
+				.toImplementationDetectionConfiguration(metadataReaderFactory);
 
-		return Arrays.stream(classMetadata.getInterfaceNames()) //
-				.filter(it -> FragmentMetadata.isCandidate(it, metadataReaderFactory)) //
-				.map(it -> FragmentMetadata.of(it, fragmentConfiguration)) //
-				.map(it -> detectRepositoryFragmentConfiguration(it, configuration.getConfigurationSource())) //
+		return fragmentMetadata.getFragmentInterfaces(configuration.getRepositoryInterface()) //
+				.map(it -> detectRepositoryFragmentConfiguration(it, config)) //
 				.flatMap(Optionals::toStream) //
 				.peek(it -> potentiallyRegisterFragmentImplementation(configuration, it)) //
 				.peek(it -> potentiallyRegisterRepositoryFragment(configuration, it));
 	}
 
-	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(
-			FragmentMetadata configuration, RepositoryConfigurationSource configurationSource) {
+	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(String fragmentInterface,
+			ImplementationDetectionConfiguration config) {
 
-		String className = configuration.getFragmentImplementationClassName();
+		ImplementationLookupConfiguration lookup = config.forFragment(fragmentInterface);
+		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(lookup);
 
-		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(className, null,
-				configuration.getBasePackages(), configuration.getExclusions(), configurationSource::generateBeanName);
-
-		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(configuration.getFragmentInterfaceName(), bd));
+		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterface, bd));
 	}
 
 	private void potentiallyRegisterFragmentImplementation(RepositoryConfiguration<?> repositoryConfiguration,
@@ -231,38 +224,5 @@ class RepositoryBeanDefinitionBuilder {
 
 		registry.registerBeanDefinition(beanName,
 				ParsingUtils.getSourceBeanDefinition(fragmentBuilder, configuration.getSource()));
-	}
-
-	private ClassMetadata getClassMetadata(String className) {
-
-		try {
-			return metadataReaderFactory.getMetadataReader(className).getClassMetadata();
-		} catch (IOException e) {
-			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
-		}
-	}
-
-	@RequiredArgsConstructor
-	private static class DefaultRepositoryFragmentDiscovery implements RepositoryFragmentDiscovery {
-
-		private final RepositoryConfiguration<?> configuration;
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryFragmentDiscovery#getExcludeFilters()
-		 */
-		@Override
-		public Streamable<TypeFilter> getExcludeFilters() {
-			return configuration.getExcludeFilters();
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryFragmentDiscovery#getRepositoryImplementationPostfix()
-		 */
-		@Override
-		public Optional<String> getRepositoryImplementationPostfix() {
-			return configuration.getConfigurationSource().getRepositoryImplementationPostfix();
-		}
 	}
 }

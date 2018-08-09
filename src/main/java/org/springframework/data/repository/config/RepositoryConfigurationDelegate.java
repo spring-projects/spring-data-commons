@@ -113,8 +113,8 @@ public class RepositoryConfigurationDelegate {
 
 		extension.registerBeansForRoot(registry, configurationSource);
 
-		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader,
-				environment);
+		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension,
+				configurationSource, resourceLoader, environment);
 		List<BeanComponentDefinition> definitions = new ArrayList<>();
 
 		if (LOG.isDebugEnabled()) {

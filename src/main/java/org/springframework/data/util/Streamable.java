@@ -30,9 +30,10 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @since 2.0
  */
 @FunctionalInterface
-public interface Streamable<T> extends Iterable<T> {
+public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
 	/**
 	 * Returns an empty {@link Streamable}.
@@ -129,5 +130,27 @@ public interface Streamable<T> extends Iterable<T> {
 	 */
 	default boolean isEmpty() {
 		return !iterator().hasNext();
+	}
+
+	/**
+	 * Creates a new {@link Streamable} from the current one and the given {@link Stream} concatenated.
+	 * 
+	 * @param stream must not be {@literal null}.
+	 * @return
+	 * @since 2.1
+	 */
+	default Streamable<T> and(Supplier<? extends Stream<? extends T>> stream) {
+
+		Assert.notNull(stream, "Stream must not be null!");
+
+		return Streamable.of(() -> Stream.concat(this.stream(), stream.get()));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.util.function.Supplier#get()
+	 */
+	default Stream<T> get() {
+		return stream();
 	}
 }

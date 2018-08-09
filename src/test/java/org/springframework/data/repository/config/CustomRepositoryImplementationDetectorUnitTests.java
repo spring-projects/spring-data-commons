@@ -15,18 +15,14 @@
  */
 package org.springframework.data.repository.config;
 
-import static java.util.Arrays.*;
-import static java.util.Collections.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.function.Function;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.mockito.Answers;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.core.env.Environment;
@@ -34,7 +30,8 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
-import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.repository.config.CustomRepositoryImplementationDetectorUnitTests.First.CanonicalSampleRepositoryTestImpl;
+import org.springframework.data.util.Streamable;
 import org.springframework.mock.env.MockEnvironment;
 
 /**
@@ -47,70 +44,107 @@ public class CustomRepositoryImplementationDetectorUnitTests {
 	MetadataReaderFactory metadataFactory = new SimpleMetadataReaderFactory();
 	Environment environment = new MockEnvironment();
 	ResourceLoader resourceLoader = new DefaultResourceLoader();
-	Function<BeanDefinition, String> nameGenerator = mock(Function.class);
+	ImplementationDetectionConfiguration configuration = mock(ImplementationDetectionConfiguration.class,
+			Answers.RETURNS_MOCKS);
 
-	CustomRepositoryImplementationDetector detector = spy(
-			new CustomRepositoryImplementationDetector(metadataFactory, environment, resourceLoader));
+	CustomRepositoryImplementationDetector detector = new CustomRepositoryImplementationDetector(environment,
+			resourceLoader, configuration);
 
 	{
-		doReturn("notTheBeanYouAreLookingFor").when(nameGenerator).apply(any(BeanDefinition.class));
+		when(configuration.forRepositoryConfiguration(any(RepositoryConfiguration.class))).thenCallRealMethod();
+		when(configuration.getMetadataReaderFactory()).thenReturn(metadataFactory);
+		when(configuration.getBasePackages()).thenReturn(Streamable.of(this.getClass().getPackage().getName()));
+		when(configuration.getImplementationPostfix()).thenReturn("TestImpl");
 	}
 
-	@Test // DATACMNS-764
+	@Test // DATACMNS-764, DATACMNS-1371
 	public void returnsNullWhenNoImplementationFound() {
 
-		doReturn(emptySet()).when(detector).findCandidateBeanDefinitions(anyString(), anyListOf(String.class),
-				anyListOf(TypeFilter.class));
+		RepositoryConfiguration mock = mock(RepositoryConfiguration.class);
 
-		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation("className", "beanName", emptyList(),
-				emptyList(), nameGenerator);
+		ImplementationLookupConfiguration lookup = configuration
+				.forRepositoryConfiguration(configFor(NoImplementationRepository.class));
+
+		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(lookup);
 
 		assertThat(beanDefinition).isEmpty();
 	}
 
-	@Test // DATACMNS-764
+	@Test // DATACMNS-764, DATACMNS-1371
 	public void returnsBeanDefinitionWhenOneImplementationIsFound() {
 
-		AbstractBeanDefinition expectedBeanDefinition = mock(AbstractBeanDefinition.class);
+		ImplementationLookupConfiguration lookup = configuration
+				.forRepositoryConfiguration(configFor(SingleSampleRepository.class));
 
-		doReturn(new HashSet<>(singleton(expectedBeanDefinition))).when(detector).findCandidateBeanDefinitions(anyString(),
-				anyListOf(String.class), anyListOf(TypeFilter.class));
+		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(lookup);
 
-		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation("className", "beanName", emptyList(),
-				emptyList(), nameGenerator);
-
-		assertThat(beanDefinition).contains(expectedBeanDefinition);
+		assertThat(beanDefinition).hasValueSatisfying(
+				it -> assertThat(it.getBeanClassName()).isEqualTo(SingleSampleRepositoryTestImpl.class.getName()));
 	}
 
-	@Test // DATACMNS-764
+	@Test // DATACMNS-764, DATACMNS-1371
 	public void returnsBeanDefinitionMatchingByNameWhenMultipleImplementationAreFound() {
 
-		AbstractBeanDefinition wrongBeanDefinition = mock(AbstractBeanDefinition.class);
-		AbstractBeanDefinition expectedBeanDefinition = mock(AbstractBeanDefinition.class);
+		when(configuration.generateBeanName(any())).then(it -> {
 
-		doReturn("expected").when(nameGenerator).apply(expectedBeanDefinition);
+			BeanDefinition definition = it.getArgument(0);
+			String className = definition.getBeanClassName();
 
-		doReturn(new HashSet<>(asList(wrongBeanDefinition, expectedBeanDefinition))).when(detector)
-				.findCandidateBeanDefinitions(anyString(), anyListOf(String.class), anyListOf(TypeFilter.class));
+			return className.contains("$First$") ? "canonicalSampleRepositoryTestImpl" : "otherBeanName";
+		});
 
-		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation("className", "expected", emptyList(),
-				emptyList(), nameGenerator);
+		ImplementationLookupConfiguration lookup = configuration
+				.forRepositoryConfiguration(configFor(CanonicalSampleRepository.class));
 
-		assertThat( beanDefinition).contains(expectedBeanDefinition);
+		assertThat(detector.detectCustomImplementation(lookup)) //
+				.hasValueSatisfying(
+						it -> assertThat(it.getBeanClassName()).isEqualTo(CanonicalSampleRepositoryTestImpl.class.getName()));
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACMNS-764
+	@Test // DATACMNS-764, DATACMNS-1371
 	public void throwsExceptionWhenMultipleImplementationAreFound() {
 
-		AbstractBeanDefinition wrongBeanDefinition = mock(AbstractBeanDefinition.class);
-		AbstractBeanDefinition expectedBeanDefinition = mock(AbstractBeanDefinition.class);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> {
 
-		doReturn("expected").when(nameGenerator).apply(any(BeanDefinition.class));
+			ImplementationLookupConfiguration lookup = mock(ImplementationLookupConfiguration.class);
 
-		doReturn(new HashSet<>(asList(wrongBeanDefinition, expectedBeanDefinition))).when(detector)
-				.findCandidateBeanDefinitions(anyString(), anyListOf(String.class), anyListOf(TypeFilter.class));
+			when(lookup.hasMatchingBeanName(any())).thenReturn(true);
+			when(lookup.matches(any())).thenReturn(true);
 
-		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation("className", "expected", emptyList(),
-				emptyList(), nameGenerator);
+			detector.detectCustomImplementation(lookup);
+		});
+	}
+
+	private RepositoryConfiguration configFor(Class<?> type) {
+
+		RepositoryConfiguration<?> configuration = mock(RepositoryConfiguration.class);
+
+		when(configuration.getRepositoryInterface()).thenReturn(type.getSimpleName());
+		when(configuration.getImplementationBasePackages())
+				.thenReturn(Streamable.of(this.getClass().getPackage().getName()));
+
+		return configuration;
+	}
+
+	// No implementation
+
+	interface NoImplementationRepository {}
+
+	// Single implementation
+
+	interface SingleSampleRepository {}
+
+	static class SingleSampleRepositoryTestImpl implements SingleSampleRepository {}
+
+	// Multiple implementations
+
+	interface CanonicalSampleRepository {}
+
+	static class First {
+		static class CanonicalSampleRepositoryTestImpl implements CanonicalSampleRepository {}
+	}
+
+	static class Second {
+		static class CanonicalSampleRepositoryTestImpl implements CanonicalSampleRepository {}
 	}
 }

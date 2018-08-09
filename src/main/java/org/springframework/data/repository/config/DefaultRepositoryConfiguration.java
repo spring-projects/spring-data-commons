@@ -21,11 +21,13 @@ import lombok.RequiredArgsConstructor;
 import java.util.Optional;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -178,5 +180,29 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	@Override
 	public Streamable<TypeFilter> getExcludeFilters() {
 		return configurationSource.getExcludeFilters();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#toImplementationDetectionConfiguration(org.springframework.core.type.classreading.MetadataReaderFactory)
+	 */
+	@Override
+	public ImplementationDetectionConfiguration toImplementationDetectionConfiguration(MetadataReaderFactory factory) {
+
+		Assert.notNull(factory, "MetadataReaderFactory must not be null!");
+
+		return configurationSource.toImplementationDetectionConfiguration(factory);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#toLookupConfiguration(org.springframework.core.type.classreading.MetadataReaderFactory)
+	 */
+	@Override
+	public ImplementationLookupConfiguration toLookupConfiguration(MetadataReaderFactory factory) {
+
+		Assert.notNull(factory, "MetadataReaderFactory must not be null!");
+
+		return toImplementationDetectionConfiguration(factory).forRepositoryConfiguration(this);
 	}
 }

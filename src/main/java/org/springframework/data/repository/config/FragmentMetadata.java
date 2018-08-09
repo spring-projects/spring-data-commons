@@ -15,34 +15,44 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.Value;
+import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.NoRepositoryBean;
-import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * Value object for a discovered Repository fragment interface.
  * 
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @since 2.1
  */
-@Value(staticConstructor = "of")
+@RequiredArgsConstructor
 public class FragmentMetadata {
 
-	private String fragmentInterfaceName;
-	private RepositoryFragmentDiscovery configuration;
+	private final MetadataReaderFactory factory;
+
+	/**
+	 * Returns all interfaces to be considered fragment ones for the given source interface.
+	 * 
+	 * @param interfaceName must not be {@literal null} or empty.
+	 * @return
+	 */
+	public Stream<String> getFragmentInterfaces(String interfaceName) {
+
+		Assert.hasText(interfaceName, "Interface name must not be null or empty!");
+
+		return Arrays.stream(getClassMetadata(interfaceName).getInterfaceNames()) //
+				.filter(this::isCandidate);
+	}
 
 	/**
 	 * Returns whether the given interface is a fragment candidate.
@@ -51,55 +61,28 @@ public class FragmentMetadata {
 	 * @param factory must not be {@literal null}.
 	 * @return
 	 */
-	public static boolean isCandidate(String interfaceName, MetadataReaderFactory factory) {
+	private boolean isCandidate(String interfaceName) {
 
 		Assert.hasText(interfaceName, "Interface name must not be null or empty!");
-		Assert.notNull(factory, "MetadataReaderFactory must not be null!");
 
-		AnnotationMetadata metadata = getAnnotationMetadata(interfaceName, factory);
-
+		AnnotationMetadata metadata = getAnnotationMetadata(interfaceName);
 		return !metadata.hasAnnotation(NoRepositoryBean.class.getName());
+
 	}
 
-	/**
-	 * Returns the exclusions to be used when scanning for fragment implementations.
-	 *
-	 * @return
-	 */
-	public List<TypeFilter> getExclusions() {
-
-		Stream<TypeFilter> configurationExcludes = configuration.getExcludeFilters().stream();
-		Stream<AnnotationTypeFilter> noRepositoryBeans = Stream.of(new AnnotationTypeFilter(NoRepositoryBean.class));
-
-		return Stream.concat(configurationExcludes, noRepositoryBeans).collect(StreamUtils.toUnmodifiableList());
-	}
-
-	/**
-	 * Returns the name of the implementation class to be detected for the fragment interface.
-	 *
-	 * @return
-	 */
-	public String getFragmentImplementationClassName() {
-
-		String postfix = configuration.getRepositoryImplementationPostfix().orElse("Impl");
-
-		return ClassUtils.getShortName(fragmentInterfaceName).concat(postfix);
-	}
-
-	/**
-	 * Returns the base packages to be scanned to find implementations of the current fragment interface.
-	 *
-	 * @return
-	 */
-	public Iterable<String> getBasePackages() {
-		return Collections.singleton(ClassUtils.getPackageName(fragmentInterfaceName));
-	}
-
-	private static AnnotationMetadata getAnnotationMetadata(String className,
-			MetadataReaderFactory metadataReaderFactory) {
+	private AnnotationMetadata getAnnotationMetadata(String className) {
 
 		try {
-			return metadataReaderFactory.getMetadataReader(className).getAnnotationMetadata();
+			return factory.getMetadataReader(className).getAnnotationMetadata();
+		} catch (IOException e) {
+			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
+		}
+	}
+
+	private ClassMetadata getClassMetadata(String className) {
+
+		try {
+			return factory.getMetadataReader(className).getClassMetadata();
 		} catch (IOException e) {
 			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
 		}

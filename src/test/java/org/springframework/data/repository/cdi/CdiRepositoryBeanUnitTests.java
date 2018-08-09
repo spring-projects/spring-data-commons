@@ -16,7 +16,6 @@
 package org.springframework.data.repository.cdi;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -25,7 +24,6 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.CreationalContext;
@@ -35,11 +33,12 @@ import javax.inject.Named;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
+import org.springframework.data.repository.config.ImplementationLookupConfiguration;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
@@ -153,13 +152,15 @@ public class CdiRepositoryBeanUnitTests {
 
 		bean.create(mock(CreationalContext.class), SampleRepository.class);
 
-		verify(detector).detectCustomImplementation( //
-				eq("CdiRepositoryBeanUnitTests.SampleRepositoryImpl"), //
-				eq("CdiRepositoryBeanUnitTests.SampleRepositoryImpl"), //
-				anySet(), //
-				anySet(), //
-				Mockito.any(Function.class) //
-		);
+		ArgumentCaptor<ImplementationLookupConfiguration> captor = ArgumentCaptor
+				.forClass(ImplementationLookupConfiguration.class);
+
+		verify(detector).detectCustomImplementation(captor.capture());
+
+		ImplementationLookupConfiguration configuration = captor.getValue();
+
+		assertThat(configuration.getImplementationBeanName()).isEqualTo("cdiRepositoryBeanUnitTests.SampleRepositoryImpl");
+		assertThat(configuration.getImplementationClassName()).isEqualTo("CdiRepositoryBeanUnitTests.SampleRepositoryImpl");
 	}
 
 	@Test // DATACMNS-1233

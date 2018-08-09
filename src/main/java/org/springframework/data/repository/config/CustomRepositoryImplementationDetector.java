@@ -15,29 +15,27 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.data.util.Streamable;
+import org.springframework.data.util.Lazy;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 
 /**
- * Detects the custom implementation for a {@link org.springframework.data.repository.Repository}
+ * Detects the custom implementation for a {@link org.springframework.data.repository.Repository} instance. If
+ * configured with a {@link ImplementationDetectionConfiguration} at construction time, the necessary component scan is
+ * executed on first access, cached and its result is the filtered on every further implementation lookup according to
+ * the given {@link ImplementationDetectionConfiguration}. If none is given initially, every invocation to
+ * {@link #detectCustomImplementation(String, String, ImplementationDetectionConfiguration)} will issue a new component
+ * scan.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
@@ -46,76 +44,91 @@ import org.springframework.util.Assert;
  * @author Jens Schauder
  * @author Mark Paluch
  */
-@RequiredArgsConstructor
 public class CustomRepositoryImplementationDetector {
 
-	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/%s.class";
+	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
 	private static final String AMBIGUOUS_CUSTOM_IMPLEMENTATIONS = "Ambiguous custom implementations detected! Found %s but expected a single implementation!";
 
-	private final @NonNull MetadataReaderFactory metadataReaderFactory;
-	private final @NonNull Environment environment;
-	private final @NonNull ResourceLoader resourceLoader;
+	private final Environment environment;
+	private final ResourceLoader resourceLoader;
+	private final Lazy<Set<BeanDefinition>> implementationCandidates;
 
 	/**
-	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
-	 *
-	 * @param configuration the {@link RepositoryConfiguration} to consider.
-	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found.
+	 * Creates a new {@link CustomRepositoryImplementationDetector} with the given {@link Environment},
+	 * {@link ResourceLoader} and {@link ImplementationDetectionConfiguration}. The latter will be registered for a
+	 * one-time component scan for implementation candidates that will the be used and filtered in all subsequent calls to
+	 * {@link #detectCustomImplementation(RepositoryConfiguration)}.
+	 * 
+	 * @param environment must not be {@literal null}.
+	 * @param resourceLoader must not be {@literal null}.
+	 * @param configuration must not be {@literal null}.
 	 */
-	@SuppressWarnings("deprecation")
-	public Optional<AbstractBeanDefinition> detectCustomImplementation(RepositoryConfiguration<?> configuration) {
+	public CustomRepositoryImplementationDetector(Environment environment, ResourceLoader resourceLoader,
+			ImplementationDetectionConfiguration configuration) {
 
-		// TODO 2.0: Extract into dedicated interface for custom implementation lookup configuration.
+		Assert.notNull(environment, "Environment must not be null!");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+		Assert.notNull(configuration, "ImplementationDetectionConfiguration must not be null!");
 
-		return detectCustomImplementation( //
-				configuration.getImplementationClassName(), //
-				configuration.getImplementationBeanName(), //
-				configuration.getImplementationBasePackages(), //
-				configuration.getExcludeFilters(), //
-				bd -> configuration.getConfigurationSource().generateBeanName(bd));
+		this.environment = environment;
+		this.resourceLoader = resourceLoader;
+		this.implementationCandidates = Lazy.of(() -> findCandidateBeanDefinitions(configuration));
+	}
+
+	/**
+	 * Creates a new {@link CustomRepositoryImplementationDetector} with the given {@link Environment} and
+	 * {@link ResourceLoader}. Calls to {@link #detectCustomImplementation(ImplementationLookupConfiguration)} will issue
+	 * scans for
+	 * 
+	 * @param environment must not be {@literal null}.
+	 * @param resourceLoader must not be {@literal null}.
+	 */
+	public CustomRepositoryImplementationDetector(Environment environment, ResourceLoader resourceLoader) {
+
+		Assert.notNull(environment, "Environment must not be null!");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+
+		this.environment = environment;
+		this.resourceLoader = resourceLoader;
+		this.implementationCandidates = Lazy.empty();
 	}
 
 	/**
 	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
 	 *
-	 * @param className must not be {@literal null}.
-	 * @param beanName may be {@literal null}
-	 * @param basePackages must not be {@literal null}.
-	 * @param excludeFilters must not be {@literal null}.
-	 * @param beanNameGenerator must not be {@literal null}.
+	 * @param lookup must not be {@literal null}.
 	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found.
 	 */
-	public Optional<AbstractBeanDefinition> detectCustomImplementation(String className, @Nullable String beanName,
-			Iterable<String> basePackages, Iterable<TypeFilter> excludeFilters,
-			Function<BeanDefinition, String> beanNameGenerator) {
+	public Optional<AbstractBeanDefinition> detectCustomImplementation(ImplementationLookupConfiguration lookup) {
 
-		Assert.notNull(className, "ClassName must not be null!");
-		Assert.notNull(basePackages, "BasePackages must not be null!");
+		Assert.notNull(lookup, "ImplementationLookupConfiguration must not be null!");
 
-		Set<BeanDefinition> definitions = findCandidateBeanDefinitions(className, basePackages, excludeFilters);
+		Set<BeanDefinition> definitions = implementationCandidates.getOptional()
+				.orElseGet(() -> findCandidateBeanDefinitions(lookup)).stream() //
+				.filter(lookup::matches) //
+				.collect(StreamUtils.toUnmodifiableSet());
 
 		return SelectionSet //
 				.of(definitions, c -> c.isEmpty() ? Optional.empty() : throwAmbiguousCustomImplementationException(c)) //
-				.filterIfNecessary(bd -> beanName != null && beanName.equals(beanNameGenerator.apply(bd)))//
-				.uniqueResult().map(it -> AbstractBeanDefinition.class.cast(it));
+				.filterIfNecessary(lookup::hasMatchingBeanName) //
+				.uniqueResult() //
+				.map(AbstractBeanDefinition.class::cast);
 	}
 
-	Set<BeanDefinition> findCandidateBeanDefinitions(String className, Iterable<String> basePackages,
-			Iterable<TypeFilter> excludeFilters) {
+	private Set<BeanDefinition> findCandidateBeanDefinitions(ImplementationDetectionConfiguration config) {
 
-		// Build pattern to lookup implementation class
+		String postfix = config.getImplementationPostfix();
 
-		// Build classpath scanner and lookup bean definition
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false,
 				environment);
 		provider.setResourceLoader(resourceLoader);
-		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
-		provider.setMetadataReaderFactory(metadataReaderFactory);
+		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, postfix));
+		provider.setMetadataReaderFactory(config.getMetadataReaderFactory());
 		provider.addIncludeFilter((reader, factory) -> true);
 
-		excludeFilters.forEach(it -> provider.addExcludeFilter(it));
+		config.getExcludeFilters().forEach(it -> provider.addExcludeFilter(it));
 
-		return Streamable.of(basePackages).stream()//
+		return config.getBasePackages().stream()//
 				.flatMap(it -> provider.findCandidateComponents(it).stream())//
 				.collect(Collectors.toSet());
 	}

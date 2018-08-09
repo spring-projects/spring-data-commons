@@ -17,6 +17,7 @@ package org.springframework.data.repository.config;
 
 import java.util.Optional;
 
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.util.Streamable;
@@ -68,24 +69,6 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	Optional<String> getNamedQueriesLocation();
 
 	/**
-	 * Returns the class name of the custom implementation.
-	 *
-	 * @return
-	 * @deprecated since 2.0. Use repository compositions by creating mixins.
-	 */
-	@Deprecated
-	String getImplementationClassName();
-
-	/**
-	 * Returns the bean name of the custom implementation.
-	 *
-	 * @return
-	 * @deprecated since 2.0. Use repository compositions by creating mixins.
-	 */
-	@Deprecated
-	String getImplementationBeanName();
-
-	/**
 	 * Returns the name of the repository base class to be used or {@literal null} if the store specific defaults shall be
 	 * applied.
 	 *
@@ -129,4 +112,22 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 * @return
 	 */
 	Streamable<TypeFilter> getExcludeFilters();
+
+	/**
+	 * Returns the {@link ImplementationDetectionConfiguration} to be used for this repository.
+	 *
+	 * @param factory must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 2.1
+	 */
+	ImplementationDetectionConfiguration toImplementationDetectionConfiguration(MetadataReaderFactory factory);
+
+	/**
+	 * Returns the {@link ImplementationLookupConfiguration} for the given {@link MetadataReaderFactory}.
+	 * 
+	 * @param factory must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 2.1
+	 */
+	ImplementationLookupConfiguration toLookupConfiguration(MetadataReaderFactory factory);
 }

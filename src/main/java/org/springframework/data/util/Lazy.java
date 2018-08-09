@@ -15,6 +15,8 @@
  */
 package org.springframework.data.util;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
@@ -35,8 +37,11 @@ import org.springframework.util.Assert;
  * @since 2.0
  */
 @RequiredArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode
 public class Lazy<T> implements Supplier<T> {
+
+	private static final Lazy<?> EMPTY = new Lazy<>(() -> null, null, true);
 
 	private final Supplier<? extends T> supplier;
 	private @Nullable T value = null;
@@ -65,6 +70,17 @@ public class Lazy<T> implements Supplier<T> {
 		Assert.notNull(value, "Value must not be null!");
 
 		return new Lazy<>(() -> value);
+	}
+
+	/**
+	 * Creates a pre-resolved empty {@link Lazy}.
+	 * 
+	 * @return
+	 * @since 2.1
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> Lazy<T> empty() {
+		return (Lazy<T>) EMPTY;
 	}
 
 	/**

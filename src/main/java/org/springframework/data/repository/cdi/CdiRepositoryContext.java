@@ -15,33 +15,26 @@
  */
 package org.springframework.data.repository.cdi;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.enterprise.inject.CreationException;
 import javax.enterprise.inject.UnsatisfiedResolutionException;
 
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.data.repository.config.FragmentMetadata;
+import org.springframework.data.repository.config.ImplementationDetectionConfiguration;
+import org.springframework.data.repository.config.ImplementationLookupConfiguration;
 import org.springframework.data.repository.config.RepositoryFragmentConfiguration;
-import org.springframework.data.repository.config.RepositoryFragmentDiscovery;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
@@ -61,6 +54,7 @@ public class CdiRepositoryContext {
 	private final ClassLoader classLoader;
 	private final CustomRepositoryImplementationDetector detector;
 	private final MetadataReaderFactory metadataReaderFactory;
+	private final FragmentMetadata metdata;
 
 	/**
 	 * Create a new {@link CdiRepositoryContext} given {@link ClassLoader} and initialize
@@ -69,16 +63,8 @@ public class CdiRepositoryContext {
 	 * @param classLoader must not be {@literal null}.
 	 */
 	public CdiRepositoryContext(ClassLoader classLoader) {
-
-		Assert.notNull(classLoader, "ClassLoader must not be null!");
-
-		this.classLoader = classLoader;
-
-		Environment environment = new StandardEnvironment();
-		ResourceLoader resourceLoader = new PathMatchingResourcePatternResolver(classLoader);
-
-		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
-		this.detector = new CustomRepositoryImplementationDetector(metadataReaderFactory, environment, resourceLoader);
+		this(classLoader, new CustomRepositoryImplementationDetector(new StandardEnvironment(),
+				new PathMatchingResourcePatternResolver(classLoader)));
 	}
 
 	/**
@@ -97,6 +83,7 @@ public class CdiRepositoryContext {
 
 		this.classLoader = classLoader;
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
+		this.metdata = new FragmentMetadata(metadataReaderFactory);
 		this.detector = detector;
 	}
 
@@ -130,14 +117,11 @@ public class CdiRepositoryContext {
 	Stream<RepositoryFragmentConfiguration> getRepositoryFragments(CdiRepositoryConfiguration configuration,
 			Class<?> repositoryInterface) {
 
-		ClassMetadata classMetadata = getClassMetadata(metadataReaderFactory, repositoryInterface.getName());
+		CdiImplementationDetectionConfiguration config = new CdiImplementationDetectionConfiguration(configuration,
+				metadataReaderFactory);
 
-		RepositoryFragmentDiscovery fragmentConfiguration = new CdiRepositoryFragmentDiscovery(configuration);
-
-		return Arrays.stream(classMetadata.getInterfaceNames()) //
-				.filter(it -> FragmentMetadata.isCandidate(it, metadataReaderFactory)) //
-				.map(it -> FragmentMetadata.of(it, fragmentConfiguration)) //
-				.map(this::detectRepositoryFragmentConfiguration) //
+		return metdata.getFragmentInterfaces(repositoryInterface.getName()) //
+				.map(it -> detectRepositoryFragmentConfiguration(it, config)) //
 				.flatMap(Optionals::toStream);
 	}
 
@@ -152,26 +136,22 @@ public class CdiRepositoryContext {
 	Optional<Class<?>> getCustomImplementationClass(Class<?> repositoryType,
 			CdiRepositoryConfiguration cdiRepositoryConfiguration) {
 
-		String className = getCustomImplementationClassName(repositoryType, cdiRepositoryConfiguration);
+		ImplementationDetectionConfiguration configuration = new CdiImplementationDetectionConfiguration(
+				cdiRepositoryConfiguration, metadataReaderFactory);
+		ImplementationLookupConfiguration lookup = configuration.forFragment(repositoryType.getName());
 
-		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation( //
-				className, //
-				className, Collections.singleton(repositoryType.getPackage().getName()), //
-				Collections.emptySet(), //
-				BeanDefinition::getBeanClassName);
+		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(lookup);
 
 		return beanDefinition.map(this::loadBeanClass);
 	}
 
-	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(
-			FragmentMetadata configuration) {
+	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(String fragmentInterfaceName,
+			CdiImplementationDetectionConfiguration config) {
 
-		String className = configuration.getFragmentImplementationClassName();
+		ImplementationLookupConfiguration lookup = config.forFragment(fragmentInterfaceName);
+		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(lookup);
 
-		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(className, null,
-				configuration.getBasePackages(), configuration.getExclusions(), BeanDefinition::getBeanClassName);
-
-		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(configuration.getFragmentInterfaceName(), bd));
+		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterfaceName, bd));
 	}
 
 	@Nullable
@@ -182,45 +162,37 @@ public class CdiRepositoryContext {
 		return beanClassName == null ? null : loadClass(beanClassName);
 	}
 
-	private static ClassMetadata getClassMetadata(MetadataReaderFactory metadataReaderFactory, String className) {
-
-		try {
-			return metadataReaderFactory.getMetadataReader(className).getClassMetadata();
-		} catch (IOException e) {
-			throw new CreationException(String.format("Cannot parse %s metadata.", className), e);
-		}
-	}
-
-	private static String getCustomImplementationClassName(Class<?> repositoryType,
-			CdiRepositoryConfiguration cdiRepositoryConfiguration) {
-
-		String configuredPostfix = cdiRepositoryConfiguration.getRepositoryImplementationPostfix();
-		Assert.hasText(configuredPostfix, "Configured repository postfix must not be null or empty!");
-
-		return ClassUtils.getShortName(repositoryType) + configuredPostfix;
-	}
-
 	@RequiredArgsConstructor
-	private static class CdiRepositoryFragmentDiscovery implements RepositoryFragmentDiscovery {
+	private static class CdiImplementationDetectionConfiguration implements ImplementationDetectionConfiguration {
 
 		private final CdiRepositoryConfiguration configuration;
+		private final @Getter MetadataReaderFactory metadataReaderFactory;
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryFragmentDiscovery#getExcludeFilters()
+		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getImplementationPostfix()
+		 */
+		@Override
+		public String getImplementationPostfix() {
+			return configuration.getRepositoryImplementationPostfix();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getBasePackages()
+		 */
+		@Override
+		public Streamable<String> getBasePackages() {
+			return Streamable.empty();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getExcludeFilters()
 		 */
 		@Override
 		public Streamable<TypeFilter> getExcludeFilters() {
-			return Streamable.of(new AnnotationTypeFilter(NoRepositoryBean.class));
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryFragmentDiscovery#getRepositoryImplementationPostfix()
-		 */
-		@Override
-		public Optional<String> getRepositoryImplementationPostfix() {
-			return Optional.of(configuration.getRepositoryImplementationPostfix());
+			return Streamable.empty();
 		}
 	}
 }
