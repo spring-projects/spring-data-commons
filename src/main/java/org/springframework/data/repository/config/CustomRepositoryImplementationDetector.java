@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -33,7 +32,6 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
@@ -51,7 +49,7 @@ import org.springframework.util.Assert;
 @RequiredArgsConstructor
 public class CustomRepositoryImplementationDetector {
 
-	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
+	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/%s.class";
 	private static final String AMBIGUOUS_CUSTOM_IMPLEMENTATIONS = "Ambiguous custom implementations detected! Found %s but expected a single implementation!";
 
 	private final @NonNull MetadataReaderFactory metadataReaderFactory;
@@ -106,7 +104,6 @@ public class CustomRepositoryImplementationDetector {
 			Iterable<TypeFilter> excludeFilters) {
 
 		// Build pattern to lookup implementation class
-		Pattern pattern = Pattern.compile(".*\\." + className);
 
 		// Build classpath scanner and lookup bean definition
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false,
@@ -114,7 +111,7 @@ public class CustomRepositoryImplementationDetector {
 		provider.setResourceLoader(resourceLoader);
 		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, className));
 		provider.setMetadataReaderFactory(metadataReaderFactory);
-		provider.addIncludeFilter(new RegexPatternTypeFilter(pattern));
+		provider.addIncludeFilter((reader, factory) -> true);
 
 		excludeFilters.forEach(it -> provider.addExcludeFilter(it));
 
