@@ -5,4 +5,5 @@ http\://www.springframework.org/schema/data/repository/spring-repository-1.6.xsd
 http\://www.springframework.org/schema/data/repository/spring-repository-1.7.xsd=org/springframework/data/repository/config/spring-repository-1.7.xsd
 http\://www.springframework.org/schema/data/repository/spring-repository-1.8.xsd=org/springframework/data/repository/config/spring-repository-1.8.xsd
 http\://www.springframework.org/schema/data/repository/spring-repository-1.11.xsd=org/springframework/data/repository/config/spring-repository-1.11.xsd
-http\://www.springframework.org/schema/data/repository/spring-repository.xsd=org/springframework/data/repository/config/spring-repository-1.11.xsd
+http\://www.springframework.org/schema/data/repository/spring-repository-2.1.xsd=org/springframework/data/repository/config/spring-repository-2.1.xsd
+http\://www.springframework.org/schema/data/repository/spring-repository.xsd=org/springframework/data/repository/config/spring-repository-2.1.xsd

@@ -170,7 +170,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 */
 	@Override
 	public boolean isLazyInit() {
-		return definition.isLazyInit();
+		return definition.isLazyInit() || !configurationSource.getBootstrapMode().equals(BootstrapMode.DEFAULT);
 	}
 
 	/*

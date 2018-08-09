@@ -15,18 +15,26 @@
  */
 package org.springframework.data.repository.config;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.AutowireCandidateResolver;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
@@ -49,6 +57,7 @@ public class RepositoryConfigurationDelegate {
 
 	private static final String REPOSITORY_REGISTRATION = "Spring Data {} - Registering repository: {} - Interface: {} - Factory: {}";
 	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode!";
+	private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = "Non-default AutowireCandidateResolver ({}) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working!";
 
 	static final String FACTORY_BEAN_OBJECT_TYPE = "factoryBeanObjectType";
 
@@ -122,8 +131,12 @@ public class RepositoryConfigurationDelegate {
 					configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
 		}
 
+		Map<String, RepositoryConfiguration<?>> configurations = new HashMap<>();
+
 		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : extension
 				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode)) {
+
+			configurations.put(configuration.getRepositoryInterface(), configuration);
 
 			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
 
@@ -149,11 +162,52 @@ public class RepositoryConfigurationDelegate {
 			definitions.add(new BeanComponentDefinition(beanDefinition, beanName));
 		}
 
+		potentiallyLazifyRepositories(configurations, registry, configurationSource.getBootstrapMode());
+
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Finished repository scanning.");
 		}
 
 		return definitions;
+	}
+
+	/**
+	 * Registers a {@link LazyRepositoryInjectionPointResolver} over the default
+	 * {@link ContextAnnotationAutowireCandidateResolver} to make injection points of lazy repositories lazy, too. Will
+	 * augment the {@link LazyRepositoryInjectionPointResolver}'s configuration if there already is one configured.
+	 * 
+	 * @param configurations must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
+	 */
+	private static void potentiallyLazifyRepositories(Map<String, RepositoryConfiguration<?>> configurations,
+			BeanDefinitionRegistry registry, BootstrapMode mode) {
+
+		if (!DefaultListableBeanFactory.class.isInstance(registry) || mode.equals(BootstrapMode.DEFAULT)) {
+			return;
+		}
+
+		DefaultListableBeanFactory beanFactory = DefaultListableBeanFactory.class.cast(registry);
+
+		AutowireCandidateResolver resolver = beanFactory.getAutowireCandidateResolver();
+
+		if (!Arrays.asList(ContextAnnotationAutowireCandidateResolver.class, LazyRepositoryInjectionPointResolver.class)
+				.contains(resolver.getClass())) {
+
+			LOG.warn(NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER, resolver.getClass().getName());
+
+			return;
+		}
+
+		AutowireCandidateResolver newResolver = LazyRepositoryInjectionPointResolver.class.isInstance(resolver) //
+				? LazyRepositoryInjectionPointResolver.class.cast(resolver).withAdditionalConfigurations(configurations) //
+				: new LazyRepositoryInjectionPointResolver(configurations);
+
+		beanFactory.setAutowireCandidateResolver(newResolver);
+
+		if (mode.equals(BootstrapMode.DEFERRED)) {
+			beanFactory.registerSingleton(DeferredRepositoryInitializationListener.class.getName(),
+					new DeferredRepositoryInitializationListener(beanFactory));
+		}
 	}
 
 	/**
@@ -173,5 +227,59 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		return multipleModulesFound;
+	}
+
+	/**
+	 * Customer {@link ContextAnnotationAutowireCandidateResolver} that also considers all injection points for lazy
+	 * repositories lazy.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.1
+	 */
+	@Slf4j
+	@RequiredArgsConstructor
+	static class LazyRepositoryInjectionPointResolver extends ContextAnnotationAutowireCandidateResolver {
+
+		private final Map<String, RepositoryConfiguration<?>> configurations;
+
+		/**
+		 * Returns a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with the
+		 * given ones.
+		 * 
+		 * @param configurations must not be {@literal null}.
+		 * @return
+		 */
+		LazyRepositoryInjectionPointResolver withAdditionalConfigurations(
+				Map<String, RepositoryConfiguration<?>> configurations) {
+
+			Map<String, RepositoryConfiguration<?>> map = new HashMap<>(this.configurations);
+			map.putAll(configurations);
+
+			return new LazyRepositoryInjectionPointResolver(map);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver#isLazy(org.springframework.beans.factory.config.DependencyDescriptor)
+		 */
+		@Override
+		protected boolean isLazy(DependencyDescriptor descriptor) {
+
+			Class<?> type = descriptor.getDependencyType();
+
+			RepositoryConfiguration<?> configuration = configurations.get(type.getName());
+
+			if (configuration == null) {
+				return super.isLazy(descriptor);
+			}
+
+			boolean lazyInit = configuration.isLazyInit();
+
+			if (lazyInit) {
+				LOG.debug("Creating lazy injection proxy for {}…", configuration.getRepositoryInterface());
+			}
+
+			return lazyInit;
+		}
 	}
 }

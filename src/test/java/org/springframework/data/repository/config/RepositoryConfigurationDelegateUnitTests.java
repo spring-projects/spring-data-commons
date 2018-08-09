@@ -15,18 +15,29 @@
  */
 package org.springframework.data.repository.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.aop.TargetSource;
+import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver;
+import org.springframework.data.repository.sample.AddressRepository;
+import org.springframework.data.repository.sample.AddressRepositoryClient;
 import org.springframework.data.repository.sample.ProductRepository;
 
 /**
@@ -35,7 +46,7 @@ import org.springframework.data.repository.sample.ProductRepository;
  * @author Oliver Gierke
  * @soundtrack Richard Spaven - Tribute (Whole Other*)
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class RepositoryConfigurationDelegateUnitTests {
 
 	@Mock RepositoryConfigurationExtension extension;
@@ -61,6 +72,51 @@ public class RepositoryConfigurationDelegateUnitTests {
 		}
 	}
 
+	@Test // DATACMNS-1368
+	public void registersLazyAutowireCandidateResolver() {
+		assertLazyRepositoryBeanSetup(LazyConfig.class);
+	}
+
+	@Test // DATACMNS-1368
+	public void registersDeferredRepositoryInitializationListener() {
+
+		ListableBeanFactory beanFactory = assertLazyRepositoryBeanSetup(DeferredConfig.class);
+
+		assertThat(beanFactory.getBeanNamesForType(DeferredRepositoryInitializationListener.class)).isNotEmpty();
+
+	}
+
+	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
+
+		StandardEnvironment environment = new StandardEnvironment();
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(configClass);
+
+		assertThat(context.getDefaultListableBeanFactory().getAutowireCandidateResolver())
+				.isInstanceOf(LazyRepositoryInjectionPointResolver.class);
+
+		AddressRepositoryClient client = context.getBean(AddressRepositoryClient.class);
+		AddressRepository repository = client.getRepository();
+
+		assertThat(Advised.class.isInstance(repository)).isTrue();
+
+		TargetSource targetSource = Advised.class.cast(repository).getTargetSource();
+		assertThat(targetSource).isNotNull();
+
+		return context.getDefaultListableBeanFactory();
+	}
+
 	@EnableRepositories(basePackageClasses = ProductRepository.class)
 	static class TestConfig {}
+
+	@ComponentScan(basePackageClasses = AddressRepository.class)
+	@EnableRepositories(basePackageClasses = AddressRepository.class,
+			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AddressRepository.class),
+			bootstrapMode = BootstrapMode.LAZY)
+	static class LazyConfig {}
+
+	@ComponentScan(basePackageClasses = AddressRepository.class)
+	@EnableRepositories(basePackageClasses = AddressRepository.class,
+			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AddressRepository.class),
+			bootstrapMode = BootstrapMode.DEFERRED)
+	static class DeferredConfig {}
 }

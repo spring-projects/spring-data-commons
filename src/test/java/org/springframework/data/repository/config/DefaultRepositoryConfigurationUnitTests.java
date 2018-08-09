@@ -23,6 +23,7 @@ import lombok.Value;
 
 import java.util.Optional;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -44,6 +45,11 @@ public class DefaultRepositoryConfigurationUnitTests {
 	@Mock RepositoryConfigurationSource source;
 
 	RepositoryConfigurationExtension extension = new SimplerRepositoryConfigurationExtension("factory", "module");
+
+	@Before
+	public void before() {
+		when(source.getBootstrapMode()).thenReturn(BootstrapMode.DEFAULT);
+	}
 
 	@Test
 	public void supportsBasicConfiguration() {

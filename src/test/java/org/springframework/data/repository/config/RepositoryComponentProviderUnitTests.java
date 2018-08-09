@@ -49,7 +49,7 @@ public class RepositoryComponentProviderUnitTests {
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.sample");
 
-		assertThat(components).hasSize(3);
+		assertThat(components).hasSize(4);
 		assertThat(components).extracting(BeanDefinition::getBeanClassName)
 				.contains(SampleAnnotatedRepository.class.getName());
 	}

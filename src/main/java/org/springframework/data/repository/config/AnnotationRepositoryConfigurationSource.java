@@ -65,6 +65,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS = "repositoryFactoryBeanClass";
 	private static final String REPOSITORY_BASE_CLASS = "repositoryBaseClass";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "considerNestedRepositories";
+	private static final String BOOTSTRAP_MODE = "bootstrapMode";
 
 	private final AnnotationMetadata configMetadata;
 	private final AnnotationMetadata enableAnnotationMetadata;
@@ -339,6 +340,20 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	@Override
 	public boolean usesExplicitFilters() {
 		return hasExplicitFilters;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBootstrapMode()
+	 */
+	@Override
+	public BootstrapMode getBootstrapMode() {
+
+		try {
+			return attributes.getEnum(BOOTSTRAP_MODE);
+		} catch (IllegalArgumentException o_O) {
+			return BootstrapMode.DEFAULT;
+		}
 	}
 
 	/**

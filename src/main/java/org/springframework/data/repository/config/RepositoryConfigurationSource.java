@@ -137,4 +137,12 @@ public interface RepositoryConfigurationSource {
 	 * @since 2.1
 	 */
 	ImplementationDetectionConfiguration toImplementationDetectionConfiguration(MetadataReaderFactory factory);
+
+	/**
+	 * Defines the repository {@link BootstrapMode} to be used.
+	 * 
+	 * @return
+	 * @since 2.1
+	 */
+	BootstrapMode getBootstrapMode();
 }

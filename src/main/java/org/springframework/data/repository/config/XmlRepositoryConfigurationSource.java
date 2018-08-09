@@ -16,6 +16,7 @@
 package org.springframework.data.repository.config;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.springframework.beans.factory.xml.ParserContext;
@@ -50,6 +51,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS_NAME = "factory-class";
 	private static final String REPOSITORY_BASE_CLASS_NAME = "base-class";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "consider-nested-repositories";
+	private static final String BOOTSTRAP_MODE = "bootstrap-mode";
 
 	private final Element element;
 	private final ParserContext context;
@@ -210,5 +212,19 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public boolean usesExplicitFilters() {
 		return !(this.includeFilters.isEmpty() && this.excludeFilters.isEmpty());
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBootstrapMode()
+	 */
+	@Override
+	public BootstrapMode getBootstrapMode() {
+
+		String attribute = element.getAttribute(BOOTSTRAP_MODE);
+
+		return StringUtils.hasText(attribute) //
+				? BootstrapMode.valueOf(attribute.toUpperCase(Locale.US)) //
+				: BootstrapMode.DEFAULT;
 	}
 }

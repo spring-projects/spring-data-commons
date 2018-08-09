@@ -51,4 +51,6 @@ public @interface EnableRepositories {
 	boolean considerNestedRepositories() default false;
 
 	boolean limitImplementationBasePackages() default true;
+
+	BootstrapMode bootstrapMode() default BootstrapMode.DEFAULT;
 }
