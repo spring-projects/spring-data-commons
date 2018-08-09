@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -219,15 +220,34 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * @param registry must not be {@literal null}.
 	 * @param beanName must not be {@literal null} or empty.
 	 * @param source must not be {@literal null}.
+	 * @deprecated since 2.1, prefer
+	 *             {@link #registerIfNotAlreadyRegistered(Supplier, BeanDefinitionRegistry, String, Object)}
 	 */
+	@Deprecated
 	public static void registerIfNotAlreadyRegistered(AbstractBeanDefinition bean, BeanDefinitionRegistry registry,
 			String beanName, Object source) {
+		registerIfNotAlreadyRegistered(() -> bean, registry, beanName, source);
+	}
+
+	/**
+	 * Registers the given {@link AbstractBeanDefinition} with the given registry with the given bean name unless the
+	 * registry already contains a bean with that name.
+	 *
+	 * @param supplier must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
+	 * @param beanName must not be {@literal null} or empty.
+	 * @param source must not be {@literal null}.
+	 */
+	public static void registerIfNotAlreadyRegistered(Supplier<AbstractBeanDefinition> supplier,
+			BeanDefinitionRegistry registry, String beanName, Object source) {
 
 		if (registry.containsBeanDefinition(beanName)) {
 			return;
 		}
 
+		AbstractBeanDefinition bean = supplier.get();
 		bean.setSource(source);
+
 		registry.registerBeanDefinition(beanName, bean);
 	}
 

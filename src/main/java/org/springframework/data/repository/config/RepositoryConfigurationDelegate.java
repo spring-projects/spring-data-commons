@@ -23,15 +23,21 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
 
@@ -113,12 +119,16 @@ public class RepositoryConfigurationDelegate {
 
 		extension.registerBeansForRoot(registry, configurationSource);
 
+		if (DefaultListableBeanFactory.class.isInstance(registry)) {
+			DefaultListableBeanFactory.class.cast(registry).setAutowireCandidateResolver(new Foo());
+		}
+
 		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, resourceLoader,
 				environment);
 		List<BeanComponentDefinition> definitions = new ArrayList<>();
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Scanning for repositories in packages {}.",
+			LOG.debug("Scanning for repositories in {}.",
 					configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
 		}
 
@@ -173,5 +183,25 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		return multipleModulesFound;
+	}
+
+	private static class Foo extends ContextAnnotationAutowireCandidateResolver {
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver#isLazy(org.springframework.beans.factory.config.DependencyDescriptor)
+		 */
+		@Override
+		protected boolean isLazy(DependencyDescriptor descriptor) {
+
+			Class<?> type = descriptor.getDependencyType();
+
+			if (Repository.class.isAssignableFrom(type)) {
+				return AnnotatedElementUtils.isAnnotated(type, Lazy.class);
+			}
+
+			// TODO Auto-generated method stub
+			return super.isLazy(descriptor);
+		}
 	}
 }
