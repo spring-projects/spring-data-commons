@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -78,6 +79,7 @@ import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
  * @author Christoph Strobl
  * @author Jens Schauder
  */
+@Slf4j
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
 	private static final BiFunction<Method, Object[], Object[]> REACTIVE_ARGS_CONVERTER = (method, o) -> {
@@ -287,6 +289,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	@SuppressWarnings({ "unchecked" })
 	public <T> T getRepository(Class<T> repositoryInterface, RepositoryFragments fragments) {
 
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Initializing repository instance for {}…", repositoryInterface.getName());
+		}
+
 		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
 		Assert.notNull(fragments, "RepositoryFragments must not be null!");
 
@@ -320,7 +326,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		composition = composition.append(RepositoryFragment.implemented(target));
 		result.addAdvice(new ImplementationMethodExecutionInterceptor(composition));
 
-		return (T) result.getProxy(classLoader);
+		T repository = (T) result.getProxy(classLoader);
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Finished creation of repository instance for {}.", repositoryInterface.getName());
+		}
+
+		return repository;
 	}
 
 	/**

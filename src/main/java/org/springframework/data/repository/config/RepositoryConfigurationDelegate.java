@@ -15,13 +15,14 @@
  */
 package org.springframework.data.repository.config;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -43,9 +44,8 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Jens Schauder
  */
+@Slf4j
 public class RepositoryConfigurationDelegate {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryConfigurationDelegate.class);
 
 	private static final String REPOSITORY_REGISTRATION = "Spring Data {} - Registering repository: {} - Interface: {} - Factory: {}";
 	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode!";
@@ -117,6 +117,11 @@ public class RepositoryConfigurationDelegate {
 				environment);
 		List<BeanComponentDefinition> definitions = new ArrayList<>();
 
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Scanning for repositories in packages {}.",
+					configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
+		}
+
 		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : extension
 				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode)) {
 
@@ -133,15 +138,19 @@ public class RepositoryConfigurationDelegate {
 			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
 			String beanName = configurationSource.generateBeanName(beanDefinition);
 
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName,
-						configuration.getRepositoryInterface(), configuration.getRepositoryFactoryBeanClassName());
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName, configuration.getRepositoryInterface(),
+						configuration.getRepositoryFactoryBeanClassName());
 			}
 
 			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, configuration.getRepositoryInterface());
 
 			registry.registerBeanDefinition(beanName, beanDefinition);
 			definitions.add(new BeanComponentDefinition(beanDefinition, beanName));
+		}
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Finished repository scanning.");
 		}
 
 		return definitions;
@@ -160,7 +169,7 @@ public class RepositoryConfigurationDelegate {
 				.loadFactoryNames(RepositoryFactorySupport.class, resourceLoader.getClassLoader()).size() > 1;
 
 		if (multipleModulesFound) {
-			LOGGER.info(MULTIPLE_MODULES);
+			LOG.info(MULTIPLE_MODULES);
 		}
 
 		return multipleModulesFound;
