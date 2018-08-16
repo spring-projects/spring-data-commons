@@ -1,0 +1,274 @@
+[[mapping.mutability]]
+= Object Mutation, Creation, and Property Access
+
+This section covers object mutability, object creation, and property access.
+
+Object mutability impacts how Spring Data handles objects for specific functionality that requires Spring Data to change properties of a particular object.
+Such changes can be Id generation, auditing or as simple as reading back an object.
+
+In general, Spring Data has no visibility requirements for types, constructors or property accessors which allows you to design your data model according to your requirements.
+Certain limitations may apply when using Spring Data on Java Runtimes that have encapsulation enabled.
+
+[[mapping.mutability.mutable]]
+== Mutable Objects
+
+Mutable objects are objects whose properties are mutable.
+Such objects have non-`final` fields and typically getters and setters. Consider the following class ``Person``:
+
+====
+[source,java]
+----
+class Person {
+
+    private String id;
+    private String name;
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    // other getters/setters omitted for brevity.
+}
+----
+====
+
+This class above is a typical example of a mutable object.
+It has setters for fields. The class is created with a no-args constructor. When Spring Data needs to change a `Person` object then changes are applied in place by setting a property directly. This means that changes become visible in the object instance that was passed to Spring Data methods such as ``save(…)``. To avoid this behavior, let's take a look at <<mapping.mutability.immutable>>.
+
+[[mapping.mutability.immutable]]
+== Immutable Objects
+
+Immutable objects are objects that do not allow changes to the actual object instance. Immutable objects can be such that entirely prevent association with to be updated property values or that create new instances.
+
+Spring Data supports both flavors of immutable objects. Consider the following immutable class ``Person``:
+
+====
+[source,java]
+----
+class Person {
+
+    private final String id;
+    private final String name;
+
+    public Person(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+}
+----
+====
+
+The `Person` class above is fully immutable - once it's created, it cannot be changed anymore. Object instances must be created by using the constructor which takes `id` and `name` parameters.
+Spring Data's `EntityReader` is able to read immutable entities from a data store. The class above declares a single constructor. Read <<mapping.mutability.constructorcreation>> for further details on how to configure additional constructors.
+
+Store modules that provide Id generation or auditing require to set the corresponding properties when persisting an object.
+This isn't possible with a class like `Person` above. Attempts to set an immutable property result in `UnsupportedOperationException`.
+
+To enable mutability with immutable objects, the class itself must declare methods that allow for creating object instances that hold all values from the previous instance and the updated property value. Spring Data supports the following patterns:
+
+* Value objects exposing `with…` methods (Wither-methods)
+* Usage of Kotlin data classes to leverage the `.copy(…)` method
+
+=== With methods
+
+Value objects providing `with…` methods create a new instance of an object that carries all previous property values and has a changed value of the `with…` property, as the following example shows:
+
+====
+[source,java]
+----
+class Person {
+
+    private final @Id String id;
+    private final String name;
+
+    public Person(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public Person withId(String id) {
+        return new Person(id, this.name);
+    }
+
+    // other wither methods omitted for brevity.
+}
+----
+====
+
+NOTE: Immutable objects using wither methods create new instances on a `with…` call. Make sure to provide a constructor that takes all arguments to avoid excessive instantiations.
+
+Lombok users can use `@Value` and `@Wither` annotations to follow the `with…` pattern.
+
+=== Kotlin data classes
+
+In Kotlin, all classes are immutable by default and require explicit property declarations to define mutable properties. Consider the following `data` class `Person`:
+
+====
+[source,java]
+----
+data class Person(val id: String, val name: String)
+----
+====
+
+This class is effectively immutable. It allows to create new instances as Kotlin generates a `copy(…)` method that creates new object instances copying all property values from the existing object and applying property values provided as arguments to the method.
+
+
+[[mapping.mutability.propertyaccess]]
+== Property Access
+
+Spring Data attempts to use field access as the primary way how to retrieve and set property values. You can customize this preference by annotating entire classes or individual properties with `@AccessType`:
+
+====
+[source,java]
+----
+@AccessType(PROPERTY)
+class Person {                                 <1>
+
+    private String id;
+
+    @AccessType(FIELD)                         <2>
+    private String name;
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    // other getters/setters omitted for brevity.
+}
+----
+<1> Annotating a class with `@AccessType(PROPERTY)` uses property accessors (getters and setters) to retrieve and update properties.
+<2> You can annotate individual properties with `@AccessType` to switch to field or property access.
+Spring Data inspects property accessor methods and the field to find an annotation.
+====
+
+Spring Data can use reflection and generated bytecode to access properties.
+Bytecode is generated on the fly and does not require any upfront or runtime instrumentation.
+Generated bytecode access is about 5% to 7% faster than reflection access, but it imposes certain limits:
+
+* Types must not reside in the default or under the `java` package.
+* The used Java Runtime must allow for declaring classes in the originating `ClassLoader`. Java 9 and newer impose certain limitations.
+
+By default, Spring Data attempts to use generated property accessors and falls back to reflection-based access if a limitation is detected.
+
+[[mapping.mutability.constructorcreation]]
+== Constructor Creation
+
+When reading an entity from the data store, Spring Data's `EntityReader` is able to create objects by invoking its persistence constructor and to pass arguments to populate property values.
+
+Consider the following `Person` class:
+
+====
+[source,java]
+----
+class Person {
+
+    private @Id String id;
+    private String name;
+
+    Person(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    // other methods omitted for brevity.
+}
+----
+====
+
+This entity can be constructed entirely from a constructor call by passing `id` and `name` parameters.
+
+The mapping subsystem allows the customization of the object construction by annotating a constructor with the `@PersistenceConstructor` annotation. The values to be used for the constructor parameters are resolved in the following way:
+
+* If the Java type has a property whose name matches the given field of the input document, then it's property information is used to select the appropriate constructor parameter to pass the input field value to. This works only if the parameter name information is present in the java `.class` files which can be achieved by compiling the source with debug information or using the new `-parameters` command-line switch for `javac` in Java 8.
+* Otherwise, a `MappingException` is thrown to indicate that the given constructor parameter could not be bound.
+
+Let's take our `Person` class and add another constructor taking just the `id` parameter:
+
+====
+[source,java]
+----
+class Person {
+
+    private @Id String id;
+    private String name;
+
+    Person(String id) {
+        this.id = id;
+        this.name = "unknown";
+    }
+
+    @PersistenceConstructor
+    Person(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    // other methods omitted for brevity.
+}
+----
+====
+
+This class has two constructors of which one is annotated with `@PersistenceConstructor`. Spring Data will solely use this constructor to create instances of `Person`.
+
+=== Kotlin classes
+
+Kotlin classes are supported to be instantiated , all classes are immutable by default and require explicit property declarations to define mutable properties. Consider the following `data` class `Person`:
+
+====
+[source,java]
+----
+data class Person(val id: String, val name: String)
+----
+====
+
+The class above compiles to a typical class with an explicit constructor. We can customize this class by adding another constructor and annotate it with `@PersistenceConstructor` to indicate a constructor preference:
+
+====
+[source,java]
+----
+data class Person(var id: String, val name: String) {
+
+    @PersistenceConstructor
+    constructor(id: String) : this(id, "unknown")
+}
+----
+====
+
+Kotlin supports parameter optionality by allowing default values to be used if a parameter is not provided.
+When Spring Data detects a constructor with parameter defaulting, then it leaves these parameters absent if the data store does not provide a value (or simply returns `null`) so Kotlin can apply parameter defaulting. Consider the following class that applies parameter defaulting for `name`
+
+====
+[source,java]
+----
+data class Person(var id: String, val name: String = "unknown")
+----
+====
+
+Every time the `name` parameter is either not part of the result or its value is `null`, then the `name` defaults to `unknown`.
+
+Spring Data can use reflection and generated bytecode to create object instances.
+Bytecode is generated on the fly and does not require any upfront or runtime instrumentation.
+Generated bytecode creation is about 25% faster than reflection access but it imposes certain limits:
+
+* Types must not reside in the default or under the `java` package.
+* Types and their constructors must be `public`
+* Types that are inner classes must be `static`.
+* The used Java Runtime must allow for declaring classes in the originating `ClassLoader`. Java 9 and newer impose certain limitations.
+
+By default, Spring Data attempts to use generated entity instantiatiors and falls back to reflection-based ones if a limitation is detected.
