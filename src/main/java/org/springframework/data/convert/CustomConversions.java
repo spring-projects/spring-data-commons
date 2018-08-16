@@ -22,16 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -44,8 +35,8 @@ import org.springframework.core.convert.converter.GenericConverter.ConvertiblePa
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -88,14 +79,14 @@ public class CustomConversions {
 	private final ConversionTargetsCache customReadTargetTypes = new ConversionTargetsCache();
 	private final ConversionTargetsCache customWriteTargetTypes = new ConversionTargetsCache();
 
-	private final Function<ConvertiblePair, Optional<Class<?>>> getReadTarget = convertiblePair -> getCustomTarget(
-			convertiblePair.getSourceType(), Optional.of(convertiblePair.getTargetType()), readingPairs);
+	private final Function<ConvertiblePair, Class<?>> getReadTarget = convertiblePair -> getCustomTarget(
+			convertiblePair.getSourceType(), convertiblePair.getTargetType(), readingPairs);
 
-	private Function<ConvertiblePair, Optional<Class<?>>> getWriteTarget = convertiblePair -> getCustomTarget(
-			convertiblePair.getSourceType(), Optional.of(convertiblePair.getTargetType()), writingPairs);
+	private Function<ConvertiblePair, Class<?>> getWriteTarget = convertiblePair -> getCustomTarget(
+			convertiblePair.getSourceType(), convertiblePair.getTargetType(), writingPairs);
 
-	private Function<ConvertiblePair, Optional<Class<?>>> getRawWriteTarget = convertiblePair -> getCustomTarget(
-			convertiblePair.getSourceType(), Optional.empty(), writingPairs);
+	private Function<ConvertiblePair, Class<?>> getRawWriteTarget = convertiblePair -> getCustomTarget(
+			convertiblePair.getSourceType(), null, writingPairs);
 
 	/**
 	 * Creates a new {@link CustomConversions} instance registering the given converters.
@@ -239,7 +230,9 @@ public class CustomConversions {
 
 		Assert.notNull(sourceType, "Source type must not be null!");
 
-		return customWriteTargetTypes.computeIfAbsent(sourceType, getRawWriteTarget);
+		Class<?> target = customWriteTargetTypes.computeIfAbsent(sourceType, getRawWriteTarget);
+
+		return Void.class.equals(target) || target == null ? Optional.empty() : Optional.of(target);
 	}
 
 	/**
@@ -256,7 +249,9 @@ public class CustomConversions {
 		Assert.notNull(sourceType, "Source type must not be null!");
 		Assert.notNull(requestedTargetType, "Target type must not be null!");
 
-		return customWriteTargetTypes.computeIfAbsent(sourceType, requestedTargetType, getWriteTarget);
+		Class<?> target = customWriteTargetTypes.computeIfAbsent(sourceType, requestedTargetType, getWriteTarget);
+
+		return Void.class.equals(target) || target == null ? Optional.empty() : Optional.of(target);
 	}
 
 	/**
@@ -302,7 +297,7 @@ public class CustomConversions {
 		Assert.notNull(sourceType, "Source type must not be null!");
 		Assert.notNull(targetType, "Target type must not be null!");
 
-		return getCustomReadTarget(sourceType, targetType).isPresent();
+		return getCustomReadTarget(sourceType, targetType) != null;
 	}
 
 	/**
@@ -313,7 +308,8 @@ public class CustomConversions {
 	 * @param targetType must not be {@literal null}.
 	 * @return
 	 */
-	private Optional<Class<?>> getCustomReadTarget(Class<?> sourceType, Class<?> targetType) {
+	@Nullable
+	private Class<?> getCustomReadTarget(Class<?> sourceType, Class<?> targetType) {
 		return customReadTargetTypes.computeIfAbsent(sourceType, targetType, getReadTarget);
 	}
 
@@ -326,30 +322,38 @@ public class CustomConversions {
 	 * @param pairs must not be {@literal null}.
 	 * @return
 	 */
-	private Optional<Class<?>> getCustomTarget(Class<?> sourceType, Optional<Class<?>> targetType,
+	@Nullable
+	private Class<?> getCustomTarget(Class<?> sourceType, @Nullable Class<?> targetType,
 			Collection<ConvertiblePair> pairs) {
 
-		Assert.notNull(sourceType, "Source Class must not be null!");
-		Assert.notNull(pairs, "Collection of ConvertiblePair must not be null!");
+		if (targetType != null && pairs.contains(new ConvertiblePair(sourceType, targetType))) {
+			return targetType;
+		}
 
-		return Optionals.firstNonEmpty(//
-				() -> targetType.filter(it -> pairs.contains(new ConvertiblePair(sourceType, it))), //
-				() -> pairs.stream()//
-						.filter(it -> hasAssignableSourceType(it, sourceType)) //
-						.<Class<?>> map(ConvertiblePair::getTargetType)//
-						.filter(it -> requestTargetTypeIsAssignable(targetType, it))//
-						.findFirst());
+		for (ConvertiblePair pair : pairs) {
+
+			if (!hasAssignableSourceType(pair, sourceType)) {
+				continue;
+			}
+
+			Class<?> candidate = pair.getTargetType();
+
+			if (!requestedTargetTypeIsAssignable(targetType, candidate)) {
+				continue;
+			}
+
+			return candidate;
+		}
+
+		return null;
 	}
 
 	private static boolean hasAssignableSourceType(ConvertiblePair pair, Class<?> sourceType) {
 		return pair.getSourceType().isAssignableFrom(sourceType);
 	}
 
-	private static boolean requestTargetTypeIsAssignable(Optional<Class<?>> requestedTargetType, Class<?> targetType) {
-
-		return !requestedTargetType.isPresent() //
-				? true //
-				: requestedTargetType.map(targetType::isAssignableFrom).orElse(false);
+	private static boolean requestedTargetTypeIsAssignable(@Nullable Class<?> requestedTargetType, Class<?> targetType) {
+		return requestedTargetType == null ? true : targetType.isAssignableFrom(requestedTargetType);
 	}
 
 	/**
@@ -370,8 +374,8 @@ public class CustomConversions {
 		 * @param mappingFunction must not be {@literal null}.
 		 * @return the optional target type.
 		 */
-		public Optional<Class<?>> computeIfAbsent(Class<?> sourceType,
-				Function<ConvertiblePair, Optional<Class<?>>> mappingFunction) {
+		@Nullable
+		public Class<?> computeIfAbsent(Class<?> sourceType, Function<ConvertiblePair, Class<?>> mappingFunction) {
 			return computeIfAbsent(sourceType, AbsentTargetTypeMarker.class, mappingFunction);
 		}
 
@@ -385,8 +389,9 @@ public class CustomConversions {
 		 * @param mappingFunction must not be {@literal null}.
 		 * @return the optional target type.
 		 */
-		public Optional<Class<?>> computeIfAbsent(Class<?> sourceType, Class<?> targetType,
-				Function<ConvertiblePair, Optional<Class<?>>> mappingFunction) {
+		@Nullable
+		public Class<?> computeIfAbsent(Class<?> sourceType, Class<?> targetType,
+				Function<ConvertiblePair, Class<?>> mappingFunction) {
 
 			TargetTypes targetTypes = customReadTargetTypes.computeIfAbsent(sourceType, TargetTypes::new);
 			return targetTypes.computeIfAbsent(targetType, mappingFunction);
@@ -407,7 +412,7 @@ public class CustomConversions {
 	static class TargetTypes {
 
 		private final @NonNull Class<?> sourceType;
-		private final Map<Class<?>, Optional<Class<?>>> conversionTargets = new ConcurrentHashMap<>();
+		private final Map<Class<?>, Class<?>> conversionTargets = new ConcurrentHashMap<>();
 
 		/**
 		 * Get or compute a target type given its {@code targetType}. Returns a cached {@link Optional} if the value
@@ -418,17 +423,17 @@ public class CustomConversions {
 		 * @param mappingFunction must not be {@literal null}.
 		 * @return the optional target type.
 		 */
-		public Optional<Class<?>> computeIfAbsent(Class<?> targetType,
-				Function<ConvertiblePair, Optional<Class<?>>> mappingFunction) {
+		@Nullable
+		public Class<?> computeIfAbsent(Class<?> targetType, Function<ConvertiblePair, Class<?>> mappingFunction) {
 
-			Optional<Class<?>> optionalTarget = conversionTargets.get(targetType);
+			Class<?> optionalTarget = conversionTargets.get(targetType);
 
 			if (optionalTarget == null) {
 				optionalTarget = mappingFunction.apply(new ConvertiblePair(sourceType, targetType));
-				conversionTargets.put(targetType, optionalTarget);
+				conversionTargets.put(targetType, optionalTarget == null ? Void.class : optionalTarget);
 			}
 
-			return optionalTarget;
+			return Void.class.equals(optionalTarget) ? null : optionalTarget;
 		}
 	}
 
