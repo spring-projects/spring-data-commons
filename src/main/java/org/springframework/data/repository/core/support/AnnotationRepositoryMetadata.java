@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
  */
 public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 
-	private static final String NO_ANNOTATION_FOUND = String.format("Interface must be annotated with @%s!",
+	private static final String NO_ANNOTATION_FOUND = String.format("Interface %%s must be annotated with @%s!",
 			RepositoryDefinition.class.getName());
 
 	private final Class<?> idType;
@@ -43,7 +43,9 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	public AnnotationRepositoryMetadata(Class<?> repositoryInterface) {
 
 		super(repositoryInterface);
-		Assert.isTrue(repositoryInterface.isAnnotationPresent(RepositoryDefinition.class), NO_ANNOTATION_FOUND);
+
+		Assert.isTrue(repositoryInterface.isAnnotationPresent(RepositoryDefinition.class),
+				String.format(NO_ANNOTATION_FOUND, repositoryInterface.getName()));
 
 		this.idType = resolveIdType(repositoryInterface);
 		this.domainType = resolveDomainType(repositoryInterface);
