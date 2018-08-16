@@ -37,10 +37,12 @@ public class AnnotationRepositoryMetadataUnitTests {
 		assertThat(metadata.getIdType()).isEqualTo(Integer.class);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test // DATACMNS-37, DATACMNS-1375
 	public void preventsUnannotatedInterface() {
 
-		new AnnotationRepositoryMetadata(UnannotatedRepository.class);
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> new AnnotationRepositoryMetadata(UnannotatedRepository.class)) //
+				.withMessageContaining(UnannotatedRepository.class.getName());
 	}
 
 	@SuppressWarnings("unused")
