@@ -46,9 +46,11 @@ class DeferredRepositoryInitializationListener implements ApplicationListener<Co
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
-		LOG.debug("Triggering deferred initialization of Spring Data repositories…");
+		LOG.info("Triggering deferred initialization of Spring Data repositories…");
 
 		beanFactory.getBeansOfType(Repository.class);
+
+		LOG.info("Spring Data repositories initialized!");
 	}
 
 	/* 

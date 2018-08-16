@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
+import org.springframework.util.StopWatch;
 
 /**
  * Delegate for configuration integration to reuse the general way of detecting repositories. Customization is done by
@@ -120,23 +122,33 @@ public class RepositoryConfigurationDelegate {
 	public List<BeanComponentDefinition> registerRepositoriesIn(BeanDefinitionRegistry registry,
 			RepositoryConfigurationExtension extension) {
 
+		if (LOG.isInfoEnabled()) {
+			LOG.info("Bootstrapping Spring Data repositories in {} mode.", configurationSource.getBootstrapMode().name());
+		}
+
 		extension.registerBeansForRoot(registry, configurationSource);
 
 		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension,
 				configurationSource, resourceLoader, environment);
 		List<BeanComponentDefinition> definitions = new ArrayList<>();
 
+		StopWatch watch = new StopWatch();
+
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Scanning for repositories in packages {}.",
 					configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
 		}
 
-		Map<String, RepositoryConfiguration<?>> configurations = new HashMap<>();
+		watch.start();
 
-		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : extension
-				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode)) {
+		Collection<RepositoryConfiguration<RepositoryConfigurationSource>> configurations = extension
+				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode);
 
-			configurations.put(configuration.getRepositoryInterface(), configuration);
+		Map<String, RepositoryConfiguration<?>> configurationsByRepositoryName = new HashMap<>(configurations.size());
+
+		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : configurations) {
+
+			configurationsByRepositoryName.put(configuration.getRepositoryInterface(), configuration);
 
 			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
 
@@ -151,8 +163,8 @@ public class RepositoryConfigurationDelegate {
 			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
 			String beanName = configurationSource.generateBeanName(beanDefinition);
 
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName, configuration.getRepositoryInterface(),
+			if (LOG.isTraceEnabled()) {
+				LOG.trace(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName, configuration.getRepositoryInterface(),
 						configuration.getRepositoryFactoryBeanClassName());
 			}
 
@@ -162,10 +174,13 @@ public class RepositoryConfigurationDelegate {
 			definitions.add(new BeanComponentDefinition(beanDefinition, beanName));
 		}
 
-		potentiallyLazifyRepositories(configurations, registry, configurationSource.getBootstrapMode());
+		potentiallyLazifyRepositories(configurationsByRepositoryName, registry, configurationSource.getBootstrapMode());
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Finished repository scanning.");
+		watch.stop();
+
+		if (LOG.isInfoEnabled()) {
+			LOG.info("Finished Spring Data repository scanning in {}ms. Found {} repository interfaces.", //
+					watch.getLastTaskTimeMillis(), configurations.size());
 		}
 
 		return definitions;
@@ -205,6 +220,9 @@ public class RepositoryConfigurationDelegate {
 		beanFactory.setAutowireCandidateResolver(newResolver);
 
 		if (mode.equals(BootstrapMode.DEFERRED)) {
+
+			LOG.debug("Registering deferred repository initialization listener.");
+
 			beanFactory.registerSingleton(DeferredRepositoryInitializationListener.class.getName(),
 					new DeferredRepositoryInitializationListener(beanFactory));
 		}
