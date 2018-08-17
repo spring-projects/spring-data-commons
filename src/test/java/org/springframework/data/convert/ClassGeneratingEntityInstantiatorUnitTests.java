@@ -303,6 +303,66 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 		});
 	}
 
+	@Test // DATACMNS-1373
+	public void shouldInstantiateProtectedInnerClass() {
+
+		prepareMocks(ProtectedInnerClass.class);
+
+		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isFalse();
+		assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ProtectedInnerClass.class);
+	}
+
+	@Test // DATACMNS-1373
+	public void shouldInstantiatePackagePrivateInnerClass() {
+
+		prepareMocks(PackagePrivateInnerClass.class);
+
+		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isFalse();
+		assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(PackagePrivateInnerClass.class);
+	}
+
+	@Test // DATACMNS-1373
+	public void shouldNotInstantiatePrivateInnerClass() {
+
+		prepareMocks(PrivateInnerClass.class);
+
+		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isTrue();
+	}
+
+	@Test // DATACMNS-1373
+	public void shouldInstantiateClassWithPackagePrivateConstructor() {
+
+		prepareMocks(ClassWithPackagePrivateConstructor.class);
+
+		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isFalse();
+		assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ClassWithPackagePrivateConstructor.class);
+	}
+
+	@Test // DATACMNS-1373
+	public void shouldInstantiateClassInDefaultPackage() throws ClassNotFoundException {
+
+		Class<?> typeInDefaultPackage = Class.forName("TypeInDefaultPackage");
+		prepareMocks(typeInDefaultPackage);
+
+		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isFalse();
+		assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(typeInDefaultPackage);
+	}
+
+	@Test // DATACMNS-1373
+	public void shouldNotInstantiateClassWithPrivateConstructor() {
+
+		prepareMocks(ClassWithPrivateConstructor.class);
+
+		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isTrue();
+	}
+
+	private void prepareMocks(Class<?> type) {
+
+		doReturn(type).when(entity).getType();
+		doReturn(PreferredConstructorDiscoverer.discover(type))//
+				.when(entity).getPersistenceConstructor();
+	}
+
 	static class Foo {
 
 		Foo(String foo) {
@@ -424,4 +484,21 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 			this.param7 = param7;
 		}
 	}
+
+	protected static class ProtectedInnerClass {}
+
+	static class PackagePrivateInnerClass {}
+
+	private static class PrivateInnerClass {}
+
+	static class ClassWithPrivateConstructor {
+
+		private ClassWithPrivateConstructor() {}
+	}
+
+	static class ClassWithPackagePrivateConstructor {
+
+		ClassWithPackagePrivateConstructor() {}
+	}
+
 }

@@ -19,8 +19,6 @@ import static org.springframework.asm.Opcodes.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +28,7 @@ import org.springframework.asm.ClassWriter;
 import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
+import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -38,7 +37,6 @@ import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -139,20 +137,20 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @param entity
 	 * @return
 	 */
-	private boolean shouldUseReflectionEntityInstantiator(PersistentEntity<?, ?> entity) {
+	boolean shouldUseReflectionEntityInstantiator(PersistentEntity<?, ?> entity) {
 
 		Class<?> type = entity.getType();
 
 		if (type.isInterface() //
 				|| type.isArray() //
-				|| !Modifier.isPublic(type.getModifiers()) //
+				|| Modifier.isPrivate(type.getModifiers()) //
 				|| (type.isMemberClass() && !Modifier.isStatic(type.getModifiers())) //
 				|| ClassUtils.isCglibProxyClass(type)) { //
 			return true;
 		}
 
 		PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
-		if (persistenceConstructor == null || !Modifier.isPublic(persistenceConstructor.getConstructor().getModifiers())) {
+		if (persistenceConstructor == null || Modifier.isPrivate(persistenceConstructor.getConstructor().getModifiers())) {
 			return true;
 		}
 
@@ -299,6 +297,7 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * </pre>
 	 *
 	 * @author Thomas Darimont
+	 * @author Mark Paluch
 	 */
 	static class ObjectInstantiatorClassGenerator {
 
@@ -310,13 +309,6 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		private static final String[] IMPLEMENTED_INTERFACES = new String[] {
 				Type.getInternalName(ObjectInstantiator.class) };
 
-		private final ByteArrayClassLoader classLoader;
-
-		ObjectInstantiatorClassGenerator() {
-
-			this.classLoader = AccessController.doPrivileged(
-					(PrivilegedAction<ByteArrayClassLoader>) () -> new ByteArrayClassLoader(ClassUtils.getDefaultClassLoader()));
-		}
 
 		/**
 		 * Generate a new class for the given {@link PersistentEntity}.
@@ -331,7 +323,13 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			String className = generateClassName(entity);
 			byte[] bytecode = generateBytecode(className, entity, constructor);
 
-			return classLoader.loadClass(className, bytecode);
+			Class<?> type = entity.getType();
+
+			try {
+				return ReflectUtils.defineClass(className, bytecode, type.getClassLoader(), type.getProtectionDomain());
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
 		}
 
 		/**
@@ -521,40 +519,6 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 					break;
 				default:
 					throw new IllegalArgumentException("Unboxing should not be attempted for descriptor '" + ch + "'");
-			}
-		}
-
-		/**
-		 * A {@link ClassLoader} that can load classes from {@code byte[]} representations.
-		 *
-		 * @author Thomas Darimont
-		 */
-		private class ByteArrayClassLoader extends ClassLoader {
-
-			public ByteArrayClassLoader(@Nullable ClassLoader parent) {
-				super(parent);
-			}
-
-			/**
-			 * Tries to load a class given {@code byte[]}.
-			 *
-			 * @param name must not be {@literal null}
-			 * @param bytes must not be {@literal null}
-			 * @return
-			 */
-			public Class<?> loadClass(String name, byte[] bytes) {
-
-				Assert.notNull(name, "name must not be null");
-				Assert.notNull(bytes, "bytes must not be null");
-
-				try {
-					Class<?> clazz = findClass(name);
-					if (clazz != null) {
-						return clazz;
-					}
-				} catch (ClassNotFoundException ignore) {}
-
-				return defineClass(name, bytes, 0, bytes.length);
 			}
 		}
 	}
