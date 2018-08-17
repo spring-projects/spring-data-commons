@@ -26,15 +26,14 @@ import org.springframework.data.util.Version;
  * Unit tests for {@link DefaultMethodInvokingMethodInterceptor}.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  */
 public class DefaultMethodInvokingMethodInterceptorUnitTests {
 
 	@Test // DATACMNS-1376
 	public void shouldApplyEncapsulatedLookupOnJava9AndHigher() {
 
-		Version version = Version.parse(System.getProperty("java.version"));
-
-		assumeTrue(version.isGreaterThanOrEqualTo(Version.parse("9.0")));
+		assumeTrue(Version.javaVersion().isGreaterThanOrEqualTo(Version.parse("9.0")));
 
 		assertThat(MethodHandleLookup.getMethodHandleLookup()).isEqualTo(MethodHandleLookup.ENCAPSULATED);
 		assertThat(MethodHandleLookup.ENCAPSULATED.isAvailable()).isTrue();
@@ -43,9 +42,7 @@ public class DefaultMethodInvokingMethodInterceptorUnitTests {
 	@Test // DATACMNS-1376
 	public void shouldApplyOpenLookupOnJava8() {
 
-		Version version = Version.parse(System.getProperty("java.version"));
-
-		assumeTrue(version.isLessThan(Version.parse("1.8.9999")));
+		assumeTrue(Version.javaVersion().isLessThan(Version.parse("1.8.9999")));
 
 		assertThat(MethodHandleLookup.getMethodHandleLookup()).isEqualTo(MethodHandleLookup.OPEN);
 		assertThat(MethodHandleLookup.OPEN.isAvailable()).isTrue();
