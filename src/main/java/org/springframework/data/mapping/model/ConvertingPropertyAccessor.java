@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -58,6 +59,18 @@ public class ConvertingPropertyAccessor<T> implements PersistentPropertyAccessor
 	@Override
 	public void setProperty(PersistentProperty<?> property, @Nullable Object value) {
 		accessor.setProperty(property, convertIfNecessary(value, property.getType()));
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentPropertyPath, java.lang.Object)
+	 */
+	@Override
+	public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value) {
+
+		Object converted = convertIfNecessary(value, path.getRequiredLeafProperty().getType());
+
+		PersistentPropertyAccessor.super.setProperty(path, converted);
 	}
 
 	/*
