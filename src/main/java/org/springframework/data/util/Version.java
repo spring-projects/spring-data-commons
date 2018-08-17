@@ -88,6 +88,15 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
+	 * Returns the Java version of the running JVM.
+	 * 
+	 * @return will never be {@literal null}.
+	 */
+	public static Version javaVersion() {
+		return parse(System.getProperty("java.version"));
+	}
+
+	/**
 	 * Returns whether the current {@link Version} is greater (newer) than the given one.
 	 *
 	 * @param version
