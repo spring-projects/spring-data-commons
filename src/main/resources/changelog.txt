@@ -1,6 +1,25 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.0.RC2 (2018-08-20)
+-----------------------------------------
+* DATACMNS-1377 - ConvertingPropertyAccessor loses its converting power for nested properties.
+* DATACMNS-1376 - Assure JDK 11 compatibility for DefaultMethodInvokingMethodInterceptor.
+* DATACMNS-1375 - In case of failures, AnnotationRepositoryMetadata should be explicit about the offending repository interface.
+* DATACMNS-1373 - Align class loading in ClassGeneratingEntityInstantiator with ClassGeneratingPropertyAccessorFactory.
+* DATACMNS-1371 - Avoid excessive component scanning for repository fragments.
+* DATACMNS-1370 - Avoid superflous regex type checks while scanning for custom implementations.
+* DATACMNS-1369 - Repository initialization should make sure the aggregate root type gets added to the mapping context.
+* DATACMNS-1368 - Add support for deferred initialization of repositories.
+* DATACMNS-1367 - Add debug logging to better identify repository scanning and initialization.
+* DATACMNS-1366 - Investigate performance regressions between 2.0 GA and 2.1 RC2.
+* DATACMNS-1364 - BasicPersistentEntity.getPersistentProperty(…) returns the unchecked value in ConcurrentReferenceHashMap.
+* DATACMNS-1362 - Broken Links in the Docs 404.
+* DATACMNS-1359 - Improve exception message for missing accessors and fields.
+* DATACMNS-1358 - Release 2.1 RC2 (Lovelace).
+* DATACMNS-1351 - Fix typos in reference documentation.
+
+
 Changes in version 1.13.14.RELEASE (2018-07-27)
 -----------------------------------------------
 * DATACMNS-1352 - AbstractMappingContext.getPersistentPropertyPath(…) fails on Object typed properties.
