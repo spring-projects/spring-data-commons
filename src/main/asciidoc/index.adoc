@@ -24,6 +24,8 @@ include::preface.adoc[]
 :leveloffset: +1
 include::dependencies.adoc[]
 
+include::object-mapping.adoc[]
+
 include::repositories.adoc[]
 
 include::repository-projections.adoc[]
