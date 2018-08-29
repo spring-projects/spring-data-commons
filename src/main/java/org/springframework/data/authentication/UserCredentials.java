@@ -24,7 +24,9 @@ import org.springframework.util.StringUtils;
  *
  * @author Thomas Risberg
  * @author Oliver Gierke
+ * @deprecated since 2.1 without replacement as it was meant for internal use only anyway.
  */
+@Deprecated
 public class UserCredentials {
 
 	public static final UserCredentials NO_CREDENTIALS = new UserCredentials(null, null);
