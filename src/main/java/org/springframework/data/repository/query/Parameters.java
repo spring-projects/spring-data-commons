@@ -68,6 +68,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		this.parameters = new ArrayList<>(types.size());
 		this.dynamicProjectionIndex = -1;
 
+		int pageableIndex = -1;
+		int sortIndex = -1;
+
 		for (int i = 0; i < types.size(); i++) {
 
 			MethodParameter methodParameter = new MethodParameter(method, i);
@@ -83,11 +86,19 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 				this.dynamicProjectionIndex = parameter.getIndex();
 			}
 
+			if (Pageable.class.isAssignableFrom(parameter.getType())) {
+				pageableIndex = i;
+			}
+
+			if (Sort.class.isAssignableFrom(parameter.getType())) {
+				sortIndex = i;
+			}
+
 			parameters.add(parameter);
 		}
 
-		this.pageableIndex = types.indexOf(Pageable.class);
-		this.sortIndex = types.indexOf(Sort.class);
+		this.pageableIndex = pageableIndex;
+		this.sortIndex = sortIndex;
 
 		assertEitherAllParamAnnotatedOrNone();
 	}
