@@ -17,6 +17,8 @@ package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import rx.Single;
 
 import java.lang.reflect.Method;
@@ -114,6 +116,12 @@ public class ParametersUnitTests {
 		assertThat(parameters.getPageableIndex()).isEqualTo(1);
 	}
 
+	@Test //DATACMNS-1383
+	public void detectsImplPageableParameter() throws Exception {
+		Parameters<?, ?> parameters = getParametersFor("validWithImplOfPageable", AppPageRequest.class);
+		assertThat(parameters.getPageableIndex()).isEqualTo(0);
+	}
+
 	@Test
 	public void detectsSortParameter() throws Exception {
 		Parameters<?, ?> parameters = getParametersFor("validWithSort", String.class, Sort.class);
@@ -200,6 +208,8 @@ public class ParametersUnitTests {
 
 		User validWithPageable(@Param("username") String username, Pageable pageable);
 
+		Page<User> validWithImplOfPageable(AppPageRequest appPageRequest);
+
 		User validWithPageableFirst(Pageable pageable, @Param("username") String username);
 
 		User validWithSort(@Param("username") String username, Sort sort);
@@ -217,5 +227,11 @@ public class ParametersUnitTests {
 		void methodWithPublisher(Publisher<String> publisher);
 
 		void methodWithSingle(Single<String> single);
+	}
+
+	class AppPageRequest extends PageRequest implements Pageable {
+		public AppPageRequest(int page, int size) {
+			super(page, size);
+		}
 	}
 }

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
@@ -86,7 +87,11 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			parameters.add(parameter);
 		}
 
-		this.pageableIndex = types.indexOf(Pageable.class);
+		this.pageableIndex = IntStream.range(0, types.size())
+				.filter(typesIndex -> Pageable.class.isAssignableFrom(types.get(typesIndex)))
+				.findFirst()
+				.orElseGet(() -> -1);
+
 		this.sortIndex = types.indexOf(Sort.class);
 
 		assertEitherAllParamAnnotatedOrNone();
