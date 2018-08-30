@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -161,6 +162,14 @@ public class ParametersUnitTests {
 		assertThat(parameters.getParameter(0).getType(), is(typeCompatibleWith(String.class)));
 	}
 
+	@Test // DATACMNS-1383
+	public void acceptsCustomPageableParameter() throws Exception {
+
+		Parameters<?, Parameter> parameters = getParametersFor("customPageable", SomePageable.class);
+
+		assertThat(parameters.hasPageableParameter(), is(true));
+	}
+
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
@@ -194,5 +203,9 @@ public class ParametersUnitTests {
 		<T> T dynamicBind(Class<T> type, Class<?> one, Class<Object> two);
 
 		void methodWithOptional(Optional<String> optional);
+
+		Page<Object> customPageable(SomePageable pageable);
 	}
+
+	interface SomePageable extends Pageable {}
 }
