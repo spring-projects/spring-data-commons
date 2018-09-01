@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.data.util.AnnotationDetectionFieldCallback;
@@ -115,6 +116,10 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 
 		if (timestamp instanceof Long) {
 			return Instant.ofEpochMilli((Long) timestamp);
+		}
+
+		if (Date.class.isInstance(timestamp)) {
+			return Date.class.cast(timestamp).toInstant();
 		}
 
 		throw new IllegalArgumentException(String.format("Can't convert %s to Instant!", timestamp));
