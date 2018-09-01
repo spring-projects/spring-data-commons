@@ -17,9 +17,11 @@ package org.springframework.data.history;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
@@ -126,6 +128,30 @@ public class AnnotationRevisionMetadataUnitTests {
 		softly.assertAll();
 	}
 
+	@Test // DATACMNS-1384
+	public void supportsTimestampRevisionInstant() {
+
+		SampleWithTimestamp sample = new SampleWithTimestamp();
+		Instant now = Instant.now();
+		sample.revision = Timestamp.from(now);
+
+		RevisionMetadata<Long> metadata = getMetadata(sample);
+
+		assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(now);
+	}
+
+	@Test // DATACMNS-1384
+	public void supportsDateRevisionInstant() {
+
+		SampleWithDate sample = new SampleWithDate();
+		Date date = new Date();
+		sample.revision = date;
+
+		RevisionMetadata<Long> metadata = getMetadata(sample);
+
+		assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(date.toInstant());
+	}
+
 	private static RevisionMetadata<Long> getMetadata(Object sample) {
 		return new AnnotationRevisionMetadata<>(sample, Autowired.class, Reference.class);
 	}
@@ -146,5 +172,15 @@ public class AnnotationRevisionMetadataUnitTests {
 
 		@Autowired Long revisionNumber;
 		@Reference long revisionLong;
+	}
+
+	// DATACMNS-1384
+
+	static class SampleWithTimestamp {
+		@Reference Timestamp revision;
+	}
+
+	static class SampleWithDate {
+		@Reference Date revision;
 	}
 }
