@@ -1,14 +1,14 @@
-[[mapping.mutability]]
+[[mapping.fundamentals]]
 = Object Mapping Fundamentals
 
 This section covers the fundamentals of Spring Data object mapping, object creation, field and property access, mutability and immutability.
 Note, that this section only applies to Spring Data modules that do not use the object mapping of the underlying data store (like JPA).
-Also be sure to consult the store specific sections for store specific object mapping, like indexes, customizing columnd or field names or the like.
+Also be sure to consult the store-specific sections for store-specific object mapping, like indexes, customizing column or field names or the like.
 
 Core responsibility of the Spring Data object mapping is to create instances of domain objects and map the store-native data structures onto those.
 This means we need two fundamental steps:
 
-1. Instance creation by using one of the constructors exposed
+1. Instance creation by using one of the constructors exposed.
 2. Instance population to materialize all exposed properties.
 
 [[mapping.object-creation]]
@@ -62,7 +62,7 @@ For the domain class to be eligible for such optimization, it needs to adhere to
 - it must not be a CGLib proxy class
 - the constructor to be used by Spring Data must not be private
 
-If any of these criterias match, Spring Data will fall back to entity instantiation via reflection.
+If any of these criteria match, Spring Data will fall back to entity instantiation via reflection.
 ****
 
 [[mapping.property-population]]
@@ -108,29 +108,45 @@ class Person {
 }
 ----
 
+.A generated Property Accessor
+====
 [source, java]
 ----
 class PersonPropertyAccessor implements PersistentPropertyAccessor {
 
-  private static final MethodHandle firstname; <2>
+  private static final MethodHandle firstname;              <2>
 
-  private Person person; <1>
+  private Person person;                                    <1>
 
   public void setProperty(PersistentProperty property, Object value) {
 
     String name = property.getName();
 
     if ("firstname".equals(name)) {
-      firstname.…; <2>
+      firstname.invoke(person, (String) value);             <2>
     } else if ("id".equals(name)) {
-      this.person = person.withId((Long) value); <3>
+      this.person = person.withId((Long) value);            <3>
     } else if ("lastname".equals(name)) {
-      this.person.setLastname((String) value); <4>
+      this.person.setLastname((String) value);              <4>
     }
   }
 }
 ----
+<1> PropertyAccessor's hold a mutable instance of the underlying object. This is, to enable mutations of otherwise immutable properties.
+<2> By default, Spring Data uses field-access to read and write property values. As per visibility rules of `private` fields, `MethodHandles` are used to interact with fields.
+<3> The class exposes a `withId(…)` method that's used to set the identifier, e.g. when an instance is inserted into the datastore and an identifier has been generated. Calling `withId(…)` creates a new `Person` object. All subsequent mutations will take place in the new instance leaving the previous untouched.
+<4> Using property-access allows direct method invocations without using `MethodHandles`.
+====
 
+This gives us a roundabout 25% performance boost over reflection.
+For the domain class to be eligible for such optimization, it needs to adhere to a set of constraints:
+
+- Types must not reside in the default or under the `java` package.
+- Types and their constructors must be `public`
+- Types that are inner classes must be `static`.
+- The used Java Runtime must allow for declaring classes in the originating `ClassLoader`. Java 9 and newer impose certain limitations.
+
+By default, Spring Data attempts to use generated property accessors and falls back to reflection-based ones if a limitation is detected.
 ****
 
 Let's have a look a
@@ -141,13 +157,13 @@ Let's have a look a
 ----
 class Person {
 
-  private final @Id Long id; <1>
-  private final String firstname, lastname; <2>
+  private final @Id Long id;                                                <1>
+  private final String firstname, lastname;                                 <2>
   private final LocalDate birthday;
   private final int age; <3>
 
-  private String comment; <4>
-  private @AccessType(Type.PROPERTY) String remarks; <5>
+  private String comment;                                                   <4>
+  private @AccessType(Type.PROPERTY) String remarks;                        <5>
 
   static Person of(String firstname, String lastname, LocalDate birthday) { <6>
 
@@ -164,11 +180,11 @@ class Person {
     this.age = age;
   }
 
-  Person withId(Long id) { <1>
+  Person withId(Long id) {                                                  <1>
     return new Person(id, this.firstname, this.lastname, this.birthday);
   }
 
-  void setRemarks(String remarks) { <5>
+  void setRemarks(String remarks) {                                         <5>
     this.remarks = remarks;
   }
 }
@@ -181,7 +197,7 @@ The same pattern is usually applied for other properties that are store managed 
 <2> The `firstname` and `lastname` properties are ordinary immutable properties potentially exposed through getters.
 <3> The `age` property is an immutable but derived one from the `birthday` property.
 With the design shown, the database value will trump the defaulting as Spring Data uses the only declared constructor.
-Even if the intend is that the calculation should be preferred, it's important that this constructor also takes `age` as parameter (to potentially ignore it) as otherwise the property population step will attempt to set the age field and fail due to it being immutable and no wither being present.
+Even if the intent is that the calculation should be preferred, it's important that this constructor also takes `age` as parameter (to potentially ignore it) as otherwise the property population step will attempt to set the age field and fail due to it being immutable and no wither being present.
 <4> The `comment` property is mutable is populated by setting its field directly.
 <5> The `remarks` properties are mutable and populated by setting the `comment` field directly or by invoking the setter method for
 <6> The class exposes a factory method and a constructor for object creation.
@@ -190,16 +206,16 @@ Instead, defaulting of properties is handled within the factory method.
 
 == General recommendations
 
-* _Try to stick to immutable objects_ -- Immutable objects are straight forward to create as materializing an object is then a matter of calling its constructor only.
+* _Try to stick to immutable objects_ -- Immutable objects are straightforward to create as materializing an object is then a matter of calling its constructor only.
 Also, this avoids your domain objects to be littered with setter methods that allow client code to manipulate the objects state.
-If you need those, prefer to make them package protected so that they can only be invoked by a limited amount of colocated types.
-Constructor-only materialization is up to 30% faster than if we also have to populate properties.
+If you need those, prefer to make them package protected so that they can only be invoked by a limited amount of co-located types.
+Constructor-only materialization is up to 30% faster than properties population.
 * _Provide an all-args constructor_ -- Even if you cannot or don't want to model your entities as immutable values, there's still value in providing a constructor that takes all properties of the entity as arguments, including the mutable ones, as this allows the object mapping to skip the property population for optimal performance.
 * _Use factory methods instead of overloaded constructors to avoid ``@PersistenceConstructor``_ -- With an all-argument constructor needed for optimal performance, we usually want to expose more application use case specific constructors that omit things like auto-generated identifiers etc.
 It's an established pattern to rather use static factory methods to expose these variants of the all-args constructor.
 * _Make sure you adhere to the constraints that allow the generated instantiator and property accessor classes to be used_ --
 * _For identifiers to be generated, still use a final field in combination with a wither method_ --
-* _Use Lombok to avoid boilerplate code_ -- As persistence operations usually require a constructor taking all arguments, their declaration becomes a tedious repeatition of boilerplate parameter to field assignments that can best be avoided by using Lombok's `@AllArgsConstructor`.
+* _Use Lombok to avoid boilerplate code_ -- As persistence operations usually require a constructor taking all arguments, their declaration becomes a tedious repetition of boilerplate parameter to field assignments that can best be avoided by using Lombok's `@AllArgsConstructor`.
 
 
 == Old stuff
