@@ -19,10 +19,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
-import org.joda.time.DateTime;
-
 /**
- * Default {@link DateTimeProvider} simply creating new {@link DateTime} instances for each method call.
+ * Default {@link DateTimeProvider} simply creating new {@link LocalDateTime} instances for each method call.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
