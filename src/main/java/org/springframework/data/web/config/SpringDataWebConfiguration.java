@@ -158,7 +158,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())
 				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
-			ObjectMapper mapper = getUniqueBean(ObjectMapper.class, context, () -> new ObjectMapper());
+			ObjectMapper mapper = getUniqueBean(ObjectMapper.class, context, ObjectMapper::new);
 
 			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
 			converter.setBeanFactory(context);
