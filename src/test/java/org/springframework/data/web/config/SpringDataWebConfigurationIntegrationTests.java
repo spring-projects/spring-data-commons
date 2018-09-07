@@ -28,10 +28,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.classloadersupport.HidingClassLoader;
+import org.springframework.data.classloadersupport.ShadowingClassLoader;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.ReflectionUtils;
 import org.xmlbeam.XBProjector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,8 +110,13 @@ public class SpringDataWebConfigurationIntegrationTests {
 		}, SomeConfiguration.class);
 	}
 
-	private void createConfigWithClassLoader(ClassLoader classLoader, Consumer<SpringDataWebConfiguration> callback,
-			Class<?>... additionalConfigurationClasses) {
+	@Test // DATACMNS-1386
+	public void doesNotFailWithJacksonMissing() throws Exception {
+		ReflectionUtils.getUniqueDeclaredMethods(loadWithout(SpringDataWebConfiguration.class, ObjectMapper.class));
+	}
+
+	private static void createConfigWithClassLoader(ClassLoader classLoader,
+			Consumer<SpringDataWebConfiguration> callback, Class<?>... additionalConfigurationClasses) {
 
 		List<Class<?>> configClasses = new ArrayList<>(Arrays.asList(additionalConfigurationClasses));
 		configClasses.add(SpringDataWebConfiguration.class);
@@ -120,6 +127,16 @@ public class SpringDataWebConfigurationIntegrationTests {
 			context.setClassLoader(classLoader);
 			callback.accept(context.getBean(SpringDataWebConfiguration.class));
 		}
+	}
+
+	private static Class<?> loadWithout(Class<?> configurationClass, Class<?>... typesOfPackagesToExclude)
+			throws ClassNotFoundException {
+
+		HidingClassLoader hidingClassLoader = HidingClassLoader.hide(typesOfPackagesToExclude);
+		ShadowingClassLoader loader = new ShadowingClassLoader(hidingClassLoader);
+		loader.excludeClass(configurationClass.getName());
+
+		return loader.loadClass(configurationClass.getName());
 	}
 
 	/**
