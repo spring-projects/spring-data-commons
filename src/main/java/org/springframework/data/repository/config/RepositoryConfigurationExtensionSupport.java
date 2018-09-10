@@ -98,16 +98,10 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 			RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
 
-			if (!useRepositoryConfiguration(metadata)) {
-				continue;
-			}
+			boolean qualifiedForImplementation = !strictMatchesOnly || configSource.usesExplicitFilters()
+					|| isStrictRepositoryCandidate(metadata);
 
-			if (!strictMatchesOnly || configSource.usesExplicitFilters()) {
-				result.add(configuration);
-				continue;
-			}
-
-			if (isStrictRepositoryCandidate(metadata)) {
+			if (qualifiedForImplementation && useRepositoryConfiguration(metadata)) {
 				result.add(configuration);
 			}
 		}
