@@ -1,6 +1,28 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.10.RELEASE (2018-09-10)
+----------------------------------------------
+* DATACMNS-1389 - RepositoryConfigurationExtensionSupport.useRepositoryConfiguration(...) fails in strict configuration mode.
+* DATACMNS-1387 - Wrong description for CurrentDateTimeProvider.
+* DATACMNS-1386 - SpringDataWebConfiguration cannot be introspected when Jackson is not available.
+* DATACMNS-1384 - Add support for java.sql.Timestamp in AnnotationRevisionMetadata.
+* DATACMNS-1383 - Custom extension of Pageable as parameter causes query method to be rejected.
+* DATACMNS-1376 - Assure JDK 11 compatibility for DefaultMethodInvokingMethodInterceptor.
+* DATACMNS-1375 - In case of failures, AnnotationRepositoryMetadata should be explicit about the offending repository interface.
+* DATACMNS-1373 - Align class loading in ClassGeneratingEntityInstantiator with ClassGeneratingPropertyAccessorFactory.
+* DATACMNS-1370 - Avoid superflous regex type checks while scanning for custom implementations.
+* DATACMNS-1369 - Repository initialization should make sure the aggregate root type gets added to the mapping context.
+* DATACMNS-1367 - Add debug logging to better identify repository scanning and initialization.
+* DATACMNS-1366 - Investigate performance regressions between 2.0 GA and 2.1 RC2.
+* DATACMNS-1364 - BasicPersistentEntity.getPersistentProperty(…) returns the unchecked value in ConcurrentReferenceHashMap.
+* DATACMNS-1362 - Broken Links in the Docs 404.
+* DATACMNS-1360 - Release 2.0.10 (Kay SR10).
+* DATACMNS-1359 - Improve exception message for missing accessors and fields.
+* DATACMNS-1351 - Fix typos in reference documentation.
+* DATACMNS-1174 - Improve error reporting for not supported repository interfaces.
+
+
 Changes in version 1.13.15.RELEASE (2018-09-10)
 -----------------------------------------------
 * DATACMNS-1383 - Custom extension of Pageable as parameter causes query method to be rejected.
