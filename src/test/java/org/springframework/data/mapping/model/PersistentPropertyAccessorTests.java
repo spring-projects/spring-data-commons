@@ -21,8 +21,10 @@ import lombok.Data;
 import lombok.Value;
 import lombok.experimental.Wither;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 import org.junit.Test;
@@ -98,18 +100,42 @@ public class PersistentPropertyAccessorTests {
 		assertThat(accessor.getProperty(property)).isEqualTo("value");
 	}
 
-	@Test // DATACMNS-1322
+	@Test // DATACMNS-1322, DATACMNS-1391
 	public void shouldSetExtendedKotlinDataClassProperty() {
 
-		ExtendedDataClassKt bean = new ExtendedDataClassKt("foo", "bar");
+		ExtendedDataClassKt bean = new ExtendedDataClassKt(0, "bar");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
 		SamplePersistentProperty property = getProperty(bean, "id");
 
-		accessor.setProperty(property, "value");
+		accessor.setProperty(property, 1L);
 
-		assertThat(accessor.getBean()).hasFieldOrPropertyWithValue("id", "value");
+		assertThat(accessor.getBean()).hasFieldOrPropertyWithValue("id", 1L);
 		assertThat(accessor.getBean()).isNotSameAs(bean);
-		assertThat(accessor.getProperty(property)).isEqualTo("value");
+		assertThat(accessor.getProperty(property)).isEqualTo(1L);
+	}
+
+	@Test // DATACMNS-1391
+	public void shouldUseKotlinGeneratedCopyMethod() {
+
+		UnusedCustomCopy bean = new UnusedCustomCopy(new Timestamp(100));
+		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
+		SamplePersistentProperty property = getProperty(bean, "date");
+
+		accessor.setProperty(property, new Timestamp(200));
+
+		assertThat(accessor.getBean()).hasFieldOrPropertyWithValue("date", new Timestamp(200));
+		assertThat(accessor.getBean()).isNotSameAs(bean);
+		assertThat(accessor.getProperty(property)).isEqualTo(new Timestamp(200));
+	}
+
+	@Test // DATACMNS-1391
+	public void kotlinCopyMethodShouldNotSetUnsettableProperty() {
+
+		SingleSettableProperty bean = new SingleSettableProperty(UUID.randomUUID());
+		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
+		SamplePersistentProperty property = getProperty(bean, "version");
+
+		assertThatThrownBy(() -> accessor.setProperty(property, 1)).isInstanceOf(UnsupportedOperationException.class);
 	}
 
 	@Test // DATACMNS-1322

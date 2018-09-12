@@ -15,9 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
-import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KCallable;
-import kotlin.reflect.KClass;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.KParameter.Kind;
 
@@ -32,6 +30,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -165,6 +164,8 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 	 */
 	static class KotlinCopyUtil {
 
+		private static final Map<Class<?>, KCallable<?>> COPY_METHOD_CACHE = new ConcurrentReferenceHashMap<>();
+
 		/**
 		 * Set a single property by calling {@code copy(…)} on a Kotlin data class. Copying creates a new instance that
 		 * holds all values of the original instance and the newly set {@link PersistentProperty} value.
@@ -174,12 +175,11 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 		static <T> Object setProperty(PersistentProperty<?> property, T bean, @Nullable Object value) {
 
 			Class<?> type = property.getOwner().getType();
-			KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
-			KCallable<?> copy = getCopyMethod(kotlinClass);
+			KCallable<?> copy = COPY_METHOD_CACHE.computeIfAbsent(type, it -> getCopyMethod(it, property));
 
 			if (copy == null) {
 				throw new UnsupportedOperationException(String.format(
-						"Kotlin class %s has no .copy(…) method. Cannot set property %s!", type.getName(), property.getName()));
+						"Kotlin class %s has no .copy(…) method for property %s!", type.getName(), property.getName()));
 			}
 
 			return copy.callBy(getCallArgs(copy, property, bean, value));
@@ -198,7 +198,8 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 					args.put(parameter, bean);
 				}
 
-				if (parameter.getKind() == Kind.VALUE && parameter.getName().equals(property.getName())) {
+				if (parameter.getKind() == Kind.VALUE && parameter.getName() != null
+						&& parameter.getName().equals(property.getName())) {
 					args.put(parameter, value);
 				}
 			}
@@ -206,16 +207,9 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 		}
 
 		@Nullable
-		private static KCallable<?> getCopyMethod(KClass<?> kotlinClass) {
-
-			for (KCallable<?> kCallable : kotlinClass.getMembers()) {
-
-				if (kCallable.getName().equals("copy")) {
-					return kCallable;
-				}
-			}
-
-			return null;
+		private static KCallable<?> getCopyMethod(Class<?> type, PersistentProperty<?> property) {
+			return KotlinCopyMethod.findCopyMethod(type).filter(it -> it.supportsProperty(property))
+					.map(KotlinCopyMethod::getCopyFunction).orElse(null);
 		}
 	}
 }
