@@ -15,11 +15,20 @@
  */
 package org.springframework.data.mapping.model
 
+import java.util.*
+
 /**
  * @author Mark Paluch
  */
 data class DataClassKt(val id: String) {
 }
 
-data class ExtendedDataClassKt(val id: String, val name: String) {
+data class ExtendedDataClassKt(val id: Long, val name: String) {
+	fun copy(name: String, id: Long): ExtendedDataClassKt {
+		throw UnsupportedOperationException("Wrong copy method")
+	}
+}
+
+data class SingleSettableProperty constructor(val id: UUID = UUID.randomUUID()) {
+	val version: Int? = null
 }

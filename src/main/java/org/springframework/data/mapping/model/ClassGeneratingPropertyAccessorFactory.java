@@ -18,12 +18,6 @@ package org.springframework.data.mapping.model;
 import static org.springframework.asm.Opcodes.*;
 import static org.springframework.data.mapping.model.BytecodeUtil.*;
 
-import kotlin.reflect.KFunction;
-import kotlin.reflect.KParameter;
-import kotlin.reflect.KParameter.Kind;
-import kotlin.reflect.jvm.ReflectJvmMapping;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -34,7 +28,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,10 +37,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.function.IntConsumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.Label;
@@ -60,6 +50,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
+import org.springframework.data.mapping.model.KotlinCopyMethod.KotlinCopyByProperty;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -1010,7 +1001,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					visitWithProperty(entity, property, mv, internalClassName, wither);
 				}
 
-				if (hasKotlinCopyMethod(entity.getType())) {
+				if (hasKotlinCopyMethod(property)) {
 					visitKotlinCopy(entity, property, mv, internalClassName);
 				}
 
@@ -1079,31 +1070,36 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitKotlinCopy(PersistentEntity<?, ?> entity, PersistentProperty<?> property, MethodVisitor mv,
 				String internalClassName) {
 
+			KotlinCopyMethod kotlinCopyMethod = KotlinCopyMethod.findCopyMethod(entity.getType())
+					.orElseThrow(() -> new IllegalStateException(
+							String.format("No usable .copy(…) method found in entity %s", entity.getType().getName())));
+
 			// this. <- for later PUTFIELD
 			mv.visitVarInsn(ALOAD, 0);
 
-			Optional<Method> publicCopy = findPublicCopyMethod(entity.getType());
-			Optional<Method> defaultedCopy = findDefaultCopyMethod(entity.getType());
+			if (kotlinCopyMethod.shouldUsePublicCopyMethod(entity)) {
 
-			if (publicCopy.filter(it -> it.getParameterCount() == 1 && !Modifier.isStatic(it.getModifiers())).isPresent()) {
 
-				// PersonWithId.copy$default..(bean, object, MASK, null)
+				// PersonWithId.copy$(value)
 				mv.visitVarInsn(ALOAD, 3);
 				mv.visitVarInsn(ALOAD, 2);
 
-				visitInvokeMethodSingleArg(mv, publicCopy.get());
+				visitInvokeMethodSingleArg(mv, kotlinCopyMethod.getPublicCopyMethod());
 			} else {
 
-				Method copy = defaultedCopy.get();
+				Method copy = kotlinCopyMethod.getSyntheticCopyMethod();
 				Class<?>[] parameterTypes = copy.getParameterTypes();
-				// PersonWithId.copy$default...(object)
+
+				// PersonWithId.copy$default..(bean, object, MASK, null)
 				mv.visitVarInsn(ALOAD, 3);
 
-				KotlinDefaultCopyMethod defaultMethod = new KotlinDefaultCopyMethod(entity.getType());
-				KotlinCopyByProperty kotlinCopyByProperty = defaultMethod.forProperty(property);
-				for (int i = 1; i < defaultMethod.getParameterCount(); i++) {
+				KotlinCopyByProperty copyByProperty = kotlinCopyMethod.forProperty(property)
+						.orElseThrow(() -> new IllegalStateException(
+								String.format("No usable .copy(…) method found for property %s", property)));
 
-					if (kotlinCopyByProperty.getParameterPosition() == i) {
+				for (int i = 1; i < kotlinCopyMethod.getParameterCount(); i++) {
+
+					if (copyByProperty.getParameterPosition() == i) {
 
 						mv.visitVarInsn(ALOAD, 2);
 
@@ -1116,7 +1112,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					visitDefaultValue(parameterTypes[i], mv);
 				}
 
-				kotlinCopyByProperty.getDefaultMask().forEach(i -> {
+				copyByProperty.getDefaultMask().forEach(i -> {
 					mv.visitIntInsn(Opcodes.SIPUSH, i);
 				});
 
@@ -1414,7 +1410,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				return true;
 			}
 
-			if (hasKotlinCopyMethod(property.getOwner().getType())) {
+			if (hasKotlinCopyMethod(property)) {
 				return true;
 			}
 		}
@@ -1424,175 +1420,20 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	}
 
 	/**
-	 * Find the Kotlin {@literal copy} method or {@literal copy} method with parameter defaulting.
+	 * Check whether the owning type of {@link PersistentProperty} declares a {@literal copy} method or {@literal copy}
+	 * method with parameter defaulting.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	@Nullable
-	static Method findCopyMethod(Class<?> type) {
+	private static boolean hasKotlinCopyMethod(PersistentProperty<?> property) {
 
-		Optional<Method> singleCopy = findPublicCopyMethod(type);
-
-		return singleCopy.orElseGet(() -> findDefaultCopyMethod(type).orElse(null));
-	}
-
-	private static Optional<Method> findPublicCopyMethod(Class<?> type) {
-
-		return Stream.concat(Arrays.stream(type.getDeclaredMethods()), Arrays.stream(type.getMethods()))
-				.filter(it -> it.getName().equals("copy") //
-						&& !it.isSynthetic() //
-						&& !it.isBridge() //
-						&& !Modifier.isStatic(it.getModifiers()) //
-						&& it.getReturnType().equals(type))
-				.findFirst();
-	}
-
-	private static Optional<Method> findDefaultCopyMethod(Class<?> type) {
-
-		return Stream.concat(Arrays.stream(type.getDeclaredMethods()), Arrays.stream(type.getMethods()))
-				.filter(it -> it.getName().equals("copy$default") //
-						&& it.isSynthetic() //
-						&& it.isBridge() //
-						&& Modifier.isStatic(it.getModifiers()) //
-						&& it.getReturnType().equals(type))
-				.findFirst();
-	}
-
-	/**
-	 * Check whether the {@link Class} declares a {@literal copy} method or {@literal copy} method with parameter
-	 * defaulting.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @return
-	 */
-	private static boolean hasKotlinCopyMethod(Class<?> type) {
+		Class<?> type = property.getOwner().getType();
 
 		if (isAccessible(type) && org.springframework.data.util.ReflectionUtils.isKotlinClass(type)) {
-			return findCopyMethod(type) != null;
+			return KotlinCopyMethod.findCopyMethod(type).filter(it -> it.supportsProperty(property)).isPresent();
 		}
 
 		return false;
-	}
-
-	/**
-	 * Value object to represent a Kotlin default method.
-	 *
-	 * @author Mark Paluch
-	 */
-	@Getter
-	static class KotlinDefaultCopyMethod {
-
-		private final int parameterCount;
-		private final KFunction<?> copyFunction;
-
-		public KotlinDefaultCopyMethod(Class<?> type) {
-
-			Method copyMethod = findPublicCopyMethod(type)
-					.orElseThrow(() -> new IllegalArgumentException("Cannot resolve public Kotlin copy() method!"));
-
-			this.copyFunction = ReflectJvmMapping.getKotlinFunction(copyMethod);
-			this.parameterCount = copyFunction.getParameters().size();
-		}
-
-		/**
-		 * Create metadata for {@literal copy$default} invocation.
-		 *
-		 * @param property
-		 * @return
-		 */
-		public KotlinCopyByProperty forProperty(PersistentProperty<?> property) {
-			return new KotlinCopyByProperty(copyFunction, property);
-		}
-	}
-
-	/**
-	 * Value object to represent Kotlin {@literal copy$default} invocation metadata.
-	 *
-	 * @author Mark Paluch
-	 */
-	@Getter
-	static class KotlinCopyByProperty {
-
-		private final int parameterPosition;
-		private final int parameterCount;
-		private final KotlinDefaultMask defaultMask;
-
-		KotlinCopyByProperty(KFunction<?> copyFunction, PersistentProperty<?> property) {
-
-			this.parameterPosition = findIndex(copyFunction, property.getName());
-			this.parameterCount = copyFunction.getParameters().size();
-			this.defaultMask = KotlinDefaultMask.from(copyFunction, it -> property.getName().equals(it.getName()));
-		}
-
-		private static int findIndex(KFunction<?> function, String parameterName) {
-
-			for (KParameter parameter : function.getParameters()) {
-				if (parameterName.equals(parameter.getName())) {
-					return parameter.getIndex();
-				}
-			}
-
-			throw new IllegalArgumentException(String.format("Cannot resolve parameter name %s to a index in method %s!",
-					parameterName, function.getName()));
-		}
-	}
-
-	/**
-	 * Value object representing defaulting masks used for Kotlin methods applying parameter defaulting.
-	 */
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	static class KotlinDefaultMask {
-
-		private final int[] defaulting;
-
-		/**
-		 * Callback method to notify {@link IntConsumer} for each defaulting mask.
-		 *
-		 * @param maskCallback must not be {@literal null}.
-		 */
-		public void forEach(IntConsumer maskCallback) {
-
-			for (int i : defaulting) {
-				maskCallback.accept(i);
-			}
-		}
-
-		/**
-		 * Creates defaulting mask(s) used to invoke Kotlin {@literal default} methods that conditionally apply parameter
-		 * values.
-		 *
-		 * @param function the {@link KFunction} that should be invoked.
-		 * @param isPresent {@link Predicate} for the presence/absence of parameters.
-		 * @return {@link KotlinDefaultMask}.
-		 */
-		public static KotlinDefaultMask from(KFunction<?> function, Predicate<KParameter> isPresent) {
-
-			List<Integer> masks = new ArrayList<>();
-			int index = 0;
-			int mask = 0;
-
-			List<KParameter> parameters = function.getParameters();
-
-			for (KParameter parameter : parameters) {
-
-				if (index != 0 && index % Integer.SIZE == 0) {
-					masks.add(mask);
-					mask = 0;
-				}
-
-				if (parameter.isOptional() && !isPresent.test(parameter)) {
-					mask = mask | (1 << (index % Integer.SIZE));
-				}
-
-				if (parameter.getKind() == Kind.VALUE) {
-					index++;
-				}
-			}
-
-			masks.add(mask);
-
-			return new KotlinDefaultMask(masks.stream().mapToInt(i -> i).toArray());
-		}
 	}
 }
