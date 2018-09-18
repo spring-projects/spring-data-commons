@@ -149,7 +149,7 @@ For the domain class to be eligible for such optimization, it needs to adhere to
 By default, Spring Data attempts to use generated property accessors and falls back to reflection-based ones if a limitation is detected.
 ****
 
-Let's have a look a
+Let's have a look at the following entity:
 
 .A sample entity
 ====
