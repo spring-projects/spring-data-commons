@@ -1,6 +1,21 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.0.RELEASE (2018-09-21)
+---------------------------------------------
+* DATACMNS-1392 - Fix typo in Parameters.getParameter(…) exception message.
+* DATACMNS-1391 - Generated Kotlin PropertyAccessor uses wrong copy method.
+* DATACMNS-1389 - RepositoryConfigurationExtensionSupport.useRepositoryConfiguration(...) fails in strict configuration mode.
+* DATACMNS-1387 - Wrong description for CurrentDateTimeProvider.
+* DATACMNS-1386 - SpringDataWebConfiguration cannot be introspected when Jackson is not available.
+* DATACMNS-1384 - Add support for java.sql.Timestamp in AnnotationRevisionMetadata.
+* DATACMNS-1383 - Custom extension of Pageable as parameter causes query method to be rejected.
+* DATACMNS-1378 - Release 2.1 GA (Lovelace).
+* DATACMNS-1374 - Document requirements and supported modes for mutable and immutable types.
+* DATACMNS-1174 - Improve error reporting for not supported repository interfaces.
+* DATACMNS-1032 - Deprecate UserCredentials and downstream clients.
+
+
 Changes in version 2.0.10.RELEASE (2018-09-10)
 ----------------------------------------------
 * DATACMNS-1389 - RepositoryConfigurationExtensionSupport.useRepositoryConfiguration(...) fails in strict configuration mode.
