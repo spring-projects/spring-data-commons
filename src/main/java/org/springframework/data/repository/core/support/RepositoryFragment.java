@@ -175,8 +175,8 @@ public interface RepositoryFragment<T> {
 			interfaceClass.ifPresent(it -> {
 
 				Assert.isTrue(ClassUtils.isAssignableValue(it, implementation),
-						() -> String.format("Fragment implementation %s does not implement %s!", ClassUtils.getQualifiedName(it),
-								ClassUtils.getQualifiedName(implementation.getClass())));
+						() -> String.format("Fragment implementation %s does not implement %s!",
+								ClassUtils.getQualifiedName(implementation.getClass()), ClassUtils.getQualifiedName(it)));
 			});
 
 			this.interfaceClass = interfaceClass;
