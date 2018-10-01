@@ -31,7 +31,7 @@ public class RepositoryFragmentUnitTests {
 	public void fragmentCreationFromUnrelatedTypesShouldFail() {
 
 		assertThatThrownBy(() -> RepositoryFragment.implemented((Class) CustomFragment.class, new UnrelatedImpl()))
-				.hasMessageMatching("Fragment implementation .* does not implement .*UnrelatedImpl!")
+				.hasMessageMatching("Fragment implementation .*UnrelatedImpl does not implement .*!")
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 
