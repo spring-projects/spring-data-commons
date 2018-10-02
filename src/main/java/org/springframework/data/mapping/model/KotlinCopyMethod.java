@@ -160,7 +160,6 @@ class KotlinCopyMethod {
 
 		return Arrays.stream(type.getDeclaredMethods()).filter(it -> it.getName().equals("copy") //
 				&& !it.isSynthetic() //
-				&& !it.isBridge() //
 				&& !Modifier.isStatic(it.getModifiers()) //
 				&& it.getReturnType().equals(type) //
 				&& it.getParameterCount() == constructorArguments.size()) //
@@ -212,7 +211,6 @@ class KotlinCopyMethod {
 						&& Modifier.isStatic(it.getModifiers()) //
 						&& it.getReturnType().equals(type))
 				.filter(Method::isSynthetic) //
-				.filter(Method::isBridge) //
 				.findFirst();
 	}
 
