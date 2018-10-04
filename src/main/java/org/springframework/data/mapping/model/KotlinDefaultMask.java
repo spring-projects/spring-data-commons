@@ -24,14 +24,19 @@ import kotlin.reflect.KFunction;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.KParameter.Kind;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Value object representing defaulting masks used for Kotlin methods applying parameter defaulting.
+ *
+ * @author Mark Paluch
+ * @since 2.1
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-class KotlinDefaultMask {
+public class KotlinDefaultMask {
 
+	@Getter
 	private final int[] defaulting;
 
 	/**
@@ -44,6 +49,16 @@ class KotlinDefaultMask {
 		for (int i : defaulting) {
 			maskCallback.accept(i);
 		}
+	}
+
+	/**
+	 * Return the number of defaulting masks required to represent the number of {@code arguments}.
+	 *
+	 * @param arguments number of method arguments.
+	 * @return the number of defaulting masks required.
+	 */
+	public static int getMaskCount(int arguments) {
+		return ((arguments - 1) / Integer.SIZE) + 1;
 	}
 
 	/**
