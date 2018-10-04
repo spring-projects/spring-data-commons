@@ -318,7 +318,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			Class<?> type = entity.getType();
 
 			try {
-				return ReflectUtils.defineClass(className, bytecode, type.getClassLoader(), type.getProtectionDomain());
+				return ReflectUtils.defineClass(className, bytecode, type.getClassLoader(), type.getProtectionDomain(), type);
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
