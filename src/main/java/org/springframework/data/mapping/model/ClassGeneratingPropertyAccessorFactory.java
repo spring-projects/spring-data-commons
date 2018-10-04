@@ -318,7 +318,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			Class<?> type = entity.getType();
 
 			try {
-				return ReflectUtils.defineClass(className, bytecode, type.getClassLoader(), type.getProtectionDomain());
+				return ReflectUtils.defineClass(className, bytecode, type.getClassLoader(), type.getProtectionDomain(), type);
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
@@ -1037,8 +1037,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke", String.format("(%s%s)%s",
 						referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT), getAccessibleTypeReferenceName(entity)),
 						false);
-
-				mv.visitTypeInsn(CHECKCAST, getAccessibleTypeReferenceName(entity));
+				if (isAccessible(entity)) {
+					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(entity.getType()));
+				}
 			} else {
 
 				// this. <- for later PUTFIELD
