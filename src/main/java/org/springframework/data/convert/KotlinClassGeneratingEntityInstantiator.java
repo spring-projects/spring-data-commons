@@ -28,6 +28,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.model.KotlinDefaultMask;
 import org.springframework.data.mapping.model.MappingInstantiationException;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.util.ReflectionUtils;
@@ -114,7 +115,7 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 
 				// candidates must contain at least two additional parameters (int, DefaultConstructorMarker).
 				// Number of defaulting masks derives from the original constructor arg count
-				int syntheticParameters = (constructor.getParameterCount() / Integer.SIZE) + 1
+				int syntheticParameters = KotlinDefaultMask.getMaskCount(constructor.getParameterCount())
 						+ /* DefaultConstructorMarker */ 1;
 
 				if (constructor.getParameterCount() + syntheticParameters != candidate.getParameterCount()) {
@@ -172,6 +173,7 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 	static class DefaultingKotlinClassInstantiatorAdapter implements EntityInstantiator {
 
 		private final ObjectInstantiator instantiator;
+		private final KFunction<?> constructor;
 		private final List<KParameter> kParameters;
 		private final Constructor<?> synthetic;
 
@@ -185,6 +187,7 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 			}
 
 			this.instantiator = instantiator;
+			this.constructor = kotlinConstructor;
 			this.kParameters = kotlinConstructor.getParameters();
 			this.synthetic = constructor.getConstructor();
 		}
@@ -214,10 +217,8 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 				throw new IllegalArgumentException("PreferredConstructor must not be null!");
 			}
 
-			int[] defaulting = new int[(synthetic.getParameterCount() / Integer.SIZE) + 1];
-
 			Object[] params = allocateArguments(
-					synthetic.getParameterCount() + defaulting.length + /* DefaultConstructorMarker */1);
+					synthetic.getParameterCount() + KotlinDefaultMask.getMaskCount(synthetic.getParameterCount()) + /* DefaultConstructorMarker */1);
 			int userParameterCount = kParameters.size();
 
 			List<Parameter<Object, P>> parameters = preferredConstructor.getParameters();
@@ -225,28 +226,30 @@ public class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEnti
 			// Prepare user-space arguments
 			for (int i = 0; i < userParameterCount; i++) {
 
-				int slot = i / Integer.SIZE;
-				int offset = slot * Integer.SIZE;
-
 				Parameter<Object, P> parameter = parameters.get(i);
-				Class<Object> type = parameter.getType().getType();
-				Object param = provider.getParameterValue(parameter);
-
-				KParameter kParameter = kParameters.get(i);
-
-				// what about null and parameter is mandatory? What if parameter is non-null?
-				if (kParameter.isOptional() && param == null) {
-
-					defaulting[slot] = defaulting[slot] | (1 << (i - offset));
-
-					if (type.isPrimitive()) {
-						param = ReflectionUtils.getPrimitiveDefault(type);
-					}
-				}
-
-				params[i] = param;
+				params[i] = provider.getParameterValue(parameter);
 			}
 
+			KotlinDefaultMask defaultMask = KotlinDefaultMask.from(constructor, it -> {
+
+				int index = kParameters.indexOf(it);
+
+				Parameter<Object, P> parameter = parameters.get(index);
+				Class<Object> type = parameter.getType().getType();
+
+				if (it.isOptional() && params[index] == null) {
+					if (type.isPrimitive()) {
+
+						// apply primitive defaulting to prevent NPE on primitive downcast
+						params[index] = ReflectionUtils.getPrimitiveDefault(type);
+					}
+					return false;
+				}
+
+				return true;
+			});
+
+			int[] defaulting = defaultMask.getDefaulting();
 			// append nullability masks to creation arguments
 			for (int i = 0; i < defaulting.length; i++) {
 				params[userParameterCount + i] = defaulting[i];
