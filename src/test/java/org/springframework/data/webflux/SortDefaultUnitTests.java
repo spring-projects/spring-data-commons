@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.web;
+package org.springframework.data.webflux;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,15 +22,16 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.web.SortDefault;
 import org.springframework.data.web.SortDefault.SortDefaults;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 /**
- * Unit tests for {@link SortDefault}.
+ * Unit tests for {@link org.springframework.data.web.SortDefault}.
  *
  * @since 1.6
  * @author Oliver Gierke
@@ -107,7 +108,7 @@ public abstract class SortDefaultUnitTests {
 		exception.expectMessage(SortDefaults.class.getSimpleName());
 		exception.expectMessage(parameter.toString());
 
-		resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null);
+		resolver.resolveArgument(parameter, TestUtils.getMockBindingContext(), TestUtils.getMockServerWebExchange());
 	}
 
 	@Test
@@ -119,7 +120,7 @@ public abstract class SortDefaultUnitTests {
 		assertSupportedAndResolvedTo(parameter, reference);
 	}
 
-	protected HandlerMethodArgumentResolver getResolver() {
+	protected org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver getResolver() {
 		return new SortHandlerMethodArgumentResolver();
 	}
 
@@ -129,7 +130,7 @@ public abstract class SortDefaultUnitTests {
 
 		HandlerMethodArgumentResolver resolver = getResolver();
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
-		assertThat(resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null)).isEqualTo(sort);
+		assertThat(resolver.resolveArgument(parameter, TestUtils.getMockBindingContext(), TestUtils.getMockServerWebExchange())).isEqualTo(sort);
 	}
 
 	protected MethodParameter getParameterOfMethod(String name) {

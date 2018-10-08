@@ -15,11 +15,6 @@
  */
 package org.springframework.data.web;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -27,13 +22,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Helper class to ease sharing code between legacy {@link PageableArgumentResolver} and
  * {@link PageableHandlerMethodArgumentResolver}.
  *
  * @author Oliver Gierke
  */
-abstract class SpringDataAnnotationUtils {
+public abstract class SpringDataAnnotationUtils {
 
 	private SpringDataAnnotationUtils() {}
 

@@ -15,12 +15,12 @@
  */
 package org.springframework.data.web;
 
-import java.lang.reflect.Method;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
+
+import java.lang.reflect.Method;
 
 /**
  * General test utilities.
