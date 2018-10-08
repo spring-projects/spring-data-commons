@@ -394,9 +394,11 @@ public class CustomConversions {
 				Function<ConvertiblePair, Class<?>> mappingFunction) {
 
 			TargetTypes targetTypes = customReadTargetTypes.get(sourceType);
+
 			if (targetTypes == null) {
 				targetTypes = customReadTargetTypes.computeIfAbsent(sourceType, TargetTypes::new);
 			}
+
 			return targetTypes.computeIfAbsent(targetType, mappingFunction);
 		}
 
