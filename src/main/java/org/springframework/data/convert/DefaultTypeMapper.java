@@ -127,7 +127,14 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 	 */
 	@Nullable
 	private TypeInformation<?> getFromCacheOrCreate(Alias alias) {
-		return typeCache.computeIfAbsent(alias, getAlias).orElse(null);
+
+		Optional<TypeInformation<?>> typeInformation = typeCache.get(alias);
+
+		if (typeInformation == null) {
+			typeInformation = typeCache.computeIfAbsent(alias, getAlias);
+		}
+
+		return typeInformation.orElse(null);
 	}
 
 	/*
