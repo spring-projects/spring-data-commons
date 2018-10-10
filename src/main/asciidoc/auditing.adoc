@@ -47,15 +47,16 @@ The following example shows an implementation of the interface that uses Spring 
 ----
 class SpringSecurityAuditorAware implements AuditorAware<User> {
 
-  public User getCurrentAuditor() {
+  public Optional<User> getCurrentAuditor() {
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (authentication == null || !authentication.isAuthenticated()) {
-      return null;
+      return Optional.empty();
     }
 
-    return ((MyUserDetails) authentication.getPrincipal()).getUser();
+    MyUserDetails myUserDetails = ((MyUserDetails) authentication.getPrincipal()).getUser();
+    return Optional.of(myUserDetails);
   }
 }
 ----
