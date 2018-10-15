@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.11.RELEASE (2018-10-15)
+----------------------------------------------
+* DATACMNS-1402 - Cannot instantiate Kotlin entity with 32 parameter constructor.
+* DATACMNS-1399 - Incorrect Error message from RepositoryFragement at line 178.
+* DATACMNS-1396 - Locking overhead on Java 8 caused by ConcurrentHashMap.computeIfAbsent(…).
+* DATACMNS-1392 - Fix typo in Parameters.getParameter(…) exception message.
+* DATACMNS-1390 - Release 2.0.11 (Kay SR11).
+
+
 Changes in version 2.1.1.RELEASE (2018-10-15)
 ---------------------------------------------
 * DATACMNS-1402 - Cannot instantiate Kotlin entity with 32 parameter constructor.
