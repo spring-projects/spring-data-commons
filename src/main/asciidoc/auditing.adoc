@@ -49,14 +49,11 @@ class SpringSecurityAuditorAware implements AuditorAware<User> {
 
   public Optional<User> getCurrentAuditor() {
 
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    if (authentication == null || !authentication.isAuthenticated()) {
-      return Optional.empty();
-    }
-
-    MyUserDetails myUserDetails = ((MyUserDetails) authentication.getPrincipal()).getUser();
-    return Optional.of(myUserDetails);
+    return Optional.ofNullable(SecurityContextHolder.getContext())
+			  .map(SecurityContext::getAuthentication)
+			  .filter(Authentication::isAuthenticated)
+			  .map(Authentication::getPrincipal)
+			  .map(User.class::cast);
   }
 }
 ----
