@@ -18,8 +18,6 @@ cache:
   directories:
     - $HOME/.m2
 
-sudo: false
-
 install: true
 
 script: "mvn clean dependency:list test -P${PROFILE} -Dsort -U"
