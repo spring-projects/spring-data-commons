@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.2.RELEASE (2018-10-29)
+---------------------------------------------
+* DATACMNS-1411 - Simplify TravisCI build definition.
+* DATACMNS-1406 - Release 2.1.2 (Lovelace SR2).
+* DATACMNS-1403 - Fixed example source in reference documentation.
+
+
 Changes in version 1.13.16.RELEASE (2018-10-15)
 -----------------------------------------------
 * DATACMNS-1392 - Fix typo in Parameters.getParameter(…) exception message.
