@@ -16,6 +16,7 @@
 package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.domain.PageRequest.pageRequest;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 	void equalsRegardsSortCorrectly() {
 
 		Sort sort = Sort.by(Direction.DESC, "foo");
-		AbstractPageRequest request = PageRequest.of(0, 10, sort);
+		AbstractPageRequest request = pageRequest().page(0).size(10).sort(sort).build();
 
 		// Equals itself
 		assertEqualsAndHashcode(request, request);
