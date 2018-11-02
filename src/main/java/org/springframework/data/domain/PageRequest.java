@@ -109,6 +109,10 @@ public class PageRequest extends AbstractPageRequest {
 		return of(page, size, Sort.by(direction, properties));
 	}
 
+	public static PageRequestBuilder pageRequest() {
+		return new PageRequestBuilder();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#getSort()
@@ -177,5 +181,31 @@ public class PageRequest extends AbstractPageRequest {
 	@Override
 	public String toString() {
 		return String.format("Page request [number: %d, size %d, sort: %s]", getPageNumber(), getPageSize(), sort);
+	}
+
+	public static final class PageRequestBuilder {
+
+		private Sort sort = Sort.unsorted();
+		private int page;
+		private int size;
+
+		public PageRequestBuilder sort(Sort sort) {
+			this.sort = sort;
+			return this;
+		}
+
+		public PageRequestBuilder page(int page) {
+			this.page = page;
+			return this;
+		}
+
+		public PageRequestBuilder size(int size) {
+			this.size = size;
+			return this;
+		}
+
+		public PageRequest build() {
+			return PageRequest.of(page, size, sort);
+		}
 	}
 }
