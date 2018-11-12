@@ -17,8 +17,8 @@ package org.springframework.data.projection;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.springframework.beans.BeansException;
@@ -44,7 +44,7 @@ import org.springframework.util.ReflectionUtils;
  */
 public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory implements BeanFactoryAware {
 
-	private final Map<Class<?>, Boolean> typeCache = new HashMap<>();
+	private final Map<Class<?>, Boolean> typeCache = new ConcurrentHashMap<>();
 	private final SpelExpressionParser parser = new SpelExpressionParser();
 
 	private @Nullable BeanFactory beanFactory;
