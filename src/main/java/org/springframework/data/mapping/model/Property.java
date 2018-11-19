@@ -22,6 +22,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.springframework.data.util.Lazy;
@@ -79,19 +80,23 @@ public class Property {
 				.filter(it -> type.getParameterTypes(it).get(0).getType().isAssignableFrom(getType()));
 
 		this.wither = Lazy.of(() -> findWither(type, getName(), getType()));
-
 	}
 
 	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
 
-		Method method = ReflectionUtils.findMethod(owner.getType(),
-				String.format("with%s", StringUtils.capitalize(propertyName)), rawType);
+		AtomicReference<Method> resultHolder = new AtomicReference<>();
+		String methodName = String.format("with%s", StringUtils.capitalize(propertyName));
 
-		if (method != null && owner.isAssignableFrom(owner.getReturnType(method))) {
-			return Optional.of(method);
-		}
+		ReflectionUtils.doWithMethods(owner.getType(), it -> {
 
-		return Optional.empty();
+			if (owner.isAssignableFrom(owner.getReturnType(it))) {
+				resultHolder.set(it);
+			}
+		}, it -> it.getName().equals(methodName) && it.getParameterCount() == 1
+				&& it.getParameterTypes()[0].equals(rawType));
+
+		Method method = resultHolder.get();
+		return method != null ? Optional.of(method) : Optional.empty();
 	}
 
 	/**

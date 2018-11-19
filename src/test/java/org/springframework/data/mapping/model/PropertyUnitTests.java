@@ -54,8 +54,31 @@ public class PropertyUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1421
+	public void shouldDiscoverDerivedWitherMethod() {
+
+		Property property = Property.of(ClassTypeInformation.from(DerivedWitherClass.class),
+				ReflectionUtils.findField(DerivedWitherClass.class, "id"));
+
+		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
+			assertThat(actual.getName()).isEqualTo("withId");
+			assertThat(actual.getReturnType()).isEqualTo(DerivedWitherClass.class);
+			assertThat(actual.getDeclaringClass()).isEqualTo(DerivedWitherClass.class);
+		});
+	}
+
+	@Test // DATACMNS-1421
+	public void shouldNotDiscoverWitherMethodWithIncompatibleReturnType() {
+
+		Property property = Property.of(ClassTypeInformation.from(AnotherLevel.class),
+				ReflectionUtils.findField(AnotherLevel.class, "id"));
+
+		assertThat(property.getWither()).isEmpty();
+	}
+
 	@Value
 	static class ImmutableType {
+
 		String id;
 		String name;
 
@@ -75,7 +98,42 @@ public class PropertyUnitTests {
 	@Value
 	@Wither
 	static class WitherType {
+
 		String id;
 		String name;
+	}
+
+	static abstract class WitherBaseClass {
+
+		abstract WitherBaseClass withId(String id);
+	}
+
+	static abstract class WitherIntermediateClass extends WitherBaseClass {
+
+		abstract WitherIntermediateClass withId(String id);
+	}
+
+	static class DerivedWitherClass extends WitherIntermediateClass {
+
+		private final String id;
+
+		protected DerivedWitherClass(String id) {
+			this.id = id;
+		}
+
+		DerivedWitherClass withId(String id) {
+			return new DerivedWitherClass(id);
+		}
+	}
+
+	static class AnotherLevel extends DerivedWitherClass {
+
+		private AnotherLevel(String id) {
+			super(id);
+		}
+
+		DerivedWitherClass withId(String id) {
+			return new AnotherLevel(id);
+		}
 	}
 }
