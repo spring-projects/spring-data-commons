@@ -262,4 +262,15 @@ public interface TypeInformation<S> {
 	 * @return will never be {@literal null}.
 	 */
 	TypeInformation<? extends S> specialize(ClassTypeInformation<?> type);
+
+	/**
+	 * Returns whether the current type is a sub type of the given one, i.e. whether it's assignable but not the same one.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	default boolean isSubTypeOf(Class<?> type) {
+		return !type.equals(getType()) && type.isAssignableFrom(getType());
+	}
 }

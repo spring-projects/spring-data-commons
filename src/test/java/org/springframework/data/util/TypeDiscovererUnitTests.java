@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -166,6 +167,16 @@ public class TypeDiscovererUnitTests {
 
 		assertThat(type.isCollectionLike()).isFalse();
 		assertThat(type.getRequiredProperty("streamable").isCollectionLike()).isTrue();
+	}
+
+	@Test // DATACMNS-1419
+	public void detectsSubTypes() {
+
+		ClassTypeInformation<Set> type = from(Set.class);
+
+		assertThat(type.isSubTypeOf(Collection.class)).isTrue();
+		assertThat(type.isSubTypeOf(Set.class)).isFalse();
+		assertThat(type.isSubTypeOf(String.class)).isFalse();
 	}
 
 	class Person {
