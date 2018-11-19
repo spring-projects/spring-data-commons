@@ -82,23 +82,6 @@ public class Property {
 		this.wither = Lazy.of(() -> findWither(type, getName(), getType()));
 	}
 
-	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
-
-		AtomicReference<Method> resultHolder = new AtomicReference<>();
-		String methodName = String.format("with%s", StringUtils.capitalize(propertyName));
-
-		ReflectionUtils.doWithMethods(owner.getType(), it -> {
-
-			if (owner.isAssignableFrom(owner.getReturnType(it))) {
-				resultHolder.set(it);
-			}
-		}, it -> it.getName().equals(methodName) && it.getParameterCount() == 1
-				&& it.getParameterTypes()[0].equals(rawType));
-
-		Method method = resultHolder.get();
-		return method != null ? Optional.of(method) : Optional.empty();
-	}
-
 	/**
 	 * Creates a new {@link Property} backed by the given field.
 	 *
@@ -284,5 +267,28 @@ public class Property {
 				() -> this.field.map(field), //
 				() -> this.descriptor.map(descriptor))//
 				.orElseThrow(() -> new IllegalStateException("Should not occur! Either field or descriptor has to be given"));
+	}
+
+	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
+
+		AtomicReference<Method> resultHolder = new AtomicReference<>();
+		String methodName = String.format("with%s", StringUtils.capitalize(propertyName));
+
+		ReflectionUtils.doWithMethods(owner.getType(), it -> {
+
+			if (owner.isAssignableFrom(owner.getReturnType(it))) {
+				resultHolder.set(it);
+			}
+		}, it -> isMethodWithSingleParameterOfType(it, methodName, rawType));
+
+		Method method = resultHolder.get();
+		return method != null ? Optional.of(method) : Optional.empty();
+	}
+
+	private static boolean isMethodWithSingleParameterOfType(Method method, String name, Class<?> type) {
+
+		return method.getParameterCount() == 1 //
+				&& method.getName().equals(name) //
+				&& method.getParameterTypes()[0].equals(type);
 	}
 }
