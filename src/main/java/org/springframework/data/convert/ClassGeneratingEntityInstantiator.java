@@ -154,6 +154,10 @@ public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return true;
 		}
 
+		if (!ClassUtils.isPresent(ObjectInstantiator.class.getName(), type.getClassLoader())) {
+			return true;
+		}
+
 		return false;
 	}
 
