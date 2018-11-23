@@ -31,9 +31,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
+import org.springframework.util.Assert;
 
 /**
  * Unit tests for {@link PersistentPropertyAccessor} through {@link BeanWrapper} and
@@ -172,6 +174,22 @@ public class PersistentPropertyAccessorTests {
 		assertThatThrownBy(() -> accessor.setProperty(property, "value")).isInstanceOf(UnsupportedOperationException.class);
 	}
 
+	@Test // DATACMNS-1422
+	public void shouldUseReflectionIfFrameworkTypesNotVisible() throws Exception {
+
+		HidingClassLoader classLoader = HidingClassLoader.hide(Assert.class);
+		classLoader.excludePackage("org.springframework.data.mapping.model");
+
+		Class<?> entityType = classLoader
+				.loadClass("org.springframework.data.mapping.model.PersistentPropertyAccessorTests$ClassLoaderTest");
+
+		ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = MAPPING_CONTEXT
+				.getRequiredPersistentEntity(entityType);
+
+		assertThat(factory.isSupported(entity)).isFalse();
+	}
+
 	private static SamplePersistentProperty getProperty(Object bean, String propertyName) {
 		return MAPPING_CONTEXT.getRequiredPersistentEntity(bean.getClass()).getRequiredPersistentProperty(propertyName);
 	}
@@ -180,6 +198,8 @@ public class PersistentPropertyAccessorTests {
 	static class DataClass {
 		String id;
 	}
+
+	static class ClassLoaderTest {}
 
 	@Value
 
