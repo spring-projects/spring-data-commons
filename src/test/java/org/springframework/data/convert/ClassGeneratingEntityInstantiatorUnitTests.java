@@ -28,6 +28,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.classloadersupport.HidingClassLoader;
+import org.springframework.data.convert.ClassGeneratingEntityInstantiator.ObjectInstantiator;
 import org.springframework.data.convert.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -352,6 +354,21 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 	public void shouldNotInstantiateClassWithPrivateConstructor() {
 
 		prepareMocks(ClassWithPrivateConstructor.class);
+
+		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isTrue();
+	}
+
+	@Test // DATACMNS-1422
+	public void shouldUseReflectionIfFrameworkTypesNotVisible() throws Exception {
+
+		HidingClassLoader classLoader = HidingClassLoader.hide(ObjectInstantiator.class);
+		classLoader.excludePackage("org.springframework.data.mapping.model");
+
+		// require type from different package to meet visibility quirks
+		Class<?> entityType = classLoader
+				.loadClass("org.springframework.data.mapping.model.PersistentPropertyAccessorTests$ClassLoaderTest");
+
+		prepareMocks(entityType);
 
 		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isTrue();
 	}

@@ -55,6 +55,7 @@ import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -139,7 +140,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		Class<?> type = entity.getType();
 		return type.getClassLoader() != null
-				&& (type.getPackage() == null || !type.getPackage().getName().startsWith("java"));
+				&& (type.getPackage() == null || !type.getPackage().getName().startsWith("java"))
+				&& ClassUtils.isPresent(PersistentPropertyAccessor.class.getName(), type.getClassLoader())
+				&& ClassUtils.isPresent(Assert.class.getName(), type.getClassLoader());
 	}
 
 	private boolean hasUniquePropertyHashCodes(PersistentEntity<?, ?> entity) {
@@ -1079,7 +1082,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitVarInsn(ALOAD, 0);
 
 			if (kotlinCopyMethod.shouldUsePublicCopyMethod(entity)) {
-
 
 				// PersonWithId.copy$(value)
 				mv.visitVarInsn(ALOAD, 3);
