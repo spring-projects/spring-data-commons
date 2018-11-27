@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.3.RELEASE (2018-11-27)
+---------------------------------------------
+* DATACMNS-1422 - ClassGeneratingPropertyAccessorFactory needs custom ClassLoader for defineClass().
+* DATACMNS-1421 - Property sometimes unable to find wither.
+* DATACMNS-1415 - ConcurrentModificationException in SpelAwareProxyProjectionFactory.
+* DATACMNS-1414 - Release 2.1.3 (Lovelace SR3).
+
+
 Changes in version 2.0.12.RELEASE (2018-11-27)
 ----------------------------------------------
 * DATACMNS-1415 - ConcurrentModificationException in SpelAwareProxyProjectionFactory.
