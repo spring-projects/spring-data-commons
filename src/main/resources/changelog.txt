@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.12.RELEASE (2018-11-27)
+----------------------------------------------
+* DATACMNS-1415 - ConcurrentModificationException in SpelAwareProxyProjectionFactory.
+* DATACMNS-1411 - Simplify TravisCI build definition.
+* DATACMNS-1407 - Release 2.0.12 (Kay SR12).
+* DATACMNS-1403 - Fixed example source in reference documentation.
+
+
 Changes in version 1.13.17.RELEASE (2018-11-27)
 -----------------------------------------------
 * DATACMNS-1415 - ConcurrentModificationException in SpelAwareProxyProjectionFactory.
