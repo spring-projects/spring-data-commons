@@ -234,7 +234,6 @@ Besides that, Spring Data supports returning the following wrapper types on quer
 * `com.google.common.base.Optional`
 * `scala.Option`
 * `io.vavr.control.Option`
-* `javaslang.control.Option` (deprecated as Javaslang is deprecated)
 
 Alternatively, query methods can choose not to use a wrapper type at all.
 The absence of a query result is then indicated by returning `null`.

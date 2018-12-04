@@ -18,7 +18,7 @@ package org.springframework.data.util;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.util.ClassTypeInformation.from;
 
-import javaslang.collection.Traversable;
+import io.vavr.collection.Traversable;
 
 import java.lang.reflect.Method;
 import java.util.Calendar;
@@ -382,7 +382,7 @@ public class ClassTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-940
-	public void detectsJavaslangTraversableComponentType() {
+	public void detectsVavrTraversableComponentType() {
 
 		ClassTypeInformation<SampleTraversable> information = ClassTypeInformation.from(SampleTraversable.class);
 
@@ -390,7 +390,7 @@ public class ClassTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-940
-	public void detectsJavaslangMapComponentAndValueType() {
+	public void detectsVavrMapComponentAndValueType() {
 
 		ClassTypeInformation<SampleMap> information = ClassTypeInformation.from(SampleMap.class);
 
@@ -611,7 +611,7 @@ public class ClassTypeInformationUnitTests {
 
 	static interface SampleTraversable extends Traversable<Integer> {}
 
-	static interface SampleMap extends javaslang.collection.Map<String, Integer> {}
+	static interface SampleMap extends io.vavr.collection.Map<String, Integer> {}
 
 	// DATACMNS-1138
 

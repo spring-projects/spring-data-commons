@@ -17,8 +17,8 @@ package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
+import io.vavr.control.Option;
 import io.vavr.control.Try;
-import javaslang.control.Option;
 import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

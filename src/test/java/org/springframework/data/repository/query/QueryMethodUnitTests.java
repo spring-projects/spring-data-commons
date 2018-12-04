@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assume.*;
 
-import javaslang.collection.Seq;
-import javaslang.control.Option;
+import io.vavr.collection.Seq;
+import io.vavr.control.Option;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;

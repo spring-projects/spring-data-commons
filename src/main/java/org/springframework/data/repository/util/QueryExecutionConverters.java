@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.util;
 
-import javaslang.collection.Seq;
-import javaslang.collection.Traversable;
-import javaslang.control.Try;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -97,8 +94,6 @@ public abstract class QueryExecutionConverters {
 			QueryExecutionConverters.class.getClassLoader());
 	private static final boolean SCALA_PRESENT = ClassUtils.isPresent("scala.Option",
 			QueryExecutionConverters.class.getClassLoader());
-	private static final boolean JAVASLANG_PRESENT = ClassUtils.isPresent("javaslang.control.Option",
-			QueryExecutionConverters.class.getClassLoader());
 	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Option",
 			QueryExecutionConverters.class.getClassLoader());
 
@@ -140,20 +135,6 @@ public abstract class QueryExecutionConverters {
 			WRAPPER_TYPES.add(NullableWrapperToScalaOptionConverter.getWrapperType());
 			UNWRAPPER_TYPES.add(NullableWrapperToScalaOptionConverter.getWrapperType());
 			UNWRAPPERS.add(ScalOptionUnwrapper.INSTANCE);
-		}
-
-		if (JAVASLANG_PRESENT) {
-
-			WRAPPER_TYPES.add(NullableWrapperToJavaslangOptionConverter.getWrapperType());
-			WRAPPER_TYPES.add(JavaslangCollections.ToJavaConverter.INSTANCE.getWrapperType());
-
-			UNWRAPPERS.add(JavaslangOptionUnwrapper.INSTANCE);
-
-			// Try support
-			WRAPPER_TYPES.add(WrapperType.singleValue(Try.class));
-			EXECUTION_ADAPTER.put(Try.class, it -> Try.of(it::get));
-
-			ALLOWED_PAGEABLE_TYPES.add(Seq.class);
 		}
 
 		if (VAVR_PRESENT) {
@@ -263,11 +244,6 @@ public abstract class QueryExecutionConverters {
 
 		if (SCALA_PRESENT) {
 			conversionService.addConverter(new NullableWrapperToScalaOptionConverter(conversionService));
-		}
-
-		if (JAVASLANG_PRESENT) {
-			conversionService.addConverter(new NullableWrapperToJavaslangOptionConverter(conversionService));
-			conversionService.addConverter(JavaslangCollections.FromJavaConverter.INSTANCE);
 		}
 
 		if (VAVR_PRESENT) {
@@ -560,37 +536,6 @@ public abstract class QueryExecutionConverters {
 	}
 
 	/**
-	 * Converter to convert from {@link NullableWrapper} into JavaSlang's {@link javaslang.control.Option}.
-	 *
-	 * @author Oliver Gierke
-	 * @since 1.13
-	 */
-	private static class NullableWrapperToJavaslangOptionConverter extends AbstractWrapperTypeConverter {
-
-		/**
-		 * Creates a new {@link NullableWrapperToJavaslangOptionConverter} using the given {@link ConversionService}.
-		 *
-		 * @param conversionService must not be {@literal null}.
-		 */
-		public NullableWrapperToJavaslangOptionConverter(ConversionService conversionService) {
-			super(conversionService, javaslang.control.Option.none(), Collections.singleton(javaslang.control.Option.class));
-		}
-
-		public static WrapperType getWrapperType() {
-			return WrapperType.singleValue(javaslang.control.Option.class);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
-		 */
-		@Override
-		protected Object wrap(Object source) {
-			return javaslang.control.Option.of(source);
-		}
-	}
-
-	/**
 	 * Converter to convert from {@link NullableWrapper} into JavaSlang's {@link io.vavr.control.Option}.
 	 *
 	 * @author Oliver Gierke
@@ -695,37 +640,6 @@ public abstract class QueryExecutionConverters {
 		@Override
 		public Object convert(Object source) {
 			return source instanceof Option ? ((Option<?>) source).getOrElse(alternative) : source;
-		}
-	}
-
-	/**
-	 * Converter to unwrap Javaslang {@link javaslang.control.Option} instances.
-	 *
-	 * @author Oliver Gierke
-	 * @since 1.13
-	 */
-	private enum JavaslangOptionUnwrapper implements Converter<Object, Object> {
-
-		INSTANCE;
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
-		@Nullable
-		@Override
-		@SuppressWarnings("unchecked")
-		public Object convert(Object source) {
-
-			if (source instanceof javaslang.control.Option) {
-				return ((javaslang.control.Option<Object>) source).getOrElse(() -> null);
-			}
-
-			if (source instanceof Traversable) {
-				return JavaslangCollections.ToJavaConverter.INSTANCE.convert(source);
-			}
-
-			return source;
 		}
 	}
 

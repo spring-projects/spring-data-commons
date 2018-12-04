@@ -28,16 +28,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -67,7 +58,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		mapTypes.add(Map.class);
 
 		try {
-			mapTypes.add(ClassUtils.forName("javaslang.collection.Map", classLoader));
+			mapTypes.add(ClassUtils.forName("io.vavr.collection.Map", classLoader));
 		} catch (ClassNotFoundException o_O) {}
 
 		MAP_TYPES = mapTypes.toArray(new Class[0]);
