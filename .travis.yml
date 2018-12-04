@@ -11,11 +11,6 @@ env:
     - PROFILE=spring5-next
     - PROFILE=querydsl-next
 
-addons:
-  apt:
-    packages:
-    - oracle-java8-installer
-
 cache:
   directories:
     - $HOME/.m2
