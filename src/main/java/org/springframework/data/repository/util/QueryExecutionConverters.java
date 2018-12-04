@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,9 +45,11 @@ import javax.annotation.Nonnull;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.geo.GeoResults;
@@ -273,7 +276,7 @@ public abstract class QueryExecutionConverters {
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
-		conversionService.addConverter(IterableToStreamableConverter.INSTANCE);
+		conversionService.addConverter(new IterableToStreamableConverter());
 	}
 
 	/**
@@ -757,18 +760,60 @@ public abstract class QueryExecutionConverters {
 		}
 	}
 
-	private enum IterableToStreamableConverter implements Converter<Iterable<?>, Streamable<?>> {
+	@RequiredArgsConstructor
+	private static class IterableToStreamableConverter implements ConditionalGenericConverter {
 
-		INSTANCE;
+		private static final TypeDescriptor STREAMABLE = TypeDescriptor.valueOf(Streamable.class);
 
-		/*
+		private final Map<TypeDescriptor, Boolean> TARGET_TYPE_CACHE = new ConcurrentHashMap<>();
+		private final ConversionService conversionService = DefaultConversionService.getSharedInstance();
+
+		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
-		@Nonnull
+		@org.springframework.lang.NonNull
 		@Override
-		public Streamable<?> convert(Iterable<?> source) {
-			return Streamable.of(source);
+		public Set<ConvertiblePair> getConvertibleTypes() {
+			return Collections.singleton(new ConvertiblePair(Iterable.class, Object.class));
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+		 */
+		@Override
+		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+			if (!Iterable.class.isAssignableFrom(sourceType.getType())) {
+				return false;
+			}
+
+			if (Streamable.class.equals(targetType.getType())) {
+				return true;
+			}
+
+			return TARGET_TYPE_CACHE.computeIfAbsent(targetType, it -> {
+				return conversionService.canConvert(STREAMABLE, targetType);
+			});
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+		 */
+		@SuppressWarnings("unchecked")
+		@Nullable
+		@Override
+		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+			Streamable<Object> streamable = source == null //
+					? Streamable.empty() //
+					: Streamable.of(Iterable.class.cast(source));
+
+			return Streamable.class.equals(targetType.getType()) //
+					? streamable //
+					: conversionService.convert(streamable, STREAMABLE, targetType);
 		}
 	}
 

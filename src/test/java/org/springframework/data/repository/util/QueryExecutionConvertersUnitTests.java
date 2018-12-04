@@ -24,6 +24,7 @@ import javaslang.collection.Seq;
 import javaslang.collection.Traversable;
 import javaslang.control.Try;
 import javaslang.control.Try.Failure;
+import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Completable;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +50,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -412,6 +415,29 @@ public class QueryExecutionConvertersUnitTests {
 		}
 	}
 
+	@Test // DATACMNS-1430
+	public void returnsStreamableForIterable() throws Exception {
+
+		assertThat(conversionService.canConvert(Iterable.class, Streamable.class)).isTrue();
+		assertThat(conversionService.convert(Arrays.asList("foo"), Streamable.class)).containsExactly("foo");
+	}
+
+	@Test // DATACMNS-1430
+	public void convertsToStreamableWrapper() throws Exception {
+
+		assertThat(conversionService.canConvert(Iterable.class, StreamableWrapper.class)).isTrue();
+		assertThat(conversionService.convert(Arrays.asList("foo"), StreamableWrapper.class).getStreamable()) //
+				.containsExactly("foo");
+	}
+
+	@Test // DATACMNS-1430
+	public void convertsToStreamableWrapperImplementingStreamable() throws Exception {
+
+		assertThat(conversionService.canConvert(Iterable.class, CustomStreamableWrapper.class)).isTrue();
+		assertThat(conversionService.convert(Arrays.asList("foo"), CustomStreamableWrapper.class)) //
+				.containsExactly("foo");
+	}
+
 	interface Sample {
 
 		Page<String> pages();
@@ -423,5 +449,23 @@ public class QueryExecutionConvertersUnitTests {
 		io.vavr.control.Try<Sample> vavrTryMethod();
 
 		io.vavr.control.Try<io.vavr.collection.Seq<Sample>> vavrTryForSeqMethod();
+	}
+
+	// DATACMNS-1430
+
+	@Value(staticConstructor = "of")
+	static class StreamableWrapper {
+		Streamable<String> streamable;
+	}
+
+	@Value
+	static class CustomStreamableWrapper<T> implements Streamable<T> {
+
+		Streamable<T> source;
+
+		@Override
+		public Iterator<T> iterator() {
+			return source.iterator();
+		}
 	}
 }

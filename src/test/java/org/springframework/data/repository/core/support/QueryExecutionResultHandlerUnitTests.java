@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import io.vavr.control.Try;
 import javaslang.control.Option;
+import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Completable;
@@ -28,6 +29,7 @@ import rx.Single;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -372,6 +374,16 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOfSatisfying(Option.class, it -> assertThat(it.get()).isEqualTo(entity));
 	}
 
+	@Test // DATACMNS-1430
+	public void convertsElementsAndValueIntoCustomStreamable() throws Exception {
+
+		Object result = handler.postProcessInvocationResult(Arrays.asList("foo"), getMethod("customStreamable"));
+
+		assertThat(result).isInstanceOfSatisfying(CustomStreamableWrapper.class, it -> {
+			assertThat(it).containsExactly("foo");
+		});
+	}
+
 	private static Method getMethod(String methodName) throws Exception {
 		return Sample.class.getMethod(methodName);
 	}
@@ -406,7 +418,23 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		// DATACMNS-938
 		Try<Option<Entity>> tryOfOption();
+
+		// DATACMNS-1430
+		CustomStreamableWrapper<String> customStreamable();
 	}
 
 	static class Entity {}
+
+	// DATACMNS-1430
+
+	@Value
+	static class CustomStreamableWrapper<T> implements Streamable<T> {
+
+		Streamable<T> source;
+
+		@Override
+		public Iterator<T> iterator() {
+			return source.iterator();
+		}
+	}
 }
