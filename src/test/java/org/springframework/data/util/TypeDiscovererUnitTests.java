@@ -160,12 +160,12 @@ public class TypeDiscovererUnitTests {
 		});
 	}
 
-	@Test // DATACMNS-1342
+	@Test // DATACMNS-1342, DATACMNS-1430
 	public void considersStreamableToBeCollectionLike() {
 
 		TypeInformation<SomeStreamable> type = from(SomeStreamable.class);
 
-		assertThat(type.isCollectionLike()).isFalse();
+		assertThat(type.isCollectionLike()).isTrue();
 		assertThat(type.getRequiredProperty("streamable").isCollectionLike()).isTrue();
 	}
 
