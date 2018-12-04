@@ -392,7 +392,17 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-940
 	public void detectsJavaslangMapComponentAndValueType() {
 
-		ClassTypeInformation<SampleMap> information = ClassTypeInformation.from(SampleMap.class);
+		ClassTypeInformation<JavaslangSampleMap> information = ClassTypeInformation.from(JavaslangSampleMap.class);
+
+		assertThat(information.getComponentType().getType()).isAssignableFrom(String.class);
+
+		assertThat(information.getMapValueType().getType()).isAssignableFrom(Integer.class);
+	}
+
+	@Test // DATACMNS-1434
+	public void detectsVavrMapComponentAndValueType() {
+
+		ClassTypeInformation<VavrSampleMap> information = ClassTypeInformation.from(VavrSampleMap.class);
 
 		assertThat(information.getComponentType().getType()).isAssignableFrom(String.class);
 
@@ -611,7 +621,9 @@ public class ClassTypeInformationUnitTests {
 
 	static interface SampleTraversable extends Traversable<Integer> {}
 
-	static interface SampleMap extends javaslang.collection.Map<String, Integer> {}
+	static interface JavaslangSampleMap extends javaslang.collection.Map<String, Integer> {}
+
+	static interface VavrSampleMap extends io.vavr.collection.Map<String, Integer> {}
 
 	// DATACMNS-1138
 
