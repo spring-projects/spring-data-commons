@@ -89,7 +89,6 @@ public class ShadowingClassLoader extends DecoratingClassLoader {
 	@Override
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
 		if (shouldShadow(name)) {
-			System.out.println("shadowing " + name);
 			Class<?> cls = this.classCache.get(name);
 			if (cls != null) {
 				return cls;
