@@ -17,6 +17,8 @@ package org.springframework.data.util;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -144,6 +146,47 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 		Assert.notNull(stream, "Stream must not be null!");
 
 		return Streamable.of(() -> Stream.concat(this.stream(), stream.get()));
+	}
+
+	/**
+	 * Creates a new {@link Streamable} from the current one and the given values concatenated.
+	 * 
+	 * @param others must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 2.2
+	 */
+	@SuppressWarnings("unchecked")
+	default Streamable<T> and(T... others) {
+
+		Assert.notNull(others, "Other values must not be null!");
+
+		return Streamable.of(() -> Stream.concat(this.stream(), Arrays.stream(others)));
+	}
+
+	/**
+	 * Creates a new {@link Streamable} from the current one and the given {@link Iterable} concatenated.
+	 * 
+	 * @param iterable must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 2.2
+	 */
+	default Streamable<T> and(Iterable<? extends T> iterable) {
+
+		Assert.notNull(iterable, "Iterable must not be null!");
+
+		return Streamable.of(() -> Stream.concat(this.stream(), StreamSupport.stream(iterable.spliterator(), false)));
+	}
+
+	/**
+	 * Convenience method to allow adding a {@link Streamable} directly as otherwise the invocation is ambiguous between
+	 * {@link #and(Iterable)} and {@link #and(Supplier)}.
+	 * 
+	 * @param streamable must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 2.2
+	 */
+	default Streamable<T> and(Streamable<? extends T> streamable) {
+		return and((Supplier<? extends Stream<? extends T>>) streamable);
 	}
 
 	/**

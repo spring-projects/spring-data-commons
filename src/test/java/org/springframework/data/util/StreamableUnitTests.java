@@ -38,4 +38,19 @@ public class StreamableUnitTests {
 		assertThat(streamable.toList()).containsExactly(1, 2, 1);
 		assertThat(streamable.toSet()).containsExactlyInAnyOrder(1, 2);
 	}
+
+	@Test // DATACMNS-1433
+	public void concatenatesIterable() {
+		assertThat(Streamable.of(1, 2).and(Arrays.asList(3, 4))).containsExactly(1, 2, 3, 4);
+	}
+
+	@Test // DATACMNS-1433
+	public void concatenatesVarargs() {
+		assertThat(Streamable.of(1, 2).and(3, 4)).containsExactly(1, 2, 3, 4);
+	}
+
+	@Test // DATACMNS-1433
+	public void concatenatesStreamable() {
+		assertThat(Streamable.of(1, 2).and(Streamable.of(3, 4))).containsExactly(1, 2, 3, 4);
+	}
 }

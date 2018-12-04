@@ -82,7 +82,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 	 */
 	@Override
 	public Streamable<TypeFilter> getExcludeFilters() {
-		return config.getExcludeFilters().and(Streamable.of(new AnnotationTypeFilter(NoRepositoryBean.class)));
+		return config.getExcludeFilters().and(new AnnotationTypeFilter(NoRepositoryBean.class));
 	}
 
 	/* 
