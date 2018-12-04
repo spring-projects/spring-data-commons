@@ -146,6 +146,26 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 		return Streamable.of(() -> Stream.concat(this.stream(), stream.get()));
 	}
 
+	/**
+	 * Creates a new, unmodifiable {@link List}.
+	 * 
+	 * @return will never be {@literal null}.
+	 * @since 2.2
+	 */
+	default List<T> toList() {
+		return stream().collect(StreamUtils.toUnmodifiableList());
+	}
+
+	/**
+	 * Creates a new, unmodifiable {@link Set}.
+	 * 
+	 * @return will never be {@literal null}.
+	 * @since 2.2
+	 */
+	default Set<T> toSet() {
+		return stream().collect(StreamUtils.toUnmodifiableSet());
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.util.function.Supplier#get()
