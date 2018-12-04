@@ -30,15 +30,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeanUtils;
@@ -58,14 +50,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	static {
 
-		ClassLoader classLoader = TypeDiscoverer.class.getClassLoader();
-
 		Set<Class<?>> mapTypes = new HashSet<Class<?>>();
 		mapTypes.add(Map.class);
-
-		try {
-			mapTypes.add(ClassUtils.forName("javaslang.collection.Map", classLoader));
-		} catch (ClassNotFoundException o_O) {}
+		tryToAddClassTo("javaslang.collection.Map", mapTypes);
+		tryToAddClassTo("io.vavr.collection.Map", mapTypes);
 
 		MAP_TYPES = Collections.unmodifiableSet(mapTypes);
 	}
@@ -581,6 +569,19 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Override
 	public int hashCode() {
 		return hashCode;
+	}
+
+	/**
+	 * Tries to load the class with the given name and adds it to the given {@link Set} of classes if present.
+	 * 
+	 * @param className must not be {@literal null} or empty.
+	 * @param classes must not be {@literal null}.
+	 */
+	private static final void tryToAddClassTo(String className, Set<Class<?>> classes) {
+
+		try {
+			classes.add(ClassUtils.forName(className, TypeDiscoverer.class.getClassLoader()));
+		} catch (ClassNotFoundException o_O) {}
 	}
 
 	/**
