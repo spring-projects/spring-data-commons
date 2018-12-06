@@ -18,13 +18,21 @@ package org.springframework.data.auditing;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.mapping.context.SampleMappingContext;
 
 /**
  * Unit test for {@code AuditingHandler}.
@@ -153,4 +161,36 @@ public class AuditingHandlerUnitTests {
 
 		verify(provider, times(1)).getNow();
 	}
+
+	@Test
+	public void setsAuditingInfoOnEntityUsingInheritance() {
+
+		AuditingHandler handler = new AuditingHandler(new PersistentEntities(Arrays.asList(new SampleMappingContext())));
+		handler.setModifyOnCreation(false);
+
+		MyDocument document = new MyDocument();
+		handler.markCreated(document);
+
+		assertThat(document.created).isNotNull();
+		assertThat(document.modified).isNull();
+
+		handler.markModified(document);
+
+		assertThat(document.created).isNotNull();
+		assertThat(document.modified).isNotNull();
+	}
+
+	static abstract class AbstractModel {
+
+		@CreatedDate Instant created;
+		@CreatedBy String creator;
+		@LastModifiedDate Instant modified;
+		@LastModifiedBy String modifier;
+	}
+
+	static class MyModel extends AbstractModel {
+		List<MyModel> models;
+	}
+
+	static class MyDocument extends MyModel {}
 }
