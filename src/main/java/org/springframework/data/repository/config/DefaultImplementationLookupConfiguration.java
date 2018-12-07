@@ -27,11 +27,10 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Default implementation of {@link ImplementationLookupConfiguration}.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  * @since 2.1
@@ -45,9 +44,9 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 	/**
 	 * Creates a new {@link DefaultImplementationLookupConfiguration} for the given
 	 * {@link ImplementationDetectionConfiguration} and interface name.
-	 * 
+	 *
 	 * @param config must not be {@literal null}.
-	 * @param implementationClassName must not be {@literal null} or empty.
+	 * @param interfaceName must not be {@literal null} or empty.
 	 */
 	DefaultImplementationLookupConfiguration(ImplementationDetectionConfiguration config, String interfaceName) {
 
@@ -56,7 +55,8 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 
 		this.config = config;
 		this.interfaceName = interfaceName;
-		this.beanName = Introspector.decapitalize(ClassUtils.getShortName(interfaceName).concat(config.getImplementationPostfix()));
+		this.beanName = Introspector
+				.decapitalize(ClassUtils.getShortName(interfaceName).concat(config.getImplementationPostfix()));
 	}
 
 	/*
@@ -86,7 +86,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 		return config.getExcludeFilters().and(new AnnotationTypeFilter(NoRepositoryBean.class));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.ImplementationDetectionConfiguration#getMetadataReaderFactory()
 	 */
@@ -125,7 +125,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 		return beanName != null && beanName.equals(config.generateBeanName(definition));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.ImplementationLookupConfiguration#matches(org.springframework.beans.factory.config.BeanDefinition, org.springframework.core.type.classreading.MetadataReaderFactory)
 	 */
