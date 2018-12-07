@@ -156,6 +156,30 @@ public class Jsr310ConvertersUnitTests {
 			assertThat(convertedDateTime).isEqualTo(dateTime);
 		}
 
+		@Test // DATACMNS-1440
+		public void convertsIsoFormattedStringToLocalDate() {
+
+			LocalDate date = LocalDate.now();
+
+			assertThat(CONVERSION_SERVICE.convert(date.toString(), LocalDate.class)).isEqualTo(date);
+		}
+
+		@Test // DATACMNS-1440
+		public void convertsIsoFormattedStringToLocalDateTime() {
+
+			LocalDateTime date = LocalDateTime.now();
+
+			assertThat(CONVERSION_SERVICE.convert(date.toString(), LocalDateTime.class)).isEqualTo(date);
+		}
+
+		@Test // DATACMNS-1440
+		public void convertsIsoFormattedStringToInstant() {
+
+			Instant date = Instant.now();
+
+			assertThat(CONVERSION_SERVICE.convert(date.toString(), Instant.class)).isEqualTo(date);
+		}
+
 		private static Predicate<Date> formatted(Temporal expected, String format) {
 
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
@@ -173,7 +197,6 @@ public class Jsr310ConvertersUnitTests {
 		}
 	}
 
-	@RunWith(Parameterized.class)
 	public static class DurationConversionTests extends ConversionTest<Duration> {
 
 		// DATACMNS-951
@@ -207,7 +230,7 @@ public class Jsr310ConvertersUnitTests {
 	}
 
 	@RunWith(Parameterized.class)
-	public static class ConversionTest<T> {
+	public static abstract class ConversionTest<T> {
 
 		public @Parameter(0) String string;
 		public @Parameter(1) T target;

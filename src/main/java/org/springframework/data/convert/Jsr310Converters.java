@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,6 +37,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -80,6 +82,9 @@ public abstract class Jsr310Converters {
 		converters.add(StringToDurationConverter.INSTANCE);
 		converters.add(PeriodToStringConverter.INSTANCE);
 		converters.add(StringToPeriodConverter.INSTANCE);
+		converters.add(StringToLocalDateConverter.INSTANCE);
+		converters.add(StringToLocalDateTimeConverter.INSTANCE);
+		converters.add(StringToInstantConverter.INSTANCE);
 
 		return converters;
 	}
@@ -283,6 +288,54 @@ public abstract class Jsr310Converters {
 		@Override
 		public Period convert(String s) {
 			return Period.parse(s);
+		}
+	}
+
+	@ReadingConverter
+	public static enum StringToLocalDateConverter implements Converter<String, LocalDate> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@NonNull
+		@Override
+		public LocalDate convert(String source) {
+			return LocalDate.parse(source, DateTimeFormatter.ISO_DATE);
+		}
+	}
+
+	@ReadingConverter
+	public static enum StringToLocalDateTimeConverter implements Converter<String, LocalDateTime> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@NonNull
+		@Override
+		public LocalDateTime convert(String source) {
+			return LocalDateTime.parse(source, DateTimeFormatter.ISO_DATE_TIME);
+		}
+	}
+
+	@ReadingConverter
+	public static enum StringToInstantConverter implements Converter<String, Instant> {
+
+		INSTANCE;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@NonNull
+		@Override
+		public Instant convert(String source) {
+			return Instant.parse(source);
 		}
 	}
 }
