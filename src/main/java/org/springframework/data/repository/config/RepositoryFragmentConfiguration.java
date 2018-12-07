@@ -17,13 +17,13 @@ package org.springframework.data.repository.config;
 
 import lombok.Value;
 
+import java.beans.Introspector;
 import java.util.Optional;
 
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Fragment configuration consisting of an interface name and the implementation class name.
@@ -76,7 +76,7 @@ public class RepositoryFragmentConfiguration {
 	 * @return name of the implementation bean.
 	 */
 	public String getImplementationBeanName() {
-		return StringUtils.uncapitalize(ClassUtils.getShortName(getClassName()));
+		return Introspector.decapitalize(ClassUtils.getShortName(getClassName()));
 	}
 
 	/**
