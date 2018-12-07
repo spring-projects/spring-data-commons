@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
+import java.beans.Introspector;
 import java.io.IOException;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -32,6 +33,7 @@ import org.springframework.util.StringUtils;
  * Default implementation of {@link ImplementationLookupConfiguration}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 2.1
  */
 class DefaultImplementationLookupConfiguration implements ImplementationLookupConfiguration {
@@ -54,8 +56,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 
 		this.config = config;
 		this.interfaceName = interfaceName;
-		this.beanName = StringUtils
-				.uncapitalize(ClassUtils.getShortName(interfaceName).concat(config.getImplementationPostfix()));
+		this.beanName = Introspector.decapitalize(ClassUtils.getShortName(interfaceName).concat(config.getImplementationPostfix()));
 	}
 
 	/* 
