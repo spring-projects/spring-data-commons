@@ -218,4 +218,21 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		assertThat(predicate, is((Predicate) $.user.as(QSpecialUser.class).specialProperty.contains("VALUE")));
 	}
+
+	@Test // DATACMNS-1443
+	public void doesNotDropValuesContainingABlank() {
+
+		values.add("firstname", " ");
+
+		assertThat(builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS), //
+				is((Predicate) QUser.user.firstname.eq(" ")));
+	}
+
+	@Test // DATACMNS-1443
+	public void dropsValuesContainingAnEmptyString() {
+
+		values.add("firstname", "");
+
+		assertThat(builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS), is(nullValue()));
+	}
 }
