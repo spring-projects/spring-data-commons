@@ -21,6 +21,9 @@ NOTE: Geospatial types (such as `GeoResult`, `GeoResults`, and `GeoPage`) are av
 |`Optional<T>`|A Java 8 or Guava `Optional`. Expects the query method to return one result at most. If no result is found, `Optional.empty()` or `Optional.absent()` is returned. More than one result triggers an `IncorrectResultSizeDataAccessException`.
 |`Option<T>`|Either a Scala or Vavr `Option` type. Semantically the same behavior as Java 8's `Optional`, described earlier.
 |`Stream<T>`|A Java 8 `Stream`.
+|`Streamable<T>`|A convenience extension of `Iterable` that directy exposes methods to stream, map and filter results, concatenate them etc.
+|Types that implement `Streamable` and take a `Streamable` constructor or factory method argument|Types that expose a constructor or `….of(…)`/`….valueOf(…)` factory method taking a `Streamable` as argument. See <<repositories.collections-and-iterables.streamable-wrapper>> for details.
+|Vavr `Seq`, `List`, `Map`, `Set`|Vavr collection types. See <<repositories.collections-and-iterables.vavr>> for details.
 |`Future<T>`|A `Future`. Expects a method to be annotated with `@Async` and requires Spring's asynchronous method execution capability to be enabled.
 |`CompletableFuture<T>`|A Java 8 `CompletableFuture`. Expects a method to be annotated with `@Async` and requires Spring's asynchronous method execution capability to be enabled.
 |`ListenableFuture`|A `org.springframework.util.concurrent.ListenableFuture`. Expects a method to be annotated with `@Async` and requires Spring's asynchronous method execution capability to be enabled.

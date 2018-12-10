@@ -225,6 +225,88 @@ In the prior example, you defined a common base interface for all your domain re
 
 NOTE: The intermediate repository interface is annotated with `@NoRepositoryBean`. Make sure you add that annotation to all repository interfaces for which Spring Data should not create instances at runtime.
 
+[[repositories.collections-and-iterables]]
+=== Repository Methods Returning Collections or Iterables
+Query methods that return multiple results can use standard Java `Iterable`, `List`, `Set`.
+Beyond that we support returning Spring Data's `Streamable`, a custom extension of `Iterable`, as well as collection types provided by http://www.vavr.io/[Vavr].
+
+[[repositories.collections-and-iterables.streamable]]
+==== Using Streamable as Query Method Return Type
+`Streamable` can be used as alternative to `Iterable` or any collection type.
+It provides convenience methods to access a non-parallel `Stream` (missing from `Iterable`), the ability to directly `….filter(…)` and `….map(…)` over the elements and concatenate the `Streamable` to others:
+
+.Using Streamable to combine query method results
+====
+[source, java]
+----
+interface PersonRepository extends Repository<Person, Long> {
+  Streamable<Person> findByFirstnameContaining(String firstname);
+  Streamable<Person> findByLastnameContaining(String lastname);
+}
+
+Streamable<Person> result = repository.findByFirstnameContaining("av")
+  .and(repository.findByLastnameContaining("ea"));
+----
+====
+
+[[repositories.collections-and-iterables.streamable-wrapper]]
+==== Returning Custom Streamable Wrapper Types
+
+Providing dedicated wrapper types for collections is a commonly used pattern to provide API on a query execution result that returns multiple elements.
+Usually these types are used by invoking a repository method returning a collection-like type and creating an instance of the wrapper type manually.
+That additional step can be avoided as Spring Data allows to use these wrapper types as query method return types if they meet the following criterias:
+
+. The type implements `Streamable`.
+. The type exposes either a constructor or a static factory method named `of(…)` or `valueOf(…)` taking `Streamable` as argument.
+
+A sample use case looks as follows:
+
+====
+[source, java]
+----
+class Product { <1>
+  MonetaryAmount getPrice() { … }
+}
+
+@RequiredArgConstructor(staticName = "of")
+class Products implements Streamable<Product> { <2>
+
+  private Streamable<Product> streamable;
+
+  public MonetaryAmount getTotal() { <3>
+    return streamable.stream() //
+      .map(Priced::getPrice)
+      .reduce(Money.of(0), MonetaryAmount::add);
+  }
+}
+
+interface ProductRepository implements Repository<Product, Long> {
+  Products findAllByDescriptionContaining(String text); <4>
+}
+----
+<1> A `Product` entity that exposes API to access the product's price.
+<2> A wrapper type for a `Streamable<Product>` that can be constructed via `Products.of(…)` (factory method created via the Lombok annotation).
+<3> The wrapper type exposes additional API calculating new values on the `Streamable<Product>`.
+<4> That wrapper type can be used as query method return type directly. No need to return `Stremable<Product>` and manually wrap it in the repository client.
+====
+
+[[repositories.collections-and-iterables.vavr]]
+==== Support for Vavr Collections
+
+http://www.vavr.io/[Vavr] is a library to embrace functional programming concepts in Java.
+It ships with a custom set of collection types that can be used as query method return types.
+
+[options=header]
+|====
+|Vavr collection type|Used Vavr implementation type|Valid Java source types
+|`io.vavr.collection.Seq`|`io.vavr.collection.List`|`java.util.Iterable`
+|`io.vavr.collection.Set`|`io.vavr.collection.LinkedHashSet`|`java.util.Iterable`
+|`io.vavr.collection.Map`|`io.vavr.collection.LinkedHashMap`|`java.util.Map`
+|====
+
+The types in the first column (or subtypes thereof) can be used as quer method return types and will get the types in the second column used as implementation type depending on the Java type of the actual query result (thrid column).
+Alternatively, `Traversable` (Vavr the `Iterable` equivalent) can be declared and we derive the implementation class from the actual return value, i.e. a `java.util.List` will be turned into a Vavr `List`/`Seq`, a `java.util.Set` becomes a Vavr `LinkedHashSet`/`Set` etc.
+
 [[repositories.nullability]]
 === Null Handling of Repository Methods
 
