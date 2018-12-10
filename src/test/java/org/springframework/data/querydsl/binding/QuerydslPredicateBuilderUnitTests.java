@@ -205,4 +205,21 @@ public class QuerydslPredicateBuilderUnitTests {
 		assertThat(builder.getPredicate(USER_TYPE, values, bindings))//
 				.isEqualTo($.user.as(QSpecialUser.class).specialProperty.contains("VALUE"));
 	}
+
+	@Test // DATACMNS-1443
+	public void doesNotDropValuesContainingABlank() {
+
+		values.add("firstname", " ");
+
+		assertThat(builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS)) //
+				.isEqualTo(QUser.user.firstname.eq(" "));
+	}
+
+	@Test // DATACMNS-1443
+	public void dropsValuesContainingAnEmptyString() {
+
+		values.add("firstname", "");
+
+		assertThat(builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS)).isNull();
+	}
 }
