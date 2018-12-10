@@ -216,6 +216,6 @@ public class QuerydslPredicateBuilder {
 	 * @return
 	 */
 	private static boolean isSingleElementCollectionWithoutText(List<String> source) {
-		return source.size() == 1 && !StringUtils.hasText(source.get(0));
+		return source.size() == 1 && !StringUtils.hasLength(source.get(0));
 	}
 }
