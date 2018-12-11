@@ -22,8 +22,7 @@ The central interface in the Spring Data repository abstraction is `Repository`.
 ====
 [source, java]
 ----
-public interface CrudRepository<T, ID extends Serializable>
-  extends Repository<T, ID> {
+public interface CrudRepository<T, ID> extends Repository<T, ID> {
 
   <S extends T> S save(S entity);      <1>
 
@@ -56,8 +55,7 @@ On top of the `CrudRepository`, there is a `PagingAndSortingRepository` abstract
 ====
 [source, java]
 ----
-public interface PagingAndSortingRepository<T, ID extends Serializable>
-  extends CrudRepository<T, ID> {
+public interface PagingAndSortingRepository<T, ID> extends CrudRepository<T, ID> {
 
   Iterable<T> findAll(Sort sort);
 
@@ -135,7 +133,7 @@ interface PersonRepository extends Repository<Person, Long> {
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @EnableJpaRepositories
-class Config {}
+class Config { … }
 ----
 
 
@@ -208,7 +206,7 @@ The following example shows how to selectively expose CRUD methods (`findById` a
 [source, java]
 ----
 @NoRepositoryBean
-interface MyBaseRepository<T, ID extends Serializable> extends Repository<T, ID> {
+interface MyBaseRepository<T, ID> extends Repository<T, ID> {
 
   Optional<T> findById(ID id);
 
@@ -243,13 +241,9 @@ The following example shows a repository that uses module-specific interfaces (J
 interface MyRepository extends JpaRepository<User, Long> { }
 
 @NoRepositoryBean
-interface MyBaseRepository<T, ID extends Serializable> extends JpaRepository<T, ID> {
-  …
-}
+interface MyBaseRepository<T, ID> extends JpaRepository<T, ID> { … }
 
-interface UserRepository extends MyBaseRepository<User, Long> {
-  …
-}
+interface UserRepository extends MyBaseRepository<User, Long> { … }
 ----
 `MyRepository` and `UserRepository` extend `JpaRepository` in their type hierarchy. They are valid candidates for the Spring Data JPA module.
 ====
@@ -260,18 +254,12 @@ The following example shows a repository that uses generic interfaces:
 ====
 [source, java]
 ----
-interface AmbiguousRepository extends Repository<User, Long> {
- …
-}
+interface AmbiguousRepository extends Repository<User, Long> { … }
 
 @NoRepositoryBean
-interface MyBaseRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
-  …
-}
+interface MyBaseRepository<T, ID> extends CrudRepository<T, ID> { … }
 
-interface AmbiguousUserRepository extends MyBaseRepository<User, Long> {
-  …
-}
+interface AmbiguousUserRepository extends MyBaseRepository<User, Long> { … }
 ----
 `AmbiguousRepository` and `AmbiguousUserRepository` extend only `Repository` and `CrudRepository` in their type hierarchy. While this is perfectly fine when using a unique Spring Data module, multiple modules cannot distinguish to which particular Spring Data these repositories should be bound.
 ====
@@ -283,23 +271,15 @@ The following example shows a repository that uses domain classes with annotatio
 ====
 [source, java]
 ----
-interface PersonRepository extends Repository<Person, Long> {
- …
-}
+interface PersonRepository extends Repository<Person, Long> { … }
 
 @Entity
-class Person {
-  …
-}
+class Person { … }
 
-interface UserRepository extends Repository<User, Long> {
- …
-}
+interface UserRepository extends Repository<User, Long> { … }
 
 @Document
-class User {
-  …
-}
+class User { … }
 ----
 `PersonRepository` references `Person`, which is annotated with the JPA `@Entity` annotation, so this repository clearly belongs to Spring Data JPA. `UserRepository` references `User`, which is annotated with Spring Data MongoDB's `@Document` annotation.
 ====
@@ -310,19 +290,13 @@ The following bad example shows a repository that uses domain classes with mixed
 ====
 [source, java]
 ----
-interface JpaPersonRepository extends Repository<Person, Long> {
- …
-}
+interface JpaPersonRepository extends Repository<Person, Long> { … }
 
-interface MongoDBPersonRepository extends Repository<Person, Long> {
- …
-}
+interface MongoDBPersonRepository extends Repository<Person, Long> { … }
 
 @Entity
 @Document
-class Person {
-  …
-}
+class Person { … }
 ----
 This example shows a domain class using both JPA and Spring Data MongoDB annotations. It defines two repositories, `JpaPersonRepository` and `MongoDBPersonRepository`. One is intended for JPA and the other for MongoDB usage. Spring Data is no longer able to tell the repositories apart, which leads to undefined behavior.
 ====
@@ -339,7 +313,7 @@ The following example shows annotation-driven configuration of base packages:
 ----
 @EnableJpaRepositories(basePackages = "com.acme.repositories.jpa")
 @EnableMongoRepositories(basePackages = "com.acme.repositories.mongo")
-interface Configuration { }
+class Configuration { … }
 ----
 ====
 
@@ -1002,7 +976,7 @@ The approach described in the <<repositories.manual-wiring,preceding section>> r
 ====
 [source, java]
 ----
-class MyRepositoryImpl<T, ID extends Serializable>
+class MyRepositoryImpl<T, ID>
   extends SimpleJpaRepository<T, ID> {
 
   private final EntityManager entityManager;
