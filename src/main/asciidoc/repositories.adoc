@@ -225,179 +225,6 @@ In the prior example, you defined a common base interface for all your domain re
 
 NOTE: The intermediate repository interface is annotated with `@NoRepositoryBean`. Make sure you add that annotation to all repository interfaces for which Spring Data should not create instances at runtime.
 
-[[repositories.collections-and-iterables]]
-=== Repository Methods Returning Collections or Iterables
-Query methods that return multiple results can use standard Java `Iterable`, `List`, `Set`.
-Beyond that we support returning Spring Data's `Streamable`, a custom extension of `Iterable`, as well as collection types provided by http://www.vavr.io/[Vavr].
-
-[[repositories.collections-and-iterables.streamable]]
-==== Using Streamable as Query Method Return Type
-`Streamable` can be used as alternative to `Iterable` or any collection type.
-It provides convenience methods to access a non-parallel `Stream` (missing from `Iterable`), the ability to directly `….filter(…)` and `….map(…)` over the elements and concatenate the `Streamable` to others:
-
-.Using Streamable to combine query method results
-====
-[source, java]
-----
-interface PersonRepository extends Repository<Person, Long> {
-  Streamable<Person> findByFirstnameContaining(String firstname);
-  Streamable<Person> findByLastnameContaining(String lastname);
-}
-
-Streamable<Person> result = repository.findByFirstnameContaining("av")
-  .and(repository.findByLastnameContaining("ea"));
-----
-====
-
-[[repositories.collections-and-iterables.streamable-wrapper]]
-==== Returning Custom Streamable Wrapper Types
-
-Providing dedicated wrapper types for collections is a commonly used pattern to provide API on a query execution result that returns multiple elements.
-Usually these types are used by invoking a repository method returning a collection-like type and creating an instance of the wrapper type manually.
-That additional step can be avoided as Spring Data allows to use these wrapper types as query method return types if they meet the following criterias:
-
-. The type implements `Streamable`.
-. The type exposes either a constructor or a static factory method named `of(…)` or `valueOf(…)` taking `Streamable` as argument.
-
-A sample use case looks as follows:
-
-====
-[source, java]
-----
-class Product { <1>
-  MonetaryAmount getPrice() { … }
-}
-
-@RequiredArgConstructor(staticName = "of")
-class Products implements Streamable<Product> { <2>
-
-  private Streamable<Product> streamable;
-
-  public MonetaryAmount getTotal() { <3>
-    return streamable.stream() //
-      .map(Priced::getPrice)
-      .reduce(Money.of(0), MonetaryAmount::add);
-  }
-}
-
-interface ProductRepository implements Repository<Product, Long> {
-  Products findAllByDescriptionContaining(String text); <4>
-}
-----
-<1> A `Product` entity that exposes API to access the product's price.
-<2> A wrapper type for a `Streamable<Product>` that can be constructed via `Products.of(…)` (factory method created via the Lombok annotation).
-<3> The wrapper type exposes additional API calculating new values on the `Streamable<Product>`.
-<4> That wrapper type can be used as query method return type directly. No need to return `Stremable<Product>` and manually wrap it in the repository client.
-====
-
-[[repositories.collections-and-iterables.vavr]]
-==== Support for Vavr Collections
-
-http://www.vavr.io/[Vavr] is a library to embrace functional programming concepts in Java.
-It ships with a custom set of collection types that can be used as query method return types.
-
-[options=header]
-|====
-|Vavr collection type|Used Vavr implementation type|Valid Java source types
-|`io.vavr.collection.Seq`|`io.vavr.collection.List`|`java.util.Iterable`
-|`io.vavr.collection.Set`|`io.vavr.collection.LinkedHashSet`|`java.util.Iterable`
-|`io.vavr.collection.Map`|`io.vavr.collection.LinkedHashMap`|`java.util.Map`
-|====
-
-The types in the first column (or subtypes thereof) can be used as quer method return types and will get the types in the second column used as implementation type depending on the Java type of the actual query result (thrid column).
-Alternatively, `Traversable` (Vavr the `Iterable` equivalent) can be declared and we derive the implementation class from the actual return value, i.e. a `java.util.List` will be turned into a Vavr `List`/`Seq`, a `java.util.Set` becomes a Vavr `LinkedHashSet`/`Set` etc.
-
-[[repositories.nullability]]
-=== Null Handling of Repository Methods
-
-As of Spring Data 2.0, repository CRUD methods that return an individual aggregate instance use Java 8's `Optional` to indicate the potential absence of a value.
-Besides that, Spring Data supports returning the following wrapper types on query methods:
-
-* `com.google.common.base.Optional`
-* `scala.Option`
-* `io.vavr.control.Option`
-
-Alternatively, query methods can choose not to use a wrapper type at all.
-The absence of a query result is then indicated by returning `null`.
-Repository methods returning collections, collection alternatives, wrappers, and streams are guaranteed never to return `null` but rather the corresponding empty representation.
-See "`<<repository-query-return-types>>`" for details.
-
-[[repositories.nullability.annotations]]
-==== Nullability Annotations
-
-You can express nullability constraints for repository methods by using link:{spring-framework-docs}/core.html#null-safety[Spring Framework's nullability annotations].
-They provide a tooling-friendly approach and opt-in `null` checks during runtime, as follows:
-
-* {spring-framework-javadoc}/org/springframework/lang/NonNullApi.html[`@NonNullApi`]: Used on the package level to declare that the default behavior for parameters and return values is to not accept or produce `null` values.
-* {spring-framework-javadoc}/org/springframework/lang/NonNull.html[`@NonNull`]: Used on a parameter or return value that must not be `null`
- (not needed on a parameter and return value where `@NonNullApi` applies).
-* {spring-framework-javadoc}/org/springframework/lang/Nullable.html[`@Nullable`]: Used on a parameter or return value that can be `null`.
-
-Spring annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR 305] annotations (a dormant but widely spread JSR). JSR 305 meta-annotations let tooling vendors such as https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], http://help.eclipse.org/oxygen/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], and link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin] provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
-To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on the package level by using Spring’s `@NonNullApi` in `package-info.java`, as shown in the following example:
-
-.Declaring Non-nullability in `package-info.java`
-====
-[source, java]
-----
-@org.springframework.lang.NonNullApi
-package com.acme;
-----
-====
-
-Once non-null defaulting is in place, repository query method invocations get validated at runtime for nullability constraints.
-If a query execution result violates the defined constraint, an exception is thrown. This happens when the method would return `null` but is declared as non-nullable (the default with the annotation defined on the package the repository resides in).
-If you want to opt-in to nullable results again, selectively use `@Nullable` on individual methods.
-Using the result wrapper types mentioned at the start of this section continues to work as expected: An empty result is translated into the value that represents absence.
-
-The following example shows a number of the techniques just described:
-
-.Using different nullability constraints
-====
-[source, java]
-----
-package com.acme;                                                       <1>
-
-import org.springframework.lang.Nullable;
-
-interface UserRepository extends Repository<User, Long> {
-
-  User getByEmailAddress(EmailAddress emailAddress);                    <2>
-
-  @Nullable
-  User findByEmailAddress(@Nullable EmailAddress emailAdress);          <3>
-
-  Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); <4>
-}
-----
-<1> The repository resides in a package (or sub-package) for which we have defined non-null behavior.
-<2> Throws an `EmptyResultDataAccessException` when the query executed does not produce a result. Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
-<3> Returns `null` when the query executed does not produce a result. Also accepts `null` as the value for `emailAddress`.
-<4> Returns `Optional.empty()` when the query executed does not produce a result. Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
-====
-
-[[repositories.nullability.kotlin]]
-==== Nullability in Kotlin-based Repositories
-
-Kotlin has the definition of https://kotlinlang.org/docs/reference/null-safety.html[nullability constraints] baked into the language.
-Kotlin code compiles to bytecode, which does not express nullability constraints through method signatures but rather through compiled-in metadata. Make sure to include the `kotlin-reflect` JAR in your project to enable introspection of Kotlin's nullability constraints.
-Spring Data repositories use the language mechanism to define those constraints to apply the same runtime checks, as follows:
-
-.Using nullability constraints on Kotlin repositories
-====
-[source, kotlin]
-----
-interface UserRepository : Repository<User, String> {
-
-  fun findByUsername(username: String): User     <1>
-
-  fun findByFirstname(firstname: String?): User? <2>
-}
-----
-<1> The method defines both the parameter and the result as non-nullable (the Kotlin default). The Kotlin compiler rejects method invocations that pass `null` to the method. If the query execution yields an empty result, an `EmptyResultDataAccessException` is thrown.
-<2> This method accepts `null` for the `firstname` parameter and returns `null` if the query execution does not produce a result.
-====
-
 [[repositories.multiple-modules]]
 === Using Repositories with Multiple Spring Data Modules
 
@@ -650,6 +477,179 @@ The limiting expressions also support the `Distinct` keyword. Also, for the quer
 If pagination or slicing is applied to a limiting query pagination (and the calculation of the number of pages available), it is applied within the limited result.
 
 NOTE: Limiting the results in combination with dynamic sorting by using a `Sort` parameter lets you express query methods for the 'K' smallest as well as for the 'K' biggest elements.
+
+[[repositories.collections-and-iterables]]
+=== Repository Methods Returning Collections or Iterables
+Query methods that return multiple results can use standard Java `Iterable`, `List`, `Set`.
+Beyond that we support returning Spring Data's `Streamable`, a custom extension of `Iterable`, as well as collection types provided by http://www.vavr.io/[Vavr].
+
+[[repositories.collections-and-iterables.streamable]]
+==== Using Streamable as Query Method Return Type
+`Streamable` can be used as alternative to `Iterable` or any collection type.
+It provides convenience methods to access a non-parallel `Stream` (missing from `Iterable`), the ability to directly `….filter(…)` and `….map(…)` over the elements and concatenate the `Streamable` to others:
+
+.Using Streamable to combine query method results
+====
+[source, java]
+----
+interface PersonRepository extends Repository<Person, Long> {
+  Streamable<Person> findByFirstnameContaining(String firstname);
+  Streamable<Person> findByLastnameContaining(String lastname);
+}
+
+Streamable<Person> result = repository.findByFirstnameContaining("av")
+  .and(repository.findByLastnameContaining("ea"));
+----
+====
+
+[[repositories.collections-and-iterables.streamable-wrapper]]
+==== Returning Custom Streamable Wrapper Types
+
+Providing dedicated wrapper types for collections is a commonly used pattern to provide API on a query execution result that returns multiple elements.
+Usually these types are used by invoking a repository method returning a collection-like type and creating an instance of the wrapper type manually.
+That additional step can be avoided as Spring Data allows to use these wrapper types as query method return types if they meet the following criterias:
+
+. The type implements `Streamable`.
+. The type exposes either a constructor or a static factory method named `of(…)` or `valueOf(…)` taking `Streamable` as argument.
+
+A sample use case looks as follows:
+
+====
+[source, java]
+----
+class Product { <1>
+  MonetaryAmount getPrice() { … }
+}
+
+@RequiredArgConstructor(staticName = "of")
+class Products implements Streamable<Product> { <2>
+
+  private Streamable<Product> streamable;
+
+  public MonetaryAmount getTotal() { <3>
+    return streamable.stream() //
+      .map(Priced::getPrice)
+      .reduce(Money.of(0), MonetaryAmount::add);
+  }
+}
+
+interface ProductRepository implements Repository<Product, Long> {
+  Products findAllByDescriptionContaining(String text); <4>
+}
+----
+<1> A `Product` entity that exposes API to access the product's price.
+<2> A wrapper type for a `Streamable<Product>` that can be constructed via `Products.of(…)` (factory method created via the Lombok annotation).
+<3> The wrapper type exposes additional API calculating new values on the `Streamable<Product>`.
+<4> That wrapper type can be used as query method return type directly. No need to return `Stremable<Product>` and manually wrap it in the repository client.
+====
+
+[[repositories.collections-and-iterables.vavr]]
+==== Support for Vavr Collections
+
+http://www.vavr.io/[Vavr] is a library to embrace functional programming concepts in Java.
+It ships with a custom set of collection types that can be used as query method return types.
+
+[options=header]
+|====
+|Vavr collection type|Used Vavr implementation type|Valid Java source types
+|`io.vavr.collection.Seq`|`io.vavr.collection.List`|`java.util.Iterable`
+|`io.vavr.collection.Set`|`io.vavr.collection.LinkedHashSet`|`java.util.Iterable`
+|`io.vavr.collection.Map`|`io.vavr.collection.LinkedHashMap`|`java.util.Map`
+|====
+
+The types in the first column (or subtypes thereof) can be used as quer method return types and will get the types in the second column used as implementation type depending on the Java type of the actual query result (thrid column).
+Alternatively, `Traversable` (Vavr the `Iterable` equivalent) can be declared and we derive the implementation class from the actual return value, i.e. a `java.util.List` will be turned into a Vavr `List`/`Seq`, a `java.util.Set` becomes a Vavr `LinkedHashSet`/`Set` etc.
+
+[[repositories.nullability]]
+=== Null Handling of Repository Methods
+
+As of Spring Data 2.0, repository CRUD methods that return an individual aggregate instance use Java 8's `Optional` to indicate the potential absence of a value.
+Besides that, Spring Data supports returning the following wrapper types on query methods:
+
+* `com.google.common.base.Optional`
+* `scala.Option`
+* `io.vavr.control.Option`
+
+Alternatively, query methods can choose not to use a wrapper type at all.
+The absence of a query result is then indicated by returning `null`.
+Repository methods returning collections, collection alternatives, wrappers, and streams are guaranteed never to return `null` but rather the corresponding empty representation.
+See "`<<repository-query-return-types>>`" for details.
+
+[[repositories.nullability.annotations]]
+==== Nullability Annotations
+
+You can express nullability constraints for repository methods by using link:{spring-framework-docs}/core.html#null-safety[Spring Framework's nullability annotations].
+They provide a tooling-friendly approach and opt-in `null` checks during runtime, as follows:
+
+* {spring-framework-javadoc}/org/springframework/lang/NonNullApi.html[`@NonNullApi`]: Used on the package level to declare that the default behavior for parameters and return values is to not accept or produce `null` values.
+* {spring-framework-javadoc}/org/springframework/lang/NonNull.html[`@NonNull`]: Used on a parameter or return value that must not be `null`
+ (not needed on a parameter and return value where `@NonNullApi` applies).
+* {spring-framework-javadoc}/org/springframework/lang/Nullable.html[`@Nullable`]: Used on a parameter or return value that can be `null`.
+
+Spring annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR 305] annotations (a dormant but widely spread JSR). JSR 305 meta-annotations let tooling vendors such as https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], http://help.eclipse.org/oxygen/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], and link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin] provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
+To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on the package level by using Spring’s `@NonNullApi` in `package-info.java`, as shown in the following example:
+
+.Declaring Non-nullability in `package-info.java`
+====
+[source, java]
+----
+@org.springframework.lang.NonNullApi
+package com.acme;
+----
+====
+
+Once non-null defaulting is in place, repository query method invocations get validated at runtime for nullability constraints.
+If a query execution result violates the defined constraint, an exception is thrown. This happens when the method would return `null` but is declared as non-nullable (the default with the annotation defined on the package the repository resides in).
+If you want to opt-in to nullable results again, selectively use `@Nullable` on individual methods.
+Using the result wrapper types mentioned at the start of this section continues to work as expected: An empty result is translated into the value that represents absence.
+
+The following example shows a number of the techniques just described:
+
+.Using different nullability constraints
+====
+[source, java]
+----
+package com.acme;                                                       <1>
+
+import org.springframework.lang.Nullable;
+
+interface UserRepository extends Repository<User, Long> {
+
+  User getByEmailAddress(EmailAddress emailAddress);                    <2>
+
+  @Nullable
+  User findByEmailAddress(@Nullable EmailAddress emailAdress);          <3>
+
+  Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); <4>
+}
+----
+<1> The repository resides in a package (or sub-package) for which we have defined non-null behavior.
+<2> Throws an `EmptyResultDataAccessException` when the query executed does not produce a result. Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
+<3> Returns `null` when the query executed does not produce a result. Also accepts `null` as the value for `emailAddress`.
+<4> Returns `Optional.empty()` when the query executed does not produce a result. Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
+====
+
+[[repositories.nullability.kotlin]]
+==== Nullability in Kotlin-based Repositories
+
+Kotlin has the definition of https://kotlinlang.org/docs/reference/null-safety.html[nullability constraints] baked into the language.
+Kotlin code compiles to bytecode, which does not express nullability constraints through method signatures but rather through compiled-in metadata. Make sure to include the `kotlin-reflect` JAR in your project to enable introspection of Kotlin's nullability constraints.
+Spring Data repositories use the language mechanism to define those constraints to apply the same runtime checks, as follows:
+
+.Using nullability constraints on Kotlin repositories
+====
+[source, kotlin]
+----
+interface UserRepository : Repository<User, String> {
+
+  fun findByUsername(username: String): User     <1>
+
+  fun findByFirstname(firstname: String?): User? <2>
+}
+----
+<1> The method defines both the parameter and the result as non-nullable (the Kotlin default). The Kotlin compiler rejects method invocations that pass `null` to the method. If the query execution yields an empty result, an `EmptyResultDataAccessException` is thrown.
+<2> This method accepts `null` for the `firstname` parameter and returns `null` if the query execution does not produce a result.
+====
 
 [[repositories.query-streaming]]
 === Streaming query results
