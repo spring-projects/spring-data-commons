@@ -1,6 +1,31 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.0.M1 (2018-12-11)
+----------------------------------------
+* DATACMNS-1444 - Add documentation section on Streamable and collection return types.
+* DATACMNS-1443 - QuerydslPredicateBuilder#isSingleElementCollectionWithoutText is too restrictive.
+* DATACMNS-1442 - Simplify reference documentation setup.
+* DATACMNS-1441 - Release 2.2 M1 (Moore).
+* DATACMNS-1440 - Add converters to create LocalDate(Time) and Instant instances from UTC formatted strings.
+* DATACMNS-1436 - Remove explicit installation of Oracle JDK from Travis build.
+* DATACMNS-1434 - Remove Javaslang support.
+* DATACMNS-1433 - Add Streamable.and(Iterable<? extends T>) and ….and(T...).
+* DATACMNS-1432 - Add Streamable.toList() and ….toSet() for convenience.
+* DATACMNS-1422 - ClassGeneratingPropertyAccessorFactory needs custom ClassLoader for defineClass().
+* DATACMNS-1421 - Property sometimes unable to find wither.
+* DATACMNS-1419 - Introduce TypeInformation.isSubtypeOf(Class).
+* DATACMNS-1415 - ConcurrentModificationException in SpelAwareProxyProjectionFactory.
+* DATACMNS-1411 - Simplify TravisCI build definition.
+* DATACMNS-1403 - Fixed example source in reference documentation.
+* DATACMNS-1402 - Cannot instantiate Kotlin entity with 32 parameter constructor.
+* DATACMNS-1401 - Warning about illegal reflective access in Spring Data Commons / MongoDB.
+* DATACMNS-1400 - KotlinCopyMethod.findSyntheticCopyMethod(…) does not find default copy method with Kotlin 1.3.
+* DATACMNS-1399 - Incorrect Error message from RepositoryFragement at line 178.
+* DATACMNS-1396 - Locking overhead on Java 8 caused by ConcurrentHashMap.computeIfAbsent(…).
+* DATACMNS-1346 - Add a findByIdOrNull(…) Kotlin extension to CrudRepository.
+
+
 Changes in version 2.1.3.RELEASE (2018-11-27)
 ---------------------------------------------
 * DATACMNS-1422 - ClassGeneratingPropertyAccessorFactory needs custom ClassLoader for defineClass().
