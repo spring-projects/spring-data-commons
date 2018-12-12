@@ -18,6 +18,7 @@ package org.springframework.data.util;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
@@ -52,5 +53,17 @@ public class StreamableUnitTests {
 	@Test // DATACMNS-1433
 	public void concatenatesStreamable() {
 		assertThat(Streamable.of(1, 2).and(Streamable.of(3, 4))).containsExactly(1, 2, 3, 4);
+	}
+
+	@Test // DATACMNS-1447
+	public void usesStreamableCollectors() {
+
+		assertThat(Streamable.of(1, 2).stream() //
+				.collect(Streamable.toStreamable())) //
+						.containsExactly(1, 2);
+
+		assertThat(Streamable.of(1, 2, 2).stream() //
+				.collect(Streamable.toStreamable(Collectors.toSet()))) //
+						.containsExactlyInAnyOrder(1, 2);
 	}
 }

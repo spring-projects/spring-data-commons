@@ -19,9 +19,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -215,5 +219,34 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 	 */
 	default Stream<T> get() {
 		return stream();
+	}
+
+	/**
+	 * A collector to easily produce a {@link Streamable} from a {@link Stream} using {@link Collectors#toList} as
+	 * intermediate collector.
+	 * 
+	 * @return
+	 * @see #toStreamable(Collector)
+	 * @since 2.2
+	 */
+	public static <S> Collector<S, ?, Streamable<S>> toStreamable() {
+		return toStreamable(Collectors.toList());
+	}
+
+	/**
+	 * A collector to easily produce a {@link Streamable} from a {@link Stream} and the given intermediate collector.
+	 * 
+	 * @return
+	 * @since 2.2
+	 */
+	@SuppressWarnings("unchecked")
+	public static <S, T extends Iterable<S>> Collector<S, ?, Streamable<S>> toStreamable(
+			Collector<S, ?, T> intermediate) {
+
+		return Collector.of( //
+				(Supplier<T>) intermediate.supplier(), //
+				(BiConsumer<T, S>) intermediate.accumulator(), //
+				(BinaryOperator<T>) intermediate.combiner(), //
+				Streamable::of);
 	}
 }
