@@ -27,6 +27,8 @@ import java.util.Set;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.core.EntityInformation;
@@ -91,7 +93,7 @@ public class Repositories implements Iterable<Class<?>> {
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("rawtypes")
 	private synchronized void cacheRepositoryFactory(String name) {
 
 		RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.get().getBean(name,
@@ -101,15 +103,13 @@ public class Repositories implements Iterable<Class<?>> {
 
 		RepositoryInformation information = repositoryFactoryInformation.getRepositoryInformation();
 		Set<Class<?>> alternativeDomainTypes = information.getAlternativeDomainTypes();
-		String beanName = BeanFactoryUtils.transformedBeanName(name);
 
 		Set<Class<?>> typesToRegister = new HashSet<>(alternativeDomainTypes.size() + 1);
 		typesToRegister.add(domainType);
 		typesToRegister.addAll(alternativeDomainTypes);
 
 		for (Class<?> type : typesToRegister) {
-			this.repositoryFactoryInfos.put(type, repositoryFactoryInformation);
-			this.repositoryBeanNames.put(type, beanName);
+			cacheFirstOrPrimary(type, repositoryFactoryInformation, BeanFactoryUtils.transformedBeanName(name));
 		}
 	}
 
@@ -261,6 +261,35 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public Iterator<Class<?>> iterator() {
 		return repositoryFactoryInfos.keySet().iterator();
+	}
+
+	/**
+	 * Caches the repository information for the given domain type or overrides existing information in case the bean name
+	 * points to a primary bean definition.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param information must not be {@literal null}.
+	 * @param name must not be {@literal null}.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void cacheFirstOrPrimary(Class<?> type, RepositoryFactoryInformation information, String name) {
+
+		if (repositoryBeanNames.containsKey(type)) {
+
+			Boolean presentAndPrimary = beanFactory //
+					.filter(ConfigurableListableBeanFactory.class::isInstance) //
+					.map(ConfigurableListableBeanFactory.class::cast) //
+					.map(it -> it.getBeanDefinition(name)) //
+					.map(BeanDefinition::isPrimary) //
+					.orElse(false);
+
+			if (!presentAndPrimary) {
+				return;
+			}
+		}
+
+		this.repositoryFactoryInfos.put(type, information);
+		this.repositoryBeanNames.put(type, name);
 	}
 
 	/**

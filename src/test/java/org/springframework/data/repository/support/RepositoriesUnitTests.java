@@ -33,6 +33,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -158,6 +159,28 @@ public class RepositoriesUnitTests {
 		assertThat(repositories.getRepositoryFor(proxy.getClass())).isNotEmpty();
 	}
 
+	@Test // DATACMNS-1448
+	public void keepsPrimaryRepositoryInCaseOfMultipleOnes() {
+
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		beanFactory.registerBeanDefinition("first", getRepositoryBeanDefinition(FirstRepository.class));
+
+		AbstractBeanDefinition definition = getRepositoryBeanDefinition(PrimaryRepository.class);
+		definition.setPrimary(true);
+
+		beanFactory.registerBeanDefinition("primary", definition);
+		beanFactory.registerBeanDefinition("third", getRepositoryBeanDefinition(ThirdRepository.class));
+
+		context = new GenericApplicationContext(beanFactory);
+		context.refresh();
+
+		Repositories repositories = new Repositories(beanFactory);
+
+		assertThat(repositories.getRepositoryFor(SomeEntity.class)).hasValueSatisfying(it -> {
+			assertThat(it).isInstanceOf(PrimaryRepository.class);
+		});
+	}
+
 	class Person {}
 
 	class Address {}
@@ -244,4 +267,13 @@ public class RepositoriesUnitTests {
 	static class SampleEntity implements Sample {}
 
 	interface SampleRepository extends Repository<Sample, Long> {}
+
+	interface SomeEntity {}
+
+	interface FirstRepository extends Repository<SomeEntity, Long> {}
+
+	@Primary
+	interface PrimaryRepository extends Repository<SomeEntity, Long> {}
+
+	interface ThirdRepository extends Repository<SomeEntity, Long> {}
 }
