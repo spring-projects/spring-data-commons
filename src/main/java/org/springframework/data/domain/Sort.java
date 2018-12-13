@@ -23,8 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.util.MethodInvocationRecorder;
+import org.springframework.data.util.MethodInvocationRecorder.Recorded;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -167,6 +170,17 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		return Sort.by(Arrays.stream(properties)//
 				.map(it -> new Order(direction, it))//
 				.collect(Collectors.toList()));
+	}
+
+	/**
+	 * Creates a new {@link TypedSort} for the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	public static <T> TypedSort<T> sort(Class<T> type) {
+		return new TypedSort<>(type);
 	}
 
 	/**
@@ -690,6 +704,85 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 			}
 
 			return result;
+		}
+	}
+
+	/**
+	 * Extension of Sort to use method handles to define properties to sort by.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.2
+	 * @soundtrack The Intersphere - Linger (The Grand Delusion)
+	 */
+	public static class TypedSort<T> extends Sort {
+
+		private static final long serialVersionUID = -3550403511206745880L;
+
+		private final Recorded<T> recorded;
+
+		private TypedSort(Class<T> type) {
+			this(MethodInvocationRecorder.forProxyOf(type));
+		}
+
+		private TypedSort(Recorded<T> recorded) {
+
+			super(new Order[0]);
+			this.recorded = recorded;
+		}
+
+		public <S> TypedSort<S> by(Function<T, S> property) {
+			return new TypedSort<>(recorded.record(property));
+		}
+
+		public <S> TypedSort<S> by(Recorded.ToCollectionConverter<T, S> collectionProperty) {
+			return new TypedSort<>(recorded.record(collectionProperty));
+		}
+
+		public <S> TypedSort<S> by(Recorded.ToMapConverter<T, S> mapProperty) {
+			return new TypedSort<>(recorded.record(mapProperty));
+		}
+
+		public Sort ascending() {
+			return withDirection(Sort::ascending);
+		}
+
+		public Sort descending() {
+			return withDirection(Sort::descending);
+		}
+
+		private Sort withDirection(Function<Sort, Sort> direction) {
+
+			return recorded.getPropertyPath() //
+					.map(Sort::by) //
+					.map(direction) //
+					.orElseGet(Sort::unsorted);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.domain.Sort#iterator()
+		 */
+		@Override
+		public Iterator<Order> iterator() {
+
+			return recorded.getPropertyPath() //
+					.map(Order::by) //
+					.map(Collections::singleton) //
+					.orElseGet(Collections::emptySet).iterator();
+
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.domain.Sort#toString()
+		 */
+		@Override
+		public String toString() {
+
+			return recorded.getPropertyPath() //
+					.map(Sort::by) //
+					.orElseGet(Sort::unsorted) //
+					.toString();
 		}
 	}
 }
