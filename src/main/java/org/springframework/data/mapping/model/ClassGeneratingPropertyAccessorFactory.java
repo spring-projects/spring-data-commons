@@ -1115,9 +1115,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					visitDefaultValue(parameterTypes[i], mv);
 				}
 
-				copyByProperty.getDefaultMask().forEach(i -> {
-					mv.visitIntInsn(Opcodes.SIPUSH, i);
-				});
+				copyByProperty.getDefaultMask().forEach(mv::visitLdcInsn);
 
 				mv.visitInsn(Opcodes.ACONST_NULL);
 

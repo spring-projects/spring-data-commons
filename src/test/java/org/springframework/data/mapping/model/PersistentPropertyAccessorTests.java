@@ -140,6 +140,19 @@ public class PersistentPropertyAccessorTests {
 		assertThatThrownBy(() -> accessor.setProperty(property, 1)).isInstanceOf(UnsupportedOperationException.class);
 	}
 
+	@Test // DATACMNS-1451
+	public void shouldSet17thImmutableNullableKotlinProperty() {
+
+		With33Args bean = new With33Args();
+		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
+		SamplePersistentProperty property = getProperty(bean, "17");
+
+		accessor.setProperty(property, "foo");
+
+		With33Args updated = (With33Args) accessor.getBean();
+		assertThat(updated.get17()).isEqualTo("foo");
+	}
+
 	@Test // DATACMNS-1322
 	public void shouldWitherProperty() {
 
