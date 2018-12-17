@@ -392,4 +392,18 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 */
 	@Nullable
 	Class<?> getAssociationTargetType();
+
+	/**
+	 * Returns a {@link PersistentPropertyAccessor} for the current property's owning value.
+	 *
+	 * @param owner must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 2.3
+	 */
+	default <T> PersistentPropertyAccessor<T> getAccessorForOwner(T owner) {
+
+		Assert.notNull(owner, "Owner must not be null!");
+
+		return getOwner().getPropertyAccessor(owner);
+	}
 }

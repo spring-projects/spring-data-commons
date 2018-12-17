@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class ConvertingPropertyAccessor<T> implements PersistentPropertyAccessor<T> {
+public class ConvertingPropertyAccessor<T> extends SimplePersistentPropertyPathAccessor<T> {
 
 	private final PersistentPropertyAccessor<T> accessor;
 	private final ConversionService conversionService;
@@ -44,6 +44,8 @@ public class ConvertingPropertyAccessor<T> implements PersistentPropertyAccessor
 	 * @param conversionService must not be {@literal null}.
 	 */
 	public ConvertingPropertyAccessor(PersistentPropertyAccessor<T> accessor, ConversionService conversionService) {
+
+		super(accessor);
 
 		Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
 		Assert.notNull(conversionService, "ConversionService must not be null!");
@@ -70,17 +72,7 @@ public class ConvertingPropertyAccessor<T> implements PersistentPropertyAccessor
 
 		Object converted = convertIfNecessary(value, path.getRequiredLeafProperty().getType());
 
-		PersistentPropertyAccessor.super.setProperty(path, converted);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
-	 */
-	@Nullable
-	@Override
-	public Object getProperty(PersistentProperty<?> property) {
-		return accessor.getProperty(property);
+		super.setProperty(path, converted);
 	}
 
 	/**
@@ -99,13 +91,14 @@ public class ConvertingPropertyAccessor<T> implements PersistentPropertyAccessor
 		return convertIfNecessary(getProperty(property), targetType);
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getBean()
+	 * @see org.springframework.data.mapping.model.SimplePersistentPropertyPathAccessor#getTypedProperty(org.springframework.data.mapping.PersistentProperty, java.lang.Class)
 	 */
+	@Nullable
 	@Override
-	public T getBean() {
-		return accessor.getBean();
+	protected <S> S getTypedProperty(PersistentProperty<?> property, Class<S> type) {
+		return convertIfNecessary(super.getTypedProperty(property, type), type);
 	}
 
 	/**
@@ -119,7 +112,11 @@ public class ConvertingPropertyAccessor<T> implements PersistentPropertyAccessor
 	@Nullable
 	@SuppressWarnings("unchecked")
 	private <S> S convertIfNecessary(@Nullable Object source, Class<S> type) {
-		return (S) (source == null ? null
-				: type.isAssignableFrom(source.getClass()) ? source : conversionService.convert(source, type));
+
+		return (S) (source == null //
+				? null //
+				: type.isAssignableFrom(source.getClass()) //
+						? source //
+						: conversionService.convert(source, type));
 	}
 }

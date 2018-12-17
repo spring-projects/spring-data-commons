@@ -52,7 +52,10 @@ public interface PersistentPropertyAccessor<T> {
 	 * @param path must not be {@literal null} or empty.
 	 * @param value can be {@literal null}.
 	 * @since 2.1
+	 * @deprecated since 2.3, use {@link PersistentPropertyPathAccessor#setProperty(PersistentPropertyPath, Object)}
+	 *             instead.
 	 */
+	@Deprecated
 	default void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value) {
 
 		Assert.notNull(path, "PersistentPropertyPath must not be null!");
@@ -60,6 +63,12 @@ public interface PersistentPropertyAccessor<T> {
 
 		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
 		PersistentProperty<?> leafProperty = path.getRequiredLeafProperty();
+		PersistentProperty<?> parentProperty = parentPath.isEmpty() ? null : parentPath.getLeafProperty();
+
+		if (parentProperty != null && (parentProperty.isCollectionLike() || parentProperty.isMap())) {
+			throw new MappingException(
+					String.format("Cannot traverse collection or map intermediate %s", parentPath.toDotPath()));
+		}
 
 		Object parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath);
 
@@ -67,8 +76,8 @@ public interface PersistentPropertyAccessor<T> {
 
 			String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
 
-			throw new MappingException(String.format(nullIntermediateMessage, parentPath.getLeafProperty(), path.toDotPath(),
-					getBean().getClass().getName()));
+			throw new MappingException(
+					String.format(nullIntermediateMessage, parentProperty, path.toDotPath(), getBean().getClass().getName()));
 		}
 
 		PersistentPropertyAccessor<?> accessor = parent == getBean() //
@@ -104,7 +113,9 @@ public interface PersistentPropertyAccessor<T> {
 	 * @param path must not be {@literal null}.
 	 * @return
 	 * @since 2.1
+	 * @deprecated since 2.3, use {@link PersistentPropertyPathAccessor#getProperty(PersistentPropertyPath)} instead
 	 */
+	@Deprecated
 	@Nullable
 	default Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path) {
 		return getProperty(path, new TraversalContext());
@@ -120,8 +131,12 @@ public interface PersistentPropertyAccessor<T> {
 	 * @param context must not be {@literal null}.
 	 * @return
 	 * @since 2.2
+	 * @deprecated since 2.3, use
+	 *             {@link PersistentPropertyPathAccessor#getProperty(PersistentPropertyPath, org.springframework.data.mapping.AccessOptions.GetOptions)}
+	 *             instead.
 	 */
 	@Nullable
+	@Deprecated
 	default Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, TraversalContext context) {
 
 		Object bean = getBean();
