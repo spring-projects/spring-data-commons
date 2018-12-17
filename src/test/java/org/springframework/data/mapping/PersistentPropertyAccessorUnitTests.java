@@ -24,10 +24,8 @@ import lombok.Value;
 import lombok.experimental.Wither;
 
 import org.junit.Test;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
-import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 
 /**
  * @author Oliver Gierke
@@ -114,23 +112,6 @@ public class PersistentPropertyAccessorUnitTests {
 			assertThat(it.immutable).isNotSameAs(immutable);
 			assertThat(it).isNotSameAs(outer);
 		});
-	}
-
-	@Test // DATACMNS-1377
-	public void shouldConvertToPropertyPathLeafType() {
-
-		Order order = new Order(new Customer("1"));
-
-		PersistentPropertyAccessor<Order> accessor = context.getPersistentEntity(Order.class).getPropertyAccessor(order);
-		ConvertingPropertyAccessor<Order> convertingAccessor = new ConvertingPropertyAccessor<>(accessor,
-				new DefaultConversionService());
-
-		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath("customer.firstname",
-				Order.class);
-
-		convertingAccessor.setProperty(path, 2);
-
-		assertThat(convertingAccessor.getBean().getCustomer().getFirstname()).isEqualTo("2");
 	}
 
 	@Value

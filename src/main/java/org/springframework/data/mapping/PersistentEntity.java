@@ -289,6 +289,15 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	<B> PersistentPropertyAccessor<B> getPropertyAccessor(B bean);
 
 	/**
+	 * Returns a {@link PersistentPropertyPathAccessor} to access property values of the given bean.
+	 *
+	 * @param bean must not be {@literal null}.
+	 * @return a new {@link PersistentPropertyPathAccessor}
+	 * @since 2.2
+	 */
+	<B> PersistentPropertyPathAccessor<B> getPropertyPathAccessor(B bean);
+
+	/**
 	 * Returns the {@link IdentifierAccessor} for the given bean.
 	 *
 	 * @param bean must not be {@literal null}.

@@ -18,9 +18,15 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Value;
+
 import org.junit.Test;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -107,6 +113,25 @@ public class ConvertingPropertyAccessorUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1377
+	public void shouldConvertToPropertyPathLeafType() {
+
+		Order order = new Order(new Customer("1"));
+
+		SampleMappingContext context = new SampleMappingContext();
+
+		PersistentPropertyAccessor<Order> accessor = context.getPersistentEntity(Order.class).getPropertyAccessor(order);
+		ConvertingPropertyAccessor<Order> convertingAccessor = new ConvertingPropertyAccessor<>(accessor,
+				new DefaultConversionService());
+
+		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath("customer.firstname",
+				Order.class);
+
+		convertingAccessor.setProperty(path, 2);
+
+		assertThat(convertingAccessor.getBean().getCustomer().getFirstname()).isEqualTo("2");
+	}
+
 	private static ConvertingPropertyAccessor getAccessor(Object entity, ConversionService conversionService) {
 
 		PersistentPropertyAccessor wrapper = new BeanWrapper<>(entity);
@@ -123,5 +148,16 @@ public class ConvertingPropertyAccessorUnitTests {
 
 	static class Entity {
 		Long id;
+	}
+
+	@Value
+	static class Order {
+		Customer customer;
+	}
+
+	@Data
+	@AllArgsConstructor
+	static class Customer {
+		String firstname;
 	}
 }

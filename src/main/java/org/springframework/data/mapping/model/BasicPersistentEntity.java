@@ -455,6 +455,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return propertyAccessorFactory.getPropertyAccessor(this, bean);
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentEntity#getPropertyPathAccessor(java.lang.Object)
+	 */
+	@Override
+	public <B> PersistentPropertyPathAccessor<B> getPropertyPathAccessor(B bean) {
+		return new SimplePersistentPropertyPathAccessor<>(getPropertyAccessor(bean));
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getIdentifierAccessor(java.lang.Object)
