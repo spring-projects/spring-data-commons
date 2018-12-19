@@ -57,7 +57,7 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
 
 		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null!");
-		Assert.notNull(annotationMetadata, "BeanDefinitionRegistry must not be null!");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
 		AbstractBeanDefinition ahbd = registerAuditHandlerBeanDefinition(registry, getConfiguration(annotationMetadata));
 		registerAuditListenerBeanDefinition(ahbd, registry);
