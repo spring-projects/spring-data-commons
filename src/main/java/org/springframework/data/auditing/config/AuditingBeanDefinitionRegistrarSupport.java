@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Francisco Soler
  */
 public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar {
 
@@ -57,7 +58,7 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
 
 		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null!");
-		Assert.notNull(annotationMetadata, "BeanDefinitionRegistry must not be null!");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
 		AbstractBeanDefinition ahbd = registerAuditHandlerBeanDefinition(registry, getConfiguration(annotationMetadata));
 		registerAuditListenerBeanDefinition(ahbd, registry);
