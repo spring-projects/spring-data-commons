@@ -213,28 +213,56 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 	 */
 	Sort parseParameterIntoSort(String[] source, String delimiter) {
 
-		List<Order> allOrders = new ArrayList<>();
+        	List<Order> allOrders = new ArrayList<>();
 
-		for (String part : source) {
+        	for (String part : source) {
 
-			if (part == null) {
-				continue;
+		    if (part == null) {
+			continue;
+		    }
+
+		    for (String element : part.split(delimiter)) {
+			if (!StringUtils.hasText(element)) {
+			    continue;
 			}
 
-			String[] elements = part.split(delimiter);
+			String[] fieldAndDirection = element.split("\\s+");
+			Optional<Direction> direction = fieldAndDirection.length <= 1 ? Optional.empty()
+				: Direction.fromOptionalString(fieldAndDirection[1]);
+			toOrder(convertToCamel(fieldAndDirection[0]), direction).ifPresent(allOrders::add);
+		    }
 
-			Optional<Direction> direction = elements.length == 0 ? Optional.empty()
-					: Direction.fromOptionalString(elements[elements.length - 1]);
+		    /*
+		    String[] elements = part.split(delimiter);
 
-			int lastIndex = direction.map(it -> elements.length - 1).orElseGet(() -> elements.length);
+		    Optional<Direction> direction = elements.length == 0 ? Optional.empty()
+			    : Direction.fromOptionalString(elements[elements.length - 1]);
 
-			for (int i = 0; i < lastIndex; i++) {
-				toOrder(elements[i], direction).ifPresent(allOrders::add);
-			}
+		    int lastIndex = direction.map(it -> elements.length - 1).orElseGet(() -> elements.length);
+
+		    for (int i = 0; i < lastIndex; i++) {
+			toOrder(elements[i], direction).ifPresent(allOrders::add);
+		    }
+		    */
+        	}
+
+        	return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
+    	}
+
+    	private static String convertToCamel(String str) {
+		StringBuilder sb = new StringBuilder();
+		boolean upper = false, first = true;
+		for (char ch : str.trim().toCharArray()) {
+		    if (ch == '-' || ch == '_') {
+			upper = !first;
+		    } else {
+			sb.append(upper ? Character.toUpperCase(ch) : Character.toLowerCase(ch));
+			upper = false;
+			first = false;
+		    }
 		}
-
-		return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
-	}
+		return sb.toString();
+    	}
 
 	private static Optional<Order> toOrder(String property, Optional<Direction> direction) {
 
