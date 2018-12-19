@@ -15,8 +15,11 @@
  */
 package org.springframework.data.web;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.domain.Sort.Direction.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.domain.Sort.Direction.DESC;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -170,6 +173,46 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		request.addParameter("sort", ",");
 
 		assertThat(resolveSort(request, PARAMETER).isSorted()).isFalse();
+	}
+
+	/**
+	 * Unit tests for {@link SortHandlerMethodArgumentResolver#parseOneSortParameter(List, String, String)}.
+	 * 
+	 * @author andyslin
+	 */
+	@Test
+	public void testParseOneSortParameter() {
+		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		List<Order> allOrders = new ArrayList<>();
+		String delimiter = ",";
+
+		// new
+		String part = "field1_name desc, field2_name asc, field3Name desc";
+		resolver.parseOneSortParameter(allOrders, delimiter, part);
+		assertThat(allOrders.size()).isEqualTo(3);
+		assertThat(allOrders.get(0).getProperty()).isEqualTo("field1Name");
+		assertThat(allOrders.get(0).getDirection()).isEqualTo(Direction.DESC);
+		assertThat(allOrders.get(1).getDirection()).isEqualTo(Direction.ASC);
+		assertThat(allOrders.get(2).getDirection()).isEqualTo(Direction.DESC);
+
+		// old
+		allOrders.clear();
+		part = "field1_name, field2_name, desc";
+		resolver.parseOneSortParameter(allOrders, delimiter, part);
+		assertThat(allOrders.size()).isEqualTo(2);
+		assertThat(allOrders.get(0).getProperty()).isEqualTo("field1Name");
+		assertThat(allOrders.get(0).getDirection()).isEqualTo(Direction.DESC);
+		assertThat(allOrders.get(1).getDirection()).isEqualTo(Direction.DESC);
+
+		// new && old
+		allOrders.clear();
+		part = "field1_name, field2_name asc, field3Name, desc";
+		resolver.parseOneSortParameter(allOrders, delimiter, part);
+		assertThat(allOrders.size()).isEqualTo(3);
+		assertThat(allOrders.get(0).getProperty()).isEqualTo("field1Name");
+		assertThat(allOrders.get(0).getDirection()).isEqualTo(Direction.DESC);
+		assertThat(allOrders.get(1).getDirection()).isEqualTo(Direction.ASC);
+		assertThat(allOrders.get(2).getDirection()).isEqualTo(Direction.DESC);
 	}
 
 	@Test // DATACMNS-753, DATACMNS-408

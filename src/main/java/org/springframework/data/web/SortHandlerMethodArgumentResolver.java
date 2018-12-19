@@ -213,56 +213,57 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 	 */
 	Sort parseParameterIntoSort(String[] source, String delimiter) {
 
-        	List<Order> allOrders = new ArrayList<>();
+		List<Order> allOrders = new ArrayList<>();
 
-        	for (String part : source) {
+		for (String part : source) {
 
-		    if (part == null) {
-			continue;
-		    }
+			if (part == null) {
+				continue;
+			}
 
-		    for (String element : part.split(delimiter)) {
+			parseOneSortParameter(allOrders, delimiter, part);
+		}
+
+		return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
+	}
+
+	/*package for test*/ void parseOneSortParameter(List<Order> allOrders, String delimiter, String part) {
+		String[] elements = part.split(delimiter);
+		int length = elements.length;
+		Optional<Direction> defaultDirection = Direction.fromOptionalString(elements[length - 1].trim());
+		if (defaultDirection.isPresent()) {
+			length = length - 1;
+		}
+
+		for (int i = 0; i < length; i++) {
+			String element = elements[i];
 			if (!StringUtils.hasText(element)) {
-			    continue;
+				continue;
+			} else {
+				element = element.trim();
 			}
 
 			String[] fieldAndDirection = element.split("\\s+");
-			Optional<Direction> direction = fieldAndDirection.length <= 1 ? Optional.empty()
-				: Direction.fromOptionalString(fieldAndDirection[1]);
+			Optional<Direction> direction = fieldAndDirection.length <= 1 ? defaultDirection
+					: Direction.fromOptionalString(fieldAndDirection[1]);
 			toOrder(convertToCamel(fieldAndDirection[0]), direction).ifPresent(allOrders::add);
-		    }
+		}
+	}
 
-		    /*
-		    String[] elements = part.split(delimiter);
-
-		    Optional<Direction> direction = elements.length == 0 ? Optional.empty()
-			    : Direction.fromOptionalString(elements[elements.length - 1]);
-
-		    int lastIndex = direction.map(it -> elements.length - 1).orElseGet(() -> elements.length);
-
-		    for (int i = 0; i < lastIndex; i++) {
-			toOrder(elements[i], direction).ifPresent(allOrders::add);
-		    }
-		    */
-        	}
-
-        	return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
-    	}
-
-    	private static String convertToCamel(String str) {
+	private static String convertToCamel(String str) {
 		StringBuilder sb = new StringBuilder();
 		boolean upper = false, first = true;
 		for (char ch : str.trim().toCharArray()) {
-		    if (ch == '-' || ch == '_') {
-			upper = !first;
-		    } else {
-			sb.append(upper ? Character.toUpperCase(ch) : Character.toLowerCase(ch));
-			upper = false;
-			first = false;
-		    }
+			if (ch == '-' || ch == '_') {
+				upper = !first;
+			} else {
+				sb.append(upper ? Character.toUpperCase(ch) : Character.toLowerCase(ch));
+				upper = false;
+				first = false;
+			}
 		}
 		return sb.toString();
-    	}
+	}
 
 	private static Optional<Order> toOrder(String property, Optional<Direction> direction) {
 
