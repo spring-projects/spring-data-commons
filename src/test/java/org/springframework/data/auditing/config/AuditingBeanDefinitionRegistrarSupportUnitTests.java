@@ -34,6 +34,7 @@ import org.springframework.data.auditing.EnableAuditing;
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Francisco Soler
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AuditingBeanDefinitionRegistrarSupportUnitTests {
@@ -48,6 +49,23 @@ public class AuditingBeanDefinitionRegistrarSupportUnitTests {
 
 		registrar.registerBeanDefinitions(metadata, registry);
 		verify(registry, times(1)).registerBeanDefinition(anyString(), any(BeanDefinition.class));
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-1453
+	public void testNullMetadataInput() {
+
+		AuditingBeanDefinitionRegistrarSupport registrar = new DummyAuditingBeanDefinitionRegistrarSupport();
+
+		registrar.registerBeanDefinitions(null, registry);
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATACMNS-1453
+	public void testNullRegistryInput() {
+
+		AuditingBeanDefinitionRegistrarSupport registrar = new DummyAuditingBeanDefinitionRegistrarSupport();
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfig.class);
+
+		registrar.registerBeanDefinitions(metadata, null);
 	}
 
 	static class SampleConfig {}
