@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
  * @author Ranie Jade Ramiso
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Francisco Soler
  */
 public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar {
 
