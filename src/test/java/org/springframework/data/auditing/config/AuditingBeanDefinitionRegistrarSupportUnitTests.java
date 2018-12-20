@@ -14,6 +14,8 @@
  */
 package org.springframework.data.auditing.config;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
@@ -51,21 +53,23 @@ public class AuditingBeanDefinitionRegistrarSupportUnitTests {
 		verify(registry, times(1)).registerBeanDefinition(anyString(), any(BeanDefinition.class));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-1453
-	public void testNullMetadataInput() {
+	@Test // DATACMNS-1453
+	public void rejectsNullAnnotationMetadata() {
 
 		AuditingBeanDefinitionRegistrarSupport registrar = new DummyAuditingBeanDefinitionRegistrarSupport();
 
-		registrar.registerBeanDefinitions(null, registry);
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> registrar.registerBeanDefinitions(null, registry));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-1453
-	public void testNullRegistryInput() {
+	@Test // DATACMNS-1453
+	public void rejectsNullRegistry() {
 
 		AuditingBeanDefinitionRegistrarSupport registrar = new DummyAuditingBeanDefinitionRegistrarSupport();
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfig.class);
 
-		registrar.registerBeanDefinitions(metadata, null);
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> registrar.registerBeanDefinitions(metadata, null));
 	}
 
 	static class SampleConfig {}
