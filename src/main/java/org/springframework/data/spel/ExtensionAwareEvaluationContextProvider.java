@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -75,7 +76,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	/**
 	 * Creates a new {@link ExtensionAwareEvaluationContextProvider} with extensions looked up lazily from the given
 	 * {@link BeanFactory}.
-	 * 
+	 *
 	 * @param beanFactory the {@link ListableBeanFactory} to lookup extensions from.
 	 */
 	public ExtensionAwareEvaluationContextProvider(ListableBeanFactory beanFactory) {
@@ -95,7 +96,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	/**
 	 * Sets the {@link ListableBeanFactory} to be used on the {@link EvaluationContext} to be created.
-	 * 
+	 *
 	 * @param beanFactory
 	 * @deprecated only exists to temporarily mitigate from the old APIs. Do not use!
 	 */
@@ -221,7 +222,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		public TypedValue read(EvaluationContext context, @Nullable Object target, String name) {
 
 			if (target instanceof EvaluationContextExtensionAdapter) {
-				return lookupPropertyFrom(((EvaluationContextExtensionAdapter) target), name);
+				return lookupPropertyFrom((EvaluationContextExtensionAdapter) target, name);
 			}
 
 			if (adapterMap.containsKey(name)) {
