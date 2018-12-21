@@ -63,7 +63,7 @@ import org.springframework.util.Assert;
 @RequiredArgsConstructor
 public class ExtensionAwareEvaluationContextProvider implements EvaluationContextProvider {
 
-	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new HashMap<>();
+	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new ConcurrentHashMap<>();
 
 	private final Supplier<? extends Collection<? extends EvaluationContextExtension>> extensions;
 	private ListableBeanFactory beanFactory;
