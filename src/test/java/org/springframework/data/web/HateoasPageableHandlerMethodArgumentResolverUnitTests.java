@@ -109,6 +109,16 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests
 		assertThat(params.getFirst(resolver.getPageParameterName())).isEqualTo("1");
 	}
 
+	@Test // DATACMNS-1455
+	public void enhancesUnpaged() {
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
+
+		getResolver().enhance(builder, null, Pageable.unpaged());
+
+		assertThat(builder).isEqualTo(builder);
+	}
+
 	@Override
 	protected HateoasPageableHandlerMethodArgumentResolver getResolver() {
 

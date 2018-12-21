@@ -28,6 +28,7 @@ import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.mvc.UriComponentsContributor;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -104,11 +105,17 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 	@Override
 	public void enhance(UriComponentsBuilder builder, @Nullable MethodParameter parameter, Object value) {
 
+		Assert.notNull(builder, "UriComponentsBuilder must not be null!");
+
 		if (!(value instanceof Pageable)) {
 			return;
 		}
 
 		Pageable pageable = (Pageable) value;
+
+		if (pageable.isUnpaged()) {
+			return;
+		}
 
 		String pagePropertyName = getParameterNameToUse(getPageParameterName(), parameter);
 		String sizePropertyName = getParameterNameToUse(getSizeParameterName(), parameter);
