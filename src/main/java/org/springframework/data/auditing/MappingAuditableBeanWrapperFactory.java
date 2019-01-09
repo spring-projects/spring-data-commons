@@ -99,6 +99,9 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 	 */
 	static class MappingAuditingMetadata {
 
+		private static final Predicate<? super PersistentProperty<?>> HAS_COLLECTION_PROPERTY = it -> it.isCollectionLike()
+				|| it.isMap();
+
 		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> createdByPaths, createdDatePaths,
 				lastModifiedByPaths, lastModifiedDatePaths;
 
@@ -113,20 +116,16 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 			Assert.notNull(type, "Type must not be null!");
 
-			this.createdByPaths = context.findPersistentPropertyPaths(type, withAnnotation(CreatedBy.class));
-			this.createdDatePaths = context.findPersistentPropertyPaths(type, withAnnotation(CreatedDate.class));
-			this.lastModifiedByPaths = context.findPersistentPropertyPaths(type, withAnnotation(LastModifiedBy.class));
-			this.lastModifiedDatePaths = context.findPersistentPropertyPaths(type, withAnnotation(LastModifiedDate.class));
+			this.createdByPaths = findPropertyPaths(type, CreatedBy.class, context);
+			this.createdDatePaths = findPropertyPaths(type, CreatedDate.class, context);
+			this.lastModifiedByPaths = findPropertyPaths(type, LastModifiedBy.class, context);
+			this.lastModifiedDatePaths = findPropertyPaths(type, LastModifiedDate.class, context);
 
 			this.isAuditable = Lazy.of( //
 					() -> Arrays.asList(createdByPaths, createdDatePaths, lastModifiedByPaths, lastModifiedDatePaths) //
 							.stream() //
 							.anyMatch(it -> !it.isEmpty())//
 			);
-		}
-
-		private static Predicate<PersistentProperty<?>> withAnnotation(Class<? extends Annotation> type) {
-			return t -> t.findAnnotation(type) != null;
 		}
 
 		/**
@@ -137,6 +136,18 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 */
 		public boolean isAuditable() {
 			return isAuditable.get();
+		}
+
+		private PersistentPropertyPaths<?, ? extends PersistentProperty<?>> findPropertyPaths(Class<?> type,
+				Class<? extends Annotation> annotation, MappingContext<?, ? extends PersistentProperty<?>> context) {
+
+			return context //
+					.findPersistentPropertyPaths(type, withAnnotation(annotation)) //
+					.dropPathIfSegmentMatches(HAS_COLLECTION_PROPERTY);
+		}
+
+		private static Predicate<PersistentProperty<?>> withAnnotation(Class<? extends Annotation> type) {
+			return t -> t.findAnnotation(type) != null;
 		}
 	}
 

@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.data.mapping.AssociationHandler;
@@ -354,6 +355,22 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		@Override
 		public Iterator<PersistentPropertyPath<P>> iterator() {
 			return paths.iterator();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.mapping.PersistentPropertyPaths#dropPathIfSegmentMatches(java.util.function.Predicate)
+		 */
+		@Override
+		public PersistentPropertyPaths<T, P> dropPathIfSegmentMatches(Predicate<? super P> predicate) {
+
+			Assert.notNull(predicate, "Predicate must not be null!");
+
+			List<PersistentPropertyPath<P>> paths = this.stream() //
+					.filter(it -> !it.stream().anyMatch(predicate)) //
+					.collect(Collectors.toList());
+
+			return paths.equals(this.paths) ? this : new DefaultPersistentPropertyPaths<>(type, paths);
 		}
 
 		/**

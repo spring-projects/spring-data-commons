@@ -23,9 +23,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.assertj.core.api.AbstractLongAssert;
@@ -222,6 +226,41 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1438
+	public void skipsCollectionPropertiesWhenSettingProperties() {
+
+		WithEmbedded withEmbedded = new WithEmbedded();
+		withEmbedded.embedded = new Embedded();
+		withEmbedded.embeddeds = Arrays.asList(new Embedded());
+		withEmbedded.embeddedMap = new HashMap<>();
+		withEmbedded.embeddedMap.put("key", new Embedded());
+
+		assertThat(factory.getBeanWrapperFor(withEmbedded)).hasValueSatisfying(it -> {
+
+			String user = "user";
+			Instant now = Instant.now();
+
+			it.setCreatedBy(user);
+			it.setLastModifiedBy(user);
+			it.setLastModifiedDate(now);
+			it.setCreatedDate(now);
+
+			Embedded embedded = withEmbedded.embeddeds.iterator().next();
+
+			assertThat(embedded.created).isNull();
+			assertThat(embedded.creator).isNull();
+			assertThat(embedded.modified).isNull();
+			assertThat(embedded.modifier).isNull();
+
+			embedded = withEmbedded.embeddedMap.get("key");
+
+			assertThat(embedded.created).isNull();
+			assertThat(embedded.creator).isNull();
+			assertThat(embedded.modified).isNull();
+			assertThat(embedded.modifier).isNull();
+		});
+	}
+
 	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
 
 		Sample sample = new Sample();
@@ -284,5 +323,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 	static class WithEmbedded {
 		Embedded embedded;
+		Collection<Embedded> embeddeds;
+		Map<String, Embedded> embeddedMap;
 	}
 }
