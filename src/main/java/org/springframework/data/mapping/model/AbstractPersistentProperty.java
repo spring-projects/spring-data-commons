@@ -59,6 +59,11 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	}
 
 	@Nullable
+	public Method getWither() {
+		return this.wither;
+	}
+
+	@Nullable
 	public Method getSetter() {
 		return this.setter;
 	}
@@ -87,7 +92,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final Method getter;
 	private final Method setter;
 	private final Field field;
-	private final @Getter(onMethod = @__(@Nullable)) Method wither;
+	private final Method wither;
 	private final boolean immutable;
 
 	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,

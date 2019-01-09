@@ -56,7 +56,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 
 	/**
 	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider}.
-	 * 
+	 *
 	 * @param beanFactory the {@link ListableBeanFactory} to lookup the {@link EvaluationContextExtension}s from, must not
 	 *          be {@literal null}.
 	 */
@@ -78,7 +78,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	/**
 	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider} using the given
 	 * {@link EvaluationContextExtension}s.
-	 * 
+	 *
 	 * @param extensions must not be {@literal null}.
 	 */
 	public ExtensionAwareQueryMethodEvaluationContextProvider(List<? extends EvaluationContextExtension> extensions) {
@@ -88,7 +88,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		this.delegate = Lazy.of(new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(extensions));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[])
 	 */
@@ -97,7 +97,8 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 
 		StandardEvaluationContext evaluationContext = delegate.get().getEvaluationContext(parameterValues);
 
-		evaluationContext.setVariables(collectVariables(parameters, parameterValues));
+		Map<String, Object> stringObjectMap = collectVariables((Streamable<? extends Parameter>) parameters, parameterValues);
+		evaluationContext.setVariables(stringObjectMap);
 
 		return evaluationContext;
 	}
@@ -187,7 +188,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		/**
 		 * Registers a result mapping for the method with the given name. Invocation results for matching methods will be
 		 * piped through the mapping.
-		 * 
+		 *
 		 * @param methodName
 		 * @param mapping
 		 */
@@ -195,7 +196,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 			this.directMappings.put(methodName, mapping);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */

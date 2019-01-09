@@ -53,7 +53,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * A factory implementation to create {@link PersistentPropertyPath} instances in various ways.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.1
  * @soundtrack Cypress Hill - Boom Biddy Bye Bye (Fugees Remix, Unreleased & Revamped)
@@ -68,7 +68,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 	/**
 	 * Creates a new {@link PersistentPropertyPath} for the given property path on the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyPath must not be {@literal null}.
 	 * @return
@@ -83,7 +83,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 	/**
 	 * Creates a new {@link PersistentPropertyPath} for the given property path on the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyPath must not be {@literal null}.
 	 * @return
@@ -98,7 +98,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 	/**
 	 * Creates a new {@link PersistentPropertyPath} for the given {@link PropertyPath}.
-	 * 
+	 *
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
@@ -112,7 +112,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	/**
 	 * Creates a new {@link PersistentPropertyPath} based on a given type and {@link Predicate} to select properties
 	 * matching it.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyFilter must not be {@literal null}.
 	 * @return
@@ -128,7 +128,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	/**
 	 * Creates a new {@link PersistentPropertyPath} based on a given type and {@link Predicate} to select properties
 	 * matching it.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyFilter must not be {@literal null}.
 	 * @param traversalGuard must not be {@literal null}.
@@ -147,7 +147,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	/**
 	 * Creates a new {@link PersistentPropertyPath} based on a given type and {@link Predicate} to select properties
 	 * matching it.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyFilter must not be {@literal null}.
 	 * @return
@@ -159,7 +159,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	/**
 	 * Creates a new {@link PersistentPropertyPath} based on a given type and {@link Predicate} to select properties
 	 * matching it.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyFilter must not be {@literal null}.
 	 * @param traversalGuard must not be {@literal null}.
@@ -296,7 +296,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 		/**
 		 * Creates a new {@link DefaultPersistentPropertyPaths} instance
-		 * 
+		 *
 		 * @param type
 		 * @param paths
 		 * @return
@@ -306,12 +306,12 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 			List<PersistentPropertyPath<P>> sorted = new ArrayList<>(paths);
 
-			Collections.sort(sorted, SHORTEST_PATH.thenComparing(ShortestSegmentFirst.INSTANCE));
+			sorted.sort(SHORTEST_PATH.thenComparing(ShortestSegmentFirst.INSTANCE));
 
 			return new DefaultPersistentPropertyPaths<>(type, sorted);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.mapping.PersistentPropertyPaths#getFirst()
 		 */
@@ -320,7 +320,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			return isEmpty() ? Optional.empty() : Optional.of(iterator().next());
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.mapping.PersistentPropertyPaths#contains(java.lang.String)
 		 */
@@ -329,7 +329,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			return contains(PropertyPath.from(path, type));
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.mapping.PersistentPropertyPaths#contains(org.springframework.data.mapping.PropertyPath)
 		 */
@@ -347,7 +347,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			return stream().anyMatch(it -> dotPath.equals(it.toDotPath()));
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Iterable#iterator()
 		 */
@@ -359,7 +359,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		/**
 		 * Simple {@link Comparator} to sort {@link PersistentPropertyPath} instances by their property segment's name
 		 * length.
-		 * 
+		 *
 		 * @author Oliver Gierke
 		 * @since 2.1
 		 */
