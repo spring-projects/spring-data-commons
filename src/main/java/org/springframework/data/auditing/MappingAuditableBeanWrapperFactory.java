@@ -27,6 +27,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Auditable;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -174,10 +175,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 */
 		@Override
 		public Object setCreatedBy(Object value) {
-
-			metadata.createdByPaths.forEach(it -> this.accessor.setProperty(it, value));
-
-			return value;
+			return setProperty(metadata.createdByPaths, value);
 		}
 
 		/*
@@ -232,7 +230,20 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		private <S, P extends PersistentProperty<?>> S setProperty(
 				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, S value) {
 
-			paths.forEach(it -> this.accessor.setProperty(it, value));
+			paths.forEach(it -> {
+
+				try {
+
+					this.accessor.setProperty(it, value);
+
+				} catch (MappingException o_O) {
+
+					// Ignore null intermediate errors temporarily
+					if (!o_O.getMessage().contains("on null intermediate")) {
+						throw o_O;
+					}
+				}
+			});
 
 			return value;
 		}
