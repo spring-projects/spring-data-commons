@@ -212,6 +212,16 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1461
+	public void skipsNullIntermediatesWhenSettingProperties() {
+
+		WithEmbedded withEmbedded = new WithEmbedded();
+
+		assertThat(factory.getBeanWrapperFor(withEmbedded)).hasValueSatisfying(it -> {
+			assertThatCode(() -> it.setCreatedBy("user")).doesNotThrowAnyException();
+		});
+	}
+
 	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
 
 		Sample sample = new Sample();
