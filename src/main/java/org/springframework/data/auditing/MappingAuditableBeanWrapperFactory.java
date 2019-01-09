@@ -171,7 +171,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
+		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.lang.Object)
 		 */
 		@Override
 		public Object setCreatedBy(Object value) {
@@ -218,7 +218,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return setDateProperty(metadata.lastModifiedDatePaths, value);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
 		 */
