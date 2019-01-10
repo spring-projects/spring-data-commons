@@ -1,6 +1,22 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.4.RELEASE (2019-01-10)
+---------------------------------------------
+* DATACMNS-1461 - Auditor attempts to set created date on null object.
+* DATACMNS-1460 - Upgrade to Vavr 0.9.3.
+* DATACMNS-1459 - Update copyright years to 2019.
+* DATACMNS-1456 - ConcurrentModificationException in ExtensionAwareEvaluationContextProvider.
+* DATACMNS-1455 - HateoasPageableHandlerMethodArgumentResolver doesn't handle Pageable.unpaged() correctly.
+* DATACMNS-1453 - Wrong assertion in AuditingBeanDefinitionRegistrarSupport.
+* DATACMNS-1443 - QuerydslPredicateBuilder#isSingleElementCollectionWithoutText is too restrictive.
+* DATACMNS-1438 - Annotation based auditing fails for annotation properties underneath collection valued subpath.
+* DATACMNS-1436 - Remove explicit installation of Oracle JDK from Travis build.
+* DATACMNS-1435 - Map component and value type detection fails for Vavr Map.
+* DATACMNS-1426 - Release 2.1.4 (Lovelace SR4).
+* DATACMNS-1346 - Add a findByIdOrNull(…) Kotlin extension to CrudRepository.
+
+
 Changes in version 2.0.13.RELEASE (2019-01-10)
 ----------------------------------------------
 * DATACMNS-1460 - Upgrade to Vavr 0.9.3.
