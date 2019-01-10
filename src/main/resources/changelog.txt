@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.18.RELEASE (2019-01-10)
+-----------------------------------------------
+* DATACMNS-1460 - Upgrade to Vavr 0.9.3.
+* DATACMNS-1459 - Update copyright years to 2019.
+* DATACMNS-1443 - QuerydslPredicateBuilder#isSingleElementCollectionWithoutText is too restrictive.
+* DATACMNS-1436 - Remove explicit installation of Oracle JDK from Travis build.
+* DATACMNS-1435 - Map component and value type detection fails for Vavr Map.
+* DATACMNS-1424 - Release 1.13.18 (Ingalls SR18).
+
+
 Changes in version 2.2.0.M1 (2018-12-11)
 ----------------------------------------
 * DATACMNS-1444 - Add documentation section on Streamable and collection return types.
