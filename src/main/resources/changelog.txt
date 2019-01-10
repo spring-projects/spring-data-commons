@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.0.13.RELEASE (2019-01-10)
+----------------------------------------------
+* DATACMNS-1460 - Upgrade to Vavr 0.9.3.
+* DATACMNS-1459 - Update copyright years to 2019.
+* DATACMNS-1455 - HateoasPageableHandlerMethodArgumentResolver doesn't handle Pageable.unpaged() correctly.
+* DATACMNS-1453 - Wrong assertion in AuditingBeanDefinitionRegistrarSupport.
+* DATACMNS-1443 - QuerydslPredicateBuilder#isSingleElementCollectionWithoutText is too restrictive.
+* DATACMNS-1436 - Remove explicit installation of Oracle JDK from Travis build.
+* DATACMNS-1435 - Map component and value type detection fails for Vavr Map.
+* DATACMNS-1425 - Release 2.0.13 (Kay SR13).
+
+
 Changes in version 1.13.18.RELEASE (2019-01-10)
 -----------------------------------------------
 * DATACMNS-1460 - Upgrade to Vavr 0.9.3.
