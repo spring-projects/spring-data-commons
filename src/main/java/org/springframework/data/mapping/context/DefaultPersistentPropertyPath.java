@@ -145,7 +145,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getLeafProperty()
 	 */
 	public T getLeafProperty() {
-		return properties.get(properties.size() - 1);
+		return properties.isEmpty() ? null : properties.get(properties.size() - 1);
 	}
 
 	/* 
@@ -153,7 +153,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getBaseProperty()
 	 */
 	public T getBaseProperty() {
-		return properties.get(0);
+		return properties.isEmpty() ? null : properties.get(0);
 	}
 
 	/* 

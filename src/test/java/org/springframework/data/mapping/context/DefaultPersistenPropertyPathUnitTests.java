@@ -21,6 +21,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -148,4 +149,19 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 		assertThat(result, is(nullValue()));
 	}
 
+	@Test // DATACMNS-1466
+	public void returnsNullForLeafPropertyOnEmptyPath() {
+
+		PersistentPropertyPath<T> path = new DefaultPersistentPropertyPath<T>(Collections.<T> emptyList());
+
+		assertThat(path.getLeafProperty(), is(nullValue()));
+	}
+
+	@Test // DATACMNS-1466
+	public void returnsNullForBasePropertyOnEmptyPath() {
+
+		PersistentPropertyPath<T> path = new DefaultPersistentPropertyPath<T>(Collections.<T> emptyList());
+
+		assertThat(path.getBaseProperty(), is(nullValue()));
+	}
 }
