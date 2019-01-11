@@ -144,7 +144,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	 */
 	@Nullable
 	public P getLeafProperty() {
-		return properties.get(properties.size() - 1);
+		return properties.isEmpty() ? null : properties.get(properties.size() - 1);
 	}
 
 	/* 
@@ -153,7 +153,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	 */
 	@Nullable
 	public P getBaseProperty() {
-		return properties.get(0);
+		return properties.isEmpty() ? null : properties.get(0);
 	}
 
 	/* 

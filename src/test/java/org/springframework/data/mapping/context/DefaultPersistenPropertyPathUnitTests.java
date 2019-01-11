@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.context;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -31,7 +32,7 @@ import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * Unit tests for {@link DefaultPersistentPropertyPath}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -125,5 +126,21 @@ public class DefaultPersistenPropertyPathUnitTests<T extends PersistentProperty<
 	@Test // DATACMNS-444
 	public void skipsMappedPropertyNameIfConverterReturnsEmptyStrings() {
 		assertThat(twoLegs.toDotPath(source -> "")).isNull();
+	}
+
+	@Test // DATACMNS-1466
+	public void returnsNullForLeafPropertyOnEmptyPath() {
+
+		PersistentPropertyPath<T> path = new DefaultPersistentPropertyPath<T>(Collections.emptyList());
+
+		assertThat(path.getLeafProperty()).isNull();
+	}
+
+	@Test // DATACMNS-1466
+	public void returnsNullForBasePropertyOnEmptyPath() {
+
+		PersistentPropertyPath<T> path = new DefaultPersistentPropertyPath<T>(Collections.emptyList());
+
+		assertThat(path.getBaseProperty()).isNull();
 	}
 }
