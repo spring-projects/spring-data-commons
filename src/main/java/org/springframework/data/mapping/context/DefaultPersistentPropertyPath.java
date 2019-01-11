@@ -238,6 +238,7 @@ class DefaultPersistentPropertyPath<T extends PersistentProperty<T>> implements 
 
 	/*
 	 * (non-Javadoc)
+	 *
 	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#isEmpty()
 	 */
 	public boolean isEmpty() {

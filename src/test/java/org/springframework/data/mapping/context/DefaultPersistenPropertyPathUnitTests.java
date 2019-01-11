@@ -33,7 +33,7 @@ import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * Unit tests for {@link DefaultPersistentPropertyPath}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
