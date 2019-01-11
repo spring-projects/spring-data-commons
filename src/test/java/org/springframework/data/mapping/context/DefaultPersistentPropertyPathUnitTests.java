@@ -138,4 +138,20 @@ public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty
 	public void skipsMappedPropertyNameIfConverterReturnsEmptyStrings() {
 		assertThat(twoLegs.toDotPath(source -> "")).isNull();
 	}
+
+	@Test // DATACMNS-1466
+	public void returnsNullForLeafPropertyOnEmptyPath() {
+
+		PersistentPropertyPath<P> path = new DefaultPersistentPropertyPath<P>(Collections.emptyList());
+
+		assertThat(path.getLeafProperty()).isNull();
+	}
+
+	@Test // DATACMNS-1466
+	public void returnsNullForBasePropertyOnEmptyPath() {
+
+		PersistentPropertyPath<P> path = new DefaultPersistentPropertyPath<P>(Collections.emptyList());
+
+		assertThat(path.getBaseProperty()).isNull();
+	}
 }
