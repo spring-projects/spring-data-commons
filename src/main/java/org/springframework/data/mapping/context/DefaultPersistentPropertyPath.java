@@ -235,7 +235,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 
 	/**
 	 * Returns whether the current path contains a property of the given type.
-	 * 
+	 *
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
