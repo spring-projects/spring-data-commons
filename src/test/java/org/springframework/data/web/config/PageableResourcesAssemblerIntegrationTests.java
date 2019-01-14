@@ -17,7 +17,6 @@ package org.springframework.data.web.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Before;
@@ -32,7 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.WebTestUtils;
-import org.springframework.hateoas.Link;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Controller;
@@ -71,9 +70,9 @@ public class PageableResourcesAssemblerIntegrationTests {
 
 		PagedResources<Resource<Person>> resources = controller.sample(PageRequest.of(1, 1));
 
-		assertThat(resources.getLink(Link.REL_PREVIOUS)).isNotNull();
-		assertThat(resources.getLink(Link.REL_NEXT)).isNotNull();
-		assertThat(resources.getLink(Link.REL_SELF)).isNotNull();
+		assertThat(resources.getLink(IanaLinkRelation.PREV.value())).isNotNull();
+		assertThat(resources.getLink(IanaLinkRelation.NEXT.value())).isNotNull();
+		assertThat(resources.getLink(IanaLinkRelation.SELF.value())).isNotNull();
 	}
 
 	@Test // DATACMNS-471

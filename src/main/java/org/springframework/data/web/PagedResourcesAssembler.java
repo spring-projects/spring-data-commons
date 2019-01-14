@@ -26,6 +26,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
@@ -220,27 +221,27 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		boolean isNavigable = page.hasPrevious() || page.hasNext();
 
 		if (isNavigable || forceFirstAndLastRels) {
-			resources.add(createLink(base, PageRequest.of(0, page.getSize(), page.getSort()), Link.REL_FIRST));
+			resources.add(createLink(base, PageRequest.of(0, page.getSize(), page.getSort()), IanaLinkRelation.FIRST.value()));
 		}
 
 		if (page.hasPrevious()) {
-			resources.add(createLink(base, page.previousPageable(), Link.REL_PREVIOUS));
+			resources.add(createLink(base, page.previousPageable(), IanaLinkRelation.PREV.value()));
 		}
 
 		Link selfLink = link.map(it -> it.withSelfRel())//
-				.orElseGet(() -> createLink(base, page.getPageable(), Link.REL_SELF));
+				.orElseGet(() -> createLink(base, page.getPageable(), IanaLinkRelation.SELF.value()));
 
 		resources.add(selfLink);
 
 		if (page.hasNext()) {
-			resources.add(createLink(base, page.nextPageable(), Link.REL_NEXT));
+			resources.add(createLink(base, page.nextPageable(), IanaLinkRelation.NEXT.value()));
 		}
 
 		if (isNavigable || forceFirstAndLastRels) {
 
 			int lastIndex = page.getTotalPages() == 0 ? 0 : page.getTotalPages() - 1;
 
-			resources.add(createLink(base, PageRequest.of(lastIndex, page.getSize(), page.getSort()), Link.REL_LAST));
+			resources.add(createLink(base, PageRequest.of(lastIndex, page.getSize(), page.getSort()), IanaLinkRelation.LAST.value()));
 		}
 
 		return resources;

@@ -45,6 +45,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 
 /**
@@ -159,7 +160,9 @@ public class SpringDataJaxbUnitTests {
 
 		@Override
 		protected List<Link> getLinks(Page<?> source) {
-			return Arrays.asList(new Link(Link.REL_NEXT, "next"), new Link(Link.REL_PREVIOUS, "previous"));
+			return Arrays.asList(
+				new Link(IanaLinkRelation.NEXT.value(), IanaLinkRelation.NEXT.value()),
+				new Link(IanaLinkRelation.PREV.value(), IanaLinkRelation.PREVIOUS.value()));
 		}
 	}
 }
