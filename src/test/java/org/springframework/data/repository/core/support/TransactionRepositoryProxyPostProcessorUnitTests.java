@@ -20,6 +20,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +29,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource;
@@ -40,6 +42,7 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
  * Unit test for {@link TransactionalRepositoryProxyPostProcessor}.
  *
  * @author Oliver Gierke
+ * @author MyeongHyeon Lee
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TransactionRepositoryProxyPostProcessorUnitTests {
@@ -70,12 +73,34 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 
 	@Test // DATACMNS-464
 	public void fallsBackToTargetMethodTransactionSettings() throws Exception {
-		assertTransactionAttributeFor(SampleImplementation.class);
+		Method repositorySaveMethod = SampleRepository.class.getMethod("save", Sample.class);
+		assertTransactionAttributeFor(repositorySaveMethod, SampleImplementation.class);
 	}
 
 	@Test // DATACMNS-464
 	public void fallsBackToTargetClassTransactionSettings() throws Exception {
-		assertTransactionAttributeFor(SampleImplementationWithClassAnnotation.class);
+		Method repositorySaveMethod = SampleRepository.class.getMethod("save", Sample.class);
+		assertTransactionAttributeFor(repositorySaveMethod, SampleImplementationWithClassAnnotation.class);
+	}
+
+	@Test // DATACMNS-1468
+	public void fallsBackToRepositoryInterfaceTransactionSettings() throws Exception {
+		Method repositorySaveMethod = SampleCrudRepository.class.getMethod("save", Object.class);
+		when(repositoryInformation.getRepositoryInterface()).thenReturn((Class) SampleCrudRepository.class);
+		assertTransactionAttributeFor(repositorySaveMethod, SampleImplementationWithOutTransaction.class);
+	}
+
+	@Test // DATACMNS-1468
+	public void highestPriorityImplementationTransactionSettings() throws NoSuchMethodException {
+		Method repositoryFindByIdMethod = SampleCrudRepository.class.getMethod("findById", Object.class);
+
+		CustomAnnotationTransactionAttributeSource attributeSource = new CustomAnnotationTransactionAttributeSource();
+
+		TransactionAttribute attribute = attributeSource.getTransactionAttribute(repositoryFindByIdMethod,
+				SampleImplementationWithReadOnlyTransaction.class);
+
+		assertThat(attribute).isNotNull();
+		assertThat(attribute.isReadOnly()).isTrue();
 	}
 
 	@Test // DATACMNS-732
@@ -89,9 +114,8 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 		assertThat(attribute).isNotNull();
 	}
 
-	private void assertTransactionAttributeFor(Class<?> implementationClass) throws Exception {
+	private void assertTransactionAttributeFor(Method repositorySaveMethod, Class<?> implementationClass) throws Exception {
 
-		Method repositorySaveMethod = SampleRepository.class.getMethod("save", Sample.class);
 		Method implementationClassMethod = implementationClass.getMethod("save", Object.class);
 
 		when(repositoryInformation.getTargetClassMethod(repositorySaveMethod)).thenReturn(implementationClassMethod);
@@ -100,7 +124,7 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 		attributeSource.setRepositoryInformation(repositoryInformation);
 
 		TransactionAttribute attribute = attributeSource.getTransactionAttribute(repositorySaveMethod,
-				SampleImplementation.class);
+				implementationClass);
 
 		assertThat(attribute).isNotNull();
 	}
@@ -127,6 +151,25 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 	static class SampleImplementationWithClassAnnotation<T> {
 
 		public <S extends T> S save(S object) {
+			return null;
+		}
+	}
+
+	@Transactional
+	interface SampleCrudRepository extends CrudRepository<Sample, Serializable> {
+	}
+
+	static class SampleImplementationWithOutTransaction<T> {
+
+		public <S extends T> S save(S object) {
+			return null;
+		}
+	}
+
+	@Transactional(readOnly = true)
+	static class SampleImplementationWithReadOnlyTransaction<T, ID> {
+
+		public Optional<T> findById(ID id) {
 			return null;
 		}
 	}

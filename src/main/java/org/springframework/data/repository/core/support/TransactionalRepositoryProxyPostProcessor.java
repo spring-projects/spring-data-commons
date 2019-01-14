@@ -54,6 +54,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author MyeongHyeon Lee
  */
 class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
 
@@ -442,6 +443,12 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 			}
 
 			txAtt = findTransactionAttribute(targetClassMethod.getDeclaringClass());
+			if (txAtt != null) {
+				return txAtt;
+			}
+
+			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
+			txAtt = findTransactionAttribute(repositoryInterface);
 			if (txAtt != null) {
 				return txAtt;
 			}
