@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 the original author or authors.
+ * Copyright 2018-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.Test;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.util.Streamable;
 
@@ -27,6 +28,7 @@ import org.springframework.data.util.Streamable;
  * Unit tests for {@link ImplementationDetectionConfiguration}.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  */
 public class ImplementationDetectionConfigurationUnitTests {
 
@@ -48,22 +50,22 @@ public class ImplementationDetectionConfigurationUnitTests {
 
 		@Override
 		public String getImplementationPostfix() {
-			return null;
+			return "Impl";
 		}
 
 		@Override
 		public Streamable<String> getBasePackages() {
-			return null;
+			return Streamable.empty();
 		}
 
 		@Override
 		public Streamable<TypeFilter> getExcludeFilters() {
-			return null;
+			return Streamable.empty();
 		}
 
 		@Override
 		public MetadataReaderFactory getMetadataReaderFactory() {
-			return null;
+			return new SimpleMetadataReaderFactory();
 		}
 	}
 }
