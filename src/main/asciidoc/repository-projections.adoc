@@ -148,7 +148,7 @@ interface NamesOnly {
   String getLastname();
 
   default String getFullName() {
-    return getFirstname.concat(" ").concat(getLastname());
+    return getFirstname().concat(" ").concat(getLastname());
   }
 }
 ----
