@@ -371,6 +371,25 @@
 				</plugins>
 			</build>
 		</profile>
+
+		<profile>
+			<id>vavr1</id>
+			<properties>
+				<vavr>1.0.0-SNAPSHOT</vavr>
+			</properties>
+			<repositories>
+				<repository>
+					<id>snapshots-repo</id>
+					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+					<releases>
+						<enabled>false</enabled>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+					</snapshots>
+				</repository>
+			</repositories>
+		</profile>
 	</profiles>
 
 	<repositories>
