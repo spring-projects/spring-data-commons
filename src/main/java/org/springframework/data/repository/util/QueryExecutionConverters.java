@@ -147,14 +147,7 @@ public abstract class QueryExecutionConverters {
 
 			// Try support
 			WRAPPER_TYPES.add(WrapperType.singleValue(Try.class));
-			EXECUTION_ADAPTER.put(io.vavr.control.Try.class, it -> {
-
-				try {
-					return Try.success(it.get());
-				} catch (Throwable o_O) {
-					return Try.failure(o_O);
-				}
-			});
+			EXECUTION_ADAPTER.put(io.vavr.control.Try.class, it -> Try.of(it::get));
 
 			ALLOWED_PAGEABLE_TYPES.add(io.vavr.collection.Seq.class);
 		}
@@ -671,7 +664,7 @@ public abstract class QueryExecutionConverters {
 		public Object convert(Object source) {
 
 			if (source instanceof io.vavr.control.Option) {
-				return ((io.vavr.control.Option<Object>) source).getOrElse(() -> null);
+				return ((io.vavr.control.Option<Object>) source).getOrElseGet(() -> null);
 			}
 
 			if (source instanceof io.vavr.collection.Traversable) {
