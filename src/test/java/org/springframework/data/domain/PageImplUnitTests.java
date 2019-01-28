@@ -76,7 +76,7 @@ public class PageImplUnitTests {
 
 		assertThat(page.isLast()).isFalse();
 		assertThat(page.hasNext()).isTrue();
-		assertThat(page.nextPageable()).isEqualTo((Pageable) PageRequest.of(1, 1));
+		assertThat(page.nextPageable()).isEqualTo(PageRequest.of(1, 1));
 	}
 
 	@Test
@@ -86,7 +86,7 @@ public class PageImplUnitTests {
 
 		assertThat(page.isFirst()).isFalse();
 		assertThat(page.hasPrevious()).isTrue();
-		assertThat(page.previousPageable()).isEqualTo((Pageable) PageRequest.of(0, 1));
+		assertThat(page.previousPageable()).isEqualTo(PageRequest.of(0, 1));
 
 		assertThat(page.isLast()).isTrue();
 		assertThat(page.hasNext()).isFalse();
