@@ -161,4 +161,17 @@ public class PageImplUnitTests {
 		assertThat(new PageImpl<>(Collections.<String> emptyList(), PageRequest.of(1, 10), 0).getTotalElements())
 				.isEqualTo(0L);
 	}
+
+	@Test // DATACMNS-1476
+	public void returnsSelfPagablesIfThePageIsAlreadyTheFirstOrLastOne() {
+
+		Pageable pageable = PageRequest.of(0, 2);
+		Slice<String> page = new PageImpl<>(Arrays.asList("foo", "bar"), pageable, 2);
+
+		assertThat(page.previousPageable()).isEqualTo(Pageable.unpaged());
+		assertThat(page.previousOrFirstPageable()).isEqualTo(pageable);
+
+		assertThat(page.nextPageable()).isEqualTo(Pageable.unpaged());
+		assertThat(page.nextOrLastPageable()).isEqualTo(pageable);
+	}
 }

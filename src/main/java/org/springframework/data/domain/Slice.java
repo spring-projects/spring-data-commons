@@ -115,6 +115,7 @@ public interface Slice<T> extends Streamable<T> {
 	 * current {@link Slice} is already the last one. Clients should check {@link #hasNext()} before calling this method.
 	 *
 	 * @return
+	 * @see #nextOrLastPageable()
 	 */
 	Pageable nextPageable();
 
@@ -124,6 +125,7 @@ public interface Slice<T> extends Streamable<T> {
 	 * method.
 	 *
 	 * @return
+	 * @see #previousPageable()
 	 */
 	Pageable previousPageable();
 
@@ -135,4 +137,26 @@ public interface Slice<T> extends Streamable<T> {
 	 * @since 1.10
 	 */
 	<U> Slice<U> map(Function<? super T, ? extends U> converter);
+
+	/**
+	 * Returns the {@link Pageable} describing the next slice or the one describing the current slice in case it's the
+	 * last one.
+	 *
+	 * @return
+	 * @since 2.2
+	 */
+	default Pageable nextOrLastPageable() {
+		return hasNext() ? nextPageable() : getPageable();
+	}
+
+	/**
+	 * Returns the {@link Pageable} describing the previous slice or the one describing the current slice in case it's the
+	 * first one.
+	 *
+	 * @return
+	 * @since 2.2
+	 */
+	default Pageable previousOrFirstPageable() {
+		return hasPrevious() ? previousPageable() : getPageable();
+	}
 }
