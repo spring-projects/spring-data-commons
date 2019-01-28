@@ -111,19 +111,18 @@ public interface Slice<T> extends Streamable<T> {
 	}
 
 	/**
-	 * Returns the {@link Pageable} to request the next {@link Slice}. Can be {@literal null} in case the current
-	 * {@link Slice} is already the last one. Clients should check {@link #hasNext()} before calling this method to make
-	 * sure they receive a non-{@literal null} value.
+	 * Returns the {@link Pageable} to request the next {@link Slice}. Can be {@link Pageable#unpaged()} in case the
+	 * current {@link Slice} is already the last one. Clients should check {@link #hasNext()} before calling this method.
 	 * 
 	 * @return
 	 */
 	Pageable nextPageable();
 
 	/**
-	 * Returns the {@link Pageable} to request the previous {@link Slice}. Can be {@literal null} in case the current
-	 * {@link Slice} is already the first one. Clients should check {@link #hasPrevious()} before calling this method make
-	 * sure receive a non-{@literal null} value.
-	 * 
+	 * Returns the {@link Pageable} to request the previous {@link Slice}. Can be {@link Pageable#unpaged()} in case the
+	 * current {@link Slice} is already the first one. Clients should check {@link #hasPrevious()} before calling this
+	 * method.
+	 *
 	 * @return
 	 */
 	Pageable previousPageable();
