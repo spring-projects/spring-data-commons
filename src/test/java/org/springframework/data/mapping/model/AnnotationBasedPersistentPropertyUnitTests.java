@@ -28,6 +28,8 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -49,6 +51,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Bastian Wilhelm
  */
 public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBasedPersistentProperty<P>> {
 
@@ -153,6 +156,21 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test // DATACMNS-534
 	public void treatsTransientAsNotExisting() {
 		assertThat(getProperty(ClassWithReadOnlyProperties.class, "transientProperty")).isNull();
+	}
+
+	@Test // DATACMNS-1477
+	public void treatsTransientModifierAsNotExisting() {
+		assertThat(getProperty(ClassWithReadOnlyProperties.class, "transientModifierProperty")).isNull();
+	}
+
+	@Test // DATACMNS-1477
+	public void treatsValueAnnotatedAsNotExisting() {
+		assertThat(getProperty(ClassWithReadOnlyProperties.class, "valueProperty")).isNull();
+	}
+
+	@Test // DATACMNS-1477
+	public void treatsAutowiredAnnotatedAsNotExisting() {
+		assertThat(getProperty(ClassWithReadOnlyProperties.class, "autowiredProperty")).isNull();
 	}
 
 	@Test // DATACMNS-534
@@ -441,7 +459,13 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		String noAnnotations;
 
+		transient String transientModifierProperty;
+
 		@Transient String transientProperty;
+
+		@Value("") String valueProperty;
+
+		@Autowired String autowiredProperty;
 
 		@ReadOnlyProperty String readOnlyProperty;
 

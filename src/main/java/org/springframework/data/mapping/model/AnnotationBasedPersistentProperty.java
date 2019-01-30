@@ -17,6 +17,7 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,6 +50,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Bastian Wilhelm
  */
 public abstract class AnnotationBasedPersistentProperty<P extends PersistentProperty<P>>
 		extends AbstractPersistentProperty<P> {
@@ -66,7 +68,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	});
 
 	private final Lazy<Boolean> isTransient = Lazy.of(() -> super.isTransient() || isAnnotationPresent(Transient.class)
-			|| isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class));
+			|| isAnnotationPresent(Value.class) || isAnnotationPresent(Autowired.class)
+			|| getProperty().getField().map(f -> Modifier.isTransient(f.getModifiers())).orElse(false));
 
 	private final Lazy<Boolean> isWritable = Lazy
 			.of(() -> !isTransient() && !isAnnotationPresent(ReadOnlyProperty.class));
