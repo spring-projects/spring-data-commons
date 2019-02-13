@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.5.RELEASE (2019-02-13)
+---------------------------------------------
+* DATACMNS-1479 - Fix usage of PageRequest in reference documentation.
+* DATACMNS-1475 - Javadoc of Slice.nextPageable() and ….previousPageable() incorrect about nullability.
+* DATACMNS-1465 - Release 2.1.5 (Lovelace SR5).
+
+
 Changes in version 2.1.4.RELEASE (2019-01-10)
 ---------------------------------------------
 * DATACMNS-1461 - Auditor attempts to set created date on null object.
