@@ -25,6 +25,7 @@ import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,6 +60,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -654,6 +657,12 @@ public abstract class QueryExecutionConverters {
 
 		INSTANCE;
 
+		private static final Method GET_OR_ELSE_GET;
+
+		static {
+			GET_OR_ELSE_GET = ReflectionUtils.findMethod(io.vavr.control.Option.class, "getOrElseGet", Supplier.class);
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
@@ -664,7 +673,12 @@ public abstract class QueryExecutionConverters {
 		public Object convert(Object source) {
 
 			if (source instanceof io.vavr.control.Option) {
-				return ((io.vavr.control.Option<Object>) source).getOrElseGet(() -> null);
+
+				Supplier<?> nullSupplier = () -> null;
+
+				return GET_OR_ELSE_GET == null //
+						? ((io.vavr.control.Option<Object>) source).getOrElse(nullSupplier)
+						: ReflectionUtils.invokeMethod(GET_OR_ELSE_GET, source, nullSupplier);
 			}
 
 			if (source instanceof io.vavr.collection.Traversable) {
