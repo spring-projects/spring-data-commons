@@ -30,7 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.IanaLinkRelation;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
@@ -66,9 +66,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
 
-		assertThat(resources.getLink(IanaLinkRelation.PREV.value())).isEmpty();
-		assertThat(resources.getLink(IanaLinkRelation.SELF.value())).isNotEmpty();
-		assertThat(resources.getLink(IanaLinkRelation.NEXT.value())).isNotEmpty();
+		assertThat(resources.getLink(IanaLinkRelations.PREV)).isEmpty();
+		assertThat(resources.getLink(IanaLinkRelations.SELF)).isNotEmpty();
+		assertThat(resources.getLink(IanaLinkRelations.NEXT)).isNotEmpty();
 	}
 
 	@Test
@@ -76,9 +76,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getLink(IanaLinkRelation.PREV.value())).isNotEmpty();
-		assertThat(resources.getLink(IanaLinkRelation.SELF.value())).isNotEmpty();
-		assertThat(resources.getLink(IanaLinkRelation.NEXT.value())).isNotEmpty();
+		assertThat(resources.getLink(IanaLinkRelations.PREV)).isNotEmpty();
+		assertThat(resources.getLink(IanaLinkRelations.SELF)).isNotEmpty();
+		assertThat(resources.getLink(IanaLinkRelations.NEXT)).isNotEmpty();
 	}
 
 	@Test
@@ -86,9 +86,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
 
-		assertThat(resources.getLink(IanaLinkRelation.PREV.value())).isNotEmpty();
-		assertThat(resources.getLink(IanaLinkRelation.SELF.value())).isNotEmpty();
-		assertThat(resources.getLink(IanaLinkRelation.NEXT.value())).isEmpty();
+		assertThat(resources.getLink(IanaLinkRelations.PREV)).isNotEmpty();
+		assertThat(resources.getLink(IanaLinkRelations.SELF)).isNotEmpty();
+		assertThat(resources.getLink(IanaLinkRelations.NEXT)).isEmpty();
 	}
 
 	@Test
@@ -99,9 +99,9 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, baseUri);
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getRequiredLink(IanaLinkRelation.PREV.value()).getHref()).startsWith(baseUri.toUriString());
-		assertThat(resources.getRequiredLink(IanaLinkRelation.SELF.value())).isNotNull();
-		assertThat(resources.getRequiredLink(IanaLinkRelation.NEXT.value()).getHref()).startsWith(baseUri.toUriString());
+		assertThat(resources.getRequiredLink(IanaLinkRelations.PREV).getHref()).startsWith(baseUri.toUriString());
+		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF)).isNotNull();
+		assertThat(resources.getRequiredLink(IanaLinkRelations.NEXT).getHref()).startsWith(baseUri.toUriString());
 	}
 
 	@Test
@@ -111,9 +111,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1), link);
 
-		assertThat(resources.getRequiredLink(IanaLinkRelation.PREV.value()).getHref()).startsWith(link.getHref());
-		assertThat(resources.getRequiredLink(IanaLinkRelation.SELF.value())).isEqualTo(link.withSelfRel());
-		assertThat(resources.getRequiredLink(IanaLinkRelation.NEXT.value()).getHref()).startsWith(link.getHref());
+		assertThat(resources.getRequiredLink(IanaLinkRelations.PREV).getHref()).startsWith(link.getHref());
+		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF)).isEqualTo(link.withSelfRel());
+		assertThat(resources.getRequiredLink(IanaLinkRelations.NEXT).getHref()).startsWith(link.getHref());
 	}
 
 	@Test // DATACMNS-358
@@ -132,7 +132,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getRequiredLink(IanaLinkRelation.SELF.value()).getHref()).doesNotContain("{").doesNotContain("}");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF).getHref()).doesNotContain("{").doesNotContain("}");
 	}
 
 	@Test // DATACMNS-418
@@ -142,8 +142,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<PersonResource> resources = assembler.toResource(createPage(0), personAssembler);
 
-		assertThat(resources.hasLink(IanaLinkRelation.SELF.value())).isTrue();
-		assertThat(resources.hasLink(IanaLinkRelation.NEXT.value())).isTrue();
+		assertThat(resources.hasLink(IanaLinkRelations.SELF)).isTrue();
+		assertThat(resources.hasLink(IanaLinkRelations.NEXT)).isTrue();
 		Collection<PersonResource> content = resources.getContent();
 		assertThat(content).hasSize(1);
 		assertThat(content.iterator().next().name).isEqualTo("Dave");
@@ -173,9 +173,9 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getRequiredLink(IanaLinkRelation.SELF.value()).getHref()).doesNotContain("{").doesNotContain("}");
-		assertThat(resources.getRequiredLink(IanaLinkRelation.NEXT.value()).getHref()).endsWith("?page=2&size=1");
-		assertThat(resources.getRequiredLink(IanaLinkRelation.PREV.value()).getHref()).endsWith("?page=0&size=1");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF).getHref()).doesNotContain("{").doesNotContain("}");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.NEXT).getHref()).endsWith("?page=2&size=1");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.PREV).getHref()).endsWith("?page=0&size=1");
 	}
 
 	@Test // DATACMNS-699
@@ -206,8 +206,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
 
-		assertThat(resources.getRequiredLink(IanaLinkRelation.FIRST.value()).getHref()).endsWith("?page=0&size=1");
-		assertThat(resources.getRequiredLink(IanaLinkRelation.LAST.value()).getHref()).endsWith("?page=2&size=1");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=1");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=2&size=1");
 	}
 
 	@Test // DATACMNS-701
@@ -215,8 +215,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
 
-		assertThat(resources.getRequiredLink(IanaLinkRelation.FIRST.value()).getHref()).endsWith("?page=0&size=1");
-		assertThat(resources.getRequiredLink(IanaLinkRelation.LAST.value()).getHref()).endsWith("?page=2&size=1");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=1");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=2&size=1");
 	}
 
 	@Test // DATACMNS-701
@@ -224,8 +224,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
 
-		assertThat(resources.getRequiredLink(IanaLinkRelation.FIRST.value()).getHref()).endsWith("?page=0&size=1");
-		assertThat(resources.getRequiredLink(IanaLinkRelation.LAST.value()).getHref()).endsWith("?page=2&size=1");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=1");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=2&size=1");
 	}
 
 	@Test // DATACMNS-701
@@ -236,8 +236,8 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resources = assembler.toResource(EMPTY_PAGE);
 
-		assertThat(resources.getRequiredLink(IanaLinkRelation.FIRST.value()).getHref()).endsWith("?page=0&size=20");
-		assertThat(resources.getRequiredLink(IanaLinkRelation.LAST.value()).getHref()).endsWith("?page=0&size=20");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=20");
+		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=0&size=20");
 	}
 
 	@Test // DATACMNS-802
@@ -254,7 +254,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PagedResources<Resource<Person>> resource = assembler.toResource(createPage(0));
 
-		assertThat(resource.getRequiredLink(IanaLinkRelation.SELF.value()).getHref()).endsWith("?page=0&size=1");
+		assertThat(resource.getRequiredLink(IanaLinkRelations.SELF).getHref()).endsWith("?page=0&size=1");
 	}
 
 	private static Page<Person> createPage(int index) {

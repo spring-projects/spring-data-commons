@@ -26,8 +26,9 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.IanaLinkRelation;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
@@ -221,27 +222,28 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		boolean isNavigable = page.hasPrevious() || page.hasNext();
 
 		if (isNavigable || forceFirstAndLastRels) {
-			resources.add(createLink(base, PageRequest.of(0, page.getSize(), page.getSort()), IanaLinkRelation.FIRST.value()));
+			resources.add(createLink(base, PageRequest.of(0, page.getSize(), page.getSort()), IanaLinkRelations.FIRST));
 		}
 
 		if (page.hasPrevious()) {
-			resources.add(createLink(base, page.previousPageable(), IanaLinkRelation.PREV.value()));
+			resources.add(createLink(base, page.previousPageable(), IanaLinkRelations.PREV));
 		}
 
 		Link selfLink = link.map(it -> it.withSelfRel())//
-				.orElseGet(() -> createLink(base, page.getPageable(), IanaLinkRelation.SELF.value()));
+				.orElseGet(() -> createLink(base, page.getPageable(), IanaLinkRelations.SELF));
 
 		resources.add(selfLink);
 
 		if (page.hasNext()) {
-			resources.add(createLink(base, page.nextPageable(), IanaLinkRelation.NEXT.value()));
+			resources.add(createLink(base, page.nextPageable(), IanaLinkRelations.NEXT));
 		}
 
 		if (isNavigable || forceFirstAndLastRels) {
 
 			int lastIndex = page.getTotalPages() == 0 ? 0 : page.getTotalPages() - 1;
 
-			resources.add(createLink(base, PageRequest.of(lastIndex, page.getSize(), page.getSort()), IanaLinkRelation.LAST.value()));
+			resources
+					.add(createLink(base, PageRequest.of(lastIndex, page.getSize(), page.getSort()), IanaLinkRelations.LAST));
 		}
 
 		return resources;
@@ -258,20 +260,20 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	}
 
 	/**
-	 * Creates a {@link Link} with the given rel that will be based on the given {@link UriTemplate} but enriched with the
-	 * values of the given {@link Pageable} (if not {@literal null}).
+	 * Creates a {@link Link} with the given {@link LinkRelation} that will be based on the given {@link UriTemplate} but
+	 * enriched with the values of the given {@link Pageable} (if not {@literal null}).
 	 *
 	 * @param base must not be {@literal null}.
 	 * @param pageable can be {@literal null}
-	 * @param rel must not be {@literal null} or empty.
+	 * @param relation must not be {@literal null}.
 	 * @return
 	 */
-	private Link createLink(UriTemplate base, Pageable pageable, String rel) {
+	private Link createLink(UriTemplate base, Pageable pageable, LinkRelation relation) {
 
 		UriComponentsBuilder builder = fromUri(base.expand());
 		pageableResolver.enhance(builder, getMethodParameter(), pageable);
 
-		return new Link(new UriTemplate(builder.build().toString()), rel);
+		return new Link(new UriTemplate(builder.build().toString()), relation);
 	}
 
 	/**
