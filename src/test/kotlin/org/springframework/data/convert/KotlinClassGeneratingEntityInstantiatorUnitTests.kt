@@ -15,14 +15,10 @@
  */
 package org.springframework.data.convert
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.doReturn
-import com.nhaarman.mockito_kotlin.whenever
+import io.mockk.every
+import io.mockk.mockk
 import org.assertj.core.api.Assertions
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.data.annotation.PersistenceConstructor
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
@@ -35,23 +31,23 @@ import java.lang.IllegalArgumentException
  * Unit tests for [KotlinClassGeneratingEntityInstantiator] creating instances using Kotlin data classes.
  *
  * @author Mark Paluch
+ * @author Sebastien Deleuze
  */
-@RunWith(MockitoJUnitRunner::class)
 @Suppress("UNCHECKED_CAST")
 class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
-	@Mock lateinit var entity: PersistentEntity<*, *>
-	@Mock lateinit var provider: ParameterValueProvider<SamplePersistentProperty>
+	val provider = mockk<ParameterValueProvider<SamplePersistentProperty>>()
 
 	@Test // DATACMNS-1126
 	fun `should create instance`() {
 
-		val entity = this.entity as PersistentEntity<Contact, SamplePersistentProperty>
+		val entity = mockk<PersistentEntity<Contact, SamplePersistentProperty>>()
 		val constructor = PreferredConstructorDiscoverer.discover<Contact, SamplePersistentProperty>(Contact::class.java)
 
-		doReturn("Walter", "White").`when`(provider).getParameterValue<SamplePersistentProperty>(any())
-		doReturn(constructor).whenever(entity).persistenceConstructor
-		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "White")
+		every { entity.persistenceConstructor } returns constructor
+		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.typeInformation } returns mockk()
 
 		val instance: Contact = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
@@ -62,15 +58,18 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	@Test // DATACMNS-1126
 	fun `should create instance and fill in defaults`() {
 
-		val entity = this.entity as PersistentEntity<ContactWithDefaulting, SamplePersistentProperty>
+		val entity = mockk<PersistentEntity<ContactWithDefaulting, SamplePersistentProperty>>()
 		val constructor = PreferredConstructorDiscoverer.discover<ContactWithDefaulting, SamplePersistentProperty>(ContactWithDefaulting::class.java)
 
-		doReturn("Walter", null, "Skyler", null, null, null, null, null, null, null, /* 0-9 */
+		every { provider.getParameterValue<String>(any()) }.returnsMany(
+				"Walter", null, "Skyler", null, null, null, null, null, null, null, /* 0-9 */
 				null, null, null, null, null, null, null, null, null, null, /* 10-19 */
 				null, null, null, null, null, null, null, null, null, null, /* 20-29 */
-				null, "Walter", null, "Junior", null).`when`(provider).getParameterValue<SamplePersistentProperty>(any())
-		doReturn(constructor).whenever(entity).persistenceConstructor
-		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+				null, "Walter", null, "Junior", null)
+
+		every { entity.persistenceConstructor } returns constructor
+		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.typeInformation } returns mockk()
 
 		val instance: ContactWithDefaulting = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
@@ -85,11 +84,13 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	@Test // DATACMNS-1200
 	fun `absent primitive value should cause MappingInstantiationException`() {
 
-		val entity = this.entity as PersistentEntity<WithBoolean, SamplePersistentProperty>
+		val entity = mockk<PersistentEntity<WithBoolean, SamplePersistentProperty>>()
 		val constructor = PreferredConstructorDiscoverer.discover<WithBoolean, SamplePersistentProperty>(WithBoolean::class.java)
 
-		doReturn(constructor).whenever(entity).persistenceConstructor
-		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+		every { provider.getParameterValue<Boolean>(any()) } returns null
+		every { entity.persistenceConstructor } returns constructor
+		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.typeInformation } returns mockk()
 
 		Assertions.assertThatThrownBy { KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider) } //
 				.isInstanceOf(MappingInstantiationException::class.java) //
@@ -100,11 +101,20 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	@Test // DATACMNS-1200
 	fun `should apply primitive defaulting for absent parameters`() {
 
-		val entity = this.entity as PersistentEntity<WithPrimitiveDefaulting, SamplePersistentProperty>
+		val entity = mockk<PersistentEntity<WithPrimitiveDefaulting, SamplePersistentProperty>>()
 		val constructor = PreferredConstructorDiscoverer.discover<WithPrimitiveDefaulting, SamplePersistentProperty>(WithPrimitiveDefaulting::class.java)
 
-		doReturn(constructor).whenever(entity).persistenceConstructor
-		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+		every { provider.getParameterValue<Byte>(any()) } returns null
+		every { provider.getParameterValue<Short>(any()) } returns null
+		every { provider.getParameterValue<Int>(any()) } returns null
+		every { provider.getParameterValue<Long>(any()) } returns null
+		every { provider.getParameterValue<Float>(any()) } returns null
+		every { provider.getParameterValue<Double>(any()) } returns null
+		every { provider.getParameterValue<Char>(any()) } returns null
+		every { provider.getParameterValue<Boolean>(any()) } returns null
+		every { entity.persistenceConstructor } returns constructor
+		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.typeInformation } returns mockk()
 
 		val instance: WithPrimitiveDefaulting = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
@@ -121,12 +131,13 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	@Test // DATACMNS-1338
 	fun `should create instance using @PersistenceConstructor`() {
 
-		val entity = this.entity as PersistentEntity<CustomUser, SamplePersistentProperty>
+		val entity = mockk<PersistentEntity<CustomUser, SamplePersistentProperty>>()
 		val constructor = PreferredConstructorDiscoverer.discover<CustomUser, SamplePersistentProperty>(CustomUser::class.java)
 
-		doReturn("Walter").`when`(provider).getParameterValue<SamplePersistentProperty>(any())
-		doReturn(constructor).whenever(entity).persistenceConstructor
-		doReturn(constructor.constructor.declaringClass).whenever(entity).type
+		every { provider.getParameterValue<String>(any()) } returns "Walter"
+		every { entity.persistenceConstructor } returns constructor
+		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.typeInformation } returns mockk()
 
 		val instance: CustomUser = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
