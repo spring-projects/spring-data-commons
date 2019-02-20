@@ -17,7 +17,8 @@ package org.springframework.data.convert
 
 import io.mockk.every
 import io.mockk.mockk
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
 import org.springframework.data.annotation.PersistenceConstructor
 import org.springframework.data.mapping.PersistentEntity
@@ -25,7 +26,6 @@ import org.springframework.data.mapping.context.SamplePersistentProperty
 import org.springframework.data.mapping.model.MappingInstantiationException
 import org.springframework.data.mapping.model.ParameterValueProvider
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer
-import java.lang.IllegalArgumentException
 
 /**
  * Unit tests for [KotlinClassGeneratingEntityInstantiator] creating instances using Kotlin data classes.
@@ -51,8 +51,8 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		val instance: Contact = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
-		Assertions.assertThat(instance.firstname).isEqualTo("Walter")
-		Assertions.assertThat(instance.lastname).isEqualTo("White")
+		assertThat(instance.firstname).isEqualTo("Walter")
+		assertThat(instance.lastname).isEqualTo("White")
 	}
 
 	@Test // DATACMNS-1126
@@ -73,12 +73,12 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		val instance: ContactWithDefaulting = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
-		Assertions.assertThat(instance.prop0).isEqualTo("Walter")
-		Assertions.assertThat(instance.prop2).isEqualTo("Skyler")
-		Assertions.assertThat(instance.prop31).isEqualTo("Walter")
-		Assertions.assertThat(instance.prop32).isEqualTo("White")
-		Assertions.assertThat(instance.prop33).isEqualTo("Junior")
-		Assertions.assertThat(instance.prop34).isEqualTo("White")
+		assertThat(instance.prop0).isEqualTo("Walter")
+		assertThat(instance.prop2).isEqualTo("Skyler")
+		assertThat(instance.prop31).isEqualTo("Walter")
+		assertThat(instance.prop32).isEqualTo("White")
+		assertThat(instance.prop33).isEqualTo("Junior")
+		assertThat(instance.prop34).isEqualTo("White")
 	}
 
 	@Test // DATACMNS-1200
@@ -92,7 +92,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
-		Assertions.assertThatThrownBy { KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider) } //
+		assertThatThrownBy { KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider) } //
 				.isInstanceOf(MappingInstantiationException::class.java) //
 				.hasMessageContaining("fun <init>(kotlin.Boolean)") //
 				.hasCauseInstanceOf(IllegalArgumentException::class.java)
@@ -118,14 +118,14 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		val instance: WithPrimitiveDefaulting = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
-		Assertions.assertThat(instance.aByte).isEqualTo(0)
-		Assertions.assertThat(instance.aShort).isEqualTo(0)
-		Assertions.assertThat(instance.anInt).isEqualTo(0)
-		Assertions.assertThat(instance.aLong).isEqualTo(0L)
-		Assertions.assertThat(instance.aFloat).isEqualTo(0.0f)
-		Assertions.assertThat(instance.aDouble).isEqualTo(0.0)
-		Assertions.assertThat(instance.aChar).isEqualTo('a')
-		Assertions.assertThat(instance.aBool).isTrue()
+		assertThat(instance.aByte).isEqualTo(0)
+		assertThat(instance.aShort).isEqualTo(0)
+		assertThat(instance.anInt).isEqualTo(0)
+		assertThat(instance.aLong).isEqualTo(0L)
+		assertThat(instance.aFloat).isEqualTo(0.0f)
+		assertThat(instance.aDouble).isEqualTo(0.0)
+		assertThat(instance.aChar).isEqualTo('a')
+		assertThat(instance.aBool).isTrue()
 	}
 
 	@Test // DATACMNS-1338
@@ -141,7 +141,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		val instance: CustomUser = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
-		Assertions.assertThat(instance.id).isEqualTo("Walter")
+		assertThat(instance.id).isEqualTo("Walter")
 	}
 
 	data class Contact(val firstname: String, val lastname: String)

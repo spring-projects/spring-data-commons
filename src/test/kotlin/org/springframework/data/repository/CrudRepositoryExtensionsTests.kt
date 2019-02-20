@@ -18,16 +18,16 @@ package org.springframework.data.repository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.Assert.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.springframework.data.repository.sample.User
 import java.util.*
-import kotlin.test.assertNull
 
 /**
  * Unit tests for CrudRepositoryExtensions.
  *
  * @author Sebastien Deleuze
+ * @author Mark Paluch
  */
 class CrudRepositoryExtensionsTests {
 
@@ -35,10 +35,13 @@ class CrudRepositoryExtensionsTests {
 
 	@Test // DATACMNS-1346
 	fun `CrudRepository#findByIdOrNull() extension should call its Java counterpart`() {
+
 		val user = User()
+
 		every { repository.findById("foo") }.returnsMany(Optional.of(user), Optional.empty())
-		assertEquals(user, repository.findByIdOrNull("foo"))
-		assertNull(repository.findByIdOrNull("foo"))
+
+		assertThat(repository.findByIdOrNull("foo")).isEqualTo(user)
+		assertThat(repository.findByIdOrNull("foo")).isNull()
 		verify(exactly = 2) { repository.findById("foo") }
 	}
 }
