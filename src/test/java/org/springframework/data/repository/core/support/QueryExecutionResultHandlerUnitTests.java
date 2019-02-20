@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 
 import io.vavr.control.Option;
@@ -27,6 +28,7 @@ import rx.Observable;
 import rx.Single;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -36,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -47,6 +50,7 @@ import org.springframework.data.util.Streamable;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 public class QueryExecutionResultHandlerUnitTests {
 
@@ -356,7 +360,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	public void convertsIterableIntoStreamable() throws Exception {
 
-		Iterable<?> source = Arrays.asList(new Object());
+		Iterable<?> source = asList(new Object());
 
 		Object result = handler.postProcessInvocationResult(source, getMethod("streamable"));
 
@@ -381,6 +385,22 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		assertThat(result).isInstanceOfSatisfying(CustomStreamableWrapper.class, it -> {
 			assertThat(it).containsExactly("foo");
+		});
+	}
+
+	@Test // DATACMNS-1482
+	public void nestedConversion() throws Exception {
+
+		Object result = handler.postProcessInvocationResult(asList(BigDecimal.ZERO, BigDecimal.ONE),
+				getMethod("listOfInteger"));
+
+		assertThat(result).isInstanceOf(List.class);
+
+		List list = (List) result;
+		SoftAssertions.assertSoftly(s -> {
+			// for making the test failure more obvious:
+			(list).forEach(v -> s.assertThat(v).isInstanceOf(Integer.class));
+			s.assertThat(list).containsExactly(0, 1);
 		});
 	}
 
@@ -421,6 +441,8 @@ public class QueryExecutionResultHandlerUnitTests {
 
 		// DATACMNS-1430
 		CustomStreamableWrapper<String> customStreamable();
+
+		List<Integer> listOfInteger();
 	}
 
 	static class Entity {}
