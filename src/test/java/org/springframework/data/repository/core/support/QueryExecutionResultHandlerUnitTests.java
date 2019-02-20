@@ -382,13 +382,14 @@ public class QueryExecutionResultHandlerUnitTests {
 		Object result = handler.postProcessInvocationResult(asList(BigDecimal.ZERO, BigDecimal.ONE),
 				getMethod("listOfInteger"));
 
-		assertThat(result).isInstanceOf(List.class);
+		assertThat(result).isInstanceOfSatisfying(List.class, list -> {
 
-		List list = (List) result;
-		SoftAssertions.assertSoftly(s -> {
-			// for making the test failure more obvious:
-			(list).forEach(v -> s.assertThat(v).isInstanceOf(Integer.class));
-			s.assertThat(list).containsExactly(0, 1);
+			SoftAssertions.assertSoftly(s -> {
+
+				// for making the test failure more obvious:
+				s.assertThat(list).allMatch(it -> Integer.class.isInstance(it));
+				s.assertThat(list).containsExactly(0, 1);
+			});
 		});
 	}
 
@@ -427,6 +428,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		// DATACMNS-938
 		Try<Option<Entity>> tryOfOption();
 
+		// DATACMNS-1482
 		List<Integer> listOfInteger();
 	}
 
