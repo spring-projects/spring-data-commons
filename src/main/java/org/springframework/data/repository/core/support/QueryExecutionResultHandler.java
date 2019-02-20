@@ -58,7 +58,7 @@ class QueryExecutionResultHandler {
 	 * Post-processes the given result of a query invocation to match the return type of the given method.
 	 *
 	 * @param result can be {@literal null}.
-	 * @param metho must not be {@literal null}.
+	 * @param method must not be {@literal null}.
 	 * @return
 	 */
 	@Nullable
@@ -74,7 +74,8 @@ class QueryExecutionResultHandler {
 	 * Post-processes the given result of a query invocation to the given type.
 	 *
 	 * @param result can be {@literal null}.
-	 * @param returnTypeDescriptor can be {@literal null}, if so, no conversion is performed.
+	 * @param nestingLevel
+	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */
 	@Nullable
