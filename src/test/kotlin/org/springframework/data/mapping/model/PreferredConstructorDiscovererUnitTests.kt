@@ -15,10 +15,10 @@
  */
 package org.springframework.data.mapping.model
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.springframework.data.annotation.PersistenceConstructor
-import org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTests.*
+import org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTests.SamplePersistentProperty
 
 /**
  * Unit tests for [PreferredConstructorDiscoverer].
@@ -32,7 +32,7 @@ class PreferredConstructorDiscovererUnitTests {
 
 		val constructor = PreferredConstructorDiscoverer.discover<Simple, SamplePersistentProperty>(Simple::class.java)
 
-		Assertions.assertThat(constructor.parameters.size).isEqualTo(1)
+		assertThat(constructor.parameters.size).isEqualTo(1)
 	}
 
 	@Test // DATACMNS-1126
@@ -40,7 +40,7 @@ class PreferredConstructorDiscovererUnitTests {
 
 		val constructor = PreferredConstructorDiscoverer.discover<TwoConstructors, SamplePersistentProperty>(TwoConstructors::class.java)
 
-		Assertions.assertThat(constructor.parameters.size).isEqualTo(1)
+		assertThat(constructor.parameters.size).isEqualTo(1)
 	}
 
 	@Test // DATACMNS-1170
@@ -48,7 +48,7 @@ class PreferredConstructorDiscovererUnitTests {
 
 		val constructor = PreferredConstructorDiscoverer.discover<TwoConstructorsWithoutDefault, SamplePersistentProperty>(TwoConstructorsWithoutDefault::class.java)
 
-		Assertions.assertThat(constructor.parameters).isEmpty()
+		assertThat(constructor.parameters).isEmpty()
 	}
 
 	@Test // DATACMNS-1126
@@ -56,7 +56,7 @@ class PreferredConstructorDiscovererUnitTests {
 
 		val constructor = PreferredConstructorDiscoverer.discover<AnnotatedConstructors, SamplePersistentProperty>(AnnotatedConstructors::class.java)
 
-		Assertions.assertThat(constructor.parameters.size).isEqualTo(2)
+		assertThat(constructor.parameters.size).isEqualTo(2)
 	}
 
 	@Test // DATACMNS-1126
@@ -64,7 +64,7 @@ class PreferredConstructorDiscovererUnitTests {
 
 		val constructor = PreferredConstructorDiscoverer.discover<DefaultConstructor, SamplePersistentProperty>(DefaultConstructor::class.java)
 
-		Assertions.assertThat(constructor.parameters.size).isEqualTo(1)
+		assertThat(constructor.parameters.size).isEqualTo(1)
 	}
 
 	@Test // DATACMNS-1126
@@ -72,18 +72,18 @@ class PreferredConstructorDiscovererUnitTests {
 
 		val constructor = PreferredConstructorDiscoverer.discover<TwoDefaultConstructorsAnnotated, SamplePersistentProperty>(TwoDefaultConstructorsAnnotated::class.java)
 
-		Assertions.assertThat(constructor.parameters.size).isEqualTo(3)
+		assertThat(constructor.parameters.size).isEqualTo(3)
 	}
-	
+
 	@Test // DATACMNS-1171
 	@Suppress("UNCHECKED_CAST")
 	fun `should not resolve constructor for synthetic Kotlin class`() {
 
 		val c = Class.forName("org.springframework.data.mapping.model.TypeCreatingSyntheticClassKt") as Class<Any>
-		
+
 		val constructor = PreferredConstructorDiscoverer.discover<Any, SamplePersistentProperty>(c)
 
-		Assertions.assertThat(constructor).isNull()
+		assertThat(constructor).isNull()
 	}
 
 	data class Simple(val firstname: String)

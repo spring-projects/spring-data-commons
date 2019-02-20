@@ -17,7 +17,7 @@ package org.springframework.data.convert
 
 import io.mockk.every
 import io.mockk.mockk
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
@@ -46,8 +46,8 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 
 		val instance: Contact = ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider)
 
-		Assertions.assertThat(instance.firstname).isEqualTo("Walter")
-		Assertions.assertThat(instance.lastname).isEqualTo("White")
+		assertThat(instance.firstname).isEqualTo("Walter")
+		assertThat(instance.lastname).isEqualTo("White")
 	}
 
 	@Test // DATACMNS-1126
@@ -61,8 +61,8 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 
 		val instance: ContactWithDefaulting = ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider)
 
-		Assertions.assertThat(instance.firstname).isEqualTo("Walter")
-		Assertions.assertThat(instance.lastname).isEqualTo("White")
+		assertThat(instance.firstname).isEqualTo("Walter")
+		assertThat(instance.lastname).isEqualTo("White")
 	}
 
 	data class Contact(val firstname: String, val lastname: String)
