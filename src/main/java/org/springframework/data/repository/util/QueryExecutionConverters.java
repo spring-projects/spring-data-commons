@@ -699,6 +699,10 @@ public abstract class QueryExecutionConverters {
 		@Override
 		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
+			if (sourceType.isAssignableTo(targetType)) {
+				return false;
+			}
+
 			if (!Iterable.class.isAssignableFrom(sourceType.getType())) {
 				return false;
 			}

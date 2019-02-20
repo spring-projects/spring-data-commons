@@ -355,6 +355,15 @@ public class QueryExecutionConvertersUnitTests {
 				.containsExactly("foo");
 	}
 
+	@Test // DATACMNS-1484
+	public void doesNotConvertCollectionToStreamableIfReturnTypeIsIterable() {
+
+		List<String> source = Arrays.asList("1", "2");
+
+		assertThat(conversionService.convert(source, Iterable.class)).isSameAs(source);
+
+	}
+
 	interface Sample {
 
 		Page<String> pages();
