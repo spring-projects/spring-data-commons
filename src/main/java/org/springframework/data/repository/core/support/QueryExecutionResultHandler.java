@@ -34,6 +34,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 class QueryExecutionResultHandler {
 
@@ -62,10 +63,6 @@ class QueryExecutionResultHandler {
 	@Nullable
 	public Object postProcessInvocationResult(@Nullable Object result, Method method) {
 
-		if (method.getReturnType().isInstance(result)) {
-			return result;
-		}
-
 		MethodParameter parameter = new MethodParameter(method, -1);
 		TypeDescriptor methodReturnTypeDescriptor = TypeDescriptor.nested(parameter, 0);
 
@@ -88,19 +85,7 @@ class QueryExecutionResultHandler {
 
 		Class<?> expectedReturnType = returnTypeDescriptor.getType();
 
-		// Early return if the raw value matches
-
-		if (result != null && expectedReturnType.isInstance(result)) {
-			return result;
-		}
-
 		result = unwrapOptional(result);
-
-		// Early return if the unrwapped value matches
-
-		if (result != null && expectedReturnType.isInstance(result)) {
-			return result;
-		}
 
 		if (QueryExecutionConverters.supports(expectedReturnType)) {
 
@@ -126,8 +111,8 @@ class QueryExecutionResultHandler {
 				return ReactiveWrapperConverters.toWrapper(result, expectedReturnType);
 			}
 
-			return conversionService.canConvert(result.getClass(), expectedReturnType)
-					? conversionService.convert(result, expectedReturnType)
+			return conversionService.canConvert(TypeDescriptor.forObject(result), returnTypeDescriptor)
+					? conversionService.convert(result, returnTypeDescriptor)
 					: result;
 		}
 
