@@ -304,7 +304,7 @@ public abstract class QueryExecutionConverters {
 
 	/**
 	 * Returns the {@link ExecutionAdapter} to be used for the given return type.
-	 * 
+	 *
 	 * @param returnType must not be {@literal null}.
 	 * @return
 	 */
@@ -682,7 +682,7 @@ public abstract class QueryExecutionConverters {
 		private final Map<TypeDescriptor, Boolean> TARGET_TYPE_CACHE = new ConcurrentHashMap<>();
 		private final ConversionService conversionService = DefaultConversionService.getSharedInstance();
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
@@ -692,7 +692,7 @@ public abstract class QueryExecutionConverters {
 			return Collections.singleton(new ConvertiblePair(Iterable.class, Object.class));
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 		 */
@@ -716,7 +716,7 @@ public abstract class QueryExecutionConverters {
 			});
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 		 */
