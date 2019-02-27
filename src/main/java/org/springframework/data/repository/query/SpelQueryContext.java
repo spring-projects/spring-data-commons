@@ -208,7 +208,7 @@ public class SpelQueryContext {
 
 			this.expressions = Collections.unmodifiableMap(expressions);
 			this.query = resultQuery.toString();
-			this.quotations = quotedAreas;
+			this.quotations = new QuotationMap(query);
 		}
 
 		/**
