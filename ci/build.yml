@@ -8,13 +8,13 @@ image_resource:
     tag: 8-jdk
 
 inputs:
-- name: spring-commons-github
+- name: spring-data-commons-github
 
 outputs:
-- name: spring-commons-artifactory
+- name: spring-data-commons-artifactory
 
 caches:
 - path: maven
 
 run:
-  path: spring-commons-github/ci/build.sh
+  path: spring-data-commons-github/ci/build.sh

@@ -8,10 +8,10 @@ image_resource:
     tag: 8-jdk
 
 inputs:
-- name: spring-commons-github
+- name: spring-data-commons-github
 
 caches:
 - path: maven
 
 run:
-  path: spring-commons-github/ci/test.sh
+  path: spring-data-commons-github/ci/test.sh
