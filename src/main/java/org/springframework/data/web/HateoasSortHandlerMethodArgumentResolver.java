@@ -22,7 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
-import org.springframework.hateoas.mvc.UriComponentsContributor;
+import org.springframework.hateoas.server.mvc.UriComponentsContributor;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -64,7 +64,7 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
+	 * @see org.springframework.hateoas.server.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
 	 */
 	@Override
 	public void enhance(UriComponentsBuilder builder, MethodParameter parameter, Object value) {

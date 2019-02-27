@@ -32,8 +32,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.WebTestUtils;
 import org.springframework.hateoas.IanaLinkRelations;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.WebApplicationContext;
@@ -68,7 +68,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 
 		assertThat(controller.assembler).isNotNull();
 
-		PagedResources<Resource<Person>> resources = controller.sample(PageRequest.of(1, 1));
+		PagedModel<EntityModel<Person>> resources = controller.sample(PageRequest.of(1, 1));
 
 		assertThat(resources.getLink(IanaLinkRelations.PREV)).isNotNull();
 		assertThat(resources.getLink(IanaLinkRelations.NEXT)).isNotNull();
@@ -97,12 +97,12 @@ public class PageableResourcesAssemblerIntegrationTests {
 		@Autowired PagedResourcesAssembler<Person> assembler;
 
 		@RequestMapping("/persons")
-		PagedResources<Resource<Person>> sample(Pageable pageable) {
+		PagedModel<EntityModel<Person>> sample(Pageable pageable) {
 
 			Page<Person> page = new PageImpl<>(Collections.singletonList(new Person()), pageable,
 					pageable.getOffset() + pageable.getPageSize() + 1);
 
-			return assembler.toResource(page);
+			return assembler.toModel(page);
 		}
 	}
 

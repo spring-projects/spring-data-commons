@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.mvc.UriComponentsContributor;
+import org.springframework.hateoas.server.mvc.UriComponentsContributor;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;

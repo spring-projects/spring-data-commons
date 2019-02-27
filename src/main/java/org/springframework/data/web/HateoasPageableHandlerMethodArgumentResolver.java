@@ -26,7 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
-import org.springframework.hateoas.mvc.UriComponentsContributor;
+import org.springframework.hateoas.server.mvc.UriComponentsContributor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
@@ -100,7 +100,7 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
+	 * @see org.springframework.hateoas.server.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
 	 */
 	@Override
 	public void enhance(UriComponentsBuilder builder, @Nullable MethodParameter parameter, Object value) {

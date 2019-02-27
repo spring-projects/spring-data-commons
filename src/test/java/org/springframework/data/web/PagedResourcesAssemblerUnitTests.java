@@ -30,14 +30,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.core.EmbeddedWrapper;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -64,7 +64,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void addsNextLinkForFirstPage() {
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(0));
 
 		assertThat(resources.getLink(IanaLinkRelations.PREV)).isEmpty();
 		assertThat(resources.getLink(IanaLinkRelations.SELF)).isNotEmpty();
@@ -74,7 +74,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void addsPreviousAndNextLinksForMiddlePage() {
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getLink(IanaLinkRelations.PREV)).isNotEmpty();
 		assertThat(resources.getLink(IanaLinkRelations.SELF)).isNotEmpty();
@@ -84,7 +84,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void addsPreviousLinkForLastPage() {
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(2));
 
 		assertThat(resources.getLink(IanaLinkRelations.PREV)).isNotEmpty();
 		assertThat(resources.getLink(IanaLinkRelations.SELF)).isNotEmpty();
@@ -97,7 +97,7 @@ public class PagedResourcesAssemblerUnitTests {
 		UriComponents baseUri = UriComponentsBuilder.fromUriString("http://foo:9090").build();
 
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, baseUri);
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.PREV).getHref()).startsWith(baseUri.toUriString());
 		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF)).isNotNull();
@@ -109,7 +109,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 		Link link = new Link("http://foo:9090", "rel");
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1), link);
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1), link);
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.PREV).getHref()).startsWith(link.getHref());
 		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF)).isEqualTo(link.withSelfRel());
@@ -124,13 +124,13 @@ public class PagedResourcesAssemblerUnitTests {
 		AbstractPageRequest request = PageRequest.of(0, 1);
 		Page<Person> page = new PageImpl<>(Collections.emptyList(), request, 0);
 
-		assembler.toResource(page);
+		assembler.toModel(page);
 	}
 
 	@Test // DATACMNS-418, DATACMNS-515
 	public void createsACanonicalLinkWithoutTemplateParameters() {
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF).getHref()).doesNotContain("{").doesNotContain("}");
 	}
@@ -140,7 +140,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 		PersonResourceAssembler personAssembler = new PersonResourceAssembler();
 
-		PagedResources<PersonResource> resources = assembler.toResource(createPage(0), personAssembler);
+		PagedModel<PersonResource> resources = assembler.toModel(createPage(0), personAssembler);
 
 		assertThat(resources.hasLink(IanaLinkRelations.SELF)).isTrue();
 		assertThat(resources.hasLink(IanaLinkRelations.NEXT)).isTrue();
@@ -156,7 +156,7 @@ public class PagedResourcesAssemblerUnitTests {
 		argumentResolver.setOneIndexedParameters(true);
 
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(argumentResolver, null);
-		PagedResources<Resource<Person>> resource = assembler.toResource(createPage(1));
+		PagedModel<EntityModel<Person>> resource = assembler.toModel(createPage(1));
 
 		assertThat(resource.hasLink("prev")).isTrue();
 		assertThat(resource.hasLink("next")).isTrue();
@@ -171,7 +171,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-515
 	public void generatedLinksShouldNotBeTemplated() {
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF).getHref()).doesNotContain("{").doesNotContain("}");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.NEXT).getHref()).endsWith("?page=2&size=1");
@@ -181,7 +181,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-699
 	public void generatesEmptyPagedResourceWithEmbeddedWrapper() {
 
-		PagedResources<?> result = assembler.toEmptyResource(EMPTY_PAGE, Person.class);
+		PagedModel<?> result = assembler.toEmptyModel(EMPTY_PAGE, Person.class);
 
 		Collection<?> content = result.getContent();
 		assertThat(content).hasSize(1);
@@ -193,18 +193,18 @@ public class PagedResourcesAssemblerUnitTests {
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-699
 	public void emptyPageCreatorRejectsPageWithContent() {
-		assembler.toEmptyResource(createPage(1), Person.class);
+		assembler.toEmptyModel(createPage(1), Person.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACMNS-699
 	public void emptyPageCreatorRejectsNullType() {
-		assembler.toEmptyResource(EMPTY_PAGE, null);
+		assembler.toEmptyModel(EMPTY_PAGE, null);
 	}
 
 	@Test // DATACMNS-701
 	public void addsFirstAndLastLinksForMultiplePages() {
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(1));
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=1");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=2&size=1");
@@ -213,7 +213,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-701
 	public void addsFirstAndLastLinksForFirstPage() {
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(0));
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(0));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=1");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=2&size=1");
@@ -222,7 +222,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-701
 	public void addsFirstAndLastLinksForLastPage() {
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(createPage(2));
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(2));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=1");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=2&size=1");
@@ -234,7 +234,7 @@ public class PagedResourcesAssemblerUnitTests {
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, null);
 		assembler.setForceFirstAndLastRels(true);
 
-		PagedResources<Resource<Person>> resources = assembler.toResource(EMPTY_PAGE);
+		PagedModel<EntityModel<Person>> resources = assembler.toModel(EMPTY_PAGE);
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=20");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=0&size=20");
@@ -243,16 +243,16 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-802
 	public void usesCustomPagedResources() {
 
-		ResourceAssembler<Page<Person>, PagedResources<Resource<Person>>> assembler = new CustomPagedResourcesAssembler<>(
+		RepresentationModelAssembler<Page<Person>, PagedModel<EntityModel<Person>>> assembler = new CustomPagedResourcesAssembler<>(
 				resolver, null);
 
-		assertThat(assembler.toResource(EMPTY_PAGE)).isInstanceOf(CustomPagedResources.class);
+		assertThat(assembler.toModel(EMPTY_PAGE)).isInstanceOf(CustomPagedResources.class);
 	}
 
 	@Test // DATACMNS-1042
 	public void selfLinkContainsCoordinatesForCurrentPage() {
 
-		PagedResources<Resource<Person>> resource = assembler.toResource(createPage(0));
+		PagedModel<EntityModel<Person>> resource = assembler.toModel(createPage(0));
 
 		assertThat(resource.getRequiredLink(IanaLinkRelations.SELF).getHref()).endsWith("?page=0&size=1");
 	}
@@ -277,18 +277,18 @@ public class PagedResourcesAssemblerUnitTests {
 		String name;
 	}
 
-	static class PersonResource extends ResourceSupport {
+	static class PersonResource extends RepresentationModel<PersonResource> {
 		String name;
 	}
 
-	static class PersonResourceAssembler implements ResourceAssembler<Person, PersonResource> {
+	static class PersonResourceAssembler implements RepresentationModelAssembler<Person, PersonResource> {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.hateoas.ResourceAssembler#toResource(java.lang.Object)
+		 * @see org.springframework.hateoas.server.RepresentationModelAssembler#toModel(java.lang.Object)
 		 */
 		@Override
-		public PersonResource toResource(Person entity) {
+		public PersonResource toModel(Person entity) {
 			PersonResource resource = new PersonResource();
 			resource.name = entity.name;
 			return resource;
@@ -301,14 +301,18 @@ public class PagedResourcesAssemblerUnitTests {
 			super(resolver, baseUri);
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.web.PagedResourcesAssembler#createPagedModel(java.util.List, org.springframework.hateoas.PagedModel.PageMetadata, org.springframework.data.domain.Page)
+		 */
 		@Override
-		protected <R extends ResourceSupport, S> PagedResources<R> createPagedResource(List<R> resources,
+		protected <R extends RepresentationModel<?>, S> PagedModel<R> createPagedModel(List<R> resources,
 				PageMetadata metadata, Page<S> page) {
 			return new CustomPagedResources<>(resources, metadata);
 		}
 	}
 
-	static class CustomPagedResources<R extends ResourceSupport> extends PagedResources<R> {
+	static class CustomPagedResources<R extends RepresentationModel> extends PagedModel<R> {
 
 		public CustomPagedResources(Collection<R> content, PageMetadata metadata) {
 			super(content, metadata);

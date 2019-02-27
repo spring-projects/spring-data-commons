@@ -26,17 +26,17 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.UriTemplate;
-import org.springframework.hateoas.core.EmbeddedWrapper;
-import org.springframework.hateoas.core.EmbeddedWrappers;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.hateoas.server.core.EmbeddedWrapper;
+import org.springframework.hateoas.server.core.EmbeddedWrappers;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -51,7 +51,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Nick Williams
  * @author Marcel Overdijk
  */
-public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, PagedResources<Resource<T>>> {
+public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<Page<T>, PagedModel<EntityModel<T>>> {
 
 	private final HateoasPageableHandlerMethodArgumentResolver pageableResolver;
 	private final Optional<UriComponents> baseUri;
@@ -62,7 +62,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	/**
 	 * Creates a new {@link PagedResourcesAssembler} using the given {@link PageableHandlerMethodArgumentResolver} and
 	 * base URI. If the former is {@literal null}, a default one will be created. If the latter is {@literal null}, calls
-	 * to {@link #toResource(Page)} will use the current request's URI to build the relevant previous and next links.
+	 * to {@link #toModel(Page)} will use the current request's URI to build the relevant previous and next links.
 	 *
 	 * @param resolver can be {@literal null}.
 	 * @param baseUri can be {@literal null}.
@@ -89,12 +89,12 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.ResourceAssembler#toResource(java.lang.Object)
+	 * @see org.springframework.hateoas.server.RepresentationModelAssembler#toModel(java.lang.Object)
 	 */
 	@Override
 	@SuppressWarnings("null")
-	public PagedResources<Resource<T>> toResource(Page<T> entity) {
-		return toResource(entity, it -> new Resource<>(it));
+	public PagedModel<EntityModel<T>> toModel(Page<T> entity) {
+		return toModel(entity, it -> new EntityModel<>(it));
 	}
 
 	/**
@@ -106,8 +106,8 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @param selfLink must not be {@literal null}.
 	 * @return
 	 */
-	public PagedResources<Resource<T>> toResource(Page<T> page, Link selfLink) {
-		return toResource(page, it -> new Resource<>(it), selfLink);
+	public PagedModel<EntityModel<T>> toModel(Page<T> page, Link selfLink) {
+		return toModel(page, it -> new EntityModel<>(it), selfLink);
 	}
 
 	/**
@@ -118,8 +118,9 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @param assembler must not be {@literal null}.
 	 * @return
 	 */
-	public <R extends ResourceSupport> PagedResources<R> toResource(Page<T> page, ResourceAssembler<T, R> assembler) {
-		return createResource(page, assembler, Optional.empty());
+	public <R extends RepresentationModel<?>> PagedModel<R> toModel(Page<T> page,
+			RepresentationModelAssembler<T, R> assembler) {
+		return createModel(page, assembler, Optional.empty());
 	}
 
 	/**
@@ -132,12 +133,12 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @param link must not be {@literal null}.
 	 * @return
 	 */
-	public <R extends ResourceSupport> PagedResources<R> toResource(Page<T> page, ResourceAssembler<T, R> assembler,
-			Link link) {
+	public <R extends RepresentationModel<?>> PagedModel<R> toModel(Page<T> page,
+			RepresentationModelAssembler<T, R> assembler, Link link) {
 
 		Assert.notNull(link, "Link must not be null!");
 
-		return createResource(page, assembler, Optional.of(link));
+		return createModel(page, assembler, Optional.of(link));
 	}
 
 	/**
@@ -148,8 +149,8 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @return
 	 * @since 2.0
 	 */
-	public PagedResources<?> toEmptyResource(Page<?> page, Class<?> type) {
-		return toEmptyResource(page, type, Optional.empty());
+	public PagedModel<?> toEmptyModel(Page<?> page, Class<?> type) {
+		return toEmptyModel(page, type, Optional.empty());
 	}
 
 	/**
@@ -161,11 +162,11 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @return
 	 * @since 1.11
 	 */
-	public PagedResources<?> toEmptyResource(Page<?> page, Class<?> type, Link link) {
-		return toEmptyResource(page, type, Optional.of(link));
+	public PagedModel<?> toEmptyModel(Page<?> page, Class<?> type, Link link) {
+		return toEmptyModel(page, type, Optional.of(link));
 	}
 
-	private PagedResources<?> toEmptyResource(Page<?> page, Class<?> type, Optional<Link> link) {
+	private PagedModel<?> toEmptyModel(Page<?> page, Class<?> type, Optional<Link> link) {
 
 		Assert.notNull(page, "Page must must not be null!");
 		Assert.isTrue(!page.hasContent(), "Page must not have any content!");
@@ -177,7 +178,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(type);
 		List<EmbeddedWrapper> embedded = Collections.singletonList(wrapper);
 
-		return addPaginationLinks(new PagedResources<>(embedded, metadata), page, link);
+		return addPaginationLinks(new PagedModel<>(embedded, metadata), page, link);
 	}
 
 	/**
@@ -188,18 +189,18 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 * @param page the original page handed to the assembler, must not be {@literal null}.
 	 * @return must not be {@literal null}.
 	 */
-	protected <R extends ResourceSupport, S> PagedResources<R> createPagedResource(List<R> resources,
+	protected <R extends RepresentationModel<?>, S> PagedModel<R> createPagedModel(List<R> resources,
 			PageMetadata metadata, Page<S> page) {
 
 		Assert.notNull(resources, "Content resources must not be null!");
 		Assert.notNull(metadata, "PageMetadata must not be null!");
 		Assert.notNull(page, "Page must not be null!");
 
-		return new PagedResources<>(resources, metadata);
+		return new PagedModel<>(resources, metadata);
 	}
 
-	private <S, R extends ResourceSupport> PagedResources<R> createResource(Page<S> page,
-			ResourceAssembler<S, R> assembler, Optional<Link> link) {
+	private <S, R extends RepresentationModel<?>> PagedModel<R> createModel(Page<S> page,
+			RepresentationModelAssembler<S, R> assembler, Optional<Link> link) {
 
 		Assert.notNull(page, "Page must not be null!");
 		Assert.notNull(assembler, "ResourceAssembler must not be null!");
@@ -207,15 +208,15 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 		List<R> resources = new ArrayList<>(page.getNumberOfElements());
 
 		for (S element : page) {
-			resources.add(assembler.toResource(element));
+			resources.add(assembler.toModel(element));
 		}
 
-		PagedResources<R> resource = createPagedResource(resources, asPageMetadata(page), page);
+		PagedModel<R> resource = createPagedModel(resources, asPageMetadata(page), page);
 
 		return addPaginationLinks(resource, page, link);
 	}
 
-	private <R> PagedResources<R> addPaginationLinks(PagedResources<R> resources, Page<?> page, Optional<Link> link) {
+	private <R> PagedModel<R> addPaginationLinks(PagedModel<R> resources, Page<?> page, Optional<Link> link) {
 
 		UriTemplate base = getUriTemplate(link);
 

@@ -36,7 +36,7 @@ import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -246,7 +246,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 		ModelAndView forModelAndView();
 
-		ResponseEntity<Resource<User>> forResourceOfUser();
+		ResponseEntity<EntityModel<User>> forResourceOfUser();
 	}
 
 	public static class SampleRepo implements QuerydslBinderCustomizer<QUser> {

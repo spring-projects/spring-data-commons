@@ -35,7 +35,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -96,7 +96,7 @@ public abstract class SpringDataJaxb {
 	 */
 	@XmlRootElement(name = "page", namespace = NAMESPACE)
 	@XmlAccessorType(XmlAccessType.FIELD)
-	public static class PageDto extends ResourceSupport {
+	public static class PageDto extends RepresentationModel {
 
 		@Nullable @XmlAnyElement @XmlElementWrapper(name = "content") List<Object> content;
 	}

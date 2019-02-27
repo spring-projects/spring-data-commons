@@ -25,9 +25,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.MethodLinkBuilderFactory;
-import org.springframework.hateoas.core.MethodParameters;
-import org.springframework.hateoas.mvc.ControllerLinkBuilderFactory;
+import org.springframework.hateoas.server.MethodLinkBuilderFactory;
+import org.springframework.hateoas.server.core.MethodParameters;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilderFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -60,13 +60,13 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	 * {@link PageableHandlerMethodArgumentResolver} and {@link MethodLinkBuilderFactory}.
 	 *
 	 * @param resolver can be {@literal null}.
-	 * @param linkBuilderFactory can be {@literal null}, will be defaulted to a {@link ControllerLinkBuilderFactory}.
+	 * @param linkBuilderFactory can be {@literal null}, will be defaulted to a {@link WebMvcLinkBuilderFactory}.
 	 */
 	public PagedResourcesAssemblerArgumentResolver(HateoasPageableHandlerMethodArgumentResolver resolver,
 			@Nullable MethodLinkBuilderFactory<?> linkBuilderFactory) {
 
 		this.resolver = resolver;
-		this.linkBuilderFactory = linkBuilderFactory == null ? new ControllerLinkBuilderFactory() : linkBuilderFactory;
+		this.linkBuilderFactory = linkBuilderFactory == null ? new WebMvcLinkBuilderFactory() : linkBuilderFactory;
 	}
 
 	/*
