@@ -103,8 +103,7 @@ public class CustomRepositoryImplementationDetector {
 
 		Assert.notNull(lookup, "ImplementationLookupConfiguration must not be null!");
 
-		Set<BeanDefinition> definitions = implementationCandidates.getOptional()
-				.orElseGet(() -> findCandidateBeanDefinitions(lookup)).stream() //
+		Set<BeanDefinition> definitions = findCandidateBeanDefinitions(lookup).stream() //
 				.filter(lookup::matches) //
 				.collect(StreamUtils.toUnmodifiableSet());
 
