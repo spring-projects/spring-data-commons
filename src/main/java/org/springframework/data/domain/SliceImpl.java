@@ -24,6 +24,7 @@ import org.springframework.lang.Nullable;
  * Default implementation of {@link Slice}.
  * 
  * @author Oliver Gierke
+ * @author Keegan Witt
  * @since 1.8
  */
 public class SliceImpl<T> extends Chunk<T> {
@@ -37,7 +38,7 @@ public class SliceImpl<T> extends Chunk<T> {
 	 * Creates a new {@link Slice} with the given content and {@link Pageable}.
 	 * 
 	 * @param content the content of this {@link Slice}, must not be {@literal null}.
-	 * @param pageable the paging information, can be {@literal null}.
+	 * @param pageable the paging information, must not be {@literal null}.
 	 * @param hasNext whether there's another slice following the current one.
 	 */
 	public SliceImpl(List<T> content, Pageable pageable, boolean hasNext) {
