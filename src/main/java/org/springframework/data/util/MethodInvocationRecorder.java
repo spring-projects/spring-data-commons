@@ -73,6 +73,7 @@ public class MethodInvocationRecorder {
 	public static <T> Recorded<T> forProxyOf(Class<T> type) {
 
 		Assert.notNull(type, "Type must not be null!");
+		Assert.isTrue(!Modifier.isFinal(type.getModifiers()), "Type to record invocations on must not be final!");
 
 		return new MethodInvocationRecorder().create(type);
 	}

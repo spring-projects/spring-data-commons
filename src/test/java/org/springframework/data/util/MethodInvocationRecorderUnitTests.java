@@ -35,6 +35,13 @@ public class MethodInvocationRecorderUnitTests {
 	Recorded<Foo> recorder = MethodInvocationRecorder.forProxyOf(Foo.class);
 
 	@Test // DATACMNS-1449
+	public void rejectsFinalTypes() {
+
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> MethodInvocationRecorder.forProxyOf(FinalType.class));
+	}
+
+	@Test // DATACMNS-1449
 	public void createsPropertyPathForSimpleMethodReference() {
 
 		Recorded<Bar> wrapper = recorder.record(Foo::getBar);
@@ -71,13 +78,15 @@ public class MethodInvocationRecorderUnitTests {
 		assertThat(recorder.record(Foo::getName).getPropertyPath()).hasValue("name");
 	}
 
-	@Test
+	@Test // DATACMNS-1449
 	public void recordsInvocationOnInterface() {
 
 		Recorded<Sample> recorder = MethodInvocationRecorder.forProxyOf(Sample.class);
 
 		assertThat(recorder.record(Sample::getName).getPropertyPath()).hasValue("name");
 	}
+
+	static final class FinalType {}
 
 	@Getter
 	static class Foo {
