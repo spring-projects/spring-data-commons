@@ -1,6 +1,35 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.0.M2 (2019-03-07)
+----------------------------------------
+* DATACMNS-1492 - Upgrade to Spring HATEOAS 1.0 M1.
+* DATACMNS-1491 - Slice JavaDoc states Pageable constructor arg can be null, but it can't.
+* DATACMNS-1490 - Exclude Lombok generated code from code coverage calculation.
+* DATACMNS-1485 - Remove version for managed Kotlin dependencies.
+* DATACMNS-1484 - IterableToStreamableConverter converts to Streamable too aggressively.
+* DATACMNS-1483 - Migrate Kotlin tests to Mockk.
+* DATACMNS-1482 - Conversion don't seem to properly handle conversion of Lists.
+* DATACMNS-1479 - Fix usage of PageRequest in reference documentation.
+* DATACMNS-1476 - Add Slice.nextOrLastPageable() and ....previousOrFirstPageable().
+* DATACMNS-1475 - Javadoc of Slice.nextPageable() and ….previousPageable() incorrect about nullability.
+* DATACMNS-1471 - Upgrade to Vavr 0.10.
+* DATACMNS-1470 - Upgrade to Spring HATEOAS 1.0.0 API.
+* DATACMNS-1462 - Introduce Concourse CI.
+* DATACMNS-1461 - Auditor attempts to set created date on null object.
+* DATACMNS-1460 - Upgrade to Vavr 0.9.3.
+* DATACMNS-1459 - Update copyright years to 2019.
+* DATACMNS-1456 - ConcurrentModificationException in ExtensionAwareEvaluationContextProvider.
+* DATACMNS-1455 - HateoasPageableHandlerMethodArgumentResolver doesn't handle Pageable.unpaged() correctly.
+* DATACMNS-1453 - Wrong assertion in AuditingBeanDefinitionRegistrarSupport.
+* DATACMNS-1451 - ClassGeneratingPropertyAccessorFactory considers only first 16 immutable Kotlin properties.
+* DATACMNS-1447 - Add Collector methods to Streamable.
+* DATACMNS-1445 - Release 2.2 M2 (Moore).
+* DATACMNS-1439 - DefaultImplementationLookupConfiguration class should use Introspector.decapitalize(…) to generate the bean name.
+* DATACMNS-1438 - Annotation based auditing fails for annotation properties underneath collection valued subpath.
+* DATACMNS-1081 - Add Querydsl support for reactive repositories.
+
+
 Changes in version 2.1.5.RELEASE (2019-02-13)
 ---------------------------------------------
 * DATACMNS-1479 - Fix usage of PageRequest in reference documentation.
