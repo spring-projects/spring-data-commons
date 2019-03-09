@@ -16,6 +16,7 @@
 package org.springframework.data.web.config;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -27,7 +28,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.repository.support.DomainClassConverter;
@@ -55,9 +58,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @author Vedran Pavic
  * @author Jens Schauder
+ * @author Tadaya Tsuyukubo
  */
 @Configuration
-public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLoaderAware {
+public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLoaderAware, ImportAware {
+
+	private static final Boolean DEFAULT_REGISTER_PAGEABLE_RESOLVER = Boolean.TRUE;
+	private static final Boolean DEFAULT_REGISTER_SORT_RESOLVER = Boolean.TRUE;
 
 	private final ApplicationContext context;
 	private final ObjectFactory<ConversionService> conversionService;
@@ -66,6 +73,9 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	private @Autowired Optional<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
 	private @Autowired Optional<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
 	private @Autowired Optional<XmlBeamHttpMessageConverter> xmlBeamHttpMessageConverter;
+
+	private boolean registerPageableResolver = DEFAULT_REGISTER_PAGEABLE_RESOLVER;
+	private boolean registerSortResolver = DEFAULT_REGISTER_SORT_RESOLVER;
 
 	public SpringDataWebConfiguration(ApplicationContext context,
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
@@ -138,8 +148,13 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 
-		argumentResolvers.add(sortResolver());
-		argumentResolvers.add(pageableResolver());
+		if (registerSortResolver) {
+			argumentResolvers.add(sortResolver());
+		}
+
+		if (registerPageableResolver) {
+			argumentResolvers.add(pageableResolver());
+		}
 
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
 		resolver.setBeanFactory(context);
@@ -184,6 +199,16 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 
 		if (beanClassLoader != null) {
 			target.setBeanClassLoader(beanClassLoader);
+		}
+	}
+
+	@Override
+	public void setImportMetadata(AnnotationMetadata importMetadata) {
+		Map<String, Object> attributes = importMetadata.getAnnotationAttributes(EnableSpringDataWebSupport.class.getName());
+		if (attributes != null) {
+			registerPageableResolver = (Boolean) attributes.getOrDefault("registerPageableResolver",
+					DEFAULT_REGISTER_PAGEABLE_RESOLVER);
+			registerSortResolver = (Boolean) attributes.getOrDefault("registerSortResolver", DEFAULT_REGISTER_SORT_RESOLVER);
 		}
 	}
 

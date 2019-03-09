@@ -32,6 +32,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -71,6 +72,16 @@ import org.springframework.util.ClassUtils;
 @Import({ EnableSpringDataWebSupport.SpringDataWebConfigurationImportSelector.class,
 		EnableSpringDataWebSupport.QuerydslActivator.class })
 public @interface EnableSpringDataWebSupport {
+
+	/**
+	 * @return register default {@link PageableHandlerMethodArgumentResolver} or not
+	 */
+	boolean registerPageableResolver() default true;
+
+	/**
+	 * @return register default {@link SortHandlerMethodArgumentResolver} or not
+	 */
+	boolean registerSortResolver() default true;
 
 	/**
 	 * Import selector to import the appropriate configuration class depending on whether Spring HATEOAS is present on the

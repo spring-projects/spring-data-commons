@@ -92,6 +92,21 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Configuration
+	@EnableWebMvc
+	@EnableSpringDataWebSupport(registerPageableResolver = false)
+	static class DoNotRegisterPageableResolverConfig {}
+
+	@Configuration
+	@EnableWebMvc
+	@EnableSpringDataWebSupport(registerSortResolver = false)
+	static class DoNotRegisterSortResolverConfig {}
+
+	@Configuration
+	@EnableWebMvc
+	@EnableSpringDataWebSupport(registerPageableResolver = false, registerSortResolver = false)
+	static class DoNotRegisterPageableAndSortResolverConfig {}
+
+	@Configuration
 	@EnableSpringDataWebSupport
 	static class CustomEntityPathResolver {
 
@@ -238,6 +253,72 @@ public class EnableSpringDataWebSupportIntegrationTests {
 		assertThat(context.getBean(EntityPathResolver.class)).isEqualTo(CustomEntityPathResolver.resolver);
 		assertThat(context.getBean(QuerydslBindingsFactory.class).getEntityPathResolver())
 				.isEqualTo(CustomEntityPathResolver.resolver);
+	}
+
+	@Test
+	public void doNotRegisterPageableResolver() {
+
+		WebApplicationContext applicationContext = WebTestUtils
+				.createApplicationContext(DoNotRegisterPageableResolverConfig.class);
+
+		List<String> names = Arrays.asList(applicationContext.getBeanDefinitionNames());
+		assertThat(names).contains("pageableResolver", "sortResolver");
+		PageableHandlerMethodArgumentResolver pageableResolver = applicationContext.getBean("pageableResolver",
+				PageableHandlerMethodArgumentResolver.class);
+		SortHandlerMethodArgumentResolver sortResolver = applicationContext.getBean("sortResolver",
+				SortHandlerMethodArgumentResolver.class);
+
+		RequestMappingHandlerAdapter requestMappingHandlerAdapter = applicationContext
+				.getBean(RequestMappingHandlerAdapter.class);
+		List<HandlerMethodArgumentResolver> resolvers = requestMappingHandlerAdapter.getArgumentResolvers();
+
+		assertThat(resolvers).doesNotContain(pageableResolver);
+		assertThat(resolvers).contains(sortResolver);
+
+	}
+
+	@Test
+	public void doNotRegisterSortResolver() {
+
+		WebApplicationContext applicationContext = WebTestUtils
+				.createApplicationContext(DoNotRegisterSortResolverConfig.class);
+
+		List<String> names = Arrays.asList(applicationContext.getBeanDefinitionNames());
+		assertThat(names).contains("pageableResolver", "sortResolver");
+		PageableHandlerMethodArgumentResolver pageableResolver = applicationContext.getBean("pageableResolver",
+				PageableHandlerMethodArgumentResolver.class);
+		SortHandlerMethodArgumentResolver sortResolver = applicationContext.getBean("sortResolver",
+				SortHandlerMethodArgumentResolver.class);
+
+		RequestMappingHandlerAdapter requestMappingHandlerAdapter = applicationContext
+				.getBean(RequestMappingHandlerAdapter.class);
+		List<HandlerMethodArgumentResolver> resolvers = requestMappingHandlerAdapter.getArgumentResolvers();
+
+		assertThat(resolvers).contains(pageableResolver);
+		assertThat(resolvers).doesNotContain(sortResolver);
+
+	}
+
+	@Test
+	public void doNotRegisterPageableAndSortResolver() {
+
+		WebApplicationContext applicationContext = WebTestUtils
+				.createApplicationContext(DoNotRegisterPageableAndSortResolverConfig.class);
+
+		List<String> names = Arrays.asList(applicationContext.getBeanDefinitionNames());
+		assertThat(names).contains("pageableResolver", "sortResolver");
+		PageableHandlerMethodArgumentResolver pageableResolver = applicationContext.getBean("pageableResolver",
+				PageableHandlerMethodArgumentResolver.class);
+		SortHandlerMethodArgumentResolver sortResolver = applicationContext.getBean("sortResolver",
+				SortHandlerMethodArgumentResolver.class);
+
+		RequestMappingHandlerAdapter requestMappingHandlerAdapter = applicationContext
+				.getBean(RequestMappingHandlerAdapter.class);
+		List<HandlerMethodArgumentResolver> resolvers = requestMappingHandlerAdapter.getArgumentResolvers();
+
+		assertThat(resolvers).doesNotContain(pageableResolver);
+		assertThat(resolvers).doesNotContain(sortResolver);
+
 	}
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
