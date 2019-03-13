@@ -31,42 +31,13 @@ public class PageRequest extends AbstractPageRequest {
 	private final Sort sort;
 
 	/**
-	 * Creates a new {@link PageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return the first
-	 * page.
-	 *
-	 * @param page zero-based page index.
-	 * @param size the size of the page to be returned.
-	 * @deprecated use {@link #of(int, int)} instead.
-	 */
-	@Deprecated
-	public PageRequest(int page, int size) {
-		this(page, size, Sort.unsorted());
-	}
-
-	/**
 	 * Creates a new {@link PageRequest} with sort parameters applied.
 	 *
 	 * @param page zero-based page index.
 	 * @param size the size of the page to be returned.
-	 * @param direction the direction of the {@link Sort} to be specified, can be {@literal null}.
-	 * @param properties the properties to sort by, must not be {@literal null} or empty.
-	 * @deprecated use {@link #of(int, int, Direction, String...)} instead.
+	 * @param sort must not be {@literal null}, use {@link Sort#unsorted()} instead.
 	 */
-	@Deprecated
-	public PageRequest(int page, int size, Direction direction, String... properties) {
-		this(page, size, Sort.by(direction, properties));
-	}
-
-	/**
-	 * Creates a new {@link PageRequest} with sort parameters applied.
-	 *
-	 * @param page zero-based page index.
-	 * @param size the size of the page to be returned.
-	 * @param sort can be {@literal null}.
-	 * @deprecated since 2.0, use {@link #of(int, int, Sort)} instead.
-	 */
-	@Deprecated
-	public PageRequest(int page, int size, Sort sort) {
+	protected PageRequest(int page, int size, Sort sort) {
 
 		super(page, size);
 
@@ -89,7 +60,7 @@ public class PageRequest extends AbstractPageRequest {
 	 *
 	 * @param page zero-based page index.
 	 * @param size the size of the page to be returned.
-	 * @param sort must not be {@literal null}.
+	 * @param sort must not be {@literal null}, use {@link Sort#unsorted()} instead.
 	 * @since 2.0
 	 */
 	public static PageRequest of(int page, int size, Sort sort) {
@@ -121,6 +92,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#next()
 	 */
+	@Override
 	public Pageable next() {
 		return new PageRequest(getPageNumber() + 1, getPageSize(), getSort());
 	}
@@ -129,6 +101,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.AbstractPageRequest#previous()
 	 */
+	@Override
 	public PageRequest previous() {
 		return getPageNumber() == 0 ? this : new PageRequest(getPageNumber() - 1, getPageSize(), getSort());
 	}
@@ -137,6 +110,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#first()
 	 */
+	@Override
 	public Pageable first() {
 		return new PageRequest(0, getPageSize(), getSort());
 	}

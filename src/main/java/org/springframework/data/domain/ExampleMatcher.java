@@ -560,19 +560,7 @@ public interface ExampleMatcher {
 	/**
 	 * Allows to transform the property value before it is used in the query.
 	 */
-	interface PropertyValueTransformer extends Function<Optional<Object>, Optional<Object>> {
-
-		/**
-		 * For backwards compatibility of clients used to invoke Spring's Converter interface.
-		 *
-		 * @param source
-		 * @return
-		 */
-		@Deprecated
-		default Object convert(Object source) {
-			return apply(Optional.ofNullable(source)).orElse(null);
-		}
-	}
+	interface PropertyValueTransformer extends Function<Optional<Object>, Optional<Object>> {}
 
 	/**
 	 * @author Christoph Strobl
@@ -697,18 +685,6 @@ public interface ExampleMatcher {
 		 */
 		public PropertyValueTransformer getPropertyValueTransformer() {
 			return valueTransformer == null ? NoOpPropertyValueTransformer.INSTANCE : valueTransformer;
-		}
-
-		/**
-		 * Transforms a given source using the {@link PropertyValueTransformer}.
-		 *
-		 * @param source
-		 * @return
-		 * @deprecated since 2.0, use {@link #transformValue(Optional)} instead.
-		 */
-		@Deprecated
-		public Object transformValue(Object source) {
-			return transformValue(Optional.ofNullable(source)).orElse(null);
 		}
 
 		/**

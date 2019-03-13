@@ -30,7 +30,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.ModelAttributeMethodProcessor;
@@ -49,18 +48,6 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
 	private final ObjectFactory<ConversionService> conversionService;
-
-	/**
-	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService} and the
-	 * {@link ModelAttribute} annotation not required.
-	 *
-	 * @param conversionService must not be {@literal null}.
-	 * @deprecated use {@link #ProxyingHandlerMethodArgumentResolver(ObjectFactory, boolean)} instead.
-	 */
-	@Deprecated
-	public ProxyingHandlerMethodArgumentResolver(final ConversionService conversionService) {
-		this(() -> conversionService, true);
-	}
 
 	/**
 	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService}.

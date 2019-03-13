@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -63,15 +62,6 @@ public class RevisionUnitTests {
 		when(firstMetadata.getRevisionNumber()).thenReturn(reference);
 
 		assertThat(Revision.of(firstMetadata, new Object()).getRevisionNumber()).isEqualTo(reference);
-	}
-
-	@Test // DATACMNS-187
-	public void returnsRevisionDate() {
-
-		Optional<LocalDateTime> reference = Optional.of(LocalDateTime.now());
-		when(firstMetadata.getRevisionDate()).thenReturn(reference);
-
-		assertThat(Revision.of(firstMetadata, new Object()).getRevisionDate()).isEqualTo(reference);
 	}
 
 	@Test // DATACMNS-1251

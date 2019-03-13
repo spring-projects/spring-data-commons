@@ -15,6 +15,8 @@
  */
 package org.springframework.data.history;
 
+import java.util.Arrays;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
@@ -40,7 +42,7 @@ public class RevisionSort extends Sort {
 	 * @param direction must not be {@literal null}.
 	 */
 	private RevisionSort(Direction direction) {
-		super(direction, PROPERTY);
+		super(Arrays.asList(new Order(direction, PROPERTY)));
 	}
 
 	/**

@@ -263,16 +263,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	}
 
 	/**
-	 * Returns a repository instance for the given interface backed by an instance providing implementation logic for
-	 * custom logic.
+	 * Returns a repository instance for the given interface backed by a single instance providing implementation logic
+	 * for custom logic. For more advanced composition needs use {@link #getRepository(Class, RepositoryFragments)}.
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 * @param customImplementation must not be {@literal null}.
 	 * @return
-	 * @deprecated since 2.0. Use {@link RepositoryFragments} with {@link #getRepository(Class, RepositoryFragments)} to
-	 *             compose repositories backed by custom implementations.
 	 */
-	@Deprecated
 	public <T> T getRepository(Class<T> repositoryInterface, Object customImplementation) {
 		return getRepository(repositoryInterface, RepositoryFragments.just(customImplementation));
 	}

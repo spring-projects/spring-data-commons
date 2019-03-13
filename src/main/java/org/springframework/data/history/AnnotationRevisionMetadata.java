@@ -73,16 +73,6 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	 * (non-Javadoc)
 	 * @see org.springframework.data.history.RevisionMetadata#getRevisionDate()
 	 */
-	@Deprecated
-	public Optional<LocalDateTime> getRevisionDate() {
-
-		return revisionDate.get().map(AnnotationRevisionMetadata::convertToLocalDateTime);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.history.RevisionMetadata#getRevisionDate()
-	 */
 	public Optional<Instant> getRevisionInstant() {
 		return revisionDate.get().map(AnnotationRevisionMetadata::convertToInstant);
 	}
@@ -104,15 +94,6 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 			ReflectionUtils.doWithFields(entity.getClass(), callback);
 			return Optional.ofNullable(callback.getValue(entity));
 		});
-	}
-
-	private static LocalDateTime convertToLocalDateTime(Object timestamp) {
-
-		if (timestamp instanceof LocalDateTime) {
-			return (LocalDateTime) timestamp;
-		}
-
-		return LocalDateTime.ofInstant(convertToInstant(timestamp), ZoneOffset.systemDefault());
 	}
 
 	private static Instant convertToInstant(Object timestamp) {

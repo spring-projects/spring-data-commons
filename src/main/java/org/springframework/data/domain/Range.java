@@ -48,41 +48,6 @@ public class Range<T extends Comparable<T>> {
 	private final @NonNull Bound<T> upperBound;
 
 	/**
-	 * Creates a new {@link Range} with the given lower and upper bound. Treats the given values as inclusive bounds. Use
-	 * {@link #Range(Comparable, Comparable, boolean, boolean)} to configure different bound behavior.
-	 *
-	 * @see Range#of(Bound, Bound)
-	 * @param lowerBound can be {@literal null} in case upperBound is not {@literal null}.
-	 * @param upperBound can be {@literal null} in case lowerBound is not {@literal null}.
-	 * @deprecated since 2.0 in favor of {@link Range#of(Bound, Bound)}.
-	 */
-	@Deprecated
-	public Range(T lowerBound, T upperBound) {
-		this(lowerBound, upperBound, true, true);
-	}
-
-	/**
-	 * Creates a new {@link Range} with the given lower and upper bound as well as the given inclusive/exclusive
-	 * semantics.
-	 *
-	 * @param lowerBound can be {@literal null}.
-	 * @param upperBound can be {@literal null}.
-	 * @param lowerInclusive
-	 * @param upperInclusive
-	 * @deprecated since 2.0. Use {@link Range#of(Bound, Bound)} and {@link Bound} factory methods:
-	 *             {@link Bound#inclusive(Comparable)}, {@link Bound#exclusive(Comparable)}/{@link Bound#unbounded()}.
-	 */
-	@Deprecated
-	public Range(T lowerBound, T upperBound, boolean lowerInclusive, boolean upperInclusive) {
-
-		this.lowerBound = lowerBound == null ? Bound.unbounded()
-				: lowerInclusive ? Bound.inclusive(lowerBound) : Bound.exclusive(lowerBound);
-
-		this.upperBound = upperBound == null ? Bound.unbounded()
-				: upperInclusive ? Bound.inclusive(upperBound) : Bound.exclusive(upperBound);
-	}
-
-	/**
 	 * Returns an unbounded {@link Range}.
 	 *
 	 * @return
@@ -115,24 +80,6 @@ public class Range<T extends Comparable<T>> {
 	 */
 	public static <T extends Comparable<T>> Range<T> of(Bound<T> lowerBound, Bound<T> upperBound) {
 		return new Range<>(lowerBound, upperBound);
-	}
-
-	/**
-	 * @return
-	 * @deprecated since 2.0, use {@link #getLowerBound()} and {@link Bound#isInclusive()}.
-	 */
-	@Deprecated
-	public boolean isLowerInclusive() {
-		return lowerBound.isInclusive();
-	}
-
-	/**
-	 * @return
-	 * @deprecated since 2.0, use {@link #getUpperBound()} and {@link Bound#isInclusive()}.
-	 */
-	@Deprecated
-	public boolean isUpperInclusive() {
-		return upperBound.isInclusive();
 	}
 
 	/**

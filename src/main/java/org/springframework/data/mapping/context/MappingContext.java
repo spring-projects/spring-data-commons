@@ -174,25 +174,11 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 			throws InvalidPersistentPropertyPath;
 
 	/**
-	 * Returns the {@link PersistentPropertyPath} for the resolvable part of the given
-	 * {@link InvalidPersistentPropertyPath}.
-	 *
-	 * @param invalidPath must not be {@literal null}.
-	 * @return the {@link PersistentPropertyPath} for the resolvable part of the given
-	 *         {@link InvalidPersistentPropertyPath}.
-	 * @since 1.11
-	 * @deprecated since 2.0, use {@link #getPersistentPropertyPath(PropertyPath)} with
-	 *             {@link InvalidPersistentPropertyPath#getResolvedPath()} instead.
-	 */
-	@Deprecated
-	PersistentPropertyPath<P> getPersistentPropertyPath(InvalidPersistentPropertyPath invalidPath);
-
-	/**
 	 * Returns all {@link PersistentPropertyPath}s pointing to properties on the given type that match the given
 	 * {@link Predicate}. In case of circular references the detection will stop at the property that references a type
 	 * that's already included in the path. Note, that is is a potentially expensive operation as results cannot be
 	 * cached.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param predicate must not be {@literal null}.
 	 * @return

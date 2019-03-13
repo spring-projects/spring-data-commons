@@ -58,7 +58,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 
 			private static final long serialVersionUID = -1324345769124477493L;
 
-			/* 
+			/*
 			 * (non-Javadoc)
 			 * @see org.xmlbeam.config.DefaultXMLFactoriesConfig#createDocumentBuilderFactory()
 			 */
@@ -77,7 +77,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 
 	/**
 	 * Creates a new {@link XmlBeamHttpMessageConverter} using the given {@link XBProjector}.
-	 * 
+	 *
 	 * @param projector must not be {@literal null}.
 	 */
 	public XmlBeamHttpMessageConverter(XBProjector projector) {
@@ -136,7 +136,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 			Throwable cause = o_O.getCause();
 
 			if (SAXParseException.class.isInstance(cause)) {
-				throw new HttpMessageNotReadableException("Cannot read input message!", cause);
+				throw new HttpMessageNotReadableException("Cannot read input message!", cause, inputMessage);
 			} else {
 				throw o_O;
 			}

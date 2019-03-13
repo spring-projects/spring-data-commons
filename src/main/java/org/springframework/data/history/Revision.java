@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.lang.Nullable;
@@ -80,34 +79,12 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	}
 
 	/**
-	 * Returns the revision date of the revision.
-	 *
-	 * @return Guaranteed to be not {@literal null}.
-	 * @deprecated Use {@link #getRevisionInstant()} instead.
-	 */
-	@Deprecated
-	public Optional<LocalDateTime> getRevisionDate() {
-		return metadata.getRevisionDate();
-	}
-
-	/**
 	 * Returns the timestamp of the revision.
 	 *
 	 * @return Guaranteed to be not {@literal null}.
 	 */
 	public Optional<Instant> getRevisionInstant() {
 		return metadata.getRevisionInstant();
-	}
-
-	/**
-	 * Returns the revision date of the revision, immediately failing on absence.
-	 *
-	 * @return the revision date.
-	 * @deprecated Use {@link #getRequiredRevisionInstant()} instead.
-	 */
-	@Deprecated
-	public LocalDateTime getRequiredRevisionDate() {
-		return metadata.getRequiredRevisionDate();
 	}
 
 	/**
@@ -130,7 +107,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 		}
 
 		return mapIfAllPresent(getRevisionNumber(), that.getRevisionNumber(), //
-				(left, right) -> left.compareTo(right)).orElse(-1);
+				Comparable::compareTo).orElse(-1);
 	}
 
 	/*

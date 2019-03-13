@@ -82,7 +82,8 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	public ExtensionAwareEvaluationContextProvider(ListableBeanFactory beanFactory) {
 
 		this(() -> getExtensionsFrom(beanFactory));
-		this.setBeanFactory(beanFactory);
+
+		this.beanFactory = beanFactory;
 	}
 
 	/**
@@ -94,40 +95,29 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		this(() -> extensions);
 	}
 
-	/**
-	 * Sets the {@link ListableBeanFactory} to be used on the {@link EvaluationContext} to be created.
-	 *
-	 * @param beanFactory
-	 * @deprecated only exists to temporarily mitigate from the old APIs. Do not use!
-	 */
-	@Deprecated
-	public void setBeanFactory(ListableBeanFactory beanFactory) {
-		this.beanFactory = beanFactory;
-	}
-
 	/* (non-Javadoc)
 	 * @see org.springframework.data.jpa.repository.support.EvaluationContextProvider#getEvaluationContext()
 	 */
 	@Override
 	public StandardEvaluationContext getEvaluationContext(Object rootObject) {
 
-		StandardEvaluationContext ec = new StandardEvaluationContext();
+		StandardEvaluationContext context = new StandardEvaluationContext();
 
 		if (beanFactory != null) {
-			ec.setBeanResolver(new BeanFactoryResolver(beanFactory));
+			context.setBeanResolver(new BeanFactoryResolver(beanFactory));
 		}
 
 		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(extensions.get());
 
-		ec.addPropertyAccessor(accessor);
-		ec.addPropertyAccessor(new ReflectivePropertyAccessor());
-		ec.addMethodResolver(accessor);
+		context.addPropertyAccessor(accessor);
+		context.addPropertyAccessor(new ReflectivePropertyAccessor());
+		context.addMethodResolver(accessor);
 
 		if (rootObject != null) {
-			ec.setRootObject(rootObject);
+			context.setRootObject(rootObject);
 		}
 
-		return ec;
+		return context;
 	}
 
 	/**

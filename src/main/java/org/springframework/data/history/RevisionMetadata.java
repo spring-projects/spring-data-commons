@@ -16,7 +16,6 @@
 package org.springframework.data.history;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -42,18 +41,10 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 	 * @throws IllegalStateException if no revision number is available.
 	 */
 	default N getRequiredRevisionNumber() {
-		return getRevisionNumber().orElseThrow(
-				() -> new IllegalStateException(String.format("No revision number found on %s!", (Object) getDelegate())));
-	}
 
-	/**
-	 * Returns the date of the revision.
-	 *
-	 * @return will never be {@literal null}.
-	 * @deprecated use {@link #getRevisionInstant()} instead.
-	 */
-	@Deprecated
-	Optional<LocalDateTime> getRevisionDate();
+		return getRevisionNumber().orElseThrow(
+				() -> new IllegalStateException(String.format("No revision number found on %s!", this.<Object> getDelegate())));
+	}
 
 	/**
 	 * Returns the timestamp of the revision.
@@ -63,28 +54,15 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 	Optional<Instant> getRevisionInstant();
 
 	/**
-	 * Returns the revision date of the revision, immediately failing on absence.
-	 *
-	 * @return will never be {@literal null}.
-	 * @throws IllegalStateException if no revision date is available.
-	 * @deprecated Use {@link #getRevisionInstant()} instead.
-	 */
-	@Deprecated
-	default LocalDateTime getRequiredRevisionDate() {
-		return getRevisionDate().orElseThrow(
-				() -> new IllegalStateException(String.format("No revision date found on %s!", (Object) getDelegate())));
-	}
-
-
-	/**
-	 * Returns the timestamp of the revision, immediately failing on absence.
+	 * Returns the time stamp of the revision, immediately failing on absence.
 	 *
 	 * @return will never be {@literal null}.
 	 * @throws IllegalStateException if no revision date is available.
 	 */
 	default Instant getRequiredRevisionInstant() {
+
 		return getRevisionInstant().orElseThrow(
-				() -> new IllegalStateException(String.format("No revision date found on %s!", (Object) getDelegate())));
+				() -> new IllegalStateException(String.format("No revision date found on %s!", this.<Object> getDelegate())));
 	}
 
 	/**

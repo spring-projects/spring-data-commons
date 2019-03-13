@@ -45,13 +45,9 @@ public class AnnotationRevisionMetadataUnitTests {
 		RevisionMetadata<Long> metadata = getMetadata(sample);
 
 		assertThat(metadata.getRevisionNumber()).isEmpty();
-		assertThat(metadata.getRevisionDate()).isEmpty();
 
 		assertThatExceptionOfType(IllegalStateException.class) //
 				.isThrownBy(metadata::getRequiredRevisionNumber);
-
-		assertThatExceptionOfType(IllegalStateException.class) //
-				.isThrownBy(metadata::getRequiredRevisionDate);
 
 		assertThatExceptionOfType(IllegalStateException.class) //
 				.isThrownBy(metadata::getRequiredRevisionInstant);
@@ -81,9 +77,6 @@ public class AnnotationRevisionMetadataUnitTests {
 
 		RevisionMetadata<Long> metadata = getMetadata(sample);
 
-		softly.assertThat(metadata.getRevisionDate()).hasValue(sample.revisionDate);
-		softly.assertThat(metadata.getRequiredRevisionDate()).isEqualTo(sample.revisionDate);
-
 		softly.assertThat(metadata.getRevisionInstant()).hasValue(expectedInstant);
 		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(expectedInstant);
 
@@ -98,9 +91,6 @@ public class AnnotationRevisionMetadataUnitTests {
 		LocalDateTime expectedLocalDateTime = LocalDateTime.ofInstant(sample.revisionInstant, ZoneOffset.systemDefault());
 
 		RevisionMetadata<Long> metadata = getMetadata(sample);
-
-		softly.assertThat(metadata.getRevisionDate()).hasValue(expectedLocalDateTime);
-		softly.assertThat(metadata.getRequiredRevisionDate()).isEqualTo(expectedLocalDateTime);
 
 		softly.assertThat(metadata.getRevisionInstant()).hasValue(sample.revisionInstant);
 		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(sample.revisionInstant);
@@ -118,9 +108,6 @@ public class AnnotationRevisionMetadataUnitTests {
 		LocalDateTime expectedLocalDateTime = LocalDateTime.ofInstant(expectedInstant, ZoneOffset.systemDefault());
 
 		RevisionMetadata<Long> metadata = getMetadata(sample);
-
-		softly.assertThat(metadata.getRevisionDate()).hasValue(expectedLocalDateTime);
-		softly.assertThat(metadata.getRequiredRevisionDate()).isEqualTo(expectedLocalDateTime);
 
 		softly.assertThat(metadata.getRevisionInstant()).hasValue(expectedInstant);
 		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(expectedInstant);

@@ -16,7 +16,6 @@
 package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.domain.Sort.Direction.*;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,10 +50,9 @@ public abstract class SortDefaultUnitTests {
 	@Test
 	public void parsesSimpleSortStringCorrectly() {
 
-		assertSortStringParsedInto(Sort.by(new Order("username")), SORT_1);
-		assertSortStringParsedInto(Sort.by(new Order(ASC, "username")), SORT_1);
-		assertSortStringParsedInto(Sort.by(new Order(ASC, "username"), //
-				new Order(DESC, "lastname"), new Order(DESC, "firstname")), SORT_2);
+		assertSortStringParsedInto(Sort.by(Order.asc("username")), SORT_1);
+		assertSortStringParsedInto(Sort.by(Order.asc("username"), //
+				Order.desc("lastname"), Order.desc("firstname")), SORT_2);
 		assertSortStringParsedInto(Sort.by("firstname", "lastname"), SORT_3);
 	}
 

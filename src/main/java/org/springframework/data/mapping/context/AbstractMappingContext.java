@@ -114,7 +114,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
 	 */
@@ -286,15 +286,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(org.springframework.data.mapping.context.InvalidPersistentPropertyPath)
-	 */
-	@Override
-	public PersistentPropertyPath<P> getPersistentPropertyPath(InvalidPersistentPropertyPath invalidPath) {
-		return persistentPropertyPathFactory.from(invalidPath.getType(), invalidPath.getResolvedPath());
-	}
-
-	/* 
-	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.MappingContext#findPersistentPropertyPath(java.lang.Class, java.util.function.Predicate)
 	 */
 	@Override
@@ -310,7 +301,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * Actually looks up the {@link PersistentPropertyPaths} for the given type, selection predicate and traversal guard.
 	 * Primary purpose is to allow sub-types to alter the default traversal guard, e.g. used by
 	 * {@link #findPersistentPropertyPaths(Class, Predicate)}.
-	 * 
+	 *
 	 * @param type will never be {@literal null}.
 	 * @param predicate will never be {@literal null}.
 	 * @param traversalGuard will never be {@literal null}.

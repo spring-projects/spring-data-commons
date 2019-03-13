@@ -27,8 +27,8 @@ import java.util.stream.Stream;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
@@ -56,29 +56,21 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 
 	/**
 	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider}.
-	 * 
+	 *
 	 * @param beanFactory the {@link ListableBeanFactory} to lookup the {@link EvaluationContextExtension}s from, must not
 	 *          be {@literal null}.
 	 */
-	@SuppressWarnings("deprecation")
 	public ExtensionAwareQueryMethodEvaluationContextProvider(ListableBeanFactory beanFactory) {
 
 		Assert.notNull(beanFactory, "ListableBeanFactory must not be null!");
 
-		this.delegate = Lazy.of(() -> {
-
-			org.springframework.data.spel.ExtensionAwareEvaluationContextProvider delegate = new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(
-					() -> getExtensionsFrom(beanFactory));
-			delegate.setBeanFactory(beanFactory);
-
-			return delegate;
-		});
+		this.delegate = Lazy.of(() -> new ExtensionAwareEvaluationContextProvider(() -> getExtensionsFrom(beanFactory)));
 	}
 
 	/**
 	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider} using the given
 	 * {@link EvaluationContextExtension}s.
-	 * 
+	 *
 	 * @param extensions must not be {@literal null}.
 	 */
 	public ExtensionAwareQueryMethodEvaluationContextProvider(List<? extends EvaluationContextExtension> extensions) {
@@ -88,7 +80,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		this.delegate = Lazy.of(new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(extensions));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[])
 	 */
@@ -137,37 +129,12 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	 * @param beanFactory must not be {@literal null}.
 	 * @return
 	 */
-	@SuppressWarnings("deprecation")
 	private static List<EvaluationContextExtension> getExtensionsFrom(ListableBeanFactory beanFactory) {
-
-		Stream<EvaluationContextExtension> legacyExtensions = beanFactory //
-				.getBeansOfType(org.springframework.data.repository.query.spi.EvaluationContextExtension.class, true, false)
-				.values().stream() //
-				.map(ExtensionAwareQueryMethodEvaluationContextProvider::adaptFromLegacyApi);
 
 		Stream<EvaluationContextExtension> extensions = beanFactory
 				.getBeansOfType(EvaluationContextExtension.class, true, false).values().stream();
 
-		return Stream.concat(extensions, legacyExtensions).collect(Collectors.toList());
-	}
-
-	@SuppressWarnings({ "deprecation", "unchecked" })
-	private static final EvaluationContextExtension adaptFromLegacyApi(
-			org.springframework.data.repository.query.spi.EvaluationContextExtension extension) {
-
-		DelegatingMethodInterceptor advice = new DelegatingMethodInterceptor(extension);
-		advice.registerResultMapping("getFunctions",
-				result -> ((Map<String, org.springframework.data.repository.query.spi.Function>) result).entrySet().stream()
-						.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().toNewFunction())));
-
-		ProxyFactory factory = new ProxyFactory();
-		factory.setInterfaces(EvaluationContextExtension.class);
-		factory.setTargetClass(extension.getClass());
-		factory.setProxyTargetClass(true);
-		factory.setTarget(extension);
-		factory.addAdvice(advice);
-
-		return (EvaluationContextExtension) factory.getProxy();
+		return extensions.collect(Collectors.toList());
 	}
 
 	/**
@@ -187,7 +154,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		/**
 		 * Registers a result mapping for the method with the given name. Invocation results for matching methods will be
 		 * piped through the mapping.
-		 * 
+		 *
 		 * @param methodName
 		 * @param mapping
 		 */
@@ -195,7 +162,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 			this.directMappings.put(methodName, mapping);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */

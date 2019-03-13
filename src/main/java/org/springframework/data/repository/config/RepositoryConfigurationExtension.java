@@ -40,19 +40,6 @@ public interface RepositoryConfigurationExtension {
 	/**
 	 * Returns all {@link RepositoryConfiguration}s obtained through the given {@link RepositoryConfigurationSource}.
 	 *
-	 * @param configSource must not be {@literal null}.
-	 * @param loader must not be {@literal null}.
-	 * @deprecated call or implement
-	 *             {@link #getRepositoryConfigurations(RepositoryConfigurationSource, ResourceLoader, boolean)} instead.
-	 * @return
-	 */
-	@Deprecated
-	<T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
-			T configSource, ResourceLoader loader);
-
-	/**
-	 * Returns all {@link RepositoryConfiguration}s obtained through the given {@link RepositoryConfigurationSource}.
-	 *
 	 * @param configSource
 	 * @param loader
 	 * @param strictMatchesOnly whether to return strict repository matches only. Handing in {@literal true} will cause
