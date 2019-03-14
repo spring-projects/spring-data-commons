@@ -328,9 +328,35 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	@Override
 	public Optional<String> getAttribute(String name) {
+		return getAttribute(name, String.class);
+	}
 
-		String attribute = attributes.getString(name);
-		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String, java.lang.Class)
+	 */
+	@Override
+	public <T> Optional<T> getAttribute(String name, Class<T> type) {
+
+		if (!attributes.containsKey(name)) {
+			throw new IllegalArgumentException(String.format("No attribute named %s found!", name));
+		}
+
+		Object value = attributes.get(name);
+
+		if (value == null) {
+			return Optional.empty();
+		}
+
+		Assert.isInstanceOf(type, value,
+				() -> String.format("Attribute value for %s is of type %s but was expected to be of type %s!", name,
+						value.getClass(), type));
+
+		Object result = String.class.isInstance(value) //
+				? StringUtils.hasText((String) value) ? value : null //
+				: value;
+
+		return Optional.ofNullable(type.cast(result));
 	}
 
 	/*
@@ -342,7 +368,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return hasExplicitFilters;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBootstrapMode()
 	 */

@@ -188,7 +188,6 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 */
 	@Override
 	public boolean shouldConsiderNestedRepositories() {
-
 		return getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES).map(Boolean::parseBoolean).orElse(false);
 	}
 
@@ -207,6 +206,19 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String, java.lang.Class)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> Optional<T> getAttribute(String name, Class<T> type) {
+
+		Assert.isAssignable(String.class, type, "Only String attribute lookups are allowed for XML namespaces!");
+
+		return (Optional<T>) getAttribute(name);
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#usesExplicitFilters()
 	 */
 	@Override
@@ -214,7 +226,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return !(this.includeFilters.isEmpty() && this.excludeFilters.isEmpty());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBootstrapMode()
 	 */

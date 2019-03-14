@@ -24,6 +24,7 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * Interface containing the configurable options for the Spring Data repository subsystem.
@@ -104,6 +105,31 @@ public interface RepositoryConfigurationSource {
 	Optional<String> getAttribute(String name);
 
 	/**
+	 * Returns the value for the attribute with the given name and type. The name is expected to be handed in camel-case.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @param type the type of the attribute to look up.
+	 * @return the attribute with the given name or {@link Optional#empty()} if not configured or empty.
+	 * @since 2.2
+	 */
+	<T> Optional<T> getAttribute(String name, Class<T> type);
+
+	/**
+	 * Returns the attribute value for the attribute of the given name.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @return the attribute with the given name and type.
+	 * @since 2.2
+	 */
+	default <T> T getRequiredAttribute(String name, Class<T> type) {
+
+		Assert.hasText(name, "Attribute name must not be null or empty!");
+
+		return getAttribute(name, type)
+				.orElseThrow(() -> new IllegalArgumentException(String.format("No attribute named %s found!", name)));
+	}
+
+	/**
 	 * Returns whether the configuration uses explicit filtering to scan for repository types.
 	 *
 	 * @return whether the configuration uses explicit filtering to scan for repository types.
@@ -131,7 +157,7 @@ public interface RepositoryConfigurationSource {
 	/**
 	 * Returns the {@link ImplementationDetectionConfiguration} to be used to scan for custom implementations of the
 	 * repository instances to be created from this {@link RepositoryConfigurationSource}.
-	 * 
+	 *
 	 * @param factory
 	 * @return will never be {@literal null}.
 	 * @since 2.1
@@ -140,7 +166,7 @@ public interface RepositoryConfigurationSource {
 
 	/**
 	 * Defines the repository {@link BootstrapMode} to be used.
-	 * 
+	 *
 	 * @return
 	 * @since 2.1
 	 */

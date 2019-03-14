@@ -16,6 +16,7 @@
 package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;
@@ -40,8 +41,8 @@ public class XmlRepositoryConfigurationSourceUnitTests {
 
 		RepositoryConfigurationSource source = mock(XmlRepositoryConfigurationSource.class);
 		ReflectionTestUtils.setField(source, "element", element);
-		when(source.getAttribute(anyString())).thenCallRealMethod();
 
+		when(source.getAttribute(anyString())).thenCallRealMethod();
 		when(element.getAttribute("some-xml-attribute")).thenReturn("value");
 
 		assertThat(source.getAttribute("someXmlAttribute")).hasValue("value");

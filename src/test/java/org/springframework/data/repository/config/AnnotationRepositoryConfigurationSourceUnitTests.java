@@ -33,6 +33,7 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.util.Streamable;
 
 /**
@@ -136,6 +137,34 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 				SampleAnnotation.class, resourceLoader, environment, registry);
 
 		assertThat(configurationSource.getRepositoryBaseClassName()).isNotPresent();
+	}
+
+	@Test // DATACMNS-1498
+	public void allowsLookupOfNonStringAttribute() {
+
+		RepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
+
+		assertThat(source.getAttribute("repositoryBaseClass", Class.class)).hasValue(PagingAndSortingRepository.class);
+		assertThat(source.getRequiredAttribute("repositoryBaseClass", Class.class))
+				.isEqualTo(PagingAndSortingRepository.class);
+	}
+
+	@Test // DATACMNS-1498
+	public void rejectsInvalidAttributeName() {
+
+		RepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
+
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> source.getAttribute("fooBar"));
+	}
+
+	@Test // DATACMNS-1498
+	public void lookupOfEmptyStringExposesAbsentValue() {
+
+		RepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
+
+		assertThat(source.getAttribute("namedQueriesLocation", String.class)).isEmpty();
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> source.getRequiredAttribute("namedQueriesLocation", String.class));
 	}
 
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
