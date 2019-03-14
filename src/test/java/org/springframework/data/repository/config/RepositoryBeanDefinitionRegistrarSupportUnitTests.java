@@ -27,6 +27,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.env.StandardEnvironment;
@@ -64,7 +66,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 
-		registrar.registerBeanDefinitions(metadata, registry);
+		registrar.registerBeanDefinitions(metadata, registry, null);
 
 		assertBeanDefinitionRegisteredFor("myRepository");
 		assertBeanDefinitionRegisteredFor("composedRepository");
@@ -78,7 +80,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(FragmentExclusionConfiguration.class, true);
 
-		registrar.registerBeanDefinitions(metadata, registry);
+		registrar.registerBeanDefinitions(metadata, registry, null);
 
 		assertBeanDefinitionRegisteredFor("repositoryWithFragmentExclusion");
 		assertNoBeanDefinitionRegisteredFor("excludedRepositoryImpl");
@@ -89,7 +91,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(LimitsImplementationBasePackages.class, true);
 
-		registrar.registerBeanDefinitions(metadata, registry);
+		registrar.registerBeanDefinitions(metadata, registry, null);
 
 		assertBeanDefinitionRegisteredFor("personRepository");
 		assertNoBeanDefinitionRegisteredFor("fragmentImpl");
@@ -98,15 +100,28 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@Test // DATACMNS-360
 	public void registeredProfileRepositoriesIfProfileActivated() {
 
-		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 		environment.setActiveProfiles("profile");
 
 		DummyRegistrar registrar = new DummyRegistrar();
 		registrar.setEnvironment(environment);
-
-		registrar.registerBeanDefinitions(metadata, registry);
+		registrar.registerBeanDefinitions(metadata, registry, null);
 
 		assertBeanDefinitionRegisteredFor("myRepository", "profileRepository");
+	}
+
+	@Test // DATACMNS-1497
+	public void usesBeanNameGeneratorProvided() {
+
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
+		BeanNameGenerator delegate = new AnnotationBeanNameGenerator();
+
+		DummyRegistrar registrar = new DummyRegistrar();
+		registrar.setEnvironment(environment);
+		registrar.registerBeanDefinitions(metadata, registry,
+				(definition, registry) -> delegate.generateBeanName(definition, registry).concat("Hello"));
+
+		assertBeanDefinitionRegisteredFor("myRepositoryHello");
 	}
 
 	private void assertBeanDefinitionRegisteredFor(String... names) {

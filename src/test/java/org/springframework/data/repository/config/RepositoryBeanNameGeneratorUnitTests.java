@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefiniti
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
@@ -48,7 +49,8 @@ public class RepositoryBeanNameGeneratorUnitTests {
 
 	@Before
 	public void setUp() {
-		this.generator = new RepositoryBeanNameGenerator(Thread.currentThread().getContextClassLoader());
+		this.generator = new RepositoryBeanNameGenerator(Thread.currentThread().getContextClassLoader(),
+				new AnnotationBeanNameGenerator());
 	}
 
 	@Test
