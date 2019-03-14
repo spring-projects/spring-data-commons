@@ -156,4 +156,55 @@ public class RangeUnitTests {
 		assertThat(range.getLowerBound().getValue()).isEmpty();
 		assertThat(range.getUpperBound().getValue()).isEmpty();
 	}
+
+	@Test // DATACMNS-1499
+	public void createsOpenRange() {
+
+		Range<Long> range = Range.open(5L, 10L);
+
+		assertThat(range.contains(5L)).isFalse();
+		assertThat(range.contains(10L)).isFalse();
+	}
+
+	@Test // DATACMNS-1499
+	public void createsClosedRange() {
+
+		Range<Long> range = Range.closed(5L, 10L);
+
+		assertThat(range.contains(5L)).isTrue();
+		assertThat(range.contains(10L)).isTrue();
+	}
+
+	@Test // DATACMNS-1499
+	public void createsLeftOpenRange() {
+
+		Range<Long> range = Range.leftOpen(5L, 10L);
+
+		assertThat(range.contains(5L)).isFalse();
+		assertThat(range.contains(10L)).isTrue();
+	}
+
+	@Test // DATACMNS-1499
+	public void createsRightOpenRange() {
+
+		Range<Long> range = Range.rightOpen(5L, 10L);
+
+		assertThat(range.contains(5L)).isTrue();
+		assertThat(range.contains(10L)).isFalse();
+	}
+
+	@Test // DATACMNS-1499
+	public void createsLeftUnboundedRange() {
+		assertThat(Range.leftUnbounded(Bound.inclusive(10L)).contains(-10000L)).isTrue();
+	}
+
+	@Test // DATACMNS-1499
+	public void createsRightUnboundedRange() {
+		assertThat(Range.rightUnbounded(Bound.inclusive(10L)).contains(10000L)).isTrue();
+	}
+
+	@Test // DATACMNS-1499
+	public void createsSingleValueRange() {
+		assertThat(Range.just(10L).contains(10L)).isTrue();
+	}
 }

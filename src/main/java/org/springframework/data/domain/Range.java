@@ -59,6 +59,84 @@ public class Range<T extends Comparable<T>> {
 	}
 
 	/**
+	 * Creates a new {@link Range} with inclusive bounds for both values.
+	 *
+	 * @param <T>
+	 * @param from must not be {@literal null}.
+	 * @param to must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	public static <T extends Comparable<T>> Range<T> closed(T from, T to) {
+		return new Range<>(Bound.inclusive(from), Bound.inclusive(to));
+	}
+
+	/**
+	 * Creates a new {@link Range} with inclusive bounds for both values.
+	 *
+	 * @param <T>
+	 * @param from must not be {@literal null}.
+	 * @param to must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	public static <T extends Comparable<T>> Range<T> open(T from, T to) {
+		return new Range<>(Bound.exclusive(from), Bound.exclusive(to));
+	}
+
+	/**
+	 * Creates a new left-open {@link Range}, i.e. left exclusive, right inclusive.
+	 *
+	 * @param <T>
+	 * @param from must not be {@literal null}.
+	 * @param to must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	public static <T extends Comparable<T>> Range<T> leftOpen(T from, T to) {
+		return new Range<>(Bound.exclusive(from), Bound.inclusive(to));
+	}
+
+	/**
+	 * Creates a new right-open {@link Range}, i.e. left inclusive, right exclusive.
+	 *
+	 * @param <T>
+	 * @param from must not be {@literal null}.
+	 * @param to must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	public static <T extends Comparable<T>> Range<T> rightOpen(T from, T to) {
+		return new Range<>(Bound.inclusive(from), Bound.exclusive(to));
+	}
+
+	/**
+	 * Creates a left-unbounded {@link Range} (the left bound set to {@link Bound#unbounded()}) with the given right
+	 * bound.
+	 *
+	 * @param <T>
+	 * @param to the right {@link Bound}, must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	public static <T extends Comparable<T>> Range<T> leftUnbounded(Bound<T> to) {
+		return new Range<>(Bound.unbounded(), to);
+	}
+
+	/**
+	 * Creates a right-unbounded {@link Range} (the right bound set to {@link Bound#unbounded()}) with the given left
+	 * bound.
+	 *
+	 * @param <T>
+	 * @param to the left {@link Bound}, must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	public static <T extends Comparable<T>> Range<T> rightUnbounded(Bound<T> from) {
+		return new Range<>(from, Bound.unbounded());
+	}
+
+	/**
 	 * Create a {@link RangeBuilder} given the lower {@link Bound}.
 	 *
 	 * @param lower must not be {@literal null}.
@@ -72,14 +150,27 @@ public class Range<T extends Comparable<T>> {
 	}
 
 	/**
-	 * Creates a new {@link Range} with the given lower and upper bound.
+	 * Creates a new {@link Range} with the given lower and upper bound. Prefer {@link #from(Bound)} for a more builder
+	 * style API.
 	 *
 	 * @param lowerBound must not be {@literal null}.
 	 * @param upperBound must not be {@literal null}.
 	 * @since 2.0
+	 * @see #from(Bound)
 	 */
 	public static <T extends Comparable<T>> Range<T> of(Bound<T> lowerBound, Bound<T> upperBound) {
 		return new Range<>(lowerBound, upperBound);
+	}
+
+	/**
+	 * Creates a new Range with the given value as sole member.
+	 *
+	 * @param <T>
+	 * @param value must not be {@literal null}.
+	 * @return
+	 */
+	public static <T extends Comparable<T>> Range<T> just(T value) {
+		return Range.closed(value, value);
 	}
 
 	/**
