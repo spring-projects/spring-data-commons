@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -129,24 +130,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		this.hasExplicitFilters = hasExplicitFilters(attributes);
 	}
 
-	/**
-	 * Returns whether there's explicit configuration of include- or exclude filters.
-	 *
-	 * @param attributes must not be {@literal null}.
-	 * @return
-	 */
-	private static boolean hasExplicitFilters(AnnotationAttributes attributes) {
-
-		for (String attribute : Arrays.asList("includeFilters", "excludeFilters")) {
-
-			if (attributes.getAnnotationArray(attribute).length > 0) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBasePackages()
@@ -226,25 +209,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return parseFilters("excludeFilters");
 	}
 
-	private Streamable<TypeFilter> parseFilters(String attributeName) {
-
-		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);
-
-		return Streamable.of(() -> Arrays.stream(filters).flatMap(it -> typeFiltersFor(it).stream()));
-	}
-
-	/**
-	 * Returns the {@link String} attribute with the given name and defaults it to {@literal Optional#empty()} in case
-	 * it's empty.
-	 *
-	 * @param attributeName
-	 * @return
-	 */
-	private Optional<String> getNullDefaultedAttribute(String attributeName) {
-		String attribute = attributes.getString(attributeName);
-		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryFactoryBeanClassName()
@@ -286,55 +250,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	public AnnotationMetadata getEnableAnnotationMetadata() {
 		return enableAnnotationMetadata;
-	}
-
-	/**
-	 * Copy of {@code ComponentScanAnnotationParser#typeFiltersFor}.
-	 *
-	 * @param filterAttributes
-	 * @return
-	 */
-	private List<TypeFilter> typeFiltersFor(AnnotationAttributes filterAttributes) {
-
-		List<TypeFilter> typeFilters = new ArrayList<>();
-		FilterType filterType = filterAttributes.getEnum("type");
-
-		for (Class<?> filterClass : filterAttributes.getClassArray("value")) {
-			switch (filterType) {
-				case ANNOTATION:
-					Assert.isAssignable(Annotation.class, filterClass,
-							"An error occured when processing a @ComponentScan " + "ANNOTATION type filter: ");
-					@SuppressWarnings("unchecked")
-					Class<Annotation> annoClass = (Class<Annotation>) filterClass;
-					typeFilters.add(new AnnotationTypeFilter(annoClass));
-					break;
-				case ASSIGNABLE_TYPE:
-					typeFilters.add(new AssignableTypeFilter(filterClass));
-					break;
-				case CUSTOM:
-					Assert.isAssignable(TypeFilter.class, filterClass,
-							"An error occured when processing a @ComponentScan " + "CUSTOM type filter: ");
-					typeFilters.add(BeanUtils.instantiateClass(filterClass, TypeFilter.class));
-					break;
-				default:
-					throw new IllegalArgumentException("Unknown filter type " + filterType);
-			}
-		}
-
-		for (String expression : getPatterns(filterAttributes)) {
-
-			String rawName = filterType.toString();
-
-			if ("REGEX".equals(rawName)) {
-				typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(expression)));
-			} else if ("ASPECTJ".equals(rawName)) {
-				typeFilters.add(new AspectJTypeFilter(expression, this.resourceLoader.getClassLoader()));
-			} else {
-				throw new IllegalArgumentException("Unknown filter type " + filterType);
-			}
-		}
-
-		return typeFilters;
 	}
 
 	/*
@@ -406,6 +321,76 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		}
 	}
 
+	private Streamable<TypeFilter> parseFilters(String attributeName) {
+
+		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);
+
+		return Streamable.of(() -> Arrays.stream(filters).flatMap(it -> typeFiltersFor(it).stream()));
+	}
+
+	/**
+	 * Returns the {@link String} attribute with the given name and defaults it to {@literal Optional#empty()} in case
+	 * it's empty.
+	 *
+	 * @param attributeName
+	 * @return
+	 */
+	private Optional<String> getNullDefaultedAttribute(String attributeName) {
+
+		String attribute = attributes.getString(attributeName);
+
+		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
+	}
+
+	/**
+	 * Copy of {@code ComponentScanAnnotationParser#typeFiltersFor}.
+	 *
+	 * @param filterAttributes
+	 * @return
+	 */
+	private List<TypeFilter> typeFiltersFor(AnnotationAttributes filterAttributes) {
+
+		List<TypeFilter> typeFilters = new ArrayList<>();
+		FilterType filterType = filterAttributes.getEnum("type");
+
+		for (Class<?> filterClass : filterAttributes.getClassArray("value")) {
+			switch (filterType) {
+				case ANNOTATION:
+					Assert.isAssignable(Annotation.class, filterClass,
+							"An error occured when processing a @ComponentScan " + "ANNOTATION type filter: ");
+					@SuppressWarnings("unchecked")
+					Class<Annotation> annoClass = (Class<Annotation>) filterClass;
+					typeFilters.add(new AnnotationTypeFilter(annoClass));
+					break;
+				case ASSIGNABLE_TYPE:
+					typeFilters.add(new AssignableTypeFilter(filterClass));
+					break;
+				case CUSTOM:
+					Assert.isAssignable(TypeFilter.class, filterClass,
+							"An error occured when processing a @ComponentScan " + "CUSTOM type filter: ");
+					typeFilters.add(BeanUtils.instantiateClass(filterClass, TypeFilter.class));
+					break;
+				default:
+					throw new IllegalArgumentException("Unknown filter type " + filterType);
+			}
+		}
+
+		for (String expression : getPatterns(filterAttributes)) {
+
+			String rawName = filterType.toString();
+
+			if ("REGEX".equals(rawName)) {
+				typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(expression)));
+			} else if ("ASPECTJ".equals(rawName)) {
+				typeFilters.add(new AspectJTypeFilter(expression, this.resourceLoader.getClassLoader()));
+			} else {
+				throw new IllegalArgumentException("Unknown filter type " + filterType);
+			}
+		}
+
+		return typeFilters;
+	}
+
 	/**
 	 * Safely reads the {@code pattern} attribute from the given {@link AnnotationAttributes} and returns an empty list if
 	 * the attribute is not present.
@@ -423,6 +408,18 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	}
 
 	/**
+	 * Returns whether there's explicit configuration of include- or exclude filters.
+	 *
+	 * @param attributes must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean hasExplicitFilters(AnnotationAttributes attributes) {
+
+		return Stream.of("includeFilters", "excludeFilters") //
+				.anyMatch(it -> attributes.getAnnotationArray(it).length > 0);
+	}
+
+	/**
 	 * Returns the {@link BeanNameGenerator} to use falling back to an {@link AnnotationBeanNameGenerator} if either the
 	 * given generator is {@literal null} or it's the one locally declared in {@link ConfigurationClassPostProcessor}'s
 	 * {@code importBeanNameGenerator}. This is to make sure we only use the given {@link BeanNameGenerator} if it was
@@ -430,6 +427,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 *
 	 * @param generator can be {@literal null}.
 	 * @return
+	 * @since 2.2
 	 */
 	private static BeanNameGenerator defaultBeanNameGenerator(@Nullable BeanNameGenerator generator) {
 

@@ -123,7 +123,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#toImplementationDetectionConfiguration()
 	 */
@@ -138,7 +138,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 		private final RepositoryConfigurationSource source;
 		private final @Getter MetadataReaderFactory metadataReaderFactory;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getImplementationPostfix()
 		 */
@@ -148,7 +148,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 					.orElse(DefaultRepositoryConfiguration.DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getBasePackages()
 		 */
@@ -157,7 +157,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 			return source.getBasePackages();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getExcludeFilters()
 		 */
@@ -166,7 +166,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 			return source.getExcludeFilters();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#generateBeanName(org.springframework.beans.factory.config.BeanDefinition)
 		 */
