@@ -15,14 +15,13 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -33,12 +32,25 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Jens Schauder
  */
-@RequiredArgsConstructor
-public class RepositoryBeanNameGenerator {
-
-	private static final SpringDataAnnotationBeanNameGenerator DELEGATE = new SpringDataAnnotationBeanNameGenerator();
+class RepositoryBeanNameGenerator {
 
 	private final ClassLoader beanClassLoader;
+	private final SpringDataAnnotationBeanNameGenerator delegate;
+
+	/**
+	 * Creates a new {@link RepositoryBeanNameGenerator} for the given {@link ClassLoader} and {@link BeanNameGenerator}.
+	 *
+	 * @param beanClassLoader must not be {@literal null}.
+	 * @param generator must not be {@literal null}.
+	 */
+	public RepositoryBeanNameGenerator(ClassLoader beanClassLoader, BeanNameGenerator generator) {
+
+		Assert.notNull(beanClassLoader, "Bean ClassLoader must not be null!");
+		Assert.notNull(generator, "BeanNameGenerator must not be null!");
+
+		this.beanClassLoader = beanClassLoader;
+		this.delegate = new SpringDataAnnotationBeanNameGenerator(generator);
+	}
 
 	/**
 	 * Generate a bean name for the given bean definition.
@@ -53,7 +65,7 @@ public class RepositoryBeanNameGenerator {
 				? (AnnotatedBeanDefinition) definition //
 				: new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
 
-		return DELEGATE.generateBeanName(beanDefinition);
+		return delegate.generateBeanName(beanDefinition);
 	}
 
 	/**

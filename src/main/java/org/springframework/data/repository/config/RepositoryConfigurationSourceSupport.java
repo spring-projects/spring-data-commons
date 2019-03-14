@@ -22,6 +22,7 @@ import java.util.Collections;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
@@ -53,14 +54,14 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	 * @param registry must not be {@literal null}.
 	 */
 	public RepositoryConfigurationSourceSupport(Environment environment, ClassLoader classLoader,
-			BeanDefinitionRegistry registry) {
+			BeanDefinitionRegistry registry, BeanNameGenerator generator) {
 
 		Assert.notNull(environment, "Environment must not be null!");
 		Assert.notNull(classLoader, "ClassLoader must not be null!");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
 		this.environment = environment;
-		this.beanNameGenerator = new RepositoryBeanNameGenerator(classLoader);
+		this.beanNameGenerator = new RepositoryBeanNameGenerator(classLoader, generator);
 		this.registry = registry;
 	}
 

@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -60,9 +61,11 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry)
+	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry, org.springframework.beans.factory.support.BeanNameGenerator)
 	 */
-	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
+	@Override
+	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry,
+			BeanNameGenerator generator) {
 
 		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null!");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
@@ -74,7 +77,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 		}
 
 		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(
-				annotationMetadata, getAnnotation(), resourceLoader, environment, registry);
+				annotationMetadata, getAnnotation(), resourceLoader, environment, registry, generator);
 
 		RepositoryConfigurationExtension extension = getExtension();
 		RepositoryConfigurationUtils.exposeRegistration(extension, registry, configurationSource);

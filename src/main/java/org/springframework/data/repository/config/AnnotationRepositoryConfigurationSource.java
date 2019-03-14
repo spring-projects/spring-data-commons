@@ -29,6 +29,9 @@ import javax.annotation.Nonnull;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
+import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
@@ -42,6 +45,7 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -82,11 +86,31 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @param resourceLoader must not be {@literal null}.
 	 * @param environment must not be {@literal null}.
 	 * @param registry must not be {@literal null}.
+	 * @deprecated since 2.2. Prefer to use overload taking a {@link BeanNameGenerator} additionally.
 	 */
+	@Deprecated
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
 			ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry) {
+		this(metadata, annotation, resourceLoader, environment, registry, null);
+	}
 
-		super(environment, ConfigurationUtils.getRequiredClassLoader(resourceLoader), registry);
+	/**
+	 * Creates a new {@link AnnotationRepositoryConfigurationSource} from the given {@link AnnotationMetadata} and
+	 * annotation.
+	 *
+	 * @param metadata must not be {@literal null}.
+	 * @param annotation must not be {@literal null}.
+	 * @param resourceLoader must not be {@literal null}.
+	 * @param environment must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
+	 * @param generator can be {@literal null}.
+	 */
+	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
+			ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry,
+			@Nullable BeanNameGenerator generator) {
+
+		super(environment, ConfigurationUtils.getRequiredClassLoader(resourceLoader), registry,
+				defaultBeanNameGenerator(generator));
 
 		Assert.notNull(metadata, "Metadata must not be null!");
 		Assert.notNull(annotation, "Annotation must not be null!");
@@ -396,5 +420,21 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		} catch (IllegalArgumentException o_O) {
 			return new String[0];
 		}
+	}
+
+	/**
+	 * Returns the {@link BeanNameGenerator} to use falling back to an {@link AnnotationBeanNameGenerator} if either the
+	 * given generator is {@literal null} or it's the one locally declared in {@link ConfigurationClassPostProcessor}'s
+	 * {@code importBeanNameGenerator}. This is to make sure we only use the given {@link BeanNameGenerator} if it was
+	 * customized.
+	 *
+	 * @param generator can be {@literal null}.
+	 * @return
+	 */
+	private static BeanNameGenerator defaultBeanNameGenerator(@Nullable BeanNameGenerator generator) {
+
+		return generator == null || ConfigurationClassPostProcessor.IMPORT_BEAN_NAME_GENERATOR.equals(generator) //
+				? new AnnotationBeanNameGenerator() //
+				: generator;
 	}
 }

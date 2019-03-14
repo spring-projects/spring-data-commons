@@ -15,8 +15,12 @@
  */
 package org.springframework.data.repository.config;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 
 /**
@@ -29,9 +33,10 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
  * @since 2.0
  * @soundtrack Nils Wülker - Never Left At All (feat. Rob Summerfield)
  */
-public class SpringDataAnnotationBeanNameGenerator {
+@RequiredArgsConstructor
+class SpringDataAnnotationBeanNameGenerator {
 
-	private final AnnotationBeanNameGenerator delegate = new AnnotationBeanNameGenerator();
+	private final @NonNull BeanNameGenerator delegate;
 
 	/**
 	 * Generates a bean name for the given {@link BeanDefinition}.
