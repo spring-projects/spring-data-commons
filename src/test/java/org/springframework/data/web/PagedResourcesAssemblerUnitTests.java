@@ -94,7 +94,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void usesBaseUriIfConfigured() {
 
-		UriComponents baseUri = UriComponentsBuilder.fromUriString("http://foo:9090").build();
+		UriComponents baseUri = UriComponentsBuilder.fromUriString("https://foo:9090").build();
 
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, baseUri);
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
@@ -107,7 +107,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void usesCustomLinkProvided() {
 
-		Link link = new Link("http://foo:9090", "rel");
+		Link link = new Link("https://foo:9090", "rel");
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1), link);
 
