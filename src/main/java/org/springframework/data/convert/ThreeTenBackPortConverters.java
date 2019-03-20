@@ -46,7 +46,7 @@ import org.threeten.bp.ZoneOffset;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author Mark Paluch
- * @see <a href="http://www.threeten.org/threetenbp">http://www.threeten.org/threetenbp</a>
+ * @see <a href="https://www.threeten.org/threetenbp">https://www.threeten.org/threetenbp</a>
  * @since 1.10
  */
 public abstract class ThreeTenBackPortConverters {

@@ -26,7 +26,7 @@ import com.querydsl.core.types.Predicate;
 /**
  * Interface to issue queries using Querydsl {@link Predicate} instances. <br />
  * Intended for usage along with the {@link org.springframework.data.repository.reactive.ReactiveCrudRepository}
- * interface to wire in <a href="http://http://www.querydsl.com">Querydsl</a>support.
+ * interface to wire in <a href="https://http://www.querydsl.com">Querydsl</a>support.
  *
  * <pre>
  *     <code>

@@ -5,7 +5,7 @@ The Spring Data Commons project applies core Spring concepts to the development 
 [[project]]
 == Project Metadata
 
-* Version control: http://github.com/spring-projects/spring-data-commons
+* Version control: https://github.com/spring-projects/spring-data-commons
 * Bugtracker: https://jira.spring.io/browse/DATACMNS
 * Release repository: https://repo.spring.io/libs-release
 * Milestone repository: https://repo.spring.io/libs-milestone

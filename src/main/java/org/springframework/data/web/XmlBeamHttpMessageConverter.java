@@ -41,7 +41,7 @@ import org.xmlbeam.config.DefaultXMLFactoriesConfig;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
- * @see <a href="http://www.xmlbeam.org">http://www.xmlbeam.org</a>
+ * @see <a href="https://www.xmlbeam.org">https://www.xmlbeam.org</a>
  * @soundtrack Dr. Kobayashi Maru & The Mothership Connection - Anthem (EPisode One)
  */
 public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Object> {
@@ -67,8 +67,8 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 
 				DocumentBuilderFactory factory = super.createDocumentBuilderFactory();
 
-				factory.setAttribute("http://apache.org/xml/features/disallow-doctype-decl", true);
-				factory.setAttribute("http://xml.org/sax/features/external-general-entities", false);
+				factory.setAttribute("https://apache.org/xml/features/disallow-doctype-decl", true);
+				factory.setAttribute("http://www.xml.org/sax/features/external-general-entities", false);
 
 				return factory;
 			}
