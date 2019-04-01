@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.6.RELEASE (2019-04-01)
+---------------------------------------------
+* DATACMNS-1491 - Slice JavaDoc states Pageable constructor arg can be null, but it can't.
+* DATACMNS-1490 - Exclude Lombok generated code from code coverage calculation.
+* DATACMNS-1483 - Migrate Kotlin tests to Mockk.
+* DATACMNS-1482 - Conversion don't seem to properly handle conversion of Lists.
+* DATACMNS-1480 - Release 2.1.6 (Lovelace SR6).
+* DATACMNS-1451 - ClassGeneratingPropertyAccessorFactory considers only first 16 immutable Kotlin properties.
+
+
 Changes in version 2.0.14.RELEASE (2019-04-01)
 ----------------------------------------------
 * DATACMNS-1491 - Slice JavaDoc states Pageable constructor arg can be null, but it can't.
