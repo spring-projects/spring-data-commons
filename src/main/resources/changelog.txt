@@ -1,6 +1,12 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.19.RELEASE (2019-04-01)
+-----------------------------------------------
+* DATACMNS-1490 - Exclude Lombok generated code from code coverage calculation.
+* DATACMNS-1463 - Release 1.13.19 (Ingalls SR19).
+
+
 Changes in version 2.2.0.M2 (2019-03-07)
 ----------------------------------------
 * DATACMNS-1492 - Upgrade to Spring HATEOAS 1.0 M1.
