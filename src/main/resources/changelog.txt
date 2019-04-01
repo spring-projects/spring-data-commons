@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.20.RELEASE (2019-04-01)
+-----------------------------------------------
+* DATACMNS-1504 - Release 1.13.20 (Ingalls SR20).
+
+
 Changes in version 1.13.19.RELEASE (2019-04-01)
 -----------------------------------------------
 * DATACMNS-1490 - Exclude Lombok generated code from code coverage calculation.
