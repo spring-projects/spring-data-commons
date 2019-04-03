@@ -24,6 +24,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -59,25 +60,43 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 		this.environment = environment;
 	}
 
+	/**
+	 * Forwarding to {@link #registerBeanDefinitions(AnnotationMetadata, BeanDefinitionRegistry, BeanNameGenerator)} for
+	 * backwards compatibility reasons so that tests in downstream modules do not accidentally invoke the super type's
+	 * default implementation.
+	 *
+	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata,
+	 *      org.springframework.beans.factory.support.BeanDefinitionRegistry)
+	 * @deprecated since 2.2, call
+	 *             {@link #registerBeanDefinitions(AnnotationMetadata, BeanDefinitionRegistry, BeanNameGenerator)}
+	 *             instead.
+	 * @see ConfigurationClassPostProcessor#IMPORT_BEAN_NAME_GENERATOR
+	 */
+	@Override
+	@Deprecated
+	public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+		registerBeanDefinitions(metadata, registry, ConfigurationClassPostProcessor.IMPORT_BEAN_NAME_GENERATOR);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry, org.springframework.beans.factory.support.BeanNameGenerator)
 	 */
 	@Override
-	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry,
+	public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry,
 			BeanNameGenerator generator) {
 
-		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null!");
+		Assert.notNull(metadata, "AnnotationMetadata must not be null!");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
 		// Guard against calls for sub-classes
-		if (annotationMetadata.getAnnotationAttributes(getAnnotation().getName()) == null) {
+		if (metadata.getAnnotationAttributes(getAnnotation().getName()) == null) {
 			return;
 		}
 
-		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(
-				annotationMetadata, getAnnotation(), resourceLoader, environment, registry, generator);
+		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
+				getAnnotation(), resourceLoader, environment, registry, generator);
 
 		RepositoryConfigurationExtension extension = getExtension();
 		RepositoryConfigurationUtils.exposeRegistration(extension, registry, configurationSource);

@@ -66,7 +66,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 
-		registrar.registerBeanDefinitions(metadata, registry, null);
+		registrar.registerBeanDefinitions(metadata, registry);
 
 		assertBeanDefinitionRegisteredFor("myRepository");
 		assertBeanDefinitionRegisteredFor("composedRepository");
@@ -80,7 +80,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(FragmentExclusionConfiguration.class, true);
 
-		registrar.registerBeanDefinitions(metadata, registry, null);
+		registrar.registerBeanDefinitions(metadata, registry);
 
 		assertBeanDefinitionRegisteredFor("repositoryWithFragmentExclusion");
 		assertNoBeanDefinitionRegisteredFor("excludedRepositoryImpl");
@@ -91,7 +91,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(LimitsImplementationBasePackages.class, true);
 
-		registrar.registerBeanDefinitions(metadata, registry, null);
+		registrar.registerBeanDefinitions(metadata, registry);
 
 		assertBeanDefinitionRegisteredFor("personRepository");
 		assertNoBeanDefinitionRegisteredFor("fragmentImpl");
@@ -105,7 +105,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		DummyRegistrar registrar = new DummyRegistrar();
 		registrar.setEnvironment(environment);
-		registrar.registerBeanDefinitions(metadata, registry, null);
+		registrar.registerBeanDefinitions(metadata, registry);
 
 		assertBeanDefinitionRegisteredFor("myRepository", "profileRepository");
 	}

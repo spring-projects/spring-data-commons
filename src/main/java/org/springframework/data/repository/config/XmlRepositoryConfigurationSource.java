@@ -19,7 +19,10 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.beans.factory.support.DefaultBeanNameGenerator;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.ConfigurationUtils;
@@ -69,7 +72,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	public XmlRepositoryConfigurationSource(Element element, ParserContext context, Environment environment) {
 
 		super(environment, ConfigurationUtils.getRequiredClassLoader(context.getReaderContext()), context.getRegistry(),
-				context.getReaderContext().getReader().getBeanNameGenerator());
+				defaultBeanNameGenerator(context.getReaderContext().getReader().getBeanNameGenerator()));
 
 		Assert.notNull(element, "Element must not be null!");
 
@@ -239,5 +242,21 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return StringUtils.hasText(attribute) //
 				? BootstrapMode.valueOf(attribute.toUpperCase(Locale.US)) //
 				: BootstrapMode.DEFAULT;
+	}
+
+	/**
+	 * Returns the {@link BeanNameGenerator} to use falling back to an {@link AnnotationBeanNameGenerator} if either the
+	 * given generator is {@literal null} or it's {@link DefaultBeanNameGenerator} in particular. This is to make sure we
+	 * only use the given {@link BeanNameGenerator} if it was customized.
+	 *
+	 * @param generator can be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	private static BeanNameGenerator defaultBeanNameGenerator(@Nullable BeanNameGenerator generator) {
+
+		return generator == null || DefaultBeanNameGenerator.class.equals(generator.getClass()) //
+				? new AnnotationBeanNameGenerator() //
+				: generator;
 	}
 }
