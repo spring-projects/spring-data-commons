@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to bind let method parameters be bound to a query via a named parameter.
+ * Annotation to bind method parameters to a query via a named parameter.
  *
  * @author Oliver Gierke
  */
