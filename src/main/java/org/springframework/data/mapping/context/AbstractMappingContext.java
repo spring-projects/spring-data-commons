@@ -30,6 +30,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -62,6 +64,7 @@ import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.FieldFilter;
@@ -86,6 +89,8 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, InitializingBean {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(MappingContext.class);
 
 	private final Optional<E> NONE = Optional.empty();
 	private final Map<TypeInformation<?>, Optional<E>> persistentEntities = new HashMap<>();
@@ -550,6 +555,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
+			if (isKotlinOverride(property, input)) {
+				return;
+			}
+
 			entity.addPersistentProperty(property);
 
 			if (property.isAssociation()) {
@@ -561,6 +570,38 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			}
 
 			property.getPersistentEntityTypes().forEach(AbstractMappingContext.this::addPersistentEntity);
+		}
+
+		private boolean isKotlinOverride(P property, Property input) {
+
+			if (!KotlinDetector.isKotlinPresent() || !input.getField().isPresent()) {
+				return false;
+			}
+
+			Field field = input.getField().get();
+			if (!KotlinDetector.isKotlinType(field.getDeclaringClass())) {
+				return false;
+			}
+
+			for (P existingProperty : entity) {
+
+				if (!property.getName().equals(existingProperty.getName())) {
+					continue;
+				}
+
+				if (field.getDeclaringClass() != entity.getType()
+						&& ClassUtils.isAssignable(field.getDeclaringClass(), entity.getType())) {
+
+					if (LOGGER.isTraceEnabled()) {
+						LOGGER.trace(String.format("Skipping '%s.%s' property declaration shadowed by '%s %s' in '%s'. ",
+								field.getDeclaringClass().getName(), property.getName(), property.getType().getSimpleName(),
+								property.getName(), entity.getType().getSimpleName()));
+					}
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 
