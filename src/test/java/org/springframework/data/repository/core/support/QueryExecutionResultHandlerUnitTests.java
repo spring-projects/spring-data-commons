@@ -39,10 +39,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.SoftAssertions;
+import org.junit.Before;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
+
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.Streamable;
 
 /**
@@ -51,11 +55,20 @@ import org.springframework.data.util.Streamable;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Jens Schauder
+ * @author wreulicke
  */
 public class QueryExecutionResultHandlerUnitTests {
 
-	QueryExecutionResultHandler handler = new QueryExecutionResultHandler(RepositoryFactorySupport.CONVERSION_SERVICE);
+	QueryExecutionResultHandler handler;
 
+	@Before
+	public void setUp() {
+		DefaultConversionService conversionService = new DefaultConversionService();
+		QueryExecutionConverters.registerConvertersIn(conversionService);
+		conversionService.removeConvertible(Object.class, Object.class);
+		handler = new QueryExecutionResultHandler(conversionService);
+	}
+	
 	@Test // DATACMNS-610
 	public void convertsListsToSet() throws Exception {
 

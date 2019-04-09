@@ -44,6 +44,8 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
@@ -81,6 +83,7 @@ import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author wreulicke
  */
 @Slf4j
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
@@ -125,6 +128,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache;
 	private final List<RepositoryProxyPostProcessor> postProcessors;
+	private final GenericConversionService conversionService;
 
 	private Optional<Class<?>> repositoryBaseClass;
 	private @Nullable QueryLookupStrategy.Key queryLookupStrategyKey;
@@ -148,6 +152,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.evaluationContextProvider = QueryMethodEvaluationContextProvider.DEFAULT;
 		this.queryPostProcessors = new ArrayList<>();
 		this.queryPostProcessors.add(collectingListener);
+		this.conversionService = new DefaultConversionService();
+		QueryExecutionConverters.registerConvertersIn(conversionService);
+		conversionService.removeConvertible(Object.class, Object.class);
 	}
 
 	/**
@@ -191,7 +198,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * queries.
 	 *
 	 * @param evaluationContextProvider can be {@literal null}, defaults to
-	 *          {@link DefaultQueryMethodEvaluationContextProvider#INSTANCE}.
+	 *          {@link QueryMethodEvaluationContextProvider.DEFAULT}.
 	 */
 	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		this.evaluationContextProvider = evaluationContextProvider == null ? QueryMethodEvaluationContextProvider.DEFAULT
@@ -232,6 +239,26 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		Assert.notNull(processor, "RepositoryProxyPostProcessor must not be null!");
 		this.postProcessors.add(processor);
+	}
+
+	/**
+	 * Adds a {@link Converter} to the conversionService.
+	 *
+	 * @param converter
+	 */
+	public <T, R> void addConverter(Converter<T, R> converter) {
+		Assert.notNull(converter, "converter must not be null!");
+		this.conversionService.addConverter(converter);
+	}
+
+	/**
+	 * Adds a {@link Converter} to the conversionService.
+	 *
+	 * @param converter
+	 */
+	public void addConverter(GenericConverter converter) {
+		Assert.notNull(converter, "converter must not be null!");
+		this.conversionService.addConverter(converter);
 	}
 
 	/**
@@ -329,7 +356,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		}
 
 		ProjectionFactory projectionFactory = getProjectionFactory(classLoader, beanFactory);
-		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory));
+		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory, conversionService));
 
 		composition = composition.append(RepositoryFragment.implemented(target));
 		result.addAdvice(new ImplementationMethodExecutionInterceptor(composition));
@@ -530,6 +557,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * a custom repository implementation instance set if this returns true.
 	 *
 	 * @author Oliver Gierke
+	 * @author wreulicke
 	 */
 	public class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
@@ -541,9 +569,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 * execution of repository interface methods.
 		 */
 		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation,
-				ProjectionFactory projectionFactory) {
-
-			this.resultHandler = new QueryExecutionResultHandler(CONVERSION_SERVICE);
+				ProjectionFactory projectionFactory, GenericConversionService conversionService) {
+			this.resultHandler = new QueryExecutionResultHandler(conversionService);
 
 			Optional<QueryLookupStrategy> lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 					RepositoryFactorySupport.this.evaluationContextProvider);

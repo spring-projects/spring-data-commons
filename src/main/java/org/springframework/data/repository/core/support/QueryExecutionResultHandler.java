@@ -39,6 +39,7 @@ import org.springframework.lang.Nullable;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Jens Schauder
+ * @author wreulicke
  */
 class QueryExecutionResultHandler {
 

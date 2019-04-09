@@ -20,14 +20,17 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.Streamable;
 
 /**
@@ -36,6 +39,7 @@ import org.springframework.data.util.Streamable;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Jens Schauder
+ * @author wreulicke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class QueryExecutorMethodInterceptorUnitTests {
@@ -43,6 +47,15 @@ public class QueryExecutorMethodInterceptorUnitTests {
 	@Mock RepositoryFactorySupport factory;
 	@Mock RepositoryInformation information;
 	@Mock QueryLookupStrategy strategy;
+	
+	private DefaultConversionService conversionService;
+	
+	@Before
+	public void setUp() {
+		conversionService = new DefaultConversionService();
+		QueryExecutionConverters.registerConvertersIn(conversionService);
+		conversionService.removeConvertible(Object.class, Object.class);
+	}
 
 	@Test
 	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() {
@@ -51,7 +64,7 @@ public class QueryExecutorMethodInterceptorUnitTests {
 		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.empty());
 
 		assertThatIllegalStateException().isThrownBy(
-				() -> factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory()));
+				() -> factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(), conversionService));
 	}
 
 	@Test
@@ -60,7 +73,7 @@ public class QueryExecutorMethodInterceptorUnitTests {
 		when(information.getQueryMethods()).thenReturn(Streamable.empty());
 		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.of(strategy));
 
-		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory());
+		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(), conversionService);
 
 		verify(strategy, times(0)).resolveQuery(any(), any(), any(), any());
 	}
