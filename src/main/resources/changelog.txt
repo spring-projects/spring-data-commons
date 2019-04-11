@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.0.M3 (2019-04-11)
+----------------------------------------
+* DATACMNS-1511 - Upgrade to XMLBeam 1.4.16.
+* DATACMNS-1499 - Add convenience factory methods to Range.
+* DATACMNS-1498 - Improve attribute lookups from RepositoryConfigurationSources.
+* DATACMNS-1497 - Custom BeanNameGenerators are not considered for repository bean name generation.
+* DATACMNS-1496 - Remove deprecations introduced in Lovelace.
+* DATACMNS-1493 - Release 2.2 M3 (Moore).
+
+
 Changes in version 2.1.6.RELEASE (2019-04-01)
 ---------------------------------------------
 * DATACMNS-1491 - Slice JavaDoc states Pageable constructor arg can be null, but it can't.
