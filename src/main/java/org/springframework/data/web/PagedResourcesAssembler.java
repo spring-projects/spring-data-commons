@@ -144,7 +144,7 @@ public class PagedResourcesAssembler<T> implements ResourceAssembler<Page<T>, Pa
 	 */
 	public PagedResources<?> toEmptyResource(Page<?> page, Class<?> type, Link link) {
 
-		Assert.notNull(page, "Page must must not be null!");
+		Assert.notNull(page, "Page must not be null!");
 		Assert.isTrue(!page.hasContent(), "Page must not have any content!");
 		Assert.notNull(type, "Type must not be null!");
 
