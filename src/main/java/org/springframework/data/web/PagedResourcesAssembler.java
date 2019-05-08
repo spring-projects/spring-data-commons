@@ -257,7 +257,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	 * @return
 	 */
 	private UriTemplate getUriTemplate(Optional<Link> baseLink) {
-		return new UriTemplate(baseLink.map(Link::getHref).orElseGet(this::baseUriOrCurrentRequest));
+		return UriTemplate.of(baseLink.map(Link::getHref).orElseGet(this::baseUriOrCurrentRequest));
 	}
 
 	/**
@@ -274,7 +274,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 		UriComponentsBuilder builder = fromUri(base.expand());
 		pageableResolver.enhance(builder, getMethodParameter(), pageable);
 
-		return new Link(new UriTemplate(builder.build().toString()), relation);
+		return new Link(UriTemplate.of(builder.build().toString()), relation);
 	}
 
 	/**

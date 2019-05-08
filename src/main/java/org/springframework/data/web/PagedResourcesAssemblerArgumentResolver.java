@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -106,8 +107,14 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	@Nullable
 	private UriComponents resolveBaseUri(MethodParameter parameter) {
 
+		Method method = parameter.getMethod();
+
+		if (method == null) {
+			throw new IllegalArgumentException(String.format("Could not obtain method from parameter %s!", parameter));
+		}
+
 		try {
-			Link linkToMethod = linkBuilderFactory.linkTo(parameter.getDeclaringClass(), parameter.getMethod()).withSelfRel();
+			Link linkToMethod = linkBuilderFactory.linkTo(parameter.getDeclaringClass(), method).withSelfRel();
 			return UriComponentsBuilder.fromUriString(linkToMethod.getHref()).build();
 		} catch (IllegalArgumentException o_O) {
 			return null;
@@ -124,7 +131,13 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	@Nullable
 	private static MethodParameter findMatchingPageableParameter(MethodParameter parameter) {
 
-		MethodParameters parameters = new MethodParameters(parameter.getMethod());
+		Method method = parameter.getMethod();
+
+		if (method == null) {
+			throw new IllegalArgumentException(String.format("Could not obtain method from parameter %s!", parameter));
+		}
+
+		MethodParameters parameters = MethodParameters.of(method);
 		List<MethodParameter> pageableParameters = parameters.getParametersOfType(Pageable.class);
 		Qualifier assemblerQualifier = parameter.getParameterAnnotation(Qualifier.class);
 
