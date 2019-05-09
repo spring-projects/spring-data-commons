@@ -271,6 +271,14 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 				.withMessageContaining("(java.lang.Integer)");
 	}
 
+	@Test // DATACMNS-1518
+	public void invokesMethodWithVarArgs() {
+
+		provider = createContextProviderWithOverloads();
+
+		assertThat(evaluateExpression("methodWithVarArgs('one', 'two')")).isEqualTo("varargs");
+	}
+
 	private static ExtensionAwareQueryMethodEvaluationContextProvider createContextProviderWithOverloads() {
 
 		return new ExtensionAwareQueryMethodEvaluationContextProvider(Collections.singletonList( //
@@ -428,6 +436,10 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 
 		public String ambiguousOverloaded(Serializable o) {
 			return "serializable";
+		}
+
+		public String methodWithVarArgs(String... args) {
+			return "varargs";
 		}
 	}
 }

@@ -15,15 +15,17 @@
  */
 package org.springframework.data.spel.spi;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.util.ParameterTypes;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.TypeUtils;
 
 /**
  * Value object to represent a function. Can either be backed by a static {@link Method} invocation (see
@@ -75,7 +77,37 @@ public class Function {
 	 * @throws Exception
 	 */
 	public Object invoke(Object[] arguments) throws Exception {
-		return method.invoke(target, arguments);
+
+		if (method.getParameterCount() == arguments.length) {
+			return method.invoke(target, arguments);
+		}
+
+		Class<?>[] types = method.getParameterTypes();
+		Class<?> tailType = types[types.length - 1];
+
+		if (tailType.isArray()) {
+
+			List<Object> argumentsToUse = new ArrayList<>(types.length);
+
+			// Add all arguments up until the last one
+			for (int i = 0; i < types.length - 1; i++) {
+				argumentsToUse.add(arguments[i]);
+			}
+
+			// Gather all other arguments into an array of the tail type
+			Object[] varargs = (Object[]) Array.newInstance(tailType.getComponentType(), arguments.length - types.length + 1);
+			int count = 0;
+
+			for (int i = types.length - 1; i < arguments.length; i++) {
+				varargs[count++] = arguments[i];
+			}
+
+			argumentsToUse.add(varargs);
+
+			return method.invoke(target, argumentsToUse.size() == 1 ? argumentsToUse.get(0) : argumentsToUse.toArray());
+		}
+
+		throw new IllegalStateException(String.format("Could not invoke method %s for arguments %s!", method, arguments));
 	}
 
 	/**
@@ -103,20 +135,7 @@ public class Function {
 	 * @return
 	 */
 	public boolean supports(List<TypeDescriptor> argumentTypes) {
-
-		if (method.getParameterCount() != argumentTypes.size()) {
-			return false;
-		}
-
-		Class<?>[] parameterTypes = method.getParameterTypes();
-
-		for (int i = 0; i < parameterTypes.length; i++) {
-			if (!TypeUtils.isAssignable(parameterTypes[i], argumentTypes.get(i).getType())) {
-				return false;
-			}
-		}
-
-		return true;
+		return ParameterTypes.of(argumentTypes).areValidFor(method);
 	}
 
 	/**
@@ -135,20 +154,7 @@ public class Function {
 	 * @return {@code true} if the types are equal, {@code false} otherwise.
 	 */
 	public boolean supportsExact(List<TypeDescriptor> argumentTypes) {
-
-		if (method.getParameterCount() != argumentTypes.size()) {
-			return false;
-		}
-
-		Class<?>[] parameterTypes = method.getParameterTypes();
-
-		for (int i = 0; i < parameterTypes.length; i++) {
-			if (parameterTypes[i] != argumentTypes.get(i).getType()) {
-				return false;
-			}
-		}
-
-		return true;
+		return ParameterTypes.of(argumentTypes).exactlyMatchParametersOf(method);
 	}
 
 	/**

@@ -15,11 +15,6 @@
  */
 package org.springframework.data.spel;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Value;
-
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,22 +41,21 @@ class Functions {
 	private static final String MESSAGE_TEMPLATE = "There are multiple matching methods of name '%s' for parameter types (%s), but no "
 			+ "exact match. Make sure to provide only one matching overload or one with exactly those types.";
 
-	private final MultiValueMap<NameAndArgumentCount, Function> functions = new LinkedMultiValueMap<>();
+	private final MultiValueMap<String, Function> functions = new LinkedMultiValueMap<>();
 
 	void addAll(Map<String, Function> newFunctions) {
 
 		newFunctions.forEach((n, f) -> {
 
-			NameAndArgumentCount k = NameAndArgumentCount.of(n, f.getParameterCount());
-			List<Function> currentElements = get(k);
+			List<Function> currentElements = get(n);
 
 			if (!contains(currentElements, f)) {
-				functions.add(k, f);
+				functions.add(n, f);
 			}
 		});
 	}
 
-	void addAll(MultiValueMap<NameAndArgumentCount, Function> newFunctions) {
+	void addAll(MultiValueMap<String, Function> newFunctions) {
 
 		newFunctions.forEach((k, list) -> {
 
@@ -73,8 +67,8 @@ class Functions {
 		});
 	}
 
-	List<Function> get(NameAndArgumentCount key) {
-		return functions.getOrDefault(key, Collections.emptyList());
+	List<Function> get(String name) {
+		return functions.getOrDefault(name, Collections.emptyList());
 	}
 
 	/**
@@ -89,9 +83,12 @@ class Functions {
 	 */
 	Optional<Function> get(String name, List<TypeDescriptor> argumentTypes) {
 
-		Stream<Function> candidates = get(NameAndArgumentCount.of(name, argumentTypes.size())).stream() //
+		Stream<Function> candidates = get(name).stream() //
 				.filter(f -> f.supports(argumentTypes));
-		return bestMatch(candidates.collect(Collectors.toList()), argumentTypes);
+
+		List<Function> collect = candidates.collect(Collectors.toList());
+
+		return bestMatch(collect, argumentTypes);
 	}
 
 	private static boolean contains(List<Function> elements, Function f) {
@@ -124,17 +121,5 @@ class Functions {
 				.collect(Collectors.joining(","));
 
 		return String.format(MESSAGE_TEMPLATE, candidates.get(0).getName(), argumentTypeString);
-	}
-
-	@Value
-	@AllArgsConstructor(access = AccessLevel.PRIVATE, staticName = "of")
-	static class NameAndArgumentCount {
-
-		String name;
-		int count;
-
-		static NameAndArgumentCount of(Method m) {
-			return NameAndArgumentCount.of(m.getName(), m.getParameterCount());
-		}
 	}
 }
