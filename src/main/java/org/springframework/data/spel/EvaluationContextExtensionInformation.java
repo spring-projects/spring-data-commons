@@ -34,7 +34,6 @@ import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.spel.EvaluationContextExtensionInformation.ExtensionTypeInformation.PublicMethodAndFieldFilter;
-import org.springframework.data.spel.Functions.NameAndArgumentCount;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.data.util.Streamable;
@@ -125,7 +124,7 @@ class EvaluationContextExtensionInformation {
 		 *
 		 * @return the functions will never be {@literal null}.
 		 */
-		private final MultiValueMap<NameAndArgumentCount, Function> functions;
+		private final MultiValueMap<String, Function> functions;
 
 		/**
 		 * Creates a new {@link ExtensionTypeInformation} fir the given type.
@@ -140,12 +139,12 @@ class EvaluationContextExtensionInformation {
 			this.properties = discoverDeclaredProperties(type);
 		}
 
-		private static MultiValueMap<NameAndArgumentCount, Function> discoverDeclaredFunctions(Class<?> type) {
+		private static MultiValueMap<String, Function> discoverDeclaredFunctions(Class<?> type) {
 
-			MultiValueMap<NameAndArgumentCount, Function> map = CollectionUtils.toMultiValueMap(new HashMap<>());
+			MultiValueMap<String, Function> map = CollectionUtils.toMultiValueMap(new HashMap<>());
 
 			ReflectionUtils.doWithMethods(type, //
-					method -> map.add(NameAndArgumentCount.of(method), new Function(method, null)), //
+					method -> map.add(method.getName(), new Function(method, null)), //
 					PublicMethodAndFieldFilter.STATIC);
 
 			return CollectionUtils.unmodifiableMultiValueMap(map);
@@ -243,12 +242,12 @@ class EvaluationContextExtensionInformation {
 		 * @param target can be {@literal null}.
 		 * @return the methods
 		 */
-		public MultiValueMap<NameAndArgumentCount, Function> getFunctions(Optional<Object> target) {
+		public MultiValueMap<String, Function> getFunctions(Optional<Object> target) {
 			return target.map(this::getFunctions).orElseGet(() -> new LinkedMultiValueMap<>());
 		}
 
-		private MultiValueMap<NameAndArgumentCount, Function> getFunctions(Object target) {
-			return methods.stream().collect(toMultiMap(NameAndArgumentCount::of, m -> new Function(m, target)));
+		private MultiValueMap<String, Function> getFunctions(Object target) {
+			return methods.stream().collect(toMultiMap(Method::getName, m -> new Function(m, target)));
 		}
 
 		/**
