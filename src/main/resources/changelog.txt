@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.7.RELEASE (2019-05-10)
+---------------------------------------------
+* DATACMNS-1528 - Reactivate Travis build profile execution for Spring 5.2.
+* DATACMNS-1520 - Fix typo in Javadoc of PagedResourcesAssembler.
+* DATACMNS-1518 - Unable to resolve methods with variable number of arguments in SpEL.
+* DATACMNS-1511 - Upgrade to XMLBeam 1.4.16.
+* DATACMNS-1510 - Javadoc phrasing in Param.
+* DATACMNS-1507 - Release 2.1.7 (Lovelace SR7).
+
+
 Changes in version 2.2.0.M3 (2019-04-11)
 ----------------------------------------
 * DATACMNS-1511 - Upgrade to XMLBeam 1.4.16.
