@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.21.RELEASE (2019-05-10)
+-----------------------------------------------
+* DATACMNS-1527 - Enable builds against Spring 5.1 and 5.2 for Travis.
+* DATACMNS-1520 - Fix typo in Javadoc of PagedResourcesAssembler.
+* DATACMNS-1510 - Javadoc phrasing in Param.
+* DATACMNS-1505 - Release 1.13.21 (Ingalls SR21).
+
+
 Changes in version 2.1.7.RELEASE (2019-05-10)
 ---------------------------------------------
 * DATACMNS-1528 - Reactivate Travis build profile execution for Spring 5.2.
