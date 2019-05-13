@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.22.RELEASE (2019-05-13)
+-----------------------------------------------
+* DATACMNS-1531 - Release 1.13.22 (Ingalls SR22).
+
+
 Changes in version 2.1.8.RELEASE (2019-05-13)
 ---------------------------------------------
 * DATACMNS-1530 - Release 2.1.8 (Lovelace SR8).
