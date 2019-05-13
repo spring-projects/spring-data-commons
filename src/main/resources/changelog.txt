@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.8.RELEASE (2019-05-13)
+---------------------------------------------
+* DATACMNS-1530 - Release 2.1.8 (Lovelace SR8).
+
+
 Changes in version 2.2.0.M4 (2019-05-13)
 ----------------------------------------
 * DATACMNS-1529 - Reactivate Travis builds for Spring Framework 5.2 snapshots.
