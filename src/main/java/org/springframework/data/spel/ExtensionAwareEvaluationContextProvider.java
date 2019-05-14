@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -37,6 +36,7 @@ import org.springframework.data.spel.EvaluationContextExtensionInformation.Exten
 import org.springframework.data.spel.EvaluationContextExtensionInformation.RootObjectInformation;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
@@ -66,7 +66,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new ConcurrentHashMap<>();
 
-	private final Supplier<? extends Collection<? extends EvaluationContextExtension>> extensions;
+	private final Lazy<? extends Collection<? extends EvaluationContextExtension>> extensions;
 	private ListableBeanFactory beanFactory;
 
 	ExtensionAwareEvaluationContextProvider() {
@@ -81,7 +81,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 */
 	public ExtensionAwareEvaluationContextProvider(ListableBeanFactory beanFactory) {
 
-		this(() -> getExtensionsFrom(beanFactory));
+		this(Lazy.of(() -> getExtensionsFrom(beanFactory)));
 		this.setBeanFactory(beanFactory);
 	}
 
@@ -91,7 +91,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @param extensions must not be {@literal null}.
 	 */
 	public ExtensionAwareEvaluationContextProvider(Collection<? extends EvaluationContextExtension> extensions) {
-		this(() -> extensions);
+		this(Lazy.of(extensions));
 	}
 
 	/**

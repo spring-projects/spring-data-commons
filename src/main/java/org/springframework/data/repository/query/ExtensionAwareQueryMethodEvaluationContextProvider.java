@@ -29,6 +29,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
@@ -52,11 +53,11 @@ import org.springframework.util.StringUtils;
  */
 public class ExtensionAwareQueryMethodEvaluationContextProvider implements QueryMethodEvaluationContextProvider {
 
-	private final Lazy<org.springframework.data.spel.ExtensionAwareEvaluationContextProvider> delegate;
+	private final ExtensionAwareEvaluationContextProvider delegate;
 
 	/**
 	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider}.
-	 * 
+	 *
 	 * @param beanFactory the {@link ListableBeanFactory} to lookup the {@link EvaluationContextExtension}s from, must not
 	 *          be {@literal null}.
 	 */
@@ -65,37 +66,31 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 
 		Assert.notNull(beanFactory, "ListableBeanFactory must not be null!");
 
-		this.delegate = Lazy.of(() -> {
-
-			org.springframework.data.spel.ExtensionAwareEvaluationContextProvider delegate = new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(
-					() -> getExtensionsFrom(beanFactory));
-			delegate.setBeanFactory(beanFactory);
-
-			return delegate;
-		});
+		this.delegate = new ExtensionAwareEvaluationContextProvider(Lazy.of(() -> getExtensionsFrom(beanFactory)));
+		this.delegate.setBeanFactory(beanFactory);
 	}
 
 	/**
 	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider} using the given
 	 * {@link EvaluationContextExtension}s.
-	 * 
+	 *
 	 * @param extensions must not be {@literal null}.
 	 */
 	public ExtensionAwareQueryMethodEvaluationContextProvider(List<? extends EvaluationContextExtension> extensions) {
 
 		Assert.notNull(extensions, "EvaluationContextExtensions must not be null!");
 
-		this.delegate = Lazy.of(new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(extensions));
+		this.delegate = new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(extensions);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[])
 	 */
 	@Override
 	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
 
-		StandardEvaluationContext evaluationContext = delegate.get().getEvaluationContext(parameterValues);
+		StandardEvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues);
 
 		evaluationContext.setVariables(collectVariables(parameters, parameterValues));
 
@@ -187,7 +182,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		/**
 		 * Registers a result mapping for the method with the given name. Invocation results for matching methods will be
 		 * piped through the mapping.
-		 * 
+		 *
 		 * @param methodName
 		 * @param mapping
 		 */
@@ -195,7 +190,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 			this.directMappings.put(methodName, mapping);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
