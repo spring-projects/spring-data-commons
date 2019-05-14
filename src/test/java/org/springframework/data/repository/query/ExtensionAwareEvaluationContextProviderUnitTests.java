@@ -16,6 +16,9 @@
 package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,10 +34,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.expression.EvaluationContext;
@@ -277,6 +283,33 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		provider = createContextProviderWithOverloads();
 
 		assertThat(evaluateExpression("methodWithVarArgs('one', 'two')")).isEqualTo("varargs");
+	}
+
+	@Test // DATACMNS-1534
+	public void contextProviderShouldLazilyLookUpExtensions() {
+
+		ListableBeanFactory beanFactory = Mockito.mock(ListableBeanFactory.class);
+
+		ExtensionAwareEvaluationContextProvider contextProvider = new ExtensionAwareEvaluationContextProvider(beanFactory);
+
+		verify(beanFactory, never()).getBeansOfType(eq(EvaluationContextExtension.class), anyBoolean(), anyBoolean());
+
+		contextProvider.getEvaluationContext(null);
+
+		verify(beanFactory).getBeansOfType(eq(EvaluationContextExtension.class), anyBoolean(), anyBoolean());
+	}
+
+	@Test // DATACMNS-1534
+	public void contextProviderShouldLookupExtensionsOnlyOnce() {
+
+		ListableBeanFactory beanFactory = Mockito.mock(ListableBeanFactory.class);
+
+		ExtensionAwareEvaluationContextProvider contextProvider = new ExtensionAwareEvaluationContextProvider(beanFactory);
+
+		contextProvider.getEvaluationContext(null);
+		contextProvider.getEvaluationContext(null);
+
+		verify(beanFactory).getBeansOfType(eq(EvaluationContextExtension.class), anyBoolean(), anyBoolean());
 	}
 
 	private static ExtensionAwareQueryMethodEvaluationContextProvider createContextProviderWithOverloads() {

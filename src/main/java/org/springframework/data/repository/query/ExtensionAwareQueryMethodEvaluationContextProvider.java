@@ -30,7 +30,6 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
-import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -52,7 +51,7 @@ import org.springframework.util.StringUtils;
  */
 public class ExtensionAwareQueryMethodEvaluationContextProvider implements QueryMethodEvaluationContextProvider {
 
-	private final Lazy<org.springframework.data.spel.ExtensionAwareEvaluationContextProvider> delegate;
+	private final ExtensionAwareEvaluationContextProvider delegate;
 
 	/**
 	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider}.
@@ -64,7 +63,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 
 		Assert.notNull(beanFactory, "ListableBeanFactory must not be null!");
 
-		this.delegate = Lazy.of(() -> new ExtensionAwareEvaluationContextProvider(() -> getExtensionsFrom(beanFactory)));
+		this.delegate = new ExtensionAwareEvaluationContextProvider(beanFactory);
 	}
 
 	/**
@@ -77,7 +76,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 
 		Assert.notNull(extensions, "EvaluationContextExtensions must not be null!");
 
-		this.delegate = Lazy.of(new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(extensions));
+		this.delegate = new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(extensions);
 	}
 
 	/*
@@ -87,7 +86,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	@Override
 	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
 
-		StandardEvaluationContext evaluationContext = delegate.get().getEvaluationContext(parameterValues);
+		StandardEvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues);
 
 		evaluationContext.setVariables(collectVariables(parameters, parameterValues));
 
