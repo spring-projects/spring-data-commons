@@ -44,8 +44,6 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.ResolvableType;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
@@ -141,8 +139,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private final QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
 	@SuppressWarnings("null")
-	public RepositoryFactorySupport() {
-
+	public RepositoryFactorySupport(GenericConversionService conversionService) {
 		this.repositoryInformationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
 		this.postProcessors = new ArrayList<>();
 
@@ -152,9 +149,24 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.evaluationContextProvider = QueryMethodEvaluationContextProvider.DEFAULT;
 		this.queryPostProcessors = new ArrayList<>();
 		this.queryPostProcessors.add(collectingListener);
-		this.conversionService = new DefaultConversionService();
+		this.conversionService = conversionService;
+	}
+	
+	@SuppressWarnings("null")
+	public RepositoryFactorySupport() {
+		this(defaultConversionService());
+	}
+	
+	/**
+	 * Creates default ConversionService.
+	 *
+	 * @return default conversion service
+	 */
+	private static GenericConversionService defaultConversionService() {
+		final DefaultConversionService conversionService = new DefaultConversionService();
 		QueryExecutionConverters.registerConvertersIn(conversionService);
 		conversionService.removeConvertible(Object.class, Object.class);
+		return conversionService;
 	}
 
 	/**
@@ -239,26 +251,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		Assert.notNull(processor, "RepositoryProxyPostProcessor must not be null!");
 		this.postProcessors.add(processor);
-	}
-
-	/**
-	 * Adds a {@link Converter} to the conversionService.
-	 *
-	 * @param converter
-	 */
-	public <T, R> void addConverter(Converter<T, R> converter) {
-		Assert.notNull(converter, "converter must not be null!");
-		this.conversionService.addConverter(converter);
-	}
-
-	/**
-	 * Adds a {@link Converter} to the conversionService.
-	 *
-	 * @param converter
-	 */
-	public void addConverter(GenericConverter converter) {
-		Assert.notNull(converter, "converter must not be null!");
-		this.conversionService.addConverter(converter);
 	}
 
 	/**
