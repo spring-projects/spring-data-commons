@@ -58,6 +58,7 @@ import org.springframework.util.StringUtils;
  * @author Peter Rietzler
  * @author Jens Schauder
  * @author Christoph Strobl
+ * @author Ariel Carrera
  */
 public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapable {
 
@@ -484,6 +485,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		configuration.getNamedQueries().ifPresent(repositoryFactory::setNamedQueries);
 		configuration.getQueryLookupStrategy().ifPresent(repositoryFactory::setQueryLookupStrategyKey);
 		configuration.getRepositoryBeanClass().ifPresent(repositoryFactory::setRepositoryBaseClass);
+		configuration.getRepositoryProxyPostProcessors().forEach(repositoryFactory::addRepositoryProxyPostProcessor);
+		configuration.getQueryCreationListeners().forEach(repositoryFactory::addQueryCreationListener);
 	}
 
 	/**
