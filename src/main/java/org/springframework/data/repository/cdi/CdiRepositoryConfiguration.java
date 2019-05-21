@@ -16,9 +16,13 @@
 
 package org.springframework.data.repository.cdi;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.support.QueryCreationListener;
+import org.springframework.data.repository.core.support.RepositoryProxyPostProcessor;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 
@@ -78,5 +82,25 @@ public interface CdiRepositoryConfiguration {
 	 */
 	default String getRepositoryImplementationPostfix() {
 		return "Impl";
+	}
+	
+	/**
+	 * Returns the list of {@link RepositoryProxyPostProcessor} to be used during repository proxy creation. Can be {@link Collections#emptyList()} .
+	 * 
+	 * @return the list of repository proxy post processors to use, can be {@link Collections#emptyList()}, must not be {@literal null}.
+	 * @since 2.2
+	 */
+	default List<RepositoryProxyPostProcessor> getRepositoryProxyPostProcessors() {
+		return Collections.emptyList();
+	}
+	
+	/**
+	 * Returns the list of {@link QueryCreationListener} to be used during repository proxy creation. Can be {@link Collections#emptyList()} .
+	 * 
+	 * @return the list query creation listeners to use, can be {@link Collections#emptyList()}, must not be {@literal null}.
+	 * @since 2.2
+	 */
+	default List<QueryCreationListener<?>> getQueryCreationListeners() {
+		return Collections.emptyList();
 	}
 }

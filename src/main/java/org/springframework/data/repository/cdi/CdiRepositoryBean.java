@@ -484,6 +484,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		configuration.getNamedQueries().ifPresent(repositoryFactory::setNamedQueries);
 		configuration.getQueryLookupStrategy().ifPresent(repositoryFactory::setQueryLookupStrategyKey);
 		configuration.getRepositoryBeanClass().ifPresent(repositoryFactory::setRepositoryBaseClass);
+		configuration.getRepositoryProxyPostProcessors().forEach(repositoryFactory::addRepositoryProxyPostProcessor);
+		configuration.getQueryCreationListeners().forEach(repositoryFactory::addQueryCreationListener);
 	}
 
 	/**

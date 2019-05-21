@@ -15,10 +15,16 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assume.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -37,6 +43,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.SpringVersion;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -86,6 +93,8 @@ public class RepositoryFactorySupportUnitTests {
 
 	@Mock MyQueryCreationListener listener;
 	@Mock PlainQueryCreationListener otherListener;
+	
+	@Mock RepositoryProxyPostProcessor repositoryPostProcessor;
 
 	@Before
 	public void setUp() {
@@ -108,6 +117,15 @@ public class RepositoryFactorySupportUnitTests {
 
 		verify(listener, times(1)).onCreation(Mockito.any(MyRepositoryQuery.class));
 		verify(otherListener, times(2)).onCreation(Mockito.any(RepositoryQuery.class));
+	}
+	
+	@Test
+	public void invokesCustomRepositoryProxyPostProcessor() throws Exception {
+
+		factory.addRepositoryProxyPostProcessor(repositoryPostProcessor);
+		factory.getRepository(ObjectRepository.class);
+
+		verify(repositoryPostProcessor, times(1)).postProcess(Mockito.any(ProxyFactory.class), Mockito.any(RepositoryInformation.class));
 	}
 
 	@Test

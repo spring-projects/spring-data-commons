@@ -21,7 +21,9 @@ import static org.mockito.Mockito.*;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -36,14 +38,19 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.data.repository.config.ImplementationLookupConfiguration;
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
+import org.springframework.data.repository.core.support.QueryCreationListener;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.core.support.RepositoryProxyPostProcessor;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
  * Unit tests for {@link CdiRepositoryBean}.
@@ -180,6 +187,8 @@ public class CdiRepositoryBeanUnitTests {
 		verify(repositoryFactory).setNamedQueries(PropertiesBasedNamedQueries.EMPTY);
 		verify(repositoryFactory).setRepositoryBaseClass(String.class);
 		verify(repositoryFactory).setQueryLookupStrategyKey(Key.CREATE);
+		verify(repositoryFactory).addRepositoryProxyPostProcessor(DummyRepositoryProxyPostProcessor.INSTANCE);
+		verify(repositoryFactory).addQueryCreationListener(DummyQueryCreationListener.INSTANCE);
 	}
 
 	static class DummyCdiRepositoryBean<T> extends CdiRepositoryBean<T> {
@@ -227,6 +236,35 @@ public class CdiRepositoryBeanUnitTests {
 		@Override
 		public Optional<Class<?>> getRepositoryBeanClass() {
 			return Optional.of(String.class);
+		}
+
+		@Override
+		public List<RepositoryProxyPostProcessor> getRepositoryProxyPostProcessors() {
+			return Arrays.asList(DummyRepositoryProxyPostProcessor.INSTANCE);
+		}
+
+		@Override
+		public List<QueryCreationListener<?>> getQueryCreationListeners() {
+			return Arrays.asList(DummyQueryCreationListener.INSTANCE);
+		}
+		
+	}
+	
+	static class DummyRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
+		
+		static final DummyRepositoryProxyPostProcessor INSTANCE = new DummyRepositoryProxyPostProcessor();
+		
+		@Override
+		public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
+		}
+	}
+	
+	static class DummyQueryCreationListener implements QueryCreationListener<RepositoryQuery> {
+		
+		public static final DummyQueryCreationListener INSTANCE = new DummyQueryCreationListener();
+		
+		@Override
+		public void onCreation(RepositoryQuery query) {
 		}
 	}
 }
