@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.cdi;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -247,24 +248,22 @@ public class CdiRepositoryBeanUnitTests {
 		public List<QueryCreationListener<?>> getQueryCreationListeners() {
 			return Arrays.asList(DummyQueryCreationListener.INSTANCE);
 		}
-		
+
 	}
-	
+
 	static class DummyRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
-		
+
 		static final DummyRepositoryProxyPostProcessor INSTANCE = new DummyRepositoryProxyPostProcessor();
-		
+
 		@Override
-		public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
-		}
+		public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {}
 	}
-	
+
 	static class DummyQueryCreationListener implements QueryCreationListener<RepositoryQuery> {
-		
+
 		public static final DummyQueryCreationListener INSTANCE = new DummyQueryCreationListener();
-		
+
 		@Override
-		public void onCreation(RepositoryQuery query) {
-		}
+		public void onCreation(RepositoryQuery query) {}
 	}
 }

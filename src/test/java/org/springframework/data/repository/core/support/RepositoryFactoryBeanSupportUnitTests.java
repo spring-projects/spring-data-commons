@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Rule;
 import org.junit.Test;
