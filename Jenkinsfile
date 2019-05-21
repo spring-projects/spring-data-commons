@@ -42,7 +42,7 @@ pipeline {
         }
         stage('Release to artifactory with docs') {
             when {
-                branch 'test'
+                anyOf { branch 'master' ; branch '2.1.x' ; branch '1.31.x' }
             }
             agent {
                 docker {
