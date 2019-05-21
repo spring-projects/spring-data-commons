@@ -77,6 +77,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Ariel Carrera
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryFactorySupportUnitTests {
@@ -93,7 +94,7 @@ public class RepositoryFactorySupportUnitTests {
 
 	@Mock MyQueryCreationListener listener;
 	@Mock PlainQueryCreationListener otherListener;
-	
+
 	@Mock RepositoryProxyPostProcessor repositoryPostProcessor;
 
 	@Before
@@ -118,14 +119,15 @@ public class RepositoryFactorySupportUnitTests {
 		verify(listener, times(1)).onCreation(Mockito.any(MyRepositoryQuery.class));
 		verify(otherListener, times(2)).onCreation(Mockito.any(RepositoryQuery.class));
 	}
-	
+
 	@Test
 	public void invokesCustomRepositoryProxyPostProcessor() throws Exception {
 
 		factory.addRepositoryProxyPostProcessor(repositoryPostProcessor);
 		factory.getRepository(ObjectRepository.class);
 
-		verify(repositoryPostProcessor, times(1)).postProcess(Mockito.any(ProxyFactory.class), Mockito.any(RepositoryInformation.class));
+		verify(repositoryPostProcessor, times(1)).postProcess(Mockito.any(ProxyFactory.class),
+				Mockito.any(RepositoryInformation.class));
 	}
 
 	@Test

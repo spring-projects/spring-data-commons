@@ -58,6 +58,7 @@ import org.springframework.util.StringUtils;
  * @author Peter Rietzler
  * @author Jens Schauder
  * @author Christoph Strobl
+ * @author Ariel Carrera
  */
 public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapable {
 
