@@ -2,6 +2,10 @@
 
 [Spring Data Commons](https://projects.spring.io/spring-data/) is part of the umbrella Spring Data project that provides shared infrastructure across the Spring Data projects. It contains technology neutral repository interfaces as well as a metadata model for persisting Java classes.
 
+[![Build Status](https://jenkins.spring.io/buildStatus/icon?job=spring-data-commons%2Fmaster&subject=Moore%20(master))](https://jenkins.spring.io/view/SpringData/job/spring-data-commons/)
+[![Build Status](https://jenkins.spring.io/buildStatus/icon?job=spring-data-commons%2F2.1.x&subject=Lovelace%20(2.1.x))](https://jenkins.spring.io/view/SpringData/job/spring-data-commons/)
+[![Build Status](https://jenkins.spring.io/buildStatus/icon?job=spring-data-commons%2F1.13.x&subject=Ingalls%20(1.13.x))](https://jenkins.spring.io/view/SpringData/job/spring-data-commons/)
+
 ## Features
 
 * Powerful Repository and custom object-mapping abstractions
