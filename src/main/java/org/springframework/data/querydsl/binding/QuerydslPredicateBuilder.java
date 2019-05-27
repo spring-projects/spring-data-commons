@@ -19,10 +19,10 @@ import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
@@ -42,7 +42,7 @@ import com.querydsl.core.types.Predicate;
 
 /**
  * Builder assembling {@link Predicate} out of {@link PropertyValues}.
- * 
+ *
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @since 1.11
@@ -57,7 +57,7 @@ public class QuerydslPredicateBuilder {
 	/**
 	 * Creates a new {@link QuerydslPredicateBuilder} for the given {@link ConversionService} and
 	 * {@link EntityPathResolver}.
-	 * 
+	 *
 	 * @param conversionService must not be {@literal null}.
 	 * @param resolver can be {@literal null}.
 	 */
@@ -67,14 +67,14 @@ public class QuerydslPredicateBuilder {
 
 		this.defaultBinding = new QuerydslDefaultBinding();
 		this.conversionService = conversionService;
-		this.paths = new HashMap<PathInformation, Path<?>>();
+		this.paths = new ConcurrentHashMap<PathInformation, Path<?>>();
 		this.resolver = resolver;
 	}
 
 	/**
 	 * Creates a Querydsl {@link Predicate} for the given values, {@link QuerydslBindings} on the given
 	 * {@link TypeInformation}.
-	 * 
+	 *
 	 * @param type the type to create a predicate for.
 	 * @param values the values to bind.
 	 * @param bindings the {@link QuerydslBindings} for the predicate.
@@ -122,7 +122,7 @@ public class QuerydslPredicateBuilder {
 
 	/**
 	 * Invokes the binding of the given values, for the given {@link PropertyPath} and {@link QuerydslBindings}.
-	 * 
+	 *
 	 * @param dotPath must not be {@literal null}.
 	 * @param bindings must not be {@literal null}.
 	 * @param values must not be {@literal null}.
@@ -143,7 +143,7 @@ public class QuerydslPredicateBuilder {
 	 * Returns the {@link Path} for the given {@link PropertyPath} and {@link QuerydslBindings}. Will try to obtain the
 	 * {@link Path} from the bindings first but fall back to reifying it from the PropertyPath in case no specific binding
 	 * has been configured.
-	 * 
+	 *
 	 * @param path must not be {@literal null}.
 	 * @param bindings must not be {@literal null}.
 	 * @return
@@ -156,7 +156,7 @@ public class QuerydslPredicateBuilder {
 			return resolvedPath;
 		}
 
-		resolvedPath = paths.get(resolvedPath);
+		resolvedPath = paths.get(path);
 
 		if (resolvedPath != null) {
 			return resolvedPath;
@@ -172,7 +172,7 @@ public class QuerydslPredicateBuilder {
 	 * Converts the given source values into a collection of elements that are of the given {@link PropertyPath}'s type.
 	 * Considers a single element list with an empty {@link String} an empty collection because this basically indicates
 	 * the property having been submitted but no value provided.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param path must not be {@literal null}.
 	 * @return
@@ -190,7 +190,8 @@ public class QuerydslPredicateBuilder {
 		for (String value : source) {
 
 			target.add(conversionService.canConvert(String.class, targetType)
-					? conversionService.convert(value, TypeDescriptor.forObject(value), getTargetTypeDescriptor(path)) : value);
+					? conversionService.convert(value, TypeDescriptor.forObject(value), getTargetTypeDescriptor(path))
+					: value);
 		}
 
 		return target;
@@ -199,7 +200,7 @@ public class QuerydslPredicateBuilder {
 	/**
 	 * Returns the target {@link TypeDescriptor} for the given {@link PathInformation} by either inspecting the field or
 	 * property (the latter preferred) to pick up annotations potentially defined for formatting purposes.
-	 * 
+	 *
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
@@ -221,7 +222,7 @@ public class QuerydslPredicateBuilder {
 	/**
 	 * Returns whether the given collection has exactly one element that doesn't contain any text. This is basically an
 	 * indicator that a request parameter has been submitted but no value for it.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
