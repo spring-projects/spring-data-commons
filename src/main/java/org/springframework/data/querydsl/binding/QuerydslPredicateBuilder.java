@@ -19,11 +19,11 @@ import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
@@ -46,6 +46,7 @@ import com.querydsl.core.types.Predicate;
  *
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.11
  */
 public class QuerydslPredicateBuilder {
@@ -68,7 +69,7 @@ public class QuerydslPredicateBuilder {
 
 		this.defaultBinding = new QuerydslDefaultBinding();
 		this.conversionService = conversionService;
-		this.paths = new HashMap<>();
+		this.paths = new ConcurrentHashMap<>();
 		this.resolver = resolver;
 	}
 
