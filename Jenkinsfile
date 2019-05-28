@@ -5,6 +5,10 @@ pipeline {
         pollSCM 'H/10 * * * *'
     }
 
+    options {
+        disableConcurrentBuilds()
+    }
+
     stages {
         stage("Test") {
             parallel {
