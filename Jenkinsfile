@@ -20,7 +20,7 @@ pipeline {
                         }
                     }
                     steps {
-                        sh "PROFILE=none ci/test.sh"
+                        sh "./mvnw clean dependency:list test -Dsort -B"
                     }
                 }
             }
@@ -41,7 +41,7 @@ pipeline {
             }
 
             steps {
-                sh "USERNAME=${ARTIFACTORY_USR} PASSWORD=${ARTIFACTORY_PSW} DOC_USERNAME=${DOC_USR} DOC_PASSWORD=${DOC_PSW} PROFILE=ci,snapshot ci/build.sh"
+                sh "USERNAME=${ARTIFACTORY_USR} PASSWORD=${ARTIFACTORY_PSW} DOC_USERNAME=${DOC_USR} DOC_PASSWORD=${DOC_PSW} ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B"
             }
         }
         stage('Release to artifactory with docs') {
@@ -61,7 +61,7 @@ pipeline {
             }
 
             steps {
-                sh "USERNAME=${ARTIFACTORY_USR} PASSWORD=${ARTIFACTORY_PSW} DOC_USERNAME=${DOC_USR} DOC_PASSWORD=${DOC_PSW} PROFILE=ci,snapshot ci/build.sh"
+                sh "USERNAME=${ARTIFACTORY_USR} PASSWORD=${ARTIFACTORY_PSW} DOC_USERNAME=${DOC_USR} DOC_PASSWORD=${DOC_PSW} ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B"
             }
         }
     }
