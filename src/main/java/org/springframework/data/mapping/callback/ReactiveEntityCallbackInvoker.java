@@ -15,23 +15,28 @@
  */
 package org.springframework.data.mapping.callback;
 
+import reactor.core.publisher.Mono;
+
+import java.util.function.BiFunction;
+
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
 /**
- * Entity callback before saving the entity. This interface allows for modifications to the actual entity that are
- * required prior to saving the entity.
- *
- * @author Mark Paluch
- * @see EntityCallback
- * @see SimpleEntityCallbacks
+ * @author Christoph Strobl
+ * @since 2.2
  */
-@FunctionalInterface
-public interface BeforeSaveCallback<T> extends EntityCallback<T> {
+interface ReactiveEntityCallbackInvoker extends EntityCallbackInvoker {
 
 	/**
-	 * Handle the entity callback. Modifications that result in creating a new instance should return the changed entity
-	 * as method return value.
-	 *
-	 * @param object the entity for this callback.
-	 * @return the resulting entity.
+	 * @param callback must not be {@literal null}.
+	 * @param entity can be {@literal null}
+	 * @param callbackInvokerFunction must not be {@literal null}.
+	 * @param <T>
+	 * @return a {@link Mono} emitting the result of the invocation.
 	 */
-	T onBeforeSave(T object);
+	@NonNull
+	@Override
+	<T> Mono<T> invokeCallback(EntityCallback<T> callback, @Nullable T entity,
+			BiFunction<EntityCallback<T>, T, Object> callbackInvokerFunction);
 }

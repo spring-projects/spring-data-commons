@@ -1,0 +1,156 @@
+[entity-callbacks]
+= Entity Callbacks
+
+The Spring Data infrastructure provides hooks for modifying an entity before and/or after certain methods are invoked.
+Those so called ``EntityCallback``s provide a convenient way to check and potentially modify an entity in a callback fashioned style. +
+An `EntityCallback` looks pretty much like a specialized `ApplicationListener`, with which you might be familiar.
+Some Spring Data implementations publish store specific events, like a `BeforeSaveEvent` that allow to modify the given entity, which in some cases, eg. immutable types, can cause somme trouble.
+Plus, the event publishing relies on the `ApplicationEventMulticaster` which can be configured with an asynchronous `TaskExecutor` leading to unpredictable outcome.
+
+``EntityCallback``s offer integration points with both sync and reactive APIs guaranteeing an in order invocation at fixed checkpoints within the processing chain, returning a potentially modified entity or an reactive wrapper type.
+
+[NOTE]
+====
+The entity callback API has been introduced with Spring Data Commons 2.2 and is the recommended way of dealing with entity modifications. +
+Existing store specific `ApplicationEvents` are still be published *before* the potentially registered ``EntityCallback``s are called.
+====
+
+[entity-callbacks.implement]
+== Implementing Entity Callbacks
+
+The `EntityCallback` is, via its generic type argument, directly associated with the domain type it is meant for.
+Each store typically uses a set of predefined entity callbacks covering the lifecycle of an entity.
+
+.Anatomy of an `EntityCallback`
+====
+[source,java]
+----
+@FunctionalInterface
+public interface BeforeSaveCallback<T> extends EntityCallback<T> {
+
+	/**
+	 * Entity callback method invoked before a domain object is saved.
+	 * Can return either the same or a modified instance.
+	 *
+	 * @return the domain object to be persisted.
+	 */
+	T onBeforeSave(T entity <2>, String collection <3>); <1>
+}
+----
+<1> `BeforeSaveCallback` specific method to be called before an entity is saved. Returns a potentially modifed instance.
+<2> The entity right bevore presisted.
+<3> A number of store specific arguments like the _collection_ the entity is persisted to.
+====
+
+.Anatomy of a reactive `EntityCallback`
+====
+[source,java]
+----
+@FunctionalInterface
+public interface ReactiveBeforeSaveCallback<T> extends EntityCallback<T> {
+
+	/**
+	 * Entity callback method invoked on subscription, before a domain object is saved.
+	 * The returned Publisher can emit either the same or a modified instance.
+	 *
+	 * @return Publisher emitting the domain object to be persisted.
+	 */
+	Publisher<T> onBeforeSave(T entity <2>, String collection <3>); <1>
+}
+----
+<1> `BeforeSaveCallback` specific method to be called on subscription, before an entity is saved. Emits a potentially modifed instance.
+<2> The entity right bevore presisted.
+<3> A number of store specific arguments like the _collection_ the entity is persisted to.
+====
+
+Implement the interface suiting your application needs like shown in the example below.
+
+.Example `BeforeSaveCallback`
+====
+[source,java]
+----
+public class DefaultingEntityCallback implements BeforeSaveCallback<Person>, Ordered <2> {
+
+	@Override
+	public Object onBeforeSave(Person entity, String collection) { <1>
+
+		if(collection == "user) {
+		    return // ...
+		}
+
+		return // ...
+	}
+
+	@Override
+	public int getOrder() {
+		return 100; <2>
+	}
+}
+----
+<1> Implement logic according to application requirements.
+<2> Potentially order the entity callback if multiple ones for the same domain type exist. Ordering follows lowest precedence.
+====
+
+[entity-callbacks.register]
+== Registering Entity Callbacks
+
+``EntityCallback``s get picked up by the store specific implementations in case they are provided with an `ApplicationContext`.
+Most template APIs already implement `ApplicationContextAware` an therefore have a context at hand if registered as a Bean.
+
+The following example provides a collection of valid entity callback registrations.
+
+.Example `EntityCallback` Bean registration
+====
+[source,java]
+----
+@Configuration
+public class EntityCallbackConfiguration {
+
+    @Bean
+    BeforeSaveCallback<Person> annotationOrderedCallback() { <1>
+    	return new First();
+    }
+
+    @Bean
+    BeforeSaveCallback<Person> interfaceOrderedCallback() { <2>
+    	return new DefaultingEntityCallback();
+    }
+
+    @Bean
+    BeforeSaveCallback<Person> unorderedLambdaReceiverCallback() { <3>
+        return (BeforeSaveCallback<Person>) it -> // ...
+    }
+
+    @Bean
+    UserCallbacks multipleCallbacksInOneImplementationClass() { <4>
+        return new UserCallbacks();
+    }
+
+    @Order(1) <1>
+    static class First implements BeforeSaveCallback<Person> {
+
+        @Override
+    	public Person onBeforeSave(Person person) {
+    		return // ...
+    	}
+    }
+
+    static class UserCallbacks implements BeforeConvertCallback<User>, BeforeSaveCallback<User> { <4>
+
+        @Override
+        public Person onBeforeConvert(User user) {
+        	return // ...
+        }
+
+        @Override
+        public Person onBeforeSave(User user) {
+        	return // ...
+        }
+    }
+}
+----
+<1> `BeforeSaveCallback` receiving its order from the `@Order` annotation.
+<2> `BeforeSaveCallback` receiving its order via the `Ordered` interface implementation.
+<3> `BeforeSaveCallback` using a lambda expression. Unordered by default and invoked last.
+<4> Combine multiple entity callback interfaces in one implementation class.
+====

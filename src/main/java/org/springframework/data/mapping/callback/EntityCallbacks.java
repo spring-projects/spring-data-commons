@@ -15,8 +15,6 @@
  */
 package org.springframework.data.mapping.callback;
 
-import reactor.core.publisher.Mono;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.util.Assert;
 
@@ -24,7 +22,7 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @since 2.2
  */
-public interface ReactiveEntityCallbacks {
+public interface EntityCallbacks {
 
 	/**
 	 * Add the given {@link EntityCallback callback} using generic type argument detection for identification of supported
@@ -36,29 +34,28 @@ public interface ReactiveEntityCallbacks {
 	void addEntityCallback(EntityCallback<?> callback);
 
 	/**
-	 * On {@link Mono#subscribe() subscribe} invoke the matching {@link EntityCallback entity callbacks} with given
-	 * arguments.
+	 * Invoke matching {@link EntityCallback entity callbacks} with given arguments.
 	 *
 	 * @param callbackType must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 * @param args optional arguments.
 	 * @param <T>
-	 * @return a {@link Mono} emitting the result after invoking the callbacks.
+	 * @return never {@literal null}.
 	 * @throws IllegalArgumentException if a required argument is {@literal null}.
 	 */
-	<T> Mono<T> callback(Class<? extends EntityCallback> callbackType, T entity, Object... args);
+	<T> T callback(Class<? extends EntityCallback> callbackType, T entity, Object... args);
 
 	/**
-	 * Obtain a new {@link ReactiveEntityCallbacks} instance.
+	 * Obtain a new {@link EntityCallbacks} instance.
 	 * <p />
 	 * {@link EntityCallback callbacks} are pre loaded from the given {@link BeanFactory}.
 	 *
 	 * @param beanFactory must not be {@literal null}.
 	 * @throws IllegalArgumentException if a required argument is {@literal null}.
 	 */
-	static ReactiveEntityCallbacks entityCallbacks(BeanFactory beanFactory) {
+	static EntityCallbacks entityCallbacks(BeanFactory beanFactory) {
 
 		Assert.notNull(beanFactory, "Context must not be null!");
-		return new DefaultReactiveEntityCallbacks(beanFactory);
+		return new DefaultEntityCallbacks(beanFactory);
 	}
 }
