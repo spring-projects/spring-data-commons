@@ -41,7 +41,7 @@ pipeline {
             }
 
             steps {
-                sh "USERNAME=${ARTIFACTORY_USR} PASSWORD=${ARTIFACTORY_PSW} DOC_USERNAME=${DOC_USR} DOC_PASSWORD=${DOC_PSW} ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B"
+                sh "USERNAME=${ARTIFACTORY_USR} PASSWORD=${ARTIFACTORY_PSW} ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B"
             }
         }
         stage('Release to artifactory with docs') {
