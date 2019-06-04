@@ -19,8 +19,12 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.util.Assert;
 
 /**
+ * Interface to be implemented by objects that can manage a number of {@link EntityCallback} objects and invoke these
+ * with a specific entity.
+ *
  * @author Christoph Strobl
  * @since 2.2
+ * @see EntityCallback
  */
 public interface EntityCallbacks {
 
@@ -39,7 +43,7 @@ public interface EntityCallbacks {
 	 * @param callbackType must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 * @param args optional arguments.
-	 * @param <T>
+	 * @param <T> Entity type.
 	 * @return never {@literal null}.
 	 * @throws IllegalArgumentException if a required argument is {@literal null}.
 	 */
