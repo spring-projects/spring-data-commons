@@ -50,14 +50,23 @@ public interface EntityCallbacks {
 	<T> T callback(Class<? extends EntityCallback> callbackType, T entity, Object... args);
 
 	/**
+	 * Obtain a new {@link EntityCallbacks} instance. <br />
+	 * Use {@link #addEntityCallback(EntityCallback)} to register callbacks manually.
+	 */
+	static EntityCallbacks create() {
+		return new DefaultEntityCallbacks();
+	}
+
+	/**
 	 * Obtain a new {@link EntityCallbacks} instance.
 	 * <p />
-	 * {@link EntityCallback callbacks} are pre loaded from the given {@link BeanFactory}.
+	 * {@link EntityCallback callbacks} are pre loaded from the given {@link BeanFactory}. <br />
+	 * Use {@link #addEntityCallback(EntityCallback)} to register additional callbacks manually.
 	 *
 	 * @param beanFactory must not be {@literal null}.
 	 * @throws IllegalArgumentException if a required argument is {@literal null}.
 	 */
-	static EntityCallbacks entityCallbacks(BeanFactory beanFactory) {
+	static EntityCallbacks create(BeanFactory beanFactory) {
 
 		Assert.notNull(beanFactory, "Context must not be null!");
 		return new DefaultEntityCallbacks(beanFactory);

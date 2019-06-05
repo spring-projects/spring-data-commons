@@ -53,14 +53,23 @@ public interface ReactiveEntityCallbacks {
 	<T> Mono<T> callback(Class<? extends EntityCallback> callbackType, T entity, Object... args);
 
 	/**
+	 * Obtain a new {@link ReactiveEntityCallbacks} instance. <br />
+	 * Use {@link #addEntityCallback(EntityCallback)} to register callbacks manually.
+	 */
+	static ReactiveEntityCallbacks create() {
+		return new DefaultReactiveEntityCallbacks();
+	}
+
+	/**
 	 * Obtain a new {@link ReactiveEntityCallbacks} instance.
 	 * <p />
-	 * {@link EntityCallback callbacks} are pre loaded from the given {@link BeanFactory}.
+	 * {@link EntityCallback callbacks} are pre loaded from the given {@link BeanFactory}. <br />
+	 * Use {@link #addEntityCallback(EntityCallback)} to register additional callbacks manually.
 	 *
 	 * @param beanFactory must not be {@literal null}.
 	 * @throws IllegalArgumentException if a required argument is {@literal null}.
 	 */
-	static ReactiveEntityCallbacks entityCallbacks(BeanFactory beanFactory) {
+	static ReactiveEntityCallbacks create(BeanFactory beanFactory) {
 
 		Assert.notNull(beanFactory, "Context must not be null!");
 		return new DefaultReactiveEntityCallbacks(beanFactory);
