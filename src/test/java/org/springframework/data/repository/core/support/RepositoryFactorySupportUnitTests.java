@@ -15,16 +15,10 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assume.assumeThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static java.util.Collections.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -36,16 +30,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.core.SpringVersion;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -63,7 +54,6 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.sample.User;
-import org.springframework.data.util.Version;
 import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
@@ -82,11 +72,6 @@ import org.springframework.util.concurrent.ListenableFuture;
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryFactorySupportUnitTests {
 
-	static final Version SPRING_VERSION = Version.parse(SpringVersion.getVersion());
-	static final Version FOUR_DOT_TWO = new Version(4, 2);
-
-	public @Rule ExpectedException exception = ExpectedException.none();
-
 	DummyRepositoryFactory factory;
 
 	@Mock PagingAndSortingRepository<Object, Object> backingRepo;
@@ -103,12 +88,12 @@ public class RepositoryFactorySupportUnitTests {
 	}
 
 	@Test
-	public void invokesCustomQueryCreationListenerForSpecialRepositoryQueryOnly() throws Exception {
+	public void invokesCustomQueryCreationListenerForSpecialRepositoryQueryOnly() {
 
 		Mockito.reset(factory.strategy);
 
-		when(factory.strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
-				Mockito.any(ProjectionFactory.class), Mockito.any(NamedQueries.class))).thenReturn(factory.queryOne,
+		when(factory.strategy.resolveQuery(any(Method.class), any(RepositoryMetadata.class), any(ProjectionFactory.class),
+				any(NamedQueries.class))).thenReturn(factory.queryOne,
 						factory.queryTwo);
 
 		factory.addQueryCreationListener(listener);
@@ -116,18 +101,17 @@ public class RepositoryFactorySupportUnitTests {
 
 		factory.getRepository(ObjectRepository.class);
 
-		verify(listener, times(1)).onCreation(Mockito.any(MyRepositoryQuery.class));
-		verify(otherListener, times(2)).onCreation(Mockito.any(RepositoryQuery.class));
+		verify(listener, times(1)).onCreation(any(MyRepositoryQuery.class));
+		verify(otherListener, times(2)).onCreation(any(RepositoryQuery.class));
 	}
 
-	@Test
-	public void invokesCustomRepositoryProxyPostProcessor() throws Exception {
+	@Test // DATACMNS-1538
+	public void invokesCustomRepositoryProxyPostProcessor() {
 
 		factory.addRepositoryProxyPostProcessor(repositoryPostProcessor);
 		factory.getRepository(ObjectRepository.class);
 
-		verify(repositoryPostProcessor, times(1)).postProcess(Mockito.any(ProxyFactory.class),
-				Mockito.any(RepositoryInformation.class));
+		verify(repositoryPostProcessor, times(1)).postProcess(any(ProxyFactory.class), any(RepositoryInformation.class));
 	}
 
 	@Test
@@ -136,7 +120,7 @@ public class RepositoryFactorySupportUnitTests {
 		ObjectRepository repository = factory.getRepository(ObjectRepository.class);
 		repository.save(repository);
 
-		verify(backingRepo, times(1)).save(Mockito.any(Object.class));
+		verify(backingRepo, times(1)).save(any(Object.class));
 	}
 
 	@Test
@@ -194,7 +178,7 @@ public class RepositoryFactorySupportUnitTests {
 
 		final Object reference = new Object();
 
-		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(invocation -> {
+		when(factory.queryOne.execute(any(Object[].class))).then(invocation -> {
 			Thread.sleep(500);
 			return reference;
 		});
@@ -215,15 +199,15 @@ public class RepositoryFactorySupportUnitTests {
 
 		assertThat(future.get()).isEqualTo(reference);
 
-		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
+		verify(factory.queryOne, times(1)).execute(any(Object[].class));
 	}
 
 	@Test // DATACMNS-509
 	public void convertsWithSameElementType() {
 
-		List<String> names = Collections.singletonList("Dave");
+		List<String> names = singletonList("Dave");
 
-		when(factory.queryOne.execute(Mockito.any(Object[].class))).thenReturn(names);
+		when(factory.queryOne.execute(any(Object[].class))).thenReturn(names);
 
 		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
 		Set<String> result = repository.convertListToStringSet();
@@ -235,35 +219,32 @@ public class RepositoryFactorySupportUnitTests {
 	@Test // DATACMNS-509
 	public void convertsCollectionToOtherCollectionWithElementSuperType() {
 
-		List<String> names = Collections.singletonList("Dave");
+		List<String> names = singletonList("Dave");
 
-		when(factory.queryOne.execute(Mockito.any(Object[].class))).thenReturn(names);
+		when(factory.queryOne.execute(any(Object[].class))).thenReturn(names);
 
 		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
 		Set<Object> result = repository.convertListToObjectSet();
 
-		assertThat(result).hasSize(1);
-		assertThat(result.iterator().next()).isEqualTo("Dave");
+		assertThat(result).containsExactly("Dave");
 	}
 
 	@Test // DATACMNS-656
 	public void rejectsNullRepositoryProxyPostProcessor() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(RepositoryProxyPostProcessor.class.getSimpleName());
-
-		factory.addRepositoryProxyPostProcessor(null);
+		assertThatThrownBy( //
+				() -> factory.addRepositoryProxyPostProcessor(null)) //
+						.isInstanceOf(IllegalArgumentException.class) //
+						.hasMessageContaining(RepositoryProxyPostProcessor.class.getSimpleName());
 	}
 
 	@Test // DATACMNS-715, SPR-13109
-	public void addsTransactionProxyInterfaceIfAvailable() throws Exception {
+	public void addsTransactionProxyInterfaceIfAvailable() {
 		assertThat(factory.getRepository(SimpleRepository.class)).isInstanceOf(TransactionalProxy.class);
 	}
 
 	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoCompletableFutureIfConfigured() throws Exception {
-
-		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
 
 		User reference = new User();
 
@@ -273,8 +254,6 @@ public class RepositoryFactorySupportUnitTests {
 	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoListenableFutureIfConfigured() throws Exception {
 
-		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
-
 		User reference = new User();
 
 		expect(prepareConvertingRepository(reference).findOneByLastname("Foo"), reference);
@@ -283,9 +262,7 @@ public class RepositoryFactorySupportUnitTests {
 	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoCompletableFutureWithEntityCollectionIfConfigured() throws Exception {
 
-		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
-
-		List<User> reference = Collections.singletonList(new User());
+		List<User> reference = singletonList(new User());
 
 		expect(prepareConvertingRepository(reference).readAllByFirstname("Foo"), reference);
 	}
@@ -293,7 +270,7 @@ public class RepositoryFactorySupportUnitTests {
 	@Test // DATACMNS-714
 	public void wrapsExecutionResultIntoListenableFutureWithEntityCollectionIfConfigured() throws Exception {
 
-		List<User> reference = Collections.singletonList(new User());
+		List<User> reference = singletonList(new User());
 
 		expect(prepareConvertingRepository(reference).readAllByLastname("Foo"), reference);
 	}
@@ -306,11 +283,11 @@ public class RepositoryFactorySupportUnitTests {
 		doReturn(CustomRepositoryBaseClass.class).when(information).getRepositoryBaseClass();
 		EntityInformation entityInformation = mock(EntityInformation.class);
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage(entityInformation.getClass().getName());
-		exception.expectMessage(String.class.getName());
-
-		factory.getTargetRepositoryViaReflection(information, entityInformation, "Foo");
+		assertThatThrownBy( //
+				() -> factory.getTargetRepositoryViaReflection(information, entityInformation, "Foo")) //
+						.isInstanceOf(IllegalStateException.class) //
+						.hasMessageContaining(entityInformation.getClass().getName()) //
+						.hasMessageContaining(String.class.getName());
 	}
 
 	@Test
@@ -329,8 +306,11 @@ public class RepositoryFactorySupportUnitTests {
 
 		KotlinUserRepository repository = factory.getRepository(KotlinUserRepository.class);
 
-		assertThatThrownBy(() -> repository.findById("")).isInstanceOf(EmptyResultDataAccessException.class)
+		assertThatThrownBy( //
+				() -> repository.findById("")) //
+						.isInstanceOf(EmptyResultDataAccessException.class) //
 				.hasMessageContaining("Result must not be null!");
+
 		assertThat(repository.findByUsername("")).isNull();
 	}
 
@@ -339,7 +319,9 @@ public class RepositoryFactorySupportUnitTests {
 
 		ObjectRepository repository = factory.getRepository(ObjectRepository.class);
 
-		assertThatThrownBy(() -> repository.findByClass(null)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy( //
+				() -> repository.findByClass(null)) //
+						.isInstanceOf(IllegalArgumentException.class) //
 				.hasMessageContaining("must not be null!");
 	}
 
@@ -358,8 +340,10 @@ public class RepositoryFactorySupportUnitTests {
 
 		KotlinUserRepository repository = factory.getRepository(KotlinUserRepository.class);
 
-		assertThatThrownBy(() -> repository.findById(null)).isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("must not be null!");
+		assertThatThrownBy( //
+				() -> repository.findById(null)) //
+						.isInstanceOf(IllegalArgumentException.class) //
+						.hasMessageContaining("must not be null!"); //
 	}
 
 	@Test // DATACMNS-1154
@@ -380,7 +364,7 @@ public class RepositoryFactorySupportUnitTests {
 
 	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {
 
-		when(factory.queryOne.execute(Mockito.any(Object[].class))).then(invocation -> {
+		when(factory.queryOne.execute(any(Object[].class))).then(invocation -> {
 			Thread.sleep(200);
 			return expectedValue;
 		});
@@ -402,7 +386,7 @@ public class RepositoryFactorySupportUnitTests {
 
 		assertThat(future.get()).isEqualTo(value);
 
-		verify(factory.queryOne, times(1)).execute(Mockito.any(Object[].class));
+		verify(factory.queryOne, times(1)).execute(any(Object[].class));
 	}
 
 	interface SimpleRepository extends Repository<Object, Serializable> {}

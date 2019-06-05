@@ -15,15 +15,13 @@
  */
 package org.springframework.data.repository.cdi;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static java.util.Collections.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -65,9 +63,9 @@ public class CdiRepositoryBeanUnitTests {
 
 	static final String PASSIVATION_ID = "javax.enterprise.inject.Default:org.springframework.data.repository.cdi.CdiRepositoryBeanUnitTests$SampleRepository";
 
-	static final Set<Annotation> NO_ANNOTATIONS = Collections.emptySet();
-	static final Set<Annotation> SINGLE_ANNOTATION = Collections
-			.singleton((Annotation) new CdiRepositoryExtensionSupport.DefaultAnnotationLiteral());
+	static final Set<Annotation> NO_ANNOTATIONS = emptySet();
+	static final Set<Annotation> SINGLE_ANNOTATION = singleton(
+			new CdiRepositoryExtensionSupport.DefaultAnnotationLiteral());
 
 	@Mock BeanManager beanManager;
 	@Mock RepositoryFactorySupport repositoryFactory;
@@ -134,6 +132,7 @@ public class CdiRepositoryBeanUnitTests {
 				SampleRepository.class, //
 				beanManager //
 		);
+
 		assertThat(bean.getId()).isEqualTo(PASSIVATION_ID);
 	}
 
@@ -242,12 +241,12 @@ public class CdiRepositoryBeanUnitTests {
 
 		@Override
 		public List<RepositoryProxyPostProcessor> getRepositoryProxyPostProcessors() {
-			return Arrays.asList(DummyRepositoryProxyPostProcessor.INSTANCE);
+			return singletonList(DummyRepositoryProxyPostProcessor.INSTANCE);
 		}
 
 		@Override
 		public List<QueryCreationListener<?>> getQueryCreationListeners() {
-			return Arrays.asList(DummyQueryCreationListener.INSTANCE);
+			return singletonList(DummyQueryCreationListener.INSTANCE);
 		}
 
 	}
