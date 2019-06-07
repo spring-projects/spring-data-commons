@@ -50,6 +50,19 @@ public interface EntityCallbacks {
 	<T> T callback(Class<? extends EntityCallback> callbackType, T entity, Object... args);
 
 	/**
+	 * Create a new {@link EntityCallbacks} instance with given {@link EntityCallback callbacks}. <br />
+	 * The provided {@link EntityCallback callbacks} are immediately {@link #addEntityCallback(EntityCallback) added}.
+	 */
+	static EntityCallbacks of(EntityCallback<?>... callbacks) {
+
+		EntityCallbacks entityCallbacks = create();
+		for (EntityCallback<?> callback : callbacks) {
+			entityCallbacks.addEntityCallback(callback);
+		}
+		return entityCallbacks;
+	}
+
+	/**
 	 * Obtain a new {@link EntityCallbacks} instance. <br />
 	 * Use {@link #addEntityCallback(EntityCallback)} to register callbacks manually.
 	 */

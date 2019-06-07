@@ -53,6 +53,19 @@ public interface ReactiveEntityCallbacks {
 	<T> Mono<T> callback(Class<? extends EntityCallback> callbackType, T entity, Object... args);
 
 	/**
+	 * Create a new {@link ReactiveEntityCallbacks} instance with given {@link EntityCallback callbacks}. <br />
+	 * The provided {@link EntityCallback callbacks} are immediately {@link #addEntityCallback(EntityCallback) added}.
+	 */
+	static ReactiveEntityCallbacks of(EntityCallback<?>... callbacks) {
+
+		ReactiveEntityCallbacks entityCallbacks = create();
+		for (EntityCallback<?> callback : callbacks) {
+			entityCallbacks.addEntityCallback(callback);
+		}
+		return entityCallbacks;
+	}
+
+	/**
 	 * Obtain a new {@link ReactiveEntityCallbacks} instance. <br />
 	 * Use {@link #addEntityCallback(EntityCallback)} to register callbacks manually.
 	 */
