@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.9.RELEASE (2019-06-14)
+---------------------------------------------
+* DATACMNS-1540 - ConcurrentModificationException in QuerydslPredicateBuilder path cache.
+* DATACMNS-1534 - Cache BeanFactory lookup for EvaluationContextExtension.
+* DATACMNS-1532 - Release 2.1.9 (Lovelace SR9).
+
+
 Changes in version 1.13.22.RELEASE (2019-05-13)
 -----------------------------------------------
 * DATACMNS-1531 - Release 1.13.22 (Ingalls SR22).
