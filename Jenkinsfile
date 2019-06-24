@@ -16,11 +16,13 @@ pipeline {
                     agent {
                         docker {
                             image 'adoptopenjdk/openjdk8:latest'
-                            args '-v $HOME/.m2:/root/.m2'
+                            args '-v $HOME/.m2:/tmp/spring-data-maven-repository'
                         }
                     }
+                    options { timeout(time: 30, unit: 'MINUTES') }
                     steps {
-                        sh "./mvnw clean dependency:list test -Dsort -B"
+                        sh 'rm -rf ?'
+                        sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/spring-data-maven-repository" ./mvnw clean dependency:list test -Dsort -B'
                     }
                 }
             }
@@ -32,16 +34,18 @@ pipeline {
             agent {
                 docker {
                     image 'adoptopenjdk/openjdk8:latest'
-                    args '-v $HOME/.m2:/root/.m2'
+                    args '-v $HOME/.m2:/tmp/spring-data-maven-repository'
                 }
             }
+            options { timeout(time: 20, unit: 'MINUTES') }
 
             environment {
                 ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
             }
 
             steps {
-                sh "USERNAME=${ARTIFACTORY_USR} PASSWORD=${ARTIFACTORY_PSW} ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B"
+                sh 'rm -rf ?'
+                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/spring-data-maven-repository" ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B'
             }
         }
         stage('Release to artifactory with docs') {
@@ -51,9 +55,10 @@ pipeline {
             agent {
                 docker {
                     image 'adoptopenjdk/openjdk8:latest'
-                    args '-v $HOME/.m2:/root/.m2'
+                    args '-v $HOME/.m2:/tmp/spring-data-maven-repository'
                 }
             }
+            options { timeout(time: 20, unit: 'MINUTES') }
 
             environment {
                 ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
@@ -61,7 +66,8 @@ pipeline {
             }
 
             steps {
-                sh "USERNAME=${ARTIFACTORY_USR} PASSWORD=${ARTIFACTORY_PSW} DOC_USERNAME=${DOC_USR} DOC_PASSWORD=${DOC_PSW} ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B"
+                sh 'rm -rf ?'
+                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/spring-data-maven-repository" DOC_USERNAME=${DOC_USR} DOC_PASSWORD=${DOC_PSW} ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B'
             }
         }
     }
