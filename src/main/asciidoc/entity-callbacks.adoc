@@ -1,4 +1,4 @@
-[entity-callbacks]
+[[entity-callbacks]]
 = Entity Callbacks
 
 The Spring Data infrastructure provides hooks for modifying an entity before and after certain methods are invoked.
@@ -17,7 +17,7 @@ The Entity Callback API has been introduced with Spring Data Commons 2.2. It is 
 Existing store specific `ApplicationEvents` are still published *before* the invoking potentially registered `EntityCallback` instances.
 ====
 
-[entity-callbacks.implement]
+[[entity-callbacks.implement]]
 == Implementing Entity Callbacks
 
 An `EntityCallback` is directly associated with its domain type through its generic type argument.
@@ -78,7 +78,7 @@ class DefaultingEntityCallback implements BeforeSaveCallback<Person>, Ordered <2
 	@Override
 	public Object onBeforeSave(Person entity, String collection) {                   <1>
 
-		if(collection == "user) {
+		if(collection == "user") {
 		    return // ...
 		}
 
@@ -95,7 +95,7 @@ class DefaultingEntityCallback implements BeforeSaveCallback<Person>, Ordered <2
 <2> Potentially order the entity callback if multiple ones for the same domain type exist. Ordering follows lowest precedence.
 ====
 
-[entity-callbacks.register]
+[[entity-callbacks.register]]
 == Registering Entity Callbacks
 
 `EntityCallback` beans are picked up by the store specific implementations in case they are registered in the `ApplicationContext`.
@@ -107,7 +107,7 @@ The following example explains a collection of valid entity callback registratio
 ====
 [source,java]
 ----
-@Order(1)                                                          <1>
+@Order(1)                                                           <1>
 @Component
 class First implements BeforeSaveCallback<Person> {
 
@@ -119,7 +119,7 @@ class First implements BeforeSaveCallback<Person> {
 
 @Component
 class DefaultingEntityCallback implements BeforeSaveCallback<Person>,
-                                                           Ordered <2> {
+                                                           Ordered { <2>
 
 	@Override
 	public Object onBeforeSave(Person entity, String collection) {
@@ -128,7 +128,7 @@ class DefaultingEntityCallback implements BeforeSaveCallback<Person>,
 
 	@Override
 	public int getOrder() {
-		return 100;                                                <2>
+		return 100;                                                  <2>
 	}
 }
 
@@ -136,14 +136,14 @@ class DefaultingEntityCallback implements BeforeSaveCallback<Person>,
 public class EntityCallbackConfiguration {
 
     @Bean
-    BeforeSaveCallback<Person> unorderedLambdaReceiverCallback() { <3>
+    BeforeSaveCallback<Person> unorderedLambdaReceiverCallback() {   <3>
         return (BeforeSaveCallback<Person>) it -> // ...
     }
 }
 
 @Component
 class UserCallbacks implements BeforeConvertCallback<User>,
-                                        BeforeSaveCallback<User> { <4>
+                                        BeforeSaveCallback<User> {   <4>
 
 	@Override
 	public Person onBeforeConvert(User user) {
