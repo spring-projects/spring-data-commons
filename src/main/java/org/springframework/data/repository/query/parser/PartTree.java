@@ -53,8 +53,8 @@ public class PartTree implements Streamable<OrPart> {
 	 * OR
 	 *  any other letter NOT in the BASIC_LATIN Uni-code Block \\P{InBASIC_LATIN} (like Chinese, Korean, Japanese, etc.).
 	 *
-	 * @see <a href="http://www.regular-expressions.info/unicode.html">http://www.regular-expressions.info/unicode.html</a>
-	 * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#ubc">Pattern</a>
+	 * @see <a href="https://www.regular-expressions.info/unicode.html">https://www.regular-expressions.info/unicode.html</a>
+	 * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#ubc">Pattern</a>
 	 */
 	private static final String KEYWORD_TEMPLATE = "(%s)(?=(\\p{Lu}|\\P{InBASIC_LATIN}))";
 	private static final String QUERY_PATTERN = "find|read|get|query|stream";

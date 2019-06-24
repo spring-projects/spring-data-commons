@@ -1,4 +1,4 @@
-:spring-framework-docs: http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference
+:spring-framework-docs: https://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference
 :spring-framework-javadoc: https://docs.spring.io/spring/docs/{springVersion}/javadoc-api
 
 [[repositories]]
@@ -149,9 +149,9 @@ class Config {}
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xmlns:jpa="http://www.springframework.org/schema/data/jpa"
    xsi:schemaLocation="http://www.springframework.org/schema/beans
-     http://www.springframework.org/schema/beans/spring-beans.xsd
+     https://www.springframework.org/schema/beans/spring-beans.xsd
      http://www.springframework.org/schema/data/jpa
-     http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+     https://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
 
    <jpa:repositories base-package="com.acme.repositories"/>
 
@@ -252,7 +252,7 @@ They provide a tooling-friendly approach and opt-in `null` checks during runtime
  (not needed on a parameter and return value where `@NonNullApi` applies).
 * {spring-framework-javadoc}/org/springframework/lang/Nullable.html[`@Nullable`]: Used on a parameter or return value that can be `null`.
 
-Spring annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR 305] annotations (a dormant but widely spread JSR). JSR 305 meta-annotations let tooling vendors such as https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], http://help.eclipse.org/oxygen/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], and link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin] provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
+Spring annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR 305] annotations (a dormant but widely spread JSR). JSR 305 meta-annotations let tooling vendors such as https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], https://help.eclipse.org/oxygen/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], and link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin] provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
 To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on the package level by using Spring’s `@NonNullApi` in `package-info.java`, as shown in the following example:
 
 .Declaring Non-nullability in `package-info.java`
@@ -640,9 +640,9 @@ Each Spring Data module includes a `repositories` element that lets you define a
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://www.springframework.org/schema/data/jpa"
   xsi:schemaLocation="http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans.xsd
+    https://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/data/jpa
-    http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+    https://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
 
   <repositories base-package="com.acme.repositories" />
 
@@ -1005,7 +1005,7 @@ This section documents a set of Spring Data extensions that enable Spring Data u
 [[core.extensions.querydsl]]
 === Querydsl Extension
 
-http://www.querydsl.com/[Querydsl] is a framework that enables the construction of statically typed SQL-like queries through its fluent API.
+https://www.querydsl.com/[Querydsl] is a framework that enables the construction of statically typed SQL-like queries through its fluent API.
 
 Several Spring Data modules offer integration with Querydsl through `QuerydslPredicateExecutor`, as shown in the following example:
 
@@ -1235,7 +1235,7 @@ You see that the assembler produced the correct URI and also picked up the defau
 [[core.web.binding]]
 ==== Web Databinding Support
 
-Spring Data projections (described in <<projections>>) can be used to bind incoming request payloads by either using http://goessner.net/articles/JsonPath/[JSONPath] expressions (requires https://github.com/json-path/JsonPath[Jayway JsonPath] or https://www.w3.org/TR/xpath-31/[XPath] expressions (requires https://xmlbeam.org/[XmlBeam]), as shown in the following example:
+Spring Data projections (described in <<projections>>) can be used to bind incoming request payloads by either using https://goessner.net/articles/JsonPath/[JSONPath] expressions (requires https://github.com/json-path/JsonPath[Jayway JsonPath] or https://www.w3.org/TR/xpath-31/[XPath] expressions (requires https://xmlbeam.org/[XmlBeam]), as shown in the following example:
 
 .HTTP payload binding using JSONPath or XPath expressions
 ====
@@ -1272,7 +1272,7 @@ For more information, see the https://github.com/spring-projects/spring-data-exa
 [[core.web.type-safe]]
 ==== Querydsl Web Support
 
-For those stores having http://www.querydsl.com/[QueryDSL] integration, it is possible to derive queries from the attributes contained in a `Request` query string.
+For those stores having https://www.querydsl.com/[QueryDSL] integration, it is possible to derive queries from the attributes contained in a `Request` query string.
 
 Consider the following query string:
 
@@ -1379,9 +1379,9 @@ You can populate your repositories by using the populator elements of the reposi
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:repository="http://www.springframework.org/schema/data/repository"
   xsi:schemaLocation="http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans.xsd
+    https://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/data/repository
-    http://www.springframework.org/schema/data/repository/spring-repository.xsd">
+    https://www.springframework.org/schema/data/repository/spring-repository.xsd">
 
   <repository:jackson2-populator locations="classpath:data.json" />
 
@@ -1406,11 +1406,11 @@ To instead use XML to define the data the repositories should be populated with,
   xmlns:repository="http://www.springframework.org/schema/data/repository"
   xmlns:oxm="http://www.springframework.org/schema/oxm"
   xsi:schemaLocation="http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans.xsd
+    https://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/data/repository
-    http://www.springframework.org/schema/data/repository/spring-repository.xsd
+    https://www.springframework.org/schema/data/repository/spring-repository.xsd
     http://www.springframework.org/schema/oxm
-    http://www.springframework.org/schema/oxm/spring-oxm.xsd">
+    https://www.springframework.org/schema/oxm/spring-oxm.xsd">
 
   <repository:unmarshaller-populator locations="classpath:data.json"
     unmarshaller-ref="unmarshaller" />
