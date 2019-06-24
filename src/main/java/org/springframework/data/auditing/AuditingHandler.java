@@ -101,8 +101,8 @@ public class AuditingHandler implements InitializingBean {
 	}
 
 	/**
-	 * Set this to false if you want to treat entity creation as modification and thus set the current date as
-	 * modification date, too. Defaults to {@code true}.
+	 * Set this to true if you want to treat entity creation as modification and thus setting the current date as
+	 * modification date during creation, too. Defaults to {@code true}.
 	 *
 	 * @param modifyOnCreation if modification information shall be set on creation, too
 	 */
