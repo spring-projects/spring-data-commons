@@ -40,10 +40,12 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	private final Object entity;
 	private final Lazy<Optional<N>> revisionNumber;
 	private final Lazy<Optional<Object>> revisionDate;
+	private final RevisionType revisionType;
 
 	/**
 	 * Creates a new {@link AnnotationRevisionMetadata} inspecting the given entity for the given annotations. If no
-	 * annotations will be provided these values will not be looked up from the entity and return {@literal null}.
+	 * annotations will be provided these values will not be looked up from the entity and return {@literal null}. The
+	 * revisionType will be set to {@literal unknown}
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param revisionNumberAnnotation must not be {@literal null}.
@@ -52,13 +54,31 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	public AnnotationRevisionMetadata(Object entity, Class<? extends Annotation> revisionNumberAnnotation,
 			Class<? extends Annotation> revisionTimeStampAnnotation) {
 
+		this(entity, revisionNumberAnnotation, revisionTimeStampAnnotation, RevisionType.UNKNOWN);
+	}
+
+	/**
+	 * Creates a new {@link AnnotationRevisionMetadata} inspecting the given entity for the given annotations. If no
+	 * annotations will be provided these values will not be looked up from the entity and return {@literal null}.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @param revisionNumberAnnotation must not be {@literal null}.
+	 * @param revisionTimeStampAnnotation must not be {@literal null}.
+	 * @param revisionType Must not be {@literal null}.
+	 * @since 2.2.0
+	 */
+	public AnnotationRevisionMetadata(Object entity, Class<? extends Annotation> revisionNumberAnnotation,
+			Class<? extends Annotation> revisionTimeStampAnnotation, RevisionType revisionType) {
+
 		Assert.notNull(entity, "Entity must not be null!");
 		Assert.notNull(revisionNumberAnnotation, "Revision number annotation must not be null!");
 		Assert.notNull(revisionTimeStampAnnotation, "Revision time stamp annotation must not be null!");
+		Assert.notNull(revisionType, "Revision Type must not be null!");
 
 		this.entity = entity;
 		this.revisionNumber = detectAnnotation(entity, revisionNumberAnnotation);
 		this.revisionDate = detectAnnotation(entity, revisionTimeStampAnnotation);
+		this.revisionType = revisionType;
 	}
 
 	/*
@@ -75,6 +95,14 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	 */
 	public Optional<Instant> getRevisionInstant() {
 		return revisionDate.get().map(AnnotationRevisionMetadata::convertToInstant);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.history.RevisionMetadata#getRevisionDate()
+	 */
+	public RevisionType getRevisionType() {
+		return revisionType;
 	}
 
 	/*
