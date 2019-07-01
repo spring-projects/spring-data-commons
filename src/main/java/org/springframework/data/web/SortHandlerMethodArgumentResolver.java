@@ -95,6 +95,19 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 		this.qualifierDelimiter = qualifierDelimiter == null ? DEFAULT_QUALIFIER_DELIMITER : qualifierDelimiter;
 	}
 
+	/**
+	 * Configures the {@link Sort} to be used as fallback in case no {@link SortDefault} or {@link SortDefaults} (the
+	 * latter only supported in legacy mode) can be found at the method parameter to be resolved.
+	 * <p>
+	 * If you set this to {@literal null}, be aware that you controller methods will get {@literal null} handed into them
+	 * in case no {@link Sort} data can be found in the request.
+	 *
+	 * @param fallbackSort the {@link Sort} to be used as general fallback.
+	 */
+	public void setFallbackSort(Sort fallbackSort) {
+		this.fallbackSort = fallbackSort;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
@@ -128,63 +141,6 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 	}
 
 	/**
-	 * Reads the default {@link Sort} to be used from the given {@link MethodParameter}. Rejects the parameter if both an
-	 * {@link SortDefaults} and {@link SortDefault} annotation is found as we cannot build a reliable {@link Sort}
-	 * instance then (property ordering).
-	 *
-	 * @param parameter will never be {@literal null}.
-	 * @return the default {@link Sort} instance derived from the parameter annotations or the configured fallback-sort
-	 *         {@link #setFallbackSort(Sort)}.
-	 */
-	private Sort getDefaultFromAnnotationOrFallback(MethodParameter parameter) {
-
-		SortDefaults annotatedDefaults = parameter.getParameterAnnotation(SortDefaults.class);
-		SortDefault annotatedDefault = parameter.getParameterAnnotation(SortDefault.class);
-
-		if (annotatedDefault != null && annotatedDefaults != null) {
-			throw new IllegalArgumentException(
-					String.format("Cannot use both @%s and @%s on parameter %s! Move %s into %s to define sorting order!",
-							SORT_DEFAULTS_NAME, SORT_DEFAULT_NAME, parameter.toString(), SORT_DEFAULT_NAME, SORT_DEFAULTS_NAME));
-		}
-
-		if (annotatedDefault != null) {
-			return appendOrCreateSortTo(annotatedDefault, Sort.unsorted());
-		}
-
-		if (annotatedDefaults != null) {
-
-			Sort sort = Sort.unsorted();
-
-			for (SortDefault currentAnnotatedDefault : annotatedDefaults.value()) {
-				sort = appendOrCreateSortTo(currentAnnotatedDefault, sort);
-			}
-
-			return sort;
-		}
-
-		return fallbackSort;
-	}
-
-	/**
-	 * Creates a new {@link Sort} instance from the given {@link SortDefault} or appends it to the given {@link Sort}
-	 * instance if it's not {@literal null}.
-	 *
-	 * @param sortDefault
-	 * @param sortOrNull
-	 * @return
-	 */
-	private Sort appendOrCreateSortTo(SortDefault sortDefault, Sort sortOrNull) {
-
-		String[] fields = SpringDataAnnotationUtils.getSpecificPropertyOrDefaultFromValue(sortDefault, "sort");
-
-		if (fields.length == 0) {
-			return Sort.unsorted();
-		}
-
-		return sortOrNull.and(Sort.by(sortDefault.direction(), fields));
-	}
-
-	/**
 	 * Returns the sort parameter to be looked up from the request. Potentially applies qualifiers to it.
 	 *
 	 * @param parameter can be {@literal null}.
@@ -201,61 +157,6 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 		}
 
 		return builder.append(sortParameter).toString();
-	}
-
-	/**
-	 * Parses the given sort expressions into a {@link Sort} instance. The implementation expects the sources to be a
-	 * concatenation of Strings using the given delimiter. If the last element can be parsed into a {@link Direction} it's
-	 * considered a {@link Direction} and a simple property otherwise.
-	 *
-	 * @param source will never be {@literal null}.
-	 * @param delimiter the delimiter to be used to split up the source elements, will never be {@literal null}.
-	 * @return
-	 */
-	Sort parseParameterIntoSort(String[] source, String delimiter) {
-
-		List<Order> allOrders = new ArrayList<>();
-
-		for (String part : source) {
-
-			if (part == null) {
-				continue;
-			}
-
-			String[] elements = Arrays.stream(part.split(delimiter)) //
-					.filter(SortHandlerMethodArgumentResolver::notOnlyDots) //
-					.toArray(String[]::new);
-
-			Optional<Direction> direction = elements.length == 0 ? Optional.empty()
-					: Direction.fromOptionalString(elements[elements.length - 1]);
-
-			int lastIndex = direction.map(it -> elements.length - 1).orElseGet(() -> elements.length);
-
-			for (int i = 0; i < lastIndex; i++) {
-				toOrder(elements[i], direction).ifPresent(allOrders::add);
-			}
-		}
-
-		return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
-	}
-
-	/**
-	 * Returns whether the given source {@link String} consists of dots only.
-	 *
-	 * @param source must not be {@literal null}.
-	 * @return
-	 */
-	private static boolean notOnlyDots(String source) {
-		return StringUtils.hasText(source.replace(".", ""));
-	}
-
-	private static Optional<Order> toOrder(String property, Optional<Direction> direction) {
-
-		if (!StringUtils.hasText(property)) {
-			return Optional.empty();
-		}
-
-		return Optional.of(direction.map(it -> new Order(it, property)).orElseGet(() -> Order.by(property)));
 	}
 
 	/**
@@ -318,6 +219,117 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 	}
 
 	/**
+	 * Parses the given sort expressions into a {@link Sort} instance. The implementation expects the sources to be a
+	 * concatenation of Strings using the given delimiter. If the last element can be parsed into a {@link Direction} it's
+	 * considered a {@link Direction} and a simple property otherwise.
+	 *
+	 * @param source will never be {@literal null}.
+	 * @param delimiter the delimiter to be used to split up the source elements, will never be {@literal null}.
+	 * @return
+	 */
+	Sort parseParameterIntoSort(String[] source, String delimiter) {
+
+		List<Order> allOrders = new ArrayList<>();
+
+		for (String part : source) {
+
+			if (part == null) {
+				continue;
+			}
+
+			String[] elements = Arrays.stream(part.split(delimiter)) //
+					.filter(SortHandlerMethodArgumentResolver::notOnlyDots) //
+					.toArray(String[]::new);
+
+			Optional<Direction> direction = elements.length == 0 //
+					? Optional.empty() //
+					: Direction.fromOptionalString(elements[elements.length - 1]);
+
+			int lastIndex = direction.map(it -> elements.length - 1) //
+					.orElseGet(() -> elements.length);
+
+			for (int i = 0; i < lastIndex; i++) {
+				toOrder(elements[i], direction).ifPresent(allOrders::add);
+			}
+		}
+
+		return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
+	}
+
+	/**
+	 * Reads the default {@link Sort} to be used from the given {@link MethodParameter}. Rejects the parameter if both an
+	 * {@link SortDefaults} and {@link SortDefault} annotation is found as we cannot build a reliable {@link Sort}
+	 * instance then (property ordering).
+	 *
+	 * @param parameter will never be {@literal null}.
+	 * @return the default {@link Sort} instance derived from the parameter annotations or the configured fallback-sort
+	 *         {@link #setFallbackSort(Sort)}.
+	 */
+	private Sort getDefaultFromAnnotationOrFallback(MethodParameter parameter) {
+
+		SortDefaults annotatedDefaults = parameter.getParameterAnnotation(SortDefaults.class);
+		SortDefault annotatedDefault = parameter.getParameterAnnotation(SortDefault.class);
+
+		if (annotatedDefault != null && annotatedDefaults != null) {
+			throw new IllegalArgumentException(
+					String.format("Cannot use both @%s and @%s on parameter %s! Move %s into %s to define sorting order!",
+							SORT_DEFAULTS_NAME, SORT_DEFAULT_NAME, parameter.toString(), SORT_DEFAULT_NAME, SORT_DEFAULTS_NAME));
+		}
+
+		if (annotatedDefault != null) {
+			return appendOrCreateSortTo(annotatedDefault, Sort.unsorted());
+		}
+
+		if (annotatedDefaults != null) {
+
+			Sort sort = Sort.unsorted();
+
+			for (SortDefault currentAnnotatedDefault : annotatedDefaults.value()) {
+				sort = appendOrCreateSortTo(currentAnnotatedDefault, sort);
+			}
+
+			return sort;
+		}
+
+		return fallbackSort;
+	}
+
+	/**
+	 * Creates a new {@link Sort} instance from the given {@link SortDefault} or appends it to the given {@link Sort}
+	 * instance if it's not {@literal null}.
+	 *
+	 * @param sortDefault
+	 * @param sortOrNull
+	 * @return
+	 */
+	private Sort appendOrCreateSortTo(SortDefault sortDefault, Sort sortOrNull) {
+
+		String[] fields = SpringDataAnnotationUtils.getSpecificPropertyOrDefaultFromValue(sortDefault, "sort");
+
+		return fields.length == 0 //
+				? Sort.unsorted()
+				: sortOrNull.and(Sort.by(sortDefault.direction(), fields));
+	}
+
+	/**
+	 * Returns whether the given source {@link String} consists of dots only.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean notOnlyDots(String source) {
+		return StringUtils.hasText(source.replace(".", ""));
+	}
+
+	private static Optional<Order> toOrder(String property, Optional<Direction> direction) {
+
+		return !StringUtils.hasText(property) //
+				? Optional.empty() //
+				: Optional.of(direction.map(it -> new Order(it, property)) //
+						.orElseGet(() -> Order.by(property)));
+	}
+
+	/**
 	 * Helper to easily build request parameter expressions for {@link Sort} instances.
 	 *
 	 * @author Oliver Gierke
@@ -375,18 +387,5 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 
 			return expressions;
 		}
-	}
-
-	/**
-	 * Configures the {@link Sort} to be used as fallback in case no {@link SortDefault} or {@link SortDefaults} (the
-	 * latter only supported in legacy mode) can be found at the method parameter to be resolved.
-	 * <p>
-	 * If you set this to {@literal null}, be aware that you controller methods will get {@literal null} handed into them
-	 * in case no {@link Sort} data can be found in the request.
-	 *
-	 * @param fallbackSort the {@link Sort} to be used as general fallback.
-	 */
-	public void setFallbackSort(Sort fallbackSort) {
-		this.fallbackSort = fallbackSort;
 	}
 }
