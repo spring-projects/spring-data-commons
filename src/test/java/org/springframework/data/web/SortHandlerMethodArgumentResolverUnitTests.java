@@ -19,6 +19,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
+import java.util.Arrays;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.BeforeClass;
@@ -181,6 +183,18 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 		assertThat(resolveSort(request, getParameterOfMethod("simpleDefault")), is(new Sort("firstname", "lastname")));
 		assertThat(resolveSort(request, getParameterOfMethod("containeredDefault")), is(new Sort("foo", "bar")));
+	}
+
+	@Test // DATACMNS-1551
+	public void resolvesDotOnlyInputToDefault() throws Exception {
+
+		for (String source : Arrays.asList(".", ".,ASC")) {
+
+			MockHttpServletRequest request = new MockHttpServletRequest();
+			request.addParameter("sort", source);
+
+			assertThat(resolveSort(request, PARAMETER), is(nullValue()));
+		}
 	}
 
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {

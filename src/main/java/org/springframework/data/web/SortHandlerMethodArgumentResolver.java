@@ -213,16 +213,25 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 				continue;
 			}
 
-			String[] elements = part.split(delimiter);
-			Direction direction = elements.length == 0 ? null : Direction.fromStringOrNull(elements[elements.length - 1]);
+			List<String> elements = new ArrayList<String>();
 
-			for (int i = 0; i < elements.length; i++) {
+			for (String candidate : part.split(delimiter)) {
+				if (StringUtils.hasText(candidate.replace(".", ""))) {
+					elements.add(candidate);
+				}
+			}
 
-				if (i == elements.length - 1 && direction != null) {
+			int numberOfElements = elements.size();
+			Direction direction = numberOfElements == 0 ? null
+					: Direction.fromStringOrNull(elements.get(numberOfElements - 1));
+
+			for (int i = 0; i < numberOfElements; i++) {
+
+				if (i == numberOfElements - 1 && direction != null) {
 					continue;
 				}
 
-				String property = elements[i];
+				String property = elements.get(i);
 
 				if (!StringUtils.hasText(property)) {
 					continue;
