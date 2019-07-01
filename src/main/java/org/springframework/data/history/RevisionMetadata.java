@@ -71,4 +71,32 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 	 * @return
 	 */
 	<T> T getDelegate();
+
+	/**
+	 * Returns the {@link RevisionType} of this change. If the {@link RevisionType} cannot be determined this method
+	 * returns {@link RevisionType#UNKNOWN}.
+	 * 
+	 * @return Guaranteed to be not {@literal null}.
+	 * @since 2.2.0
+	 */
+	default RevisionType getRevisionType() {
+		return RevisionType.UNKNOWN;
+	}
+
+	/**
+	 * The type of a {@link Revision}.
+	 * 
+	 * @author Jens Schauder
+	 * @since 2.2.0
+	 */
+	enum RevisionType {
+		/** Fallback when the type of a revision cannot be determined. */
+		UNKNOWN,
+		/** Creation of an instance */
+		INSERT,
+		/** Change of an instance */
+		UPDATE,
+		/** Deletion of an instance */
+		DELETE
+	}
 }
