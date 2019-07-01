@@ -38,7 +38,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 
 /**
  * Unit tests for {@link SortHandlerMethodArgumentResolver}.
- * 
+ *
  * @since 1.6
  * @author Oliver Gierke
  * @author Thomas Darimont
