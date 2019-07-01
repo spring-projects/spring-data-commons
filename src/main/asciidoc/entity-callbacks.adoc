@@ -73,7 +73,7 @@ Implement the interface suiting your application needs like shown in the example
 ====
 [source,java]
 ----
-class DefaultingEntityCallback implements BeforeSaveCallback<Person>, Ordered <2> {
+class DefaultingEntityCallback implements BeforeSaveCallback<Person>, Ordered {      <2>
 
 	@Override
 	public Object onBeforeSave(Person entity, String collection) {                   <1>
