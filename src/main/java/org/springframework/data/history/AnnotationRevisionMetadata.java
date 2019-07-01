@@ -64,7 +64,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 	 * @param entity must not be {@literal null}.
 	 * @param revisionNumberAnnotation must not be {@literal null}.
 	 * @param revisionTimeStampAnnotation must not be {@literal null}.
-	 * @param revisionType Must not be {@literal null}.
+	 * @param revisionType must not be {@literal null}.
 	 * @since 2.2.0
 	 */
 	public AnnotationRevisionMetadata(Object entity, Class<? extends Annotation> revisionNumberAnnotation,
