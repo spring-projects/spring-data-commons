@@ -16,6 +16,7 @@
 package org.springframework.data.web;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -221,7 +222,9 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 				continue;
 			}
 
-			String[] elements = part.split(delimiter);
+			String[] elements = Arrays.stream(part.split(delimiter)) //
+					.filter(SortHandlerMethodArgumentResolver::notOnlyDots) //
+					.toArray(String[]::new);
 
 			Optional<Direction> direction = elements.length == 0 ? Optional.empty()
 					: Direction.fromOptionalString(elements[elements.length - 1]);
@@ -234,6 +237,16 @@ public class SortHandlerMethodArgumentResolver implements SortArgumentResolver {
 		}
 
 		return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
+	}
+
+	/**
+	 * Returns whether the given source {@link String} consists of dots only.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean notOnlyDots(String source) {
+		return StringUtils.hasText(source.replace(".", ""));
 	}
 
 	private static Optional<Order> toOrder(String property, Optional<Direction> direction) {

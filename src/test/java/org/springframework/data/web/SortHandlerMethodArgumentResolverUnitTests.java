@@ -18,6 +18,8 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
+import java.util.stream.Stream;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.BeforeClass;
@@ -180,6 +182,20 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 		assertThat(resolveSort(request, getParameterOfMethod("simpleDefault"))).isEqualTo(Sort.by("firstname", "lastname"));
 		assertThat(resolveSort(request, getParameterOfMethod("containeredDefault"))).isEqualTo(Sort.by("foo", "bar"));
+	}
+
+	@Test // DATACMNS-1551
+	public void resolvesDotOnlyInputToDefault() {
+
+		Stream.of(".", ".,ASC").forEach(it -> {
+
+			MockHttpServletRequest request = new MockHttpServletRequest();
+			request.addParameter("sort", it);
+
+			assertThatCode(() -> {
+				assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.unsorted());
+			}).doesNotThrowAnyException();
+		});
 	}
 
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
