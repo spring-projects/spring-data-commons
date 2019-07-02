@@ -16,11 +16,13 @@
 package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -64,6 +66,10 @@ class QueryExecutionResultHandler {
 	@Nullable
 	public Object postProcessInvocationResult(@Nullable Object result, Method method) {
 
+		if (!processingRequired(result, method.getReturnType())) {
+			return result;
+		}
+
 		MethodParameter parameter = new MethodParameter(method, -1);
 
 		return postProcessInvocationResult(result, 0, parameter);
@@ -96,19 +102,17 @@ class QueryExecutionResultHandler {
 			// For a wrapper type, try nested resolution first
 			result = postProcessInvocationResult(result, nestingLevel + 1, parameter);
 
-			TypeDescriptor targetType = TypeDescriptor.valueOf(expectedReturnType);
-
-			if (conversionService.canConvert(WRAPPER_TYPE, returnTypeDescriptor)
-					&& !conversionService.canBypassConvert(WRAPPER_TYPE, targetType)) {
-
-				return conversionService.convert(new NullableWrapper(result), expectedReturnType);
+			if (conversionRequired(WRAPPER_TYPE, returnTypeDescriptor)) {
+				return conversionService.convert(new NullableWrapper(result), returnTypeDescriptor);
 			}
 
-			if (result != null
-					&& conversionService.canConvert(TypeDescriptor.valueOf(result.getClass()), returnTypeDescriptor)
-					&& !conversionService.canBypassConvert(TypeDescriptor.valueOf(result.getClass()), targetType)) {
+			if (result != null) {
 
-				return conversionService.convert(result, expectedReturnType);
+				TypeDescriptor source = TypeDescriptor.valueOf(result.getClass());
+
+				if (conversionRequired(source, returnTypeDescriptor)) {
+					return conversionService.convert(result, returnTypeDescriptor);
+				}
 			}
 		}
 
@@ -129,6 +133,20 @@ class QueryExecutionResultHandler {
 	}
 
 	/**
+	 * Returns whether the configured {@link ConversionService} can convert between the given {@link TypeDescriptor}s and
+	 * the conversion will not be a no-op.
+	 *
+	 * @param source
+	 * @param target
+	 * @return
+	 */
+	private boolean conversionRequired(TypeDescriptor source, TypeDescriptor target) {
+
+		return conversionService.canConvert(source, target) //
+				&& !conversionService.canBypassConvert(source, target);
+	}
+
+	/**
 	 * Unwraps the given value if it's a JDK 8 {@link Optional}.
 	 *
 	 * @param source can be {@literal null}.
@@ -142,6 +160,22 @@ class QueryExecutionResultHandler {
 			return null;
 		}
 
-		return Optional.class.isInstance(source) ? Optional.class.cast(source).orElse(null) : source;
+		return Optional.class.isInstance(source) //
+				? Optional.class.cast(source).orElse(null) //
+				: source;
+	}
+
+	/**
+	 * Returns whether we have to process the given source object in the first place.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @param targetType must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean processingRequired(@Nullable Object source, Class<?> targetType) {
+
+		return !targetType.isInstance(source) //
+				|| source == null //
+				|| Collection.class.isInstance(source);
 	}
 }
