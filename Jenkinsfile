@@ -29,7 +29,7 @@ pipeline {
                     options { timeout(time: 30, unit: 'MINUTES') }
                     steps {
                         sh 'rm -rf ?'
-                        sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/spring-data-maven-repository" ./mvnw clean dependency:list test -Dsort -B'
+                        sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/spring-data-maven-repository" ./mvnw clean dependency:list verify -Dsort -B'
                     }
                 }
             }
@@ -53,7 +53,14 @@ pipeline {
 
             steps {
                 sh 'rm -rf ?'
-                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/spring-data-maven-repository" ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B'
+                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/spring-data-maven-repository" ./mvnw -Pci,artifactory ' +
+                        '-Dartifactory.server=https://repo.spring.io ' +
+                        "-Dartifactory.username=${ARTIFACTORY_USR} " +
+                        "-Dartifactory.password=${ARTIFACTORY_PSW} " +
+                        "-Dartifactory.staging-repository=libs-snapshot-local " +
+                        "-Dartifactory.build-name=spring-data-build " +
+                        "-Dartifactory.build-number=${BUILD_NUMBER} " +
+                        '-Dmaven.test.skip=true clean deploy -B'
             }
         }
         stage('Release to artifactory with docs') {
@@ -70,12 +77,18 @@ pipeline {
 
             environment {
                 ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
-                DOC = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
             }
 
             steps {
                 sh 'rm -rf ?'
-                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/spring-data-maven-repository" DOC_USERNAME=${DOC_USR} DOC_PASSWORD=${DOC_PSW} ./mvnw -Pci,snapshot -Dmaven.test.skip=true clean deploy -B'
+                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/spring-data-maven-repository" ./mvnw -Pci,artifactory ' +
+                        '-Dartifactory.server=https://repo.spring.io ' +
+                        "-Dartifactory.username=${ARTIFACTORY_USR} " +
+                        "-Dartifactory.password=${ARTIFACTORY_PSW} " +
+                        "-Dartifactory.staging-repository=libs-snapshot-local " +
+                        "-Dartifactory.build-name=spring-data-build " +
+                        "-Dartifactory.build-number=${BUILD_NUMBER} " +
+                        '-Dmaven.test.skip=true clean deploy -B'
             }
         }
     }
