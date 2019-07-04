@@ -405,6 +405,14 @@ public class QueryExecutionResultHandlerUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1552
+	public void keepsVavrOptionType() throws Exception {
+
+		Option<Entity> source = Option.of(new Entity());
+
+		assertThat(handler.postProcessInvocationResult(source, getMethod("option"))).isSameAs(source);
+	}
+
 	private static Method getMethod(String methodName) throws Exception {
 		return Sample.class.getMethod(methodName);
 	}

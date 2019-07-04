@@ -167,7 +167,7 @@ class QueryExecutionResultHandler {
 
 	/**
 	 * Returns whether we have to process the given source object in the first place.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param targetType must not be {@literal null}.
 	 * @return
