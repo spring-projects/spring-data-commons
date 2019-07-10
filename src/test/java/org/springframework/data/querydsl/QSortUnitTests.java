@@ -23,6 +23,7 @@ import static org.springframework.data.querydsl.QQSortUnitTests_WrapperToWrapWra
 import java.util.List;
 
 import org.junit.Test;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -41,9 +42,9 @@ import com.querydsl.core.types.dsl.StringPath;
  */
 public class QSortUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-402
+	@Test // DATACMNS-402
 	public void shouldThrowIfNullIsGiven() {
-		new QSort((List<OrderSpecifier<?>>) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new QSort((List<OrderSpecifier<?>>) null));
 	}
 
 	@Test // DATACMNS-402

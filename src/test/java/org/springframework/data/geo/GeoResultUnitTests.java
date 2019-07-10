@@ -50,10 +50,11 @@ public class GeoResultUnitTests {
 		assertThat(fourth.equals(first)).isFalse();
 	}
 
+	@Test
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
+	// DATACMNS-437
 	public void rejectsNullContent() {
-		new GeoResult(null, new Distance(2.5));
+		assertThatIllegalArgumentException().isThrownBy(() -> new GeoResult(null, new Distance(2.5)));
 	}
 
 	@Test // DATACMNS-482

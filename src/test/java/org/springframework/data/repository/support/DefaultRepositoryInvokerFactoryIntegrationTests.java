@@ -21,10 +21,9 @@ import static org.mockito.Mockito.*;
 import java.util.Optional;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.sample.Product;
 import org.springframework.data.repository.sample.ProductRepository;
@@ -47,8 +46,6 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 
 	RepositoryInvokerFactory factory;
 
-	@Rule public ExpectedException exception = ExpectedException.none();
-
 	@Before
 	public void setUp() {
 		this.factory = new DefaultRepositoryInvokerFactory(repositories);
@@ -69,11 +66,10 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 	@Test // DATACMNS-374, DATACMNS-589
 	public void shouldThrowMeaningfulExceptionWhenTheRepositoryForAGivenDomainClassCannotBeFound() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("No repository found for domain type: ");
-		exception.expectMessage(Object.class.getName());
-
-		factory.getInvokerFor(Object.class);
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> factory.getInvokerFor(Object.class)) //
+				.withMessageContaining("No repository found for domain type: ") //
+				.withMessageContaining(Object.class.getName());
 	}
 
 	@Test // DATACMNS-589

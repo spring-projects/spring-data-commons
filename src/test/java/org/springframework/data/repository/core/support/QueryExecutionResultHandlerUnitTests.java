@@ -266,7 +266,7 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(mono.block()).isNull();
 	}
 
-	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACMNS-836
+	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
 	public void convertsRxJavaCompletableIntoMonoWithException() throws Exception {
 
@@ -276,8 +276,8 @@ public class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono mono = (Mono) result;
-		mono.block();
-		fail("Missing InvalidDataAccessApiUsageException");
+
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class).isThrownBy(mono::block);
 	}
 
 	@Test // DATACMNS-836

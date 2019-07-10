@@ -56,24 +56,28 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		assertSupportedAndResult(supportedMethodParameter, PageRequest.of(0, 100), request);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsEmptyPageParameterName() {
-		new PageableHandlerMethodArgumentResolver().setPageParameterName("");
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new PageableHandlerMethodArgumentResolver().setPageParameterName(""));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullPageParameterName() {
-		new PageableHandlerMethodArgumentResolver().setPageParameterName(null);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new PageableHandlerMethodArgumentResolver().setPageParameterName(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsEmptySizeParameterName() {
-		new PageableHandlerMethodArgumentResolver().setSizeParameterName("");
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new PageableHandlerMethodArgumentResolver().setSizeParameterName(""));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullSizeParameterName() {
-		new PageableHandlerMethodArgumentResolver().setSizeParameterName(null);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new PageableHandlerMethodArgumentResolver().setSizeParameterName(null));
 	}
 
 	@Test
@@ -104,10 +108,8 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("invalidDefaultPageSize", Pageable.class),
 				0);
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("invalidDefaultPageSize");
-
-		assertSupportedAndResult(parameter, DEFAULT_PAGE_REQUEST);
+		assertThatIllegalStateException().isThrownBy(() -> assertSupportedAndResult(parameter, DEFAULT_PAGE_REQUEST)) //
+				.withMessageContaining("invalidDefaultPageSize");
 	}
 
 	@Test // DATACMNS-408

@@ -7,7 +7,7 @@ import org.springframework.data.domain.Sort.Direction;
 
 /**
  * Unit test for {@link Direction}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DirectionUnitTests {
@@ -19,8 +19,8 @@ public class DirectionUnitTests {
 		assertThat(Direction.fromString("desc")).isEqualTo(Direction.DESC);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsInvalidString() throws Exception {
-		Direction.fromString("foo");
+	@Test
+	public void rejectsInvalidString() {
+		assertThatIllegalArgumentException().isThrownBy(() -> Direction.fromString("foo"));
 	}
 }

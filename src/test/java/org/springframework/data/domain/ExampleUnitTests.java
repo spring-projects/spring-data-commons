@@ -42,9 +42,9 @@ public class ExampleUnitTests {
 		example = Example.of(person);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-810
+	@Test // DATACMNS-810
 	public void rejectsNullProbe() {
-		Example.of(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> Example.of(null));
 	}
 
 	@Test // DATACMNS-810

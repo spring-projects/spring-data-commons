@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -74,9 +75,9 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 		assertThat(user.modifiedDate).isNotNull();
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-365
+	@Test // DATACMNS-365
 	public void rejectsNullMappingContext() {
-		new IsNewAwareAuditingHandler((PersistentEntities) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new IsNewAwareAuditingHandler((PersistentEntities) null));
 	}
 
 	@Test // DATACMNS-365

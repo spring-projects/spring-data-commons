@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
@@ -52,9 +53,9 @@ public class QuerydslBindingsUnitTests {
 		this.bindings = new QuerydslBindings();
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
+	@Test // DATACMNS-669
 	public void rejectsNullPath() {
-		bindings.getBindingForPath(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> bindings.getBindingForPath(null));
 	}
 
 	@Test // DATACMNS-669
@@ -190,14 +191,14 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("address.city", User.class)).isFalse();
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-787
+	@Test // DATACMNS-787
 	public void rejectsNullAlias() {
-		bindings.bind(QUser.user.address).as(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> bindings.bind(QUser.user.address).as(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-787
+	@Test // DATACMNS-787
 	public void rejectsEmptyAlias() {
-		bindings.bind(QUser.user.address).as("");
+		assertThatIllegalArgumentException().isThrownBy(() -> bindings.bind(QUser.user.address).as(""));
 	}
 
 	@Test // DATACMNS-787

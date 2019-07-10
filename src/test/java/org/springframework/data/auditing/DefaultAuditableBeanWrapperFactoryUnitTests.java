@@ -26,6 +26,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
 import org.junit.Test;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper;
@@ -43,9 +44,9 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 
 	DefaultAuditableBeanWrapperFactory factory = new DefaultAuditableBeanWrapperFactory();
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullSource() {
-		factory.getBeanWrapperFor(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.getBeanWrapperFor(null));
 	}
 
 	@Test
@@ -85,7 +86,7 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 		});
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-867
+	@Test // DATACMNS-867
 	public void errorsWhenUnableToConvertDateViaIntermediateJavaUtilDateConversion() {
 
 		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
@@ -93,7 +94,10 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 
 		Optional<AuditableBeanWrapper<Jsr310ThreeTenBpAuditedUser>> wrapper = factory.getBeanWrapperFor(user);
 
-		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(zonedDateTime));
+		assertThat(wrapper).isNotEmpty();
+
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> wrapper.ifPresent(it -> it.setLastModifiedDate(zonedDateTime)));
 	}
 
 	@Test // DATACMNS-1259

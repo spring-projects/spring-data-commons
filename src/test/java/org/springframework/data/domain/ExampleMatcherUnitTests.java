@@ -57,9 +57,10 @@ public class ExampleMatcherUnitTests {
 		assertThat(matcher.getNullHandler()).isEqualTo(NullHandler.IGNORE);
 	}
 
-	@Test(expected = UnsupportedOperationException.class) // DATACMNS-810
+	@Test // DATACMNS-810
 	public void ignoredPathsIsNotModifiable() {
-		matcher.getIgnoredPaths().add("¯\\_(ツ)_/¯");
+		assertThatExceptionOfType(UnsupportedOperationException.class)
+				.isThrownBy(() -> matcher.getIgnoredPaths().add("¯\\_(ツ)_/¯"));
 	}
 
 	@Test // DATACMNS-810

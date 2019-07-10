@@ -55,14 +55,14 @@ public class PageImplUnitTests {
 		assertNotEqualsAndHashcode(page, new PageImpl<>(content, PageRequest.of(0, 15), 100));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void preventsNullContentForSimpleSetup() throws Exception {
-		new PageImpl<>(null);
+	@Test
+	public void preventsNullContentForSimpleSetup() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new PageImpl<>(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void preventsNullContentForAdvancedSetup() throws Exception {
-		new PageImpl<>(null, null, 0);
+	@Test
+	public void preventsNullContentForAdvancedSetup() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new PageImpl<>(null, null, 0));
 	}
 
 	@Test

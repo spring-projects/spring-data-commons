@@ -39,9 +39,9 @@ public class PersistableIsNewStrategyUnitTests {
 		assertThat(strategy.isNew(entity)).isFalse();
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNonPersistableEntity() {
-		strategy.isNew(new Object());
+		assertThatIllegalArgumentException().isThrownBy(() -> strategy.isNew(new Object()));
 	}
 
 	@SuppressWarnings("serial")

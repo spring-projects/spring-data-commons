@@ -38,9 +38,9 @@ public class EntityInstantiatorsUnitTests {
 	@Mock PersistentEntity<?, ?> entity;
 	@Mock EntityInstantiator customInstantiator;
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullFallbackInstantiator() {
-		new EntityInstantiators((EntityInstantiator) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new EntityInstantiators((EntityInstantiator) null));
 	}
 
 	@Test

@@ -111,12 +111,13 @@ public class ChainedTransactionManagerTests {
 
 	}
 
-	@Test(expected = UnexpectedRollbackException.class)
+	@Test
 	public void shouldThrowExceptionOnFailingRollback() {
 
 		PlatformTransactionManager first = createFailingTransactionManager("first");
 		setupTransactionManagers(first);
-		createAndRollbackTransaction();
+
+		assertThatExceptionOfType(UnexpectedRollbackException.class).isThrownBy(this::createAndRollbackTransaction);
 	}
 
 	private void setupTransactionManagers(PlatformTransactionManager... transactionManagers) {

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;
@@ -37,9 +38,10 @@ public class PersistenceExceptionTranslationRepositoryProxyPostProcessorUnitTest
 	@Mock ListableBeanFactory beanFactory;
 	@Mock ProxyFactory proxyFactory;
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-318
-	public void rejectsNullBeanFactory() throws Exception {
-		new PersistenceExceptionTranslationRepositoryProxyPostProcessor(null);
+	@Test // DATACMNS-318
+	public void rejectsNullBeanFactory() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new PersistenceExceptionTranslationRepositoryProxyPostProcessor(null));
 	}
 
 	@Test // DATACMNS-318

@@ -17,9 +17,8 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -32,6 +31,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  *
  * @since 1.6
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public abstract class SortDefaultUnitTests {
 
@@ -44,8 +44,6 @@ public abstract class SortDefaultUnitTests {
 	static final Direction SORT_DIRECTION = Direction.DESC;
 
 	static final Sort SORT = Sort.by(SORT_DIRECTION, SORT_FIELDS);
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void parsesSimpleSortStringCorrectly() {
@@ -92,19 +90,18 @@ public abstract class SortDefaultUnitTests {
 	}
 
 	@Test
-	public void rejectsDoubleAnnotatedMethod() throws Exception {
+	public void rejectsDoubleAnnotatedMethod() {
 
 		MethodParameter parameter = getParameterOfMethod("invalid");
 
 		HandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(SortDefault.class.getSimpleName());
-		exception.expectMessage(SortDefaults.class.getSimpleName());
-		exception.expectMessage(parameter.toString());
-
-		resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null)) //
+				.withMessageContaining(SortDefault.class.getSimpleName()) //
+				.withMessageContaining(SortDefaults.class.getSimpleName()) //
+				.withMessageContaining(parameter.toString());
 	}
 
 	@Test

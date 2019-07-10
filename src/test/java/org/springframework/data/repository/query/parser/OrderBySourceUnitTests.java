@@ -30,26 +30,25 @@ import org.springframework.data.domain.Sort;
 public class OrderBySourceUnitTests {
 
 	@Test
-	public void handlesSingleDirectionAndPropertyCorrectly() throws Exception {
+	public void handlesSingleDirectionAndPropertyCorrectly() {
 		assertThat(new OrderBySource("UsernameDesc").toSort()).isEqualTo(Sort.by("username").descending());
 	}
 
 	@Test
-	public void handlesCamelCasePropertyCorrecty() throws Exception {
+	public void handlesCamelCasePropertyCorrecty() {
 		assertThat(new OrderBySource("LastnameUsernameDesc").toSort()).isEqualTo(Sort.by("lastnameUsername").descending());
 	}
 
 	@Test
-	public void handlesMultipleDirectionsCorrectly() throws Exception {
+	public void handlesMultipleDirectionsCorrectly() {
 
 		OrderBySource orderBySource = new OrderBySource("LastnameAscUsernameDesc");
 		assertThat(orderBySource.toSort()).isEqualTo(Sort.by("lastname").ascending().and(Sort.by("username").descending()));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsMissingProperty() throws Exception {
-
-		new OrderBySource("Desc");
+	@Test
+	public void rejectsMissingProperty() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new OrderBySource("Desc"));
 	}
 
 	@Test

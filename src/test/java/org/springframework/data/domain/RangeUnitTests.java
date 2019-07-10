@@ -18,6 +18,7 @@ package org.springframework.data.domain;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
+
 import org.springframework.data.domain.Range.Bound;
 
 /**
@@ -29,9 +30,10 @@ import org.springframework.data.domain.Range.Bound;
  */
 public class RangeUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-651
+	@Test // DATACMNS-651
 	public void rejectsNullReferenceValuesForContains() {
-		Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L)).contains(null);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L)).contains(null));
 	}
 
 	@Test // DATACMNS-651

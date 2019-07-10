@@ -96,9 +96,9 @@ public class RepositoriesUnitTests {
 		assertThat(repositories.getRepositoryFor(String.class)).isNotPresent();
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullBeanFactory() {
-		new Repositories(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new Repositories(null));
 	}
 
 	@Test // DATACMNS-256

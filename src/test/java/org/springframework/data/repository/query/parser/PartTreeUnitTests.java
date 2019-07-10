@@ -50,19 +50,19 @@ public class PartTreeUnitTests {
 
 	private String[] PREFIXES = { "find", "read", "get", "query", "stream", "count", "delete", "remove", "exists" };
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullSource() throws Exception {
-		new PartTree(null, getClass());
+	@Test
+	public void rejectsNullSource() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new PartTree(null, getClass()));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullDomainClass() throws Exception {
-		new PartTree("test", null);
+	@Test
+	public void rejectsNullDomainClass() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new PartTree("test", null));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsMultipleOrderBy() throws Exception {
-		partTree("firstnameOrderByLastnameOrderByFirstname");
+	@Test
+	public void rejectsMultipleOrderBy() {
+		assertThatIllegalArgumentException().isThrownBy(() -> partTree("firstnameOrderByLastnameOrderByFirstname"));
 	}
 
 	@Test

@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -57,17 +58,17 @@ public class ParametersUnitTests {
 		new DefaultParameters(validWithSort);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsInvalidMethodWithParamMissing() throws Exception {
 
 		Method method = SampleDao.class.getMethod("invalidParamMissing", String.class, String.class);
-		new DefaultParameters(method);
+
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultParameters(method));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullMethod() throws Exception {
-
-		new DefaultParameters(null);
+	@Test
+	public void rejectsNullMethod() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultParameters(null));
 	}
 
 	@Test

@@ -30,9 +30,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -73,8 +71,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 @RunWith(MockitoJUnitRunner.class)
 public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
-	@Rule public ExpectedException exception = ExpectedException.none();
-
 	@Mock T property, anotherProperty;
 
 	@Test
@@ -82,14 +78,14 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		PersistentEntitySpec.assertInvariants(createEntity(Person.class));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullTypeInformation() {
-		new BasicPersistentEntity<Object, T>(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new BasicPersistentEntity<Object, T>(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullProperty() {
-		createEntity(Person.class, null).addPersistentProperty(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> createEntity(Person.class, null).addPersistentProperty(null));
 	}
 
 	@Test
@@ -160,8 +156,7 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		when(anotherProperty.getName()).thenReturn("another");
 
 		entity.addPersistentProperty(property);
-		exception.expect(MappingException.class);
-		entity.addPersistentProperty(anotherProperty);
+		assertThatExceptionOfType(MappingException.class).isThrownBy(() -> entity.addPersistentProperty(anotherProperty));
 	}
 
 	@Test // DATACMNS-365
@@ -205,22 +200,22 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(accessor.getBean()).isEqualTo(value);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
+	@Test // DATACMNS-596
 	public void rejectsNullBeanForPropertyAccessor() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
-		entity.getPropertyAccessor(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> entity.getPropertyAccessor(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
+	@Test // DATACMNS-596
 	public void rejectsNonMatchingBeanForPropertyAccessor() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
-		entity.getPropertyAccessor("foo");
+		assertThatIllegalArgumentException().isThrownBy(() -> entity.getPropertyAccessor("foo"));
 	}
 
 	@Test // DATACMNS-597
@@ -245,10 +240,8 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 		PersistentEntity<Entity, T> entity = createEntity(Entity.class);
 
-		exception.expectMessage(Entity.class.getName());
-		exception.expectMessage(Object.class.getName());
-
-		entity.getPropertyAccessor(new Object());
+		assertThatThrownBy(() -> entity.getPropertyAccessor(new Object())).hasMessageContaining(Entity.class.getName())
+				.hasMessageContaining(Object.class.getName());
 	}
 
 	@Test // DATACMNS-934, DATACMNS-867

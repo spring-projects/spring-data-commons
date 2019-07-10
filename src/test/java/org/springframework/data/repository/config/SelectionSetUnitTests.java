@@ -41,17 +41,19 @@ public class SelectionSetUnitTests {
 		assertThat(SelectionSet.of(emptySet()).uniqueResult()).isEmpty();
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACMNS-764
+	@Test // DATACMNS-764
 	public void multipleElementsThrowException() {
-		SelectionSet.of(asList("one", "two")).uniqueResult();
+		assertThatIllegalStateException().isThrownBy(() -> SelectionSet.of(asList("one", "two")).uniqueResult());
 	}
 
-	@Test(expected = NullPointerException.class) // DATACMNS-764
+	@Test // DATACMNS-764
 	public void throwsCustomExceptionWhenConfigured() {
 
-		SelectionSet.of(asList("one", "two"), c -> {
-			throw new NullPointerException();
-		}).uniqueResult();
+		assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> {
+			SelectionSet.of(asList("one", "two"), c -> {
+				throw new NullPointerException();
+			}).uniqueResult();
+		});
 	}
 
 	@Test // DATACMNS-764

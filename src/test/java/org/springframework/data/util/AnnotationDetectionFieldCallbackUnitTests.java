@@ -30,9 +30,9 @@ import org.springframework.util.ReflectionUtils;
  */
 public class AnnotationDetectionFieldCallbackUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-616
+	@Test // DATACMNS-616
 	public void rejectsNullAnnotationType() {
-		new AnnotationDetectionFieldCallback(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new AnnotationDetectionFieldCallback(null));
 	}
 
 	@Test // DATACMNS-616

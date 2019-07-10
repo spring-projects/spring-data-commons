@@ -30,16 +30,16 @@ public class IdPropertyIdentifierAccessorUnitTests {
 
 	SampleMappingContext mappingContext = new SampleMappingContext();
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-599
+	@Test // DATACMNS-599
 	public void rejectsEntityWithoutIdentifierProperty() {
-
-		new IdPropertyIdentifierAccessor(mappingContext.getRequiredPersistentEntity(Sample.class), new Sample());
+		assertThatIllegalArgumentException().isThrownBy(
+				() -> new IdPropertyIdentifierAccessor(mappingContext.getRequiredPersistentEntity(Sample.class), new Sample()));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-599
+	@Test // DATACMNS-599
 	public void rejectsNullBean() {
-
-		new IdPropertyIdentifierAccessor(mappingContext.getRequiredPersistentEntity(SampleWithId.class), null);
+		assertThatIllegalArgumentException().isThrownBy(
+				() -> new IdPropertyIdentifierAccessor(mappingContext.getRequiredPersistentEntity(SampleWithId.class), null));
 	}
 
 	@Test // DATACMNS-599

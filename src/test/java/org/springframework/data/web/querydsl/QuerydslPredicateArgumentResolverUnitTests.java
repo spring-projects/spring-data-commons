@@ -21,9 +21,8 @@ import static org.springframework.data.web.querydsl.QuerydslPredicateArgumentRes
 import java.util.Optional;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,12 +51,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
  *
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class QuerydslPredicateArgumentResolverUnitTests {
-
-	static final TypeInformation<?> USER_TYPE = ClassTypeInformation.from(User.class);
-
-	public @Rule ExpectedException exception = ExpectedException.none();
 
 	QuerydslPredicateArgumentResolver resolver;
 	MockHttpServletRequest request;
@@ -81,9 +77,10 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 				.isTrue();
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
+	@Test // DATACMNS-669
 	public void supportsParameterShouldThrowExceptionWhenMethodParameterIsNoPredicateButAnnotatedAsSuch() {
-		resolver.supportsParameter(getMethodParameterFor("nonPredicateWithAnnotation", String.class));
+		assertThatIllegalArgumentException().isThrownBy(
+				() -> resolver.supportsParameter(getMethodParameterFor("nonPredicateWithAnnotation", String.class)));
 	}
 
 	@Test // DATACMNS-669
@@ -100,7 +97,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
-		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("rand"));
+		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand"));
 	}
 
 	@Test // DATACMNS-669
@@ -112,7 +109,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		Predicate predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
-		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("al'thor")));
+		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("al'thor")));
 	}
 
 	@Test // DATACMNS-669

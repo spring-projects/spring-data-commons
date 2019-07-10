@@ -28,9 +28,9 @@ import org.springframework.util.SerializationUtils;
  */
 public class PointUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
+	@Test // DATACMNS-437
 	public void rejectsNullforCopyConstructor() {
-		new Point(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new Point(null));
 	}
 
 	@Test // DATACMNS-437

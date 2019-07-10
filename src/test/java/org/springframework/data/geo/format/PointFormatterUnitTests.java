@@ -23,14 +23,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+
 import org.springframework.data.geo.Point;
 
 /**
@@ -50,25 +49,19 @@ public class PointFormatterUnitTests {
 
 	public static class UnparameterizedTests {
 
-		public @Rule ExpectedException exception = ExpectedException.none();
-
 		@Test // DATAREST-279, DATACMNS-626
 		public void rejectsArbitraryNonsense() {
-
-			exception.expect(IllegalArgumentException.class);
-			exception.expectMessage("comma");
-
-			INSTANCE.convert("foo");
+			assertThatIllegalArgumentException().isThrownBy(() -> INSTANCE.convert("foo")).withMessageContaining("comma");
 		}
 
-		@Test(expected = IllegalArgumentException.class) // DATAREST-279, DATACMNS-626
+		@Test // DATAREST-279, DATACMNS-626
 		public void rejectsMoreThanTwoCoordinates() {
-			INSTANCE.convert("10.8,20.9,30.10");
+			assertThatIllegalArgumentException().isThrownBy(() -> INSTANCE.convert("10.8,20.9,30.10"));
 		}
 
-		@Test(expected = IllegalArgumentException.class) // DATAREST-279, DATACMNS-626
+		@Test // DATAREST-279, DATACMNS-626
 		public void rejectsInvalidCoordinate() {
-			INSTANCE.convert("10.8,foo");
+			assertThatIllegalArgumentException().isThrownBy(() -> INSTANCE.convert("10.8,foo"));
 		}
 	}
 

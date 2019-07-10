@@ -41,9 +41,10 @@ public class SimpleEntityPathResolverUnitTests {
 		assertThat(resolver.createPath(NamedUser.class)).isInstanceOf(QSimpleEntityPathResolverUnitTests_NamedUser.class);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme() throws Exception {
-		resolver.createPath(QSimpleEntityPathResolverUnitTests_Sample.class);
+	@Test
+	public void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> resolver.createPath(QSimpleEntityPathResolverUnitTests_Sample.class));
 	}
 
 	@Test // DATACMNS-1235

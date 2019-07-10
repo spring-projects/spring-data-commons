@@ -40,9 +40,9 @@ public class PersistentEntitiesUnitTests {
 	@Mock SampleMappingContext first;
 	@Mock SampleMappingContext second;
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-458
+	@Test // DATACMNS-458
 	public void rejectsNullMappingContexts() {
-		new PersistentEntities(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new PersistentEntities(null));
 	}
 
 	@Test // DATACMNS-458

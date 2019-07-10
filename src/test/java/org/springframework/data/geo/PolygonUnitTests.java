@@ -32,9 +32,9 @@ public class PolygonUnitTests {
 	Point second = new Point(2, 2);
 	Point third = new Point(3, 3);
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
+	@Test // DATACMNS-437
 	public void rejectsNullPoints() {
-		new Polygon(null, null, null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new Polygon(null, null, null));
 	}
 
 	@Test // DATACMNS-437

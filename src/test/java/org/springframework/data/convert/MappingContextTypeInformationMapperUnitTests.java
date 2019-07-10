@@ -45,9 +45,9 @@ public class MappingContextTypeInformationMapperUnitTests {
 		mappingContext = new SampleMappingContext();
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullMappingContext() {
-		new MappingContextTypeInformationMapper(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new MappingContextTypeInformationMapper(null));
 	}
 
 	@Test

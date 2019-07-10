@@ -86,13 +86,14 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 				.satisfies(it -> verify(provider, times(1)).getParameterValue(it.getParameters().iterator().next()));
 	}
 
-	@Test(expected = MappingInstantiationException.class) // DATACMNS-300, DATACMNS-578
+	@Test // DATACMNS-300, DATACMNS-578
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void throwsExceptionOnBeanInstantiationException() {
 
 		doReturn(PersistentEntity.class).when(entity).getType();
 
-		this.instance.createInstance(entity, provider);
+		assertThatExceptionOfType(MappingInstantiationException.class)
+				.isThrownBy(() -> this.instance.createInstance(entity, provider));
 	}
 
 	@Test // DATACMNS-134, DATACMNS-578

@@ -19,9 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Field;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.util.ReflectionUtils;
 
@@ -38,8 +37,6 @@ public class AnnotationAuditingMetadataUnitTests {
 	static final Field createdDateField = ReflectionUtils.findField(AnnotatedUser.class, "createdDate");
 	static final Field lastModifiedByField = ReflectionUtils.findField(AnnotatedUser.class, "lastModifiedBy");
 	static final Field lastModifiedDateField = ReflectionUtils.findField(AnnotatedUser.class, "lastModifiedDate");
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void checkAnnotationDiscovery() {
@@ -82,11 +79,8 @@ public class AnnotationAuditingMetadataUnitTests {
 			@CreatedDate String field;
 		}
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage(String.class.getName());
-		exception.expectMessage("field");
-
-		AnnotationAuditingMetadata.getMetadata(Sample.class);
+		assertThatIllegalStateException().isThrownBy(() -> AnnotationAuditingMetadata.getMetadata(Sample.class))
+				.withMessageContaining("field").withMessageContaining("String");
 	}
 
 	@SuppressWarnings("unused")

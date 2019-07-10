@@ -63,14 +63,15 @@ public class QuerydslPredicateBuilderUnitTests {
 		this.values = new LinkedMultiValueMap<>();
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
+	@Test // DATACMNS-669
 	public void rejectsNullConversionService() {
-		new QuerydslPredicateBuilder(null, SimpleEntityPathResolver.INSTANCE);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new QuerydslPredicateBuilder(null, SimpleEntityPathResolver.INSTANCE));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-669
+	@Test // DATACMNS-669
 	public void getPredicateShouldThrowErrorWhenBindingContextIsNull() {
-		builder.getPredicate(null, values, null);
+		assertThatIllegalArgumentException().isThrownBy(() -> builder.getPredicate(null, values, null));
 	}
 
 	@Test // DATACMNS-669, DATACMNS-1168

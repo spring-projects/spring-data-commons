@@ -80,13 +80,14 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 				.satisfies(it -> verify(provider, times(1)).getParameterValue(it.getParameters().iterator().next()));
 	}
 
-	@Test(expected = MappingInstantiationException.class) // DATACMNS-300
+	@Test // DATACMNS-300
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void throwsExceptionOnBeanInstantiationException() {
 
 		doReturn(PersistentEntity.class).when(entity).getType();
 
-		INSTANCE.createInstance(entity, provider);
+		assertThatExceptionOfType(MappingInstantiationException.class)
+				.isThrownBy(() -> INSTANCE.createInstance(entity, provider));
 	}
 
 	@Test // DATACMNS-134

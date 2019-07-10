@@ -139,9 +139,10 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		assertThat(declaredConstructors[0].getParameterTypes()[0]).isEqualTo(expectedConstructorType);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-809
+	@Test // DATACMNS-809
 	public void shouldFailOnNullBean() {
-		factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), null);
+		assertThatIllegalArgumentException().isThrownBy(
+				() -> factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), null));
 	}
 
 	@Test // DATACMNS-809

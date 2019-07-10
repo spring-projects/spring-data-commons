@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -42,13 +44,14 @@ public class QueryExecutorMethodInterceptorUnitTests {
 	@Mock RepositoryInformation information;
 	@Mock QueryLookupStrategy strategy;
 
-	@Test(expected = IllegalStateException.class)
-	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() throws Exception {
+	@Test
+	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() {
 
 		when(information.hasQueryMethods()).thenReturn(true);
 		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.empty());
 
-		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory());
+		assertThatIllegalStateException().isThrownBy(
+				() -> factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory()));
 	}
 
 	@Test

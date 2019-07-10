@@ -28,9 +28,9 @@ import org.springframework.data.mapping.context.AbstractMappingContext.Persisten
  */
 public class PropertyMatchUnitTests {
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsBothParametersBeingNull() {
-		new PropertyMatch(null, null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new PropertyMatch(null, null));
 	}
 
 	@Test

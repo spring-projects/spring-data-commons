@@ -70,19 +70,22 @@ public class CdiRepositoryBeanUnitTests {
 	@Mock BeanManager beanManager;
 	@Mock RepositoryFactorySupport repositoryFactory;
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void voidRejectsNullQualifiers() {
-		new DummyCdiRepositoryBean<>(null, SampleRepository.class, beanManager);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new DummyCdiRepositoryBean<>(null, SampleRepository.class, beanManager));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void voidRejectsNullRepositoryType() {
-		new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, null, beanManager);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, null, beanManager));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void voidRejectsNullBeanManager() {
-		new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class, null);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class, null));
 	}
 
 	@Test

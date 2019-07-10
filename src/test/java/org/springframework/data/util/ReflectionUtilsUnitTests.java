@@ -60,9 +60,10 @@ public class ReflectionUtilsUnitTests {
 		assertThat(field).isNull();
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void rejectsNonUniqueField() {
-		ReflectionUtils.findField(Sample.class, new ReflectionUtils.AnnotationFieldFilter(Autowired.class));
+		assertThatIllegalStateException().isThrownBy(
+				() -> ReflectionUtils.findField(Sample.class, new ReflectionUtils.AnnotationFieldFilter(Autowired.class)));
 	}
 
 	@Test

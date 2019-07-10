@@ -51,17 +51,19 @@ public class QueryMethodUnitTests {
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(SampleRepository.class);
 	ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 
-	@Test(expected = IllegalStateException.class) // DATAJPA-59
+	@Test // DATAJPA-59
 	public void rejectsPagingMethodWithInvalidReturnType() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("pagingMethodWithInvalidReturnType", Pageable.class);
-		new QueryMethod(method, metadata, factory);
+
+		assertThatIllegalStateException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAJPA-59
+	@Test // DATAJPA-59
 	public void rejectsPagingMethodWithoutPageable() throws Exception {
 		Method method = SampleRepository.class.getMethod("pagingMethodWithoutPageable");
-		new QueryMethod(method, metadata, factory);
+
+		assertThatIllegalArgumentException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
 	}
 
 	@Test // DATACMNS-64

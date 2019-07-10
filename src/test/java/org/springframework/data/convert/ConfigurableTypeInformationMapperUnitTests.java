@@ -45,19 +45,19 @@ public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProp
 		mapper = new ConfigurableTypeInformationMapper(Collections.singletonMap(String.class, "1"));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullTypeMap() {
-		new ConfigurableTypeInformationMapper(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new ConfigurableTypeInformationMapper(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNonBijectionalMap() {
 
 		Map<Class<?>, String> map = new HashMap<>();
 		map.put(String.class, "1");
 		map.put(Object.class, "1");
 
-		new ConfigurableTypeInformationMapper(map);
+		assertThatIllegalArgumentException().isThrownBy(() -> new ConfigurableTypeInformationMapper(map));
 	}
 
 	@Test

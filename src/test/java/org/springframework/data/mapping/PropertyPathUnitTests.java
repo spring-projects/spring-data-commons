@@ -23,9 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
@@ -34,11 +33,10 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 @SuppressWarnings("unused")
 public class PropertyPathUnitTests {
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void parsesSimplePropertyCorrectly() throws Exception {
@@ -214,16 +212,17 @@ public class PropertyPathUnitTests {
 				.withMessageContaining("property _id");
 	}
 
-	@Test(expected = PropertyReferenceException.class) // DATACMNS 158
+	@Test // DATACMNS 158
 	public void rejectsInvalidPathsContainingDigits() {
-		PropertyPath.from("PropertyThatWillFail4Sure", Foo.class);
+		assertThatExceptionOfType(PropertyReferenceException.class)
+				.isThrownBy(() -> from("PropertyThatWillFail4Sure", Foo.class));
 	}
 
 	@Test
 	public void rejectsInvalidProperty() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
-				.isThrownBy(() -> PropertyPath.from("_foo_id", Sample2.class))//
+				.isThrownBy(() -> from("_foo_id", Sample2.class))//
 				.matches(e -> e.getBaseProperty().getSegment().equals("_foo"));
 	}
 
@@ -278,61 +277,54 @@ public class PropertyPathUnitTests {
 	@Test // DATACMNS-381
 	public void exposesPreviouslyReferencedPathInExceptionMessage() {
 
-		exception.expect(PropertyReferenceException.class);
-		exception.expectMessage("bar"); // missing variable
-		exception.expectMessage("String"); // type
-		exception.expectMessage("Bar.user.name"); // previously referenced path
-
-		PropertyPath.from("userNameBar", Bar.class);
+		assertThatExceptionOfType(PropertyReferenceException.class).isThrownBy(() -> from("userNameBar", Bar.class)) //
+				.withMessageContaining("bar") // missing variable
+				.withMessageContaining("String") // type
+				.withMessageContaining("Bar.user.name"); // previously referenced path
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
+	@Test // DATACMNS-387
 	public void rejectsNullSource() {
-		from(null, Foo.class);
+		assertThatIllegalArgumentException().isThrownBy(() -> from(null, Foo.class));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
+	@Test // DATACMNS-387
 	public void rejectsEmptySource() {
-		from("", Foo.class);
+		assertThatIllegalArgumentException().isThrownBy(() -> from("", Foo.class));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
+	@Test // DATACMNS-387
 	public void rejectsNullClass() {
-		from("foo", (Class<?>) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> from("foo", (Class<?>) null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
+	@Test // DATACMNS-387
 	public void rejectsNullTypeInformation() {
-		from("foo", (TypeInformation<?>) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> from("foo", (TypeInformation<?>) null));
 	}
 
 	@Test // DATACMNS-546
 	public void returnsCompletePathIfResolutionFailedCompletely() {
 
-		exception.expect(PropertyReferenceException.class);
-		exception.expectMessage("somethingDifferent");
-
-		from("somethingDifferent", Foo.class);
+		assertThatExceptionOfType(PropertyReferenceException.class) //
+				.isThrownBy(() -> from("somethingDifferent", Foo.class)).withMessageContaining("somethingDifferent");
 	}
 
 	@Test // DATACMNS-546
 	public void includesResolvedPathInExceptionMessage() {
 
-		exception.expect(PropertyReferenceException.class);
-		exception.expectMessage("fooName");
-		exception.expectMessage(FooBar.class.getSimpleName());
-		exception.expectMessage("Bar.user");
-
-		from("userFooName", Bar.class);
+		assertThatExceptionOfType(PropertyReferenceException.class) //
+				.isThrownBy(() -> from("userFooName", Bar.class)) //
+				.withMessageContaining("fooName") // missing variable
+				.withMessageContaining(FooBar.class.getSimpleName()) // type
+				.withMessageContaining("Bar.user"); // previously referenced path
 	}
 
 	@Test // DATACMNS-703
 	public void includesPropertyHintsOnTypos() {
 
-		exception.expect(PropertyReferenceException.class);
-		exception.expectMessage("userName");
-
-		from("userAme", Foo.class);
+		assertThatExceptionOfType(PropertyReferenceException.class) //
+				.isThrownBy(() -> from("userAme", Foo.class)).withMessageContaining("userName");
 	}
 
 	@Test // DATACMNS-867

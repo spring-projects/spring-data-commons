@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import io.reactivex.Completable;
@@ -26,13 +26,12 @@ import rx.Single;
 import java.io.Serializable;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.reactivestreams.Publisher;
+
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 
@@ -44,8 +43,6 @@ import org.springframework.data.repository.reactive.ReactiveSortingRepository;
  */
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class ReactiveWrapperRepositoryFactorySupportUnitTests {
-
-	public @Rule ExpectedException exception = ExpectedException.none();
 
 	DummyRepositoryFactory factory;
 

@@ -45,25 +45,25 @@ public class SimpleParameterAccessorUnitTests {
 		new ParametersParameterAccessor(parameters, new Object[] { "test" });
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullParameters() throws Exception {
-
-		new ParametersParameterAccessor(null, new Object[0]);
+	@Test
+	public void rejectsNullParameters() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new ParametersParameterAccessor(null, new Object[0]));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullValues() throws Exception {
-		new ParametersParameterAccessor(parameters, null);
+	@Test
+	public void rejectsNullValues() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new ParametersParameterAccessor(parameters, null));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsTooLittleNumberOfArguments() throws Exception {
-		new ParametersParameterAccessor(parameters, new Object[0]);
+	@Test
+	public void rejectsTooLittleNumberOfArguments() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new ParametersParameterAccessor(parameters, new Object[0]));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsTooManyArguments() throws Exception {
-		new ParametersParameterAccessor(parameters, new Object[] { "test", "test" });
+	@Test
+	public void rejectsTooManyArguments() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new ParametersParameterAccessor(parameters, new Object[] { "test", "test" }));
 	}
 
 	@Test

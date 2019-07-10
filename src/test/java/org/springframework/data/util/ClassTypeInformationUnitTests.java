@@ -42,7 +42,7 @@ public class ClassTypeInformationUnitTests {
 	@Test
 	public void discoversTypeForSimpleGenericField() {
 
-		TypeInformation<ConcreteType> discoverer = ClassTypeInformation.from(ConcreteType.class);
+		TypeInformation<ConcreteType> discoverer = from(ConcreteType.class);
 
 		assertThat(discoverer.getType()).isEqualTo(ConcreteType.class);
 
@@ -56,7 +56,7 @@ public class ClassTypeInformationUnitTests {
 	@Test
 	public void discoversTypeForNestedGenericField() {
 
-		TypeInformation<ConcreteWrapper> discoverer = ClassTypeInformation.from(ConcreteWrapper.class);
+		TypeInformation<ConcreteWrapper> discoverer = from(ConcreteWrapper.class);
 		assertThat(discoverer.getType()).isEqualTo(ConcreteWrapper.class);
 
 		assertThat(discoverer.getProperty("wrapped")).satisfies(it -> {
@@ -72,15 +72,14 @@ public class ClassTypeInformationUnitTests {
 	@SuppressWarnings("rawtypes")
 	public void discoversBoundType() {
 
-		TypeInformation<GenericTypeWithBound> information = ClassTypeInformation.from(GenericTypeWithBound.class);
+		TypeInformation<GenericTypeWithBound> information = from(GenericTypeWithBound.class);
 		assertThat(information.getProperty("person")).satisfies(it -> assertThat(it.getType()).isEqualTo(Person.class));
 	}
 
 	@Test
 	public void discoversBoundTypeForSpecialization() {
 
-		TypeInformation<SpecialGenericTypeWithBound> information = ClassTypeInformation
-				.from(SpecialGenericTypeWithBound.class);
+		TypeInformation<SpecialGenericTypeWithBound> information = from(SpecialGenericTypeWithBound.class);
 		assertThat(information.getProperty("person"))
 				.satisfies(it -> assertThat(it.getType()).isEqualTo(SpecialPerson.class));
 	}
@@ -89,7 +88,7 @@ public class ClassTypeInformationUnitTests {
 	@SuppressWarnings("rawtypes")
 	public void discoversBoundTypeForNested() {
 
-		TypeInformation<AnotherGenericType> information = ClassTypeInformation.from(AnotherGenericType.class);
+		TypeInformation<AnotherGenericType> information = from(AnotherGenericType.class);
 
 		assertThat(information.getProperty("nested"))
 				.satisfies(it -> assertThat(it.getType()).isEqualTo(GenericTypeWithBound.class));
@@ -100,7 +99,7 @@ public class ClassTypeInformationUnitTests {
 	@Test
 	public void discoversArraysAndCollections() {
 
-		TypeInformation<StringCollectionContainer> information = ClassTypeInformation.from(StringCollectionContainer.class);
+		TypeInformation<StringCollectionContainer> information = from(StringCollectionContainer.class);
 
 		TypeInformation<?> array = information.getProperty("array");
 
@@ -126,7 +125,7 @@ public class ClassTypeInformationUnitTests {
 	@Test
 	public void discoversMapValueType() {
 
-		TypeInformation<StringMapContainer> information = ClassTypeInformation.from(StringMapContainer.class);
+		TypeInformation<StringMapContainer> information = from(StringMapContainer.class);
 
 		TypeInformation<?> genericMap = information.getProperty("genericMap");
 
@@ -142,8 +141,8 @@ public class ClassTypeInformationUnitTests {
 	@Test
 	public void typeInfoDoesNotEqualForGenericTypesWithDifferentParent() {
 
-		TypeInformation<ConcreteWrapper> first = ClassTypeInformation.from(ConcreteWrapper.class);
-		TypeInformation<AnotherConcreteWrapper> second = ClassTypeInformation.from(AnotherConcreteWrapper.class);
+		TypeInformation<ConcreteWrapper> first = from(ConcreteWrapper.class);
+		TypeInformation<AnotherConcreteWrapper> second = from(AnotherConcreteWrapper.class);
 
 		assertThat(first.getProperty("wrapped").equals(second.getProperty("wrapped"))).isFalse();
 	}
@@ -151,7 +150,7 @@ public class ClassTypeInformationUnitTests {
 	@Test
 	public void handlesPropertyFieldMismatchCorrectly() {
 
-		TypeInformation<PropertyGetter> from = ClassTypeInformation.from(PropertyGetter.class);
+		TypeInformation<PropertyGetter> from = from(PropertyGetter.class);
 
 		assertThat(from.getProperty("_name")).satisfies(it -> assertThat(it.getType()).isEqualTo(String.class));
 		assertThat(from.getProperty("name")).satisfies(it -> assertThat(it.getType()).isEqualTo(byte[].class));
@@ -160,14 +159,14 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-77
 	public void returnsSameInstanceForCachedClass() {
 
-		TypeInformation<PropertyGetter> info = ClassTypeInformation.from(PropertyGetter.class);
-		assertThat(ClassTypeInformation.from(PropertyGetter.class)).isSameAs(info);
+		TypeInformation<PropertyGetter> info = from(PropertyGetter.class);
+		assertThat(from(PropertyGetter.class)).isSameAs(info);
 	}
 
 	@Test // DATACMNS-39
 	public void resolvesWildCardTypeCorrectly() {
 
-		TypeInformation<ClassWithWildCardBound> information = ClassTypeInformation.from(ClassWithWildCardBound.class);
+		TypeInformation<ClassWithWildCardBound> information = from(ClassWithWildCardBound.class);
 
 		TypeInformation<?> wildcard = information.getProperty("wildcard");
 
@@ -186,7 +185,7 @@ public class ClassTypeInformationUnitTests {
 	@Test
 	public void resolvesTypeParametersCorrectly() {
 
-		TypeInformation<ConcreteType> information = ClassTypeInformation.from(ConcreteType.class);
+		TypeInformation<ConcreteType> information = from(ConcreteType.class);
 		TypeInformation<?> superTypeInformation = information.getSuperTypeInformation(GenericType.class);
 
 		List<TypeInformation<?>> parameters = superTypeInformation.getTypeArguments();
@@ -198,7 +197,7 @@ public class ClassTypeInformationUnitTests {
 	@Test
 	public void resolvesNestedInheritedTypeParameters() {
 
-		TypeInformation<SecondExtension> information = ClassTypeInformation.from(SecondExtension.class);
+		TypeInformation<SecondExtension> information = from(SecondExtension.class);
 		TypeInformation<?> superTypeInformation = information.getSuperTypeInformation(Base.class);
 
 		List<TypeInformation<?>> parameters = superTypeInformation.getTypeArguments();
@@ -209,7 +208,7 @@ public class ClassTypeInformationUnitTests {
 	@Test
 	public void discoveresMethodParameterTypesCorrectly() throws Exception {
 
-		TypeInformation<SecondExtension> information = ClassTypeInformation.from(SecondExtension.class);
+		TypeInformation<SecondExtension> information = from(SecondExtension.class);
 		Method method = SecondExtension.class.getMethod("foo", Base.class);
 		List<TypeInformation<?>> informations = information.getParameterTypes(method);
 		TypeInformation<?> returnTypeInformation = information.getReturnType(method);
@@ -281,9 +280,9 @@ public class ClassTypeInformationUnitTests {
 		assertThat(information.getProperty("category.id")).isEqualTo(from(Long.class));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-387
+	@Test // DATACMNS-387
 	public void rejectsNullClass() {
-		ClassTypeInformation.from(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> ClassTypeInformation.from(null));
 	}
 
 	@Test // DATACMNS-422
@@ -296,7 +295,7 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-440
 	public void detectsSpecialMapAsMapValueType() {
 
-		TypeInformation<?> seriously = ClassTypeInformation.from(SuperGenerics.class).getProperty("seriously");
+		TypeInformation<?> seriously = from(SuperGenerics.class).getProperty("seriously");
 
 		// Type
 		assertThat(seriously.getType()).isEqualTo(SortedMap.class);
@@ -331,7 +330,7 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-594
 	public void considersGenericsOfTypeBounds() {
 
-		assertThat(ClassTypeInformation.from(ConcreteRootIntermediate.class)
+		assertThat(from(ConcreteRootIntermediate.class)
 				.getProperty("intermediate.content.intermediate.content").getType())//
 						.isEqualTo(Leaf.class);
 	}
@@ -339,13 +338,13 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-783, DATACMNS-853
 	public void specializesTypeUsingTypeVariableContext() {
 
-		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
+		ClassTypeInformation<Foo> root = from(Foo.class);
 
-		assertThat(root.getProperty("abstractBar").specialize(ClassTypeInformation.from(Bar.class)))//
+		assertThat(root.getProperty("abstractBar").specialize(from(Bar.class)))//
 				.satisfies(it -> {
 					assertThat(it.getType()).isEqualTo(Bar.class);
-					assertThat(it.getProperty("field").getType()).isEqualTo(Character.class);
-					assertThat(it.getProperty("anotherField").getType()).isEqualTo(Integer.class);
+							assertThat(it.getProperty("field").getType()).isEqualTo(Character.class);
+							assertThat(it.getProperty("anotherField").getType()).isEqualTo(Integer.class);
 				});
 	}
 
@@ -376,7 +375,7 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-896
 	public void prefersLocalTypeMappingOverNestedWithSameGenericType() {
 
-		ClassTypeInformation<Concrete> information = ClassTypeInformation.from(Concrete.class);
+		ClassTypeInformation<Concrete> information = from(Concrete.class);
 
 		assertThat(information.getProperty("field").getType()).isEqualTo(Nested.class);
 	}
@@ -384,7 +383,7 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-940
 	public void detectsVavrTraversableComponentType() {
 
-		ClassTypeInformation<SampleTraversable> information = ClassTypeInformation.from(SampleTraversable.class);
+		ClassTypeInformation<SampleTraversable> information = from(SampleTraversable.class);
 
 		assertThat(information.getComponentType().getType()).isAssignableFrom(Integer.class);
 	}
@@ -392,7 +391,7 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-940
 	public void detectsVavrMapComponentAndValueType() {
 
-		ClassTypeInformation<SampleMap> information = ClassTypeInformation.from(SampleMap.class);
+		ClassTypeInformation<SampleMap> information = from(SampleMap.class);
 
 		assertThat(information.getComponentType().getType()).isAssignableFrom(String.class);
 
@@ -402,8 +401,8 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-1138
 	public void usesTargetTypeForWildcardedBaseOnSpecialization() {
 
-		ClassTypeInformation<WildcardedWrapper> wrapper = ClassTypeInformation.from(WildcardedWrapper.class);
-		ClassTypeInformation<SomeConcrete> concrete = ClassTypeInformation.from(SomeConcrete.class);
+		ClassTypeInformation<WildcardedWrapper> wrapper = from(WildcardedWrapper.class);
+		ClassTypeInformation<SomeConcrete> concrete = from(SomeConcrete.class);
 
 		TypeInformation<?> property = wrapper.getRequiredProperty("wildcarded");
 

@@ -21,9 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
@@ -31,39 +30,32 @@ import org.springframework.data.util.TypeInformation;
  * Unit tests for {@link PropertyReferenceException}
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class PropertyReferenceExceptionUnitTests {
 
 	static final TypeInformation<Sample> TYPE_INFO = ClassTypeInformation.from(Sample.class);
 	static final List<PropertyPath> NO_PATHS = Collections.emptyList();
 
-	public @Rule ExpectedException exception = ExpectedException.none();
-
 	@Test
 	public void rejectsNullPropertyName() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("name");
-
-		new PropertyReferenceException(null, TYPE_INFO, NO_PATHS);
+		assertThatIllegalArgumentException().isThrownBy(() -> new PropertyReferenceException(null, TYPE_INFO, NO_PATHS))
+				.withMessageContaining("name");
 	}
 
 	@Test
 	public void rejectsNullType() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("Type");
-
-		new PropertyReferenceException("nme", null, NO_PATHS);
+		assertThatIllegalArgumentException().isThrownBy(() -> new PropertyReferenceException("nme", null, NO_PATHS))
+				.withMessageContaining("Type");
 	}
 
 	@Test
 	public void rejectsNullPaths() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("paths");
-
-		new PropertyReferenceException("nme", TYPE_INFO, null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new PropertyReferenceException("nme", TYPE_INFO, null))
+				.withMessageContaining("paths");
 	}
 
 	@Test // DATACMNS-801

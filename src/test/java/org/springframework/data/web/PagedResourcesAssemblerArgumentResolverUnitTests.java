@@ -21,9 +21,8 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
@@ -40,8 +39,6 @@ import org.springframework.web.util.UriComponents;
 public class PagedResourcesAssemblerArgumentResolverUnitTests {
 
 	PagedResourcesAssemblerArgumentResolver resolver;
-
-	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -160,8 +157,8 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		Method method = Controller.class.getMethod(methodName, PagedResourcesAssembler.class, Pageable.class,
 				Pageable.class);
 
-		exception.expect(IllegalStateException.class);
-		resolver.resolveArgument(new MethodParameter(method, 0), null, null, null);
+		assertThatIllegalStateException()
+				.isThrownBy(() -> resolver.resolveArgument(new MethodParameter(method, 0), null, null, null));
 	}
 
 	@RequestMapping("/")

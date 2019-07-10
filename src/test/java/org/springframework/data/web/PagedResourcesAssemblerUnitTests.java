@@ -191,14 +191,14 @@ public class PagedResourcesAssemblerUnitTests {
 		assertThat(((EmbeddedWrapper) element).getRelTargetType()).isEqualTo(Person.class);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-699
+	@Test // DATACMNS-699
 	public void emptyPageCreatorRejectsPageWithContent() {
-		assembler.toEmptyModel(createPage(1), Person.class);
+		assertThatIllegalArgumentException().isThrownBy(() -> assembler.toEmptyModel(createPage(1), Person.class));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-699
+	@Test // DATACMNS-699
 	public void emptyPageCreatorRejectsNullType() {
-		assembler.toEmptyModel(EMPTY_PAGE, null);
+		assertThatIllegalArgumentException().isThrownBy(() -> assembler.toEmptyModel(EMPTY_PAGE, null));
 	}
 
 	@Test // DATACMNS-701

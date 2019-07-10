@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -24,8 +25,8 @@ import java.lang.reflect.Method;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.repository.Repository;
@@ -48,14 +49,16 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 	@Mock ProxyFactory proxyFactory;
 	@Mock RepositoryInformation repositoryInformation;
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullBeanFactory() throws Exception {
-		new TransactionalRepositoryProxyPostProcessor(null, "transactionManager", true);
+	@Test
+	public void rejectsNullBeanFactory() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new TransactionalRepositoryProxyPostProcessor(null, "transactionManager", true));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullTxManagerName() throws Exception {
-		new TransactionalRepositoryProxyPostProcessor(beanFactory, null, true);
+	@Test
+	public void rejectsNullTxManagerName() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new TransactionalRepositoryProxyPostProcessor(beanFactory, null, true));
 	}
 
 	@Test
@@ -65,7 +68,7 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 				true);
 		postProcessor.postProcess(proxyFactory, repositoryInformation);
 
-		verify(proxyFactory).addAdvice(Mockito.any(TransactionInterceptor.class));
+		verify(proxyFactory).addAdvice(any(TransactionInterceptor.class));
 	}
 
 	@Test // DATACMNS-464

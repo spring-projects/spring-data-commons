@@ -83,11 +83,10 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 		verify(delegate).invoke(invocation);
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACMNS-630
-	public void rejectsEmptySpelExpression() throws Throwable {
-
-		new SpelEvaluatingMethodInterceptor(delegate, new Target(), new DefaultListableBeanFactory(), parser,
-				InvalidProjection.class);
+	@Test // DATACMNS-630
+	public void rejectsEmptySpelExpression() {
+		assertThatIllegalStateException().isThrownBy(() -> new SpelEvaluatingMethodInterceptor(delegate, new Target(),
+				new DefaultListableBeanFactory(), parser, InvalidProjection.class));
 	}
 
 	@Test // DATACMNS-630

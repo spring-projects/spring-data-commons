@@ -18,9 +18,8 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -33,8 +32,6 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Thomas Darimont
  */
 public class RepositoryFactoryBeanSupportUnitTests {
-
-	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Test // DATACMNS-341
 	@SuppressWarnings({ "rawtypes", "unchecked" })

@@ -28,7 +28,7 @@ import java.util.TreeMap;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
@@ -57,7 +57,7 @@ public class AbstractMappingContextUnitTests {
 		context.setSimpleTypeHolder(new SimpleTypeHolder(Collections.singleton(LocalDateTime.class), true));
 	}
 
-	@Test(expected = MappingException.class) // DATACMNS-92
+	@Test // DATACMNS-92
 	public void doesNotAddInvalidEntity() {
 
 		context = new SampleMappingContext() {
@@ -82,7 +82,7 @@ public class AbstractMappingContextUnitTests {
 			// expected
 		}
 
-		context.getPersistentEntity(Unsupported.class);
+		assertThatExceptionOfType(MappingException.class).isThrownBy(() -> context.getPersistentEntity(Unsupported.class));
 	}
 
 	@Test
@@ -93,10 +93,10 @@ public class AbstractMappingContextUnitTests {
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.setApplicationEventPublisher(applicationContext);
 
-		verify(applicationContext, times(0)).publishEvent(Mockito.any(ApplicationEvent.class));
+		verify(applicationContext, times(0)).publishEvent(any(ApplicationEvent.class));
 
 		context.afterPropertiesSet();
-		verify(applicationContext, times(1)).publishEvent(Mockito.any(ApplicationEvent.class));
+		verify(applicationContext, times(1)).publishEvent(any(ApplicationEvent.class));
 	}
 
 	@Test // DATACMNS-214
@@ -106,14 +106,14 @@ public class AbstractMappingContextUnitTests {
 		assertThat(context.getPersistentEntity(String.class)).isNull();
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-214
+	@Test // DATACMNS-214
 	public void rejectsNullValueForGetPersistentEntityOfClass() {
-		context.getPersistentEntity((Class<?>) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> context.getPersistentEntity((Class<?>) null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-214
+	@Test // DATACMNS-214
 	public void rejectsNullValueForGetPersistentEntityOfTypeInformation() {
-		context.getPersistentEntity((TypeInformation<?>) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> context.getPersistentEntity((TypeInformation<?>) null));
 	}
 
 	@Test // DATACMNS-228

@@ -20,9 +20,8 @@ import static org.springframework.data.web.SortDefaultUnitTests.*;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.PageRequest;
@@ -52,8 +51,6 @@ public abstract class PageableDefaultUnitTests {
 	static final AbstractPageRequest REFERENCE_WITH_SORT = PageRequest.of(PAGE_NUMBER, PAGE_SIZE, SORT);
 	static final AbstractPageRequest REFERENCE_WITH_SORT_FIELDS = PageRequest.of(PAGE_NUMBER, PAGE_SIZE,
 			Sort.by(SORT_FIELDS));
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void supportsPageable() {
@@ -107,10 +104,9 @@ public abstract class PageableDefaultUnitTests {
 		HandlerMethodArgumentResolver resolver = getResolver();
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("unique");
-
-		resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null);
+		assertThatIllegalStateException()
+				.isThrownBy(() -> resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null)) //
+				.withMessageContaining("unique");
 	}
 
 	@Test
@@ -122,10 +118,9 @@ public abstract class PageableDefaultUnitTests {
 		HandlerMethodArgumentResolver resolver = getResolver();
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("Ambiguous");
-
-		resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null);
+		assertThatIllegalStateException()
+				.isThrownBy(() -> resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null)) //
+				.withMessageContaining("Ambiguous");
 	}
 
 	protected void assertSupportedAndResult(MethodParameter parameter, Pageable pageable) throws Exception {

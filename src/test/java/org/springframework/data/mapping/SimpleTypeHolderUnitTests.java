@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.UUID;
 
 import org.junit.Test;
+
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
@@ -34,20 +35,22 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  */
 public class SimpleTypeHolderUnitTests {
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullCustomTypes() {
-		new SimpleTypeHolder(null, false);
+		assertThatIllegalArgumentException().isThrownBy(() -> new SimpleTypeHolder(null, false));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullOriginal() {
-		new SimpleTypeHolder(new HashSet<>(), null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new SimpleTypeHolder(new HashSet<>(), null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-31
+	@Test // DATACMNS-31
 	public void rejectsNullTypeForIsSimpleTypeCall() {
+
 		SimpleTypeHolder holder = SimpleTypeHolder.DEFAULT;
-		holder.isSimpleType(null);
+
+		assertThatIllegalArgumentException().isThrownBy(() -> holder.isSimpleType(null));
 	}
 
 	@Test

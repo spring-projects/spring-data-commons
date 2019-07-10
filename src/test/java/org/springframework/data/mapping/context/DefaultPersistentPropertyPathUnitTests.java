@@ -52,9 +52,9 @@ public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty
 		twoLegs = new DefaultPersistentPropertyPath<>(Arrays.asList(first, second));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullProperties() {
-		new DefaultPersistentPropertyPath<>(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultPersistentPropertyPath<>(null));
 	}
 
 	@Test

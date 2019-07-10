@@ -39,24 +39,24 @@ import com.google.common.base.Optional;
  */
 public class DefaultRepositoryMetadataUnitTests {
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void preventsNullRepositoryInterface() {
-		new DefaultRepositoryMetadata(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNonInterface() {
-		new DefaultRepositoryMetadata(Object.class);
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(Object.class));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNonRepositoryInterface() {
-		new DefaultRepositoryMetadata(Collection.class);
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(Collection.class));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-406
+	@Test // DATACMNS-406
 	public void rejectsUnparameterizedRepositoryInterface() {
-		new DefaultRepositoryMetadata(Repository.class);
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(Repository.class));
 	}
 
 	@Test

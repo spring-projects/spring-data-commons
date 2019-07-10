@@ -17,9 +17,8 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.ReflectionUtils;
 
@@ -27,10 +26,9 @@ import org.springframework.util.ReflectionUtils;
  * Unit tests for {@link AnnotationDetectionMethodCallback}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class AnnotationDetectionMethodCallbackUnitTests {
-
-	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Test // DATACMNS-452
 	public void findsMethodWithAnnotation() throws Exception {
@@ -47,13 +45,13 @@ public class AnnotationDetectionMethodCallbackUnitTests {
 	@Test // DATACMNS-452
 	public void detectsAmbiguousAnnotations() {
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("Value");
-		exception.expectMessage("getValue");
-		exception.expectMessage("getOtherValue");
-
 		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class, true);
-		ReflectionUtils.doWithMethods(Multiple.class, callback);
+
+		assertThatIllegalStateException() //
+				.isThrownBy(() -> ReflectionUtils.doWithMethods(Multiple.class, callback)) //
+				.withMessageContaining("Value") //
+				.withMessageContaining("getValue") //
+				.withMessageContaining("getOtherValue");
 	}
 
 	interface Sample {

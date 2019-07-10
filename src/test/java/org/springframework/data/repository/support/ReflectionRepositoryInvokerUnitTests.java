@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalAnswers;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -45,7 +46,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.support.CrudRepositoryInvokerUnitTests.PersonRepository;
-import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
+import org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -171,40 +172,40 @@ public class ReflectionRepositoryInvokerUnitTests {
 		getInvokerFor(repository, expectInvocationOf(method)).invokeDeleteById("1");
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACMNS-589
+	@Test // DATACMNS-589
 	public void rejectsInvocationOfMissingDeleteMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
 		assertThat(invoker.hasDeleteMethod()).isFalse();
-		invoker.invokeDeleteById(1L);
+		assertThatIllegalStateException().isThrownBy(() -> invoker.invokeDeleteById(1L));
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACMNS-589
+	@Test // DATACMNS-589
 	public void rejectsInvocationOfMissingFindOneMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
 		assertThat(invoker.hasFindOneMethod()).isFalse();
-		invoker.invokeFindById(1L);
+		assertThatIllegalStateException().isThrownBy(() -> invoker.invokeFindById(1L));
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACMNS-589
+	@Test // DATACMNS-589
 	public void rejectsInvocationOfMissingFindAllMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
 		assertThat(invoker.hasFindAllMethod()).isFalse();
-		invoker.invokeFindAll(Sort.unsorted());
+		assertThatIllegalStateException().isThrownBy(() -> invoker.invokeFindAll(Sort.unsorted()));
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACMNS-589
+	@Test // DATACMNS-589
 	public void rejectsInvocationOfMissingSaveMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
 		assertThat(invoker.hasSaveMethod()).isFalse();
-		invoker.invokeSave(new Object());
+		assertThatIllegalStateException().isThrownBy(() -> invoker.invokeSave(new Object()));
 	}
 
 	@Test // DATACMNS-647

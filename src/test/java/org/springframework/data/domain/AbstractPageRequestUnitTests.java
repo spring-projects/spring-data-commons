@@ -28,14 +28,14 @@ public abstract class AbstractPageRequestUnitTests {
 
 	public abstract AbstractPageRequest newPageRequest(int page, int size);
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-402
+	@Test // DATACMNS-402
 	public void preventsNegativePage() {
-		newPageRequest(-1, 10);
+		assertThatIllegalArgumentException().isThrownBy(() -> newPageRequest(-1, 10));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-402
+	@Test // DATACMNS-402
 	public void preventsNegativeSize() {
-		newPageRequest(0, -1);
+		assertThatIllegalArgumentException().isThrownBy(() -> newPageRequest(0, -1));
 	}
 
 	@Test // DATACMNS-402
@@ -72,9 +72,9 @@ public abstract class AbstractPageRequestUnitTests {
 		assertNotEqualsAndHashcode(request, newPageRequest(0, 11));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-377
+	@Test // DATACMNS-377
 	public void preventsPageSizeLessThanOne() {
-		newPageRequest(0, 0);
+		assertThatIllegalArgumentException().isThrownBy(() -> newPageRequest(0, 0));
 	}
 
 	@Test // DATACMNS-1327

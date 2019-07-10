@@ -51,18 +51,22 @@ public class DirectFieldAccessFallbackBeanWrapperUnitTests {
 		assertThat(sample.firstname).isEqualTo("Dave");
 	}
 
-	@Test(expected = NotReadablePropertyException.class) // DATACMNS-452
+	@Test // DATACMNS-452
 	public void throwsAppropriateExceptionIfNoFieldFoundForRead() {
 
 		BeanWrapper wrapper = new DirectFieldAccessFallbackBeanWrapper(new Sample());
-		wrapper.getPropertyValue("lastname");
+
+		assertThatExceptionOfType(NotReadablePropertyException.class)
+				.isThrownBy(() -> wrapper.getPropertyValue("lastname"));
 	}
 
-	@Test(expected = NotWritablePropertyException.class) // DATACMNS-452
+	@Test // DATACMNS-452
 	public void throwsAppropriateExceptionIfNoFieldFoundForWrite() {
 
 		BeanWrapper wrapper = new DirectFieldAccessFallbackBeanWrapper(new Sample());
-		wrapper.setPropertyValue("lastname", "Matthews");
+
+		assertThatExceptionOfType(NotWritablePropertyException.class)
+				.isThrownBy(() -> wrapper.setPropertyValue("lastname", "Matthews"));
 	}
 
 	static class Sample {

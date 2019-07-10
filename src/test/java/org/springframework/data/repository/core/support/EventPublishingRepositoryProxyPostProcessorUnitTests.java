@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.AfterDomainEventPublication;
@@ -58,9 +59,9 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Mock ApplicationEventPublisher publisher;
 	@Mock MethodInvocation invocation;
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-928
+	@Test // DATACMNS-928
 	public void rejectsNullAggregateTypes() {
-		EventPublishingMethod.of(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> EventPublishingMethod.of(null));
 	}
 
 	@Test // DATACMNS-928

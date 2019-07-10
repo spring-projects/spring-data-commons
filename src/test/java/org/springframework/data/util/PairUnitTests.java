@@ -35,14 +35,14 @@ public class PairUnitTests {
 		assertThat(pair.getSecond()).isEqualTo(2);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-790
+	@Test // DATACMNS-790
 	public void rejectsNullFirstElement() {
-		Pair.of(null, 1);
+		assertThatIllegalArgumentException().isThrownBy(() -> Pair.of(null, 1));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-790
+	@Test // DATACMNS-790
 	public void rejectsNullSecondElement() {
-		Pair.of(1, null);
+		assertThatIllegalArgumentException().isThrownBy(() -> Pair.of(1, null));
 	}
 
 	@Test // DATACMNS-790

@@ -47,9 +47,9 @@ public class TypeDiscovererUnitTests {
 	@Mock Map<TypeVariable<?>, Type> firstMap;
 	@Mock Map<TypeVariable<?>, Type> secondMap;
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void rejectsNullType() {
-		new TypeDiscoverer<>(null, null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new TypeDiscoverer<>(null, null));
 	}
 
 	@Test

@@ -49,14 +49,14 @@ public class DistanceFormatterUnitTests {
 
 	public static class UnparameterizedTests {
 
-		@Test(expected = IllegalArgumentException.class) // DATAREST-279, DATACMNS-626
+		@Test // DATAREST-279, DATACMNS-626
 		public void rejectsArbitraryNonsense() {
-			INSTANCE.convert("foo");
+			assertThatIllegalArgumentException().isThrownBy(() -> INSTANCE.convert("foo"));
 		}
 
-		@Test(expected = IllegalArgumentException.class) // DATAREST-279, DATACMNS-626
+		@Test // DATAREST-279, DATACMNS-626
 		public void rejectsUnsupportedMetric() {
-			INSTANCE.convert("10.8cm");
+			assertThatIllegalArgumentException().isThrownBy(() -> INSTANCE.convert("10.8cm"));
 		}
 
 		@Test // DATAREST-279, DATACMNS-626

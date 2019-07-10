@@ -21,9 +21,8 @@ import java.beans.PropertyDescriptor;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.beans.NotWritablePropertyException;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -35,8 +34,6 @@ import org.springframework.beans.factory.annotation.Value;
  * @author Mark Paluch
  */
 public class SpelAwareProxyProjectionFactoryUnitTests {
-
-	public @Rule ExpectedException exception = ExpectedException.none();
 
 	SpelAwareProxyProjectionFactory factory;
 
@@ -97,8 +94,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 		ProjectionWithNotWriteableProperty projection = factory.createProjection(ProjectionWithNotWriteableProperty.class,
 				customer);
 
-		exception.expect(NotWritablePropertyException.class);
-		projection.setFirstName("Carl");
+		assertThatExceptionOfType(NotWritablePropertyException.class).isThrownBy(() -> projection.setFirstName("Carl"));
 	}
 
 	static class Customer {

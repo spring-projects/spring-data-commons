@@ -29,14 +29,14 @@ import org.springframework.stereotype.Component;
  */
 public class AnnotationAttributeUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-607
+	@Test // DATACMNS-607
 	public void rejectsNullAnnotationType() {
-		new AnnotationAttribute(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new AnnotationAttribute(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-607
+	@Test // DATACMNS-607
 	public void rejectsNullAnnotationTypeForAnnotationAndAttributeName() {
-		new AnnotationAttribute(null, Optional.of("name"));
+		assertThatIllegalArgumentException().isThrownBy(() -> new AnnotationAttribute(null, Optional.of("name")));
 	}
 
 	@Test // DATACMNS-607

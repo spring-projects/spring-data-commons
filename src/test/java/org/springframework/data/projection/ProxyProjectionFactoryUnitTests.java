@@ -39,16 +39,18 @@ public class ProxyProjectionFactoryUnitTests {
 
 	ProjectionFactory factory = new ProxyProjectionFactory();
 
+	@Test
 	@SuppressWarnings("null")
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
+	// DATACMNS-630
 	public void rejectsNullProjectionType() {
-		factory.createProjection(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.createProjection(null));
 	}
 
+	@Test
 	@SuppressWarnings("null")
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
+	// DATACMNS-630
 	public void rejectsNullProjectionTypeWithSource() {
-		factory.createProjection(null, new Object());
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.createProjection(null, new Object()));
 	}
 
 	@Test // DATACMNS-630
@@ -82,9 +84,9 @@ public class ProxyProjectionFactoryUnitTests {
 		assertThat(((TargetClassAware) proxy).getTargetClass()).isEqualTo(HashMap.class);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-221, DATACMNS-630
+	@Test // DATAREST-221, DATACMNS-630
 	public void rejectsNonInterfacesAsProjectionTarget() {
-		factory.createProjection(Object.class, new Object());
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.createProjection(Object.class, new Object()));
 	}
 
 	@Test // DATACMNS-630

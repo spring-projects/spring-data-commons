@@ -28,14 +28,14 @@ import org.springframework.util.SerializationUtils;
  */
 public class CircleUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
+	@Test // DATACMNS-437
 	public void rejectsNullOrigin() {
-		new Circle(null, new Distance(0));
+		assertThatIllegalArgumentException().isThrownBy(() -> new Circle(null, new Distance(0)));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-437
+	@Test // DATACMNS-437
 	public void rejectsNegativeRadius() {
-		new Circle(1, 1, -1);
+		assertThatIllegalArgumentException().isThrownBy(() -> new Circle(1, 1, -1));
 	}
 
 	@Test // DATACMNS-437

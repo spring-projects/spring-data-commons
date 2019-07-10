@@ -36,9 +36,10 @@ import org.springframework.scheduling.annotation.Async;
  */
 public class ClassUtilsUnitTests {
 
-	@Test(expected = IllegalStateException.class)
-	public void rejectsInvalidReturnType() throws Exception {
-		assertReturnTypeAssignable(SomeDao.class.getMethod("findByFirstname", Pageable.class, String.class), User.class);
+	@Test
+	public void rejectsInvalidReturnType() {
+		assertThatIllegalStateException().isThrownBy(() -> assertReturnTypeAssignable(
+				SomeDao.class.getMethod("findByFirstname", Pageable.class, String.class), User.class));
 	}
 
 	@Test

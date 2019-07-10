@@ -35,14 +35,15 @@ public class ConvertingPropertyAccessorUnitTests {
 
 	static final ConversionService CONVERSION_SERVICE = new DefaultFormattingConversionService();
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
+	@Test // DATACMNS-596
 	public void rejectsNullPropertyAccessorDelegate() {
-		new ConvertingPropertyAccessor(null, CONVERSION_SERVICE);
+		assertThatIllegalArgumentException().isThrownBy(() -> new ConvertingPropertyAccessor(null, CONVERSION_SERVICE));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-596
+	@Test // DATACMNS-596
 	public void rejectsNullConversionService() {
-		new ConvertingPropertyAccessor(new BeanWrapper<>(new Object()), null);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new ConvertingPropertyAccessor(new BeanWrapper<>(new Object()), null));
 	}
 
 	@Test // DATACMNS-596

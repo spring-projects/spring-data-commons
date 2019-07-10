@@ -38,9 +38,9 @@ public class MapAccessingMethodInterceptorUnitTests {
 
 	@Mock MethodInvocation invocation;
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
+	@Test // DATACMNS-630
 	public void rejectsNullMap() {
-		new MapAccessingMethodInterceptor(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new MapAccessingMethodInterceptor(null));
 	}
 
 	@Test // DATACMNS-630
@@ -94,11 +94,12 @@ public class MapAccessingMethodInterceptorUnitTests {
 		assertThat(new MapAccessingMethodInterceptor(map).invoke(invocation)).isNull();
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-630
+	@Test // DATACMNS-630
 	public void rejectsNonAccessorInvocation() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("someMethod"));
-		new MapAccessingMethodInterceptor(Collections.emptyMap()).invoke(invocation);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new MapAccessingMethodInterceptor(Collections.emptyMap()).invoke(invocation));
 	}
 
 	interface Sample {

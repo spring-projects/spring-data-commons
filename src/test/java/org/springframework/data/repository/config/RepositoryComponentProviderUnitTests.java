@@ -78,9 +78,10 @@ public class RepositoryComponentProviderUnitTests {
 		assertThat(components).extracting(BeanDefinition::getBeanClassName).contains(nestedRepositoryClassName);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-1098
+	@Test // DATACMNS-1098
 	public void rejectsNullBeanDefinitionRegistry() {
-		new RepositoryComponentProvider(Collections.emptyList(), null);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new RepositoryComponentProvider(Collections.emptyList(), null));
 	}
 
 	@Test // DATACMNS-1098
