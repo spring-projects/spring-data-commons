@@ -16,7 +16,6 @@
 package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.Matchers.*;
 
 import java.util.List;
 
@@ -83,7 +82,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 
 		assertThat(source).isInstanceOf(List.class);
 		List<?> list = (List<?>) source;
-		assertThat(list).isNotEqualTo(empty());
+		assertThat(list).isNotEmpty();
 		Object element = list.get(0);
 		assertThat(element).isInstanceOf(ClassPathResource.class);
 		ClassPathResource resource = (ClassPathResource) element;

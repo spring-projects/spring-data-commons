@@ -15,14 +15,13 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -67,8 +66,8 @@ public class RepositoryConfigurationDelegateUnitTests {
 
 			BeanDefinition beanDefinition = definition.getBeanDefinition();
 
-			assertThat(beanDefinition.getAttribute(RepositoryConfigurationDelegate.FACTORY_BEAN_OBJECT_TYPE).toString(),
-					endsWith("Repository"));
+			assertThat(beanDefinition.getAttribute(RepositoryConfigurationDelegate.FACTORY_BEAN_OBJECT_TYPE).toString())
+					.endsWith("Repository");
 		}
 	}
 

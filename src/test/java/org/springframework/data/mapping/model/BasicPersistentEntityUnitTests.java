@@ -16,7 +16,6 @@
 package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -39,6 +37,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -190,21 +189,6 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 		assertThatThrownBy(() -> entity.getRequiredPersistentProperty("foo"))
 				.hasMessageContaining("Required property foo not found");
-	}
-
-	@Test // DATACMNS-596
-	public void returnsBeanWrapperForPropertyAccessor() {
-
-		assumeThat(System.getProperty("java.version"), CoreMatchers.startsWith("1.6"));
-
-		SampleMappingContext context = new SampleMappingContext();
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
-
-		Entity value = new Entity();
-		PersistentPropertyAccessor<Entity> accessor = entity.getPropertyAccessor(value);
-
-		assertThat(accessor).isInstanceOf(BeanWrapper.class);
-		assertThat(accessor.getBean()).isEqualTo(value);
 	}
 
 	@Test // DATACMNS-809

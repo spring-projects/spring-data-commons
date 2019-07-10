@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -29,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.reactivestreams.Publisher;
+
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
@@ -52,8 +52,8 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method reference = extractTargetMethodFromRepository(RxJava1InterfaceWithGenerics.class, "deleteAll");
 
-		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("deleteAll"));
+		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
+		assertThat(reference.getName()).isEqualTo("deleteAll");
 	}
 
 	@Test // DATACMNS-836
@@ -62,9 +62,9 @@ public class ReactiveRepositoryInformationUnitTests {
 		Method reference = extractTargetMethodFromRepository(RxJava1InterfaceWithGenerics.class, "saveAll",
 				Observable.class);
 
-		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("saveAll"));
-		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
+		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
+		assertThat(reference.getName()).isEqualTo("saveAll");
+		assertThat(reference.getParameterTypes()[0]).isEqualTo(Publisher.class);
 	}
 
 	@Test // DATACMNS-988
@@ -72,8 +72,8 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method reference = extractTargetMethodFromRepository(RxJava2InterfaceWithGenerics.class, "deleteAll");
 
-		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("deleteAll"));
+		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
+		assertThat(reference.getName()).isEqualTo("deleteAll");
 	}
 
 	@Test // DATACMNS-988
@@ -81,9 +81,9 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method reference = extractTargetMethodFromRepository(RxJava2InterfaceWithGenerics.class, "saveAll", Flowable.class);
 
-		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("saveAll"));
-		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
+		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
+		assertThat(reference.getName()).isEqualTo("saveAll");
+		assertThat(reference.getParameterTypes()[0]).isEqualTo(Publisher.class);
 	}
 
 	@Test // DATACMNS-836
@@ -91,9 +91,9 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method reference = extractTargetMethodFromRepository(ReactiveSortingRepository.class, "saveAll", Publisher.class);
 
-		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("saveAll"));
-		assertThat(reference.getParameterTypes()[0], is(equalTo(Publisher.class)));
+		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
+		assertThat(reference.getName()).isEqualTo("saveAll");
+		assertThat(reference.getParameterTypes()[0]).isEqualTo(Publisher.class);
 	}
 
 	@Test // DATACMNS-836
@@ -102,9 +102,9 @@ public class ReactiveRepositoryInformationUnitTests {
 		Method reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "saveAll",
 				Iterable.class);
 
-		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("saveAll"));
-		assertThat(reference.getParameterTypes()[0], is(equalTo(Iterable.class)));
+		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
+		assertThat(reference.getName()).isEqualTo("saveAll");
+		assertThat(reference.getParameterTypes()[0]).isEqualTo(Iterable.class);
 	}
 
 	@Test // DATACMNS-836
@@ -112,9 +112,9 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "save", Object.class);
 
-		assertEquals(ReactiveCrudRepository.class, reference.getDeclaringClass());
-		assertThat(reference.getName(), is("save"));
-		assertThat(reference.getParameterTypes()[0], is(equalTo(Object.class)));
+		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
+		assertThat(reference.getName()).isEqualTo("save");
+		assertThat(reference.getParameterTypes()[0]).isEqualTo(Object.class);
 	}
 
 	@Test // DATACMNS-1023
@@ -122,7 +122,7 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		Method reference = extractTargetMethodFromRepository(DummyRepository.class, "saveAll", Iterable.class);
 
-		assertThat(reference, is(ReactiveCrudRepository.class.getMethod("saveAll", Iterable.class)));
+		assertThat(reference).isEqualTo(ReactiveCrudRepository.class.getMethod("saveAll", Iterable.class));
 	}
 
 	private Method extractTargetMethodFromRepository(Class<?> repositoryType, String methodName, Class<?>... args)

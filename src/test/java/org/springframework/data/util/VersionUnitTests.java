@@ -17,19 +17,15 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.hamcrest.Matchers;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /**
  * Unit tests for {@link Version}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class VersionUnitTests {
-
-	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Test // DATCMNS-384
 	public void sameVersionsEqualOneDigits() {
@@ -133,13 +129,13 @@ public class VersionUnitTests {
 	@Test // DATCMNS-384
 	public void removesTrailingZerosAfterSecondValueForToString() {
 
-		assertThat(new Version(2).toString()).isEqualTo("2.0");
-		assertThat(new Version(2, 0).toString()).isEqualTo("2.0");
-		assertThat(new Version(2, 0, 0).toString()).isEqualTo("2.0");
-		assertThat(new Version(2, 0, 0, 0).toString()).isEqualTo("2.0");
-		assertThat(new Version(2, 0, 1).toString()).isEqualTo("2.0.1");
-		assertThat(new Version(2, 0, 1, 0).toString()).isEqualTo("2.0.1");
-		assertThat(new Version(2, 0, 0, 1).toString()).isEqualTo("2.0.0.1");
+		assertThat(new Version(2)).hasToString("2.0");
+		assertThat(new Version(2, 0)).hasToString("2.0");
+		assertThat(new Version(2, 0, 0)).hasToString("2.0");
+		assertThat(new Version(2, 0, 0, 0)).hasToString("2.0");
+		assertThat(new Version(2, 0, 1)).hasToString("2.0.1");
+		assertThat(new Version(2, 0, 1, 0)).hasToString("2.0.1");
+		assertThat(new Version(2, 0, 0, 1)).hasToString("2.0.0.1");
 	}
 
 	@Test // DATACMNS-496
@@ -155,10 +151,7 @@ public class VersionUnitTests {
 	@Test // DATACMNS-719, DATACMNS-496
 	public void rejectsNonNumericPartOnNonLastPosition() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(Matchers.instanceOf(IllegalArgumentException.class));
-		exception.expectMessage("1.RELEASE.2");
-
-		Version.parse("1.RELEASE.2");
+		assertThatIllegalArgumentException().isThrownBy(() -> Version.parse("1.RELEASE.2"))
+				.withMessageContaining("1.RELEASE.2");
 	}
 }

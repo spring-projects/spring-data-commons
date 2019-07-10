@@ -16,7 +16,6 @@
 package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.Matchers.*;
 import static org.springframework.data.domain.ExampleMatcher.*;
 
 import org.junit.Before;
@@ -34,37 +33,37 @@ public class ExampleMatcherUnitTests {
 	ExampleMatcher matcher;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		matcher = matching();
 	}
 
 	@Test // DATACMNS-810
-	public void defaultStringMatcherShouldReturnDefault() throws Exception {
+	public void defaultStringMatcherShouldReturnDefault() {
 		assertThat(matcher.getDefaultStringMatcher()).isEqualTo(StringMatcher.DEFAULT);
 	}
 
 	@Test // DATACMNS-810
-	public void ignoreCaseShouldReturnFalseByDefault() throws Exception {
+	public void ignoreCaseShouldReturnFalseByDefault() {
 		assertThat(matcher.isIgnoreCaseEnabled()).isFalse();
 	}
 
 	@Test // DATACMNS-810
-	public void ignoredPathsIsEmptyByDefault() throws Exception {
+	public void ignoredPathsIsEmptyByDefault() {
 		assertThat(matcher.getIgnoredPaths()).isEmpty();
 	}
 
 	@Test // DATACMNS-810
-	public void nullHandlerShouldReturnIgnoreByDefault() throws Exception {
+	public void nullHandlerShouldReturnIgnoreByDefault() {
 		assertThat(matcher.getNullHandler()).isEqualTo(NullHandler.IGNORE);
 	}
 
 	@Test(expected = UnsupportedOperationException.class) // DATACMNS-810
-	public void ignoredPathsIsNotModifiable() throws Exception {
+	public void ignoredPathsIsNotModifiable() {
 		matcher.getIgnoredPaths().add("¯\\_(ツ)_/¯");
 	}
 
 	@Test // DATACMNS-810
-	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseEnabled() throws Exception {
+	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseEnabled() {
 
 		matcher = matching().withIgnoreCase();
 
@@ -72,7 +71,7 @@ public class ExampleMatcherUnitTests {
 	}
 
 	@Test // DATACMNS-810
-	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseSet() throws Exception {
+	public void ignoreCaseShouldReturnTrueWhenIgnoreCaseSet() {
 
 		matcher = matching().withIgnoreCase(true);
 
@@ -80,7 +79,7 @@ public class ExampleMatcherUnitTests {
 	}
 
 	@Test // DATACMNS-810
-	public void nullHandlerShouldReturnInclude() throws Exception {
+	public void nullHandlerShouldReturnInclude() {
 
 		matcher = matching().withIncludeNullValues();
 
@@ -88,7 +87,7 @@ public class ExampleMatcherUnitTests {
 	}
 
 	@Test // DATACMNS-810
-	public void nullHandlerShouldReturnIgnore() throws Exception {
+	public void nullHandlerShouldReturnIgnore() {
 
 		matcher = matching().withIgnoreNullValues();
 
@@ -96,7 +95,7 @@ public class ExampleMatcherUnitTests {
 	}
 
 	@Test // DATACMNS-810
-	public void nullHandlerShouldReturnConfiguredValue() throws Exception {
+	public void nullHandlerShouldReturnConfiguredValue() {
 
 		matcher = matching().withNullHandler(NullHandler.INCLUDE);
 
@@ -104,7 +103,7 @@ public class ExampleMatcherUnitTests {
 	}
 
 	@Test // DATACMNS-810
-	public void ignoredPathsShouldReturnCorrectProperties() throws Exception {
+	public void ignoredPathsShouldReturnCorrectProperties() {
 
 		matcher = matching().withIgnorePaths("foo", "bar", "baz");
 
@@ -113,7 +112,7 @@ public class ExampleMatcherUnitTests {
 	}
 
 	@Test // DATACMNS-810
-	public void ignoredPathsShouldReturnUniqueProperties() throws Exception {
+	public void ignoredPathsShouldReturnUniqueProperties() {
 
 		matcher = matching().withIgnorePaths("foo", "bar", "foo");
 
@@ -122,12 +121,12 @@ public class ExampleMatcherUnitTests {
 	}
 
 	@Test // DATACMNS-810
-	public void withCreatesNewInstance() throws Exception {
+	public void withCreatesNewInstance() {
 
 		matcher = matching().withIgnorePaths("foo", "bar", "foo");
 		ExampleMatcher configuredExampleSpec = matcher.withIgnoreCase();
 
-		assertThat(matcher).isNotEqualTo(sameInstance(configuredExampleSpec));
+		assertThat(matcher).isNotSameAs(configuredExampleSpec);
 		assertThat(matcher.getIgnoredPaths()).hasSize(2);
 		assertThat(matcher.isIgnoreCaseEnabled()).isFalse();
 
@@ -157,31 +156,29 @@ public class ExampleMatcherUnitTests {
 	}
 
 	@Test // DATACMNS-900
-	public void shouldCompareUsingHashCodeAndEquals() throws Exception {
+	public void shouldCompareUsingHashCodeAndEquals() {
 
 		matcher = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //
 				.withNullHandler(NullHandler.IGNORE) //
 				.withIgnoreCase("ignored-case") //
 				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
-				.withMatcher("world", matcher -> matcher.endsWith());
+				.withMatcher("world", GenericPropertyMatcher::endsWith);
 
 		ExampleMatcher sameAsMatcher = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //
 				.withNullHandler(NullHandler.IGNORE) //
 				.withIgnoreCase("ignored-case") //
 				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
-				.withMatcher("world", matcher -> matcher.endsWith());
+				.withMatcher("world", GenericPropertyMatcher::endsWith);
 
 		ExampleMatcher different = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //
 				.withNullHandler(NullHandler.IGNORE) //
 				.withMatcher("hello", GenericPropertyMatchers.contains().ignoreCase());
 
-		assertThat(matcher.hashCode()).isEqualTo(sameAsMatcher.hashCode());
-		assertThat(matcher.hashCode()).isNotEqualTo(different.hashCode());
-		assertThat(matcher).isEqualTo(sameAsMatcher);
-		assertThat(matcher).isNotEqualTo(different);
+		assertThat(matcher.hashCode()).isEqualTo(sameAsMatcher.hashCode()).isNotEqualTo(different.hashCode());
+		assertThat(matcher).isEqualTo(sameAsMatcher).isNotEqualTo(different);
 	}
 
 	static class Person {

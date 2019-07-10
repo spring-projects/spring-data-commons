@@ -15,9 +15,7 @@
  */
 package org.springframework.data.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.text.DateFormat;
 import java.text.Format;
@@ -29,6 +27,7 @@ import java.util.Locale;
 
 import org.joda.time.DateTime;
 import org.junit.Test;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
@@ -38,6 +37,7 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+
 import org.threeten.bp.LocalDateTime;
 
 /**
@@ -93,7 +93,7 @@ public class CustomConversionsUnitTests {
 				Arrays.asList(StringToFormatConverter.INSTANCE));
 		conversions.registerConvertersIn(conversionService);
 
-		assertThat(conversionService.canConvert(String.class, Format.class), is(true));
+		assertThat(conversionService.canConvert(String.class, Format.class)).isTrue();
 	}
 
 	@Test // DATAMONGO-259, DATACMNS-1035
@@ -101,7 +101,7 @@ public class CustomConversionsUnitTests {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(StringToFormatConverter.INSTANCE));
-		assertThat(conversions.isSimpleType(Format.class), is(false));
+		assertThat(conversions.isSimpleType(Format.class)).isFalse();
 	}
 
 	@Test // DATAMONGO-298, DATACMNS-1035
@@ -109,8 +109,8 @@ public class CustomConversionsUnitTests {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(StringToIntegerConverter.INSTANCE));
-		assertThat(conversions.hasCustomReadTarget(String.class, Integer.class), is(true));
-		assertThat(conversions.hasCustomWriteTarget(String.class, Integer.class), is(true));
+		assertThat(conversions.hasCustomReadTarget(String.class, Integer.class)).isTrue();
+		assertThat(conversions.hasCustomWriteTarget(String.class, Integer.class)).isTrue();
 	}
 
 	@Test // DATAMONGO-795, DATACMNS-1035

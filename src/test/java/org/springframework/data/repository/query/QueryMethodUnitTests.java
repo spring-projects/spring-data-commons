@@ -16,8 +16,6 @@
 package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assume.*;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
@@ -30,7 +28,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import org.junit.Test;
-import org.springframework.core.SpringVersion;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -40,7 +38,6 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
-import org.springframework.data.util.Version;
 
 /**
  * Unit tests for {@link QueryMethod}.
@@ -50,9 +47,6 @@ import org.springframework.data.util.Version;
  * @author Maciek Opała
  */
 public class QueryMethodUnitTests {
-
-	private static final Version SPRING_VERSION = Version.parse(SpringVersion.getVersion());
-	private static final Version FOUR_DOT_TWO = new Version(4, 2);
 
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(SampleRepository.class);
 	ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
@@ -159,8 +153,6 @@ public class QueryMethodUnitTests {
 
 	@Test // DATACMNS-716
 	public void doesNotRejectCompletableFutureQueryForEntityCollection() throws Exception {
-
-		assumeThat(SPRING_VERSION.isGreaterThanOrEqualTo(FOUR_DOT_TWO), is(true));
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsCompletableFutureForEntityCollection");

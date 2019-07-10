@@ -22,9 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.junit.Test;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.type.filter.AssignableTypeFilter;
@@ -90,41 +89,6 @@ public class RepositoryComponentProviderUnitTests {
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
 
 		assertThat(provider.getRegistry()).isEqualTo(registry);
-	}
-
-	static class BeanDefinitionOfTypeMatcher extends BaseMatcher<BeanDefinition> {
-
-		private final Class<?> expectedType;
-
-		private BeanDefinitionOfTypeMatcher(Class<?> expectedType) {
-			this.expectedType = expectedType;
-		}
-
-		public static BeanDefinitionOfTypeMatcher beanDefinitionOfType(Class<?> expectedType) {
-			return new BeanDefinitionOfTypeMatcher(expectedType);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.hamcrest.Matcher#matches(java.lang.Object)
-		 */
-		@Override
-		public boolean matches(Object item) {
-
-			if (!(item instanceof BeanDefinition)) {
-				return false;
-			}
-
-			BeanDefinition definition = (BeanDefinition) item;
-			return definition.getBeanClassName().equals(expectedType.getName());
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.hamcrest.SelfDescribing#describeTo(org.hamcrest.Description)
-		 */
-		@Override
-		public void describeTo(Description description) {}
 	}
 
 	public interface MyNestedRepository extends Repository<Person, Long> {}
