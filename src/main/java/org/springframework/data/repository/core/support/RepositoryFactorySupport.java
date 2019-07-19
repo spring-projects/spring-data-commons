@@ -587,8 +587,14 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			Method method = invocation.getMethod();
 
-			return QueryExecutionConverters //
-					.getExecutionAdapter(method.getReturnType()) //
+			QueryExecutionConverters.ExecutionAdapter executionAdapter = QueryExecutionConverters //
+					.getExecutionAdapter(method.getReturnType());
+
+			if (executionAdapter == null) {
+				return resultHandler.postProcessInvocationResult(doInvoke(invocation), method);
+			}
+
+			return executionAdapter //
 					.apply(() -> resultHandler.postProcessInvocationResult(doInvoke(invocation), method));
 		}
 
@@ -596,10 +602,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		private Object doInvoke(MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
-			Object[] arguments = invocation.getArguments();
 
 			if (hasQueryFor(method)) {
-				return queries.get(method).execute(arguments);
+				return queries.get(method).execute(invocation.getArguments());
 			}
 
 			return invocation.proceed();

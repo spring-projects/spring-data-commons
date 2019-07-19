@@ -20,11 +20,13 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 
 /**
  * Interface to access method parameters. Allows dedicated access to parameters of special types
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public interface ParameterAccessor extends Iterable<Object> {
 
@@ -48,8 +50,19 @@ public interface ParameterAccessor extends Iterable<Object> {
 	 *
 	 * @return
 	 * @since 1.12
+	 * @deprecated use {@link #findDynamicProjection()} instead.
 	 */
+	@Deprecated
 	Optional<Class<?>> getDynamicProjection();
+
+	/**
+	 * Returns the dynamic projection type to be used when executing the query or {@literal null} if none is defined.
+	 *
+	 * @return
+	 * @since 2.2
+	 */
+	@Nullable
+	Class<?> findDynamicProjection();
 
 	/**
 	 * Returns the bindable value with the given index. Bindable means, that {@link Pageable} and {@link Sort} values are

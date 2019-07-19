@@ -57,6 +57,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -102,6 +103,7 @@ public abstract class QueryExecutionConverters {
 	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
 	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<Class<?>>();
 	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>();
+	private static final Map<Class<?>, Boolean> SUPPORTS_CACHE = new ConcurrentReferenceHashMap<>();
 
 	static {
 
@@ -173,13 +175,16 @@ public abstract class QueryExecutionConverters {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		for (WrapperType candidate : WRAPPER_TYPES) {
-			if (candidate.getType().isAssignableFrom(type)) {
-				return true;
-			}
-		}
+		return SUPPORTS_CACHE.computeIfAbsent(type, key -> {
 
-		return false;
+			for (WrapperType candidate : WRAPPER_TYPES) {
+				if (candidate.getType().isAssignableFrom(type)) {
+					return true;
+				}
+			}
+
+			return false;
+		});
 	}
 
 	/**
@@ -308,11 +313,12 @@ public abstract class QueryExecutionConverters {
 	 * @param returnType must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	public static ExecutionAdapter getExecutionAdapter(Class<?> returnType) {
 
 		Assert.notNull(returnType, "Return type must not be null!");
 
-		return EXECUTION_ADAPTER.getOrDefault(returnType, ThrowingSupplier::get);
+		return EXECUTION_ADAPTER.get(returnType);
 	}
 
 	public interface ThrowingSupplier {

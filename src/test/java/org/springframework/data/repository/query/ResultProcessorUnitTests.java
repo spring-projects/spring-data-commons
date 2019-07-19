@@ -146,7 +146,7 @@ public class ResultProcessorUnitTests {
 		ResultProcessor factory = getProcessor("findOneDynamic", Class.class);
 		assertThat(factory.withDynamicProjection(accessor)).isEqualTo(factory);
 
-		doReturn(Optional.of(SampleProjection.class)).when(accessor).getDynamicProjection();
+		doReturn(SampleProjection.class).when(accessor).findDynamicProjection();
 
 		ResultProcessor processor = factory.withDynamicProjection(accessor);
 		assertThat(processor.getReturnedType().getReturnedType()).isEqualTo(SampleProjection.class);

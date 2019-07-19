@@ -74,7 +74,7 @@ public class Lazy<T> implements Supplier<T> {
 
 	/**
 	 * Creates a pre-resolved empty {@link Lazy}.
-	 * 
+	 *
 	 * @return
 	 * @since 2.1
 	 */
@@ -103,7 +103,7 @@ public class Lazy<T> implements Supplier<T> {
 	/**
 	 * Returns the {@link Optional} value created by the configured {@link Supplier}, allowing the absence of values in
 	 * contrast to {@link #get()}. Will return the calculated instance for subsequent lookups.
-	 * 
+	 *
 	 * @return
 	 */
 	public Optional<T> getOptional() {
@@ -112,7 +112,7 @@ public class Lazy<T> implements Supplier<T> {
 
 	/**
 	 * Returns a new Lazy that will consume the given supplier in case the current one does not yield in a result.
-	 * 
+	 *
 	 * @param supplier must not be {@literal null}.
 	 * @return
 	 */
@@ -125,7 +125,7 @@ public class Lazy<T> implements Supplier<T> {
 
 	/**
 	 * Returns a new Lazy that will return the given value in case the current one does not yield in a result.
-	 * 
+	 *
 	 * @param supplier must not be {@literal null}.
 	 * @return
 	 */
@@ -198,9 +198,10 @@ public class Lazy<T> implements Supplier<T> {
 	 * Returns the value of the lazy evaluation.
 	 *
 	 * @return
+	 * @since 2.2
 	 */
 	@Nullable
-	private T getNullable() {
+	public T getNullable() {
 
 		T value = this.value;
 

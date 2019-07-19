@@ -28,6 +28,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
@@ -51,6 +52,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private final int pageableIndex;
 	private final int sortIndex;
 	private final List<T> parameters;
+	private final Lazy<S> bindable;
 
 	private int dynamicProjectionIndex;
 
@@ -99,6 +101,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		this.pageableIndex = pageableIndex;
 		this.sortIndex = sortIndex;
+		this.bindable = Lazy.of(this::getBindable);
 
 		assertEitherAllParamAnnotatedOrNone();
 	}
@@ -129,6 +132,21 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		this.pageableIndex = pageableIndexTemp;
 		this.sortIndex = sortIndexTemp;
 		this.dynamicProjectionIndex = dynamicProjectionTemp;
+		this.bindable = Lazy.of(() -> (S) this);
+	}
+
+	private S getBindable() {
+
+		List<T> bindables = new ArrayList<>();
+
+		for (T candidate : this) {
+
+			if (candidate.isBindable()) {
+				bindables.add(candidate);
+			}
+		}
+
+		return createFrom(bindables);
 	}
 
 	/**
@@ -262,17 +280,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * @see Parameter#isSpecialParameter()
 	 */
 	public S getBindableParameters() {
-
-		List<T> bindables = new ArrayList<>();
-
-		for (T candidate : this) {
-
-			if (candidate.isBindable()) {
-				bindables.add(candidate);
-			}
-		}
-
-		return createFrom(bindables);
+		return this.bindable.get();
 	}
 
 	protected abstract S createFrom(List<T> parameters);

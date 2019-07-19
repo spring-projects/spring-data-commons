@@ -28,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -48,6 +49,7 @@ public class Parameter {
 	private final MethodParameter parameter;
 	private final Class<?> parameterType;
 	private final boolean isDynamicProjectionParameter;
+	private final Lazy<Optional<String>> name;
 
 	/**
 	 * Creates a new {@link Parameter} for the given {@link MethodParameter}.
@@ -61,6 +63,10 @@ public class Parameter {
 		this.parameter = parameter;
 		this.parameterType = potentiallyUnwrapParameterType(parameter);
 		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter);
+		this.name = Lazy.of(() -> {
+			Param annotation = parameter.getParameterAnnotation(Param.class);
+			return Optional.ofNullable(annotation == null ? parameter.getParameterName() : annotation.value());
+		});
 	}
 
 	/**
@@ -129,9 +135,7 @@ public class Parameter {
 	 * @return
 	 */
 	public Optional<String> getName() {
-
-		Param annotation = parameter.getParameterAnnotation(Param.class);
-		return Optional.ofNullable(annotation == null ? parameter.getParameterName() : annotation.value());
+		return this.name.get();
 	}
 
 	/**

@@ -52,6 +52,7 @@ public class QueryMethod {
 	private final Parameters<?, ?> parameters;
 	private final ResultProcessor resultProcessor;
 	private final Lazy<Class<?>> domainClass;
+	private final Lazy<Boolean> isCollectionQuery;
 
 	/**
 	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct query to use for following
@@ -111,6 +112,7 @@ public class QueryMethod {
 		});
 
 		this.resultProcessor = new ResultProcessor(this, factory);
+		this.isCollectionQuery = Lazy.of(this::calculateIsCollectionQuery);
 	}
 
 	/**
@@ -170,22 +172,7 @@ public class QueryMethod {
 	 * @return
 	 */
 	public boolean isCollectionQuery() {
-
-		if (isPageQuery() || isSliceQuery()) {
-			return false;
-		}
-
-		Class<?> returnType = method.getReturnType();
-
-		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
-			return true;
-		}
-
-		if (QueryExecutionConverters.supports(unwrappedReturnType)) {
-			return !QueryExecutionConverters.isSingleValue(unwrappedReturnType);
-		}
-
-		return ClassTypeInformation.from(unwrappedReturnType).isCollectionLike();
+		return isCollectionQuery.get();
 	}
 
 	/**
@@ -260,6 +247,25 @@ public class QueryMethod {
 	@Override
 	public String toString() {
 		return method.toString();
+	}
+
+	private boolean calculateIsCollectionQuery() {
+
+		if (isPageQuery() || isSliceQuery()) {
+			return false;
+		}
+
+		Class<?> returnType = method.getReturnType();
+
+		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
+			return true;
+		}
+
+		if (QueryExecutionConverters.supports(unwrappedReturnType)) {
+			return !QueryExecutionConverters.isSingleValue(unwrappedReturnType);
+		}
+
+		return ClassTypeInformation.from(unwrappedReturnType).isCollectionLike();
 	}
 
 	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(Method method) {
