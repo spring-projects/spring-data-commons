@@ -107,6 +107,22 @@ public interface PersistentPropertyAccessor<T> {
 	 */
 	@Nullable
 	default Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path) {
+		return getProperty(path, new TraversalContext());
+	}
+
+	/**
+	 * Return the value pointed to by the given {@link PersistentPropertyPath}. If the given path is empty, the wrapped
+	 * bean is returned. On each path segment value lookup, the resulting value is post-processed by handlers registered
+	 * on the given {@link TraversalContext} context. This can be used to unwrap container types that are encountered
+	 * during the traversal.
+	 *
+	 * @param path must not be {@literal null}.
+	 * @param context must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	@Nullable
+	default Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, TraversalContext context) {
 
 		Object bean = getBean();
 		Object current = bean;
@@ -128,7 +144,7 @@ public interface PersistentPropertyAccessor<T> {
 			PersistentEntity<?, ? extends PersistentProperty<?>> entity = property.getOwner();
 			PersistentPropertyAccessor<Object> accessor = entity.getPropertyAccessor(current);
 
-			current = accessor.getProperty(property);
+			current = context.postProcess(property, accessor.getProperty(property));
 		}
 
 		return current;

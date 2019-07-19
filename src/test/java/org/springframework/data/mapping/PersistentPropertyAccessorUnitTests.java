@@ -19,9 +19,19 @@ import static org.assertj.core.api.Assertions.*;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Value;
 import lombok.experimental.Wither;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -133,6 +143,53 @@ public class PersistentPropertyAccessorUnitTests {
 		assertThat(convertingAccessor.getBean().getCustomer().getFirstname()).isEqualTo("2");
 	}
 
+	@Test // DATACMNS-1555
+	public void usesTraversalContextToTraverseCollections() {
+
+		WithContext withContext = WithContext.builder() //
+				.collection(Collections.singleton("value")) //
+				.list(Collections.singletonList("value")) //
+				.set(Collections.singleton("value")) //
+				.map(Collections.singletonMap("key", "value")) //
+				.string(" value ") //
+				.build();
+
+		Spec collectionHelper = Spec.of("collection",
+				(context, property) -> context.registerCollectionHandler(property, it -> it.iterator().next()));
+		Spec listHelper = Spec.of("list", (context, property) -> context.registerListHandler(property, it -> it.get(0)));
+		Spec setHelper = Spec.of("set",
+				(context, property) -> context.registerSetHandler(property, it -> it.iterator().next()));
+		Spec mapHelper = Spec.of("map", (context, property) -> context.registerMapHandler(property, it -> it.get("key")));
+		Spec stringHelper = Spec.of("string",
+				(context, property) -> context.registerHandler(property, String.class, it -> it.trim()));
+
+		Stream.of(collectionHelper, listHelper, setHelper, mapHelper, stringHelper).forEach(it -> {
+
+			PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(WithContext.class);
+			PersistentProperty<?> property = entity.getRequiredPersistentProperty(it.name);
+			PersistentPropertyAccessor<WithContext> accessor = entity.getPropertyAccessor(withContext);
+
+			TraversalContext traversalContext = it.registrar.apply(new TraversalContext(), property);
+
+			PersistentPropertyPath<SamplePersistentProperty> propertyPath = context.getPersistentPropertyPath(it.name,
+					WithContext.class);
+
+			assertThat(accessor.getProperty(propertyPath, traversalContext)).isEqualTo("value");
+		});
+	}
+
+	@Test // DATACMNS-1555
+	public void traversalContextRejectsInvalidPropertyHandler() {
+
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(WithContext.class);
+		PersistentProperty<?> property = entity.getRequiredPersistentProperty("collection");
+
+		TraversalContext traversal = new TraversalContext();
+
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> traversal.registerHandler(property, Map.class, Function.identity()));
+	}
+
 	@Value
 	static class Order {
 		Customer customer;
@@ -156,5 +213,24 @@ public class PersistentPropertyAccessorUnitTests {
 	@Wither(AccessLevel.PACKAGE)
 	static class Outer {
 		NestedImmutable immutable;
+	}
+
+	// DATACMNS-1555
+
+	@Builder
+	static class WithContext {
+
+		Collection<String> collection;
+		List<String> list;
+		Set<String> set;
+		Map<String, String> map;
+		String string;
+	}
+
+	@Value(staticConstructor = "of")
+	static class Spec {
+
+		String name;
+		BiFunction<TraversalContext, PersistentProperty<?>, TraversalContext> registrar;
 	}
 }
