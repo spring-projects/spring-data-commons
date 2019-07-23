@@ -16,6 +16,7 @@
 package org.springframework.data.repository.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -51,11 +52,26 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		Assert.isTrue(parameters.getNumberOfParameters() == values.length, "Invalid number of parameters given!");
 
 		this.parameters = parameters;
-		this.values = new ArrayList<>(values.length);
+
+		if (requiresUnwrapping(values)) {
+			this.values = new ArrayList<>(values.length);
+			for (Object value : values) {
+				this.values.add(QueryExecutionConverters.unwrap(value));
+			}
+		} else {
+			this.values = Arrays.asList(values);
+		}
+	}
+
+	private static boolean requiresUnwrapping(Object[] values) {
 
 		for (Object value : values) {
-			this.values.add(QueryExecutionConverters.unwrap(value));
+			if (value != null && QueryExecutionConverters.supports(value.getClass())) {
+				return true;
+			}
 		}
+
+		return false;
 	}
 
 	/**
