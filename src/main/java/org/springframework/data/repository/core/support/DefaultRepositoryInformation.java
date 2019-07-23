@@ -180,7 +180,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 */
 	@Override
 	public boolean isCustomMethod(Method method) {
-		return composition.findMethod(method).isPresent();
+		return composition.getMethod(method) != null;
 	}
 
 	/*
@@ -200,7 +200,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	public boolean isBaseClassMethod(Method method) {
 
 		Assert.notNull(method, "Method must not be null!");
-		return baseComposition.findMethod(method).isPresent();
+		return baseComposition.getMethod(method) != null;
 	}
 
 	/*

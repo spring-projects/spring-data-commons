@@ -37,6 +37,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.MethodLookup.InvokedMethod;
 import org.springframework.data.repository.core.support.MethodLookup.MethodPredicate;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -70,7 +71,7 @@ public class RepositoryComposition {
 	private static final RepositoryComposition EMPTY = new RepositoryComposition(RepositoryFragments.empty(),
 			MethodLookups.direct(), PASSTHRU_ARG_CONVERTER);
 
-	private final Map<Method, Optional<Method>> methodCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Method, Method> methodCache = new ConcurrentReferenceHashMap<>();
 	private final @Getter RepositoryFragments fragments;
 	private final @Getter MethodLookup methodLookup;
 	private final @Getter BiFunction<Method, Object[], Object[]> argumentConverter;
@@ -192,8 +193,11 @@ public class RepositoryComposition {
 	 */
 	public Object invoke(Method method, Object... args) throws Throwable {
 
-		Method methodToCall = findMethod(method) //
-				.orElseThrow(() -> new IllegalArgumentException(String.format("No fragment found for method %s", method)));
+		Method methodToCall = getMethod(method);
+
+		if (methodToCall == null) {
+			throw new IllegalArgumentException(String.format("No fragment found for method %s", method));
+		}
 
 		ReflectionUtils.makeAccessible(methodToCall);
 
@@ -207,6 +211,18 @@ public class RepositoryComposition {
 	 * @return
 	 */
 	public Optional<Method> findMethod(Method method) {
+		return Optional.ofNullable(getMethod(method));
+	}
+
+	/**
+	 * Find the implementation method for the given {@link Method} invoked on the composite interface.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @return
+	 * @since 2.2
+	 */
+	@Nullable
+	Method getMethod(Method method) {
 
 		return methodCache.computeIfAbsent(method,
 				key -> RepositoryFragments.findMethod(InvokedMethod.of(key), methodLookup, fragments::methods));
@@ -345,21 +361,26 @@ public class RepositoryComposition {
 		 */
 		public Object invoke(Method method, Object[] args) throws Throwable {
 
-			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(method, key -> {
+			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(method, this::findImplementationFragment);
+			Optional<?> optional = fragment.getImplementation();
 
-				return stream().filter(it -> it.hasMethod(key)) //
-						.filter(it -> it.getImplementation().isPresent()) //
-						.findFirst()
-						.orElseThrow(() -> new IllegalArgumentException(String.format("No fragment found for method %s", key)));
-			});
+			if (!optional.isPresent()) {
+				throw new IllegalArgumentException(String.format("No implementation found for method %s", method));
+			}
 
-			Object target = fragment.getImplementation().orElseThrow(
-					() -> new IllegalArgumentException(String.format("No implementation found for method %s", method)));
-
-			return method.invoke(target, args);
+			return method.invoke(optional.get(), args);
 		}
 
-		private static Optional<Method> findMethod(InvokedMethod invokedMethod, MethodLookup lookup,
+		private RepositoryFragment<?> findImplementationFragment(Method key) {
+
+			return stream().filter(it -> it.hasMethod(key)) //
+					.filter(it -> it.getImplementation().isPresent()) //
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException(String.format("No fragment found for method %s", key)));
+		}
+
+		@Nullable
+		private static Method findMethod(InvokedMethod invokedMethod, MethodLookup lookup,
 				Supplier<Stream<Method>> methodStreamSupplier) {
 
 			for (MethodPredicate methodPredicate : lookup.getLookups()) {
@@ -369,11 +390,11 @@ public class RepositoryComposition {
 						.findFirst();
 
 				if (resolvedMethod.isPresent()) {
-					return resolvedMethod;
+					return resolvedMethod.get();
 				}
 			}
 
-			return Optional.empty();
+			return null;
 		}
 
 		/*

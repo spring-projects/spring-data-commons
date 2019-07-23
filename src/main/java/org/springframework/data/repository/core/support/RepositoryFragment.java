@@ -160,10 +160,11 @@ public interface RepositoryFragment<T> {
 
 		private final Optional<Class<T>> interfaceClass;
 		private final T implementation;
+		private final Optional<T> optionalImplementation;
 
 		/**
 		 * Creates a new {@link ImplementedRepositoryFragment} for the given interface class and implementation.
-		 * 
+		 *
 		 * @param interfaceClass must not be {@literal null}.
 		 * @param implementation must not be {@literal null}.
 		 */
@@ -181,6 +182,7 @@ public interface RepositoryFragment<T> {
 
 			this.interfaceClass = interfaceClass;
 			this.implementation = implementation;
+			this.optionalImplementation = Optional.of(implementation);
 		}
 
 		/*
@@ -198,7 +200,7 @@ public interface RepositoryFragment<T> {
 		 */
 		@Override
 		public Optional<T> getImplementation() {
-			return Optional.of(implementation);
+			return optionalImplementation;
 		}
 
 		/*
