@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -310,12 +311,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			result.addAdvice(new MethodInvocationValidator());
 		}
 
-		result.addAdvice(SurroundingTransactionDetectorMethodInterceptor.INSTANCE);
 		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 
 		postProcessors.forEach(processor -> processor.postProcess(result, information));
 
-		result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
+		if (DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(repositoryInterface)) {
+			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
+		}
 
 		ProjectionFactory projectionFactory = getProjectionFactory(classLoader, beanFactory);
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory));

@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.aop.ProxyMethodInvocation;
 import org.springframework.data.util.Lazy;
 import org.springframework.lang.Nullable;
@@ -44,6 +45,26 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 
 	private final MethodHandleLookup methodHandleLookup = MethodHandleLookup.getMethodHandleLookup();
 	private final Map<Method, MethodHandle> methodHandleCache = new ConcurrentReferenceHashMap<>(10, ReferenceType.WEAK);
+
+	/**
+	 * Returns whether the {@code interfaceClass} declares {@link Method#isDefault() default methods}.
+	 *
+	 * @param interfaceClass the {@link Class} to inspect.
+	 * @return {@literal true} if {@code interfaceClass} declares a default method.
+	 * @since 2.2
+	 */
+	public static boolean hasDefaultMethods(Class<?> interfaceClass) {
+
+		Method[] methods = ReflectionUtils.getAllDeclaredMethods(interfaceClass);
+
+		for (Method method : methods) {
+			if (method.isDefault()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/*
 	 * (non-Javadoc)
