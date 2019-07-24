@@ -178,7 +178,7 @@ public abstract class QueryExecutionConverters {
 		return SUPPORTS_CACHE.computeIfAbsent(type, key -> {
 
 			for (WrapperType candidate : WRAPPER_TYPES) {
-				if (candidate.getType().isAssignableFrom(type)) {
+				if (candidate.getType().isAssignableFrom(key)) {
 					return true;
 				}
 			}

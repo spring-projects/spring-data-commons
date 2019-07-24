@@ -54,7 +54,7 @@ import org.springframework.data.util.Streamable;
  */
 public class QueryExecutionResultHandlerUnitTests {
 
-	QueryExecutionResultHandler handler = new QueryExecutionResultHandler();
+	QueryExecutionResultHandler handler = new QueryExecutionResultHandler(RepositoryFactorySupport.CONVERSION_SERVICE);
 
 	@Test // DATACMNS-610
 	public void convertsListsToSet() throws Exception {

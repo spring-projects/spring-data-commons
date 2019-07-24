@@ -44,6 +44,8 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -113,6 +115,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		return o;
 	};
+
+	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
+
+	static {
+		QueryExecutionConverters.registerConvertersIn(CONVERSION_SERVICE);
+		CONVERSION_SERVICE.removeConvertible(Object.class, Object.class);
+	}
 
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache;
 	private final List<RepositoryProxyPostProcessor> postProcessors;
@@ -534,7 +543,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation,
 				ProjectionFactory projectionFactory) {
 
-			this.resultHandler = new QueryExecutionResultHandler();
+			this.resultHandler = new QueryExecutionResultHandler(CONVERSION_SERVICE);
 
 			Optional<QueryLookupStrategy> lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 					RepositoryFactorySupport.this.evaluationContextProvider);
