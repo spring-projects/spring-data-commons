@@ -15,10 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
@@ -36,7 +33,7 @@ import org.springframework.util.Assert;
 public class ParametersParameterAccessor implements ParameterAccessor {
 
 	private final Parameters<?, ?> parameters;
-	private final List<Object> values;
+	private final Object[] values;
 
 	/**
 	 * Creates a new {@link ParametersParameterAccessor}.
@@ -54,12 +51,13 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		this.parameters = parameters;
 
 		if (requiresUnwrapping(values)) {
-			this.values = new ArrayList<>(values.length);
-			for (Object value : values) {
-				this.values.add(QueryExecutionConverters.unwrap(value));
+			this.values = new Object[values.length];
+
+			for (int i = 0; i < values.length; i++) {
+				this.values[i] = QueryExecutionConverters.unwrap(values[i]);
 			}
 		} else {
-			this.values = Arrays.asList(values);
+			this.values = values;
 		}
 	}
 
@@ -88,7 +86,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 *
 	 * @return
 	 */
-	protected List<Object> getValues() {
+	protected Object[] getValues() {
 		return this.values;
 	}
 
@@ -102,7 +100,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 			return Pageable.unpaged();
 		}
 
-		Pageable pageable = (Pageable) values.get(parameters.getPageableIndex());
+		Pageable pageable = (Pageable) values[parameters.getPageableIndex()];
 
 		return pageable == null ? Pageable.unpaged() : pageable;
 	}
@@ -115,7 +113,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 		if (parameters.hasSortParameter()) {
 
-			Sort sort = (Sort) values.get(parameters.getSortIndex());
+			Sort sort = (Sort) values[parameters.getSortIndex()];
 			return sort == null ? Sort.unsorted() : sort;
 		}
 
@@ -134,7 +132,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	public Optional<Class<?>> getDynamicProjection() {
 
 		return Optional.ofNullable(parameters.hasDynamicProjection() //
-				? (Class<?>) values.get(parameters.getDynamicProjectionIndex()) //
+				? (Class<?>) values[parameters.getDynamicProjectionIndex()] //
 				: null);
 	}
 
@@ -147,7 +145,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	public Class<?> findDynamicProjection() {
 
 		return parameters.hasDynamicProjection() //
-				? (Class<?>) values.get(parameters.getDynamicProjectionIndex())
+				? (Class<?>) values[parameters.getDynamicProjectionIndex()]
 				: null;
 	}
 
@@ -159,7 +157,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T> T getValue(int index) {
-		return (T) values.get(index);
+		return (T) values[index];
 	}
 
 	/*
@@ -167,7 +165,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 * @see org.springframework.data.repository.query.ParameterAccessor#getBindableValue(int)
 	 */
 	public Object getBindableValue(int index) {
-		return values.get(parameters.getBindableParameter(index).getIndex());
+		return values[parameters.getBindableParameter(index).getIndex()];
 	}
 
 	/*
@@ -177,7 +175,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	public boolean hasBindableNullValue() {
 
 		for (Parameter parameter : parameters.getBindableParameters()) {
-			if (values.get(parameter.getIndex()) == null) {
+			if (values[parameter.getIndex()] == null) {
 				return true;
 			}
 		}
