@@ -426,7 +426,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Creates a new {@link Order} instance. Takes a single property. Direction is {@link Direction#ASC} and
+		 * Creates a new {@link Order} instance. Takes a single property. Direction is {@link Direction#DESC} and
 		 * NullHandling {@link NullHandling#NATIVE}.
 		 *
 		 * @param property must not be {@literal null} or empty.
