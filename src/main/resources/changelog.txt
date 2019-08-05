@@ -1,6 +1,25 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.0.RC2 (2019-08-05)
+-----------------------------------------
+* DATACMNS-1560 - Upgrade to Vavr 0.10.2.
+* DATACMNS-1558 - Upgrade to Vavr 0.10.1.
+* DATACMNS-1557 - Sort Javadoc mentions wrong sorting order.
+* DATACMNS-1556 - Performance improvements in repository invocation handling.
+* DATACMNS-1555 - Add support in PersistentPropertyAccessor for multivalued properties.
+* DATACMNS-1554 - Migrate tests to AssertJ.
+* DATACMNS-1553 - Revise readme for a consistent structure.
+* DATACMNS-1552 - Invalid conversions for Option instances returned from custom repository methods.
+* DATACMNS-1551 - NullPointException throw rather than PropertyReferenceException if Sort property string is ".".
+* DATACMNS-1550 - Add RevisionType to RevisionMetadata.
+* DATACMNS-1548 - Fix JavaDoc on AuditingHandler.setModifyOnCreation(…).
+* DATACMNS-1545 - Fix anchors and callouts in entity callbacks documentation.
+* DATACMNS-1544 - Release 2.2 RC2 (Moore).
+* DATACMNS-1536 - Introduce Jenkins CI.
+* DATACMNS-1524 - Major invocation penalty of repository extension methods.
+
+
 Changes in version 2.1.10.RELEASE (2019-08-05)
 ----------------------------------------------
 * DATACMNS-1557 - Sort Javadoc mentions wrong sorting order.
