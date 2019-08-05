@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.10.RELEASE (2019-08-05)
+----------------------------------------------
+* DATACMNS-1557 - Sort Javadoc mentions wrong sorting order.
+* DATACMNS-1552 - Invalid conversions for Option instances returned from custom repository methods.
+* DATACMNS-1551 - NullPointException throw rather than PropertyReferenceException if Sort property string is ".".
+* DATACMNS-1549 - Fix NoHTTP errors.
+* DATACMNS-1548 - Fix JavaDoc on AuditingHandler.setModifyOnCreation(…).
+* DATACMNS-1543 - Release 2.1.10 (Lovelace SR10).
+* DATACMNS-1536 - Introduce Jenkins CI.
+* DATACMNS-1524 - Major invocation penalty of repository extension methods.
+
+
 Changes in version 1.13.23.RELEASE (2019-08-05)
 -----------------------------------------------
 * DATACMNS-1551 - NullPointException throw rather than PropertyReferenceException if Sort property string is ".".
