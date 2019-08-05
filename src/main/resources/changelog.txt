@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 1.13.23.RELEASE (2019-08-05)
+-----------------------------------------------
+* DATACMNS-1551 - NullPointException throw rather than PropertyReferenceException if Sort property string is ".".
+* DATACMNS-1548 - Fix JavaDoc on AuditingHandler.setModifyOnCreation(…).
+* DATACMNS-1540 - ConcurrentModificationException in QuerydslPredicateBuilder path cache.
+* DATACMNS-1536 - Introduce Jenkins CI.
+* DATACMNS-1533 - Release 1.13.23 (Ingalls SR23).
+
+
 Changes in version 2.2.0.RC1 (2019-06-14)
 -----------------------------------------
 * DATACMNS-1541 - Create security policy readme.
