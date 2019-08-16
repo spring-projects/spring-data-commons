@@ -31,7 +31,7 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * entity instance completely.
 	 *
 	 * @param entity must not be {@literal null}.
-	 * @return the saved entity will never be {@literal null}.
+	 * @return the saved entity; will never be {@literal null}.
 	 */
 	<S extends T> S save(S entity);
 
@@ -39,7 +39,7 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Saves all given entities.
 	 *
 	 * @param entities must not be {@literal null}.
-	 * @return the saved entities will never be {@literal null}.
+	 * @return the saved entities; will never be {@literal null}.
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
 	 */
 	<S extends T> Iterable<S> saveAll(Iterable<S> entities);
