@@ -58,7 +58,7 @@ public interface QuerydslPredicateExecutor<T> {
 	 * be found an empty {@link Iterable} is returned.
 	 *
 	 * @param predicate must not be {@literal null}.
-	 * @param sort the {@link Sort} specification to sort the results by, may be {@link Sort#empty()}, must not be
+	 * @param sort the {@link Sort} specification to sort the results by, may be {@link Sort#unsorted()}, must not be
 	 *          {@literal null}.
 	 * @return all entities matching the given {@link Predicate}.
 	 * @since 1.10
@@ -70,7 +70,7 @@ public interface QuerydslPredicateExecutor<T> {
 	 * match could be found an empty {@link Iterable} is returned.
 	 *
 	 * @param predicate must not be {@literal null}.
-	 * @param orders the {@link OrderSpecifier}s to sort the results by.
+	 * @param orders the {@link OrderSpecifier}s to sort the results by, must not be {@literal null}.
 	 * @return all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s.
 	 */
 	Iterable<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
@@ -78,7 +78,7 @@ public interface QuerydslPredicateExecutor<T> {
 	/**
 	 * Returns all entities ordered by the given {@link OrderSpecifier}s.
 	 *
-	 * @param orders the {@link OrderSpecifier}s to sort the results by.
+	 * @param orders the {@link OrderSpecifier}s to sort the results by, must not be {@literal null}.
 	 * @return all entities ordered by the given {@link OrderSpecifier}s.
 	 */
 	Iterable<T> findAll(OrderSpecifier<?>... orders);
