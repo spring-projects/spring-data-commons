@@ -30,6 +30,7 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
@@ -45,6 +46,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * @author Mark Paluch
  * @author Michael Cramer
  * @author Mariusz Mączkowski
+ * @author Jens Schauder
  */
 public class PartTreeUnitTests {
 
@@ -601,6 +603,44 @@ public class PartTreeUnitTests {
 		assertThat(tree.hasPredicate()).isFalse();
 	}
 
+	/**
+	 * This test does not verify a desired behaviour but documents a limitation. If it starts failing and everything else
+	 * is green, remove the expectation to fail with an exception.
+	 */
+	@Test // DATACMNS-1570
+	public void specialCapitalizationInSubject() {
+
+		assertThatThrownBy(() -> new PartTree("findByZIndex", SpecialCapitalization.class))
+				.isInstanceOf(PropertyReferenceException.class);
+	}
+
+	/**
+	 * This test does not verify a desired behaviour but documents a limitation. If it starts failing and everything else
+	 * is green, remove the expectation to fail with an exception.
+	 */
+	@Test // DATACMNS-1570
+	public void specialCapitalizationInOrderBy() {
+
+		assertThatThrownBy(() -> new PartTree("findByOrderByZIndex", SpecialCapitalization.class))
+				.isInstanceOf(PropertyReferenceException.class);
+	}
+
+	@Test // DATACMNS-1570
+	public void allCapsInSubject() {
+
+		PartTree tree = new PartTree("findByURL", SpecialCapitalization.class);
+
+		assertThat(tree).hasSize(1);
+	}
+
+	@Test // DATACMNS-1570
+	public void allCapsInOrderBy() {
+
+		PartTree tree = new PartTree("findByOrderByURL", SpecialCapitalization.class);
+
+		assertThat(tree.getSort()).hasSize(1);
+	}
+
 	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {
 		assertLimiting(methodName, entityType, limiting, maxResults, false);
 	}
@@ -741,5 +781,18 @@ public class PartTreeUnitTests {
 	interface Anders {
 
 		Long getId();
+	}
+
+	public static class SpecialCapitalization {
+		int zIndex;
+		int URL;
+
+		int getZIndex() {
+			return zIndex;
+		}
+
+		int getURL() {
+			return URL;
+		}
 	}
 }

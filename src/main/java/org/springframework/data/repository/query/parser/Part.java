@@ -17,6 +17,7 @@ package org.springframework.data.repository.query.parser;
 
 import lombok.EqualsAndHashCode;
 
+import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +28,6 @@ import java.util.regex.Pattern;
 
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * A single part of a method name that has to be transformed into a query part. The actual transformation is defined by
@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  * @author Martin Baumgartner
+ * @author Jens Schauder
  */
 @EqualsAndHashCode
 public class Part {
@@ -262,7 +263,7 @@ public class Part {
 		 */
 		public String extractProperty(String part) {
 
-			String candidate = StringUtils.uncapitalize(part);
+			String candidate = Introspector.decapitalize(part);
 
 			for (String keyword : keywords) {
 				if (candidate.endsWith(keyword)) {
