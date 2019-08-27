@@ -420,6 +420,40 @@ public class ClassTypeInformationUnitTests {
 		assertThat(property.specialize(concrete)).isEqualTo(concrete);
 	}
 
+	@Test // DATACMNS-1571
+	public void considersGenericsOfTypeToSpecializeToIfFullyResolved() {
+
+		TypeInformation<StoredEvent> storeEvent = ClassTypeInformation.from(StoredEvent.class);
+		assertThat(storeEvent.getType()).isEqualTo(StoredEvent.class);
+
+		TypeInformation<DomainEvent> domainEvent = (TypeInformation<DomainEvent>) storeEvent.getProperty("event");
+		assertThat(domainEvent.getType()).isEqualTo(DomainEvent.class);
+
+		TypeInformation<? extends DomainEvent> specialized = domainEvent
+				.specialize(ClassTypeInformation.from(OfferCreated.class));
+
+		assertThat(specialized.getType()).isEqualTo(OfferCreated.class);
+		assertThat(specialized.getProperty("aggregateId").getType()).isEqualTo(Long.class);
+		assertThat(specialized.getProperty("root").getType()).isEqualTo(OfferDetails.class);
+	}
+
+	@Test // DATACMNS-1571
+	public void mergesGenericsFromContextAndProvidedDefaultOnSpecialization() {
+
+		TypeInformation<StoredEvent> storeEvent = ClassTypeInformation.from(StoredEvent.class);
+		assertThat(storeEvent.getType()).isEqualTo(StoredEvent.class);
+
+		TypeInformation<DomainEvent> domainEvent = (TypeInformation<DomainEvent>) storeEvent.getProperty("event");
+		assertThat(domainEvent.getType()).isEqualTo(DomainEvent.class);
+
+		TypeInformation<? extends DomainEvent> specialized = domainEvent
+				.specialize(ClassTypeInformation.from(GenericEvent.class));
+
+		assertThat(specialized.getType()).isEqualTo(GenericEvent.class);
+		assertThat(specialized.getProperty("aggregateId").getType()).isEqualTo(Long.class);
+		assertThat(specialized.getProperty("root").getType()).isEqualTo(Aggregate.class);
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -636,4 +670,28 @@ public class ClassTypeInformationUnitTests {
 	static class WildcardedWrapper {
 		SomeGeneric<?> wildcarded;
 	}
+
+	// DATACMNS-1571
+
+	interface Aggregate {}
+
+	static class StoredEvent<A extends Aggregate, ID> {
+		DomainEvent<A, ID> event;
+	}
+
+	static abstract class DomainEvent<T extends Aggregate, ID> {
+
+		ID aggregateId;
+		T root;
+	}
+
+	static class OfferDetails implements Aggregate {
+		String name;
+	}
+
+	// A domain type fully binding all generics
+	static class OfferCreated extends DomainEvent<OfferDetails, Long> {}
+
+	// A domain type partially binding generics
+	static class GenericEvent<T extends Aggregate> extends DomainEvent<T, Long> {}
 }
