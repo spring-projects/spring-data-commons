@@ -85,7 +85,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		this.componentType = Lazy.of(this::doGetComponentType);
 		this.valueType = Lazy.of(this::doGetMapValueType);
 		this.typeVariableMap = typeVariableMap;
-		this.hashCode = 17 + (31 * type.hashCode()) + (31 * typeVariableMap.hashCode());
+		this.hashCode = 17 + 31 * type.hashCode() + 31 * typeVariableMap.hashCode();
 	}
 
 	/**
@@ -431,11 +431,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		List<Type> candidates = new ArrayList<>();
-
 		Type genericSuperclass = rawType.getGenericSuperclass();
+
 		if (genericSuperclass != null) {
 			candidates.add(genericSuperclass);
 		}
+
 		candidates.addAll(Arrays.asList(rawType.getGenericInterfaces()));
 
 		for (Type candidate : candidates) {
@@ -445,7 +446,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			if (superType.equals(candidateInfo.getType())) {
 				return candidateInfo;
 			} else {
+
 				TypeInformation<?> nestedSuperType = candidateInfo.getSuperTypeInformation(superType);
+
 				if (nestedSuperType != null) {
 					return nestedSuperType;
 				}
@@ -497,17 +500,19 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
 
-		if (arguments == null) {
-			return getSuperTypeInformation(bound) instanceof ParameterizedTypeInformation ? ClassTypeInformation.OBJECT
-					: null;
+		if (arguments != null) {
+			return createInfo(arguments[index]);
 		}
 
-		return createInfo(arguments[index]);
+		return getSuperTypeInformation(bound) instanceof ParameterizedTypeInformation //
+				? ClassTypeInformation.OBJECT //
+				: null;
 	}
 
 	private Class<?> getBaseType(Class<?>[] candidates) {
 
 		Class<S> type = getType();
+
 		for (Class<?> candidate : candidates) {
 			if (candidate.isAssignableFrom(type)) {
 				return candidate;
