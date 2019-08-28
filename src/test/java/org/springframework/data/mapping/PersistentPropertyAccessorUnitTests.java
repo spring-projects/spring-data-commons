@@ -15,6 +15,7 @@
  */
 package org.springframework.data.mapping;
 
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 
 import lombok.AccessLevel;
@@ -24,6 +25,7 @@ import lombok.Data;
 import lombok.Value;
 import lombok.experimental.Wither;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -148,7 +150,7 @@ public class PersistentPropertyAccessorUnitTests {
 
 		WithContext withContext = WithContext.builder() //
 				.collection(Collections.singleton("value")) //
-				.list(Collections.singletonList("value")) //
+				.list(singletonList("value")) //
 				.set(Collections.singleton("value")) //
 				.map(Collections.singletonMap("key", "value")) //
 				.string(" value ") //
@@ -165,7 +167,8 @@ public class PersistentPropertyAccessorUnitTests {
 
 		Stream.of(collectionHelper, listHelper, setHelper, mapHelper, stringHelper).forEach(it -> {
 
-			PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(WithContext.class);
+			PersistentEntity<Object, SamplePersistentProperty> entity = context
+					.getRequiredPersistentEntity(WithContext.class);
 			PersistentProperty<?> property = entity.getRequiredPersistentProperty(it.name);
 			PersistentPropertyAccessor<WithContext> accessor = entity.getPropertyAccessor(withContext);
 
@@ -188,6 +191,95 @@ public class PersistentPropertyAccessorUnitTests {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
 				.isThrownBy(() -> traversal.registerHandler(property, Map.class, Function.identity()));
+	}
+
+	@Test // DATACMNS-1555
+	public void usesTraversalContextToTraverseCollectionsWhenSettingProperties() {
+
+		WithContext withContext = WithContext.builder() //
+				.collection(Collections.singleton("value")) //
+				.list(singletonList("value")) //
+				.set(Collections.singleton("value")) //
+				.map(Collections.singletonMap("key", "value")) //
+				.string(" value ") //
+				.build();
+
+		Spec listHelper = Spec.of( //
+				"list", //
+				(context, property) -> context.registerListHandler( //
+						property, //
+						list -> list.get(0), //
+						// intentionally creating a new list on write
+						(l, v) -> new ArrayList<>(singleton(v)) //
+				) //
+		);
+		Spec setHelper = Spec.of( //
+				"set", //
+				(context, property) -> context.registerSetHandler( //
+						property, //
+						set -> set.iterator().next(), //
+						// intentionally creating a new set on write
+						(s, v) -> singleton(v)) //
+		);
+		Spec mapHelper = Spec.of( //
+				"map", //
+				(context, property) -> context.registerMapHandler( //
+						property, //
+						map -> map.get("key"), //
+						// intentionally creating a new set on write
+						(map, v) -> singletonMap("key", v)) //
+		);
+
+		Stream.of(listHelper, setHelper, mapHelper).forEach(it -> {
+
+			PersistentEntity<Object, SamplePersistentProperty> entity = context
+					.getRequiredPersistentEntity(WithContext.class);
+			PersistentProperty<?> property = entity.getRequiredPersistentProperty(it.name);
+			PersistentPropertyAccessor<WithContext> accessor = entity.getPropertyAccessor(withContext);
+
+			TraversalContext traversalContext = it.registrar.apply(new TraversalContext(), property);
+
+			PersistentPropertyPath<SamplePersistentProperty> propertyPath = context.getPersistentPropertyPath(it.name,
+					WithContext.class);
+
+			Object originalContainer = accessor.getProperty(property);
+
+			accessor.setProperty(propertyPath, "new value", traversalContext);
+
+			WithContext bean = accessor.getBean();
+			Object changedContainer = entity.getPropertyAccessor(bean).getProperty(property);
+
+			assertThat(changedContainer).isNotSameAs(originalContainer);
+			assertThat(accessor.getProperty(propertyPath, traversalContext)).isEqualTo("new value");
+		});
+	}
+
+	@Test // DATACMNS-1555
+	public void usesTraversalContextToTraverseCollectionsWhenSettingPropertiesInNestedProperties() {
+
+		WithContext withContext = WithContext.builder() //
+				.entityList(singletonList(new NestedImmutable("value"))) //
+				.build();
+
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(WithContext.class);
+		PersistentProperty<?> entityList = entity.getRequiredPersistentProperty("entityList");
+		PersistentPropertyAccessor<WithContext> accessor = entity.getPropertyAccessor(withContext);
+
+		TraversalContext traversalContext = new TraversalContext().registerHandler(entityList, List.class, l -> l.get(0),
+				(l, v) -> singletonList(v));
+
+		PersistentPropertyPath<SamplePersistentProperty> propertyPath = context
+				.getPersistentPropertyPath("entityList.value", WithContext.class);
+
+		Object originalContainer = accessor.getProperty(entityList);
+
+		accessor.setProperty(propertyPath, "new value", traversalContext);
+
+		WithContext bean = accessor.getBean();
+		Object changedContainer = entity.getPropertyAccessor(bean).getProperty(entityList);
+
+		assertThat(changedContainer).isNotSameAs(originalContainer);
+		assertThat(accessor.getProperty(propertyPath, traversalContext)).isEqualTo("new value");
 	}
 
 	@Value
@@ -225,6 +317,7 @@ public class PersistentPropertyAccessorUnitTests {
 		Set<String> set;
 		Map<String, String> map;
 		String string;
+		List<NestedImmutable> entityList;
 	}
 
 	@Value(staticConstructor = "of")

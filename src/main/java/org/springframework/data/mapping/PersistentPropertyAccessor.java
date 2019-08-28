@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Jens Schauder
  * @since 1.10
  * @see PersistentEntity#getPropertyAccessor(Object)
  * @see ConvertingPropertyAccessor
@@ -54,6 +55,11 @@ public interface PersistentPropertyAccessor<T> {
 	 * @since 2.1
 	 */
 	default void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value) {
+		setProperty(path, value, new TraversalContext());
+	}
+
+	default void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value,
+			TraversalContext context) {
 
 		Assert.notNull(path, "PersistentPropertyPath must not be null!");
 		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty!");
@@ -61,7 +67,7 @@ public interface PersistentPropertyAccessor<T> {
 		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
 		PersistentProperty<?> leafProperty = path.getRequiredLeafProperty();
 
-		Object parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath);
+		Object parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath, context);
 
 		if (parent == null) {
 
@@ -75,7 +81,9 @@ public interface PersistentPropertyAccessor<T> {
 				? this //
 				: leafProperty.getOwner().getPropertyAccessor(parent);
 
-		accessor.setProperty(leafProperty, value);
+		Object valueToSet = context.preProcess(leafProperty, accessor.getProperty(leafProperty), value);
+
+		accessor.setProperty(leafProperty, valueToSet);
 
 		if (parentPath.isEmpty()) {
 			return;
@@ -84,7 +92,7 @@ public interface PersistentPropertyAccessor<T> {
 		Object bean = accessor.getBean();
 
 		if (bean != parent) {
-			setProperty(parentPath, bean);
+			setProperty(parentPath, bean, context);
 		}
 	}
 
