@@ -166,7 +166,20 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	@Override
 	@SuppressWarnings("unchecked")
 	public TypeInformation<? extends T> specialize(ClassTypeInformation<?> type) {
-		return isResolvedCompletely() ? (TypeInformation<? extends T>) type : super.specialize(type);
+
+		if (isResolvedCompletely()) {
+			return (TypeInformation<? extends T>) type;
+		}
+
+		TypeInformation<?> asSupertype = type.getSuperTypeInformation(getType());
+
+		if (asSupertype == null || !ParameterizedTypeInformation.class.isInstance(asSupertype)) {
+			return super.specialize(type);
+		}
+
+		return ((ParameterizedTypeInformation<?>) asSupertype).isResolvedCompletely() //
+				? (TypeInformation<? extends T>) type //
+				: super.specialize(type);
 	}
 
 	/*

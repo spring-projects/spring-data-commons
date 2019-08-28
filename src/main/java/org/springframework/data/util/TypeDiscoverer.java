@@ -481,13 +481,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@SuppressWarnings("unchecked")
 	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
 
+		Assert.notNull(type, "Type must not be null!");
 		Assert.isTrue(getType().isAssignableFrom(type.getType()),
-				String.format("%s must be assignable from %s", getType(), type.getType()));
+				() -> String.format("%s must be assignable from %s", getType(), type.getType()));
 
-		List<TypeInformation<?>> arguments = getTypeArguments();
+		List<TypeInformation<?>> typeArguments = getTypeArguments();
 
-		return (TypeInformation<? extends S>) (arguments.isEmpty() ? type
-				: createInfo(new SyntheticParamterizedType(type, arguments)));
+		return (TypeInformation<? extends S>) (typeArguments.isEmpty() //
+				? type //
+				: type.createInfo(new SyntheticParamterizedType(type, getTypeArguments())));
 	}
 
 	@Nullable
