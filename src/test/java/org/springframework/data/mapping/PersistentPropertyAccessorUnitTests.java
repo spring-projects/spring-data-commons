@@ -43,6 +43,7 @@ import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 
 /**
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class PersistentPropertyAccessorUnitTests {
 
@@ -53,7 +54,7 @@ public class PersistentPropertyAccessorUnitTests {
 
 	private void setUp(Order order, String path) {
 
-		this.accessor = context.getPersistentEntity(Order.class).getPropertyAccessor(order);
+		this.accessor = context.getRequiredPersistentEntity(Order.class).getPropertyAccessor(order);
 		this.path = context.getPersistentPropertyPath(path, Order.class);
 	}
 
@@ -110,7 +111,7 @@ public class PersistentPropertyAccessorUnitTests {
 	@Test // DATACMNS-1322
 	public void correctlyReplacesObjectInstancesWhenSettingPropertyPathOnImmutableObjects() {
 
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Outer.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Outer.class);
 		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath("immutable.value",
 				entity.getType());
 
@@ -163,7 +164,7 @@ public class PersistentPropertyAccessorUnitTests {
 				(context, property) -> context.registerSetHandler(property, it -> it.iterator().next()));
 		Spec mapHelper = Spec.of("map", (context, property) -> context.registerMapHandler(property, it -> it.get("key")));
 		Spec stringHelper = Spec.of("string",
-				(context, property) -> context.registerHandler(property, String.class, it -> it.trim()));
+				(context, property) -> context.registerHandler(property, String.class, String::trim));
 
 		Stream.of(collectionHelper, listHelper, setHelper, mapHelper, stringHelper).forEach(it -> {
 
@@ -184,7 +185,7 @@ public class PersistentPropertyAccessorUnitTests {
 	@Test // DATACMNS-1555
 	public void traversalContextRejectsInvalidPropertyHandler() {
 
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(WithContext.class);
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(WithContext.class);
 		PersistentProperty<?> property = entity.getRequiredPersistentProperty("collection");
 
 		TraversalContext traversal = new TraversalContext();
