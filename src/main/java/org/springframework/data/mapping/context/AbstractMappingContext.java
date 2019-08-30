@@ -380,7 +380,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 					entity.setPersistentPropertyAccessorFactory(persistentPropertyAccessorFactory);
 				}
 
-			} catch (MappingException e) {
+			} catch (RuntimeException e) {
 				persistentEntities.remove(typeInformation);
 				throw e;
 			}
