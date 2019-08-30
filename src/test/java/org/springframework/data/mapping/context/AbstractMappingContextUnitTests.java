@@ -19,12 +19,19 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import groovy.lang.MetaClass;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -57,32 +64,13 @@ public class AbstractMappingContextUnitTests {
 		context.setSimpleTypeHolder(new SimpleTypeHolder(Collections.singleton(LocalDateTime.class), true));
 	}
 
-	@Test(expected = MappingException.class) // DATACMNS-92
+	@Test // DATACMNS-92
 	public void doesNotAddInvalidEntity() {
 
-		context = new SampleMappingContext() {
-			@Override
-			@SuppressWarnings("unchecked")
-			protected <S> BasicPersistentEntity<Object, SamplePersistentProperty> createPersistentEntity(
-					TypeInformation<S> typeInformation) {
-				return new BasicPersistentEntity<Object, SamplePersistentProperty>((TypeInformation<Object>) typeInformation) {
-					@Override
-					public void verify() {
-						if (Unsupported.class.isAssignableFrom(getType())) {
-							throw new MappingException("Unsupported type!");
-						}
-					}
-				};
-			}
-		};
+		context = TypeRejectingMappingContext.rejecting(() -> new MappingException("Not supported!"), Unsupported.class);
 
-		try {
-			context.getPersistentEntity(Unsupported.class);
-		} catch (MappingException e) {
-			// expected
-		}
-
-		context.getPersistentEntity(Unsupported.class);
+		assertThatExceptionOfType(MappingException.class) //
+				.isThrownBy(() -> context.getPersistentEntity(Unsupported.class));
 	}
 
 	@Test
@@ -213,6 +201,21 @@ public class AbstractMappingContextUnitTests {
 		assertThat(context.getPersistentEntity(property)).isNull();
 	}
 
+	@Test // DATACMNS-1574
+	public void cleansUpCacheForRuntimeException() {
+
+		TypeRejectingMappingContext context = TypeRejectingMappingContext.rejecting(() -> new RuntimeException(),
+				Unsupported.class);
+
+		assertThatExceptionOfType(RuntimeException.class) //
+				.isThrownBy(() -> context.getPersistentEntity(Unsupported.class));
+
+		// Second lookup still throws the exception as the temporarily created entity was not cached
+
+		assertThatExceptionOfType(RuntimeException.class) //
+				.isThrownBy(() -> context.getPersistentEntity(Unsupported.class));
+	}
+
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
 
 		boolean found = false;
@@ -251,5 +254,56 @@ public class AbstractMappingContextUnitTests {
 
 	static class Extension extends Base {
 		@Id String foo;
+	}
+
+	/**
+	 * Extension of {@link SampleMappingContext} to reject the creation of certain types with a configurable exception.
+	 *
+	 * @author Oliver Drotbohm
+	 */
+	@Value
+	@EqualsAndHashCode(callSuper = false)
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	private static class TypeRejectingMappingContext extends SampleMappingContext {
+
+		Supplier<? extends RuntimeException> exception;
+		Collection<Class<?>> rejectedTypes;
+
+		/**
+		 * Creates a new {@link TypeRejectingMappingContext} producing the given exceptions if any of the given types is
+		 * encountered.
+		 *
+		 * @param <T>
+		 * @param exception must not be {@literal null}.
+		 * @param types must not be {@literal null}.
+		 * @return
+		 */
+		public static <T extends RuntimeException> TypeRejectingMappingContext rejecting(Supplier<T> exception,
+				Class<?>... types) {
+			return new TypeRejectingMappingContext(exception, Arrays.asList(types));
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.mapping.context.SampleMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation)
+		 */
+		@Override
+		protected <S> BasicPersistentEntity<Object, SamplePersistentProperty> createPersistentEntity(
+				TypeInformation<S> typeInformation) {
+
+			return new BasicPersistentEntity<Object, SamplePersistentProperty>((TypeInformation<Object>) typeInformation) {
+
+				/*
+				 * (non-Javadoc)
+				 * @see org.springframework.data.mapping.model.BasicPersistentEntity#verify()
+				 */
+				@Override
+				public void verify() {
+					if (rejectedTypes.stream().anyMatch(it -> it.isAssignableFrom(getType()))) {
+						throw exception.get();
+					}
+				}
+			};
+		}
 	}
 }
