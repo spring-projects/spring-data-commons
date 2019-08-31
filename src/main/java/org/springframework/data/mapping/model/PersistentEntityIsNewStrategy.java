@@ -99,7 +99,7 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 		}
 
 		if (valueType != null && !valueType.isPrimitive()) {
-			return value == null;
+			return false;
 		}
 
 		if (Number.class.isInstance(value)) {
