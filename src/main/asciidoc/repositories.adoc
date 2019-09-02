@@ -534,11 +534,53 @@ List<User> findByLastname(String lastname, Pageable pageable);
 ----
 ====
 
+IMPORTANT: APIs taking `Sort` and `Pageable` expect non-`null` values to be handed into methods.
+If you don't want to apply any sorting or pagination use `Sort.unsorted()` and `Pageable.unpaged()`.
+
 The first method lets you pass an `org.springframework.data.domain.Pageable` instance to the query method to dynamically add paging to your statically defined query. A `Page` knows about the total number of elements and pages available. It does so by the infrastructure triggering a count query to calculate the overall number. As this might be expensive (depending on the store used), you can instead return a `Slice`. A `Slice` only knows about whether a next `Slice` is available, which might be sufficient when walking through a larger result set.
 
 Sorting options are handled through the `Pageable` instance, too. If you only need sorting, add an `org.springframework.data.domain.Sort` parameter to your method. As you can see, returning a `List` is also possible. In this case, the additional metadata required to build the actual `Page` instance is not created (which, in turn, means that the additional count query that would have been necessary is not issued). Rather, it restricts the query to look up only the given range of entities.
 
 NOTE: To find out how many pages you get for an entire query, you have to trigger an additional count query. By default, this query is derived from the query you actually trigger.
+
+[[repositories.paging-and-sorting]]
+==== Paging and Sorting
+
+Simple sorting expressions can be defined by using property names.
+Expressions can be concatenated to collect multiple criterias into one expression.
+
+.Defining sort expressions
+====
+[source, java]
+----
+Sort sort = Sort.by("firstname").ascending()
+  .and(Sort.by("lastname").descending());
+----
+====
+
+For a more type-safe way of defining sort expressions, start with the type to define the sort expression for and use method references to define the properties to sort on.
+
+.Defining sort expressions using the type-safe API
+====
+[source, java]
+----
+TypedSort<Person> person = Sort.sort(Person.class);
+
+TypedSort<Person> sort = person.by(Person::getFirstname).ascending() 
+  .and(person.by(Person::getLastname).descending());
+----
+====
+
+If your store implementation supports Querydsl, you can also use the metamodel types generated to define sort expressions:
+
+.Defining sort expressions using the Querydsl API
+====
+[source, java]
+----
+QSort sort = QSort.by(QPerson.firstname.asc())
+  .and(QSort.by(QPerson.lastname.desc()));
+----
+====
 
 [[repositories.limit-query-result]]
 === Limiting Query Results
