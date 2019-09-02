@@ -236,8 +236,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns the target type we can readTargetWriteLocl an inject of the given source type to. The returned type might
-	 * be a subclass of the given expected type though. If {@code expectedTargetType} is {@literal null} we will simply
+	 * Returns the target type we can read an inject of the given source type to. The returned type might
+	 * be a subclass of the given expected type though. If {@code requestedTargetType} is {@literal null} we will simply
 	 * return the first target type matching or {@literal null} if no conversion can be found.
 	 *
 	 * @param sourceType must not be {@literal null}
@@ -255,7 +255,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to readTargetWriteLocl into a Mongo native type. The
+	 * Returns whether we have a custom conversion registered to read {@code sourceType} into a native type. The
 	 * returned type might be a subclass of the given expected type though.
 	 *
 	 * @param sourceType must not be {@literal null}
@@ -269,8 +269,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to readTargetWriteLocl an object of the given source type
-	 * into an object of the given Mongo native target type.
+	 * Returns whether we have a custom conversion registered to read an object of the given source type
+	 * into an object of the given native target type.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
@@ -285,7 +285,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to readTargetReadLock the given source into the given target
+	 * Returns whether we have a custom conversion registered to read the given source into the given target
 	 * type.
 	 *
 	 * @param sourceType must not be {@literal null}
@@ -301,8 +301,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns the actual target type for the given {@code sourceType} and {@code requestedTargetType}. Note that the
-	 * returned {@link Class} could be an assignable type to the given {@code requestedTargetType}.
+	 * Returns the actual target type for the given {@code sourceType} and {@code targetType}. Note that the
+	 * returned {@link Class} could be an assignable type to the given {@code targetType}.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
@@ -314,7 +314,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Inspects the given {@link ConvertiblePair}s for ones that have a source compatible type as source. Additionally
+	 * Inspects the given {@link ConvertiblePair ConvertiblePairs} for ones that have a source compatible type as source. Additionally
 	 * checks assignability of the target type if one is given.
 	 *
 	 * @param sourceType must not be {@literal null}.
