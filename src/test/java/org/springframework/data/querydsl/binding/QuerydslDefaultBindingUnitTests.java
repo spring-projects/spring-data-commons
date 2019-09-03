@@ -79,7 +79,7 @@ public class QuerydslDefaultBindingUnitTests {
 	}
 
 	@Test //DATACMNS-1578
-	public void shouldCreatePredicateWithIsNullWhenPropertyIsAnObjectAndValueIsNull() {
+	public void shouldCreatePredicateWithIsNullWhenPropertyIsAnNestedObjectAndValueIsNull() {
 		Optional<Predicate> predicate = binding.bind(QUser.user.address.city, Collections.singleton(null));
 		assertThat(predicate).hasValueSatisfying(it -> assertThat(it.toString()).isEqualTo(QUser.user.address.city.isNull().toString()));
 	}
