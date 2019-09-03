@@ -30,6 +30,7 @@ import com.querydsl.core.types.Predicate;
 /**
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author Colin Gao
  */
 public class QuerydslDefaultBindingUnitTests {
 
@@ -75,5 +76,11 @@ public class QuerydslDefaultBindingUnitTests {
 	@Test
 	public void testname() {
 		assertThat(binding.bind(QUser.user.lastname, Collections.emptySet())).isNotPresent();
+	}
+
+	@Test //DATACMNS-1578
+	public void shouldCreatePredicateWithIsNullWhenPropertyIsAnNestedObjectAndValueIsNull() {
+		Optional<Predicate> predicate = binding.bind(QUser.user.address.city, Collections.singleton(null));
+		assertThat(predicate).hasValueSatisfying(it -> assertThat(it.toString()).isEqualTo(QUser.user.address.city.isNull().toString()));
 	}
 }
