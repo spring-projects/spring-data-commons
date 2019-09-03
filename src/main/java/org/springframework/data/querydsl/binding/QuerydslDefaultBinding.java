@@ -38,6 +38,9 @@ import com.querydsl.core.types.dsl.SimpleExpression;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @since 1.11
+ *
+ * @author Colin Gao
+ * @since 2.1
  */
 class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>, Object> {
 
@@ -73,7 +76,12 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 				return Optional.of(((SimpleExpression) path).in(value));
 			}
 
-			return Optional.of(((SimpleExpression) path).eq(value.iterator().next()));
+			Object object = value.iterator().next();
+			if (object == null) {
+				return Optional.of(((SimpleExpression) path).isNull());
+			}
+			
+			return Optional.of(((SimpleExpression) path).eq(object));
 		}
 
 		throw new IllegalArgumentException(
