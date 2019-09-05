@@ -54,7 +54,8 @@ public class QuerydslDefaultBindingUnitTests {
 
 		Optional<Predicate> predicate = binding.bind(QUser.user.address.city, Collections.singleton("two rivers"));
 
-		assertThat(predicate).hasValueSatisfying(it -> assertThat(it.toString()).isEqualTo(QUser.user.address.city.eq("two rivers").toString()));
+		assertThat(predicate).hasValueSatisfying(
+				it -> assertThat(it.toString()).isEqualTo(QUser.user.address.city.eq("two rivers").toString()));
 	}
 
 	@Test // DATACMNS-669
@@ -78,9 +79,13 @@ public class QuerydslDefaultBindingUnitTests {
 		assertThat(binding.bind(QUser.user.lastname, Collections.emptySet())).isNotPresent();
 	}
 
-	@Test //DATACMNS-1578
-	public void shouldCreatePredicateWithIsNullWhenPropertyIsAnNestedObjectAndValueIsNull() {
+	@Test // DATACMNS-1578
+	public void shouldCreatePredicateWithIsNullWhenPropertyIsANestedObjectAndValueIsNull() {
+
 		Optional<Predicate> predicate = binding.bind(QUser.user.address.city, Collections.singleton(null));
-		assertThat(predicate).hasValueSatisfying(it -> assertThat(it.toString()).isEqualTo(QUser.user.address.city.isNull().toString()));
+
+		assertThat(predicate).hasValueSatisfying(it -> {
+			assertThat(it.toString()).isEqualTo(QUser.user.address.city.isNull().toString());
+		});
 	}
 }
