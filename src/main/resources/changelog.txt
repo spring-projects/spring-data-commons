@@ -1,6 +1,20 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.0.RC3 (2019-09-06)
+-----------------------------------------
+* DATACMNS-1578 - Properly bind null values to ….isNull() expressions in Querydsl.
+* DATACMNS-1576 - Fix JavaDoc on CustomConversions.
+* DATACMNS-1574 - Partially populated PersistentEntity instances not properly removed from cache.
+* DATACMNS-1571 - TypeInformation.specialize(…) does not consider generics information in given type.
+* DATACMNS-1570 - Parsing of query method names is inconsistent for attributes beginning with a single lower case character followed by an upper case character.
+* DATACMNS-1569 - Revise nullability documentation in Querydsl APIs.
+* DATACMNS-1568 - Explicitly mention null-handling changes made for Sort and Pageable in 2.0 in reference docs.
+* DATACMNS-1567 - Fix license years in header of Repository.
+* DATACMNS-1565 - Add HTTPS entries into spring.schemas.
+* DATACMNS-1563 - Release 2.2 RC3 (Moore).
+
+
 Changes in version 2.2.0.RC2 (2019-08-05)
 -----------------------------------------
 * DATACMNS-1560 - Upgrade to Vavr 0.10.2.
