@@ -68,7 +68,7 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 	 * @see org.springframework.hateoas.server.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
 	 */
 	@Override
-	public void enhance(UriComponentsBuilder builder, MethodParameter parameter, @Nullable Object value) {
+	public void enhance(UriComponentsBuilder builder, @Nullable MethodParameter parameter, @Nullable Object value) {
 
 		if (!(value instanceof Sort)) {
 			return;
