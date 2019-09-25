@@ -50,8 +50,8 @@ public class PageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new unsorted {@link PageRequest}.
 	 *
-	 * @param page zero-based page index.
-	 * @param size the size of the page to be returned.
+	 * @param page zero-based page index, must not be negative.
+	 * @param size the size of the page to be returned, must be greater than 0.
 	 * @since 2.0
 	 */
 	public static PageRequest of(int page, int size) {
@@ -73,8 +73,8 @@ public class PageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link PageRequest} with sort direction and properties applied.
 	 *
-	 * @param page zero-based page index.
-	 * @param size the size of the page to be returned.
+	 * @param page zero-based page index, must not be negative.
+	 * @param size the size of the page to be returned, must be greater than 0.
 	 * @param direction must not be {@literal null}.
 	 * @param properties must not be {@literal null}.
 	 * @since 2.0
