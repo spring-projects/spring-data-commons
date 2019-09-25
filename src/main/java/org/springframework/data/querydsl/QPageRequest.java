@@ -37,8 +37,8 @@ public class QPageRequest extends AbstractPageRequest {
 	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return the first
 	 * page.
 	 *
-	 * @param page
-	 * @param size
+	 * @param page must not be negative.
+	 * @param size must be greater or equal to 0.
 	 */
 	public QPageRequest(int page, int size) {
 		this(page, size, QSort.unsorted());
@@ -47,8 +47,8 @@ public class QPageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link QPageRequest} with the given {@link OrderSpecifier}s applied.
 	 *
-	 * @param page
-	 * @param size
+	 * @param page must not be negative.
+	 * @param size must be greater or equal to 0.
 	 * @param orderSpecifiers must not be {@literal null} or empty;
 	 */
 	public QPageRequest(int page, int size, OrderSpecifier<?>... orderSpecifiers) {
