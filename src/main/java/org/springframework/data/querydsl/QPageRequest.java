@@ -18,6 +18,7 @@ package org.springframework.data.querydsl;
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.Assert;
 
 import com.querydsl.core.types.OrderSpecifier;
 
@@ -57,12 +58,15 @@ public class QPageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link QPageRequest} with sort parameters applied.
 	 *
-	 * @param page
-	 * @param size
-	 * @param sort
+	 * @param page must not be negative.
+	 * @param size must be greater or equal to 0.
+	 * @param sort must not be {@literal null}.
 	 */
 	public QPageRequest(int page, int size, QSort sort) {
+
 		super(page, size);
+
+		Assert.notNull(sort, "QSort must not be null!");
 
 		this.sort = sort;
 	}

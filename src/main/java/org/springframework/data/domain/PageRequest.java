@@ -17,6 +17,7 @@ package org.springframework.data.domain;
 
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * Basic Java Bean implementation of {@code Pageable}.
@@ -60,15 +61,17 @@ public class PageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link PageRequest} with sort parameters applied.
 	 *
-	 * @param page zero-based page index.
-	 * @param size the size of the page to be returned.
-	 * @param sort can be {@literal null}.
+	 * @param page zero-based page index, must not be negative.
+	 * @param size the size of the page to be returned, must be greater than 0.
+	 * @param sort must not be {@literal null}.
 	 * @deprecated since 2.0, use {@link #of(int, int, Sort)} instead.
 	 */
 	@Deprecated
 	public PageRequest(int page, int size, Sort sort) {
 
 		super(page, size);
+
+		Assert.notNull(sort, "Sort must not be null!");
 
 		this.sort = sort;
 	}

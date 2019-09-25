@@ -15,6 +15,7 @@
  */
 package org.springframework.data.domain;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
 import org.junit.Test;
@@ -60,5 +61,12 @@ public class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
 		// Is not equal to instance with another sort
 		assertNotEqualsAndHashcode(request, PageRequest.of(0, 10, Direction.ASC, "foo"));
+	}
+
+	@Test // DATACMNS-1581
+	public void rejectsNullSort() {
+
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> PageRequest.of(0, 10, null));
 	}
 }
