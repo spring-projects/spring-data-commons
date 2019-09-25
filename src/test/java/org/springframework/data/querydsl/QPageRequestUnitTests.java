@@ -31,14 +31,14 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 	 */
 	@Override
 	public AbstractPageRequest newPageRequest(int page, int size) {
-		return new QPageRequest(page, size);
+		return QPageRequest.of(page, size);
 	}
 
 	@Test
 	public void constructsQPageRequestWithOrderSpecifiers() {
 
 		QUser user = QUser.user;
-		QPageRequest pageRequest = new QPageRequest(0, 10, user.firstname.asc());
+		QPageRequest pageRequest = QPageRequest.of(0, 10, user.firstname.asc());
 
 		assertThat(pageRequest.getSort()).isEqualTo(QSort.by(user.firstname.asc()));
 	}
@@ -47,7 +47,7 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 	public void constructsQPageRequestWithQSort() {
 
 		QUser user = QUser.user;
-		QPageRequest pageRequest = new QPageRequest(0, 10, QSort.by(user.firstname.asc()));
+		QPageRequest pageRequest = QPageRequest.of(0, 10, QSort.by(user.firstname.asc()));
 
 		assertThat(pageRequest.getSort()).isEqualTo(QSort.by(user.firstname.asc()));
 	}
@@ -56,6 +56,6 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 	public void rejectsNullSort() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
-				.isThrownBy(() -> new QPageRequest(0, 10, (QSort) null));
+				.isThrownBy(() -> QPageRequest.of(0, 10, (QSort) null));
 	}
 }

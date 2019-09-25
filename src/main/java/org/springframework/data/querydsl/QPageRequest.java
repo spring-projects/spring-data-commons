@@ -26,6 +26,7 @@ import com.querydsl.core.types.OrderSpecifier;
  * Basic Java Bean implementation of {@link Pageable} with support for QueryDSL.
  *
  * @author Thomas Darimont
+ * @author Oliver Drotbohm
  */
 public class QPageRequest extends AbstractPageRequest {
 
@@ -39,7 +40,9 @@ public class QPageRequest extends AbstractPageRequest {
 	 *
 	 * @param page must not be negative.
 	 * @param size must be greater or equal to 0.
+	 * @deprecated since 2.1, use {@link #of(int, int)} instead.
 	 */
+	@Deprecated
 	public QPageRequest(int page, int size) {
 		this(page, size, QSort.unsorted());
 	}
@@ -50,7 +53,9 @@ public class QPageRequest extends AbstractPageRequest {
 	 * @param page must not be negative.
 	 * @param size must be greater or equal to 0.
 	 * @param orderSpecifiers must not be {@literal null} or empty;
+	 * @deprecated since 2.1, use {@link #of(int, int, OrderSpecifier...)} instead.
 	 */
+	@Deprecated
 	public QPageRequest(int page, int size, OrderSpecifier<?>... orderSpecifiers) {
 		this(page, size, new QSort(orderSpecifiers));
 	}
@@ -61,7 +66,9 @@ public class QPageRequest extends AbstractPageRequest {
 	 * @param page must not be negative.
 	 * @param size must be greater or equal to 0.
 	 * @param sort must not be {@literal null}.
+	 * @deprecated since 2.1, use {@link #of(int, int, QSort)} instead.
 	 */
+	@Deprecated
 	public QPageRequest(int page, int size, QSort sort) {
 
 		super(page, size);
@@ -69,6 +76,42 @@ public class QPageRequest extends AbstractPageRequest {
 		Assert.notNull(sort, "QSort must not be null!");
 
 		this.sort = sort;
+	}
+
+	/**
+	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return the first
+	 * page.
+	 *
+	 * @param page must not be negative.
+	 * @param size must be greater or equal to 0.
+	 * @since 2.1
+	 */
+	public static QPageRequest of(int page, int size) {
+		return new QPageRequest(page, size, QSort.unsorted());
+	}
+
+	/**
+	 * Creates a new {@link QPageRequest} with the given {@link OrderSpecifier}s applied.
+	 *
+	 * @param page must not be negative.
+	 * @param size must be greater or equal to 0.
+	 * @param orderSpecifiers must not be {@literal null} or empty;
+	 * @since 2.1
+	 */
+	public static QPageRequest of(int page, int size, OrderSpecifier<?>... orderSpecifiers) {
+		return new QPageRequest(page, size, new QSort(orderSpecifiers));
+	}
+
+	/**
+	 * Creates a new {@link QPageRequest} with sort parameters applied.
+	 *
+	 * @param page must not be negative.
+	 * @param size must be greater or equal to 0.
+	 * @param sort must not be {@literal null}.
+	 * @since 2.1
+	 */
+	public static QPageRequest of(int page, int size, QSort sort) {
+		return new QPageRequest(page, size, sort);
 	}
 
 	/*
@@ -86,7 +129,7 @@ public class QPageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public Pageable next() {
-		return new QPageRequest(getPageNumber() + 1, getPageSize(), sort);
+		return QPageRequest.of(getPageNumber() + 1, getPageSize(), sort);
 	}
 
 	/*
@@ -95,7 +138,7 @@ public class QPageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public Pageable previous() {
-		return new QPageRequest(getPageNumber() - 1, getPageSize(), sort);
+		return QPageRequest.of(getPageNumber() - 1, getPageSize(), sort);
 	}
 
 	/*
@@ -104,6 +147,6 @@ public class QPageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public Pageable first() {
-		return new QPageRequest(0, getPageSize(), sort);
+		return QPageRequest.of(0, getPageSize(), sort);
 	}
 }
