@@ -51,4 +51,11 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 
 		assertThat(pageRequest.getSort()).isEqualTo(QSort.by(user.firstname.asc()));
 	}
+
+	@Test // DATACMNS-1581
+	public void rejectsNullSort() {
+
+		assertThatExceptionOfType(IllegalArgumentException.class) //
+				.isThrownBy(() -> new QPageRequest(0, 10, (QSort) null));
+	}
 }
