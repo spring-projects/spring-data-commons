@@ -217,6 +217,7 @@ It's an established pattern to rather use static factory methods to expose these
 * _For identifiers to be generated, still use a final field in combination with a wither method_ --
 * _Use Lombok to avoid boilerplate code_ -- As persistence operations usually require a constructor taking all arguments, their declaration becomes a tedious repetition of boilerplate parameter to field assignments that can best be avoided by using Lombok's `@AllArgsConstructor`.
 
+[[mapping.kotlin]]
 == Kotlin support
 
 Spring Data adapts specifics of Kotlin to allow object creation and mutation.

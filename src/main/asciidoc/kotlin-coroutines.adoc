@@ -1,0 +1,53 @@
+[[kotlin.coroutines]]
+= Coroutines
+
+Kotlin https://kotlinlang.org/docs/reference/coroutines-overview.html[Coroutines] are Kotlin lightweight threads allowing to write non-blocking code imperatively.
+On language side, suspending functions provides an abstraction for asynchronous operations while on library side https://github.com/Kotlin/kotlinx.coroutines[kotlinx.coroutines] provides functions like https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html[`async { }`] and types like https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html[`Flow`].
+
+Spring Data modules provide support for Coroutines on the following scope:
+
+* https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-deferred/index.html[Deferred] and https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html[Flow] return values support in Kotlin extensions
+
+[[kotlin.coroutines.dependencies]]
+== Dependencies
+
+Coroutines support is enabled when `kotlinx-coroutines-core` and `kotlinx-coroutines-reactor` dependencies are in the classpath:
+
+.Dependencies to add in Maven pom.xml
+====
+[source,xml]
+----
+<dependency>
+	<groupId>org.jetbrains.kotlinx</groupId>
+	<artifactId>kotlinx-coroutines-core</artifactId>
+</dependency>
+
+<dependency>
+	<groupId>org.jetbrains.kotlinx</groupId>
+	<artifactId>kotlinx-coroutines-reactor</artifactId>
+</dependency>
+----
+====
+
+Version `1.3.0` and above are supported.
+
+[[kotlin.coroutines.reactive]]
+== How Reactive translates to Coroutines?
+
+For return values, the translation from Reactive to Coroutines APIs is the following:
+
+* `fun handler(): Mono<Void>` becomes `suspend fun handler()`
+* `fun handler(): Mono<T>` becomes `suspend fun handler(): T` or `suspend fun handler(): T?` depending on if the `Mono` can be empty or not (with the advantage of being more statically typed)
+* `fun handler(): Flux<T>` becomes `fun handler(): Flow<T>`
+
+https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html[`Flow`] is `Flux` equivalent in Coroutines world, suitable for hot or cold stream, finite or infinite streams, with the following main differences:
+
+* `Flow` is push-based while `Flux` is push-pull hybrid
+* Backpressure is implemented via suspending functions
+* `Flow` has only a https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/collect.html[single suspending `collect` method] and operators are implemented as https://kotlinlang.org/docs/reference/extensions.html[extensions]
+* https://github.com/Kotlin/kotlinx.coroutines/tree/master/kotlinx-coroutines-core/common/src/flow/operators[Operators are easy to implement] thanks to Coroutines
+* Extensions allow adding custom operators to `Flow`
+* Collect operations are suspending functions
+* https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/map.html[`map` operator] supports asynchronous operation (no need for `flatMap`) since it takes a suspending function parameter
+
+Read this blog post about https://spring.io/blog/2019/04/12/going-reactive-with-spring-coroutines-and-kotlin-flow[Going Reactive with Spring, Coroutines and Kotlin Flow] for more details, including how to run code concurrently with Coroutines.
