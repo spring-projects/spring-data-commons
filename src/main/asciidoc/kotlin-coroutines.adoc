@@ -1,8 +1,8 @@
 [[kotlin.coroutines]]
 = Coroutines
 
-Kotlin https://kotlinlang.org/docs/reference/coroutines-overview.html[Coroutines] are Kotlin lightweight threads allowing to write non-blocking code imperatively.
-On language side, suspending functions provides an abstraction for asynchronous operations while on library side https://github.com/Kotlin/kotlinx.coroutines[kotlinx.coroutines] provides functions like https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html[`async { }`] and types like https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html[`Flow`].
+Kotlin https://kotlinlang.org/docs/reference/coroutines-overview.html[Coroutines] are lightweight threads allowing to write non-blocking code imperatively.
+On language side, `suspend` functions provides an abstraction for asynchronous operations while on library side https://github.com/Kotlin/kotlinx.coroutines[kotlinx.coroutines] provides functions like https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html[`async { }`] and types like https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html[`Flow`].
 
 Spring Data modules provide support for Coroutines on the following scope:
 
@@ -29,7 +29,7 @@ Coroutines support is enabled when `kotlinx-coroutines-core` and `kotlinx-corout
 ----
 ====
 
-Version `1.3.0` and above are supported.
+NOTE: Supported versions `1.3.0` and above.
 
 [[kotlin.coroutines.reactive]]
 == How Reactive translates to Coroutines?
