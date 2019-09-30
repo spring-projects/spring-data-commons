@@ -1,6 +1,21 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.11.RELEASE (2019-09-30)
+----------------------------------------------
+* DATACMNS-1581 - Reject invalid null values for Sort in factory methods of PageRequest.
+* DATACMNS-1580 - Update documentation.
+* DATACMNS-1576 - Fix JavaDoc on CustomConversions.
+* DATACMNS-1574 - Partially populated PersistentEntity instances not properly removed from cache.
+* DATACMNS-1571 - TypeInformation.specialize(…) does not consider generics information in given type.
+* DATACMNS-1570 - Parsing of query method names is inconsistent for attributes beginning with a single lower case character followed by an upper case character.
+* DATACMNS-1569 - Revise nullability documentation in Querydsl APIs.
+* DATACMNS-1568 - Explicitly mention null-handling changes made for Sort and Pageable in 2.0 in reference docs.
+* DATACMNS-1567 - Fix license years in header of Repository.
+* DATACMNS-1565 - Add HTTPS entries into spring.schemas.
+* DATACMNS-1561 - Release 2.1.11 (Lovelace SR11).
+
+
 Changes in version 2.2.0.RC3 (2019-09-06)
 -----------------------------------------
 * DATACMNS-1578 - Properly bind null values to ….isNull() expressions in Querydsl.
