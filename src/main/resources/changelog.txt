@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.0.RELEASE (2019-09-30)
+---------------------------------------------
+* DATACMNS-1584 - Add documentation for Kotlin support.
+* DATACMNS-1583 - Introduce QPageRequest factory methods for consistency with PageRequest.
+* DATACMNS-1581 - Reject invalid null values for Sort in factory methods of PageRequest.
+* DATACMNS-1580 - Update documentation.
+* DATACMNS-1562 - Release 2.2 GA (Moore).
+* DATACMNS-1486 - HateoasSortHandlerMethodArgumentResolver is missing a @Nullable annotation.
+* DATACMNS-1211 - Provide WebFlux Pageable and Sort argument resolver.
+
+
 Changes in version 2.1.11.RELEASE (2019-09-30)
 ----------------------------------------------
 * DATACMNS-1581 - Reject invalid null values for Sort in factory methods of PageRequest.
