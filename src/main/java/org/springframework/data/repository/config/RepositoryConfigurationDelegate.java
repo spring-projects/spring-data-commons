@@ -192,7 +192,7 @@ public class RepositoryConfigurationDelegate {
 	 * Registers a {@link LazyRepositoryInjectionPointResolver} over the default
 	 * {@link ContextAnnotationAutowireCandidateResolver} to make injection points of lazy repositories lazy, too. Will
 	 * augment the {@link LazyRepositoryInjectionPointResolver}'s configuration if there already is one configured.
-	 * 
+	 *
 	 * @param configurations must not be {@literal null}.
 	 * @param registry must not be {@literal null}.
 	 */
@@ -265,7 +265,7 @@ public class RepositoryConfigurationDelegate {
 		/**
 		 * Returns a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with the
 		 * given ones.
-		 * 
+		 *
 		 * @param configurations must not be {@literal null}.
 		 * @return
 		 */
@@ -278,7 +278,7 @@ public class RepositoryConfigurationDelegate {
 			return new LazyRepositoryInjectionPointResolver(map);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver#isLazy(org.springframework.beans.factory.config.DependencyDescriptor)
 		 */
