@@ -130,4 +130,11 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 * @since 2.1
 	 */
 	ImplementationLookupConfiguration toLookupConfiguration(MetadataReaderFactory factory);
+
+	/**
+	 * Returns whether the repository is the primary one for its type.
+	 *
+	 * @return
+	 */
+	boolean isPrimary();
 }
