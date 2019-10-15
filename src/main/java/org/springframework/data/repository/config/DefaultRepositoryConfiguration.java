@@ -205,4 +205,13 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 
 		return toImplementationDetectionConfiguration(factory).forRepositoryConfiguration(this);
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#isPrimary()
+	 */
+	@Override
+	public boolean isPrimary() {
+		return definition.isPrimary();
+	}
 }
