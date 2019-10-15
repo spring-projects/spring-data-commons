@@ -124,7 +124,7 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 
 	/**
 	 * Returns the {@link ImplementationLookupConfiguration} for the given {@link MetadataReaderFactory}.
-	 * 
+	 *
 	 * @param factory must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 * @since 2.1
