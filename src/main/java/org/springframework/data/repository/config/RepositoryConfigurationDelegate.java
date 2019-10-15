@@ -161,6 +161,8 @@ public class RepositoryConfigurationDelegate {
 			}
 
 			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
+			beanDefinition.setPrimary(configuration.isPrimary());
+
 			String beanName = configurationSource.generateBeanName(beanDefinition);
 
 			if (LOG.isTraceEnabled()) {
