@@ -182,7 +182,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return configurationSource.getExcludeFilters();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#toImplementationDetectionConfiguration(org.springframework.core.type.classreading.MetadataReaderFactory)
 	 */
@@ -194,7 +194,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return configurationSource.toImplementationDetectionConfiguration(factory);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#toLookupConfiguration(org.springframework.core.type.classreading.MetadataReaderFactory)
 	 */
