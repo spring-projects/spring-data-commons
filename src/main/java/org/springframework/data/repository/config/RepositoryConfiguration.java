@@ -107,6 +107,14 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	boolean isLazyInit();
 
 	/**
+	 * Returns whether the repository is the primary one for its type.
+	 *
+	 * @return {@literal true} whether the repository is the primary one for its type.
+	 * @since 2.3
+	 */
+	boolean isPrimary();
+
+	/**
 	 * Returns the {@link TypeFilter}s to be used to exclude packages from repository scanning.
 	 *
 	 * @return
@@ -131,10 +139,4 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 */
 	ImplementationLookupConfiguration toLookupConfiguration(MetadataReaderFactory factory);
 
-	/**
-	 * Returns whether the repository is the primary one for its type.
-	 *
-	 * @return
-	 */
-	boolean isPrimary();
 }
