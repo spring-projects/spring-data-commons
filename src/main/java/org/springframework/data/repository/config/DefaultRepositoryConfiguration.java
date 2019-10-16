@@ -161,7 +161,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	public String getRepositoryFactoryBeanClassName() {
 
 		return configurationSource.getRepositoryFactoryBeanClassName()
-				.orElseGet(() -> extension.getRepositoryFactoryBeanClassName());
+				.orElseGet(extension::getRepositoryFactoryBeanClassName);
 	}
 
 	/*
@@ -171,6 +171,15 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	@Override
 	public boolean isLazyInit() {
 		return definition.isLazyInit() || !configurationSource.getBootstrapMode().equals(BootstrapMode.DEFAULT);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#isPrimary()
+	 */
+	@Override
+	public boolean isPrimary() {
+		return definition.isPrimary();
 	}
 
 	/*
@@ -204,14 +213,5 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		Assert.notNull(factory, "MetadataReaderFactory must not be null!");
 
 		return toImplementationDetectionConfiguration(factory).forRepositoryConfiguration(this);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#isPrimary()
-	 */
-	@Override
-	public boolean isPrimary() {
-		return definition.isPrimary();
 	}
 }
