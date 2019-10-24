@@ -190,8 +190,8 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * Sets the given source on the given {@link AbstractBeanDefinition} and registers it inside the given
 	 * {@link BeanDefinitionRegistry}. For {@link BeanDefinition}s to be registered once-and-only-once for all
 	 * configuration elements (annotation or XML), prefer calling
-	 * {@link #registerIfNotAlreadyRegistered(AbstractBeanDefinition, BeanDefinitionRegistry, String, Object)} with a
-	 * dedicated bean name to avoid the bead definition being registered multiple times.
+	 * {@link #registerIfNotAlreadyRegistered(Supplier, BeanDefinitionRegistry, String, Object)} with a dedicated bean
+	 * name to avoid the bead definition being registered multiple times.
 	 *
 	 * @param registry must not be {@literal null}.
 	 * @param bean must not be {@literal null}.
