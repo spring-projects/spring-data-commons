@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -53,7 +54,9 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryConfigurationExtensionSupport.class);
 	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s.";
-	private static final String MULTI_STORE_DROPPED = "Spring Data {} - Could not safely identify store assignment for repository candidate {}.";
+	private static final String MULTI_STORE_DROPPED = "Spring Data %s - Could not safely identify store assignment for repository candidate %s. If you want this repository to be a %s repository,";
+
+	private boolean noMultiStoreSupport = false;
 
 	/*
 	 * (non-Javadoc)
@@ -294,7 +297,22 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 */
 	protected boolean isStrictRepositoryCandidate(RepositoryMetadata metadata) {
 
+		if (noMultiStoreSupport) {
+			return false;
+		}
+
 		Collection<Class<?>> types = getIdentifyingTypes();
+		Collection<Class<? extends Annotation>> annotations = getIdentifyingAnnotations();
+		String moduleName = getModuleName();
+
+		if (types.isEmpty() && annotations.isEmpty()) {
+			if (!noMultiStoreSupport) {
+				LOGGER.warn("Spring Data {} does not support multi-store setups!", moduleName);
+				noMultiStoreSupport = true;
+				return false;
+			}
+		}
+
 		Class<?> repositoryInterface = metadata.getRepositoryInterface();
 
 		for (Class<?> type : types) {
@@ -304,11 +322,6 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		}
 
 		Class<?> domainType = metadata.getDomainType();
-		Collection<Class<? extends Annotation>> annotations = getIdentifyingAnnotations();
-
-		if (annotations.isEmpty()) {
-			return true;
-		}
 
 		for (Class<? extends Annotation> annotationType : annotations) {
 			if (AnnotationUtils.findAnnotation(domainType, annotationType) != null) {
@@ -316,7 +329,23 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 			}
 		}
 
-		LOGGER.info(MULTI_STORE_DROPPED, getModuleName(), repositoryInterface);
+		String message = String.format(MULTI_STORE_DROPPED, moduleName, repositoryInterface, moduleName);
+
+		if (!annotations.isEmpty()) {
+			message = message.concat(" consider annotating your entities with one of these annotations: ") //
+					.concat(toString(annotations)) //
+					.concat(types.isEmpty() ? "." : " (preferred)");
+		}
+
+		if (!types.isEmpty()) {
+
+			message = message.concat(annotations.isEmpty() ? " consider" : ", or consider") //
+					.concat(" extending one of the following types with your repository: ") //
+					.concat(toString(types)) //
+					.concat(".");
+		}
+
+		LOGGER.info(message);
 
 		return false;
 	}
@@ -363,5 +392,12 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		}
 
 		return null;
+	}
+
+	private static String toString(Collection<? extends Class<?>> types) {
+
+		return types.stream() //
+				.map(Class::getName) //
+				.collect(Collectors.joining(", "));
 	}
 }

@@ -34,9 +34,11 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
@@ -86,6 +88,15 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 				.hasMessageContaining("Reactive Repositories are not supported");
 	}
 
+	@Test // DATACMNS-1596
+	public void doesNotClaimEntityIfNoIdentifyingAnnotationsAreExposed() {
+
+		NonIdentifyingConfigurationExtension extension = new NonIdentifyingConfigurationExtension();
+		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(AnnotatedTypeRepository.class);
+
+		assertThat(extension.isStrictRepositoryCandidate(metadata)).isFalse();
+	}
+
 	static class SampleRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
 		@Override
@@ -106,6 +117,24 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 		@Override
 		protected Collection<Class<?>> getIdentifyingTypes() {
 			return Collections.singleton(StoreInterface.class);
+		}
+	}
+
+	static class NonIdentifyingConfigurationExtension extends RepositoryConfigurationExtensionSupport {
+
+		@Override
+		protected String getModulePrefix() {
+			return "non-identifying";
+		}
+
+		@Override
+		public String getRepositoryFactoryBeanClassName() {
+			return RepositoryFactoryBeanSupport.class.getName();
+		}
+
+		@Override
+		protected Collection<Class<?>> getIdentifyingTypes() {
+			return Collections.singleton(CrudRepository.class);
 		}
 	}
 
