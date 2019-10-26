@@ -93,7 +93,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 
 		Class<?> rawType = type.getType();
 		Collection<Object> result = CollectionFactory.createCollection(rawType.isArray() ? List.class : rawType,
-				sources.size());
+				type.getComponentType().getType(), sources.size());
 
 		for (Object source : sources) {
 			result.add(getProjection(source, type.getRequiredComponentType().getType()));
