@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +40,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
  *
  * @author Oliver Gierke
  * @author Saulo Medeiros de Araujo
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ProjectingMethodInterceptorUnitTests {
@@ -105,8 +107,7 @@ public class ProjectingMethodInterceptorUnitTests {
 		assertThat(result).isInstanceOf(Set.class);
 
 		Set<Object> projections = (Set<Object>) result;
-		assertThat(projections).hasSize(1);
-		assertThat(projections).hasOnlyElementsOfType(HelperProjection.class);
+		assertThat(projections).hasSize(1).hasOnlyElementsOfType(HelperProjection.class);
 	}
 
 	@Test // DATAREST-394, DATAREST-408
@@ -122,8 +123,7 @@ public class ProjectingMethodInterceptorUnitTests {
 
 		List<Object> projections = (List<Object>) result;
 
-		assertThat(projections).hasSize(1);
-		assertThat(projections).hasOnlyElementsOfType(HelperProjection.class);
+		assertThat(projections).hasSize(1).hasOnlyElementsOfType(HelperProjection.class);
 	}
 
 	@Test // DATAREST-394, DATAREST-408
@@ -138,8 +138,7 @@ public class ProjectingMethodInterceptorUnitTests {
 
 		Collection<Object> projections = (Collection<Object>) result;
 
-		assertThat(projections).hasSize(1);
-		assertThat(projections).hasOnlyElementsOfType(HelperProjection.class);
+		assertThat(projections).hasSize(1).hasOnlyElementsOfType(HelperProjection.class);
 	}
 
 	@Test // DATAREST-394, DATAREST-408
@@ -156,8 +155,7 @@ public class ProjectingMethodInterceptorUnitTests {
 
 		Map<String, Object> projections = (Map<String, Object>) result;
 
-		assertThat(projections).hasSize(1);
-		assertThat(projections).matches(map -> map.get("foo") instanceof HelperProjection);
+		assertThat(projections).hasSize(1).matches(map -> map.get("foo") instanceof HelperProjection);
 	}
 
 	@Test
@@ -173,8 +171,22 @@ public class ProjectingMethodInterceptorUnitTests {
 
 		Collection<?> collection = (Collection<?>) result;
 
-		assertThat(collection).hasSize(1);
-		assertThat(collection).hasOnlyElementsOfType(HelperProjection.class);
+		assertThat(collection).hasSize(1).hasOnlyElementsOfType(HelperProjection.class);
+	}
+
+	@Test // DATACMNS-1598
+	public void returnsEnumSet() throws Throwable {
+
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
+				conversionService);
+
+		Object result = methodInterceptor
+				.invoke(mockInvocationOf("getHelperEnumSet", Collections.singletonList(HelperEnum.Helpful)));
+
+		assertThat(result).isInstanceOf(EnumSet.class);
+
+		Collection<HelperEnum> collection = (Collection<HelperEnum>) result;
+		assertThat(collection).containsOnly(HelperEnum.Helpful);
 	}
 
 	/**
@@ -210,11 +222,17 @@ public class ProjectingMethodInterceptorUnitTests {
 		Map<String, HelperProjection> getHelperMap();
 
 		Collection<HelperProjection> getHelperArray();
+
+		EnumSet<HelperEnum> getHelperEnumSet();
 	}
 
 	interface HelperProjection {
 		Helper getHelper();
 
 		String getString();
+	}
+
+	enum HelperEnum {
+		Helpful, NotSoMuch;
 	}
 }
