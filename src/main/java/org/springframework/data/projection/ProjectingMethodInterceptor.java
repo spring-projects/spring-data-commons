@@ -44,6 +44,7 @@ import org.springframework.util.ObjectUtils;
  * projecting proxy in case the returned value is not of the return type of the invoked method.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.10
  */
 @RequiredArgsConstructor
@@ -92,8 +93,9 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	private Object projectCollectionElements(Collection<?> sources, TypeInformation<?> type) {
 
 		Class<?> rawType = type.getType();
+		TypeInformation<?> componentType = type.getComponentType();
 		Collection<Object> result = CollectionFactory.createCollection(rawType.isArray() ? List.class : rawType,
-				type.getComponentType().getType(), sources.size());
+				componentType != null ? componentType.getType() : null, sources.size());
 
 		for (Object source : sources) {
 			result.add(getProjection(source, type.getRequiredComponentType().getType()));
