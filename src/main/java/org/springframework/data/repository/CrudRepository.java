@@ -38,9 +38,11 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	/**
 	 * Saves all given entities.
 	 *
-	 * @param entities must not be {@literal null}.
-	 * @return the saved entities; will never be {@literal null}.
-	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
+	 * @param entities must not be {@literal null} nor must it contain {@literal null}
+	 * @return the saved entities; will never be {@literal null}. The returned {@literal Iterable} will have the same size
+	 *         as the {@literal Iterable} passed as an argument.
+	 * @throws IllegalArgumentException in case the given {@literal Iterable} or one of its contained entities is
+	 *           {@literal null}.
 	 */
 	<S extends T> Iterable<S> saveAll(Iterable<S> entities);
 
@@ -71,9 +73,15 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Returns all instances of the type with the given IDs.
+	 * <p>
+	 * If some or all ids are not found no entities are returned for these IDs.
+	 * <p>
+	 * Note that the order of elements in the result is not guaranteed.
 	 *
-	 * @param ids
-	 * @return
+	 * @param ids must not be {@literal null} nor contain any {@literal null} values.
+	 * @return guaranteed to be not {@literal null}. The size will be equal or smaller than that of the argument.
+	 * @throws IllegalArgumentException in case the given {@literal Iterable} or one of its contained entities is
+	 *           {@literal null}.
 	 */
 	Iterable<T> findAllById(Iterable<ID> ids);
 
@@ -95,7 +103,7 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	/**
 	 * Deletes a given entity.
 	 *
-	 * @param entity
+	 * @param entity must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
 	 */
 	void delete(T entity);
@@ -103,8 +111,9 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	/**
 	 * Deletes the given entities.
 	 *
-	 * @param entities
-	 * @throws IllegalArgumentException in case the given {@link Iterable} is {@literal null}.
+	 * @param entities must not be {@literal null}. Must not contain {@literal null} elements
+	 * @throws IllegalArgumentException in case the given {@literal Iterable} or one of its contained entities is
+	 *           {@literal null}.
 	 */
 	void deleteAll(Iterable<? extends T> entities);
 
