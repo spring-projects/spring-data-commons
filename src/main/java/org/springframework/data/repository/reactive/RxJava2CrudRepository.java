@@ -42,7 +42,8 @@ public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 	 * entity instance completely.
 	 *
 	 * @param entity must not be {@literal null}.
-	 * @return the saved entity.
+	 * @return {@link Single} emitting the saved entity.
+	 * @throws IllegalArgumentException in case the given {@code entity} is {@literal null}.
 	 */
 	<S extends T> Single<S> save(S entity);
 
@@ -50,8 +51,9 @@ public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Saves all given entities.
 	 *
 	 * @param entities must not be {@literal null}.
-	 * @return the saved entities.
-	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
+	 * @return {@link Flowable} emitting the saved entities.
+	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
+	 *           {@literal null}.
 	 */
 	<S extends T> Flowable<S> saveAll(Iterable<S> entities);
 
@@ -59,8 +61,8 @@ public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Saves all given entities.
 	 *
 	 * @param entityStream must not be {@literal null}.
-	 * @return the saved entities.
-	 * @throws IllegalArgumentException in case the given {@code Publisher} is {@literal null}.
+	 * @return {@link Flowable} emitting the saved entities.
+	 * @throws IllegalArgumentException in case the given {@link Flowable entityStream} is {@literal null}.
 	 */
 	<S extends T> Flowable<S> saveAll(Flowable<S> entityStream);
 
@@ -68,26 +70,26 @@ public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Retrieves an entity by its id.
 	 *
 	 * @param id must not be {@literal null}.
-	 * @return the entity with the given id or {@link Maybe#empty()} if none found.
-	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
+	 * @return {@link Maybe} emitting the entity with the given id or {@link Maybe#empty()} if none found.
+	 * @throws IllegalArgumentException in case the given {@code id} is {@literal null}.
 	 */
 	Maybe<T> findById(ID id);
 
 	/**
 	 * Retrieves an entity by its id supplied by a {@link Single}.
 	 *
-	 * @param id must not be {@literal null}.
-	 * @return the entity with the given id or {@link Maybe#empty()} if none found.
-	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
+	 * @param id must not be {@literal null}. Uses the first emitted element to perform the find-query.
+	 * @return {@link Maybe} emitting the entity with the given id or {@link Maybe#empty()} if none found.
+	 * @throws IllegalArgumentException in case the given {@link Single id} is {@literal null}.
 	 */
 	Maybe<T> findById(Single<ID> id);
 
 	/**
-	 * Returns whether an entity with the given id exists.
+	 * Returns whether an entity with the given {@code id} exists.
 	 *
 	 * @param id must not be {@literal null}.
-	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise.
-	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
+	 * @return {@link Single} emitting {@literal true} if an entity with the given id exists, {@literal false} otherwise.
+	 * @throws IllegalArgumentException in case the given {@code id} is {@literal null}.
 	 */
 	Single<Boolean> existsById(ID id);
 
@@ -95,38 +97,49 @@ public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Returns whether an entity with the given id, supplied by a {@link Single}, exists.
 	 *
 	 * @param id must not be {@literal null}.
-	 * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise.
-	 * @throws IllegalArgumentException if {@code id} is {@literal null}
+	 * @return {@link Single} emitting {@literal true} if an entity with the given id exists, {@literal false} otherwise.
+	 * @throws IllegalArgumentException in case the given {@link Single id} is {@literal null}.
 	 */
 	Single<Boolean> existsById(Single<ID> id);
 
 	/**
 	 * Returns all instances of the type.
 	 *
-	 * @return all entities.
+	 * @return {@link Flowable} emitting all entities.
 	 */
 	Flowable<T> findAll();
 
 	/**
-	 * Returns all instances of the type with the given IDs.
+	 * Returns all instances of the type {@code T} with the given IDs.
+	 * <p>
+	 * If some or all ids are not found, no entities are returned for these IDs.
+	 * <p>
+	 * Note that the order of elements in the result is not guaranteed.
 	 *
-	 * @param ids must not be {@literal null}.
-	 * @return the found entities.
+	 * @param ids must not be {@literal null} nor contain any {@literal null} values.
+	 * @return {@link Flowable} emitting the found entities. The size can be equal or less than the number of given
+	 *         {@code ids}.
+	 * @throws IllegalArgumentException in case the given {@link Iterable ids} or one of its items is {@literal null}.
 	 */
 	Flowable<T> findAllById(Iterable<ID> ids);
 
 	/**
-	 * Returns all instances of the type with the given IDs.
+	 * Returns all instances of the type {@code T} with the given IDs supplied by a {@link Flowable}.
+	 * <p>
+	 * If some or all ids are not found, no entities are returned for these IDs.
+	 * <p>
+	 * Note that the order of elements in the result is not guaranteed.
 	 *
 	 * @param idStream must not be {@literal null}.
-	 * @return the found entities.
+	 * @return {@link Flowable} emitting the found entities.
+	 * @throws IllegalArgumentException in case the given {@link Flowable idStream} is {@literal null}.
 	 */
 	Flowable<T> findAllById(Flowable<ID> idStream);
 
 	/**
 	 * Returns the number of entities available.
 	 *
-	 * @return the number of entities.
+	 * @return {@link Single} emitting the number of entities.
 	 */
 	Single<Long> count();
 
@@ -134,6 +147,7 @@ public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Deletes the entity with the given id.
 	 *
 	 * @param id must not be {@literal null}.
+	 * @return {@link Completable} signaling when operation has completed.
 	 * @throws IllegalArgumentException in case the given {@code id} is {@literal null}.
 	 */
 	Completable deleteById(ID id);
@@ -142,6 +156,7 @@ public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Deletes a given entity.
 	 *
 	 * @param entity must not be {@literal null}.
+	 * @return {@link Completable} signaling when operation has completed.
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
 	 */
 	Completable delete(T entity);
@@ -150,20 +165,25 @@ public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Deletes the given entities.
 	 *
 	 * @param entities must not be {@literal null}.
-	 * @throws IllegalArgumentException in case the given {@link Iterable} is {@literal null}.
+	 * @return {@link Completable} signaling when operation has completed.
+	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
+	 *           {@literal null}.
 	 */
 	Completable deleteAll(Iterable<? extends T> entities);
 
 	/**
-	 * Deletes the given entities.
+	 * Deletes the given entities supplied by a {@link Flowable}.
 	 *
 	 * @param entityStream must not be {@literal null}.
-	 * @throws IllegalArgumentException in case the given {@link Flowable} is {@literal null}.
+	 * @return {@link Completable} signaling when operation has completed.
+	 * @throws IllegalArgumentException in case the given {@link Flowable entityStream} is {@literal null}.
 	 */
 	Completable deleteAll(Flowable<? extends T> entityStream);
 
 	/**
 	 * Deletes all entities managed by the repository.
+	 *
+	 * @return {@link Completable} signaling when operation has completed.
 	 */
 	Completable deleteAll();
 }

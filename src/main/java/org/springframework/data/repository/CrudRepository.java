@@ -32,16 +32,17 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @return the saved entity; will never be {@literal null}.
+	 * @throws IllegalArgumentException in case the given {@code entity} is {@literal null}.
 	 */
 	<S extends T> S save(S entity);
 
 	/**
 	 * Saves all given entities.
 	 *
-	 * @param entities must not be {@literal null} nor must it contain {@literal null}
+	 * @param entities must not be {@literal null} nor must it contain {@literal null}.
 	 * @return the saved entities; will never be {@literal null}. The returned {@literal Iterable} will have the same size
 	 *         as the {@literal Iterable} passed as an argument.
-	 * @throws IllegalArgumentException in case the given {@literal Iterable} or one of its contained entities is
+	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
 	 *           {@literal null}.
 	 */
 	<S extends T> Iterable<S> saveAll(Iterable<S> entities);
@@ -50,7 +51,7 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Retrieves an entity by its id.
 	 *
 	 * @param id must not be {@literal null}.
-	 * @return the entity with the given id or {@literal Optional#empty()} if none found
+	 * @return the entity with the given id or {@literal Optional#empty()} if none found.
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
 	Optional<T> findById(ID id);
@@ -72,23 +73,22 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	Iterable<T> findAll();
 
 	/**
-	 * Returns all instances of the type with the given IDs.
+	 * Returns all instances of the type {@code T} with the given IDs.
 	 * <p>
-	 * If some or all ids are not found no entities are returned for these IDs.
+	 * If some or all ids are not found, no entities are returned for these IDs.
 	 * <p>
 	 * Note that the order of elements in the result is not guaranteed.
 	 *
 	 * @param ids must not be {@literal null} nor contain any {@literal null} values.
-	 * @return guaranteed to be not {@literal null}. The size will be equal or smaller than that of the argument.
-	 * @throws IllegalArgumentException in case the given {@literal Iterable} or one of its contained entities is
-	 *           {@literal null}.
+	 * @return guaranteed to be not {@literal null}. The size can be equal or less than the number of given {@code ids}.
+	 * @throws IllegalArgumentException in case the given {@link Iterable ids} or one of its items is {@literal null}.
 	 */
 	Iterable<T> findAllById(Iterable<ID> ids);
 
 	/**
 	 * Returns the number of entities available.
 	 *
-	 * @return the number of entities
+	 * @return the number of entities.
 	 */
 	long count();
 
@@ -111,9 +111,8 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	/**
 	 * Deletes the given entities.
 	 *
-	 * @param entities must not be {@literal null}. Must not contain {@literal null} elements
-	 * @throws IllegalArgumentException in case the given {@literal Iterable} or one of its contained entities is
-	 *           {@literal null}.
+	 * @param entities must not be {@literal null}. Must not contain {@literal null} elements.
+	 * @throws IllegalArgumentException in case the given {@literal entities} or one of its entities is {@literal null}.
 	 */
 	void deleteAll(Iterable<? extends T> entities);
 
