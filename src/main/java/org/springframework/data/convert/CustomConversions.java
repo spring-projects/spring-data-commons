@@ -49,6 +49,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Anshul Mehra
  * @since 2.0
  */
 @Slf4j
@@ -107,7 +108,9 @@ public class CustomConversions {
 		toRegister.addAll(DEFAULT_CONVERTERS);
 
 		toRegister.stream()//
-				.flatMap(it -> storeConversions.getRegistrationsFor(it).stream())//
+				.flatMap(converter -> storeConversions.getRegistrationsFor(converter).stream())//
+				.filter(registration -> registration.isReading() ? registration.isSimpleSourceType() : true)//
+				.filter(registration -> registration.isWriting() ? registration.isSimpleTargetType() : true)//
 				.forEach(this::register);
 
 		Collections.reverse(toRegister);
