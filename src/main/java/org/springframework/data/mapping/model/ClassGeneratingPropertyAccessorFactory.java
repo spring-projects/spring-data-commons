@@ -317,13 +317,26 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		static Class<?> generateCustomAccessorClass(PersistentEntity<?, ?> entity) {
 
 			String className = generateClassName(entity);
-			byte[] bytecode = generateBytecode(className.replace('.', '/'), entity);
 			Class<?> type = entity.getType();
+			ClassLoader classLoader = type.getClassLoader();
+
+			if (ClassUtils.isPresent(className, classLoader)) {
+
+				try {
+					return ClassUtils.forName(className, classLoader);
+				} catch (Exception o_O) {
+					throw new IllegalStateException(o_O);
+				}
+			}
+
+			byte[] bytecode = generateBytecode(className.replace('.', '/'), entity);
 
 			try {
-				return ReflectUtils.defineClass(className, bytecode, type.getClassLoader(), type.getProtectionDomain(), type);
-			} catch (Exception e) {
-				throw new IllegalStateException(e);
+
+				return ReflectUtils.defineClass(className, bytecode, classLoader, type.getProtectionDomain(), type);
+
+			} catch (Exception o_O) {
+				throw new IllegalStateException(o_O);
 			}
 		}
 
