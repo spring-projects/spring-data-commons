@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.12.RELEASE (2019-11-04)
+----------------------------------------------
+* DATACMNS-1602 - Reuse generated PropertyAccessor's and Entityinstantiator classes across EntityInstantiators and PersistentPropertyAccessorFactorys.
+* DATACMNS-1601 - Improve CrudRepository JavaDoc with the guarantees and exceptions of findAllById and deleteAllById.
+* DATACMNS-1598 - "Cannot create EnumSet for unknown element type".
+* DATACMNS-1596 - Module not exposing any entity identifying annotations claims all repositories.
+* DATACMNS-1585 - Release 2.1.12 (Lovelace SR12).
+
+
 Changes in version 2.2.0.RELEASE (2019-09-30)
 ---------------------------------------------
 * DATACMNS-1584 - Add documentation for Kotlin support.
