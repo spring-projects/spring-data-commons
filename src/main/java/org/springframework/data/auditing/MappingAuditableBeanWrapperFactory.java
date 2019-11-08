@@ -98,24 +98,32 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 	 */
 	static class MappingAuditingMetadata {
 
+		private static final Predicate<PersistentProperty<?>> TRAVERSAL_GURAD = PersistentPropertyPaths.SKIP_ASSOICATIONS
+				.and(it -> !it.isCollectionLike() && !it.isMap());
+
 		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> createdByPaths, createdDatePaths,
 				lastModifiedByPaths, lastModifiedDatePaths;
 
 		private final Lazy<Boolean> isAuditable;
 
 		/**
-		 * Creates a new {@link MappingAuditingMetadata} instance from the given {@link PersistentEntity}.
+		 * Creates a new {@link MappingAuditingMetadata} instance from the given {@link PersistentEntity} identified by the
+		 * {@link MappingContext} via its {@literal type}.
 		 *
-		 * @param entity must not be {@literal null}.
+		 * @param context must not be {@literal null}.
+		 * @param type the domain type.
 		 */
 		public <P> MappingAuditingMetadata(MappingContext<?, ? extends PersistentProperty<?>> context, Class<?> type) {
 
 			Assert.notNull(type, "Type must not be null!");
 
-			this.createdByPaths = context.findPersistentPropertyPaths(type, withAnnotation(CreatedBy.class));
-			this.createdDatePaths = context.findPersistentPropertyPaths(type, withAnnotation(CreatedDate.class));
-			this.lastModifiedByPaths = context.findPersistentPropertyPaths(type, withAnnotation(LastModifiedBy.class));
-			this.lastModifiedDatePaths = context.findPersistentPropertyPaths(type, withAnnotation(LastModifiedDate.class));
+			this.createdByPaths = context.findPersistentPropertyPaths(type, withAnnotation(CreatedBy.class), TRAVERSAL_GURAD);
+			this.createdDatePaths = context.findPersistentPropertyPaths(type, withAnnotation(CreatedDate.class),
+					TRAVERSAL_GURAD);
+			this.lastModifiedByPaths = context.findPersistentPropertyPaths(type, withAnnotation(LastModifiedBy.class),
+					TRAVERSAL_GURAD);
+			this.lastModifiedDatePaths = context.findPersistentPropertyPaths(type, withAnnotation(LastModifiedDate.class),
+					TRAVERSAL_GURAD);
 
 			this.isAuditable = Lazy.of( //
 					() -> Arrays.asList(createdByPaths, createdDatePaths, lastModifiedByPaths, lastModifiedDatePaths) //

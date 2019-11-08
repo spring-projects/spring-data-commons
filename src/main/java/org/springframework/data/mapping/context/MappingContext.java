@@ -176,15 +176,34 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	/**
 	 * Returns all {@link PersistentPropertyPath}s pointing to properties on the given type that match the given
 	 * {@link Predicate}. In case of circular references the detection will stop at the property that references a type
-	 * that's already included in the path. Note, that is is a potentially expensive operation as results cannot be
-	 * cached.
+	 * that's already included in the path. <br />
+	 * Skips {@link PersistentProperty#isAssociation() associations} by default. <br />
+	 * <strong>Note</strong>, that is a potentially expensive operation as results cannot be cached.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param predicate must not be {@literal null}.
 	 * @return
 	 * @since 2.1
 	 */
-	<T> PersistentPropertyPaths<T, P> findPersistentPropertyPaths(Class<T> type, Predicate<? super P> predicate);
+	default <T> PersistentPropertyPaths<T, P> findPersistentPropertyPaths(Class<T> type, Predicate<? super P> predicate) {
+		return findPersistentPropertyPaths(type, predicate, PersistentPropertyPaths.SKIP_ASSOICATIONS);
+	}
+
+	/**
+	 * Returns all {@link PersistentPropertyPath}s pointing to properties on the given type that match the given
+	 * {@link Predicate}. In case of circular references the detection will stop at the property that references a type
+	 * that's already included in the path. The traversal guard allows to additionally limit the path traversal to eg.
+	 * exclude associations. <br />
+	 * <strong>Note</strong>, that is a potentially expensive operation as results cannot be cached.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @param predicate must not be {@literal null}.
+	 * @parm traversalGuard must not be {@literal null}.
+	 * @return
+	 * @since 2.2.2
+	 */
+	<T> PersistentPropertyPaths<T, P> findPersistentPropertyPaths(Class<T> type, Predicate<? super P> predicate,
+			Predicate<? super P> traversalGuard);
 
 	/**
 	 * Returns the {@link TypeInformation}s for all {@link PersistentEntity}s in the {@link MappingContext}.

@@ -23,9 +23,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.api.AbstractLongAssert;
@@ -48,6 +51,7 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Christoph Strobl
  * @since 1.8
  */
 public class MappingAuditableBeanWrapperFactoryUnitTests {
@@ -61,6 +65,7 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		context.getPersistentEntity(Sample.class);
 		context.getPersistentEntity(SampleWithInstant.class);
 		context.getPersistentEntity(WithEmbedded.class);
+		context.getPersistentEntity(CyclicEmbeddedWithList.class);
 
 		PersistentEntities entities = PersistentEntities.of(context);
 		factory = new MappingAuditableBeanWrapperFactory(entities);
@@ -212,6 +217,27 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1609
+	public void skipsEntitiesInCollections() {
+
+		CyclicEmbeddedWithList target = new CyclicEmbeddedWithList();
+		target.embeddedList = Collections.singletonList(new CyclicEmbeddedWithList());
+
+		Optional<AuditableBeanWrapper<CyclicEmbeddedWithList>> wrapper = factory.getBeanWrapperFor(target);
+
+		assertThat(wrapper).hasValueSatisfying(it -> {
+
+			Instant now = Instant.now();
+			it.setLastModifiedDate(now);
+
+			CyclicEmbeddedWithList outer = it.getBean();
+			assertThat(outer.updated).isEqualTo(now);
+			assertThat(outer.embeddedList.get(0).updated).isNull();
+
+			assertThat(it.getLastModifiedDate()).hasValue(now);
+		});
+	}
+
 	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
 
 		Sample sample = new Sample();
@@ -274,5 +300,27 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 	static class WithEmbedded {
 		Embedded embedded;
+	}
+
+	public static class CyclicEmbeddedWithList {
+
+		@LastModifiedDate Instant updated;
+		List<CyclicEmbeddedWithList> embeddedList = new ArrayList<>();
+
+		public Instant getUpdated() {
+			return updated;
+		}
+
+		public void setUpdated(Instant updated) {
+			this.updated = updated;
+		}
+
+		public List<CyclicEmbeddedWithList> getEmbeddedList() {
+			return embeddedList;
+		}
+
+		public void setEmbeddedList(List<CyclicEmbeddedWithList> embeddedList) {
+			this.embeddedList = embeddedList;
+		}
 	}
 }

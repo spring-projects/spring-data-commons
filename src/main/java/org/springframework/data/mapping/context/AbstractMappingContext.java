@@ -286,15 +286,16 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.MappingContext#findPersistentPropertyPath(java.lang.Class, java.util.function.Predicate)
+	 * @see org.springframework.data.mapping.context.MappingContext#findPersistentPropertyPath(java.lang.Class, java.util.function.Predicate, java.util.function.Predicate)
 	 */
-	@Override
-	public <T> PersistentPropertyPaths<T, P> findPersistentPropertyPaths(Class<T> type, Predicate<? super P> predicate) {
+	public <T> PersistentPropertyPaths<T, P> findPersistentPropertyPaths(Class<T> type, Predicate<? super P> predicate,
+			Predicate<? super P> traversalGuard) {
 
 		Assert.notNull(type, "Type must not be null!");
 		Assert.notNull(predicate, "Selection predicate must not be null!");
+		Assert.notNull(traversalGuard, "TraversalGuard must not be null!");
 
-		return doFindPersistentPropertyPaths(type, predicate, it -> !it.isAssociation());
+		return doFindPersistentPropertyPaths(type, predicate, traversalGuard);
 	}
 
 	/**
@@ -309,7 +310,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @see #findPersistentPropertyPaths(Class, Predicate)
 	 */
 	protected final <T> PersistentPropertyPaths<T, P> doFindPersistentPropertyPaths(Class<T> type,
-			Predicate<? super P> predicate, Predicate<P> traversalGuard) {
+			Predicate<? super P> predicate, Predicate<? super P> traversalGuard) {
 		return persistentPropertyPathFactory.from(ClassTypeInformation.from(type), predicate, traversalGuard);
 	}
 

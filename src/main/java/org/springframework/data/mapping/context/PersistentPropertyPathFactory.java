@@ -20,17 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.Value;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -55,6 +45,7 @@ import org.springframework.util.StringUtils;
  * A factory implementation to create {@link PersistentPropertyPath} instances in various ways.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 2.1
  * @soundtrack Cypress Hill - Boom Biddy Bye Bye (Fugees Remix, Unreleased & Revamped)
  */
@@ -135,7 +126,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 * @return
 	 */
 	public <T> PersistentPropertyPaths<T, P> from(Class<T> type, Predicate<? super P> propertyFilter,
-			Predicate<P> traversalGuard) {
+			Predicate<? super P> traversalGuard) {
 
 		Assert.notNull(type, "Type must not be null!");
 		Assert.notNull(propertyFilter, "Property filter must not be null!");
@@ -166,7 +157,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 * @return
 	 */
 	public <T> PersistentPropertyPaths<T, P> from(TypeInformation<T> type, Predicate<? super P> propertyFilter,
-			Predicate<P> traversalGuard) {
+			Predicate<? super P> traversalGuard) {
 
 		Assert.notNull(type, "Type must not be null!");
 		Assert.notNull(propertyFilter, "Property filter must not be null!");
@@ -237,7 +228,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	}
 
 	private <T> Collection<PersistentPropertyPath<P>> from(TypeInformation<T> type, Predicate<? super P> filter,
-			Predicate<P> traversalGuard, DefaultPersistentPropertyPath<P> basePath) {
+			Predicate<? super P> traversalGuard, DefaultPersistentPropertyPath<P> basePath) {
 
 		TypeInformation<?> actualType = type.getActualType();
 
@@ -263,7 +254,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 				properties.add(currentPath);
 			}
 
-			if (traversalGuard.and(IS_ENTITY).test(persistentProperty)) {
+			if (traversalGuard.and((Predicate) IS_ENTITY).test(persistentProperty)) {
 				properties.addAll(from(typeInformation, filter, traversalGuard, currentPath));
 			}
 		};

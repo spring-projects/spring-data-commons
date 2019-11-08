@@ -16,6 +16,7 @@
 package org.springframework.data.mapping;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.springframework.data.util.Streamable;
 
@@ -23,11 +24,17 @@ import org.springframework.data.util.Streamable;
  * A wrapper for a collection of {@link PersistentPropertyPath}s.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 2.1
  * @soundtrack Stuart McCallum - North Star (City)
  */
 public interface PersistentPropertyPaths<T, P extends PersistentProperty<P>>
 		extends Streamable<PersistentPropertyPath<P>> {
+
+	/**
+	 * @since 2.2.2
+	 */
+	Predicate<PersistentProperty<?>> SKIP_ASSOICATIONS = it -> !it.isAssociation();
 
 	/**
 	 * Returns the first {@link PersistentPropertyPath}.
