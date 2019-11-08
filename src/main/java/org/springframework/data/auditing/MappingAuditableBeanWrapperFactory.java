@@ -113,7 +113,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 * @param context must not be {@literal null}.
 		 * @param type the domain type.
 		 */
-		public <P> MappingAuditingMetadata(MappingContext<?, ? extends PersistentProperty<?>> context, Class<?> type) {
+		<P> MappingAuditingMetadata(MappingContext<?, ? extends PersistentProperty<?>> context, Class<?> type) {
 
 			Assert.notNull(type, "Type must not be null!");
 
@@ -142,7 +142,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 *
 		 * @return
 		 */
-		public boolean isAuditable() {
+		boolean isAuditable() {
 			return isAuditable.get();
 		}
 	}
@@ -166,8 +166,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 * @param accessor must not be {@literal null}.
 		 * @param metadata must not be {@literal null}.
 		 */
-		public MappingMetadataAuditableBeanWrapper(PersistentPropertyAccessor<T> accessor,
-				MappingAuditingMetadata metadata) {
+		MappingMetadataAuditableBeanWrapper(PersistentPropertyAccessor<T> accessor, MappingAuditingMetadata metadata) {
 
 			Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
 			Assert.notNull(metadata, "Auditing metadata must not be null!");

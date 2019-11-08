@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.api.AbstractLongAssert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -58,8 +58,8 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 
 	DefaultAuditableBeanWrapperFactory factory;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	public void beforeEach() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		context.getPersistentEntity(Sample.class);
