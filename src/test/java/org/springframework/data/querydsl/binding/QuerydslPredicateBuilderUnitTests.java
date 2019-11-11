@@ -16,6 +16,7 @@
 package org.springframework.data.querydsl.binding;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assumptions.*;
 import static org.springframework.test.util.ReflectionTestUtils.*;
 
 import java.text.ParseException;
@@ -33,6 +34,7 @@ import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.querydsl.Users;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Version;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -46,6 +48,7 @@ import com.querydsl.core.types.Predicate;
  *
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class QuerydslPredicateBuilderUnitTests {
 
@@ -81,6 +84,9 @@ public class QuerydslPredicateBuilderUnitTests {
 	@Test // DATACMNS-669
 	public void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
 
+		assumeThat(Version.javaVersion().toString())
+				.as("QueryDSL isn't Java 11 ready https://github.com/querydsl/querydsl/issues/2151").startsWith("1.8");
+
 		values.add("firstname", "Oliver");
 
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
@@ -94,6 +100,9 @@ public class QuerydslPredicateBuilderUnitTests {
 
 	@Test // DATACMNS-669
 	public void resolveArgumentShouldCreateNestedStringParameterPredicateCorrectly() throws Exception {
+
+		assumeThat(Version.javaVersion().toString())
+				.as("QueryDSL isn't Java 11 ready https://github.com/querydsl/querydsl/issues/2151").startsWith("1.8");
 
 		values.add("address.city", "Linz");
 

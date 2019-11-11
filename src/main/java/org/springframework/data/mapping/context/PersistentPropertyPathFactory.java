@@ -62,7 +62,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> {
 
-	private static final Predicate<PersistentProperty<?>> IS_ENTITY = it -> it.isEntity();
+	private static final Predicate<PersistentProperty<? extends PersistentProperty<?>>> IS_ENTITY = it -> it.isEntity();
 
 	private final Map<TypeAndPath, PersistentPropertyPath<P>> propertyPaths = new ConcurrentReferenceHashMap<>();
 	private final MappingContext<E, P> context;
@@ -289,7 +289,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	static class DefaultPersistentPropertyPaths<T, P extends PersistentProperty<P>>
 			implements PersistentPropertyPaths<T, P> {
 
-		private static final Comparator<PersistentPropertyPath<?>> SHORTEST_PATH = Comparator
+		private static final Comparator<PersistentPropertyPath<? extends PersistentProperty<?>>> SHORTEST_PATH = Comparator
 				.comparingInt(PersistentPropertyPath::getLength);
 
 		private final TypeInformation<T> type;

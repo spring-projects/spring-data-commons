@@ -318,45 +318,24 @@
 
 	<build>
 		<plugins>
-
-			<plugin>
-				<groupId>com.mysema.maven</groupId>
-				<artifactId>apt-maven-plugin</artifactId>
-				<version>${apt}</version>
-				<executions>
-					<execution>
-						<phase>generate-test-sources</phase>
-						<goals>
-							<goal>test-process</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/generated-test-sources/test-annotations</outputDirectory>
-							<processor>com.querydsl.apt.QuerydslAnnotationProcessor</processor>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>enforce-rules</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-					</execution>
-				</executions>
+				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<rules>
-						<requireJavaVersion>
-							<version>[1.8,1.9)</version>
-						</requireJavaVersion>
-					</rules>
+					<annotationProcessors>
+						<annotationProcessor>
+							lombok.launch.AnnotationProcessorHider$AnnotationProcessor
+						</annotationProcessor>
+						<annotationProcessor>
+							lombok.launch.AnnotationProcessorHider$ClaimingProcessor
+						</annotationProcessor>
+						<annotationProcessor>
+							com.querydsl.apt.QuerydslAnnotationProcessor
+						</annotationProcessor>
+					</annotationProcessors>
+
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>

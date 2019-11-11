@@ -30,7 +30,6 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
-import org.springframework.data.util.Streamable;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
@@ -101,7 +100,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	 * @param arguments must not be {@literal null}.
 	 * @return
 	 */
-	private static Map<String, Object> collectVariables(Streamable<? extends Parameter> parameters, Object[] arguments) {
+	private static Map<String, Object> collectVariables(Parameters<?, ?> parameters, Object[] arguments) {
 
 		Map<String, Object> variables = new HashMap<>();
 
