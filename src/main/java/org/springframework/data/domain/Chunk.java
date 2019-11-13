@@ -70,7 +70,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	 * @see org.springframework.data.domain.Slice#getSize()
 	 */
 	public int getSize() {
-		return pageable.isPaged() ? pageable.getPageSize() : 0;
+		return pageable.isPaged() ? pageable.getPageSize() : content.size();
 	}
 
 	/*
