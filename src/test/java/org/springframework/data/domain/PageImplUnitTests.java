@@ -161,4 +161,15 @@ public class PageImplUnitTests {
 		assertThat(new PageImpl<>(Collections.<String> emptyList(), PageRequest.of(1, 10), 0).getTotalElements())
 				.isEqualTo(0L);
 	}
+
+	@Test // DATACMNS-1613
+	public void usesContentLengthForSizeIfNoPageableGiven() {
+
+		Page<Integer> page = new PageImpl<>(Arrays.asList(1, 2));
+
+		assertThat(page.getSize()).isEqualTo(2);
+		assertThat(page.getTotalPages()).isEqualTo(1);
+		assertThat(page.hasPrevious()).isFalse();
+		assertThat(page.hasNext()).isFalse();
+	}
 }
