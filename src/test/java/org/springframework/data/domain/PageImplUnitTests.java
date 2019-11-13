@@ -174,4 +174,15 @@ public class PageImplUnitTests {
 		assertThat(page.nextPageable()).isEqualTo(Pageable.unpaged());
 		assertThat(page.nextOrLastPageable()).isEqualTo(pageable);
 	}
+
+	@Test // DATACMNS-1613
+	public void usesContentLengthForSizeIfNoPageableGiven() {
+
+		Page<Integer> page = new PageImpl<>(Arrays.asList(1, 2));
+
+		assertThat(page.getSize()).isEqualTo(2);
+		assertThat(page.getTotalPages()).isEqualTo(1);
+		assertThat(page.hasPrevious()).isFalse();
+		assertThat(page.hasNext()).isFalse();
+	}
 }
