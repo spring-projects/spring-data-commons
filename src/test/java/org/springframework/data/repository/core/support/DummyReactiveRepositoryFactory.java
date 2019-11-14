@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,27 +21,24 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.mockito.Mockito;
+
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
- * Dummy implementation for {@link RepositoryFactorySupport} that is equipped with mocks to simulate behavior for test
- * cases.
- *
- * @author Oliver Gierke
+ * @author Mark Paluch
  */
-public class DummyRepositoryFactory extends RepositoryFactorySupport {
+public class DummyReactiveRepositoryFactory extends ReactiveRepositoryFactorySupport {
 
-	public final MyRepositoryQuery queryOne = mock(MyRepositoryQuery.class);
+	public final DummyRepositoryFactory.MyRepositoryQuery queryOne = mock(DummyRepositoryFactory.MyRepositoryQuery.class);
 	public final RepositoryQuery queryTwo = mock(RepositoryQuery.class);
 	public final QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
 
@@ -49,7 +46,7 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 			QuerydslPredicateExecutor.class);
 	private final Object repository;
 
-	public DummyRepositoryFactory(Object repository) {
+	public DummyReactiveRepositoryFactory(Object repository) {
 
 		this.repository = repository;
 
@@ -100,19 +97,12 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryFragments(org.springframework.data.repository.core.RepositoryMetadata)
 	 */
 	@Override
-	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
+	protected RepositoryComposition.RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
 
-		RepositoryFragments fragments = super.getRepositoryFragments(metadata);
+		RepositoryComposition.RepositoryFragments fragments = super.getRepositoryFragments(metadata);
 
 		return QuerydslPredicateExecutor.class.isAssignableFrom(metadata.getRepositoryInterface()) //
-				? fragments.append(RepositoryFragments.just(querydsl)) //
+				? fragments.append(RepositoryComposition.RepositoryFragments.just(querydsl)) //
 				: fragments;
-	}
-
-	/**
-	 * @author Mark Paluch
-	 */
-	public static interface MyRepositoryQuery extends RepositoryQuery {
-
 	}
 }

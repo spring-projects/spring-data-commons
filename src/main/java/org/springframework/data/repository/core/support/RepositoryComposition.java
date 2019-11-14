@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -201,7 +202,7 @@ public class RepositoryComposition {
 
 		ReflectionUtils.makeAccessible(methodToCall);
 
-		return fragments.invoke(methodToCall, argumentConverter.apply(methodToCall, args));
+		return fragments.invoke(method, methodToCall, argumentConverter.apply(methodToCall, args));
 	}
 
 	/**
@@ -250,6 +251,7 @@ public class RepositoryComposition {
 		static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
 
 		private final Map<Method, RepositoryFragment<?>> fragmentCache = new ConcurrentReferenceHashMap<>();
+		private final Map<Method, ImplementationInvocationMetadata> invocationMetadataCache = new ConcurrentHashMap<>();
 		private final List<RepositoryFragment<?>> fragments;
 
 		/**
@@ -354,21 +356,30 @@ public class RepositoryComposition {
 		/**
 		 * Invoke {@link Method} by resolving the
 		 *
-		 * @param method
+		 * @param invokedMethod invoked method as per invocation on the interface.
+		 * @param methodToCall backend method that is backing the call.
 		 * @param args
 		 * @return
 		 * @throws Throwable
 		 */
-		public Object invoke(Method method, Object[] args) throws Throwable {
+		@Nullable
+		public Object invoke(Method invokedMethod, Method methodToCall, Object[] args) throws Throwable {
 
-			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(method, this::findImplementationFragment);
+			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
 			Optional<?> optional = fragment.getImplementation();
 
 			if (!optional.isPresent()) {
-				throw new IllegalArgumentException(String.format("No implementation found for method %s", method));
+				throw new IllegalArgumentException(String.format("No implementation found for method %s", methodToCall));
 			}
 
-			return method.invoke(optional.get(), args);
+			ImplementationInvocationMetadata invocationMetadata = invocationMetadataCache.get(invokedMethod);
+
+			if (invocationMetadata == null) {
+				invocationMetadata = new ImplementationInvocationMetadata(invokedMethod, methodToCall);
+				invocationMetadataCache.put(invokedMethod, invocationMetadata);
+			}
+
+			return invocationMetadata.invoke(methodToCall, optional.get(), args);
 		}
 
 		private RepositoryFragment<?> findImplementationFragment(Method key) {
