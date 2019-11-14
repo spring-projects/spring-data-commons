@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
+import kotlin.coroutines.Continuation;
+import kotlin.reflect.KFunction;
+import kotlinx.coroutines.reactive.AwaitKt;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -35,6 +38,7 @@ import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.reactivestreams.Publisher;
 
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
@@ -43,6 +47,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -64,6 +69,7 @@ import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.Pair;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
@@ -85,35 +91,35 @@ import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 @Slf4j
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
-	private static final BiFunction<Method, Object[], Object[]> REACTIVE_ARGS_CONVERTER = (method, o) -> {
+	private static final BiFunction<Method, Object[], Object[]> REACTIVE_ARGS_CONVERTER = (method, args) -> {
 
 		if (ReactiveWrappers.isAvailable()) {
 
 			Class<?>[] parameterTypes = method.getParameterTypes();
 
-			Object[] converted = new Object[o.length];
-			for (int i = 0; i < parameterTypes.length; i++) {
+			Object[] converted = new Object[args.length];
+			for (int i = 0; i < args.length; i++) {
 
-				Class<?> parameterType = parameterTypes[i];
-				Object value = o[i];
+				Object value = args[i];
+				Object convertedArg = value;
 
-				if (value == null) {
-					continue;
+				Class<?> parameterType = parameterTypes.length > i ? parameterTypes[i] : null;
+
+				if (value != null && parameterType != null) {
+					if (!parameterType.isAssignableFrom(value.getClass())
+							&& ReactiveWrapperConverters.canConvert(value.getClass(), parameterType)) {
+
+						convertedArg = ReactiveWrapperConverters.toWrapper(value, parameterType);
+					}
 				}
 
-				if (!parameterType.isAssignableFrom(value.getClass())
-						&& ReactiveWrapperConverters.canConvert(value.getClass(), parameterType)) {
-
-					converted[i] = ReactiveWrapperConverters.toWrapper(value, parameterType);
-				} else {
-					converted[i] = value;
-				}
+				converted[i] = convertedArg;
 			}
 
 			return converted;
 		}
 
-		return o;
+		return args;
 	};
 
 	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
@@ -534,6 +540,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	public class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 		private final Map<Method, RepositoryQuery> queries;
+		private final Map<Method, QueryMethodInvoker> invocationMetadataCache = new ConcurrentReferenceHashMap<>();
 		private final QueryExecutionResultHandler resultHandler;
 
 		/**
@@ -615,7 +622,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			Method method = invocation.getMethod();
 
 			if (hasQueryFor(method)) {
-				return queries.get(method).execute(invocation.getArguments());
+
+				QueryMethodInvoker invocationMetadata = invocationMetadataCache.get(method);
+
+				if (invocationMetadata == null) {
+					invocationMetadata = new QueryMethodInvoker(method);
+					invocationMetadataCache.put(method, invocationMetadata);
+				}
+
+				RepositoryQuery repositoryQuery = queries.get(method);
+				return invocationMetadata.invoke(repositoryQuery, invocation.getArguments());
 			}
 
 			return invocation.proceed();
@@ -709,6 +725,57 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			this.repositoryInterfaceName = metadata.getRepositoryInterface().getName();
 			this.compositionHash = composition.hashCode();
+		}
+	}
+
+	static class QueryMethodInvoker {
+
+		private final boolean suspendedDeclaredMethod;
+		private final Class<?> returnedType;
+		private final boolean returnsReactiveType;
+
+		QueryMethodInvoker(Method invokedMethod) {
+
+			this.suspendedDeclaredMethod = KotlinDetector.isKotlinReflectPresent() && isSuspendedMethod(invokedMethod);
+			this.returnedType = this.suspendedDeclaredMethod ? KotlinReflectionUtils.getReturnType(invokedMethod)
+					: invokedMethod.getReturnType();
+			this.returnsReactiveType = ReactiveWrappers.supports(returnedType);
+		}
+
+		private static boolean isSuspendedMethod(Method invokedMethod) {
+
+			KFunction<?> invokedFunction = ReflectionUtils.isKotlinClass(invokedMethod.getDeclaringClass())
+					? KotlinReflectionUtils.findKotlinFunction(invokedMethod)
+					: null;
+
+			return invokedFunction != null && invokedFunction.isSuspend();
+		}
+
+		@Nullable
+		public Object invoke(RepositoryQuery query, Object[] args) {
+			return suspendedDeclaredMethod ? invokeReactiveToSuspend(query, args) : query.execute(args);
+		}
+
+		@Nullable
+		@SuppressWarnings({ "unchecked", "ConstantConditions" })
+		private Object invokeReactiveToSuspend(RepositoryQuery query, Object[] args) {
+
+			Continuation<Object> continuation = (Continuation) args[args.length - 1];
+			args[args.length - 1] = null;
+			Object result = query.execute(args);
+
+			if (returnsReactiveType) {
+				return ReactiveWrapperConverters.toWrapper(result, returnedType);
+			}
+
+			Publisher<?> publisher;
+			if (result instanceof Publisher) {
+				publisher = (Publisher<?>) result;
+			} else {
+				publisher = ReactiveWrapperConverters.toWrapper(result, Publisher.class);
+			}
+
+			return AwaitKt.awaitFirstOrNull(publisher, continuation);
 		}
 	}
 }

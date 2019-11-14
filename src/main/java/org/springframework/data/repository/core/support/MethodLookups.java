@@ -331,23 +331,22 @@ interface MethodLookups {
 
 			return Optional.of(candidate)//
 					.filter(it -> invokedMethod.getName().equals(it.getName()))//
-					.filter(it -> invokedMethod.getParameterCount() == it.getParameterCount())//
-					.filter(it -> parametersMatch(it, invokedMethod.getMethod(), predicate));
+					.filter(it -> parameterCountMatch(invokedMethod, it))//
+					.filter(it -> parametersMatch(invokedMethod.getMethod(), it, predicate));
 		}
 
 		/**
 		 * Checks the given method's parameters to match the ones of the given base class method. Matches generic arguments
 		 * against the ones bound in the given repository interface.
 		 *
-		 * @param baseClassMethod must not be {@literal null}.
 		 * @param declaredMethod must not be {@literal null}.
+		 * @param baseClassMethod must not be {@literal null}.
 		 * @param predicate must not be {@literal null}.
 		 * @return
 		 */
-		private static boolean parametersMatch(Method baseClassMethod, Method declaredMethod,
+		private static boolean parametersMatch(Method declaredMethod, Method baseClassMethod,
 				Predicate<ParameterOverrideCriteria> predicate) {
-
-			return methodParameters(baseClassMethod, declaredMethod).allMatch(predicate);
+			return methodParameters(declaredMethod, baseClassMethod).allMatch(predicate);
 		}
 
 		/**
@@ -378,13 +377,17 @@ interface MethodLookups {
 					&& parameterCriteria.getBaseType().isAssignableFrom(parameterCriteria.getDeclaredType());
 		}
 
-		private static Stream<ParameterOverrideCriteria> methodParameters(Method first, Method second) {
+		private static boolean parameterCountMatch(InvokedMethod invokedMethod, Method baseClassMethod) {
 
-			Assert.isTrue(first.getParameterCount() == second.getParameterCount(), "Method parameter count must be equal!");
+			ImplementationInvocationMetadata invocationMetadata = new ImplementationInvocationMetadata(
+					invokedMethod.getMethod(), baseClassMethod);
+			return invocationMetadata.canInvoke(invokedMethod.getMethod(), baseClassMethod);
+		}
 
-			return IntStream.range(0, first.getParameterCount()) //
-					.mapToObj(index -> ParameterOverrideCriteria.of(new MethodParameter(first, index),
-							new MethodParameter(second, index)));
+		private static Stream<ParameterOverrideCriteria> methodParameters(Method invokedMethod, Method baseClassMethod) {
+			return IntStream.range(0, baseClassMethod.getParameterCount()) //
+					.mapToObj(index -> ParameterOverrideCriteria.of(new MethodParameter(invokedMethod, index),
+							new MethodParameter(baseClassMethod, index)));
 		}
 
 		/**
@@ -395,8 +398,8 @@ interface MethodLookups {
 		@Value(staticConstructor = "of")
 		static class ParameterOverrideCriteria {
 
-			private final MethodParameter base;
 			private final MethodParameter declared;
+			private final MethodParameter base;
 
 			/**
 			 * @return base method parameter type.

@@ -19,6 +19,7 @@ import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.repository.core.support.DummyRepositoryFactory.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -93,8 +94,7 @@ public class RepositoryFactorySupportUnitTests {
 		Mockito.reset(factory.strategy);
 
 		when(factory.strategy.resolveQuery(any(Method.class), any(RepositoryMetadata.class), any(ProjectionFactory.class),
-				any(NamedQueries.class))).thenReturn(factory.queryOne,
-						factory.queryTwo);
+				any(NamedQueries.class))).thenReturn(factory.queryOne, factory.queryTwo);
 
 		factory.addQueryCreationListener(listener);
 		factory.addQueryCreationListener(otherListener);
@@ -309,7 +309,7 @@ public class RepositoryFactorySupportUnitTests {
 		assertThatThrownBy( //
 				() -> repository.findById("")) //
 						.isInstanceOf(EmptyResultDataAccessException.class) //
-				.hasMessageContaining("Result must not be null!");
+						.hasMessageContaining("Result must not be null!");
 
 		assertThat(repository.findByUsername("")).isNull();
 	}
@@ -322,7 +322,7 @@ public class RepositoryFactorySupportUnitTests {
 		assertThatThrownBy( //
 				() -> repository.findByClass(null)) //
 						.isInstanceOf(IllegalArgumentException.class) //
-				.hasMessageContaining("must not be null!");
+						.hasMessageContaining("must not be null!");
 	}
 
 	@Test // DATACMNS-1154
@@ -424,10 +424,6 @@ public class RepositoryFactorySupportUnitTests {
 	}
 
 	interface MyQueryCreationListener extends QueryCreationListener<MyRepositoryQuery> {
-
-	}
-
-	interface MyRepositoryQuery extends RepositoryQuery {
 
 	}
 

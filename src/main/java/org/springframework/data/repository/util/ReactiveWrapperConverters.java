@@ -20,6 +20,8 @@ import static org.springframework.data.repository.util.ReactiveWrapperConverters
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import kotlinx.coroutines.flow.Flow;
+import kotlinx.coroutines.reactive.ReactiveFlowKt;
 import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -34,10 +36,14 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.ReactiveAdapter;
 import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.converter.ConditionalConverter;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.repository.util.ReactiveWrappers.ReactiveLibrary;
@@ -156,6 +162,12 @@ public class ReactiveWrapperConverters {
 				conversionService.addConverter(RxJava2ObservableToSingleConverter.INSTANCE);
 				conversionService.addConverter(RxJava2ObservableToMaybeConverter.INSTANCE);
 			}
+
+			if (ReactiveWrappers.isAvailable(ReactiveLibrary.KOTLIN_COROUTINES)) {
+				conversionService.addConverter(PublisherToFlowConverter.INSTANCE);
+			}
+
+			conversionService.addConverterFactory(ReactiveAdapterConverterFactory.INSTANCE);
 		}
 
 		return conversionService;
@@ -489,6 +501,27 @@ public class ReactiveWrapperConverters {
 		@Override
 		public Mono<?> convert(Publisher<?> source) {
 			return Mono.from(source);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Coroutine converters
+	// -------------------------------------------------------------------------
+
+	/**
+	 * A {@link Converter} to convert a {@link Publisher} to {@link Flow}.
+	 *
+	 * @author Mark Paluch
+	 * @author 2.3
+	 */
+	private enum PublisherToFlowConverter implements Converter<Publisher<?>, Flow<?>> {
+
+		INSTANCE;
+
+		@Nonnull
+		@Override
+		public Flow<?> convert(Publisher<?> source) {
+			return ReactiveFlowKt.asFlow(source);
 		}
 	}
 
@@ -1061,6 +1094,38 @@ public class ReactiveWrapperConverters {
 		@Override
 		public io.reactivex.Observable<?> convert(io.reactivex.Single<?> source) {
 			return source.toObservable();
+		}
+	}
+
+	/**
+	 * A {@link ConverterFactory} that adapts between reactive types using {@link ReactiveAdapterRegistry}.
+	 */
+	private enum ReactiveAdapterConverterFactory implements ConverterFactory<Object, Object>, ConditionalConverter {
+
+		INSTANCE;
+
+		@Override
+		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+			return isSupported(sourceType) || isSupported(targetType);
+		}
+
+		private boolean isSupported(TypeDescriptor typeDescriptor) {
+			return REACTIVE_ADAPTER_REGISTRY != null
+					&& REACTIVE_ADAPTER_REGISTRY.getAdapter(typeDescriptor.getType()) != null;
+		}
+
+		@Override
+		@SuppressWarnings({ "ConstantConditions", "unchecked" })
+		public <T> Converter<Object, T> getConverter(Class<T> targetType) {
+			return source -> {
+
+				Publisher<?> publisher = source instanceof Publisher ? (Publisher<?>) source
+						: REACTIVE_ADAPTER_REGISTRY.getAdapter(Publisher.class, source).toPublisher(source);
+
+				ReactiveAdapter adapter = REACTIVE_ADAPTER_REGISTRY.getAdapter(targetType);
+
+				return (T) adapter.fromPublisher(publisher);
+			};
 		}
 	}
 

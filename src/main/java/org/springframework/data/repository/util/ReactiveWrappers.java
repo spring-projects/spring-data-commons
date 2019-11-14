@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.util;
 
+import kotlin.Unit;
+import kotlinx.coroutines.flow.Flow;
 import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,6 +32,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.ReactiveTypeDescriptor;
 import org.springframework.data.util.ProxyUtils;
 import org.springframework.data.util.ReflectionUtils;
@@ -71,6 +74,11 @@ public class ReactiveWrappers {
 	private static final boolean RXJAVA2_PRESENT = ClassUtils.isPresent("io.reactivex.Flowable",
 			ReactiveWrappers.class.getClassLoader());
 
+	private static final boolean KOTLIN_COROUTINES_PRESENT = ClassUtils.isPresent("kotlinx.coroutines.flow.Flow",
+			ReactiveWrappers.class.getClassLoader())
+			&& ClassUtils.isPresent("kotlinx.coroutines.reactive.ReactiveFlowKt", ReactiveWrappers.class.getClassLoader())
+			&& ClassUtils.isPresent("kotlinx.coroutines.reactor.ReactorFlowKt", ReactiveWrappers.class.getClassLoader());
+
 	private static final Collection<ReactiveTypeDescriptor> REACTIVE_WRAPPERS;
 
 	/**
@@ -79,7 +87,7 @@ public class ReactiveWrappers {
 	 * @author Mark Paluch
 	 */
 	static enum ReactiveLibrary {
-		PROJECT_REACTOR, RXJAVA1, RXJAVA2;
+		PROJECT_REACTOR, RXJAVA1, RXJAVA2, KOTLIN_COROUTINES;
 	}
 
 	static {
@@ -111,6 +119,13 @@ public class ReactiveWrappers {
 			reactiveWrappers.add(ReactiveTypeDescriptor.singleOptionalValue(Mono.class, Mono::empty));
 			reactiveWrappers.add(ReactiveTypeDescriptor.multiValue(Flux.class, Flux::empty));
 			reactiveWrappers.add(ReactiveTypeDescriptor.multiValue(Publisher.class, Flux::empty));
+
+			if (KOTLIN_COROUTINES_PRESENT) {
+
+				reactiveWrappers.add(ReactiveTypeDescriptor.multiValue(Flow.class, () -> {
+					return (Flow<Object>) (flowCollector, continuation) -> Unit.INSTANCE;
+				}));
+			}
 		}
 
 		REACTIVE_WRAPPERS = Collections.unmodifiableCollection(reactiveWrappers);
@@ -143,6 +158,8 @@ public class ReactiveWrappers {
 				return RXJAVA1_PRESENT;
 			case RXJAVA2:
 				return RXJAVA2_PRESENT;
+			case KOTLIN_COROUTINES:
+				return PROJECT_REACTOR_PRESENT && KOTLIN_COROUTINES_PRESENT;
 			default:
 				throw new IllegalArgumentException(String.format("Reactive library %s not supported", reactiveLibrary));
 		}
