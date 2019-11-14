@@ -11,7 +11,7 @@ Spring Data modules provide support for Coroutines on the following scope:
 [[kotlin.coroutines.dependencies]]
 == Dependencies
 
-Coroutines support is enabled when `kotlinx-coroutines-core` and `kotlinx-coroutines-reactor` dependencies are in the classpath:
+Coroutines support is enabled when `kotlinx-coroutines-core`, `kotlinx-coroutines-reactive` and `kotlinx-coroutines-reactor` dependencies are in the classpath:
 
 .Dependencies to add in Maven pom.xml
 ====
@@ -20,6 +20,11 @@ Coroutines support is enabled when `kotlinx-coroutines-core` and `kotlinx-corout
 <dependency>
 	<groupId>org.jetbrains.kotlinx</groupId>
 	<artifactId>kotlinx-coroutines-core</artifactId>
+</dependency>
+
+<dependency>
+	<groupId>org.jetbrains.kotlinx</groupId>
+	<artifactId>kotlinx-coroutines-reactive</artifactId>
 </dependency>
 
 <dependency>
@@ -51,3 +56,26 @@ https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coro
 * https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/map.html[`map` operator] supports asynchronous operation (no need for `flatMap`) since it takes a suspending function parameter
 
 Read this blog post about https://spring.io/blog/2019/04/12/going-reactive-with-spring-coroutines-and-kotlin-flow[Going Reactive with Spring, Coroutines and Kotlin Flow] for more details, including how to run code concurrently with Coroutines.
+
+[[kotlin.coroutines.repositories]]
+== Repositories
+
+Here is an example of a Coroutines repository:
+
+====
+[source,kotlin]
+----
+interface CoroutinesRepository : CoCrudRepository<User, String> {
+
+    suspend fun findOne(id: String): User
+
+    fun findByFirstname(firstname: String): Flow<User>
+}
+----
+====
+
+Coroutines repositories are built on reactive repositories to expose the non-blocking nature of data access through Kotlin's Coroutines.
+Methods on a Coroutines repository can be backed either by a query method or a custom implementation.
+Invoking a custom implementation method propagates the Coroutines invocation to the actual implementation method if the custom method is `suspend`able without requiring the implementation method to return a reactive type such as `Mono` or `Flux`.
+
+NOTE: Coroutines repositories are only discovered when the repository extends the `CoCrudRepository` interface.
