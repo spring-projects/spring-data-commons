@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
@@ -152,15 +151,6 @@ public abstract class QueryExecutionConverters {
 
 			ALLOWED_PAGEABLE_TYPES.add(io.vavr.collection.Seq.class);
 		}
-
-		if (ReactiveWrappers.isAvailable()) {
-			WRAPPER_TYPES
-					.addAll(ReactiveWrappers.getNoValueTypes().stream().map(WrapperType::noValue).collect(Collectors.toList()));
-			WRAPPER_TYPES.addAll(
-					ReactiveWrappers.getSingleValueTypes().stream().map(WrapperType::singleValue).collect(Collectors.toList()));
-			WRAPPER_TYPES.addAll(
-					ReactiveWrappers.getMultiValueTypes().stream().map(WrapperType::multiValue).collect(Collectors.toList()));
-		}
 	}
 
 	private QueryExecutionConverters() {}
@@ -181,6 +171,10 @@ public abstract class QueryExecutionConverters {
 				if (candidate.getType().isAssignableFrom(key)) {
 					return true;
 				}
+			}
+
+			if (ReactiveWrappers.supports(type)) {
+				return true;
 			}
 
 			return false;
@@ -212,6 +206,10 @@ public abstract class QueryExecutionConverters {
 			if (candidate.getType().isAssignableFrom(type)) {
 				return candidate.isSingleValue();
 			}
+		}
+
+		if (ReactiveWrappers.supports(type) && ReactiveWrappers.isSingleValueType(type)) {
+			return true;
 		}
 
 		return false;
