@@ -731,9 +731,15 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	static class QueryMethodInvoker {
 
 		private final boolean suspendedDeclaredMethod;
+		private final Class<?> returnedType;
+		private final boolean returnsReactiveType;
 
 		QueryMethodInvoker(Method invokedMethod) {
+
 			this.suspendedDeclaredMethod = KotlinDetector.isKotlinReflectPresent() && isSuspendedMethod(invokedMethod);
+			this.returnedType = this.suspendedDeclaredMethod ? KotlinReflectionUtils.getReturnType(invokedMethod)
+					: invokedMethod.getReturnType();
+			this.returnsReactiveType = ReactiveWrappers.supports(returnedType);
 		}
 
 		private static boolean isSuspendedMethod(Method invokedMethod) {
@@ -754,9 +760,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		@SuppressWarnings({ "unchecked", "ConstantConditions" })
 		private Object invokeReactiveToSuspend(RepositoryQuery query, Object[] args) {
 
-			Object[] invocationArguments = new Object[args.length - 1];
-			System.arraycopy(args, 0, invocationArguments, 0, invocationArguments.length);
-			Object result = query.execute(invocationArguments);
+			Continuation<Object> continuation = (Continuation) args[args.length - 1];
+			args[args.length - 1] = null;
+			Object result = query.execute(args);
+
+			if (returnsReactiveType) {
+				return ReactiveWrapperConverters.toWrapper(result, returnedType);
+			}
 
 			Publisher<?> publisher;
 			if (result instanceof Publisher) {
@@ -765,7 +775,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 				publisher = ReactiveWrapperConverters.toWrapper(result, Publisher.class);
 			}
 
-			return AwaitKt.awaitFirstOrNull(publisher, (Continuation) args[args.length - 1]);
+			return AwaitKt.awaitFirstOrNull(publisher, continuation);
 		}
 	}
 }

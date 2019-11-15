@@ -22,6 +22,7 @@ import kotlin.reflect.KFunction;
 import kotlin.reflect.KMutableProperty;
 import kotlin.reflect.KProperty;
 import kotlin.reflect.KType;
+import kotlin.reflect.jvm.KTypesJvm;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Method;
@@ -62,6 +63,23 @@ public final class KotlinReflectionUtils {
 		}
 
 		return kotlinFunction;
+	}
+
+	/**
+	 * Returns the {@link Class return type} of a Kotlin {@link Method}. Supports regular and suspended methods.
+	 *
+	 * @param method the method to inspect, typically any synthetic JVM {@link Method}.
+	 * @return return type of the method.
+	 */
+	public static Class<?> getReturnType(Method method) {
+
+		KFunction<?> kotlinFunction = KotlinReflectionUtils.findKotlinFunction(method);
+
+		if (kotlinFunction == null) {
+			throw new IllegalArgumentException(String.format("Cannot resolve %s to a KFunction!", method));
+		}
+
+		return JvmClassMappingKt.getJavaClass(KTypesJvm.getJvmErasure(kotlinFunction.getReturnType()));
 	}
 
 	/**

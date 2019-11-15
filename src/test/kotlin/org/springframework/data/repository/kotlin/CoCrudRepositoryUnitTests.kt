@@ -82,7 +82,7 @@ class CoCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo"))).thenReturn(Mono.just(sample))
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Mono.just(sample))
 
 		val result = runBlocking {
 			coRepository.findOne("foo")
@@ -96,7 +96,7 @@ class CoCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo"))).thenReturn(Single.just(sample))
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Single.just(sample))
 
 		val result = runBlocking {
 			coRepository.findOne("foo")
@@ -139,10 +139,32 @@ class CoCrudRepositoryUnitTests {
 		assertThat(result).hasSize(1).containsOnly(sample)
 	}
 
+	@Test // DATACMNS-1508
+	fun shouldBridgeSuspendedFlowMethod() {
+
+		val sample = User()
+
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Flux.just(sample), Flux.empty<User>())
+
+		val result = runBlocking {
+			coRepository.findSuspendedMultiple("foo").toList()
+		}
+
+		assertThat(result).hasSize(1).containsOnly(sample)
+
+		val emptyResult = runBlocking {
+			coRepository.findSuspendedMultiple("foo").toList()
+		}
+
+		assertThat(emptyResult).isEmpty()
+	}
+
 	interface MyCoRepository : CoCrudRepository<User, String> {
 
 		suspend fun findOne(id: String): User
 
 		fun findMultiple(id: String): Flow<User>
+
+		suspend fun findSuspendedMultiple(id: String): Flow<User>
 	}
 }
