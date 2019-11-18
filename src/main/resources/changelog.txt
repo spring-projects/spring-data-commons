@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.2.RELEASE (2019-11-18)
+---------------------------------------------
+* DATACMNS-1618 - Set loglevel for java.time converters to debug (temporary fix).
+* DATACMNS-1613 - PageImpl created from only a Collection returns invalid size.
+* DATACMNS-1609 - Auditing metadata should not detect paths containing map or collection like segments.
+* DATACMNS-1606 - Release 2.2.2 (Moore SR2).
+
+
 Changes in version 2.1.13.RELEASE (2019-11-18)
 ----------------------------------------------
 * DATACMNS-1613 - PageImpl created from only a Collection returns invalid size.
