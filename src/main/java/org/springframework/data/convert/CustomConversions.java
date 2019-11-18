@@ -204,7 +204,11 @@ public class CustomConversions {
 			readingPairs.add(pair);
 
 			if (LOG.isWarnEnabled() && !converterRegistration.isSimpleSourceType()) {
-				LOG.warn(String.format(READ_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
+
+				String msg = String.format(READ_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType());
+
+				// TODO: this is a temporary fix seeking a better solution for 2.3
+				warnIfNotTimeType(pair.getSourceType(), msg);
 			}
 		}
 
@@ -216,19 +220,20 @@ public class CustomConversions {
 			if (LOG.isWarnEnabled() && !converterRegistration.isSimpleTargetType()) {
 
 				String msg = String.format(WRITE_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType());
-				if (isJavaTimeType(pair.getTargetType())) {
 
-					// TODO: this is a temporary fix seeking a better solution for 2.3
-					LOG.debug(msg);
-				} else {
-					LOG.warn(msg);
-				}
+				// TODO: this is a temporary fix seeking a better solution for 2.3
+				warnIfNotTimeType(pair.getTargetType(), msg);
 			}
 		}
 	}
 
-	private boolean isJavaTimeType(Class<?> type) {
-		return type.getName().startsWith("java.time");
+	private static void warnIfNotTimeType(Class<?> type, String msg) {
+
+		if (type.getName().startsWith("java.time.")) {
+			LOG.debug(msg);
+		} else {
+			LOG.warn(msg);
+		}
 	}
 
 	/**
@@ -248,9 +253,9 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns the target type we can read an inject of the given source type to. The returned type might
-	 * be a subclass of the given expected type though. If {@code requestedTargetType} is {@literal null} we will simply
-	 * return the first target type matching or {@literal null} if no conversion can be found.
+	 * Returns the target type we can read an inject of the given source type to. The returned type might be a subclass of
+	 * the given expected type though. If {@code requestedTargetType} is {@literal null} we will simply return the first
+	 * target type matching or {@literal null} if no conversion can be found.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param requestedTargetType must not be {@literal null}.
@@ -267,8 +272,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to read {@code sourceType} into a native type. The
-	 * returned type might be a subclass of the given expected type though.
+	 * Returns whether we have a custom conversion registered to read {@code sourceType} into a native type. The returned
+	 * type might be a subclass of the given expected type though.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @return
@@ -281,8 +286,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to read an object of the given source type
-	 * into an object of the given native target type.
+	 * Returns whether we have a custom conversion registered to read an object of the given source type into an object of
+	 * the given native target type.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
@@ -297,8 +302,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to read the given source into the given target
-	 * type.
+	 * Returns whether we have a custom conversion registered to read the given source into the given target type.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param targetType must not be {@literal null}
@@ -313,8 +317,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns the actual target type for the given {@code sourceType} and {@code targetType}. Note that the
-	 * returned {@link Class} could be an assignable type to the given {@code targetType}.
+	 * Returns the actual target type for the given {@code sourceType} and {@code targetType}. Note that the returned
+	 * {@link Class} could be an assignable type to the given {@code targetType}.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
@@ -326,8 +330,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Inspects the given {@link ConvertiblePair ConvertiblePairs} for ones that have a source compatible type as source. Additionally
-	 * checks assignability of the target type if one is given.
+	 * Inspects the given {@link ConvertiblePair ConvertiblePairs} for ones that have a source compatible type as source.
+	 * Additionally checks assignability of the target type if one is given.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType can be {@literal null}.
