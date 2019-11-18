@@ -214,9 +214,21 @@ public class CustomConversions {
 			customSimpleTypes.add(pair.getSourceType());
 
 			if (LOG.isWarnEnabled() && !converterRegistration.isSimpleTargetType()) {
-				LOG.warn(String.format(WRITE_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
+
+				String msg = String.format(WRITE_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType());
+				if (isJavaTimeType(pair.getTargetType())) {
+
+					// TODO: this is a temporary fix seeking a better solution for 2.3
+					LOG.debug(msg);
+				} else {
+					LOG.warn(msg);
+				}
 			}
 		}
+	}
+
+	private boolean isJavaTimeType(Class<?> type) {
+		return type.getName().startsWith("java.time");
 	}
 
 	/**
