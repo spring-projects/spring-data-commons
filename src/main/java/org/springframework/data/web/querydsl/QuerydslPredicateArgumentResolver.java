@@ -74,16 +74,12 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 
-		if (Predicate.class.equals(parameter.getParameterType())) {
-			return true;
-		}
-
-		if (parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
+		if (parameter.hasParameterAnnotation(QuerydslPredicate.class) && !Predicate.class.equals(parameter.getParameterType())) {
 			throw new IllegalArgumentException(String.format("Parameter at position %s must be of type Predicate but was %s.",
 					parameter.getParameterIndex(), parameter.getParameterType()));
 		}
 
-		return false;
+		return parameter.hasParameterAnnotation(QuerydslPredicate.class);
 	}
 
 	/*
