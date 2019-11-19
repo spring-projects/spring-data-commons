@@ -768,8 +768,6 @@ interface CustomizedUserRepository {
 ----
 ====
 
-Then you can let your repository interface additionally extend from the fragment interface, as shown in the following example:
-
 .Implementation of custom repository functionality
 ====
 [source, java]
@@ -787,7 +785,7 @@ NOTE: The most important part of the class name that corresponds to the fragment
 
 The implementation itself does not depend on Spring Data and can be a regular Spring bean. Consequently, you can use standard dependency injection behavior to inject references to other beans (such as a `JdbcTemplate`), take part in aspects, and so on.
 
-You can let your repository interface extend the fragment interface, as shown in the following example:
+Then you can let your repository interface extend the fragment interface, as shown in the following example:
 
 .Changes to your repository interface
 ====
