@@ -74,7 +74,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	@Test // DATACMNS-669
 	public void supportsParameterReturnsTrueWhenMethodParameterIsPredicateButNotAnnotatedAsSuch() {
 		assertThat(resolver.supportsParameter(getMethodParameterFor("predicateWithoutAnnotation", Predicate.class)))
-				.isTrue();
+				.isFalse();
 	}
 
 	@Test // DATACMNS-669
