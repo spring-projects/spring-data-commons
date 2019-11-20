@@ -16,8 +16,7 @@
 package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +51,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Jens Schauder
+ * @author Christoph Strobl
  */
 public class ExtensionAwareEvaluationContextProviderUnitTests {
 
@@ -310,6 +310,26 @@ public class ExtensionAwareEvaluationContextProviderUnitTests {
 		contextProvider.getEvaluationContext(null);
 
 		verify(beanFactory).getBeansOfType(eq(EvaluationContextExtension.class), anyBoolean(), anyBoolean());
+	}
+
+	@Test // DATACMNS-1625
+	public void shouldNotFetchRootObject() {
+
+		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(Arrays.asList( //
+				new DummyExtension("_first", "first") {
+					@Override
+					public CustomExtensionRootObject1 getRootObject() {
+						throw new RuntimeException("o_O");
+					}
+				}, //
+				new DummyExtension("_second", "second") {
+					@Override
+					public CustomExtensionRootObject2 getRootObject() {
+						return new CustomExtensionRootObject2();
+					}
+				}));
+
+		assertThat(provider.getEvaluationContext(new DefaultParameters(method), new String[] { "firstname" })).isNotNull();
 	}
 
 	private static ExtensionAwareQueryMethodEvaluationContextProvider createContextProviderWithOverloads() {

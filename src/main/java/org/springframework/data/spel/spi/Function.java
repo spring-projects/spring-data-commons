@@ -21,6 +21,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.util.ParameterTypes;
@@ -34,12 +35,13 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Christoph Strobl
  * @since 1.9
  */
 public class Function {
 
 	private final Method method;
-	private final @Nullable Object target;
+	private final Supplier<Object> target;
 
 	/**
 	 * Creates a new {@link Function} to statically invoke the given {@link Method}.
@@ -66,7 +68,7 @@ public class Function {
 				"Method must either be static or a non-static one with a target object!");
 
 		this.method = method;
-		this.target = target;
+		this.target = target instanceof Supplier ? (Supplier<Object>) target : () -> target;
 	}
 
 	/**
@@ -79,7 +81,7 @@ public class Function {
 	public Object invoke(Object[] arguments) throws Exception {
 
 		if (method.getParameterCount() == arguments.length) {
-			return method.invoke(target, arguments);
+			return method.invoke(target.get(), arguments);
 		}
 
 		Class<?>[] types = method.getParameterTypes();
@@ -104,7 +106,7 @@ public class Function {
 
 			argumentsToUse.add(varargs);
 
-			return method.invoke(target, argumentsToUse.size() == 1 ? argumentsToUse.get(0) : argumentsToUse.toArray());
+			return method.invoke(target.get(), argumentsToUse.size() == 1 ? argumentsToUse.get(0) : argumentsToUse.toArray());
 		}
 
 		throw new IllegalStateException(String.format("Could not invoke method %s for arguments %s!", method, arguments));

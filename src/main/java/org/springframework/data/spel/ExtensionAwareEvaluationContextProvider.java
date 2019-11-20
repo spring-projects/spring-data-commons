@@ -20,11 +20,12 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -32,7 +33,6 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.spel.EvaluationContextExtensionInformation.ExtensionTypeInformation;
 import org.springframework.data.spel.EvaluationContextExtensionInformation.RootObjectInformation;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
@@ -50,6 +50,7 @@ import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.MultiValueMap;
 
 /**
  * An {@link EvaluationContextProvider} that assembles an {@link EvaluationContext} from a list of
@@ -354,6 +355,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * itself.
 	 *
 	 * @author Oliver Gierke
+	 * @author Christoph Strobl
 	 * @since 1.9
 	 */
 	private static class EvaluationContextExtensionAdapter {
@@ -361,7 +363,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		private final EvaluationContextExtension extension;
 
 		private final Functions functions = new Functions();
-		private final Map<String, Object> properties;
+		private final LazyProperties properties = new LazyProperties();
 
 		/**
 		 * Creates a new {@link EvaluationContextExtensionAdapter} for the given {@link EvaluationContextExtension} and
@@ -376,18 +378,15 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			Assert.notNull(extension, "Extension must not be null!");
 			Assert.notNull(information, "Extension information must not be null!");
 
-			Optional<Object> target = Optional.ofNullable(extension.getRootObject());
-			ExtensionTypeInformation extensionTypeInformation = information.getExtensionTypeInformation();
-			RootObjectInformation rootObjectInformation = information.getRootObjectInformation(target);
+			LazyRootObject rootObject = new LazyRootObject(information, Lazy.of(() -> extension.getRootObject()));
 
-			functions.addAll(extension.getFunctions());
-			functions.addAll(rootObjectInformation.getFunctions(target));
-			functions.addAll(extensionTypeInformation.getFunctions());
+			functions.lazyAddAt(0, () -> extension.getFunctions());
+			functions.lazyAddAt(1, () -> rootObject.resolveFunctions());
+			functions.lazyAddAt(2, () -> information.getExtensionTypeInformation().getFunctions());
 
-			this.properties = new HashMap<>();
-			this.properties.putAll(extensionTypeInformation.getProperties());
-			this.properties.putAll(rootObjectInformation.getProperties(target));
-			this.properties.putAll(extension.getProperties());
+			properties.lazyAddAt(0, () -> information.getExtensionTypeInformation().getProperties());
+			properties.lazyAddAt(1, () -> rootObject.resolveProperties());
+			properties.lazyAddAt(2, () -> extension.getProperties());
 
 			this.extension = extension;
 		}
@@ -416,7 +415,74 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * @return a map from property name to property value.
 		 */
 		public Map<String, Object> getProperties() {
-			return this.properties;
+			return Collections.unmodifiableMap(this.properties.getProperties());
+		}
+
+		/**
+		 * A lazy wrapper object capturing properties in their order of resolution for an
+		 * {@link EvaluationContextExtension#getRootObject() root object}.
+		 *
+		 * @author Christoph Strobl
+		 * @since 2.1.15
+		 */
+		private static class LazyProperties {
+
+			private final Object lock = new Object();
+			private boolean resolved = false;
+			private Map<Integer, Supplier<Map<String, Object>>> lazyProperties = new LinkedHashMap<>();
+
+			private final Map<String, Object> properties = new LinkedHashMap<>();
+
+			void lazyAddAt(int position, Supplier<Map<String, Object>> functionSource) {
+				lazyProperties.put(position, functionSource);
+			}
+
+			Map<String, Object> getProperties() {
+
+				if (!resolved) {
+					resolve();
+				}
+
+				return properties;
+			}
+
+			private void resolve() {
+
+				synchronized (lock) {
+
+					if (!resolved) {
+						lazyProperties.values().forEach(it -> properties.putAll(it.get()));
+					}
+					resolved = true;
+				}
+			}
+		}
+
+		/**
+		 * Lazy evaluating variant of obtaining the {@link EvaluationContext#getRootObject() root object} of an
+		 * {@link EvaluationContextExtension}.
+		 *
+		 * @author Christoph Strobl
+		 * @since 2.1.15
+		 */
+		private static class LazyRootObject extends Lazy<RootObjectInformation> {
+
+			Lazy<Object> targetObject;
+
+			LazyRootObject(EvaluationContextExtensionInformation information, Lazy<Object> targetObject) {
+
+				super(() -> information.getRootObjectInformation(targetObject.getOptional()));
+				this.targetObject = targetObject;
+			}
+
+			private MultiValueMap<String, Function> resolveFunctions() {
+				return get().getFunctions(targetObject.getOptional());
+
+			}
+
+			private Map<String, Object> resolveProperties() {
+				return get().getProperties(targetObject.getOptional());
+			}
 		}
 	}
 }

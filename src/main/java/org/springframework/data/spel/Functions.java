@@ -16,9 +16,11 @@
 package org.springframework.data.spel;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,12 +30,12 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 /**
- * {@link MultiValueMap} like data structure to keep lists of
- * {@link org.springframework.data.repository.query.spi.Function}s indexed by name and argument list length, where the
- * value lists are actually unique with respect to the signature.
+ * {@link MultiValueMap} like data structure to keep lists of {@link org.springframework.data.spel.spi.Function}s
+ * indexed by name and argument list length, where the value lists are actually unique with respect to the signature.
  *
  * @author Jens Schauder
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 2.1
  */
 class Functions {
@@ -43,7 +45,24 @@ class Functions {
 
 	private final MultiValueMap<String, Function> functions = new LinkedMultiValueMap<>();
 
-	void addAll(Map<String, Function> newFunctions) {
+	private final Object lock = new Object();
+	private boolean resolved = false;
+
+	private Map<Integer, Supplier<Map<String, ?>>> lazyFunctionInit = new LinkedHashMap<>();
+
+	/**
+	 * Order matters! <br />
+	 * Register functions for resolution in a given order (overrides if present!)
+	 *
+	 * @param position
+	 * @param functionSource
+	 * @since 2.1.15
+	 */
+	void lazyAddAt(int position, Supplier<Map<String, ?>> functionSource) {
+		lazyFunctionInit.put(position, functionSource);
+	}
+
+	private void addAll(Map<String, Function> newFunctions) {
 
 		newFunctions.forEach((n, f) -> {
 
@@ -55,7 +74,7 @@ class Functions {
 		});
 	}
 
-	void addAll(MultiValueMap<String, Function> newFunctions) {
+	private void addAll(MultiValueMap<String, Function> newFunctions) {
 
 		newFunctions.forEach((k, list) -> {
 
@@ -68,6 +87,11 @@ class Functions {
 	}
 
 	List<Function> get(String name) {
+
+		if (!resolved) {
+			resolveFunctions();
+		}
+
 		return functions.getOrDefault(name, Collections.emptyList());
 	}
 
@@ -83,12 +107,36 @@ class Functions {
 	 */
 	Optional<Function> get(String name, List<TypeDescriptor> argumentTypes) {
 
+		if (!resolved) {
+			resolveFunctions();
+		}
+
 		Stream<Function> candidates = get(name).stream() //
 				.filter(f -> f.supports(argumentTypes));
 
 		List<Function> collect = candidates.collect(Collectors.toList());
 
 		return bestMatch(collect, argumentTypes);
+	}
+
+	private void resolveFunctions() {
+
+		synchronized (lock) {
+			if (!resolved) {
+
+				resolved = true;
+				lazyFunctionInit.values().forEach(it -> {
+
+					Object source = it.get();
+					if (source instanceof MultiValueMap) {
+
+						this.addAll((MultiValueMap<String, Function>) source);
+					} else {
+						this.addAll((Map<String, Function>) source);
+					}
+				});
+			}
+		}
 	}
 
 	private static boolean contains(List<Function> elements, Function f) {
