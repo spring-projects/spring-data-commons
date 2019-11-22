@@ -16,6 +16,7 @@
 package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.text.DateFormat;
 import java.text.Format;
@@ -27,17 +28,17 @@ import java.util.Locale;
 
 import org.joda.time.DateTime;
 import org.junit.Test;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
+import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.convert.CustomConversions.StoreConversions;
+import org.springframework.data.convert.ThreeTenBackPortConverters.LocalDateTimeToJavaTimeInstantConverter;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-
 import org.threeten.bp.LocalDateTime;
 
 /**
@@ -192,6 +193,29 @@ public class CustomConversionsUnitTests {
 
 		assertThat(conversionService.canConvert(CustomType.class, Locale.class)).isTrue();
 		assertThat(conversionService.canConvert(Locale.class, CustomType.class)).isTrue();
+	}
+
+	@Test // DATACMNS-1615
+	public void skipsUnsupportedDefaultWritingConverter() {
+
+		ConverterRegistry registry = mock(ConverterRegistry.class);
+		StoreConversions storeConversions = StoreConversions
+				.of(new SimpleTypeHolder(Collections.singleton(Date.class), true) {
+
+					@Override
+					public boolean isSimpleType(Class<?> type) {
+
+						if (type.getName().startsWith("java.time")) {
+							return false;
+						}
+
+						return super.isSimpleType(type);
+					}
+				});
+
+		new CustomConversions(storeConversions, Collections.emptyList()).registerConvertersIn(registry);
+
+		verify(registry, never()).addConverter(any(LocalDateTimeToJavaTimeInstantConverter.class));
 	}
 
 	private static Class<?> createProxyTypeFor(Class<?> type) {
