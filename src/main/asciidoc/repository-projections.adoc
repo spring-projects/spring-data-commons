@@ -1,3 +1,7 @@
+ifndef::projection-collection[]
+:projection-collection: Collection
+endif::[]
+
 [[projections]]
 = Projections
 
@@ -9,7 +13,7 @@ Imagine a repository and aggregate root type such as the following example:
 
 .A sample aggregate and repository
 ====
-[source, java]
+[source, java, subs="+attributes"]
 ----
 class Person {
 
@@ -24,7 +28,7 @@ class Person {
 
 interface PersonRepository extends Repository<Person, UUID> {
 
-  Collection<Person> findByLastname(String lastname);
+  {projection-collection}<Person> findByLastname(String lastname);
 }
 ----
 ====
@@ -54,11 +58,11 @@ Doing so lets a query method be added as follows:
 
 .A repository using an interface based projection with a query method
 ====
-[source, java]
+[source, java, subs="+attributes"]
 ----
 interface PersonRepository extends Repository<Person, UUID> {
 
-  Collection<NamesOnly> findByLastname(String lastname);
+  {projection-collection}<NamesOnly> findByLastname(String lastname);
 }
 ----
 ====
@@ -256,11 +260,11 @@ To apply dynamic projections, use a query method such as the one shown in the fo
 
 .A repository using a dynamic projection parameter
 ====
-[source, java]
+[source, java, subs="+attributes"]
 ----
 interface PersonRepository extends Repository<Person, UUID> {
 
-  <T> Collection<T> findByLastname(String lastname, Class<T> type);
+  <T> {projection-collection}<T> findByLastname(String lastname, Class<T> type);
 }
 ----
 ====
@@ -269,14 +273,14 @@ This way, the method can be used to obtain the aggregates as is or with a projec
 
 .Using a repository with dynamic projections
 ====
-[source, java]
+[source, java, subs="+attributes"]
 ----
 void someMethod(PersonRepository people) {
 
-  Collection<Person> aggregates =
+  {projection-collection}<Person> aggregates =
     people.findByLastname("Matthews", Person.class);
 
-  Collection<NamesOnly> aggregates =
+  {projection-collection}<NamesOnly> aggregates =
     people.findByLastname("Matthews", NamesOnly.class);
 }
 ----
