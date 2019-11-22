@@ -22,9 +22,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.convert.converter.Converter;
@@ -57,6 +68,10 @@ public class CustomConversions {
 	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type! You might want to check your annotation setup at the converter implementation.";
 	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type! You might want to check your annotation setup at the converter implementation.";
 	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory!";
+	private static final String CONVERTER_FILTER = "converter from %s to %s as %s converter.";
+	private static final String ADD_CONVERTER = "Adding %s" + CONVERTER_FILTER;
+	private static final String SKIP_CONVERTER = "Skipping " + CONVERTER_FILTER
+			+ " %s is not a store supported simple type!";
 	private static final List<Object> DEFAULT_CONVERTERS;
 
 	static {
@@ -79,6 +94,8 @@ public class CustomConversions {
 	private final ConversionTargetsCache customReadTargetTypes = new ConversionTargetsCache();
 	private final ConversionTargetsCache customWriteTargetTypes = new ConversionTargetsCache();
 
+	private final ConverterConfiguration converterConfiguration;
+
 	private final Function<ConvertiblePair, Class<?>> getReadTarget = convertiblePair -> getCustomTarget(
 			convertiblePair.getSourceType(), convertiblePair.getTargetType(), readingPairs);
 
@@ -89,31 +106,51 @@ public class CustomConversions {
 			convertiblePair.getSourceType(), null, writingPairs);
 
 	/**
-	 * Creates a new {@link CustomConversions} instance registering the given converters.
+	 * Deferred initialization allowing store implementations use a callback/consumer driven configuration of the actual
+	 * {@link CustomConversions}.
+	 *
+	 * @param converterConfiguration the {@link Supplier} providing a {@link ConverterConfiguration}.
+	 * @since 2.3
+	 */
+	protected CustomConversions(Supplier<ConverterConfiguration> converterConfiguration) {
+		this(converterConfiguration.get());
+	}
+
+	/**
+	 * @param converterConfiguration the {@link ConverterConfiguration} to apply.
+	 * @since 2.3
+	 */
+	protected CustomConversions(ConverterConfiguration converterConfiguration) {
+
+		this.converterConfiguration = converterConfiguration;
+
+		List<Object> registeredConverters = collectPotentialConverterRegistrations(
+				converterConfiguration.getStoreConversions(), converterConfiguration.getUserConverters()).stream() //
+						.filter(this::isSupportedConverter) //
+						.filter(it -> !skip(it)) //
+						.map(ConverterRegistrationIntent::getConverterRegistration) //
+						.map(this::register) //
+						.distinct() //
+						.collect(Collectors.toList());
+
+		Collections.reverse(registeredConverters);
+
+		this.converters = Collections.unmodifiableList(registeredConverters);
+		this.simpleTypeHolder = new SimpleTypeHolder(customSimpleTypes,
+				converterConfiguration.getStoreConversions().getStoreTypeHolder());
+	}
+
+	/**
+	 * Creates a new {@link CustomConversions} instance registering all given user defined converters and selecting
+	 * {@link Converter converters} from {@link StoreConversions} depending on
+	 * {@link StoreConversions#getSimpleTypeHolder() store simple types} only considering those that either convert
+	 * to/from a store supported type.
 	 *
 	 * @param storeConversions must not be {@literal null}.
 	 * @param converters must not be {@literal null}.
 	 */
 	public CustomConversions(StoreConversions storeConversions, Collection<?> converters) {
-
-		Assert.notNull(storeConversions, "StoreConversions must not be null!");
-		Assert.notNull(converters, "List of converters must not be null!");
-
-		List<Object> toRegister = new ArrayList<>();
-
-		// Add user provided converters to make sure they can override the defaults
-		toRegister.addAll(converters);
-		toRegister.addAll(storeConversions.getStoreConverters());
-		toRegister.addAll(DEFAULT_CONVERTERS);
-
-		toRegister.stream()//
-				.flatMap(it -> storeConversions.getRegistrationsFor(it).stream())//
-				.forEach(this::register);
-
-		Collections.reverse(toRegister);
-
-		this.converters = Collections.unmodifiableList(toRegister);
-		this.simpleTypeHolder = new SimpleTypeHolder(customSimpleTypes, storeConversions.getStoreTypeHolder());
+		this(new ConverterConfiguration(storeConversions, new ArrayList<>(converters)));
 	}
 
 	/**
@@ -153,6 +190,37 @@ public class CustomConversions {
 	}
 
 	/**
+	 * Get all converters and add origin information
+	 * 
+	 * @param storeConversions
+	 * @param converters
+	 * @return
+	 * @since 2.3
+	 */
+	private List<ConverterRegistrationIntent> collectPotentialConverterRegistrations(StoreConversions storeConversions,
+			Collection<?> converters) {
+
+		List<ConverterRegistrationIntent> converterRegistrations = new ArrayList<>();
+
+		converterRegistrations.addAll(converters.stream() //
+				.flatMap(it -> storeConversions.getRegistrationsFor(it).stream()) //
+				.map(ConverterRegistrationIntent::userConverters) //
+				.collect(Collectors.toList()));
+
+		converterRegistrations.addAll(storeConversions.getStoreConverters().stream() //
+				.flatMap(it -> storeConversions.getRegistrationsFor(it).stream()) //
+				.map(ConverterRegistrationIntent::storeConverters) //
+				.collect(Collectors.toList()));
+
+		converterRegistrations.addAll(DEFAULT_CONVERTERS.stream() //
+				.flatMap(it -> storeConversions.getRegistrationsFor(it).stream()) //
+				.map(ConverterRegistrationIntent::defaultConverters) //
+				.collect(Collectors.toList()));
+
+		return converterRegistrations;
+	}
+
+	/**
 	 * Registers the given converter in the given {@link GenericConversionService}.
 	 *
 	 * @param candidate must not be {@literal null}.
@@ -160,31 +228,27 @@ public class CustomConversions {
 	 */
 	private void registerConverterIn(Object candidate, ConverterRegistry conversionService) {
 
-		boolean added = false;
-
 		if (candidate instanceof Converter) {
 			conversionService.addConverter(Converter.class.cast(candidate));
-			added = true;
+			return;
 		}
 
 		if (candidate instanceof ConverterFactory) {
 			conversionService.addConverterFactory(ConverterFactory.class.cast(candidate));
-			added = true;
+			return;
 		}
 
 		if (candidate instanceof GenericConverter) {
 			conversionService.addConverter(GenericConverter.class.cast(candidate));
-			added = true;
+			return;
 		}
 
 		if (candidate instanceof ConverterAware) {
 			ConverterAware.class.cast(candidate).getConverters().forEach(it -> registerConverterIn(it, conversionService));
-			added = true;
+			return;
 		}
 
-		if (!added) {
-			throw new IllegalArgumentException(String.format(NOT_A_CONVERTER, candidate));
-		}
+		throw new IllegalArgumentException(String.format(NOT_A_CONVERTER, candidate));
 	}
 
 	/**
@@ -193,7 +257,7 @@ public class CustomConversions {
 	 *
 	 * @param converterRegistration
 	 */
-	private void register(ConverterRegistration converterRegistration) {
+	private Object register(ConverterRegistration converterRegistration) {
 
 		Assert.notNull(converterRegistration, "Converter registration must not be null!");
 
@@ -217,6 +281,50 @@ public class CustomConversions {
 				LOG.warn(String.format(WRITE_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
 			}
 		}
+
+		return converterRegistration.getConverter();
+	}
+
+	/**
+	 * Validate a given {@link ConverterRegistration} in a specific setup. <br />
+	 * Non {@link ReadingConverter reading} and user defined {@link Converter converters} are only considered supported if
+	 * the {@link ConverterRegistrationIntent#isSimpleTargetType() target type} is considered to be a store simple type.
+	 *
+	 * @param registrationIntent
+	 * @return {@literal true} if supported.
+	 * @since 2.3
+	 */
+	private boolean isSupportedConverter(ConverterRegistrationIntent registrationIntent) {
+
+		boolean register = registrationIntent.isUserConverter()
+				|| (registrationIntent.isReading() && registrationIntent.isSimpleSourceType())
+				|| (registrationIntent.isWriting() && registrationIntent.isSimpleTargetType());
+
+		if (LOG.isDebugEnabled()) {
+
+			if (register) {
+				LOG.debug(String.format(ADD_CONVERTER, registrationIntent.isUserConverter() ? "user defined " : "",
+						registrationIntent.getSourceType(), registrationIntent.getTargetType(),
+						registrationIntent.isReading() ? "reading" : "writing"));
+			} else {
+				LOG.debug(String.format(SKIP_CONVERTER, registrationIntent.getSourceType(), registrationIntent.getTargetType(),
+						registrationIntent.isReading() ? "reading" : "writing",
+						registrationIntent.isReading() ? registrationIntent.getSourceType() : registrationIntent.getTargetType()));
+			}
+		}
+
+		return register;
+	}
+
+	/**
+	 * @param intent must not be {@literal null}.
+	 * @return {@literal true} if the given {@link ConverterRegistration} shall be skipped.
+	 * @since 2.3
+	 */
+	private boolean skip(ConverterRegistrationIntent intent) {
+
+		return intent.isDefaultConveter()
+				&& converterConfiguration.getSkipFor().contains(intent.getConverterRegistration().getConvertiblePair());
 	}
 
 	/**
@@ -443,14 +551,89 @@ public class CustomConversions {
 	}
 
 	/**
+	 * Value class tying together a {@link ConverterRegistration} and its {@link ConverterOrigin origin} to allow fine
+	 * grained registration based on store supported types.
+	 *
+	 * @since 2.3
+	 * @author Christoph Strobl
+	 */
+	protected static class ConverterRegistrationIntent {
+
+		private final ConverterRegistration delegate;
+		private final ConverterOrigin origin;
+
+		ConverterRegistrationIntent(ConverterRegistration delegate, ConverterOrigin origin) {
+			this.delegate = delegate;
+			this.origin = origin;
+		}
+
+		static ConverterRegistrationIntent userConverters(ConverterRegistration delegate) {
+			return new ConverterRegistrationIntent(delegate, ConverterOrigin.USER_DEFINED);
+		}
+
+		static ConverterRegistrationIntent storeConverters(ConverterRegistration delegate) {
+			return new ConverterRegistrationIntent(delegate, ConverterOrigin.STORE);
+		}
+
+		static ConverterRegistrationIntent defaultConverters(ConverterRegistration delegate) {
+			return new ConverterRegistrationIntent(delegate, ConverterOrigin.DEFAULT);
+		}
+
+		Class<?> getSourceType() {
+			return delegate.getConvertiblePair().getSourceType();
+		}
+
+		Class<?> getTargetType() {
+			return delegate.getConvertiblePair().getTargetType();
+		}
+
+		public boolean isWriting() {
+			return delegate.isWriting();
+		}
+
+		public boolean isReading() {
+			return delegate.isReading();
+		}
+
+		public boolean isSimpleSourceType() {
+			return delegate.isSimpleSourceType();
+		}
+
+		public boolean isSimpleTargetType() {
+			return delegate.isSimpleTargetType();
+		}
+
+		public boolean isUserConverter() {
+			return isConverterOfSource(ConverterOrigin.USER_DEFINED);
+		}
+
+		public boolean isDefaultConveter() {
+			return isConverterOfSource(ConverterOrigin.DEFAULT);
+		}
+
+		public ConverterRegistration getConverterRegistration() {
+			return delegate;
+		}
+
+		private boolean isConverterOfSource(ConverterOrigin source) {
+			return origin.equals(source);
+		}
+
+		protected enum ConverterOrigin {
+			DEFAULT, USER_DEFINED, STORE
+		}
+	}
+
+	/**
 	 * Conversion registration information.
 	 *
 	 * @author Oliver Gierke
 	 * @author Mark Paluch
 	 */
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	static class ConverterRegistration {
+	private static class ConverterRegistration {
 
+		private final Object converter;
 		private final @NonNull ConvertiblePair convertiblePair;
 		private final @NonNull StoreConversions storeConversions;
 		private final boolean reading;
@@ -499,6 +682,13 @@ public class CustomConversions {
 		 */
 		public boolean isSimpleTargetType() {
 			return storeConversions.isStoreSimpleType(convertiblePair.getTargetType());
+		}
+
+		/**
+		 * @return
+		 */
+		Object getConverter() {
+			return converter;
 		}
 	}
 
@@ -575,7 +765,7 @@ public class CustomConversions {
 
 				return convertibleTypes == null //
 						? Streamable.empty() //
-						: Streamable.of(convertibleTypes).map(it -> register(it, isReading, isWriting));
+						: Streamable.of(convertibleTypes).map(it -> register(converter, it, isReading, isWriting));
 
 			} else if (converter instanceof ConverterFactory) {
 
@@ -600,19 +790,85 @@ public class CustomConversions {
 				throw new IllegalStateException(String.format("Couldn't resolve type arguments for %s!", converterType));
 			}
 
-			return Streamable.of(register(arguments[0], arguments[1], isReading, isWriting));
+			return Streamable.of(register(converter, arguments[0], arguments[1], isReading, isWriting));
 		}
 
-		private ConverterRegistration register(Class<?> source, Class<?> target, boolean isReading, boolean isWriting) {
-			return register(new ConvertiblePair(source, target), isReading, isWriting);
+		private ConverterRegistration register(Object converter, Class<?> source, Class<?> target, boolean isReading,
+				boolean isWriting) {
+			return register(converter, new ConvertiblePair(source, target), isReading, isWriting);
 		}
 
-		private ConverterRegistration register(ConvertiblePair pair, boolean isReading, boolean isWriting) {
-			return new ConverterRegistration(pair, this, isReading, isWriting);
+		private ConverterRegistration register(Object converter, ConvertiblePair pair, boolean isReading,
+				boolean isWriting) {
+			return new ConverterRegistration(converter, pair, this, isReading, isWriting);
 		}
 
 		private boolean isStoreSimpleType(Class<?> type) {
 			return storeTypeHolder.isSimpleType(type);
+		}
+	}
+
+	/**
+	 * Value object holding the actual {@link StoreConversions} and custom {@link Converter converters} configured for
+	 * registration.
+	 * 
+	 * @author Christoph Strobl
+	 * @since 2.3
+	 */
+	protected static class ConverterConfiguration {
+
+		private final StoreConversions storeConversions;
+		private final List<?> userConverters;
+		private final Set<ConvertiblePair> skipFor;
+
+		/**
+		 * Create a new ConverterConfiguration holding the given {@link StoreConversions} and user defined converters.
+		 *
+		 * @param storeConversions must not be {@literal null}.
+		 * @param userConverters must not be {@literal null} use {@link Collections#emptyList()} instead.
+		 */
+		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters) {
+			this(storeConversions, userConverters, Collections.emptySet());
+		}
+
+		/**
+		 * Create a new ConverterConfiguration holding the given {@link StoreConversions} and user defined converters as
+		 * well as a {@link Collection} of {@link ConvertiblePair} for which to skip the registration of default converters.
+		 * <br />
+		 * This allows store implementations to modify default converter registration based on specific needs and
+		 * configurations. User defined converters will are never subject of filtering.
+		 *
+		 * @param storeConversions must not be {@literal null}.
+		 * @param userConverters must not be {@literal null} use {@link Collections#emptyList()} instead.
+		 * @param skipFor must not be {@literal null} use {@link Collections#emptyList()} instead.
+		 */
+		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters,
+				Collection<ConvertiblePair> skipFor) {
+
+			this.storeConversions = storeConversions;
+			this.userConverters = new ArrayList<>(userConverters);
+			this.skipFor = new HashSet<>(skipFor);
+		}
+
+		/**
+		 * @return never {@literal null}
+		 */
+		StoreConversions getStoreConversions() {
+			return storeConversions;
+		}
+
+		/**
+		 * @return never {@literal null}.
+		 */
+		List<?> getUserConverters() {
+			return userConverters;
+		}
+
+		/**
+		 * @return never {@literal null}.
+		 */
+		Set<ConvertiblePair> getSkipFor() {
+			return skipFor;
 		}
 	}
 }
