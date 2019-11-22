@@ -54,8 +54,8 @@ import org.springframework.util.Assert;
 @Slf4j
 public class CustomConversions {
 
-	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type! You might wanna check you annotation setup at the converter implementation.";
-	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type! You might wanna check you annotation setup at the converter implementation.";
+	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type! You might wanna check your annotation setup at the converter implementation.";
+	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type! You might wanna check your annotation setup at the converter implementation.";
 	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory!";
 	private static final List<Object> DEFAULT_CONVERTERS;
 
