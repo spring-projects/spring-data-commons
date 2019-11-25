@@ -27,16 +27,19 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.joda.time.DateTime;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.core.convert.converter.ConverterRegistry;
+import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
+import org.springframework.data.convert.CustomConversions.ConverterConfiguration;
 import org.springframework.data.convert.CustomConversions.StoreConversions;
+import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter;
 import org.springframework.data.convert.ThreeTenBackPortConverters.LocalDateTimeToJavaTimeInstantConverter;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.threeten.bp.LocalDateTime;
@@ -50,6 +53,15 @@ import org.threeten.bp.LocalDateTime;
  * @since 2.0
  */
 public class CustomConversionsUnitTests {
+
+	static final SimpleTypeHolder DATE_EXCLUDING_SIMPLE_TYPE_HOLDER = new SimpleTypeHolder(
+			Collections.singleton(Date.class), true) {
+
+		@Override
+		public boolean isSimpleType(Class<?> type) {
+			return type.getName().startsWith("java.time") ? false : super.isSimpleType(type);
+		}
+	};
 
 	@Test // DATACMNS-1035
 	public void findsBasicReadAndWriteConversions() {
@@ -199,23 +211,47 @@ public class CustomConversionsUnitTests {
 	public void skipsUnsupportedDefaultWritingConverter() {
 
 		ConverterRegistry registry = mock(ConverterRegistry.class);
-		StoreConversions storeConversions = StoreConversions
-				.of(new SimpleTypeHolder(Collections.singleton(Date.class), true) {
 
-					@Override
-					public boolean isSimpleType(Class<?> type) {
-
-						if (type.getName().startsWith("java.time")) {
-							return false;
-						}
-
-						return super.isSimpleType(type);
-					}
-				});
-
-		new CustomConversions(storeConversions, Collections.emptyList()).registerConvertersIn(registry);
+		new CustomConversions(StoreConversions.of(DATE_EXCLUDING_SIMPLE_TYPE_HOLDER), Collections.emptyList())
+				.registerConvertersIn(registry);
 
 		verify(registry, never()).addConverter(any(LocalDateTimeToJavaTimeInstantConverter.class));
+	}
+
+	@Test // DATACMNS-1615
+	public void doesNotSkipUnsupportedUserConverter() {
+
+		ConverterRegistry registry = mock(ConverterRegistry.class);
+
+		new CustomConversions(StoreConversions.of(DATE_EXCLUDING_SIMPLE_TYPE_HOLDER),
+				Collections.singletonList(LocalDateTimeToJavaTimeInstantConverter.INSTANCE)).registerConvertersIn(registry);
+
+		verify(registry).addConverter(any(LocalDateTimeToJavaTimeInstantConverter.class));
+	}
+
+	@Test // DATACMNS-1615
+	public void skipsConverterBasedOnConfiguration() {
+
+		ConverterRegistry registry = mock(ConverterRegistry.class);
+
+		ConverterConfiguration config = new ConverterConfiguration(StoreConversions.NONE, Collections.emptyList(),
+				Collections.singleton(new ConvertiblePair(java.time.LocalDateTime.class, Date.class)));
+		new CustomConversions(config).registerConvertersIn(registry);
+
+		verify(registry, never()).addConverter(any(LocalDateTimeToDateConverter.class));
+	}
+
+	@Test // DATACMNS-1615
+	public void doesNotSkipUserConverterConverterEvenWhenConfigurationWouldNotAllowIt() {
+
+		ConverterRegistry registry = mock(ConverterRegistry.class);
+
+		ConverterConfiguration config = new ConverterConfiguration(StoreConversions.NONE,
+				Collections.singletonList(LocalDateTimeToDateConverter.INSTANCE),
+				Collections.singleton(new ConvertiblePair(java.time.LocalDateTime.class, Date.class)));
+		new CustomConversions(config).registerConvertersIn(registry);
+
+		verify(registry).addConverter(any(LocalDateTimeToDateConverter.class));
 	}
 
 	private static Class<?> createProxyTypeFor(Class<?> type) {
