@@ -49,8 +49,8 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PagedResourcesAssemblerArgumentResolver.class);
 
-	private static final String SUPERFLOUS_QUALIFIER = "Found qualified {} parameter, but a unique unqualified {} parameter. Using that one, but you might wanna check your controller method configuration!";
-	private static final String PARAMETER_AMBIGUITY = "Discovered muliple parameters of type Pageable but no qualifier annotations to disambiguate!";
+	private static final String SUPERFLOUS_QUALIFIER = "Found qualified {} parameter, but a unique unqualified {} parameter. Using that one, but you might want to check your controller method configuration!";
+	private static final String PARAMETER_AMBIGUITY = "Discovered multiple parameters of type Pageable but no qualifier annotations to disambiguate!";
 
 	private final HateoasPageableHandlerMethodArgumentResolver resolver;
 	private final MethodLinkBuilderFactory<?> linkBuilderFactory;
