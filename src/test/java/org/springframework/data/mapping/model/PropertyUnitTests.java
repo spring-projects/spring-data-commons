@@ -18,7 +18,7 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 import org.junit.Test;
 import org.springframework.data.util.ClassTypeInformation;
@@ -96,7 +96,7 @@ public class PropertyUnitTests {
 	}
 
 	@Value
-	@Wither
+	@With
 	static class WitherType {
 
 		String id;

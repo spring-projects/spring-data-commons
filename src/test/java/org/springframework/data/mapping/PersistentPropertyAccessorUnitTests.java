@@ -22,7 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -41,6 +41,7 @@ import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 
 /**
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class PersistentPropertyAccessorUnitTests {
 
@@ -204,13 +205,13 @@ public class PersistentPropertyAccessorUnitTests {
 	// DATACMNS-1322
 
 	@Value
-	@Wither(AccessLevel.PACKAGE)
+	@With(AccessLevel.PACKAGE)
 	static class NestedImmutable {
 		String value;
 	}
 
 	@Value
-	@Wither(AccessLevel.PACKAGE)
+	@With(AccessLevel.PACKAGE)
 	static class Outer {
 		NestedImmutable immutable;
 	}

@@ -19,7 +19,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import lombok.experimental.Wither;
+import lombok.With;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
  * Default implementation of {@link ExampleMatcher}.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 2.0
  */
 @ToString
@@ -44,7 +45,7 @@ class TypedExampleMatcher implements ExampleMatcher {
 	private final PropertySpecifiers propertySpecifiers;
 	private final Set<String> ignoredPaths;
 	private final boolean defaultIgnoreCase;
-	private final @Wither(AccessLevel.PACKAGE) MatchMode mode;
+	private final @With(AccessLevel.PACKAGE) MatchMode mode;
 
 	TypedExampleMatcher() {
 

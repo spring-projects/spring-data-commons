@@ -19,7 +19,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Wither;
+import lombok.With;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -44,12 +44,13 @@ import org.springframework.lang.Nullable;
  * factory methods on {@link ConverterBuilder} to create instances of this class.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 2.0
  * @see ConverterBuilder#writing(Class, Class, Function)
  * @see ConverterBuilder#reading(Class, Class, Function)
  * @soundtrack John Mayer - Still Feel Like Your Man (The Search for Everything)
  */
-@Wither(AccessLevel.PACKAGE)
+@With(AccessLevel.PACKAGE)
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 class DefaultConverterBuilder<S, T>
 		implements ConverterAware, ReadingConverterBuilder<T, S>, WritingConverterBuilder<S, T> {

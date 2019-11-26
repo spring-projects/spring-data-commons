@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import lombok.Data;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -217,7 +217,7 @@ public class PersistentPropertyAccessorTests {
 	@Value
 
 	static class ValueClass {
-		@Wither String id;
+		@With String id;
 		String immutable;
 	}
 

@@ -73,7 +73,7 @@ Unless already populated by the entity's constructor (i.e. consumed through its 
 After that, all non-transient properties that have not already been populated by the constructor are set on the entity instance.
 For that we use the following algorithm:
 
-1. If the property is immutable but exposes a wither method (see below), we use the wither to create a new entity instance with the new property value.
+1. If the property is immutable but exposes a `with…` method (see below), we use the `with…` method to create a new entity instance with the new property value.
 2. If property access (i.e. access through getters and setters) is defined, we're invoking the setter method.
 3. By default, we set the field value directly.
 
@@ -82,7 +82,7 @@ For that we use the following algorithm:
 ****
 Similarly to our <<mapping.object-creation.details,optimizations in object construction>> we also use Spring Data runtime generated accessor classes to interact with the entity instance.
 
-[source, java]
+[source,java]
 ----
 class Person {
 
@@ -197,7 +197,7 @@ The same pattern is usually applied for other properties that are store managed 
 <2> The `firstname` and `lastname` properties are ordinary immutable properties potentially exposed through getters.
 <3> The `age` property is an immutable but derived one from the `birthday` property.
 With the design shown, the database value will trump the defaulting as Spring Data uses the only declared constructor.
-Even if the intent is that the calculation should be preferred, it's important that this constructor also takes `age` as parameter (to potentially ignore it) as otherwise the property population step will attempt to set the age field and fail due to it being immutable and no wither being present.
+Even if the intent is that the calculation should be preferred, it's important that this constructor also takes `age` as parameter (to potentially ignore it) as otherwise the property population step will attempt to set the age field and fail due to it being immutable and no `with…` method being present.
 <4> The `comment` property is mutable is populated by setting its field directly.
 <5> The `remarks` properties are mutable and populated by setting the `comment` field directly or by invoking the setter method for
 <6> The class exposes a factory method and a constructor for object creation.
@@ -214,7 +214,7 @@ Constructor-only materialization is up to 30% faster than properties population.
 * _Use factory methods instead of overloaded constructors to avoid ``@PersistenceConstructor``_ -- With an all-argument constructor needed for optimal performance, we usually want to expose more application use case specific constructors that omit things like auto-generated identifiers etc.
 It's an established pattern to rather use static factory methods to expose these variants of the all-args constructor.
 * _Make sure you adhere to the constraints that allow the generated instantiator and property accessor classes to be used_ --
-* _For identifiers to be generated, still use a final field in combination with a wither method_ --
+* _For identifiers to be generated, still use a final field in combination with a `with…` method_ --
 * _Use Lombok to avoid boilerplate code_ -- As persistence operations usually require a constructor taking all arguments, their declaration becomes a tedious repetition of boilerplate parameter to field assignments that can best be avoided by using Lombok's `@AllArgsConstructor`.
 
 [[mapping.kotlin]]
@@ -224,7 +224,8 @@ Spring Data adapts specifics of Kotlin to allow object creation and mutation.
 
 === Kotlin object creation
 
-Kotlin classes are supported to be instantiated , all classes are immutable by default and require explicit property declarations to define mutable properties. Consider the following `data` class `Person`:
+Kotlin classes are supported to be instantiated , all classes are immutable by default and require explicit property declarations to define mutable properties.
+Consider the following `data` class `Person`:
 
 ====
 [source,java]

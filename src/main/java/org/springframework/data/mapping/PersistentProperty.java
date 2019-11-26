@@ -114,11 +114,11 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Returns the wither {@link Method} to set a property value on a new object instance. Might return {@literal null} in
-	 * case there is no wither available.
+	 * Returns the with {@link Method} to set a property value on a new object instance. Might return {@literal null} in
+	 * case there is no with available.
 	 * <p/>
-	 * Wither {@link Method methods} are property-bound instance {@link Method methods} that accept a single argument of
-	 * the property type creating a new object instance.
+	 * With {@link Method methods} are property-bound instance {@link Method methods} that accept a single argument of the
+	 * property type creating a new object instance.
 	 *
 	 * <pre class="code">
 	 * class Person {
@@ -133,7 +133,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * }
 	 * </pre>
 	 *
-	 * @return the wither {@link Method} to set a property value on a new object instance if available, otherwise
+	 * @return the with {@link Method} to set a property value on a new object instance if available, otherwise
 	 *         {@literal null}.
 	 * @since 2.1
 	 */
