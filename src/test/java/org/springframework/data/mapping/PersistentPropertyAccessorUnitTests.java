@@ -40,6 +40,8 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 
 /**
+ * Unit tests for {@link PersistentPropertyAccessor}.
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  */

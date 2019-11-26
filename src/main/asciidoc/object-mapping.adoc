@@ -160,7 +160,7 @@ class Person {
   private final @Id Long id;                                                <1>
   private final String firstname, lastname;                                 <2>
   private final LocalDate birthday;
-  private final int age; <3>
+  private final int age;                                                    <3>
 
   private String comment;                                                   <4>
   private @AccessType(Type.PROPERTY) String remarks;                        <5>
