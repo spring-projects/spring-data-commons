@@ -53,6 +53,7 @@ import org.springframework.util.StopWatch;
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 @Slf4j
 public class RepositoryConfigurationDelegate {
@@ -123,7 +124,8 @@ public class RepositoryConfigurationDelegate {
 			RepositoryConfigurationExtension extension) {
 
 		if (LOG.isInfoEnabled()) {
-			LOG.info("Bootstrapping Spring Data repositories in {} mode.", configurationSource.getBootstrapMode().name());
+			LOG.info("Bootstrapping Spring Data {} repositories in {} mode.", //
+					extension.getModuleName(), configurationSource.getBootstrapMode().name());
 		}
 
 		extension.registerBeansForRoot(registry, configurationSource);
@@ -135,7 +137,8 @@ public class RepositoryConfigurationDelegate {
 		StopWatch watch = new StopWatch();
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Scanning for repositories in packages {}.",
+			LOG.debug("Scanning for {} repositories in packages {}.", //
+					extension.getModuleName(), //
 					configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
 		}
 
@@ -179,8 +182,8 @@ public class RepositoryConfigurationDelegate {
 		watch.stop();
 
 		if (LOG.isInfoEnabled()) {
-			LOG.info("Finished Spring Data repository scanning in {}ms. Found {} repository interfaces.", //
-					watch.getLastTaskTimeMillis(), configurations.size());
+			LOG.info("Finished Spring Data repository scanning in {}ms. Found {} {} repository interfaces.", //
+					watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName());
 		}
 
 		return definitions;
