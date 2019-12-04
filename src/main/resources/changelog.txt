@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.3.RELEASE (2019-12-04)
+---------------------------------------------
+* DATACMNS-1631 - Fix spelling in reference documentation.
+* DATACMNS-1629 - Log module name in RepositoryConfigurationDelegate during repository scanning.
+* DATACMNS-1626 - Add attribute to projection documentation for reuse with R2DBC.
+* DATACMNS-1622 - Release 2.2.3 (Moore SR3).
+* DATACMNS-1603 - Reword "wanna" exception messages.
+
+
 Changes in version 2.1.14.RELEASE (2019-12-04)
 ----------------------------------------------
 * DATACMNS-1631 - Fix spelling in reference documentation.
@@ -2557,5 +2566,6 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
