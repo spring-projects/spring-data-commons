@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.14.RELEASE (2019-12-04)
+----------------------------------------------
+* DATACMNS-1631 - Fix spelling in reference documentation.
+* DATACMNS-1629 - Log module name in RepositoryConfigurationDelegate during repository scanning.
+* DATACMNS-1621 - Release 2.1.14 (Lovelace SR14).
+* DATACMNS-1603 - Reword "wanna" exception messages.
+
+
 Changes in version 2.2.2.RELEASE (2019-11-18)
 ---------------------------------------------
 * DATACMNS-1618 - Set loglevel for java.time converters to debug (temporary fix).
@@ -2549,4 +2557,5 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
