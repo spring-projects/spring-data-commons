@@ -28,10 +28,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.classloadersupport.HidingClassLoader;
-import org.springframework.data.classloadersupport.ShadowingClassLoader;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.instrument.classloading.ShadowingClassLoader;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 import org.xmlbeam.XBProjector;
