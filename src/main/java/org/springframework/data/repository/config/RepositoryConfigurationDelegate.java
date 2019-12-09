@@ -164,7 +164,6 @@ public class RepositoryConfigurationDelegate {
 			}
 
 			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
-			beanDefinition.setPrimary(configuration.isPrimary());
 			beanDefinition.setResourceDescription(configuration.getResourceDescription());
 
 			String beanName = configurationSource.generateBeanName(beanDefinition);

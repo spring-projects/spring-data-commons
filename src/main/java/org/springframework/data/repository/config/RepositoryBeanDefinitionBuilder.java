@@ -102,6 +102,7 @@ class RepositoryBeanDefinitionBuilder {
 		builder.addPropertyValue("queryLookupStrategyKey", configuration.getQueryLookupStrategyKey());
 		builder.addPropertyValue("lazyInit", configuration.isLazyInit());
 		builder.setLazyInit(configuration.isLazyInit());
+		builder.setPrimary(configuration.isPrimary());
 
 		configuration.getRepositoryBaseClassName()//
 				.ifPresent(it -> builder.addPropertyValue("repositoryBaseClass", it));

@@ -38,7 +38,6 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AspectJTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
@@ -124,7 +123,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		}
 
 		this.attributes = new AnnotationAttributes(annotationAttributes);
-		this.enableAnnotationMetadata = new StandardAnnotationMetadata(annotation);
+		this.enableAnnotationMetadata = AnnotationMetadata.introspect(annotation);
 		this.configMetadata = metadata;
 		this.resourceLoader = resourceLoader;
 		this.hasExplicitFilters = hasExplicitFilters(attributes);
