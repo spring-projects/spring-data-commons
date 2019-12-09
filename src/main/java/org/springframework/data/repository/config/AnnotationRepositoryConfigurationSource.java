@@ -321,6 +321,19 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getResourceDescription()
+	 */
+	@Override
+	public String getResourceDescription() {
+
+		String simpleClassName = ClassUtils.getShortName(configMetadata.getClassName());
+		String annoationClassName = ClassUtils.getShortName(enableAnnotationMetadata.getClassName());
+
+		return String.format("@%s declared on %s", annoationClassName, simpleClassName);
+	}
+
 	private Streamable<TypeFilter> parseFilters(String attributeName) {
 
 		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);

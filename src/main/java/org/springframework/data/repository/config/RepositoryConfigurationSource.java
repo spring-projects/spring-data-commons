@@ -171,4 +171,13 @@ public interface RepositoryConfigurationSource {
 	 * @since 2.1
 	 */
 	BootstrapMode getBootstrapMode();
+
+	/**
+	 * Returns a human readable description of the repository configuration source for error reporting purposes.
+	 *
+	 * @return can be {@literal null}.
+	 * @since 2.3
+	 */
+	@Nullable
+	String getResourceDescription();
 }

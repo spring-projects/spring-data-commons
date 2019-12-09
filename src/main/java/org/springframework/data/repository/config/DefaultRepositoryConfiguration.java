@@ -214,4 +214,14 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 
 		return toImplementationDetectionConfiguration(factory).forRepositoryConfiguration(this);
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getResourceDescription()
+	 */
+	@Override
+	@org.springframework.lang.NonNull
+	public String getResourceDescription() {
+		return String.format("%s defined in %s", getRepositoryInterface(), configurationSource.getResourceDescription());
+	}
 }

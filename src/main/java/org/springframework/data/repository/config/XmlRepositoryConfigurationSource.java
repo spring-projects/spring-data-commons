@@ -31,6 +31,7 @@ import org.springframework.data.config.TypeFilterParser.Type;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.util.ParsingUtils;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -242,6 +243,19 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return StringUtils.hasText(attribute) //
 				? BootstrapMode.valueOf(attribute.toUpperCase(Locale.US)) //
 				: BootstrapMode.DEFAULT;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getResourceDescription()
+	 */
+	@Override
+	@NonNull
+	public String getResourceDescription() {
+
+		Object source = getSource();
+
+		return source == null ? "" : source.toString();
 	}
 
 	/**

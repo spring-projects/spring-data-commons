@@ -26,6 +26,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupportUnitTests.DummyConfigurationExtension;
+import org.springframework.util.ClassUtils;
 
 /**
  * Integration tests for {@link RepositoryBeanDefinitionRegistrarSupport}.
@@ -90,5 +91,16 @@ public class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 	@Test // DATACMNS-102
 	public void composedRepositoriesShouldBeAssembledCorrectly() {
 		assertThat(context.getBean(ComposedRepository.class).getOne()).isEqualTo("one");
+	}
+
+	@Test // DATACMNS-1620
+	public void registeredBeanDefinitionsContainHumanReadableResourceDescription() {
+
+		BeanDefinition definition = context.getBeanDefinition("myRepository");
+
+		assertThat(definition.getResourceDescription()) //
+				.contains(MyRepository.class.getName()) //
+				.contains(EnableRepositories.class.getSimpleName()) //
+				.contains(ClassUtils.getShortName(SampleConfig.class));
 	}
 }

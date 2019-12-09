@@ -139,4 +139,12 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 */
 	ImplementationLookupConfiguration toLookupConfiguration(MetadataReaderFactory factory);
 
+	/**
+	 * Returns a human readable description of the repository interface declaration for error reporting purposes.
+	 *
+	 * @return can be {@literal null}.
+	 * @since 2.3
+	 */
+	@Nullable
+	String getResourceDescription();
 }
