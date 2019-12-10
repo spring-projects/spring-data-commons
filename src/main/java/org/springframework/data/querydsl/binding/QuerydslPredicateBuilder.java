@@ -91,7 +91,7 @@ public class QuerydslPredicateBuilder {
 		BooleanBuilder builder = new BooleanBuilder();
 
 		if (values.isEmpty()) {
-			return builder;
+			return builder.getValue();
 		}
 
 		for (Entry<String, List<String>> entry : values.entrySet()) {
