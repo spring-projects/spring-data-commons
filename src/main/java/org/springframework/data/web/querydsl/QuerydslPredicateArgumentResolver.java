@@ -21,9 +21,11 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
@@ -38,6 +40,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 
 /**
@@ -49,6 +52,10 @@ import com.querydsl.core.types.Predicate;
  * @since 1.11
  */
 public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentResolver {
+
+	private static final ResolvableType PREDICATE = ResolvableType.forClass(Predicate.class);
+	private static final ResolvableType OPTIONAL_OF_PREDICATE = ResolvableType.forClassWithGenerics(Optional.class,
+			PREDICATE);
 
 	private final QuerydslBindingsFactory bindingsFactory;
 	private final QuerydslPredicateBuilder predicateBuilder;
@@ -74,7 +81,9 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 
-		if (Predicate.class.equals(parameter.getParameterType())) {
+		ResolvableType type = ResolvableType.forMethodParameter(parameter);
+
+		if (PREDICATE.isAssignableFrom(type) || OPTIONAL_OF_PREDICATE.isAssignableFrom(type)) {
 			return true;
 		}
 
@@ -92,7 +101,7 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 	 */
 	@Nullable
 	@Override
-	public Predicate resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
+	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
 		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
@@ -105,13 +114,23 @@ public class QuerydslPredicateArgumentResolver implements HandlerMethodArgumentR
 				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
 		TypeInformation<?> domainType = extractTypeInfo(parameter).getRequiredActualType();
 
-		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindings = annotation//
-				.map(QuerydslPredicate::bindings)//
+		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindingsAnnotation = annotation //
+				.map(QuerydslPredicate::bindings) //
 				.map(CastUtils::cast);
 
-		return predicateBuilder.getPredicate(domainType, parameters,
-				bindings.map(it -> bindingsFactory.createBindingsFor(domainType, it))
-						.orElseGet(() -> bindingsFactory.createBindingsFor(domainType)));
+		QuerydslBindings bindings = bindingsAnnotation //
+				.map(it -> bindingsFactory.createBindingsFor(domainType, it)) //
+				.orElseGet(() -> bindingsFactory.createBindingsFor(domainType));
+
+		Predicate result = predicateBuilder.getPredicate(domainType, parameters, bindings);
+
+		if (!parameter.isOptional() && result == null) {
+			return new BooleanBuilder();
+		}
+
+		return OPTIONAL_OF_PREDICATE.isAssignableFrom(ResolvableType.forMethodParameter(parameter)) //
+				? Optional.ofNullable(result) //
+				: result;
 	}
 
 	/**

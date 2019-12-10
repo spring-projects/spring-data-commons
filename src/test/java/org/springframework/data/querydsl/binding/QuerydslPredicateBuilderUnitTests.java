@@ -38,7 +38,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.querydsl.collections.CollQueryFactory;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Constant;
 import com.querydsl.core.types.Predicate;
 
@@ -75,9 +74,8 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-669, DATACMNS-1168
-	public void getPredicateShouldReturnEmptyPredicateWhenPropertiesAreEmpty() {
-		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS))
-				.isEqualTo(new BooleanBuilder());
+	public void getPredicateShouldReturnNullWhenPropertiesAreEmpty() {
+		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS)).isNull();
 	}
 
 	@Test // DATACMNS-669
@@ -87,7 +85,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		assertThat(predicate).isEqualTo((Predicate) QUser.user.firstname.eq("Oliver"));
+		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("Oliver"));
 
 		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
 
