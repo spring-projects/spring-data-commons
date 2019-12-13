@@ -23,4 +23,4 @@ package org.springframework.data.repository
  * @author Sebastien Deleuze
  * @since 2.1.4
  */
-fun <T, ID> CrudRepository<T, ID>.findByIdOrNull(id: ID): T? = findById(id).orElse(null)
+fun <T, ID: Any> CrudRepository<T, ID>.findByIdOrNull(id: ID): T? = findById(id).orElse(null)
