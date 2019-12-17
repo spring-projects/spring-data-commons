@@ -35,7 +35,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -196,8 +195,14 @@ public class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
 
 		assertThat(accessor).isNotInstanceOf(BeanWrapper.class);
-		assertThat(accessor.getClass().getName()).contains("_Accessor_");
-		assertThat(accessor.getBean()).isEqualTo(value);
+
+		assertThat(accessor).isInstanceOfSatisfying(InstantiationAwarePropertyAccessor.class, it -> {
+
+			PersistentPropertyAccessor delegate = (PersistentPropertyAccessor) ReflectionTestUtils.getField(it, "delegate");
+
+			assertThat(delegate.getClass().getName()).contains("_Accessor_");
+			assertThat(delegate.getBean()).isEqualTo(value);
+		});
 	}
 
 	@Test // DATACMNS-596

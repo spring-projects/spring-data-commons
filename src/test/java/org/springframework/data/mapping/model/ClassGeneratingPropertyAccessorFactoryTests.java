@@ -150,7 +150,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		assertThat(getProperty(new Dummy(), "dummy"))
 				.satisfies(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
-				.isThrownBy(() -> getPersistentPropertyAccessor(bean).getProperty(property)));
+						.isThrownBy(() -> getPersistentPropertyAccessor(bean).getProperty(property)));
 	}
 
 	@Test // DATACMNS-809
@@ -158,7 +158,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		assertThat(getProperty(new Dummy(), "dummy"))
 				.satisfies(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
-				.isThrownBy(() -> getPersistentPropertyAccessor(bean).setProperty(property, Optional.empty())));
+						.isThrownBy(() -> getPersistentPropertyAccessor(bean).setProperty(property, Optional.empty())));
 	}
 
 	@Test // DATACMNS-809
@@ -168,7 +168,10 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 				.getRequiredPersistentEntity(bean.getClass());
 
 		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"))
-				.isInstanceOf(ClassGeneratingPropertyAccessorFactory.class);
+				.isInstanceOfSatisfying(InstantiationAwarePropertyAccessorFactory.class, it -> {
+					assertThat(ReflectionTestUtils.getField(it, "delegate"))
+							.isInstanceOf(ClassGeneratingPropertyAccessorFactory.class);
+				});
 	}
 
 	private PersistentPropertyAccessor getPersistentPropertyAccessor(Object bean) {

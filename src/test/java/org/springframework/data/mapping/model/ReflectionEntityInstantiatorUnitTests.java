@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.convert;
+package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.convert.ReflectionEntityInstantiator.*;
+import static org.springframework.data.mapping.model.ReflectionEntityInstantiator.*;
 import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.lang.reflect.Constructor;
@@ -28,15 +29,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.data.convert.ReflectionEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
-import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.mapping.model.MappingInstantiationException;
-import org.springframework.data.mapping.model.ParameterValueProvider;
-import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
+import org.springframework.data.mapping.model.ReflectionEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.util.ReflectionUtils;
 
 /**

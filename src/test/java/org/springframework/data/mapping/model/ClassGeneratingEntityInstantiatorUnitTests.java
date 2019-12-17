@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.convert;
+package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.util.ClassTypeInformation.from;
 
@@ -29,16 +30,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.classloadersupport.HidingClassLoader;
-import org.springframework.data.convert.ClassGeneratingEntityInstantiator.ObjectInstantiator;
-import org.springframework.data.convert.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
-import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.mapping.model.MappingInstantiationException;
-import org.springframework.data.mapping.model.ParameterValueProvider;
-import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
+import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator.ObjectInstantiator;
+import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -363,11 +360,10 @@ public class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProp
 	public void shouldUseReflectionIfFrameworkTypesNotVisible() throws Exception {
 
 		HidingClassLoader classLoader = HidingClassLoader.hide(ObjectInstantiator.class);
-		classLoader.excludePackage("org.springframework.data.mapping.model");
+		classLoader.excludePackage("org.springframework.data.mapping");
 
 		// require type from different package to meet visibility quirks
-		Class<?> entityType = classLoader
-				.loadClass("org.springframework.data.mapping.model.PersistentPropertyAccessorTests$ClassLoaderTest");
+		Class<?> entityType = classLoader.loadClass("org.springframework.data.mapping.Person");
 
 		prepareMocks(entityType);
 

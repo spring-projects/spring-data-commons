@@ -139,7 +139,10 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 				.getRequiredPersistentEntity(bean.getClass());
 
 		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"))
-				.isInstanceOf(ClassGeneratingPropertyAccessorFactory.class);
+				.isInstanceOfSatisfying(InstantiationAwarePropertyAccessorFactory.class, it -> {
+					assertThat(ReflectionTestUtils.getField(it, "delegate"))
+							.isInstanceOf(ClassGeneratingPropertyAccessorFactory.class);
+				});
 	}
 
 	private PersistentPropertyAccessor getPersistentPropertyAccessor(Object bean) {

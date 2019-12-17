@@ -13,32 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.convert;
+package org.springframework.data.mapping.model;
 
 import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.model.InternalEntityInstantiatorFactory;
+import org.springframework.util.Assert;
 
 /**
  * Simple value object allowing access to {@link EntityInstantiator} instances for a given type falling back to a
  * default one.
  *
- * @author Oliver Gierke
+ * @author Oliver Drotbohm
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
- * @deprecated since 2.3, use {@link org.springframework.data.mapping.model.EntityInstantiators} instead.
+ * @since 2.3
  */
-@Deprecated
-public class EntityInstantiators extends org.springframework.data.mapping.model.EntityInstantiators {
+public class EntityInstantiators {
+
+	private final EntityInstantiator fallback;
+	private final Map<Class<?>, EntityInstantiator> customInstantiators;
 
 	/**
 	 * Creates a new {@link EntityInstantiators} using the default fallback instantiator and no custom ones.
 	 */
 	public EntityInstantiators() {
-		super();
+		this(Collections.emptyMap());
 	}
 
 	/**
@@ -46,8 +48,8 @@ public class EntityInstantiators extends org.springframework.data.mapping.model.
 	 *
 	 * @param fallback must not be {@literal null}.
 	 */
-	public EntityInstantiators(org.springframework.data.mapping.model.EntityInstantiator fallback) {
-		super(fallback, Collections.emptyMap());
+	public EntityInstantiators(EntityInstantiator fallback) {
+		this(fallback, Collections.emptyMap());
 	}
 
 	/**
@@ -55,9 +57,8 @@ public class EntityInstantiators extends org.springframework.data.mapping.model.
 	 *
 	 * @param customInstantiators must not be {@literal null}.
 	 */
-	public EntityInstantiators(
-			Map<Class<?>, org.springframework.data.mapping.model.EntityInstantiator> customInstantiators) {
-		super(InternalEntityInstantiatorFactory.getKotlinClassGeneratingEntityInstantiator(), customInstantiators);
+	public EntityInstantiators(Map<Class<?>, EntityInstantiator> customInstantiators) {
+		this(new KotlinClassGeneratingEntityInstantiator(), customInstantiators);
 	}
 
 	/**
@@ -67,17 +68,32 @@ public class EntityInstantiators extends org.springframework.data.mapping.model.
 	 * @param defaultInstantiator must not be {@literal null}.
 	 * @param customInstantiators must not be {@literal null}.
 	 */
-	public EntityInstantiators(org.springframework.data.mapping.model.EntityInstantiator defaultInstantiator,
-			Map<Class<?>, org.springframework.data.mapping.model.EntityInstantiator> customInstantiators) {
-		super(defaultInstantiator, customInstantiators);
+	public EntityInstantiators(EntityInstantiator defaultInstantiator,
+			Map<Class<?>, EntityInstantiator> customInstantiators) {
+
+		Assert.notNull(defaultInstantiator, "DefaultInstantiator must not be null!");
+		Assert.notNull(customInstantiators, "CustomInstantiators must not be null!");
+
+		this.fallback = defaultInstantiator;
+		this.customInstantiators = customInstantiators;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.EntityInstantiators#getInstantiatorFor(org.springframework.data.mapping.PersistentEntity)
+	/**
+	 * Returns the {@link EntityInstantiator} to be used to create the given {@link PersistentEntity}.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @return will never be {@literal null}.
 	 */
-	@Override
 	public EntityInstantiator getInstantiatorFor(PersistentEntity<?, ?> entity) {
-		return new EntityInstantiatorAdapter(super.getInstantiatorFor(entity));
+
+		Assert.notNull(entity, "Entity must not be null!");
+		Class<?> type = entity.getType();
+
+		if (!customInstantiators.containsKey(type)) {
+			return fallback;
+		}
+
+		EntityInstantiator instantiator = customInstantiators.get(entity.getType());
+		return instantiator == null ? fallback : instantiator;
 	}
 }

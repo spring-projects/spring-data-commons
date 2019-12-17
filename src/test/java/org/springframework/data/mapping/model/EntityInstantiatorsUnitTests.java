@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.convert;
+package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -55,8 +55,7 @@ public class EntityInstantiatorsUnitTests {
 
 		doReturn(String.class).when(entity).getType();
 
-		Map<Class<?>, EntityInstantiator> customInstantiators = Collections
-				.singletonMap(String.class, customInstantiator);
+		Map<Class<?>, EntityInstantiator> customInstantiators = Collections.singletonMap(String.class, customInstantiator);
 
 		EntityInstantiators instantiators = new EntityInstantiators(customInstantiators);
 		assertThat(instantiators.getInstantiatorFor(entity)).isEqualTo(customInstantiator);
@@ -67,8 +66,8 @@ public class EntityInstantiatorsUnitTests {
 
 		doReturn(Object.class).when(entity).getType();
 
-		Map<Class<?>, EntityInstantiator> customInstantiators = Collections
-				.singletonMap(String.class, ReflectionEntityInstantiator.INSTANCE);
+		Map<Class<?>, EntityInstantiator> customInstantiators = Collections.singletonMap(String.class,
+				ReflectionEntityInstantiator.INSTANCE);
 
 		EntityInstantiators instantiators = new EntityInstantiators(customInstantiator, customInstantiators);
 		instantiators.getInstantiatorFor(entity);
@@ -76,7 +75,6 @@ public class EntityInstantiatorsUnitTests {
 		assertThat(instantiators.getInstantiatorFor(entity)).isEqualTo(customInstantiator);
 
 		doReturn(String.class).when(entity).getType();
-		assertThat(instantiators.getInstantiatorFor(entity))
-				.isEqualTo((EntityInstantiator) ReflectionEntityInstantiator.INSTANCE);
+		assertThat(instantiators.getInstantiatorFor(entity)).isEqualTo(ReflectionEntityInstantiator.INSTANCE);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,21 @@
  */
 package org.springframework.data.convert;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.model.InternalEntityInstantiatorFactory;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 
 /**
- * Kotlin-specific extension to {@link ClassGeneratingEntityInstantiator} that adapts Kotlin constructors with
- * defaulting.
+ * Adapter to bridge calls from the new APIs back to the legacy ones.
  *
- * @author Mark Paluch
- * @author Oliver Gierke
- * @since 2.0
- * @deprecated since 2.3, use {@link org.springframework.data.mapping.model.KotlinClassGeneratingEntityInstantiator}
- *             instead.
+ * @author Oliver Drotbohm
  */
-@Deprecated
-public class KotlinClassGeneratingEntityInstantiator implements EntityInstantiator {
+@RequiredArgsConstructor
+class EntityInstantiatorAdapter implements EntityInstantiator {
 
-	private final org.springframework.data.mapping.model.EntityInstantiator delegate = InternalEntityInstantiatorFactory
-			.getKotlinClassGeneratingEntityInstantiator();
+	private final org.springframework.data.mapping.model.EntityInstantiator delegate;
 
 	/*
 	 * (non-Javadoc)
