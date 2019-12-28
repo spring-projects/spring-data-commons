@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -35,6 +36,7 @@ import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.util.Lazy;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
@@ -45,6 +47,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Daniel Shuy
  * @since 1.8
  */
 public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrapperFactory {
@@ -105,6 +108,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> createdByPaths, createdDatePaths,
 				lastModifiedByPaths, lastModifiedDatePaths;
 
+		private final @Nullable OverwriteBehavior createdByOverwriteBehavior, createdDateOverwriteBehavior;
+
 		private final Lazy<Boolean> isAuditable;
 
 		/**
@@ -120,6 +125,12 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			this.createdDatePaths = findPropertyPaths(type, CreatedDate.class, context);
 			this.lastModifiedByPaths = findPropertyPaths(type, LastModifiedBy.class, context);
 			this.lastModifiedDatePaths = findPropertyPaths(type, LastModifiedDate.class, context);
+
+			Optional<CreatedBy> createdByAnnotation = findAnnotation(createdByPaths, CreatedBy.class);
+			Optional<CreatedDate> createdDateAnnotation = findAnnotation(createdDatePaths, CreatedDate.class);
+
+			createdByOverwriteBehavior = createdByAnnotation.map(CreatedBy::overwriteBehavior).orElse(null);
+			createdDateOverwriteBehavior = createdDateAnnotation.map(CreatedDate::overwriteBehavior).orElse(null);
 
 			this.isAuditable = Lazy.of( //
 					() -> Arrays.asList(createdByPaths, createdDatePaths, lastModifiedByPaths, lastModifiedDatePaths) //
@@ -144,6 +155,15 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return context //
 					.findPersistentPropertyPaths(type, withAnnotation(annotation)) //
 					.dropPathIfSegmentMatches(HAS_COLLECTION_PROPERTY);
+		}
+
+		private <A extends Annotation> Optional<A> findAnnotation(
+				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> persistentPropertyPaths, Class<A> annotationType) {
+
+			return persistentPropertyPaths.getFirst().flatMap(persistentProperties -> persistentProperties.stream() //
+					.map(persistentProperty -> persistentProperty.findAnnotation(annotationType)) //
+					.filter(Objects::nonNull) //
+					.findAny());
 		}
 
 		private static Predicate<PersistentProperty<?>> withAnnotation(Class<? extends Annotation> type) {
@@ -180,13 +200,35 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			this.metadata = metadata;
 		}
 
+		public Optional<?> getCreatedBy() {
+
+			return metadata.createdByPaths.getFirst() //
+					.map(accessor::getProperty);
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.lang.Object)
 		 */
 		@Override
 		public Object setCreatedBy(Object value) {
+
+			if (metadata.createdByOverwriteBehavior == OverwriteBehavior.SKIP) {
+				Optional<?> createdBy = getCreatedBy();
+				if (createdBy.isPresent()) {
+					return createdBy.get();
+				}
+			}
+
 			return setProperty(metadata.createdByPaths, value);
+		}
+
+		public Optional<TemporalAccessor> getCreatedDate() {
+
+			Optional<Object> firstValue = metadata.createdDatePaths.getFirst() //
+					.map(accessor::getProperty);
+
+			return getAsTemporalAccessor(firstValue, TemporalAccessor.class);
 		}
 
 		/*
@@ -195,6 +237,14 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 */
 		@Override
 		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
+
+			if (metadata.createdDateOverwriteBehavior == OverwriteBehavior.SKIP) {
+				Optional<TemporalAccessor> createdDate = getCreatedDate();
+				if (createdDate.isPresent()) {
+					return createdDate.get();
+				}
+			}
+
 			return setDateProperty(metadata.createdDatePaths, value);
 		}
 

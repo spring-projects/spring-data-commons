@@ -18,6 +18,8 @@ package org.springframework.data.auditing;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import lombok.Setter;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -52,6 +54,7 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Daniel Shuy
  * @since 1.8
  */
 public class MappingAuditableBeanWrapperFactoryUnitTests {
@@ -65,6 +68,9 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		context.getPersistentEntity(Sample.class);
 		context.getPersistentEntity(SampleWithInstant.class);
 		context.getPersistentEntity(WithEmbedded.class);
+		context.getPersistentEntity(AuditableWithOverwriteBehaviorDefault.class);
+		context.getPersistentEntity(AuditableWithOverwriteBehaviorOverwrite.class);
+		context.getPersistentEntity(AuditableWithOverwriteBehaviorSkip.class);
 
 		PersistentEntities entities = PersistentEntities.of(context);
 		factory = new MappingAuditableBeanWrapperFactory(entities);
@@ -261,6 +267,193 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1641
+	public void fieldWithOverwriteBehaviorDefaultInClassExtendingAuditableShouldBeOverwritten() {
+
+		String oldUser = "old";
+		Instant oldDate = Instant.now();
+
+		ExtendingAuditableWithOverwriteBehaviorDefault source = new ExtendingAuditableWithOverwriteBehaviorDefault();
+		source.setCreatedBy(oldUser);
+		source.setCreatedDate(oldDate);
+		source.setLastModifiedBy(oldUser);
+		source.setLastModifiedDate(oldDate);
+
+		Optional<AuditableBeanWrapper<ExtendingAuditableWithOverwriteBehaviorDefault>> wrapper = factory
+				.getBeanWrapperFor(source);
+
+		assertThat(wrapper).hasValueSatisfying(it -> {
+
+			assertThat(it).isInstanceOf(DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper.class);
+
+			String newUser = "new";
+			Instant newDate = Instant.now();
+
+			it.setCreatedBy(newUser);
+			it.setCreatedDate(newDate);
+			it.setLastModifiedBy(newUser);
+			it.setLastModifiedDate(newDate);
+
+			assertThat(source.getCreatedBy()).hasValue(newUser);
+			assertThat(source.getCreatedDate()).hasValue(newDate);
+			assertThat(source.getLastModifiedBy()).hasValue(newUser);
+			assertThat(source.getLastModifiedDate()).hasValue(newDate);
+		});
+	}
+
+	@Test // DATACMNS-1641
+	public void fieldWithOverwriteBehaviorOverwriteInClassExtendingAuditableShouldBeOverwritten() {
+
+		String oldUser = "old";
+		Instant oldDate = Instant.now();
+
+		ExtendingAuditableWithOverwriteBehaviorOverwrite source = new ExtendingAuditableWithOverwriteBehaviorOverwrite();
+		source.setCreatedBy(oldUser);
+		source.setCreatedDate(oldDate);
+		source.setLastModifiedBy(oldUser);
+		source.setLastModifiedDate(oldDate);
+
+		Optional<AuditableBeanWrapper<ExtendingAuditableWithOverwriteBehaviorOverwrite>> wrapper = factory
+				.getBeanWrapperFor(source);
+
+		assertThat(wrapper).hasValueSatisfying(it -> {
+
+			assertThat(it).isInstanceOf(DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper.class);
+
+			String newUser = "new";
+			Instant newDate = Instant.now();
+
+			it.setCreatedBy(newUser);
+			it.setCreatedDate(newDate);
+			it.setLastModifiedBy(newUser);
+			it.setLastModifiedDate(newDate);
+
+			assertThat(source.getCreatedBy()).hasValue(newUser);
+			assertThat(source.getCreatedDate()).hasValue(newDate);
+			assertThat(source.getLastModifiedBy()).hasValue(newUser);
+			assertThat(source.getLastModifiedDate()).hasValue(newDate);
+		});
+	}
+
+	@Test // DATACMNS-1641
+	public void fieldWithOverwriteBehaviorSkipInClassExtendingAuditableShouldNotBeOverwritten() {
+
+		String oldUser = "old";
+		Instant oldDate = Instant.now();
+
+		ExtendingAuditableWithOverwriteBehaviorSkip source = new ExtendingAuditableWithOverwriteBehaviorSkip();
+		source.setCreatedBy(oldUser);
+		source.setCreatedDate(oldDate);
+		source.setLastModifiedBy(oldUser);
+		source.setLastModifiedDate(oldDate);
+
+		Optional<AuditableBeanWrapper<ExtendingAuditableWithOverwriteBehaviorSkip>> wrapper = factory
+				.getBeanWrapperFor(source);
+
+		assertThat(wrapper).hasValueSatisfying(it -> {
+
+			assertThat(it).isInstanceOf(DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper.class);
+
+			String newUser = "new";
+			Instant newDate = Instant.now();
+
+			it.setCreatedBy(newUser);
+			it.setCreatedDate(newDate);
+			it.setLastModifiedBy(newUser);
+			it.setLastModifiedDate(newDate);
+
+			assertThat(source.getCreatedBy()).hasValue(oldUser);
+			assertThat(source.getCreatedDate()).hasValue(oldDate);
+			assertThat(source.getLastModifiedBy()).hasValue(newUser);
+			assertThat(source.getLastModifiedDate()).hasValue(newDate);
+		});
+	}
+
+	@Test // DATACMNS-1641
+	public void fieldWithOverwriteBehaviorDefaultShouldBeOverwritten() {
+
+		String oldUser = "old";
+		Instant oldDate = Instant.now();
+
+		AuditableWithOverwriteBehaviorDefault source = new AuditableWithOverwriteBehaviorDefault();
+		source.createdBy = oldUser;
+		source.createdDate = oldDate;
+
+		Optional<AuditableBeanWrapper<AuditableWithOverwriteBehaviorDefault>> wrapper = factory.getBeanWrapperFor(source);
+
+		assertThat(wrapper).hasValueSatisfying(it -> {
+
+			assertThat(it).isInstanceOf(MappingAuditableBeanWrapperFactory.MappingMetadataAuditableBeanWrapper.class);
+
+			String newUser = "new";
+			Instant newDate = Instant.now();
+
+			it.setCreatedBy(newUser);
+			it.setCreatedDate(newDate);
+			it.setLastModifiedBy(newUser);
+			it.setLastModifiedDate(newDate);
+
+			assertThat(source.createdBy).isEqualTo(newUser);
+			assertThat(source.createdDate).isEqualTo(newDate);
+		});
+	}
+
+	@Test // DATACMNS-1641
+	public void fieldWithOverwriteBehaviorOverwriteShouldBeOverwritten() {
+
+		String oldUser = "old";
+		Instant oldDate = Instant.now();
+
+		AuditableWithOverwriteBehaviorOverwrite source = new AuditableWithOverwriteBehaviorOverwrite();
+		source.createdBy = oldUser;
+		source.createdDate = oldDate;
+
+		Optional<AuditableBeanWrapper<AuditableWithOverwriteBehaviorOverwrite>> wrapper = factory.getBeanWrapperFor(source);
+
+		assertThat(wrapper).hasValueSatisfying(it -> {
+
+			assertThat(it).isInstanceOf(MappingAuditableBeanWrapperFactory.MappingMetadataAuditableBeanWrapper.class);
+
+			String newUser = "new";
+			Instant newDate = Instant.now();
+
+			it.setCreatedBy(newUser);
+			it.setCreatedDate(newDate);
+			it.setLastModifiedBy(newUser);
+			it.setLastModifiedDate(newDate);
+
+			assertThat(source.createdBy).isEqualTo(newUser);
+			assertThat(source.createdDate).isEqualTo(newDate);
+		});
+	}
+
+	@Test // DATACMNS-1641
+	public void fieldWithOverwriteBehaviorSkipShouldNotBeOverwritten() {
+
+		String oldUser = "old";
+		Instant oldDate = Instant.now();
+
+		AuditableWithOverwriteBehaviorSkip source = new AuditableWithOverwriteBehaviorSkip();
+		source.createdBy = oldUser;
+		source.createdDate = oldDate;
+
+		Optional<AuditableBeanWrapper<AuditableWithOverwriteBehaviorSkip>> wrapper = factory.getBeanWrapperFor(source);
+
+		assertThat(wrapper).hasValueSatisfying(it -> {
+
+			assertThat(it).isInstanceOf(MappingAuditableBeanWrapperFactory.MappingMetadataAuditableBeanWrapper.class);
+
+			String newUser = "new";
+			Instant newDate = Instant.now();
+
+			it.setCreatedBy(newUser);
+			it.setCreatedDate(newDate);
+
+			assertThat(source.createdBy).isEqualTo(oldUser);
+			assertThat(source.createdDate).isEqualTo(oldDate);
+		});
+	}
+
 	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
 
 		Sample sample = new Sample();
@@ -325,5 +518,122 @@ public class MappingAuditableBeanWrapperFactoryUnitTests {
 		Embedded embedded;
 		Collection<Embedded> embeddeds;
 		Map<String, Embedded> embeddedMap;
+	}
+
+	@Setter
+	public static abstract class ExtendingAuditableBase implements Auditable<String, Long, Instant> {
+
+		protected String createdBy;
+		protected Instant createdDate;
+		protected String lastModifiedBy;
+		protected Instant lastModifiedDate;
+
+		@Override
+		public Long getId() {
+			return null;
+		}
+
+		@Override
+		public boolean isNew() {
+			return false;
+		}
+	}
+
+	public static class ExtendingAuditableWithOverwriteBehaviorDefault extends ExtendingAuditableBase {
+
+		@Override
+		public Optional<String> getCreatedBy() {
+			return Optional.ofNullable(createdBy);
+		}
+
+		@Override
+		public Optional<Instant> getCreatedDate() {
+			return Optional.ofNullable(createdDate);
+		}
+
+		@Override
+		public Optional<String> getLastModifiedBy() {
+			return Optional.ofNullable(lastModifiedBy);
+		}
+
+		@Override
+		public Optional<Instant> getLastModifiedDate() {
+			return Optional.ofNullable(lastModifiedDate);
+		}
+	}
+
+	public static class ExtendingAuditableWithOverwriteBehaviorOverwrite extends ExtendingAuditableBase {
+
+		@CreatedBy(overwriteBehavior = OverwriteBehavior.OVERWRITE)
+		@Override
+		public Optional<String> getCreatedBy() {
+			return Optional.ofNullable(createdBy);
+		}
+
+		@CreatedDate(overwriteBehavior = OverwriteBehavior.OVERWRITE)
+		@Override
+		public Optional<Instant> getCreatedDate() {
+			return Optional.ofNullable(createdDate);
+		}
+
+		@Override
+		public Optional<String> getLastModifiedBy() {
+			return Optional.ofNullable(lastModifiedBy);
+		}
+
+		@Override
+		public Optional<Instant> getLastModifiedDate() {
+			return Optional.ofNullable(lastModifiedDate);
+		}
+	}
+
+	public static class ExtendingAuditableWithOverwriteBehaviorSkip extends ExtendingAuditableBase {
+
+		@CreatedBy(overwriteBehavior = OverwriteBehavior.SKIP)
+		@Override
+		public Optional<String> getCreatedBy() {
+			return Optional.ofNullable(createdBy);
+		}
+
+		@CreatedDate(overwriteBehavior = OverwriteBehavior.SKIP)
+		@Override
+		public Optional<Instant> getCreatedDate() {
+			return Optional.ofNullable(createdDate);
+		}
+
+		@Override
+		public Optional<String> getLastModifiedBy() {
+			return Optional.ofNullable(lastModifiedBy);
+		}
+
+		@Override
+		public Optional<Instant> getLastModifiedDate() {
+			return Optional.ofNullable(lastModifiedDate);
+		}
+	}
+
+	public static class AuditableWithOverwriteBehaviorDefault {
+
+		@CreatedBy public String createdBy;
+
+		@CreatedDate public Instant createdDate;
+	}
+
+	public static class AuditableWithOverwriteBehaviorOverwrite {
+
+		@CreatedBy(overwriteBehavior = OverwriteBehavior.OVERWRITE) //
+		public String createdBy;
+
+		@CreatedDate(overwriteBehavior = OverwriteBehavior.OVERWRITE) //
+		public Instant createdDate;
+	}
+
+	public static class AuditableWithOverwriteBehaviorSkip {
+
+		@CreatedBy(overwriteBehavior = OverwriteBehavior.SKIP) //
+		public String createdBy;
+
+		@CreatedDate(overwriteBehavior = OverwriteBehavior.SKIP) //
+		public Instant createdDate;
 	}
 }

@@ -18,7 +18,9 @@ package org.springframework.data.auditing;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
@@ -27,7 +29,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
@@ -43,6 +48,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Daniel Shuy
  * @since 1.5
  */
 class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory {
@@ -83,15 +89,35 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	static class AuditableInterfaceBeanWrapper
 			extends DateConvertingAuditableBeanWrapper<Auditable<Object, ?, TemporalAccessor>> {
 
+		private static final String GETTER_NAME_CREATED_BY = "getCreatedBy";
+		private static final String GETTER_NAME_CREATED_DATE = "getCreatedDate";
+
 		private final @NonNull Auditable<Object, ?, TemporalAccessor> auditable;
 		private final Class<? extends TemporalAccessor> type;
+
+		private final @Nullable OverwriteBehavior createdByOverwriteBehavior;
+		private final @Nullable OverwriteBehavior createdDateOverwriteBehavior;
 
 		@SuppressWarnings("unchecked")
 		public AuditableInterfaceBeanWrapper(Auditable<Object, ?, TemporalAccessor> auditable) {
 
+			Class<?> auditableType = auditable.getClass();
+
 			this.auditable = auditable;
-			this.type = (Class<? extends TemporalAccessor>) ResolvableType.forClass(Auditable.class, auditable.getClass())
+			this.type = (Class<? extends TemporalAccessor>) ResolvableType.forClass(Auditable.class, auditableType)
 					.getGeneric(2).resolve(TemporalAccessor.class);
+
+			Optional<CreatedBy> createdByAnnotation = getAnnotationForMethod( //
+					auditableType, GETTER_NAME_CREATED_BY, CreatedBy.class);
+			Optional<CreatedDate> createdDateAnnotation = getAnnotationForMethod( //
+					auditableType, GETTER_NAME_CREATED_DATE, CreatedDate.class);
+
+			createdByOverwriteBehavior = createdByAnnotation.map(CreatedBy::overwriteBehavior).orElse(null);
+			createdDateOverwriteBehavior = createdDateAnnotation.map(CreatedDate::overwriteBehavior).orElse(null);
+		}
+
+		public Optional<?> getCreatedBy() {
+			return auditable.getCreatedBy();
 		}
 
 		/*
@@ -101,8 +127,19 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Override
 		public Object setCreatedBy(Object value) {
 
+			if (createdByOverwriteBehavior == OverwriteBehavior.SKIP) {
+				Optional<?> createdBy = getCreatedBy();
+				if (createdBy.isPresent()) {
+					return createdBy.get();
+				}
+			}
+
 			auditable.setCreatedBy(value);
 			return value;
+		}
+
+		public Optional<TemporalAccessor> getCreatedDate() {
+			return getAsTemporalAccessor(auditable.getCreatedDate(), TemporalAccessor.class);
 		}
 
 		/*
@@ -111,6 +148,13 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 */
 		@Override
 		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
+
+			if (createdDateOverwriteBehavior == OverwriteBehavior.SKIP) {
+				Optional<TemporalAccessor> createdDate = getCreatedDate();
+				if (createdDate.isPresent()) {
+					return createdDate.get();
+				}
+			}
 
 			auditable.setCreatedDate(getAsTemporalAccessor(Optional.of(value), type).orElseThrow(IllegalStateException::new));
 
@@ -158,6 +202,18 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Override
 		public Auditable<Object, ?, TemporalAccessor> getBean() {
 			return auditable;
+		}
+
+		private <A extends Annotation> Optional<A> getAnnotationForMethod(Class<?> type, String methodName,
+				Class<A> annotationType) {
+
+			Method getter = org.springframework.util.ReflectionUtils.findMethod(type, methodName);
+			if (getter == null) {
+				throw new IllegalStateException(String.format( //
+						"Method %s not found in %s", methodName, type.getSimpleName()));
+			}
+
+			return Optional.ofNullable(AnnotationUtils.getAnnotation(getter, annotationType));
 		}
 	}
 
@@ -276,13 +332,35 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			this.target = target;
 		}
 
+		public Optional<?> getCreatedBy() {
+
+			return metadata.getCreatedByField() //
+					.flatMap(this::getValueFromField);
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.util.Optional)
 		 */
 		@Override
 		public Object setCreatedBy(Object value) {
+
+			if (metadata.getCreatedByOverwriteBehavior() == OverwriteBehavior.SKIP) {
+				Optional<?> createdBy = getCreatedBy();
+				if (createdBy.isPresent()) {
+					return createdBy.get();
+				}
+			}
+
 			return setField(metadata.getCreatedByField(), value);
+		}
+
+		public Optional<TemporalAccessor> getCreatedDate() {
+
+			Optional<?> value = metadata.getCreatedDateField() //
+					.flatMap(this::getValueFromField);
+
+			return getAsTemporalAccessor(value, TemporalAccessor.class);
 		}
 
 		/*
@@ -291,6 +369,13 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 */
 		@Override
 		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
+
+			if (metadata.getCreatedDateOverwriteBehavior() == OverwriteBehavior.SKIP) {
+				Optional<TemporalAccessor> createdDate = getCreatedDate();
+				if (createdDate.isPresent()) {
+					return createdDate.get();
+				}
+			}
 
 			return setDateField(metadata.getCreatedDateField(), value);
 		}
@@ -311,12 +396,10 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
 
-			return getAsTemporalAccessor(metadata.getLastModifiedDateField().map(field -> {
+			Optional<?> value = metadata.getLastModifiedDateField() //
+					.flatMap(this::getValueFromField);
 
-				Object value = org.springframework.util.ReflectionUtils.getField(field, target);
-				return value instanceof Optional ? ((Optional<?>) value).orElse(null) : value;
-
-			}), TemporalAccessor.class);
+			return getAsTemporalAccessor(value, TemporalAccessor.class);
 		}
 
 		/*
@@ -361,6 +444,14 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			field.ifPresent(it -> ReflectionUtils.setField(it, target, getDateValueToSet(value, it.getType(), it)));
 
 			return value;
+		}
+
+		private Optional<?> getValueFromField(Field field) {
+
+			Object value = org.springframework.util.ReflectionUtils.getField(field, target);
+			return (value instanceof Optional) ? //
+					(Optional<?>) value : //
+					Optional.ofNullable(value);
 		}
 	}
 }

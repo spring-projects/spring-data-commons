@@ -21,14 +21,23 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.data.auditing.OverwriteBehavior;
+
 /**
  * Declares a field as the one representing the principal that created the entity containing the field.
  *
  * @author Ranie Jade Ramiso
  * @author Oliver Gierke
+ * @author Daniel Shuy
  * @since 1.5
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 public @interface CreatedBy {
+
+	/**
+	 * The behavior if existing field value is not {@code null}. Defaults to {@link OverwriteBehavior#OVERWRITE}.
+	 */
+	OverwriteBehavior overwriteBehavior() default OverwriteBehavior.OVERWRITE;
+
 }

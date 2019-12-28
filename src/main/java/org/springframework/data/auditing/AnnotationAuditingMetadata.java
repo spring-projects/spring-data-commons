@@ -15,6 +15,8 @@
  */
 package org.springframework.data.auditing;
 
+import lombok.Getter;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -33,6 +36,7 @@ import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.ReflectionUtils.AnnotationFieldFilter;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -42,6 +46,7 @@ import org.springframework.util.Assert;
  * @author Ranie Jade Ramiso
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Daniel Shuy
  * @since 1.5
  */
 final class AnnotationAuditingMetadata {
@@ -76,6 +81,9 @@ final class AnnotationAuditingMetadata {
 	private final Optional<Field> lastModifiedByField;
 	private final Optional<Field> lastModifiedDateField;
 
+	private final @Nullable @Getter OverwriteBehavior createdByOverwriteBehavior;
+	private final @Nullable @Getter OverwriteBehavior createdDateOverwriteBehavior;
+
 	/**
 	 * Creates a new {@link AnnotationAuditingMetadata} instance for the given type.
 	 *
@@ -92,6 +100,14 @@ final class AnnotationAuditingMetadata {
 
 		assertValidDateFieldType(createdDateField);
 		assertValidDateFieldType(lastModifiedDateField);
+
+		Optional<CreatedBy> createdByAnnotation = createdByField
+				.map(field -> AnnotationUtils.getAnnotation(field, CreatedBy.class));
+		Optional<CreatedDate> createdDateAnnotation = createdDateField
+				.map(field -> AnnotationUtils.getAnnotation(field, CreatedDate.class));
+
+		createdByOverwriteBehavior = createdByAnnotation.map(CreatedBy::overwriteBehavior).orElse(null);
+		createdDateOverwriteBehavior = createdDateAnnotation.map(CreatedDate::overwriteBehavior).orElse(null);
 	}
 
 	/**
