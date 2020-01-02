@@ -278,9 +278,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(association, "Association must not be null!");
 
-		if (!associations.contains(association)) {
-			associations.add(association);
-		}
+		associations.add(association);
 	}
 
 	/*

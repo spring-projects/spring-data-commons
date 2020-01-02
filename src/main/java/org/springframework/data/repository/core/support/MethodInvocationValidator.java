@@ -109,15 +109,15 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	static class Nullability {
 
-		boolean nullableReturn;
-		boolean[] nullableParameters;
-		MethodParameter methodParameters[];
+		final boolean nullableReturn;
+		final boolean[] nullableParameters;
+		final MethodParameter[] methodParameters;
 
 		static Nullability of(Method method, ParameterNameDiscoverer discoverer) {
 
 			boolean nullableReturn = isNullableParameter(new MethodParameter(method, -1));
 			boolean[] nullableParameters = new boolean[method.getParameterCount()];
-			MethodParameter methodParameters[] = new MethodParameter[method.getParameterCount()];
+			MethodParameter[] methodParameters = new MethodParameter[method.getParameterCount()];
 
 			for (int i = 0; i < method.getParameterCount(); i++) {
 

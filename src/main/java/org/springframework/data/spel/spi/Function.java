@@ -166,6 +166,7 @@ public class Function {
 	public boolean isSignatureEqual(Function other) {
 
 		return getName().equals(other.getName()) //
+				&& method.getParameterCount() == other.method.getParameterCount()
 				&& Arrays.equals(method.getParameterTypes(), other.method.getParameterTypes());
 	}
 }
