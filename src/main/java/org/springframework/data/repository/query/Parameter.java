@@ -28,12 +28,12 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * Class to abstract a single parameter of a query method. It is held in the context of a {@link Parameters} instance.
@@ -58,13 +58,10 @@ public class Parameter {
 
 		List<Class<?>> types = new ArrayList<>(Arrays.asList(Pageable.class, Sort.class));
 
-		try {
-			// consider Kotlin Coroutines Continuation a special parameter. That parameter is synthetic and should not get
-			// bound to any query.
-			types.add(ClassUtils.forName("kotlin.coroutines.Continuation", Parameter.class.getClassLoader()));
-		} catch (ClassNotFoundException e) {
-			// ignore
-		}
+		// consider Kotlin Coroutines Continuation a special parameter. That parameter is synthetic and should not get
+		// bound to any query.
+
+		ClassUtils.ifPresent("kotlin.coroutines.Continuation", Parameter.class.getClassLoader(), types::add);
 
 		TYPES = Collections.unmodifiableList(types);
 	}

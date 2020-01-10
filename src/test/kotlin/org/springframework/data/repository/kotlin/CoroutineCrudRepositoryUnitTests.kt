@@ -37,7 +37,7 @@ import rx.Single
  *
  * @author Mark Paluch
  */
-class CoCrudRepositoryUnitTests {
+class CoroutineCrudRepositoryUnitTests {
 
 	val backingRepository = mockk<ReactiveCrudRepository<User, String>>()
 	lateinit var factory: DummyReactiveRepositoryFactory;
@@ -159,7 +159,7 @@ class CoCrudRepositoryUnitTests {
 		assertThat(emptyResult).isEmpty()
 	}
 
-	interface MyCoRepository : CoCrudRepository<User, String> {
+	interface MyCoRepository : CoroutineCrudRepository<User, String> {
 
 		suspend fun findOne(id: String): User
 

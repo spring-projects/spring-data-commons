@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,10 +52,10 @@ class ImplementationInvocationMetadata {
 			return;
 		}
 
-		KFunction<?> declaredFunction = ReflectionUtils.isKotlinClass(declaredMethod.getDeclaringClass())
+		KFunction<?> declaredFunction = KotlinDetector.isKotlinType(declaredMethod.getDeclaringClass())
 				? KotlinReflectionUtils.findKotlinFunction(declaredMethod)
 				: null;
-		KFunction<?> baseClassFunction = ReflectionUtils.isKotlinClass(baseClassMethod.getDeclaringClass())
+		KFunction<?> baseClassFunction = KotlinDetector.isKotlinType(baseClassMethod.getDeclaringClass())
 				? KotlinReflectionUtils.findKotlinFunction(baseClassMethod)
 				: null;
 
@@ -68,11 +68,13 @@ class ImplementationInvocationMetadata {
 	@Nullable
 	public Object invoke(Method methodToCall, Object instance, Object[] args) throws Throwable {
 
-		if (suspendedDeclaredMethod && !suspendedBaseClassMethod && reactiveBaseClassMethod) {
-			return invokeReactiveToSuspend(methodToCall, instance, args);
-		}
+		return shouldAdaptReactiveToSuspended() ? invokeReactiveToSuspend(methodToCall, instance, args)
+				: methodToCall.invoke(instance, args);
 
-		return methodToCall.invoke(instance, args);
+	}
+
+	private boolean shouldAdaptReactiveToSuspended() {
+		return suspendedDeclaredMethod && !suspendedBaseClassMethod && reactiveBaseClassMethod;
 	}
 
 	@Nullable
@@ -80,16 +82,17 @@ class ImplementationInvocationMetadata {
 	private Object invokeReactiveToSuspend(Method methodToCall, Object instance, Object[] args)
 			throws ReflectiveOperationException {
 
+		/*
+		 * Kotlin suspendable functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
+		 * We're invoking a method without Continuation as we expect the method to return any sort of reactive type,
+		 * therefore we need to strip the Continuation parameter.
+		 */
 		Object[] invocationArguments = new Object[args.length - 1];
 		System.arraycopy(args, 0, invocationArguments, 0, invocationArguments.length);
 		Object result = methodToCall.invoke(instance, invocationArguments);
 
-		Publisher<?> publisher;
-		if (result instanceof Publisher) {
-			publisher = (Publisher<?>) result;
-		} else {
-			publisher = ReactiveWrapperConverters.toWrapper(result, Publisher.class);
-		}
+		Publisher<?> publisher = result instanceof Publisher ? (Publisher<?>) result
+				: ReactiveWrapperConverters.toWrapper(result, Publisher.class);
 
 		return AwaitKt.awaitFirstOrNull(publisher, (Continuation) args[args.length - 1]);
 	}

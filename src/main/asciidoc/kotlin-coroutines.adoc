@@ -65,7 +65,7 @@ Here is an example of a Coroutines repository:
 ====
 [source,kotlin]
 ----
-interface CoroutinesRepository : CoCrudRepository<User, String> {
+interface CoroutineRepository : CoroutineCrudRepository<User, String> {
 
     suspend fun findOne(id: String): User
 
@@ -78,4 +78,4 @@ Coroutines repositories are built on reactive repositories to expose the non-blo
 Methods on a Coroutines repository can be backed either by a query method or a custom implementation.
 Invoking a custom implementation method propagates the Coroutines invocation to the actual implementation method if the custom method is `suspend`able without requiring the implementation method to return a reactive type such as `Mono` or `Flux`.
 
-NOTE: Coroutines repositories are only discovered when the repository extends the `CoCrudRepository` interface.
+NOTE: Coroutines repositories are only discovered when the repository extends the `CoroutineCrudRepository` interface.
