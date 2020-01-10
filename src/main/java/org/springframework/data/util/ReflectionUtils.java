@@ -31,6 +31,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -50,10 +51,6 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  */
 @UtilityClass
 public class ReflectionUtils {
-
-	private static final boolean KOTLIN_IS_PRESENT = ClassUtils.isPresent("kotlin.Unit",
-			BeanUtils.class.getClassLoader());
-	private static final int KOTLIN_KIND_CLASS = 1;
 
 	/**
 	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
@@ -350,12 +347,11 @@ public class ReflectionUtils {
 	 *
 	 * @return {@literal true} if {@code type} is a Kotlin class.
 	 * @since 2.0
+	 * @deprecated since 2.3, use {@link KotlinDetector#isKotlinType(Class)} instead.
 	 */
+	@Deprecated
 	public static boolean isKotlinClass(Class<?> type) {
-
-		return KOTLIN_IS_PRESENT && Arrays.stream(type.getDeclaredAnnotations()) //
-				.map(Annotation::annotationType) //
-				.anyMatch(annotation -> annotation.getName().equals("kotlin.Metadata"));
+		return KotlinDetector.isKotlinType(type);
 	}
 
 	/**
@@ -364,17 +360,11 @@ public class ReflectionUtils {
 	 *
 	 * @return {@literal true} if {@code type} is a supported Kotlin class.
 	 * @since 2.0
+	 * @deprecated since 2.3, use {@link KotlinReflectionUtils#isSupportedKotlinClass(Class)} instead.
 	 */
+	@Deprecated
 	public static boolean isSupportedKotlinClass(Class<?> type) {
-
-		if (!isKotlinClass(type)) {
-			return false;
-		}
-
-		return Arrays.stream(type.getDeclaredAnnotations()) //
-				.filter(annotation -> annotation.annotationType().getName().equals("kotlin.Metadata")) //
-				.map(annotation -> AnnotationUtils.getValue(annotation, "k")) //
-				.anyMatch(it -> Integer.valueOf(KOTLIN_KIND_CLASS).equals(it));
+		return KotlinReflectionUtils.isSupportedKotlinClass(type);
 	}
 
 	/**

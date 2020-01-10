@@ -20,7 +20,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.NoRepositoryBean
 
 /**
- * Extension of [CoCrudRepository] to provide additional methods to retrieve entities using the sorting
+ * Extension of [CoroutineCrudRepository] to provide additional methods to retrieve entities using the sorting
  * abstraction.
  *
  * @author Mark Paluch
@@ -29,7 +29,7 @@ import org.springframework.data.repository.NoRepositoryBean
  * @see Sort
  */
 @NoRepositoryBean
-interface CoSortingRepository<T, ID> : CoCrudRepository<T, ID> {
+interface CoroutineSortingRepository<T, ID> : CoroutineCrudRepository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.

@@ -32,7 +32,7 @@ import org.springframework.data.repository.sample.User
  *
  * @author Mark Paluch
  */
-class CoCrudRepositoryCustomImplementationUnitTests {
+class CoroutineCrudRepositoryCustomImplementationUnitTests {
 
 	val backingRepository = mockk<ReactiveCrudRepository<User, String>>()
 	lateinit var factory: DummyReactiveRepositoryFactory;
@@ -61,7 +61,7 @@ class CoCrudRepositoryCustomImplementationUnitTests {
 		}
 	}
 
-	interface MyCoRepository : CoCrudRepository<User, String>, MyCustomCoRepository
+	interface MyCoRepository : CoroutineCrudRepository<User, String>, MyCustomCoRepository
 
 	interface MyCustomCoRepository {
 

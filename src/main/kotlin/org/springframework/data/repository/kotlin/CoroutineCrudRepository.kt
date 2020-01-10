@@ -28,7 +28,7 @@ import reactor.core.publisher.Mono
  * @see Flow
  */
 @NoRepositoryBean
-interface CoCrudRepository<T, ID> : Repository<T, ID> {
+interface CoroutineCrudRepository<T, ID> : Repository<T, ID> {
 
 	/**
 	 * Saves a given entity. Use the returned instance for further operations as the save operation might have changed the
@@ -86,11 +86,7 @@ interface CoCrudRepository<T, ID> : Repository<T, ID> {
 
 	/**
 	 * Returns all instances of the type `T` with the given IDs.
-	 *
-	 *
 	 * If some or all ids are not found, no entities are returned for these IDs.
-	 *
-	 *
 	 * Note that the order of elements in the result is not guaranteed.
 	 *
 	 * @param ids must not be null nor contain any null values.

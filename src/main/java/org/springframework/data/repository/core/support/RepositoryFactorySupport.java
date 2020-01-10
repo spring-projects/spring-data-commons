@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import kotlin.coroutines.Continuation;
-import kotlin.reflect.KFunction;
-import kotlinx.coroutines.reactive.AwaitKt;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -29,7 +26,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,7 +34,6 @@ import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.reactivestreams.Publisher;
 
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
@@ -47,8 +42,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.core.KotlinDetector;
-import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
@@ -69,8 +62,6 @@ import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
-import org.springframework.data.util.KotlinReflectionUtils;
-import org.springframework.data.util.Pair;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionalProxy;
@@ -335,7 +326,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		}
 
 		ProjectionFactory projectionFactory = getProjectionFactory(classLoader, beanFactory);
-		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory));
+		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
+				evaluationContextProvider);
+		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory, queryLookupStrategy,
+				namedQueries, queryPostProcessors));
 
 		composition = composition.append(RepositoryFragment.implemented(target));
 		result.addAdvice(new ImplementationMethodExecutionInterceptor(composition));
@@ -531,124 +525,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	}
 
 	/**
-	 * This {@code MethodInterceptor} intercepts calls to methods of the custom implementation and delegates the to it if
-	 * configured. Furthermore it resolves method calls to finders and triggers execution of them. You can rely on having
-	 * a custom repository implementation instance set if this returns true.
-	 *
-	 * @author Oliver Gierke
-	 */
-	public class QueryExecutorMethodInterceptor implements MethodInterceptor {
-
-		private final Map<Method, RepositoryQuery> queries;
-		private final Map<Method, QueryMethodInvoker> invocationMetadataCache = new ConcurrentReferenceHashMap<>();
-		private final QueryExecutionResultHandler resultHandler;
-
-		/**
-		 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model of {@link QueryMethod}s to be invoked on
-		 * execution of repository interface methods.
-		 */
-		public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation,
-				ProjectionFactory projectionFactory) {
-
-			this.resultHandler = new QueryExecutionResultHandler(CONVERSION_SERVICE);
-
-			Optional<QueryLookupStrategy> lookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
-					RepositoryFactorySupport.this.evaluationContextProvider);
-
-			if (!lookupStrategy.isPresent() && repositoryInformation.hasQueryMethods()) {
-
-				throw new IllegalStateException("You have defined query method in the repository but "
-						+ "you don't have any query lookup strategy defined. The "
-						+ "infrastructure apparently does not support query methods!");
-			}
-
-			this.queries = lookupStrategy //
-					.map(it -> mapMethodsToQuery(repositoryInformation, it, projectionFactory)) //
-					.orElse(Collections.emptyMap());
-		}
-
-		private Map<Method, RepositoryQuery> mapMethodsToQuery(RepositoryInformation repositoryInformation,
-				QueryLookupStrategy lookupStrategy, ProjectionFactory projectionFactory) {
-
-			return repositoryInformation.getQueryMethods().stream() //
-					.map(method -> lookupQuery(method, repositoryInformation, lookupStrategy, projectionFactory)) //
-					.peek(pair -> invokeListeners(pair.getSecond())) //
-					.collect(Pair.toMap());
-		}
-
-		private Pair<Method, RepositoryQuery> lookupQuery(Method method, RepositoryInformation information,
-				QueryLookupStrategy strategy, ProjectionFactory projectionFactory) {
-			return Pair.of(method, strategy.resolveQuery(method, information, projectionFactory, namedQueries));
-		}
-
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		private void invokeListeners(RepositoryQuery query) {
-
-			for (QueryCreationListener listener : queryPostProcessors) {
-
-				ResolvableType typeArgument = ResolvableType.forClass(QueryCreationListener.class, listener.getClass())
-						.getGeneric(0);
-
-				if (typeArgument != null && typeArgument.isAssignableFrom(ResolvableType.forClass(query.getClass()))) {
-					listener.onCreation(query);
-				}
-			}
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-		 */
-		@Override
-		@Nullable
-		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
-
-			Method method = invocation.getMethod();
-
-			QueryExecutionConverters.ExecutionAdapter executionAdapter = QueryExecutionConverters //
-					.getExecutionAdapter(method.getReturnType());
-
-			if (executionAdapter == null) {
-				return resultHandler.postProcessInvocationResult(doInvoke(invocation), method);
-			}
-
-			return executionAdapter //
-					.apply(() -> resultHandler.postProcessInvocationResult(doInvoke(invocation), method));
-		}
-
-		@Nullable
-		private Object doInvoke(MethodInvocation invocation) throws Throwable {
-
-			Method method = invocation.getMethod();
-
-			if (hasQueryFor(method)) {
-
-				QueryMethodInvoker invocationMetadata = invocationMetadataCache.get(method);
-
-				if (invocationMetadata == null) {
-					invocationMetadata = new QueryMethodInvoker(method);
-					invocationMetadataCache.put(method, invocationMetadata);
-				}
-
-				RepositoryQuery repositoryQuery = queries.get(method);
-				return invocationMetadata.invoke(repositoryQuery, invocation.getArguments());
-			}
-
-			return invocation.proceed();
-		}
-
-		/**
-		 * Returns whether we know of a query to execute for the given {@link Method};
-		 *
-		 * @param method
-		 * @return
-		 */
-		private boolean hasQueryFor(Method method) {
-			return queries.containsKey(method);
-		}
-	}
-
-	/**
 	 * Method interceptor that calls methods on the {@link RepositoryComposition}.
 	 *
 	 * @author Mark Paluch
@@ -725,57 +601,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			this.repositoryInterfaceName = metadata.getRepositoryInterface().getName();
 			this.compositionHash = composition.hashCode();
-		}
-	}
-
-	static class QueryMethodInvoker {
-
-		private final boolean suspendedDeclaredMethod;
-		private final Class<?> returnedType;
-		private final boolean returnsReactiveType;
-
-		QueryMethodInvoker(Method invokedMethod) {
-
-			this.suspendedDeclaredMethod = KotlinDetector.isKotlinReflectPresent() && isSuspendedMethod(invokedMethod);
-			this.returnedType = this.suspendedDeclaredMethod ? KotlinReflectionUtils.getReturnType(invokedMethod)
-					: invokedMethod.getReturnType();
-			this.returnsReactiveType = ReactiveWrappers.supports(returnedType);
-		}
-
-		private static boolean isSuspendedMethod(Method invokedMethod) {
-
-			KFunction<?> invokedFunction = ReflectionUtils.isKotlinClass(invokedMethod.getDeclaringClass())
-					? KotlinReflectionUtils.findKotlinFunction(invokedMethod)
-					: null;
-
-			return invokedFunction != null && invokedFunction.isSuspend();
-		}
-
-		@Nullable
-		public Object invoke(RepositoryQuery query, Object[] args) {
-			return suspendedDeclaredMethod ? invokeReactiveToSuspend(query, args) : query.execute(args);
-		}
-
-		@Nullable
-		@SuppressWarnings({ "unchecked", "ConstantConditions" })
-		private Object invokeReactiveToSuspend(RepositoryQuery query, Object[] args) {
-
-			Continuation<Object> continuation = (Continuation) args[args.length - 1];
-			args[args.length - 1] = null;
-			Object result = query.execute(args);
-
-			if (returnsReactiveType) {
-				return ReactiveWrapperConverters.toWrapper(result, returnedType);
-			}
-
-			Publisher<?> publisher;
-			if (result instanceof Publisher) {
-				publisher = (Publisher<?>) result;
-			} else {
-				publisher = ReactiveWrapperConverters.toWrapper(result, Publisher.class);
-			}
-
-			return AwaitKt.awaitFirstOrNull(publisher, continuation);
 		}
 	}
 }

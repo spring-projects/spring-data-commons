@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,13 @@ import kotlin.reflect.jvm.KTypesJvm;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.Nullable;
 
 /**
@@ -38,10 +41,31 @@ import org.springframework.lang.Nullable;
  *
  * @author Mark Paluch
  * @since 2.3
+ * @see org.springframework.core.KotlinDetector#isKotlinReflectPresent()
  */
 public final class KotlinReflectionUtils {
 
+	private static final int KOTLIN_KIND_CLASS = 1;
+
 	private KotlinReflectionUtils() {}
+
+	/**
+	 * Return {@literal true} if the specified class is a supported Kotlin class. Currently supported are only regular
+	 * Kotlin classes. Other class types (synthetic, SAM, lambdas) are not supported via reflection.
+	 *
+	 * @return {@literal true} if {@code type} is a supported Kotlin class.
+	 */
+	public static boolean isSupportedKotlinClass(Class<?> type) {
+
+		if (!KotlinDetector.isKotlinType(type)) {
+			return false;
+		}
+
+		return Arrays.stream(type.getDeclaredAnnotations()) //
+				.filter(annotation -> annotation.annotationType().getName().equals("kotlin.Metadata")) //
+				.map(annotation -> AnnotationUtils.getValue(annotation, "k")) //
+				.anyMatch(it -> Integer.valueOf(KOTLIN_KIND_CLASS).equals(it));
+	}
 
 	/**
 	 * Returns a {@link KFunction} instance corresponding to the given Java {@link Method} instance, or {@code null} if
@@ -55,14 +79,24 @@ public final class KotlinReflectionUtils {
 
 		KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(method);
 
-		if (kotlinFunction == null) {
+		// Fallback to own lookup because there's no public Kotlin API for that kind of lookup until
+		// https://youtrack.jetbrains.com/issue/KT-20768 gets resolved.
+		return kotlinFunction == null ? findKFunction(method).orElse(null) : kotlinFunction;
+	}
 
-			// Fallback to own lookup because there's no public Kotlin API for that kind of lookup until
-			// https://youtrack.jetbrains.com/issue/KT-20768 gets resolved.
-			return findKFunction(method).orElse(null);
-		}
+	/**
+	 * Returns whether the {@link Method} is declared as suspend (Kotlin Coroutine).
+	 *
+	 * @param method the method to inspect.
+	 * @return {@literal true} if the method is declared as suspend.
+	 * @see KFunction#isSuspend()
+	 */
+	public static boolean isSuspend(Method method) {
 
-		return kotlinFunction;
+		KFunction<?> invokedFunction = KotlinDetector.isKotlinType(method.getDeclaringClass()) ? findKotlinFunction(method)
+				: null;
+
+		return invokedFunction != null && invokedFunction.isSuspend();
 	}
 
 	/**

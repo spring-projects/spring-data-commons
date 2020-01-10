@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -28,10 +29,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryLookupStrategy;
-import org.springframework.data.util.Streamable;
 
 /**
- * Unit test for {@link QueryExecuterMethodInterceptor}.
+ * Unit test for {@link QueryExecutorMethodInterceptor}.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
@@ -40,27 +40,24 @@ import org.springframework.data.util.Streamable;
 @RunWith(MockitoJUnitRunner.class)
 public class QueryExecutorMethodInterceptorUnitTests {
 
-	@Mock RepositoryFactorySupport factory;
 	@Mock RepositoryInformation information;
 	@Mock QueryLookupStrategy strategy;
 
-	@Test
+	@Test // DATACMNS-1508
 	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() {
 
 		when(information.hasQueryMethods()).thenReturn(true);
-		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.empty());
 
-		assertThatIllegalStateException().isThrownBy(
-				() -> factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory()));
+		assertThatIllegalStateException()
+				.isThrownBy(() -> new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(),
+						Optional.empty(), PropertiesBasedNamedQueries.EMPTY, Collections.emptyList()));
 	}
 
-	@Test
+	@Test // DATACMNS-1508
 	public void skipsQueryLookupsIfQueryLookupStrategyIsNotPresent() {
 
-		when(information.getQueryMethods()).thenReturn(Streamable.empty());
-		when(factory.getQueryLookupStrategy(any(), any())).thenReturn(Optional.of(strategy));
-
-		factory.new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory());
+		new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(), Optional.empty(),
+				PropertiesBasedNamedQueries.EMPTY, Collections.emptyList());
 
 		verify(strategy, times(0)).resolveQuery(any(), any(), any(), any());
 	}

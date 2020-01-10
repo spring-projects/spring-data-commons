@@ -45,6 +45,7 @@ import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
 import org.springframework.cglib.core.ReflectUtils;
+import org.springframework.core.KotlinDetector;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -1444,7 +1445,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		Class<?> type = property.getOwner().getType();
 
-		if (isAccessible(type) && org.springframework.data.util.ReflectionUtils.isKotlinClass(type)) {
+		if (isAccessible(type) && KotlinDetector.isKotlinType(type)) {
 			return KotlinCopyMethod.findCopyMethod(type).filter(it -> it.supportsProperty(property)).isPresent();
 		}
 
