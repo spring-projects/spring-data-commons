@@ -50,7 +50,8 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  */
 public class PartTreeUnitTests {
 
-	private String[] PREFIXES = { "find", "read", "get", "query", "stream", "count", "delete", "remove", "exists" };
+	private String[] PREFIXES = { "find", "read", "get", "query", "search", "stream", "count", "delete", "remove",
+			"exists" };
 
 	@Test
 	public void rejectsNullSource() {
@@ -395,6 +396,15 @@ public class PartTreeUnitTests {
 	public void queryPrefixShouldBeSupportedInRepositoryQueryMethods() {
 
 		PartTree tree = new PartTree("queryByFirstnameAndLastname", User.class);
+		Iterable<Part> parts = tree.getParts();
+
+		assertThat(parts).containsExactly(part("firstname"), part("lastname"));
+	}
+
+	@Test // DATACMNS-1645
+	public void searchPrefixShouldBeSupportedInRepositoryQueryMethods() {
+
+		PartTree tree = new PartTree("searchByFirstnameAndLastname", User.class);
 		Iterable<Part> parts = tree.getParts();
 
 		assertThat(parts).containsExactly(part("firstname"), part("lastname"));
