@@ -112,7 +112,7 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	/**
 	 * @author Mark Paluch
 	 */
-	public static interface MyRepositoryQuery extends RepositoryQuery {
+	public interface MyRepositoryQuery extends RepositoryQuery {
 
 	}
 }

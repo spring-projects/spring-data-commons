@@ -57,7 +57,7 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		every { backingRepository.findAll() }.returns(Flux.just(sample))
+		every { backingRepository.findAll() } returns Flux.just(sample)
 
 		val result = runBlocking {
 			coRepository.findAll().toList()
@@ -113,7 +113,7 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		every { backingRepository.findById("foo") }.returns(Mono.just(sample))
+		every { backingRepository.findById("foo") } returns Mono.just(sample)
 
 		val result = runBlocking {
 			coRepository.findById("foo")
