@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import reactor.core.publisher.Mono
  * Interface for generic CRUD operations using Kotlin Coroutines on a repository for a specific type.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.3
  * @see Flow
  */
@@ -97,6 +98,18 @@ interface CoroutineCrudRepository<T, ID> : Repository<T, ID> {
 	fun findAllById(ids: Iterable<ID>): Flow<T>
 
 	/**
+	 * Returns all instances of the type `T` with the given IDs.
+	 * If some or all ids are not found, no entities are returned for these IDs.
+	 * Note that the order of elements in the result is not guaranteed.
+	 *
+	 * @param ids must not be null nor contain any null values.
+	 * @return [Flow] emitting the found entities. The size can be equal or less than the number of given
+	 * ids.
+	 * @throws IllegalArgumentException in case the given [ids][Iterable] or one of its items is null.
+	 */
+	fun findAllById(ids: Flow<ID>): Flow<T>
+
+	/**
 	 * Returns the number of entities available.
 	 *
 	 * @return number of entities.
@@ -127,6 +140,14 @@ interface CoroutineCrudRepository<T, ID> : Repository<T, ID> {
 	 * null.
 	 */
 	suspend fun deleteAll(entities: Iterable<T>)
+
+	/**
+	 * Deletes all given entities.
+	 *
+	 * @param entityStream must not be null.
+	 * @throws IllegalArgumentException in case the given [entityStream][Flow] is null.
+	 */
+	fun <S : T> deleteAll(entityStream: Flow<S>)
 
 	/**
 	 * Deletes all entities managed by the repository.
