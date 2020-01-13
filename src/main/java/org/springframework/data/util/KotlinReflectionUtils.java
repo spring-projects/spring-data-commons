@@ -40,12 +40,11 @@ import org.springframework.lang.Nullable;
  * errors.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.3
  * @see org.springframework.core.KotlinDetector#isKotlinReflectPresent()
  */
 public final class KotlinReflectionUtils {
-
-	private static final int KOTLIN_KIND_CLASS = 1;
 
 	private KotlinReflectionUtils() {}
 
@@ -64,7 +63,7 @@ public final class KotlinReflectionUtils {
 		return Arrays.stream(type.getDeclaredAnnotations()) //
 				.filter(annotation -> annotation.annotationType().getName().equals("kotlin.Metadata")) //
 				.map(annotation -> AnnotationUtils.getValue(annotation, "k")) //
-				.anyMatch(it -> Integer.valueOf(KOTLIN_KIND_CLASS).equals(it));
+				.anyMatch(it -> Integer.valueOf(KotlinClassHeaderKind.CLASS.id).equals(it));
 	}
 
 	/**
@@ -201,5 +200,16 @@ public final class KotlinReflectionUtils {
 
 		Method javaMethod = ReflectJvmMapping.getJavaMethod(function);
 		return javaMethod != null && javaMethod.equals(method);
+	}
+
+	private enum KotlinClassHeaderKind {
+
+		CLASS(1), FILE(2), SYNTHETIC_CLASS(3), MULTI_FILE_CLASS_FACADE(4), MULTI_FILE_CLASS_PART(5);
+
+		int id;
+
+		KotlinClassHeaderKind(int val) {
+			this.id = val;
+		}
 	}
 }

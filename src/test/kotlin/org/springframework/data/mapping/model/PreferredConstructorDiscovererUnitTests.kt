@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,8 +109,7 @@ class PreferredConstructorDiscovererUnitTests {
 		constructor(firstname: String, lastname: String) : this(firstname)
 	}
 
-	class DefaultConstructor(val firstname: String = "foo") {
-	}
+	class DefaultConstructor(val firstname: String = "foo")
 
 	class TwoDefaultConstructorsAnnotated(val firstname: String = "foo", val lastname: String = "bar") {
 

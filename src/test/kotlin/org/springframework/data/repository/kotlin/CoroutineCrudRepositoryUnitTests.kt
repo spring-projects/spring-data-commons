@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,16 @@ package org.springframework.data.repository.kotlin
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
+import org.reactivestreams.Publisher
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.data.repository.sample.User
@@ -40,8 +43,8 @@ import rx.Single
 class CoroutineCrudRepositoryUnitTests {
 
 	val backingRepository = mockk<ReactiveCrudRepository<User, String>>()
-	lateinit var factory: DummyReactiveRepositoryFactory;
-	lateinit var coRepository: MyCoRepository;
+	lateinit var factory: DummyReactiveRepositoryFactory
+	lateinit var coRepository: MyCoRepository
 
 	@Before
 	fun before() {
@@ -54,7 +57,7 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		every { backingRepository.findAll() }.returns(Flux.just(sample))
+		every { backingRepository.findAll() } returns Flux.just(sample)
 
 		val result = runBlocking {
 			coRepository.findAll().toList()
@@ -64,17 +67,113 @@ class CoroutineCrudRepositoryUnitTests {
 	}
 
 	@Test // DATACMNS-1508
+	fun shouldInvokeFindAllById() {
+
+		every { backingRepository.findAllById(any<Publisher<String>>()) } returns Flux.fromArray(arrayOf(User(), User()))
+
+		val result = runBlocking {
+			coRepository.findAllById(flowOf("user-1", "user-2")).toList()
+		}
+
+		assertThat(result).hasSize(2)
+	}
+
+	@Test // DATACMNS-1508
+	fun shouldInvokeSaveAllWhenGivenIterable() {
+
+		val sample = listOf(User(), User())
+
+		every { backingRepository.saveAll(any<Iterable<User>>()) } returns Flux.fromIterable(sample)
+
+		val result = runBlocking {
+			coRepository.saveAll(sample).toList()
+		}
+
+		assertThat(result).containsExactlyElementsOf(sample)
+	}
+
+	@Test // DATACMNS-1508
+	fun shouldInvokeSaveAllWhenGivenFlow() {
+
+		val u1 = User()
+		val u2 = User()
+		val sample = flowOf(u1, u2)
+
+		every { backingRepository.saveAll(any<Publisher<User>>()) } returns Flux.fromArray(arrayOf(u1, u2))
+
+		val result = runBlocking {
+			coRepository.saveAll(sample).toList()
+		}
+
+		assertThat(result).containsExactly(u1, u2)
+	}
+
+	@Test // DATACMNS-1508
 	fun shouldInvokeFindById() {
 
 		val sample = User()
 
-		every { backingRepository.findById("foo") }.returns(Mono.just(sample))
+		every { backingRepository.findById("foo") } returns Mono.just(sample)
 
 		val result = runBlocking {
 			coRepository.findById("foo")
 		}
 
 		assertThat(result).isNotNull().isEqualTo(sample)
+	}
+
+	@Test // DATACMNS-1508
+	fun shouldInvokeExistsById() {
+
+		every { backingRepository.existsById("foo") } returns Mono.just(true)
+
+		val result = runBlocking {
+			coRepository.existsById("foo")
+		}
+
+		assertThat(result).isTrue()
+	}
+
+	@Test // DATACMNS-1508
+	fun shouldInvokeDeleteAll() {
+
+		every { backingRepository.deleteAll() } returns Mono.empty()
+
+		runBlocking {
+			coRepository.deleteAll()
+		}
+
+		verify { backingRepository.deleteAll() }
+	}
+
+	@Test // DATACMNS-1508
+	fun shouldInvokeDeleteAllWhenGivenIterable() {
+
+		val sample = listOf(User(), User())
+
+		every { backingRepository.deleteAll(any<Iterable<User>>()) } returns Mono.empty()
+
+		runBlocking {
+			coRepository.deleteAll(sample)
+		}
+
+		verify { backingRepository.deleteAll(sample) }
+	}
+
+	@Test // DATACMNS-1508
+	fun shouldInvokeDeleteAllWhenGivenFlow() {
+
+		val u1 = User()
+		val u2 = User()
+		val sample = flowOf(u1, u2)
+
+		every { backingRepository.deleteAll(any<Publisher<User>>()) } returns Mono.empty()
+
+		runBlocking {
+			coRepository.deleteAll(sample)
+		}
+
+		verify { backingRepository.deleteAll(any<Publisher<User>>()) }
 	}
 
 	@Test // DATACMNS-1508
