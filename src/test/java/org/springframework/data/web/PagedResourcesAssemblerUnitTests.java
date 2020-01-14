@@ -107,7 +107,7 @@ public class PagedResourcesAssemblerUnitTests {
 	@Test
 	public void usesCustomLinkProvided() {
 
-		Link link = new Link("https://foo:9090", "rel");
+		Link link = Link.of("https://foo:9090", "rel");
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1), link);
 

@@ -94,7 +94,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	@Override
 	@SuppressWarnings("null")
 	public PagedModel<EntityModel<T>> toModel(Page<T> entity) {
-		return toModel(entity, it -> new EntityModel<>(it));
+		return toModel(entity, it -> EntityModel.of(it));
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	 * @return
 	 */
 	public PagedModel<EntityModel<T>> toModel(Page<T> page, Link selfLink) {
-		return toModel(page, it -> new EntityModel<>(it), selfLink);
+		return toModel(page, it -> EntityModel.of(it), selfLink);
 	}
 
 	/**
@@ -178,7 +178,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 		EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(type);
 		List<EmbeddedWrapper> embedded = Collections.singletonList(wrapper);
 
-		return addPaginationLinks(new PagedModel<>(embedded, metadata), page, link);
+		return addPaginationLinks(PagedModel.of(embedded, metadata), page, link);
 	}
 
 	/**
@@ -196,7 +196,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 		Assert.notNull(metadata, "PageMetadata must not be null!");
 		Assert.notNull(page, "Page must not be null!");
 
-		return new PagedModel<>(resources, metadata);
+		return PagedModel.of(resources, metadata);
 	}
 
 	private <S, R extends RepresentationModel<?>> PagedModel<R> createModel(Page<S> page,
@@ -274,7 +274,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 		UriComponentsBuilder builder = fromUri(base.expand());
 		pageableResolver.enhance(builder, getMethodParameter(), pageable);
 
-		return new Link(UriTemplate.of(builder.build().toString()), relation);
+		return Link.of(UriTemplate.of(builder.build().toString()), relation);
 	}
 
 	/**

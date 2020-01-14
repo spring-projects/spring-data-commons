@@ -160,8 +160,8 @@ public class SpringDataJaxbUnitTests {
 
 		@Override
 		protected List<Link> getLinks(Page<?> source) {
-			return Arrays.asList(new Link(IanaLinkRelations.NEXT.value(), IanaLinkRelations.NEXT),
-					new Link(IanaLinkRelations.PREV.value(), IanaLinkRelations.PREV));
+			return Arrays.asList(Link.of(IanaLinkRelations.NEXT.value(), IanaLinkRelations.NEXT),
+					Link.of(IanaLinkRelations.PREV.value(), IanaLinkRelations.PREV));
 		}
 	}
 }
