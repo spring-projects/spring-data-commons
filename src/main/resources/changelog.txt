@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.4.RELEASE (2020-01-15)
+---------------------------------------------
+* DATACMNS-1643 - Update copyright years to 2020.
+* DATACMNS-1635 - Allow dedicated expression of null handling for Querydsl Predicates in WebMVC integration.
+* DATACMNS-1633 - Release 2.2.4 (Moore SR4).
+* DATACMNS-1593 - QuerydslPredicateArgumentResolver produces null result for empty form submission.
+
+
 Changes in version 2.1.15.RELEASE (2020-01-15)
 ----------------------------------------------
 * DATACMNS-1643 - Update copyright years to 2020.
@@ -2572,6 +2580,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
