@@ -1,6 +1,12 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.15.RELEASE (2020-01-15)
+----------------------------------------------
+* DATACMNS-1643 - Update copyright years to 2020.
+* DATACMNS-1632 - Release 2.1.15 (Lovelace SR15).
+
+
 Changes in version 2.2.3.RELEASE (2019-12-04)
 ---------------------------------------------
 * DATACMNS-1631 - Fix spelling in reference documentation.
@@ -2566,6 +2572,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
