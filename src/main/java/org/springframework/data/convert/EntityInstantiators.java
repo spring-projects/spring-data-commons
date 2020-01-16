@@ -17,6 +17,8 @@ package org.springframework.data.convert;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.InternalEntityInstantiatorFactory;
@@ -46,7 +48,7 @@ public class EntityInstantiators extends org.springframework.data.mapping.model.
 	 *
 	 * @param fallback must not be {@literal null}.
 	 */
-	public EntityInstantiators(org.springframework.data.mapping.model.EntityInstantiator fallback) {
+	public EntityInstantiators(EntityInstantiator fallback) {
 		super(fallback, Collections.emptyMap());
 	}
 
@@ -55,9 +57,9 @@ public class EntityInstantiators extends org.springframework.data.mapping.model.
 	 *
 	 * @param customInstantiators must not be {@literal null}.
 	 */
-	public EntityInstantiators(
-			Map<Class<?>, org.springframework.data.mapping.model.EntityInstantiator> customInstantiators) {
-		super(InternalEntityInstantiatorFactory.getKotlinClassGeneratingEntityInstantiator(), customInstantiators);
+	public EntityInstantiators(Map<Class<?>, EntityInstantiator> customInstantiators) {
+		super(InternalEntityInstantiatorFactory.getKotlinClassGeneratingEntityInstantiator(),
+				adaptFromLegacy(customInstantiators));
 	}
 
 	/**
@@ -67,9 +69,9 @@ public class EntityInstantiators extends org.springframework.data.mapping.model.
 	 * @param defaultInstantiator must not be {@literal null}.
 	 * @param customInstantiators must not be {@literal null}.
 	 */
-	public EntityInstantiators(org.springframework.data.mapping.model.EntityInstantiator defaultInstantiator,
-			Map<Class<?>, org.springframework.data.mapping.model.EntityInstantiator> customInstantiators) {
-		super(defaultInstantiator, customInstantiators);
+	public EntityInstantiators(EntityInstantiator defaultInstantiator,
+			Map<Class<?>, EntityInstantiator> customInstantiators) {
+		super(defaultInstantiator, adaptFromLegacy(customInstantiators));
 	}
 
 	/*
@@ -79,5 +81,14 @@ public class EntityInstantiators extends org.springframework.data.mapping.model.
 	@Override
 	public EntityInstantiator getInstantiatorFor(PersistentEntity<?, ?> entity) {
 		return new EntityInstantiatorAdapter(super.getInstantiatorFor(entity));
+	}
+
+	private static Map<Class<?>, org.springframework.data.mapping.model.EntityInstantiator> adaptFromLegacy(
+			Map<Class<?>, EntityInstantiator> instantiators) {
+
+		return instantiators == null //
+				? null //
+				: instantiators.entrySet().stream() //
+						.collect(Collectors.toMap(Entry::getKey, e -> new EntityInstantiatorAdapter(e.getValue())));
 	}
 }
