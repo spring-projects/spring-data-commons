@@ -1,6 +1,34 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.0.M1 (2020-01-16)
+----------------------------------------
+* DATACMNS-1651 - Fix typo in Javadoc.
+* DATACMNS-1647 - Switch to use factory methods of RepresentationModel classes.
+* DATACMNS-1645 - Add search prefix for part tree queries.
+* DATACMNS-1643 - Update copyright years to 2020.
+* DATACMNS-1635 - Allow dedicated expression of null handling for Querydsl Predicates in WebMVC integration.
+* DATACMNS-1631 - Fix spelling in reference documentation.
+* DATACMNS-1630 - Remove custom copy of ShadowingClassLoader.
+* DATACMNS-1629 - Log module name in RepositoryConfigurationDelegate during repository scanning.
+* DATACMNS-1626 - Add attribute to projection documentation for reuse with R2DBC.
+* DATACMNS-1620 - Improve resource description of repository bean definitions.
+* DATACMNS-1613 - PageImpl created from only a Collection returns invalid size.
+* DATACMNS-1609 - Auditing metadata should not detect paths containing map or collection like segments.
+* DATACMNS-1603 - Reword "wanna" exception messages.
+* DATACMNS-1602 - Reuse generated PropertyAccessor's and Entityinstantiator classes across EntityInstantiators and PersistentPropertyAccessorFactorys.
+* DATACMNS-1601 - Improve CrudRepository JavaDoc with the guarantees and exceptions of findAllById and deleteAllById.
+* DATACMNS-1598 - "Cannot create EnumSet for unknown element type".
+* DATACMNS-1596 - Module not exposing any entity identifying annotations claims all repositories.
+* DATACMNS-1593 - QuerydslPredicateArgumentResolver produces null result for empty form submission.
+* DATACMNS-1592 - Update documentation to use @With instead of @Wither.
+* DATACMNS-1591 - @Primary annotation not honored.
+* DATACMNS-1587 - Release 2.3 M1 (Neumann).
+* DATACMNS-1508 - Add support for Coroutines repositories.
+* DATACMNS-990 - Enable building with JDK11+.
+* DATACMNS-949 - Drop own Converters and use ReactiveAdapterRegistry directly where possible.
+
+
 Changes in version 2.2.4.RELEASE (2020-01-15)
 ---------------------------------------------
 * DATACMNS-1643 - Update copyright years to 2020.
@@ -2580,6 +2608,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
