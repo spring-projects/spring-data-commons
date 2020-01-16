@@ -16,10 +16,12 @@
 package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assumptions.*;
 
 import java.net.URL;
 import java.net.URLClassLoader;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.core.KotlinDetector;
@@ -32,6 +34,11 @@ import org.springframework.util.ReflectionUtils;
  * @author Mark Paluch
  */
 public class KotlinReflectionUtilsUnitTests {
+
+	@Before
+	public void before() {
+		assumeThat(Version.javaVersion()).isLessThan(Version.parse("9.0"));
+	}
 
 	@Test // DATACMNS-1508
 	public void classShouldLoadWithKotlin() {
