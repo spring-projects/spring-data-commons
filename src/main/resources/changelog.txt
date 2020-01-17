@@ -1,6 +1,11 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.0.M2 (2020-01-17)
+----------------------------------------
+* DATACMNS-1652 - Release 2.3 M2 (Neumann).
+
+
 Changes in version 2.3.0.M1 (2020-01-16)
 ----------------------------------------
 * DATACMNS-1651 - Fix typo in Javadoc.
@@ -2608,6 +2613,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
