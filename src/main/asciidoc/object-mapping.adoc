@@ -207,6 +207,7 @@ Even if the intent is that the calculation should be preferred, it's important t
 The core idea here is to use factory methods instead of additional constructors to avoid the need for constructor disambiguation through `@PersistenceConstructor`.
 Instead, defaulting of properties is handled within the factory method.
 
+[[mapping.general-recommendations]]
 == General recommendations
 
 * _Try to stick to immutable objects_ -- Immutable objects are straightforward to create as materializing an object is then a matter of calling its constructor only.
