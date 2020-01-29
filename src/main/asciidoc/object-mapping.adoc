@@ -183,7 +183,7 @@ class Person {
   }
 
   Person withId(Long id) {                                                  <1>
-    return new Person(id, this.firstname, this.lastname, this.birthday);
+    return new Person(id, this.firstname, this.lastname, this.birthday, this.age);
   }
 
   void setRemarks(String remarks) {                                         <5>
