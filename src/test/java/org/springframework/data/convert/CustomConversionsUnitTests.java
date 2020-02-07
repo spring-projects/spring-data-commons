@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
+import java.util.function.Predicate;
 
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
@@ -235,7 +236,7 @@ public class CustomConversionsUnitTests {
 		ConverterRegistry registry = mock(ConverterRegistry.class);
 
 		ConverterConfiguration config = new ConverterConfiguration(StoreConversions.NONE, Collections.emptyList(),
-				Collections.singleton(new ConvertiblePair(java.time.LocalDateTime.class, Date.class)));
+				Predicate.<ConvertiblePair> isEqual(new ConvertiblePair(java.time.LocalDateTime.class, Date.class)).negate());
 		new CustomConversions(config).registerConvertersIn(registry);
 
 		verify(registry, never()).addConverter(any(LocalDateTimeToDateConverter.class));
@@ -248,7 +249,7 @@ public class CustomConversionsUnitTests {
 
 		ConverterConfiguration config = new ConverterConfiguration(StoreConversions.NONE,
 				Collections.singletonList(LocalDateTimeToDateConverter.INSTANCE),
-				Collections.singleton(new ConvertiblePair(java.time.LocalDateTime.class, Date.class)));
+				Predicate.<ConvertiblePair> isEqual(new ConvertiblePair(java.time.LocalDateTime.class, Date.class)).negate());
 		new CustomConversions(config).registerConvertersIn(registry);
 
 		verify(registry).addConverter(any(LocalDateTimeToDateConverter.class));

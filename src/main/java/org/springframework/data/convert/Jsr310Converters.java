@@ -53,6 +53,8 @@ public abstract class Jsr310Converters {
 
 	private static final boolean JAVA_8_IS_PRESENT = ClassUtils.isPresent("java.time.LocalDateTime",
 			Jsr310Converters.class.getClassLoader());
+	private static final List<Class<?>> CLASSES = Arrays.asList(LocalDateTime.class, LocalDate.class, LocalTime.class,
+			Instant.class, ZoneId.class, Duration.class, Period.class);
 
 	/**
 	 * Returns the converters to be registered. Will only return converters in case we're running on Java 8.
@@ -95,8 +97,7 @@ public abstract class Jsr310Converters {
 			return false;
 		}
 
-		return Arrays.<Class<?>> asList(LocalDateTime.class, LocalDate.class, LocalTime.class, Instant.class)
-				.contains(type);
+		return CLASSES.contains(type);
 	}
 
 	@ReadingConverter
@@ -296,7 +297,7 @@ public abstract class Jsr310Converters {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -312,7 +313,7 @@ public abstract class Jsr310Converters {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
@@ -328,7 +329,7 @@ public abstract class Jsr310Converters {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */

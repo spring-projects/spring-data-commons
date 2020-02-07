@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.core.GenericTypeResolver;
@@ -99,35 +99,24 @@ public class CustomConversions {
 	private final Function<ConvertiblePair, Class<?>> getReadTarget = convertiblePair -> getCustomTarget(
 			convertiblePair.getSourceType(), convertiblePair.getTargetType(), readingPairs);
 
-	private Function<ConvertiblePair, Class<?>> getWriteTarget = convertiblePair -> getCustomTarget(
+	private final Function<ConvertiblePair, Class<?>> getWriteTarget = convertiblePair -> getCustomTarget(
 			convertiblePair.getSourceType(), convertiblePair.getTargetType(), writingPairs);
 
-	private Function<ConvertiblePair, Class<?>> getRawWriteTarget = convertiblePair -> getCustomTarget(
+	private final Function<ConvertiblePair, Class<?>> getRawWriteTarget = convertiblePair -> getCustomTarget(
 			convertiblePair.getSourceType(), null, writingPairs);
-
-	/**
-	 * Deferred initialization allowing store implementations use a callback/consumer driven configuration of the actual
-	 * {@link CustomConversions}.
-	 *
-	 * @param converterConfiguration the {@link Supplier} providing a {@link ConverterConfiguration}.
-	 * @since 2.3
-	 */
-	protected CustomConversions(Supplier<ConverterConfiguration> converterConfiguration) {
-		this(converterConfiguration.get());
-	}
 
 	/**
 	 * @param converterConfiguration the {@link ConverterConfiguration} to apply.
 	 * @since 2.3
 	 */
-	protected CustomConversions(ConverterConfiguration converterConfiguration) {
+	public CustomConversions(ConverterConfiguration converterConfiguration) {
 
 		this.converterConfiguration = converterConfiguration;
 
 		List<Object> registeredConverters = collectPotentialConverterRegistrations(
 				converterConfiguration.getStoreConversions(), converterConfiguration.getUserConverters()).stream() //
 						.filter(this::isSupportedConverter) //
-						.filter(it -> !skip(it)) //
+						.filter(this::shouldRegister) //
 						.map(ConverterRegistrationIntent::getConverterRegistration) //
 						.map(this::register) //
 						.distinct() //
@@ -191,7 +180,7 @@ public class CustomConversions {
 
 	/**
 	 * Get all converters and add origin information
-	 * 
+	 *
 	 * @param storeConversions
 	 * @param converters
 	 * @return
@@ -202,20 +191,23 @@ public class CustomConversions {
 
 		List<ConverterRegistrationIntent> converterRegistrations = new ArrayList<>();
 
-		converterRegistrations.addAll(converters.stream() //
-				.flatMap(it -> storeConversions.getRegistrationsFor(it).stream()) //
+		converters.stream() //
+				.map(storeConversions::getRegistrationsFor) //
+				.flatMap(Streamable::stream) //
 				.map(ConverterRegistrationIntent::userConverters) //
-				.collect(Collectors.toList()));
+				.forEach(converterRegistrations::add);
 
-		converterRegistrations.addAll(storeConversions.getStoreConverters().stream() //
-				.flatMap(it -> storeConversions.getRegistrationsFor(it).stream()) //
+		storeConversions.getStoreConverters().stream() //
+				.map(storeConversions::getRegistrationsFor) //
+				.flatMap(Streamable::stream) //
 				.map(ConverterRegistrationIntent::storeConverters) //
-				.collect(Collectors.toList()));
+				.forEach(converterRegistrations::add);
 
-		converterRegistrations.addAll(DEFAULT_CONVERTERS.stream() //
-				.flatMap(it -> storeConversions.getRegistrationsFor(it).stream()) //
+		DEFAULT_CONVERTERS.stream() //
+				.map(storeConversions::getRegistrationsFor) //
+				.flatMap(Streamable::stream) //
 				.map(ConverterRegistrationIntent::defaultConverters) //
-				.collect(Collectors.toList()));
+				.forEach(converterRegistrations::add);
 
 		return converterRegistrations;
 	}
@@ -253,7 +245,7 @@ public class CustomConversions {
 
 	/**
 	 * Registers the given {@link ConvertiblePair} as reading or writing pair depending on the type sides being basic
-	 * Mongo types.
+	 * types.
 	 *
 	 * @param converterRegistration
 	 */
@@ -318,18 +310,17 @@ public class CustomConversions {
 
 	/**
 	 * @param intent must not be {@literal null}.
-	 * @return {@literal true} if the given {@link ConverterRegistration} shall be skipped.
+	 * @return {@literal false} if the given {@link ConverterRegistration} shall be skipped.
 	 * @since 2.3
 	 */
-	private boolean skip(ConverterRegistrationIntent intent) {
-
-		return intent.isDefaultConveter()
-				&& converterConfiguration.getSkipFor().contains(intent.getConverterRegistration().getConvertiblePair());
+	private boolean shouldRegister(ConverterRegistrationIntent intent) {
+		return !intent.isDefaultConverter()
+				|| converterConfiguration.shouldRegister(intent.getConverterRegistration().getConvertiblePair());
 	}
 
 	/**
 	 * Returns the target type to convert to in case we have a custom conversion registered to convert the given source
-	 * type into a Mongo native one.
+	 * type into a store native one.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @return
@@ -344,9 +335,9 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns the target type we can read an inject of the given source type to. The returned type might
-	 * be a subclass of the given expected type though. If {@code requestedTargetType} is {@literal null} we will simply
-	 * return the first target type matching or {@literal null} if no conversion can be found.
+	 * Returns the target type we can read an inject of the given source type to. The returned type might be a subclass of
+	 * the given expected type though. If {@code requestedTargetType} is {@literal null} we will simply return the first
+	 * target type matching or {@literal null} if no conversion can be found.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param requestedTargetType must not be {@literal null}.
@@ -363,8 +354,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to read {@code sourceType} into a native type. The
-	 * returned type might be a subclass of the given expected type though.
+	 * Returns whether we have a custom conversion registered to read {@code sourceType} into a native type. The returned
+	 * type might be a subclass of the given expected type though.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @return
@@ -377,8 +368,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to read an object of the given source type
-	 * into an object of the given native target type.
+	 * Returns whether we have a custom conversion registered to read an object of the given source type into an object of
+	 * the given native target type.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
@@ -393,8 +384,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to read the given source into the given target
-	 * type.
+	 * Returns whether we have a custom conversion registered to read the given source into the given target type.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param targetType must not be {@literal null}
@@ -409,8 +399,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns the actual target type for the given {@code sourceType} and {@code targetType}. Note that the
-	 * returned {@link Class} could be an assignable type to the given {@code targetType}.
+	 * Returns the actual target type for the given {@code sourceType} and {@code targetType}. Note that the returned
+	 * {@link Class} could be an assignable type to the given {@code targetType}.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
@@ -422,8 +412,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Inspects the given {@link ConvertiblePair ConvertiblePairs} for ones that have a source compatible type as source. Additionally
-	 * checks assignability of the target type if one is given.
+	 * Inspects the given {@link ConvertiblePair ConvertiblePairs} for ones that have a source compatible type as source.
+	 * Additionally checks assignability of the target type if one is given.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType can be {@literal null}.
@@ -461,7 +451,7 @@ public class CustomConversions {
 	}
 
 	private static boolean requestedTargetTypeIsAssignable(@Nullable Class<?> requestedTargetType, Class<?> targetType) {
-		return requestedTargetType == null ? true : targetType.isAssignableFrom(requestedTargetType);
+		return requestedTargetType == null || targetType.isAssignableFrom(requestedTargetType);
 	}
 
 	/**
@@ -607,7 +597,7 @@ public class CustomConversions {
 			return isConverterOfSource(ConverterOrigin.USER_DEFINED);
 		}
 
-		public boolean isDefaultConveter() {
+		public boolean isDefaultConverter() {
 			return isConverterOfSource(ConverterOrigin.DEFAULT);
 		}
 
@@ -645,7 +635,7 @@ public class CustomConversions {
 		 * @return
 		 */
 		public boolean isWriting() {
-			return writing == true || (!reading && isSimpleTargetType());
+			return writing || (!reading && isSimpleTargetType());
 		}
 
 		/**
@@ -654,7 +644,7 @@ public class CustomConversions {
 		 * @return
 		 */
 		public boolean isReading() {
-			return reading == true || (!writing && isSimpleSourceType());
+			return reading || (!writing && isSimpleSourceType());
 		}
 
 		/**
@@ -667,7 +657,7 @@ public class CustomConversions {
 		}
 
 		/**
-		 * Returns whether the source type is a Mongo simple one.
+		 * Returns whether the source type is a simple one.
 		 *
 		 * @return
 		 */
@@ -676,7 +666,7 @@ public class CustomConversions {
 		}
 
 		/**
-		 * Returns whether the target type is a Mongo simple one.
+		 * Returns whether the target type is a simple one.
 		 *
 		 * @return
 		 */
@@ -811,7 +801,7 @@ public class CustomConversions {
 	/**
 	 * Value object holding the actual {@link StoreConversions} and custom {@link Converter converters} configured for
 	 * registration.
-	 * 
+	 *
 	 * @author Christoph Strobl
 	 * @since 2.3
 	 */
@@ -819,7 +809,7 @@ public class CustomConversions {
 
 		private final StoreConversions storeConversions;
 		private final List<?> userConverters;
-		private final Set<ConvertiblePair> skipFor;
+		private final Predicate<ConvertiblePair> converterRegistrationFilter;
 
 		/**
 		 * Create a new ConverterConfiguration holding the given {@link StoreConversions} and user defined converters.
@@ -828,7 +818,7 @@ public class CustomConversions {
 		 * @param userConverters must not be {@literal null} use {@link Collections#emptyList()} instead.
 		 */
 		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters) {
-			this(storeConversions, userConverters, Collections.emptySet());
+			this(storeConversions, userConverters, it -> true);
 		}
 
 		/**
@@ -840,14 +830,14 @@ public class CustomConversions {
 		 *
 		 * @param storeConversions must not be {@literal null}.
 		 * @param userConverters must not be {@literal null} use {@link Collections#emptyList()} instead.
-		 * @param skipFor must not be {@literal null} use {@link Collections#emptyList()} instead.
+		 * @param converterRegistrationFilter must not be {@literal null}..
 		 */
 		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters,
-				Collection<ConvertiblePair> skipFor) {
+				Predicate<ConvertiblePair> converterRegistrationFilter) {
 
 			this.storeConversions = storeConversions;
 			this.userConverters = new ArrayList<>(userConverters);
-			this.skipFor = new HashSet<>(skipFor);
+			this.converterRegistrationFilter = converterRegistrationFilter;
 		}
 
 		/**
@@ -867,8 +857,8 @@ public class CustomConversions {
 		/**
 		 * @return never {@literal null}.
 		 */
-		Set<ConvertiblePair> getSkipFor() {
-			return skipFor;
+		boolean shouldRegister(ConvertiblePair candidate) {
+			return this.converterRegistrationFilter.test(candidate);
 		}
 	}
 }
