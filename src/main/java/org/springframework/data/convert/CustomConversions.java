@@ -288,7 +288,7 @@ public class CustomConversions {
 	 */
 	private boolean isSupportedConverter(ConverterRegistrationIntent registrationIntent) {
 
-		boolean register = registrationIntent.isUserConverter()
+		boolean register = registrationIntent.isUserConverter() || registrationIntent.isStoreConverter()
 				|| (registrationIntent.isReading() && registrationIntent.isSimpleSourceType())
 				|| (registrationIntent.isWriting() && registrationIntent.isSimpleTargetType());
 
@@ -595,6 +595,10 @@ public class CustomConversions {
 
 		public boolean isUserConverter() {
 			return isConverterOfSource(ConverterOrigin.USER_DEFINED);
+		}
+
+		public boolean isStoreConverter() {
+			return isConverterOfSource(ConverterOrigin.STORE);
 		}
 
 		public boolean isDefaultConverter() {

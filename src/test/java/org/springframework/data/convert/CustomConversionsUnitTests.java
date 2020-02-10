@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import org.joda.time.DateTime;
@@ -42,6 +43,7 @@ import org.springframework.data.convert.CustomConversions.ConverterConfiguration
 import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter;
 import org.springframework.data.convert.ThreeTenBackPortConverters.LocalDateTimeToJavaTimeInstantConverter;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.threeten.bp.LocalDateTime;
 
@@ -219,6 +221,21 @@ public class CustomConversionsUnitTests {
 		verify(registry, never()).addConverter(any(LocalDateTimeToJavaTimeInstantConverter.class));
 	}
 
+	@Test // DATACMNS-1665
+	public void registersStoreConverter() {
+
+		ConverterRegistry registry = mock(ConverterRegistry.class);
+
+		SimpleTypeHolder holder = new SimpleTypeHolder(Collections.emptySet(), true);
+
+		CustomConversions conversions = new CustomConversions(StoreConversions.of(holder, PointToMapConverter.INSTANCE),
+				Collections.emptyList());
+		conversions.registerConvertersIn(registry);
+
+		assertThat(conversions.isSimpleType(Point.class));
+		verify(registry).addConverter(any(PointToMapConverter.class));
+	}
+
 	@Test // DATACMNS-1615
 	public void doesNotSkipUnsupportedUserConverter() {
 
@@ -336,6 +353,18 @@ public class CustomConversionsUnitTests {
 		@Override
 		public String convert(Object source) {
 			return source != null ? source.toString() : null;
+		}
+
+	}
+
+	@WritingConverter
+	enum PointToMapConverter implements Converter<Point, Map<String, String>> {
+
+		INSTANCE;
+
+		@Override
+		public Map<String, String> convert(Point source) {
+			return source != null ? Collections.emptyMap() : null;
 		}
 
 	}
