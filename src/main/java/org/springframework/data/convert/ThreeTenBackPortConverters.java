@@ -48,7 +48,9 @@ import org.threeten.bp.ZoneOffset;
  * @author Mark Paluch
  * @see <a href="https://www.threeten.org/threetenbp">https://www.threeten.org/threetenbp</a>
  * @since 1.10
+ * @deprecated since 2.3, use JSR-310 types as replacement for ThreeTenBackport.
  */
+@Deprecated
 public abstract class ThreeTenBackPortConverters {
 
 	private static final boolean THREE_TEN_BACK_PORT_IS_PRESENT = ClassUtils.isPresent("org.threeten.bp.LocalDateTime",
@@ -95,6 +97,7 @@ public abstract class ThreeTenBackPortConverters {
 		return SUPPORTED_TYPES.contains(type);
 	}
 
+	@Deprecated
 	public static enum LocalDateTimeToJsr310LocalDateTimeConverter
 			implements Converter<LocalDateTime, java.time.LocalDateTime> {
 
@@ -114,6 +117,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
 
 		INSTANCE;
@@ -125,6 +129,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum LocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
 
 		INSTANCE;
@@ -136,6 +141,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
 
 		INSTANCE;
@@ -147,6 +153,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
 
 		INSTANCE;
@@ -158,6 +165,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum DateToLocalTimeConverter implements Converter<Date, LocalTime> {
 
 		INSTANCE;
@@ -169,6 +177,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum LocalTimeToDateConverter implements Converter<LocalTime, Date> {
 
 		INSTANCE;
@@ -180,6 +189,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum DateToInstantConverter implements Converter<Date, Instant> {
 
 		INSTANCE;
@@ -191,6 +201,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum InstantToDateConverter implements Converter<Instant, Date> {
 
 		INSTANCE;
@@ -202,6 +213,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum LocalDateTimeToJavaTimeInstantConverter implements Converter<LocalDateTime, java.time.Instant> {
 
 		INSTANCE;
@@ -213,6 +225,7 @@ public abstract class ThreeTenBackPortConverters {
 		}
 	}
 
+	@Deprecated
 	public static enum JavaTimeInstantToLocalDateTimeConverter implements Converter<java.time.Instant, LocalDateTime> {
 
 		INSTANCE;
@@ -225,6 +238,7 @@ public abstract class ThreeTenBackPortConverters {
 	}
 
 	@WritingConverter
+	@Deprecated
 	public static enum ZoneIdToStringConverter implements Converter<ZoneId, String> {
 
 		INSTANCE;
@@ -237,6 +251,7 @@ public abstract class ThreeTenBackPortConverters {
 	}
 
 	@ReadingConverter
+	@Deprecated
 	public static enum StringToZoneIdConverter implements Converter<String, ZoneId> {
 
 		INSTANCE;

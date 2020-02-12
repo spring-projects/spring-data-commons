@@ -39,7 +39,9 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author Mark Paluch
+ * @deprecated since 2.3, use JSR-310 types as replacement for Joda-Time.
  */
+@Deprecated
 public abstract class JodaTimeConverters {
 
 	private static final boolean JODA_TIME_IS_PRESENT = ClassUtils.isPresent("org.joda.time.LocalDate", null);
@@ -75,6 +77,7 @@ public abstract class JodaTimeConverters {
 		return converters;
 	}
 
+	@Deprecated
 	public enum LocalDateTimeToJsr310Converter implements Converter<LocalDateTime, java.time.LocalDateTime> {
 
 		INSTANCE;
@@ -86,6 +89,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@Deprecated
 	public enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
 
 		INSTANCE;
@@ -97,6 +101,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@Deprecated
 	public enum LocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
 
 		INSTANCE;
@@ -108,6 +113,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@Deprecated
 	public enum DateTimeToDateConverter implements Converter<DateTime, Date> {
 
 		INSTANCE;
@@ -119,6 +125,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@Deprecated
 	public enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
 
 		INSTANCE;
@@ -130,6 +137,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@Deprecated
 	public enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
 
 		INSTANCE;
@@ -141,6 +149,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@Deprecated
 	public enum DateToDateTimeConverter implements Converter<Date, DateTime> {
 
 		INSTANCE;
@@ -153,6 +162,7 @@ public abstract class JodaTimeConverters {
 	}
 
 	@ReadingConverter
+	@Deprecated
 	public enum LocalDateTimeToJodaLocalDateTime implements Converter<java.time.LocalDateTime, LocalDateTime> {
 
 		INSTANCE;
@@ -164,6 +174,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@Deprecated
 	public enum InstantToJodaLocalDateTime implements Converter<java.time.Instant, LocalDateTime> {
 
 		INSTANCE;
@@ -175,6 +186,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@Deprecated
 	public enum JodaLocalDateTimeToInstant implements Converter<LocalDateTime, Instant> {
 
 		INSTANCE;
@@ -186,6 +198,7 @@ public abstract class JodaTimeConverters {
 		}
 	}
 
+	@Deprecated
 	public enum LocalDateTimeToJodaDateTime implements Converter<java.time.LocalDateTime, DateTime> {
 
 		INSTANCE;
