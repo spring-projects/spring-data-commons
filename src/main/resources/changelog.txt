@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.0.M3 (2020-02-12)
+----------------------------------------
+* DATACMNS-1666 - Deprecate Joda-Time and ThreeTenBackport support.
+* DATACMNS-1665 - Changed converter registration broke converter usage in Spring Data Elasticsearch.
+* DATACMNS-1661 - Add missing parameter to object-mapping property population in reference documentation.
+* DATACMNS-1660 - Add anchor to section on mapping recommendations in reference documentation.
+* DATACMNS-1655 - Release 2.3 M3 (Neumann).
+* DATACMNS-1615 - Allow fine grained store specific converter registration.
+* DATACMNS-1212 - Remove unnecessary conversion between Instant and ZonedDateTime.
+
+
 Changes in version 2.3.0.M2 (2020-01-17)
 ----------------------------------------
 * DATACMNS-1652 - Release 2.3 M2 (Neumann).
@@ -2613,6 +2624,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
