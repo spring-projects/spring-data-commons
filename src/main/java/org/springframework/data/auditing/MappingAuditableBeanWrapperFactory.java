@@ -239,8 +239,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return accessor.getBean();
 		}
 
-		private <S, P extends PersistentProperty<?>> S setProperty(
-				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, S value) {
+		private <S> S setProperty(PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, S value) {
 
 			paths.forEach(it -> {
 
@@ -251,17 +250,15 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 				} catch (MappingException o_O) {
 
 					// Ignore null intermediate errors temporarily
-					if (!o_O.getMessage().contains("on null intermediate")) {
-						throw o_O;
-					}
+					potentiallyRethrowException(o_O);
 				}
 			});
 
 			return value;
 		}
 
-		private <P extends PersistentProperty<?>> TemporalAccessor setDateProperty(
-				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> property, TemporalAccessor value) {
+		private TemporalAccessor setDateProperty(PersistentPropertyPaths<?, ? extends PersistentProperty<?>> property,
+				TemporalAccessor value) {
 
 			property.forEach(it -> {
 
@@ -272,13 +269,17 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 				} catch (MappingException o_O) {
 
 					// Ignore null intermediate errors temporarily
-					if (!o_O.getMessage().contains("on null intermediate")) {
-						throw o_O;
-					}
+					potentiallyRethrowException(o_O);
 				}
 			});
 
 			return value;
+		}
+
+		private static void potentiallyRethrowException(MappingException o_O) {
+			if (!o_O.getMessage().contains("on null intermediate")) {
+				throw o_O;
+			}
 		}
 	}
 }
