@@ -128,7 +128,7 @@ public class Range<T extends Comparable<T>> {
 	 * bound.
 	 *
 	 * @param <T>
-	 * @param to the left {@link Bound}, must not be {@literal null}.
+	 * @param from the left {@link Bound}, must not be {@literal null}.
 	 * @return
 	 * @since 2.2
 	 */
