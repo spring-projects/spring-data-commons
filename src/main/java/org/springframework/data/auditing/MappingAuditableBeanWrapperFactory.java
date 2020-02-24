@@ -45,6 +45,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.8
  */
 public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrapperFactory {
@@ -262,8 +263,20 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		private <P extends PersistentProperty<?>> TemporalAccessor setDateProperty(
 				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> property, TemporalAccessor value) {
 
-			property.forEach(it -> this.accessor.setProperty(it,
-					getDateValueToSet(value, it.getRequiredLeafProperty().getType(), accessor.getBean())));
+			property.forEach(it -> {
+
+				try {
+
+					this.accessor.setProperty(it,
+							getDateValueToSet(value, it.getRequiredLeafProperty().getType(), accessor.getBean()));
+				} catch (MappingException o_O) {
+
+					// Ignore null intermediate errors temporarily
+					if (!o_O.getMessage().contains("on null intermediate")) {
+						throw o_O;
+					}
+				}
+			});
 
 			return value;
 		}
