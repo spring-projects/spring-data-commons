@@ -107,7 +107,7 @@ public interface TypeInformation<S> {
 	}
 
 	/**
-	 * Returns whether the property is a {@ link java.util.Map}. If this returns {@literal true} you can expect
+	 * Returns whether the property is a {@link java.util.Map}. If this returns {@literal true} you can expect
 	 * {@link #getComponentType()} as well as {@link #getMapValueType()} to return something not {@literal null}.
 	 *
 	 * @return
