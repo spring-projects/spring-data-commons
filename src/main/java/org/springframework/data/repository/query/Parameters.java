@@ -63,15 +63,15 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		Assert.notNull(method, "Method must not be null!");
 
-		List<Class<?>> types = Arrays.asList(method.getParameterTypes());
+		Class<?>[] types = method.getParameterTypes();
 
-		this.parameters = new ArrayList<>(types.size());
+		this.parameters = new ArrayList<>(types.length);
 		this.dynamicProjectionIndex = -1;
 
 		int pageableIndex = -1;
 		int sortIndex = -1;
 
-		for (int i = 0; i < types.size(); i++) {
+		for (int i = 0; i < types.length; i++) {
 
 			MethodParameter methodParameter = new MethodParameter(method, i);
 			methodParameter.initParameterNameDiscovery(discoverer);
