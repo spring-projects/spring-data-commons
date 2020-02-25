@@ -111,13 +111,13 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 		boolean nullableReturn;
 		boolean[] nullableParameters;
-		MethodParameter methodParameters[];
+		MethodParameter[] methodParameters;
 
 		static Nullability of(Method method, ParameterNameDiscoverer discoverer) {
 
 			boolean nullableReturn = isNullableParameter(new MethodParameter(method, -1));
 			boolean[] nullableParameters = new boolean[method.getParameterCount()];
-			MethodParameter methodParameters[] = new MethodParameter[method.getParameterCount()];
+			MethodParameter[] methodParameters = new MethodParameter[method.getParameterCount()];
 
 			for (int i = 0; i < method.getParameterCount(); i++) {
 
