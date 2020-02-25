@@ -307,7 +307,7 @@ class EntityCallbackDiscoverer {
 
 		Collection<Method> methods = new ArrayList<>(1);
 
-		ReflectionUtils.doWithMethods(callbackType, mc -> methods.add(mc), method -> {
+		ReflectionUtils.doWithMethods(callbackType, methods::add, method -> {
 
 			if (!Modifier.isPublic(method.getModifiers()) || method.getParameterCount() != args.length + 1
 					|| method.isBridge() || ReflectionUtils.isObjectMethod(method)) {
