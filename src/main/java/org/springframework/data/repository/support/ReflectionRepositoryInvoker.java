@@ -300,11 +300,12 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 		Method method = methods.getFindAllMethod()
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
-		Class<?>[] types = method.getParameterTypes();
 
-		if (types.length == 0) {
+		if (method.getParameterCount() == 0) {
 			return invokeForNonNullResult(method);
 		}
+
+		Class<?>[] types = method.getParameterTypes();
 
 		if (Pageable.class.isAssignableFrom(types[0])) {
 			return invokeForNonNullResult(method, pageable);
