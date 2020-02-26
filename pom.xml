@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>2.2.5.RELEASE</version>
+		<version>2.2.6.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -371,8 +371,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-release</id>
-			<url>https://repo.spring.io/libs-release</url>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
 
