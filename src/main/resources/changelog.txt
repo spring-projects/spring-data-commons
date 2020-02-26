@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.5.RELEASE (2020-02-26)
+---------------------------------------------
+* DATACMNS-1673 - Use Method.getParameterCount() where possible.
+* DATACMNS-1672 - Fix documentation typos.
+* DATACMNS-1671 - Auditor attempts to set created date on null object.
+* DATACMNS-1661 - Add missing parameter to object-mapping property population in reference documentation.
+* DATACMNS-1660 - Add anchor to section on mapping recommendations in reference documentation.
+* DATACMNS-1651 - Fix typo in Javadoc.
+* DATACMNS-1650 - Release 2.2.5 (Moore SR5).
+
+
 Changes in version 2.1.16.RELEASE (2020-02-26)
 ----------------------------------------------
 * DATACMNS-1673 - Use Method.getParameterCount() where possible.
@@ -2635,6 +2646,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
