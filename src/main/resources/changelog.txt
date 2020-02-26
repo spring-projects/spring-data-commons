@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.16.RELEASE (2020-02-26)
+----------------------------------------------
+* DATACMNS-1673 - Use Method.getParameterCount() where possible.
+* DATACMNS-1672 - Fix documentation typos.
+* DATACMNS-1671 - Auditor attempts to set created date on null object.
+* DATACMNS-1661 - Add missing parameter to object-mapping property population in reference documentation.
+* DATACMNS-1660 - Add anchor to section on mapping recommendations in reference documentation.
+* DATACMNS-1651 - Fix typo in Javadoc.
+* DATACMNS-1648 - Release 2.1.16 (Lovelace SR16).
+
+
 Changes in version 2.3.0.M3 (2020-02-12)
 ----------------------------------------
 * DATACMNS-1666 - Deprecate Joda-Time and ThreeTenBackport support.
@@ -2624,6 +2635,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
