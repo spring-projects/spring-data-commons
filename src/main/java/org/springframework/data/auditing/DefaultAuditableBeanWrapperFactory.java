@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -151,7 +150,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return value;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
 		 */
@@ -162,7 +161,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	}
 
 	/**
-	 * Base class for {@link AuditableBeanWrapper} implementations that might need to convert {@link Calendar} values into
+	 * Base class for {@link AuditableBeanWrapper} implementations that might need to convert {@link TemporalAccessor} values into
 	 * compatible types when setting date/time information.
 	 *
 	 * @author Oliver Gierke
@@ -170,12 +169,9 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 */
 	abstract static class DateConvertingAuditableBeanWrapper<T> implements AuditableBeanWrapper<T> {
 
-		private final ConversionService conversionService;
+		private static ConversionService conversionService;
 
-		/**
-		 * Creates a new {@link DateConvertingAuditableBeanWrapper}.
-		 */
-		public DateConvertingAuditableBeanWrapper() {
+		static {
 
 			DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
 
@@ -183,11 +179,12 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
 			ThreeTenBackPortConverters.getConvertersToRegister().forEach(conversionService::addConverter);
 
-			this.conversionService = conversionService;
+			DateConvertingAuditableBeanWrapper.conversionService = conversionService;
+
 		}
 
 		/**
-		 * Returns the {@link Calendar} in a type, compatible to the given field.
+		 * Returns the {@link TemporalAccessor} in a type, compatible to the given field.
 		 *
 		 * @param value can be {@literal null}.
 		 * @param targetType must not be {@literal null}.
@@ -221,7 +218,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		}
 
 		/**
-		 * Returns the given object as {@link Calendar}.
+		 * Returns the given object as {@link TemporalAccessor}.
 		 *
 		 * @param source can be {@literal null}.
 		 * @param target must not be {@literal null}.
@@ -328,7 +325,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return setDateField(metadata.getLastModifiedDateField(), value);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
 		 */
