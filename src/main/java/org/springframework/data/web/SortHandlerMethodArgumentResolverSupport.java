@@ -187,8 +187,10 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 	/**
 	 * Parses the given sort expressions into a {@link Sort} instance. The implementation expects the sources to be a
-	 * concatenation of Strings using the given delimiter. If the last element can be parsed into a {@link Direction} it's
-	 * considered a {@link Direction} and a simple property otherwise.
+	 * concatenation of Strings using the given delimiter. If the last element is equal to "ignorecase" (when using a
+	 * case-insensitive comparison), the sort order will be performed without respect to case. If the last element (or the
+	 * penultimate element if the last is "ignorecase") can be parsed into a {@link Direction} it's considered a
+	 * {@link Direction} and a simple property otherwise.
 	 *
 	 * @param source will never be {@literal null}.
 	 * @param delimiter the delimiter to be used to split up the source elements, will never be {@literal null}.

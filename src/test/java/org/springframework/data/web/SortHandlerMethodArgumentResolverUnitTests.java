@@ -18,6 +18,7 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -72,6 +73,28 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
 		assertThat(sort.isSorted()).isFalse();
+	}
+
+	@Test
+	public void sortParamHandlesSortOrderAndIgnoreCase() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,DESC,IgnoreCase");
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, PARAMETER))
+				.isEqualTo(Sort.by(Arrays.asList(new Order(DESC, "property").ignoreCase())));
+	}
+
+	@Test
+	public void sortParamHandlesIgnoreCase() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,IgnoreCase");
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, PARAMETER))
+				.isEqualTo(Sort.by(Arrays.asList(new Order(ASC, "property").ignoreCase())));
 	}
 
 	@Test
