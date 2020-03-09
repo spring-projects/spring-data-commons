@@ -23,6 +23,7 @@ import java.time.ZoneOffset;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.ReflectionAuditingBeanWrapper;
@@ -36,6 +37,7 @@ import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConv
  */
 public class ReflectionAuditingBeanWrapperUnitTests {
 
+	ConversionService conversionService;
 	AnnotationAuditingMetadata metadata;
 	AnnotatedUser user;
 	AuditableBeanWrapper wrapper;
@@ -44,9 +46,9 @@ public class ReflectionAuditingBeanWrapperUnitTests {
 
 	@Before
 	public void setUp() {
-
+		this.conversionService = DefaultAuditableBeanWrapperFactory.getDateConversionService();
 		this.user = new AnnotatedUser();
-		this.wrapper = new ReflectionAuditingBeanWrapper(user);
+		this.wrapper = new ReflectionAuditingBeanWrapper(conversionService, user);
 	}
 
 	@Test
@@ -74,7 +76,7 @@ public class ReflectionAuditingBeanWrapperUnitTests {
 		}
 
 		Sample sample = new Sample();
-		AuditableBeanWrapper wrapper = new ReflectionAuditingBeanWrapper(sample);
+		AuditableBeanWrapper wrapper = new ReflectionAuditingBeanWrapper(conversionService, sample);
 
 		wrapper.setCreatedDate(time);
 		assertThat(sample.createdDate).isEqualTo(time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli());

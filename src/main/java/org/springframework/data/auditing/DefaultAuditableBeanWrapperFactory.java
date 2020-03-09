@@ -46,6 +46,12 @@ import org.springframework.util.Assert;
  */
 class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory {
 
+	protected final ConversionService conversionService;
+
+	public DefaultAuditableBeanWrapperFactory() {
+		this.conversionService = getDateConversionService();
+	}
+
 	/**
 	 * Returns an {@link AuditableBeanWrapper} if the given object is capable of being equipped with auditing information.
 	 *
@@ -60,13 +66,13 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		return Optional.of(source).map(it -> {
 
 			if (it instanceof Auditable) {
-				return (AuditableBeanWrapper<T>) new AuditableInterfaceBeanWrapper((Auditable<Object, ?, TemporalAccessor>) it);
+				return (AuditableBeanWrapper<T>) new AuditableInterfaceBeanWrapper(conversionService, (Auditable<Object, ?, TemporalAccessor>) it);
 			}
 
 			AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(it.getClass());
 
 			if (metadata.isAuditable()) {
-				return new ReflectionAuditingBeanWrapper<T>(it);
+				return new ReflectionAuditingBeanWrapper<T>(conversionService, it);
 			}
 
 			return null;
@@ -74,11 +80,25 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	}
 
 	/**
+	 * Creates conversion service for conversions between {@link TemporalAccessor} values and other supported date type values.
+	 *
+	 * @return
+	 */
+	static ConversionService getDateConversionService() {
+		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
+
+		JodaTimeConverters.getConvertersToRegister().forEach(conversionService::addConverter);
+		Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
+		ThreeTenBackPortConverters.getConvertersToRegister().forEach(conversionService::addConverter);
+
+		return conversionService;
+	}
+
+	/**
 	 * An {@link AuditableBeanWrapper} that works with objects implementing
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	static class AuditableInterfaceBeanWrapper
 			extends DateConvertingAuditableBeanWrapper<Auditable<Object, ?, TemporalAccessor>> {
 
@@ -86,7 +106,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		private final Class<? extends TemporalAccessor> type;
 
 		@SuppressWarnings("unchecked")
-		public AuditableInterfaceBeanWrapper(Auditable<Object, ?, TemporalAccessor> auditable) {
+		public AuditableInterfaceBeanWrapper(ConversionService conversionService, Auditable<Object, ?, TemporalAccessor> auditable) {
+			super(conversionService);
 
 			this.auditable = auditable;
 			this.type = (Class<? extends TemporalAccessor>) ResolvableType.forClass(Auditable.class, auditable.getClass())
@@ -167,21 +188,10 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 * @author Oliver Gierke
 	 * @since 1.8
 	 */
+	@RequiredArgsConstructor
 	abstract static class DateConvertingAuditableBeanWrapper<T> implements AuditableBeanWrapper<T> {
 
-		private static ConversionService conversionService;
-
-		static {
-
-			DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
-
-			JodaTimeConverters.getConvertersToRegister().forEach(conversionService::addConverter);
-			Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
-			ThreeTenBackPortConverters.getConvertersToRegister().forEach(conversionService::addConverter);
-
-			DateConvertingAuditableBeanWrapper.conversionService = conversionService;
-
-		}
+		private final ConversionService conversionService;
 
 		/**
 		 * Returns the {@link TemporalAccessor} in a type, compatible to the given field.
@@ -263,9 +273,11 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		/**
 		 * Creates a new {@link ReflectionAuditingBeanWrapper} to set auditing data on the given target object.
 		 *
+		 * @param conversionService conversion service for date value type conversions
 		 * @param target must not be {@literal null}.
 		 */
-		public ReflectionAuditingBeanWrapper(T target) {
+		public ReflectionAuditingBeanWrapper(ConversionService conversionService, T target) {
+			super(conversionService);
 
 			Assert.notNull(target, "Target object must not be null!");
 
