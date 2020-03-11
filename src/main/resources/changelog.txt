@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.0.M4 (2020-03-11)
+----------------------------------------
+* DATACMNS-1679 - ReactiveWrappers uses package-private types in its API.
+* DATACMNS-1673 - Use Method.getParameterCount() where possible.
+* DATACMNS-1672 - Fix documentation typos.
+* DATACMNS-1667 - Release 2.3 M4 (Neumann).
+* DATACMNS-1610 - Improve auditing metadata detection.
+
+
 Changes in version 2.2.5.RELEASE (2020-02-26)
 ---------------------------------------------
 * DATACMNS-1673 - Use Method.getParameterCount() where possible.
@@ -2646,6 +2655,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
