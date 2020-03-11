@@ -77,7 +77,7 @@ public class ReactiveWrappers {
 	 *
 	 * @author Mark Paluch
 	 */
-	static enum ReactiveLibrary {
+	public enum ReactiveLibrary {
 		PROJECT_REACTOR, RXJAVA1, RXJAVA2, KOTLIN_COROUTINES;
 	}
 
