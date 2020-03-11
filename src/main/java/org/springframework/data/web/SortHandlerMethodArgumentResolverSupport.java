@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -163,7 +164,14 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 			return Sort.unsorted();
 		}
 
-		return sortOrNull.and(Sort.by(sortDefault.direction(), fields));
+		List<Order> orders = new ArrayList<>(fields.length);
+		for (String field : fields) {
+
+			Order order = new Order(sortDefault.direction(), field);
+			orders.add(sortDefault.caseSensitive() ? order : order.ignoreCase());
+		}
+
+		return sortOrNull.and(Sort.by(orders));
 	}
 
 	/**
@@ -187,9 +195,9 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 	/**
 	 * Parses the given sort expressions into a {@link Sort} instance. The implementation expects the sources to be a
-	 * concatenation of Strings using the given delimiter. If the last element is equal to "ignorecase" (when using a
+	 * concatenation of Strings using the given delimiter. If the last element is equal {@code ignorecase} (when using a
 	 * case-insensitive comparison), the sort order will be performed without respect to case. If the last element (or the
-	 * penultimate element if the last is "ignorecase") can be parsed into a {@link Direction} it's considered a
+	 * penultimate element if the last is {@code ignorecase}) can be parsed into a {@link Direction} it's considered a
 	 * {@link Direction} and a simple property otherwise.
 	 *
 	 * @param source will never be {@literal null}.
@@ -206,30 +214,13 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 				continue;
 			}
 
-			String[] elements = Arrays.stream(part.split(delimiter)) //
-					.filter(SortHandlerMethodArgumentResolver::notOnlyDots) //
-					.toArray(String[]::new);
-
-			Optional<Direction> direction = elements.length == 0 ? Optional.empty()
-					: Direction.fromOptionalString(elements[elements.length - 1]);
-
-			int lastIndex = direction.map(it -> elements.length - 1).orElseGet(() -> elements.length);
-
-			for (int i = 0; i < lastIndex; i++) {
-				toOrder(elements[i], direction).ifPresent(allOrders::add);
-			}
+			SortOrderParser.parse(part, delimiter) //
+					.parseIgnoreCase() //
+					.parseDirection() //
+					.forEachOrder(allOrders::add);
 		}
 
 		return allOrders.isEmpty() ? Sort.unsorted() : Sort.by(allOrders);
-	}
-
-	private static Optional<Order> toOrder(String property, Optional<Direction> direction) {
-
-		if (!StringUtils.hasText(property)) {
-			return Optional.empty();
-		}
-
-		return Optional.of(direction.map(it -> new Order(it, property)).orElseGet(() -> Order.by(property)));
 	}
 
 	/**
@@ -358,6 +349,106 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 			expressions.add(StringUtils.collectionToDelimitedString(elements, propertyDelimiter));
 
 			return expressions;
+		}
+	}
+
+	/**
+	 * Parser for sort {@link Order}.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.3
+	 */
+	static class SortOrderParser {
+
+		private static final String IGNORECASE = "ignorecase";
+
+		private final String[] elements;
+		private final int lastIndex;
+		private final Optional<Direction> direction;
+		private final Optional<Boolean> ignoreCase;
+
+		private SortOrderParser(String[] elements) {
+			this(elements, elements.length, Optional.empty(), Optional.empty());
+		}
+
+		private SortOrderParser(String[] elements, int lastIndex, Optional<Direction> direction,
+				Optional<Boolean> ignoreCase) {
+			this.elements = elements;
+			this.lastIndex = Math.max(0, lastIndex);
+			this.direction = direction;
+			this.ignoreCase = ignoreCase;
+		}
+
+		/**
+		 * Parse the raw sort string delimited by {@code delimiter}.
+		 *
+		 * @param part sort part to parse.
+		 * @param delimiter the delimiter to be used to split up the source elements, will never be {@literal null}.
+		 * @return the parsing state object.
+		 */
+		public static SortOrderParser parse(String part, String delimiter) {
+
+			String[] elements = Arrays.stream(part.split(delimiter)) //
+					.filter(SortHandlerMethodArgumentResolver::notOnlyDots) //
+					.toArray(String[]::new);
+
+			return new SortOrderParser(elements);
+		}
+
+		/**
+		 * Parse the {@code ignoreCase} portion of the sort specification.
+		 *
+		 * @return a new parsing state object.
+		 */
+		public SortOrderParser parseIgnoreCase() {
+
+			Optional<Boolean> ignoreCase = lastIndex > 0 ? fromOptionalString(elements[lastIndex - 1]) : Optional.empty();
+
+			return new SortOrderParser(elements, lastIndex - (ignoreCase.isPresent() ? 1 : 0), direction, ignoreCase);
+		}
+
+		/**
+		 * Parse the {@link Order} portion of the sort specification.
+		 *
+		 * @return a new parsing state object.
+		 */
+		public SortOrderParser parseDirection() {
+
+			Optional<Direction> direction = lastIndex > 0 ? Direction.fromOptionalString(elements[lastIndex - 1])
+					: Optional.empty();
+
+			return new SortOrderParser(elements, lastIndex - (direction.isPresent() ? 1 : 0), direction, ignoreCase);
+		}
+
+		/**
+		 * Notify a {@link Consumer callback function} for each parsed {@link Order} object.
+		 *
+		 * @param callback block to be executed.
+		 */
+		public void forEachOrder(Consumer<? super Order> callback) {
+
+			for (int i = 0; i < lastIndex; i++) {
+				toOrder(elements[i]).ifPresent(callback);
+			}
+		}
+
+		private Optional<Boolean> fromOptionalString(String value) {
+			return IGNORECASE.equalsIgnoreCase(value) ? Optional.of(true) : Optional.empty();
+		}
+
+		private Optional<Order> toOrder(String property) {
+
+			if (!StringUtils.hasText(property)) {
+				return Optional.empty();
+			}
+
+			Order order = direction.map(it -> new Order(it, property)).orElseGet(() -> Order.by(property));
+
+			if (ignoreCase.isPresent()) {
+				return Optional.of(order.ignoreCase());
+			}
+
+			return Optional.of(order);
 		}
 	}
 }

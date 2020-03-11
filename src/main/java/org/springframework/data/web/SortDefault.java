@@ -58,6 +58,14 @@ public @interface SortDefault {
 	Direction direction() default Direction.ASC;
 
 	/**
+	 * Specifies whether to apply case-sensitive sorting. Defaults to {@literal true}.
+	 *
+	 * @return
+	 * @since 2.3
+	 */
+	boolean caseSensitive() default true;
+
+	/**
 	 * Wrapper annotation to allow declaring multiple {@link SortDefault} annotations on a method parameter.
 	 *
 	 * @since 1.6

@@ -18,19 +18,20 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
-import java.util.Arrays;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.web.SortDefault.SortDefaults;
+import org.springframework.lang.Nullable;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -43,6 +44,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Nick Williams
+ * @author Mark Paluch
  */
 public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
@@ -54,7 +56,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	}
 
 	@Test // DATACMNS-351
-	public void fallbackToGivenDefaultSort() throws Exception {
+	public void fallbackToGivenDefaultSort() {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
@@ -66,35 +68,13 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	}
 
 	@Test // DATACMNS-351
-	public void fallbackToDefaultDefaultSort() throws Exception {
+	public void fallbackToDefaultDefaultSort() {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 
 		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
 		assertThat(sort.isSorted()).isFalse();
-	}
-
-	@Test
-	public void sortParamHandlesSortOrderAndIgnoreCase() throws Exception {
-
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addParameter("sort", "property,DESC,IgnoreCase");
-		request.addParameter("sort", "");
-
-		assertThat(resolveSort(request, PARAMETER))
-				.isEqualTo(Sort.by(Arrays.asList(new Order(DESC, "property").ignoreCase())));
-	}
-
-	@Test
-	public void sortParamHandlesIgnoreCase() throws Exception {
-
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addParameter("sort", "property,IgnoreCase");
-		request.addParameter("sort", "");
-
-		assertThat(resolveSort(request, PARAMETER))
-				.isEqualTo(Sort.by(Arrays.asList(new Order(ASC, "property").ignoreCase())));
 	}
 
 	@Test
@@ -126,7 +106,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	}
 
 	@Test
-	public void returnsNullForSortParameterSetToNothing() throws Exception {
+	public void returnsNullForSortParameterSetToNothing() {
 
 		MethodParameter parameter = getParameterOfMethod("supportedMethod");
 
@@ -139,7 +119,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 	}
 
 	@Test // DATACMNS-366
-	public void requestForMultipleSortPropertiesIsUnmarshalledCorrectly() throws Exception {
+	public void requestForMultipleSortPropertiesIsUnmarshalledCorrectly() {
 
 		MethodParameter parameter = getParameterOfMethod("supportedMethod");
 
@@ -186,6 +166,46 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		request.addParameter("sort", "");
 
 		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(DESC, "property"));
+	}
+
+	@Test // DATACMNS-658
+	public void sortParamHandlesSortOrderAndIgnoreCase() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,DESC,IgnoreCase");
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(new Order(DESC, "property").ignoreCase()));
+	}
+
+	@Test // DATACMNS-658
+	public void sortParamHandlesMultiplePropertiesWithSortOrderAndIgnoreCase() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property1,property2,DESC,IgnoreCase");
+
+		assertThat(resolveSort(request, PARAMETER))
+				.isEqualTo(Sort.by(new Order(DESC, "property1").ignoreCase(), new Order(DESC, "property2").ignoreCase()));
+	}
+
+	@Test // DATACMNS-658
+	public void sortParamHandlesIgnoreCase() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,IgnoreCase");
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(new Order(ASC, "property").ignoreCase()));
+	}
+
+	@Test // DATACMNS-658
+	public void returnsDefaultCaseInsensitive() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, getParameterOfMethod("simpleDefaultWithDirectionCaseInsensitive")))
+				.isEqualTo(Sort.by(new Order(DESC, "firstname").ignoreCase(), new Order(DESC, "lastname").ignoreCase()));
 	}
 
 	@Test // DATACMNS-379
@@ -243,7 +263,7 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		return getRequestWithSort(sort, null);
 	}
 
-	private static NativeWebRequest getRequestWithSort(Sort sort, String qualifier) {
+	private static NativeWebRequest getRequestWithSort(@Nullable Sort sort, @Nullable String qualifier) {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 
@@ -254,7 +274,9 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 		for (Order order : sort) {
 
 			String prefix = StringUtils.hasText(qualifier) ? qualifier + "_" : "";
-			request.addParameter(prefix + "sort", String.format("%s,%s", order.getProperty(), order.getDirection().name()));
+			String suffix = order.isIgnoreCase() ? ",IgnoreCase" : "";
+			request.addParameter(prefix + "sort",
+					String.format("%s,%s%s", order.getProperty(), order.getDirection().name(), suffix));
 		}
 
 		return new ServletWebRequest(request);
@@ -277,6 +299,9 @@ public class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitT
 
 		void simpleDefaultWithDirection(
 				@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC) Sort sort);
+
+		void simpleDefaultWithDirectionCaseInsensitive(
+				@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC, caseSensitive = false) Sort sort);
 
 		void containeredDefault(@SortDefaults(@SortDefault({ "foo", "bar" })) Sort sort);
 

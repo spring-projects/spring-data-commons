@@ -448,7 +448,7 @@ For a more type-safe way of defining sort expressions, start with the type to de
 ----
 TypedSort<Person> person = Sort.sort(Person.class);
 
-TypedSort<Person> sort = person.by(Person::getFirstname).ascending() 
+TypedSort<Person> sort = person.by(Person::getFirstname).ascending()
   .and(person.by(Person::getLastname).descending());
 ----
 ====
@@ -1249,7 +1249,7 @@ The preceding method signature causes Spring MVC try to derive a `Pageable` inst
 |===============
 |`page`|Page you want to retrieve. 0-indexed and defaults to 0.
 |`size`|Size of the page you want to retrieve. Defaults to 20.
-|`sort`|Properties that should be sorted by in the format `property,property(,ASC\|DESC)`. Default sort direction is ascending. Use multiple `sort` parameters if you want to switch directions -- for example, `?sort=firstname&sort=lastname,asc`.
+|`sort`|Properties that should be sorted by in the format `property,property(,ASC\|DESC)(,IgnoreCase)`. Default sort direction is case-sensitive ascending. Use multiple `sort` parameters if you want to switch direction or case sensitivity -- for example, `?sort=firstname&sort=lastname,asc&sort=city,ignorecase`.
 |===============
 
 To customize this behavior, register a bean implementing the `PageableHandlerMethodArgumentResolverCustomizer` interface or the `SortHandlerMethodArgumentResolverCustomizer` interface, respectively. Its `customize()` method gets called, letting you change settings, as shown in the following example:
