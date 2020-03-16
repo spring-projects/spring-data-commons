@@ -23,14 +23,15 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link SpelQueryContext}.
- * 
+ *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 public class SpelQueryContextUnitTests {
 
 	static final QueryMethodEvaluationContextProvider EVALUATION_CONTEXT_PROVIDER = QueryMethodEvaluationContextProvider.DEFAULT;
-	static final BiFunction<Integer, String, String> PARAMETER_NAME_SOURCE = (index, spel) -> "EPP" + index;
+	static final BiFunction<Integer, String, String> PARAMETER_NAME_SOURCE = (index, spel) -> "__$synthetic$__" + index;
 	static final BiFunction<String, String, String> REPLACEMENT_SOURCE = (prefix, name) -> prefix + name;
 
 	@Test // DATACMNS-1258
@@ -62,5 +63,19 @@ public class SpelQueryContextUnitTests {
 		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
 		assertThat(context.withEvaluationContextProvider(EVALUATION_CONTEXT_PROVIDER)).isNotNull();
+	}
+
+	@Test // DATACMNS-1683
+	public void reportsQuotationCorrectly() {
+
+		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+
+		SpelQueryContext.SpelExtractor extractor = context.parse(
+				"select n from NetworkServer n where (LOWER(n.name) LIKE LOWER(NULLIF(text(concat('%',:#{#networkRequest.name},'%')), '')) OR :#{#networkRequest.name} IS NULL )");
+
+		assertThat(extractor.getQueryString()).isEqualTo(
+				"select n from NetworkServer n where (LOWER(n.name) LIKE LOWER(NULLIF(text(concat('%',:__$synthetic$__0,'%')), '')) OR :__$synthetic$__1 IS NULL )");
+		assertThat(extractor.isQuoted(extractor.getQueryString().indexOf(":__$synthetic$__0"))).isFalse();
+		assertThat(extractor.isQuoted(extractor.getQueryString().indexOf(":__$synthetic$__1"))).isFalse();
 	}
 }
