@@ -67,11 +67,11 @@ public class SpelQueryContext {
 
 	/**
 	 * Parses the query for SpEL expressions using the pattern:
-	 * 
+	 *
 	 * <pre>
 	 * &lt;prefix&gt;#{&lt;spel&gt;}
 	 * </pre>
-	 * 
+	 *
 	 * with prefix being the character ':' or '?'. Parsing honors quoted {@literal String}s enclosed in single or double
 	 * quotation marks.
 	 *
@@ -86,7 +86,7 @@ public class SpelQueryContext {
 	/**
 	 * Createsa {@link EvaluatingSpelQueryContext} from the current one and the given
 	 * {@link QueryMethodEvaluationContextProvider}.
-	 * 
+	 *
 	 * @param provider must not be {@literal null}.
 	 * @return
 	 */
@@ -111,7 +111,7 @@ public class SpelQueryContext {
 		/**
 		 * Creates a new {@link EvaluatingSpelQueryContext} for the given {@link QueryMethodEvaluationContextProvider},
 		 * parameter name source and replacement source.
-		 * 
+		 *
 		 * @param evaluationContextProvider must not be {@literal null}.
 		 * @param parameterNameSource must not be {@literal null}.
 		 * @param replacementSource must not be {@literal null}.
@@ -126,11 +126,11 @@ public class SpelQueryContext {
 
 		/**
 		 * Parses the query for SpEL expressions using the pattern:
-		 * 
+		 *
 		 * <pre>
 		 * &lt;prefix&gt;#{&lt;spel&gt;}
 		 * </pre>
-		 * 
+		 *
 		 * with prefix being the character ':' or '?'. Parsing honors quoted {@literal String}s enclosed in single or double
 		 * quotation marks.
 		 *
@@ -165,7 +165,7 @@ public class SpelQueryContext {
 
 		/**
 		 * Creates a SpelExtractor from a query String.
-		 * 
+		 *
 		 * @param query must not be {@literal null}.
 		 */
 		SpelExtractor(String query) {
@@ -184,7 +184,7 @@ public class SpelQueryContext {
 
 				if (quotedAreas.isQuoted(matcher.start())) {
 
-					resultQuery.append(query.substring(matchedUntil, matcher.end()));
+					resultQuery.append(query, matchedUntil, matcher.end());
 
 				} else {
 
@@ -194,7 +194,7 @@ public class SpelQueryContext {
 					String parameterName = parameterNameSource.apply(expressionCounter, spelExpression);
 					String replacement = replacementSource.apply(prefix, parameterName);
 
-					resultQuery.append(query.substring(matchedUntil, matcher.start()));
+					resultQuery.append(query, matchedUntil, matcher.start());
 					resultQuery.append(replacement);
 
 					expressions.put(parameterName, spelExpression);
@@ -230,7 +230,7 @@ public class SpelQueryContext {
 
 		/**
 		 * A {@literal Map} from parameter name to SpEL expression.
-		 * 
+		 *
 		 * @return Guaranteed to be not {@literal null}.
 		 */
 		Map<String, String> getParameterMap() {
@@ -258,7 +258,7 @@ public class SpelQueryContext {
 
 		/**
 		 * Creates a new {@link QuotationMap} for the query.
-		 * 
+		 *
 		 * @param query can be {@literal null}.
 		 */
 		public QuotationMap(@Nullable String query) {
