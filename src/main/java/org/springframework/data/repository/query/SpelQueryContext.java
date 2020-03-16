@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
  *
  * @author Jens Schauder
  * @author Gerrit Meier
+ * @author Mark Paluch
  * @since 2.1
  */
 @RequiredArgsConstructor(staticName = "of")
@@ -145,7 +146,7 @@ public class SpelQueryContext {
 
 	/**
 	 * Parses a query string, identifies the contained SpEL expressions, replaces them with bind parameters and offers a
-	 * {@link Map} from those bind parameters to the spel expression.
+	 * {@link Map} from those bind parameters to the SpEL expression.
 	 * <p>
 	 * The parser detects quoted parts of the query string and does not detect SpEL expressions inside such quoted parts
 	 * of the query.
@@ -208,7 +209,9 @@ public class SpelQueryContext {
 
 			this.expressions = Collections.unmodifiableMap(expressions);
 			this.query = resultQuery.toString();
-			this.quotations = quotedAreas;
+
+			// recreate quotation map based on rewritten query.
+			this.quotations = new QuotationMap(this.query);
 		}
 
 		/**
@@ -220,6 +223,12 @@ public class SpelQueryContext {
 			return query;
 		}
 
+		/**
+		 * Return whether the {@link #getQueryString() query} at {@code index} is quoted.
+		 *
+		 * @param index
+		 * @return {@literal true} if quoted; {@literal false} otherwise.
+		 */
 		public boolean isQuoted(int index) {
 			return quotations.isQuoted(index);
 		}
