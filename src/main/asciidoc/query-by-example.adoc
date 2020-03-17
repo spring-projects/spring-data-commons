@@ -63,7 +63,7 @@ Example<Person> example = Example.of(person);         <3>
 <3> Create the `Example`.
 ====
 
-Examples are ideally be executed with repositories. To do so, let your repository interface extend `QueryByExampleExecutor<T>`. The following listing shows an excerpt from the `QueryByExampleExecutor` interface:
+Example queries can be executed by using repositories. To do so, let your repository interface extend `QueryByExampleExecutor<T>`. The following listing shows an excerpt from the `QueryByExampleExecutor` interface:
 
 .The `QueryByExampleExecutor`
 ====
