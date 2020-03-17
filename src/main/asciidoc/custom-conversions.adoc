@@ -1,0 +1,43 @@
+The following example of a Spring `Converter` implementation converts from a `String` to a custom `Email` value object:
+
+[source,java,subs="verbatim,attributes"]
+----
+@ReadingConverter
+public class EmailReadConverter implements Converter<String, Email> {
+
+  public Email convert(String source) {
+    return Email.valueOf(source);
+  }
+}
+----
+
+If you write a `Converter` whose source and target type are native types, we cannot determine whether we should consider it as a reading or a writing converter.
+Registering the converter instance as both might lead to unwanted results.
+For example, a `Converter<String, Long>` is ambiguous, although it probably does not make sense to try to convert all `String` instances into `Long` instances when writing.
+To let you force the infrastructure to register a converter for only one way, we provide `@ReadingConverter` and `@WritingConverter` annotations to be used in the converter implementation.
+
+Converters are subject to explicit registration as instances are not picked up from a classpath or container scan to avoid unwanted registration with a conversion service and the side effects resulting from such a registration. Converters are registered with `CustomConversions` as the central facility that allows registration and querying for registered converters based on source- and target type.
+
+`CustomConversions` ships with a pre-defined set of converter registrations:
+
+* JSR-310 Converters for conversion between `java.time`, `java.util.Date` and `String` types.
+* Deprecated: Joda Time Converters for conversion between `org.joda.time`, JSR-310, and `java.util.Date`.
+* Deprecated: ThreeTenBackport Converters for conversion between `org.joda.time`, JSR-310, and `java.util.Date`.
+
+NOTE: Default converters for local temporal types (e.g. `LocalDateTime` to `java.util.Date`) rely on system-default timezone settings to convert between those types. You can override the default converter, by registering your own converter.
+
+[[customconversions.converter-disambiguation]]
+== Converter Disambiguation
+
+Generally, we inspect the `Converter` implementations for the source and target types they convert from and to.
+Depending on whether one of those is a type the underlying data access API can handle natively, we register the converter instance as a reading or a writing converter.
+The following examples show a writing-  and a read converter (note the difference is in the order of the qualifiers on `Converter`):
+
+[source,java]
+----
+// Write converter as only the target type is one that can be handled natively
+class MyConverter implements Converter<Person, String> { … }
+
+// Read converter as only the source type is one that can be handled natively
+class MyConverter implements Converter<String, Person> { … }
+----
