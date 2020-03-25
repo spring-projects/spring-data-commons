@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.6.RELEASE (2020-03-25)
+---------------------------------------------
+* DATACMNS-1684 - Fix grammar in reference documentation.
+* DATACMNS-1683 - SpelExtractor does not consider quotation offsets from rewritten query.
+* DATACMNS-1679 - ReactiveWrappers uses package-private types in its API.
+* DATACMNS-1675 - Release 2.2.6 (Moore SR6).
+
+
 Changes in version 2.3.0.M4 (2020-03-11)
 ----------------------------------------
 * DATACMNS-1679 - ReactiveWrappers uses package-private types in its API.
@@ -2655,6 +2663,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
