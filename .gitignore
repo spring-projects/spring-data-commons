@@ -4,6 +4,8 @@ target/
 .classpath
 *.orig
 .springBeans
+.factorypath
+.sts4-cache
 .ant-targets-build.xml
 src/ant/.ant-targets-upload-dist.xml
 *.sonar4clipse*
