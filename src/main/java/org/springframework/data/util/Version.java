@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
  * Value object to represent a Version consisting of major, minor and bugfix part.
  *
  * @author Oliver Gierke
+ * @author Peter-Josef Meisch
  */
 public class Version implements Comparable<Version> {
 
@@ -88,8 +89,40 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
+	 * @return the major version
+	 * @since 2.3.0
+	 */
+	public int getMajor() {
+		return major;
+	}
+
+	/**
+	 * @return the minor version
+	 * @since 2.3.0
+	 */
+	public int getMinor() {
+		return minor;
+	}
+
+	/**
+	 * @return the bugfix version
+	 * @since 2.3.0
+	 */
+	public int getBugfix() {
+		return bugfix;
+	}
+
+	/**
+	 * @return the build version
+	 * @since 2.3.0
+	 */
+	public int getBuild() {
+		return build;
+	}
+
+	/**
 	 * Returns the Java version of the running JVM.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	public static Version javaVersion() {

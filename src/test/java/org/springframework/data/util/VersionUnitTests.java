@@ -24,6 +24,7 @@ import org.junit.Test;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Peter-Josef Meisch
  */
 public class VersionUnitTests {
 
@@ -153,5 +154,15 @@ public class VersionUnitTests {
 
 		assertThatIllegalArgumentException().isThrownBy(() -> Version.parse("1.RELEASE.2"))
 				.withMessageContaining("1.RELEASE.2");
+	}
+
+	@Test // DATACMNS-1692
+	public void shouldReturnTheParsedFields() {
+		Version version = Version.parse("1.2.3.5");
+
+		assertThat(version.getMajor()).isEqualTo(1);
+		assertThat(version.getMinor()).isEqualTo(2);
+		assertThat(version.getBugfix()).isEqualTo(3);
+		assertThat(version.getBuild()).isEqualTo(5);
 	}
 }
