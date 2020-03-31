@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.0.RC1 (2020-03-31)
+-----------------------------------------
+* DATACMNS-1691 - Update .gitignore to include STS specific config files.
+* DATACMNS-1689 - RepositoryMetadata.getReturnedDomainClass(...) returns Object for suspended methods.
+* DATACMNS-1685 - Provide documentation for custom conversions.
+* DATACMNS-1684 - Fix grammar in reference documentation.
+* DATACMNS-1683 - SpelExtractor does not consider quotation offsets from rewritten query.
+* DATACMNS-1680 - Release 2.3 RC1 (Neumann).
+* DATACMNS-658 - Extend SortHandlerMethodArgument resolver to be able to detect the request for ignore-case.
+
+
 Changes in version 2.2.6.RELEASE (2020-03-25)
 ---------------------------------------------
 * DATACMNS-1684 - Fix grammar in reference documentation.
@@ -2663,6 +2674,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
