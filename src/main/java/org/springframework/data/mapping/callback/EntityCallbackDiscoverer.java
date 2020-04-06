@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -186,7 +187,7 @@ class EntityCallbackDiscoverer {
 	private Collection<EntityCallback<?>> retrieveEntityCallbacks(ResolvableType entityType, ResolvableType callbackType,
 			@Nullable CallbackRetriever retriever) {
 
-		List<EntityCallback<?>> allCallbacks = new ArrayList<>();
+		List<EntityCallback<?>> allCallbacks = null;
 		Set<EntityCallback<?>> callbacks;
 		Set<String> callbackBeans;
 
@@ -197,8 +198,9 @@ class EntityCallbackDiscoverer {
 
 		for (EntityCallback<?> callback : callbacks) {
 			if (supportsEvent(callback, entityType, callbackType)) {
-				if (retriever != null) {
-					retriever.getEntityCallbacks().add(callback);
+
+				if (allCallbacks == null) {
+					allCallbacks = new ArrayList<>();
 				}
 				allCallbacks.add(callback);
 			}
@@ -211,13 +213,19 @@ class EntityCallbackDiscoverer {
 					Class<?> callbackImplType = beanFactory.getType(callbackBeanName);
 					if (callbackImplType == null || supportsEvent(callbackImplType, entityType)) {
 						EntityCallback<?> callback = beanFactory.getBean(callbackBeanName, EntityCallback.class);
-						if (!allCallbacks.contains(callback) && supportsEvent(callback, entityType, callbackType)) {
+
+						if ((allCallbacks == null || !allCallbacks.contains(callback))
+								&& supportsEvent(callback, entityType, callbackType)) {
 							if (retriever != null) {
 								if (beanFactory.isSingleton(callbackBeanName)) {
 									retriever.entityCallbacks.add(callback);
 								} else {
 									retriever.entityCallbackBeans.add(callbackBeanName);
 								}
+							}
+
+							if (allCallbacks == null) {
+								allCallbacks = new ArrayList<>();
 							}
 							allCallbacks.add(callback);
 						}
@@ -227,6 +235,10 @@ class EntityCallbackDiscoverer {
 					// probably in the middle of the destruction phase
 				}
 			}
+		}
+
+		if (allCallbacks == null) {
+			return Collections.emptyList();
 		}
 
 		AnnotationAwareOrderComparator.sort(allCallbacks);
@@ -272,7 +284,7 @@ class EntityCallbackDiscoverer {
 
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.springframework.beans.factory.BeanClassLoaderAware
 	 */
 	public void setBeanClassLoader(ClassLoader classLoader) {
@@ -356,6 +368,8 @@ class EntityCallbackDiscoverer {
 
 		private final Set<EntityCallback<?>> entityCallbacks = new LinkedHashSet<>();
 
+		private final List<EntityCallback<?>> cachedEntityCallbacks = new ArrayList<>();
+
 		private final Set<String> entityCallbackBeans = new LinkedHashSet<>();
 
 		private final boolean preFiltered;
@@ -365,6 +379,17 @@ class EntityCallbackDiscoverer {
 		}
 
 		Collection<EntityCallback<?>> getEntityCallbacks() {
+
+			if (this.entityCallbackBeans.isEmpty()) {
+
+				if (cachedEntityCallbacks.size() != entityCallbacks.size()) {
+					cachedEntityCallbacks.clear();
+					cachedEntityCallbacks.addAll(entityCallbacks);
+					AnnotationAwareOrderComparator.sort(cachedEntityCallbacks);
+				}
+
+				return cachedEntityCallbacks;
+			}
 
 			List<EntityCallback<?>> allCallbacks = new ArrayList<>(
 					this.entityCallbacks.size() + this.entityCallbackBeans.size());
