@@ -53,6 +53,7 @@ import org.springframework.data.repository.core.support.EventPublishingRepositor
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Yuki Yoshida
+ * @author Réda Housni Alaoui
  * @soundtrack Henrik Freischlader Trio - Nobody Else To Blame (Openness)
  */
 @ExtendWith(MockitoExtension.class)
@@ -124,11 +125,36 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		verify(publisher).publishEvent(event);
 	}
+	
+	@Test // DATACMNS-1663
+	public void interceptsDeleteMethod() throws Throwable {
+		SomeEvent event = new SomeEvent();
+		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		mockInvocation(invocation, SampleRepository.class.getMethod("delete", Object.class), sample);
 
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
+				.invoke(invocation);
+
+		verify(publisher).publishEvent(event);
+	}
+	
 	@Test // DATACMNS-928
 	void doesNotInterceptNonSaveMethod() throws Throwable {
 
 		doReturn(SampleRepository.class.getMethod("findById", Object.class)).when(invocation).getMethod();
+
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
+				.invoke(invocation);
+
+		verify(publisher, never()).publishEvent(any());
+	}
+
+	@Test // DATACMNS-1663
+	public void doesNotInterceptDeleteByIdMethod() throws Throwable {
+
+		doReturn(SampleRepository.class.getMethod("deleteById", Object.class)).when(invocation).getMethod();
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -169,6 +195,20 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), sample);
+
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
+				.invoke(invocation);
+
+		verify(publisher).publishEvent(any(SomeEvent.class));
+	}
+
+	@Test // DATACMNS-1663
+	public void publishesEventsForCallToDeleteWithIterable() throws Throwable {
+
+		SomeEvent event = new SomeEvent();
+		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAll", Iterable.class), sample);
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
