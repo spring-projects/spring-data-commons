@@ -39,15 +39,17 @@ import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * {@link RepositoryProxyPostProcessor} to register a {@link MethodInterceptor} to intercept the
- * {@link CrudRepository#save(Object)} method and publish events potentially exposed via a method annotated with
- * {@link DomainEvents}. If no such method can be detected on the aggregate root, no interceptor is added. Additionally,
+ * {@link RepositoryProxyPostProcessor} to register a {@link MethodInterceptor} to intercept
+ * {@link CrudRepository#save(Object)} and {@link CrudRepository#delete(Object)} methods and publish events potentially
+ * exposed via a method annotated with {@link DomainEvents}. If no such method can be detected on the aggregate root, no
+ * interceptor is added. Additionally,
  * the aggregate root can expose a method annotated with {@link AfterDomainEventPublication}. If present, the method
  * will be invoked after all events have been published.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Yuki Yoshida
+ * @author Réda Housni Alaoui
  * @since 1.13
  * @soundtrack Henrik Freischlader Trio - Master Plan (Openness)
  */
@@ -73,7 +75,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	}
 
 	/**
-	 * {@link MethodInterceptor} to publish events exposed an aggregate on calls to a save method on the repository.
+	 * {@link MethodInterceptor} to publish events exposed an aggregate on calls to a save or delete method on the repository.
 	 *
 	 * @author Oliver Gierke
 	 * @since 1.13
@@ -94,11 +96,15 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			Object[] arguments = invocation.getArguments();
 			Object result = invocation.proceed();
 
-			if (!invocation.getMethod().getName().startsWith("save")) {
+			String methodName = invocation.getMethod().getName();
+			Object eventSource;
+			if (methodName.startsWith("save")) {
+				eventSource = arguments.length == 1 ? arguments[0] : result;
+			} else if ((methodName.equals("delete") || methodName.equals("deleteAll")) && arguments.length == 1) {
+				eventSource = arguments[0];
+			} else {
 				return result;
 			}
-
-			Object eventSource = arguments.length == 1 ? arguments[0] : result;
 
 			eventMethod.publishEventsFrom(eventSource, publisher);
 
