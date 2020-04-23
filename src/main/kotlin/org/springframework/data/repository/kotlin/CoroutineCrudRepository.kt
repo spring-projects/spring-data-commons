@@ -147,7 +147,7 @@ interface CoroutineCrudRepository<T, ID> : Repository<T, ID> {
 	 * @param entityStream must not be null.
 	 * @throws IllegalArgumentException in case the given [entityStream][Flow] is null.
 	 */
-	fun <S : T> deleteAll(entityStream: Flow<S>)
+	suspend fun <S : T> deleteAll(entityStream: Flow<S>)
 
 	/**
 	 * Deletes all entities managed by the repository.
