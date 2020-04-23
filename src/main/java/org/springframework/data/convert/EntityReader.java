@@ -15,10 +15,13 @@
  */
 package org.springframework.data.convert;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface to read object from store specific sources.
  *
  * @author Oliver Gierke
+ * @author Piotr Kubowicz
  */
 public interface EntityReader<T, S> {
 
@@ -29,5 +32,5 @@ public interface EntityReader<T, S> {
 	 * @param source the source to create an object of the given type from.
 	 * @return
 	 */
-	<R extends T> R read(Class<R> type, S source);
+	<R extends T> R read(Class<R> type, @Nullable S source);
 }
