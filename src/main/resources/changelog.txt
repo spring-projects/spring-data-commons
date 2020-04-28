@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.7.RELEASE (2020-04-28)
+---------------------------------------------
+* DATACMNS-1710 - Avoid potentially expensive constructor parameter creation where possible.
+* DATACMNS-1691 - Update .gitignore to include STS specific config files.
+* DATACMNS-1690 - Release 2.2.7 (Moore SR7).
+
+
 Changes in version 2.1.17.RELEASE (2020-04-28)
 ----------------------------------------------
 * DATACMNS-1710 - Avoid potentially expensive constructor parameter creation where possible.
@@ -2684,6 +2691,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
