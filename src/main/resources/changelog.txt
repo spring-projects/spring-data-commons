@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.0.RC2 (2020-04-28)
+-----------------------------------------
+* DATACMNS-1710 - Avoid potentially expensive constructor parameter creation where possible.
+* DATACMNS-1707 - CoroutineCrudRepository misses suspend for deleteAll(entityStream: Flow<S>).
+* DATACMNS-1701 - Use JDK 14 for Java.NEXT CI testing.
+* DATACMNS-1698 - Reduce allocations in EntityCallbackDiscoverer.
+* DATACMNS-1694 - Release 2.3 RC2 (Neumann).
+
+
 Changes in version 2.2.7.RELEASE (2020-04-28)
 ---------------------------------------------
 * DATACMNS-1710 - Avoid potentially expensive constructor parameter creation where possible.
@@ -2691,6 +2700,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
