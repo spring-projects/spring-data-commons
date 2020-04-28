@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.17.RELEASE (2020-04-28)
+----------------------------------------------
+* DATACMNS-1710 - Avoid potentially expensive constructor parameter creation where possible.
+* DATACMNS-1691 - Update .gitignore to include STS specific config files.
+* DATACMNS-1684 - Fix grammar in reference documentation.
+* DATACMNS-1683 - SpelExtractor does not consider quotation offsets from rewritten query.
+* DATACMNS-1679 - ReactiveWrappers uses package-private types in its API.
+* DATACMNS-1674 - Release 2.1.17 (Lovelace SR17).
+
+
 Changes in version 2.3.0.RC1 (2020-03-31)
 -----------------------------------------
 * DATACMNS-1691 - Update .gitignore to include STS specific config files.
@@ -2674,6 +2684,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
