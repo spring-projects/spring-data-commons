@@ -158,6 +158,6 @@ class UserCallbacks implements BeforeConvertCallback<User>,
 ----
 <1> `BeforeSaveCallback` receiving its order from the `@Order` annotation.
 <2> `BeforeSaveCallback` receiving its order via the `Ordered` interface implementation.
-<3> `BeforeSaveCallback` using a lambda expression. Unordered by default and invoked last.
+<3> `BeforeSaveCallback` using a lambda expression. Unordered by default and invoked last. Note that callbacks implemented by a lambda expression do not expose typing information hence invoking these with a non-assignable entity affects the callback throughput. Use a `class` or `enum` to enable type filtering for the callback bean.
 <4> Combine multiple entity callback interfaces in a single implementation class.
 ====
