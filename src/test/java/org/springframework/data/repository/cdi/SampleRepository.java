@@ -23,6 +23,6 @@ import org.springframework.data.repository.Repository;
  *
  * @author Oliver Gierke
  */
-public interface SampleRepository extends Repository<Object, Serializable> {
+interface SampleRepository extends Repository<Object, Serializable> {
 
 }

@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,14 +57,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Jens Schauder
  * @author Vedran Pavic
  */
-public class EnableSpringDataWebSupportIntegrationTests {
+class EnableSpringDataWebSupportIntegrationTests {
 
 	@Configuration
 	@EnableWebMvc
 	@EnableSpringDataWebSupport
 	static class SampleConfig {
 
-		public @Bean SampleController controller() {
+		@Bean
+		SampleController controller() {
 			return new SampleController();
 		}
 	}
@@ -75,7 +76,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	static class PageableResolverCustomizerConfig extends SampleConfig {
 
 		@Bean
-		public PageableHandlerMethodArgumentResolverCustomizer testPageableResolverCustomizer() {
+		PageableHandlerMethodArgumentResolverCustomizer testPageableResolverCustomizer() {
 			return pageableResolver -> pageableResolver.setMaxPageSize(100);
 		}
 	}
@@ -86,7 +87,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	static class SortResolverCustomizerConfig extends SampleConfig {
 
 		@Bean
-		public SortHandlerMethodArgumentResolverCustomizer testSortResolverCustomizer() {
+		SortHandlerMethodArgumentResolverCustomizer testSortResolverCustomizer() {
 			return sortResolver -> sortResolver.setSortParameter("foo");
 		}
 	}
@@ -104,7 +105,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-330
-	public void registersBasicBeanDefinitions() throws Exception {
+	void registersBasicBeanDefinitions() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
@@ -116,7 +117,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-330
-	public void registersHateoasSpecificBeanDefinitions() throws Exception {
+	void registersHateoasSpecificBeanDefinitions() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
@@ -126,7 +127,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-330
-	public void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() throws Exception {
+	void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() throws Exception {
 
 		HidingClassLoader classLoader = HidingClassLoader.hide(Link.class);
 
@@ -139,7 +140,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	public void registersJacksonSpecificBeanDefinitions() throws Exception {
+	void registersJacksonSpecificBeanDefinitions() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
@@ -148,7 +149,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	public void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() throws Exception {
+	void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(HidingClassLoader.hide(ObjectMapper.class),
 				SampleConfig.class);
@@ -159,7 +160,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-626
-	public void registersFormatters() {
+	void registersFormatters() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 
@@ -172,7 +173,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-630
-	public void createsProxyForInterfaceBasedControllerMethodParameter() throws Exception {
+	void createsProxyForInterfaceBasedControllerMethodParameter() throws Exception {
 
 		WebApplicationContext applicationContext = WebTestUtils.createApplicationContext(SampleConfig.class);
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
@@ -190,7 +191,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-660
-	public void picksUpWebConfigurationMixins() {
+	void picksUpWebConfigurationMixins() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
@@ -199,7 +200,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-822
-	public void picksUpPageableResolverCustomizer() {
+	void picksUpPageableResolverCustomizer() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(PageableResolverCustomizerConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
@@ -210,7 +211,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-822
-	public void picksUpSortResolverCustomizer() {
+	void picksUpSortResolverCustomizer() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SortResolverCustomizerConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
@@ -221,7 +222,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-1237
-	public void configuresProxyingHandlerMethodArgumentResolver() {
+	void configuresProxyingHandlerMethodArgumentResolver() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 
@@ -231,7 +232,7 @@ public class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-1235
-	public void picksUpEntityPathResolverIfRegistered() {
+	void picksUpEntityPathResolverIfRegistered() {
 
 		WebApplicationContext context = WebTestUtils.createApplicationContext(CustomEntityPathResolver.class);
 

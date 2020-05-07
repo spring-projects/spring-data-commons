@@ -24,10 +24,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link RevisionMetadata}.
@@ -35,13 +35,13 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @author Oliver Gierke
  * @author Jens Schauder
  */
-@RunWith(MockitoJUnitRunner.class)
-public class RevisionUnitTests {
+@ExtendWith(MockitoExtension.class)
+class RevisionUnitTests {
 
 	@Mock RevisionMetadata<Integer> firstMetadata, secondMetadata;
 
 	@Test
-	public void comparesCorrectly() {
+	void comparesCorrectly() {
 
 		when(firstMetadata.getRevisionNumber()).thenReturn(Optional.of(1));
 		when(secondMetadata.getRevisionNumber()).thenReturn(Optional.of(2));
@@ -56,7 +56,7 @@ public class RevisionUnitTests {
 	}
 
 	@Test // DATACMNS-187
-	public void returnsRevisionNumber() {
+	void returnsRevisionNumber() {
 
 		Optional<Integer> reference = Optional.of(4711);
 		when(firstMetadata.getRevisionNumber()).thenReturn(reference);
@@ -65,7 +65,7 @@ public class RevisionUnitTests {
 	}
 
 	@Test // DATACMNS-1251
-	public void returnsRevisionInstant() {
+	void returnsRevisionInstant() {
 
 		Optional<Instant> reference = Optional.of(Instant.now());
 		when(firstMetadata.getRevisionInstant()).thenReturn(reference);
@@ -74,7 +74,7 @@ public class RevisionUnitTests {
 	}
 
 	@Test // DATACMNS-218
-	public void returnsRevisionMetadata() {
+	void returnsRevisionMetadata() {
 		assertThat(Revision.of(firstMetadata, new Object()).getMetadata()).isEqualTo(firstMetadata);
 	}
 }

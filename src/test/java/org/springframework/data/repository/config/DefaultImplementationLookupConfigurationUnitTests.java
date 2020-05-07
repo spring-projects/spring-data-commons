@@ -18,17 +18,17 @@ package org.springframework.data.repository.config;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link DefaultImplementationLookupConfigurationUnitTests}.
  *
  * @author Mark Paluch
  */
-public class DefaultImplementationLookupConfigurationUnitTests {
+class DefaultImplementationLookupConfigurationUnitTests {
 
 	@Test // DATACMNS-1439
-	public void shouldConsiderBeanNameDecapitalization() {
+	void shouldConsiderBeanNameDecapitalization() {
 
 		ImplementationDetectionConfiguration idcMock = mock(ImplementationDetectionConfiguration.class);
 		when(idcMock.getImplementationPostfix()).thenReturn("Impl");

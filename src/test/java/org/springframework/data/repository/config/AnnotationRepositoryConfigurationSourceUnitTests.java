@@ -21,8 +21,8 @@ import static org.mockito.Mockito.*;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -43,15 +43,15 @@ import org.springframework.data.util.Streamable;
  * @author Thomas Darimont
  * @author Mark Paluch
  */
-public class AnnotationRepositoryConfigurationSourceUnitTests {
+class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	RepositoryConfigurationSource source;
 	Environment environment;
 	ResourceLoader resourceLoader;
 	BeanDefinitionRegistry registry;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 		environment = new StandardEnvironment();
@@ -63,14 +63,14 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	}
 
 	@Test // DATACMNS-47
-	public void findsBasePackagesForClasses() {
+	void findsBasePackagesForClasses() {
 
 		assertThat(source.getBasePackages())//
 				.contains(AnnotationRepositoryConfigurationSourceUnitTests.class.getPackage().getName());
 	}
 
 	@Test // DATACMNS-47, DATACMNS-102
-	public void evaluatesExcludeFiltersCorrectly() {
+	void evaluatesExcludeFiltersCorrectly() {
 
 		Streamable<BeanDefinition> candidates = source.getCandidates(new DefaultResourceLoader());
 
@@ -80,7 +80,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	}
 
 	@Test // DATACMNS-47
-	public void defaultsToPackageOfAnnotatedClass() {
+	void defaultsToPackageOfAnnotatedClass() {
 
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
 		Iterable<String> packages = source.getBasePackages();
@@ -90,7 +90,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	}
 
 	@Test // DATACMNS-47
-	public void returnsConfiguredBasePackage() {
+	void returnsConfiguredBasePackage() {
 
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithBasePackage.class);
 
@@ -98,21 +98,21 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	}
 
 	@Test // DATACMNS-90
-	public void returnsConsiderNestedRepositories() {
+	void returnsConsiderNestedRepositories() {
 
 		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithNestedRepositories.class);
 		assertThat(source.shouldConsiderNestedRepositories()).isTrue();
 	}
 
 	@Test // DATACMNS-456
-	public void findsStringAttributeByName() {
+	void findsStringAttributeByName() {
 
 		RepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithBasePackage.class);
 		assertThat(source.getAttribute("namedQueriesLocation")).hasValue("bar");
 	}
 
 	@Test // DATACMNS-502
-	public void returnsEmptyStringForBasePackage() throws Exception {
+	void returnsEmptyStringForBasePackage() throws Exception {
 
 		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(
 				getClass().getClassLoader().loadClass("TypeInDefaultPackage"), true);
@@ -123,14 +123,14 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	}
 
 	@Test // DATACMNS-526
-	public void detectsExplicitFilterConfiguration() {
+	void detectsExplicitFilterConfiguration() {
 
 		assertThat(getConfigSource(ConfigurationWithExplicitFilter.class).usesExplicitFilters()).isTrue();
 		assertThat(getConfigSource(DefaultConfiguration.class).usesExplicitFilters()).isFalse();
 	}
 
 	@Test // DATACMNS-542
-	public void ignoresMissingRepositoryBaseClassNameAttribute() {
+	void ignoresMissingRepositoryBaseClassNameAttribute() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(ConfigWithSampleAnnotation.class, true);
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
@@ -140,7 +140,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	}
 
 	@Test // DATACMNS-1498
-	public void allowsLookupOfNonStringAttribute() {
+	void allowsLookupOfNonStringAttribute() {
 
 		RepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
 
@@ -150,7 +150,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	}
 
 	@Test // DATACMNS-1498
-	public void rejectsInvalidAttributeName() {
+	void rejectsInvalidAttributeName() {
 
 		RepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
 
@@ -158,7 +158,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 	}
 
 	@Test // DATACMNS-1498
-	public void lookupOfEmptyStringExposesAbsentValue() {
+	void lookupOfEmptyStringExposesAbsentValue() {
 
 		RepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
 
@@ -174,7 +174,7 @@ public class AnnotationRepositoryConfigurationSourceUnitTests {
 				registry);
 	}
 
-	public static class Person {}
+	static class Person {}
 
 	@EnableRepositories
 	static class DefaultConfiguration {}

@@ -29,31 +29,31 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link TypeDiscoverer}.
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class TypeDiscovererUnitTests {
 
-	static final Map<TypeVariable<?>, Type> EMPTY_MAP = Collections.emptyMap();
+	private static final Map<TypeVariable<?>, Type> EMPTY_MAP = Collections.emptyMap();
 
 	@Mock Map<TypeVariable<?>, Type> firstMap;
 	@Mock Map<TypeVariable<?>, Type> secondMap;
 
 	@Test
-	public void rejectsNullType() {
+	void rejectsNullType() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new TypeDiscoverer<>(null, null));
 	}
 
 	@Test
-	public void isNotEqualIfTypesDiffer() {
+	void isNotEqualIfTypesDiffer() {
 
 		TypeDiscoverer<Object> objectTypeInfo = new TypeDiscoverer<>(Object.class, EMPTY_MAP);
 		TypeDiscoverer<String> stringTypeInfo = new TypeDiscoverer<>(String.class, EMPTY_MAP);
@@ -62,7 +62,7 @@ public class TypeDiscovererUnitTests {
 	}
 
 	@Test
-	public void isNotEqualIfTypeVariableMapsDiffer() {
+	void isNotEqualIfTypeVariableMapsDiffer() {
 
 		assertThat(firstMap.equals(secondMap)).isFalse();
 
@@ -73,7 +73,7 @@ public class TypeDiscovererUnitTests {
 	}
 
 	@Test
-	public void dealsWithTypesReferencingThemselves() {
+	void dealsWithTypesReferencingThemselves() {
 
 		TypeInformation<SelfReferencing> information = from(SelfReferencing.class);
 		TypeInformation<?> first = information.getProperty("parent").getMapValueType();
@@ -83,7 +83,7 @@ public class TypeDiscovererUnitTests {
 	}
 
 	@Test
-	public void dealsWithTypesReferencingThemselvesInAMap() {
+	void dealsWithTypesReferencingThemselvesInAMap() {
 
 		TypeInformation<SelfReferencingMap> information = from(SelfReferencingMap.class);
 		TypeInformation<?> property = information.getProperty("map");
@@ -92,7 +92,7 @@ public class TypeDiscovererUnitTests {
 	}
 
 	@Test
-	public void returnsComponentAndValueTypesForMapExtensions() {
+	void returnsComponentAndValueTypesForMapExtensions() {
 
 		TypeInformation<?> discoverer = new TypeDiscoverer<>(CustomMap.class, EMPTY_MAP);
 
@@ -101,7 +101,7 @@ public class TypeDiscovererUnitTests {
 	}
 
 	@Test
-	public void returnsComponentTypeForCollectionExtension() {
+	void returnsComponentTypeForCollectionExtension() {
 
 		TypeDiscoverer<CustomCollection> discoverer = new TypeDiscoverer<>(CustomCollection.class, firstMap);
 
@@ -109,7 +109,7 @@ public class TypeDiscovererUnitTests {
 	}
 
 	@Test
-	public void returnsComponentTypeForArrays() {
+	void returnsComponentTypeForArrays() {
 
 		TypeDiscoverer<String[]> discoverer = new TypeDiscoverer<>(String[].class, EMPTY_MAP);
 
@@ -117,7 +117,7 @@ public class TypeDiscovererUnitTests {
 	}
 
 	@Test // DATACMNS-57
-	public void discoveresConstructorParameterTypesCorrectly() throws NoSuchMethodException, SecurityException {
+	void discoveresConstructorParameterTypesCorrectly() throws NoSuchMethodException, SecurityException {
 
 		TypeDiscoverer<GenericConstructors> discoverer = new TypeDiscoverer<>(GenericConstructors.class, firstMap);
 		Constructor<GenericConstructors> constructor = GenericConstructors.class.getConstructor(List.class, Locale.class);
@@ -130,7 +130,7 @@ public class TypeDiscovererUnitTests {
 
 	@Test
 	@SuppressWarnings("rawtypes")
-	public void returnsNullForComponentAndValueTypesForRawMaps() {
+	void returnsNullForComponentAndValueTypesForRawMaps() {
 
 		TypeDiscoverer<Map> discoverer = new TypeDiscoverer<>(Map.class, EMPTY_MAP);
 
@@ -140,7 +140,7 @@ public class TypeDiscovererUnitTests {
 
 	@Test // DATACMNS-167
 	@SuppressWarnings("rawtypes")
-	public void doesNotConsiderTypeImplementingIterableACollection() {
+	void doesNotConsiderTypeImplementingIterableACollection() {
 
 		TypeDiscoverer<Person> discoverer = new TypeDiscoverer<>(Person.class, EMPTY_MAP);
 		TypeInformation reference = from(Address.class);
@@ -161,7 +161,7 @@ public class TypeDiscovererUnitTests {
 	}
 
 	@Test // DATACMNS-1342, DATACMNS-1430
-	public void considersStreamableToBeCollectionLike() {
+	void considersStreamableToBeCollectionLike() {
 
 		TypeInformation<SomeStreamable> type = from(SomeStreamable.class);
 
@@ -170,7 +170,7 @@ public class TypeDiscovererUnitTests {
 	}
 
 	@Test // DATACMNS-1419
-	public void detectsSubTypes() {
+	void detectsSubTypes() {
 
 		ClassTypeInformation<Set> type = from(Set.class);
 

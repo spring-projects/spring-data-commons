@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -36,10 +36,10 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTests {
+class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTests {
 
 	@Test // DATACMNS-333
-	public void registersJackson2InitializerCorrectly() {
+	void registersJackson2InitializerCorrectly() {
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
@@ -58,7 +58,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTes
 	}
 
 	@Test // DATACMNS-58
-	public void registersXmlInitializerCorrectly() {
+	void registersXmlInitializerCorrectly() {
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);

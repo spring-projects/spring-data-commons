@@ -17,7 +17,7 @@ package org.springframework.data.geo;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.SerializationUtils;
 
 /**
@@ -26,15 +26,15 @@ import org.springframework.util.SerializationUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class PointUnitTests {
+class PointUnitTests {
 
 	@Test // DATACMNS-437
-	public void rejectsNullforCopyConstructor() {
+	void rejectsNullforCopyConstructor() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new Point(null));
 	}
 
 	@Test // DATACMNS-437
-	public void equalsIsImplementedCorrectly() {
+	void equalsIsImplementedCorrectly() {
 
 		assertThat(new Point(1.5, 1.5)).isEqualTo(new Point(1.5, 1.5));
 		assertThat(new Point(1.5, 1.5)).isNotEqualTo(new Point(2.0, 2.0));
@@ -42,12 +42,12 @@ public class PointUnitTests {
 	}
 
 	@Test // DATACMNS-437
-	public void invokingToStringWorksCorrectly() {
+	void invokingToStringWorksCorrectly() {
 		assertThat(new Point(1.5, 1.5).toString()).isEqualTo("Point [x=1.500000, y=1.500000]");
 	}
 
 	@Test // DATACMNS-482
-	public void testSerialization() {
+	void testSerialization() {
 
 		Point point = new Point(1.5, 1.5);
 

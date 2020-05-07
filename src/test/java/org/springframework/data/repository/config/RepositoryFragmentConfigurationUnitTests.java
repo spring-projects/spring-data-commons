@@ -17,17 +17,17 @@ package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link RepositoryFragmentConfiguration}.
  *
  * @author Mark Paluch
  */
-public class RepositoryFragmentConfigurationUnitTests {
+class RepositoryFragmentConfigurationUnitTests {
 
 	@Test // DATACMNS-1439
-	public void shouldConsiderBeanNameDecapitalization() {
+	void shouldConsiderBeanNameDecapitalization() {
 
 		assertThat(getImplementationBeanName("com.acme.UDPRepository")).isEqualTo("UDPRepository");
 		assertThat(getImplementationBeanName("com.acme.UdpRepository")).isEqualTo("udpRepository");

@@ -16,7 +16,7 @@
 package org.springframework.data.mapping.model
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.springframework.data.annotation.PersistenceConstructor
 import org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTests.SamplePersistentProperty
 

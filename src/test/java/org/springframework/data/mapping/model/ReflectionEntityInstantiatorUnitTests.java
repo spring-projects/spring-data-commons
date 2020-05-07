@@ -25,10 +25,11 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -43,28 +44,28 @@ import org.springframework.util.ReflectionUtils;
  * @author Johannes Mockenhaupt
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
+@ExtendWith(MockitoExtension.class)
+class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
 	@Mock PersistentEntity<?, P> entity;
 	@Mock ParameterValueProvider<P> provider;
 
 	@Test
-	public void instantiatesSimpleObjectCorrectly() {
+	void instantiatesSimpleObjectCorrectly() {
 
 		doReturn(Object.class).when(entity).getType();
 		INSTANCE.createInstance(entity, provider);
 	}
 
 	@Test
-	public void instantiatesArrayCorrectly() {
+	void instantiatesArrayCorrectly() {
 
 		doReturn(String[][].class).when(entity).getType();
 		INSTANCE.createInstance(entity, provider);
 	}
 
 	@Test // DATACMNS-1126
-	public void instantiatesTypeWithPreferredConstructorUsingParameterValueProvider() {
+	void instantiatesTypeWithPreferredConstructorUsingParameterValueProvider() {
 
 		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
@@ -79,7 +80,7 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 
 	@Test // DATACMNS-300
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void throwsExceptionOnBeanInstantiationException() {
+	void throwsExceptionOnBeanInstantiationException() {
 
 		doReturn(PersistentEntity.class).when(entity).getType();
 
@@ -88,7 +89,7 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 	}
 
 	@Test // DATACMNS-134
-	public void createsInnerClassInstanceCorrectly() {
+	void createsInnerClassInstanceCorrectly() {
 
 		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(from(Inner.class));
 		assertThat(entity.getPersistenceConstructor()).satisfies(it -> {
@@ -114,7 +115,7 @@ public class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<
 
 	@Test // DATACMNS-283
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void capturesContextOnInstantiationException() throws Exception {
+	void capturesContextOnInstantiationException() throws Exception {
 
 		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<>(from(Sample.class));
 

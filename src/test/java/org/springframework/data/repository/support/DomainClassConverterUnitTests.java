@@ -22,11 +22,14 @@ import static org.mockito.Mockito.*;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -47,8 +50,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class DomainClassConverterUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class DomainClassConverterUnitTests {
 
 	static final User USER = new User();
 	static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
@@ -60,14 +64,14 @@ public class DomainClassConverterUnitTests {
 
 	@Mock DefaultConversionService service;
 
-	@Before
+	@BeforeEach
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void setUp() {
+	void setUp() {
 		converter = new DomainClassConverter(service);
 	}
 
 	@Test
-	public void matchFailsIfNoDaoAvailable() throws Exception {
+	void matchFailsIfNoDaoAvailable() {
 
 		GenericApplicationContext ctx = new GenericApplicationContext();
 		ctx.refresh();
@@ -76,7 +80,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	@Test
-	public void matchesIfConversionInBetweenIsPossible() throws Exception {
+	void matchesIfConversionInBetweenIsPossible() {
 
 		converter.setApplicationContext(initContextWithRepo());
 
@@ -86,7 +90,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	@Test
-	public void matchFailsIfNoIntermediateConversionIsPossible() throws Exception {
+	void matchFailsIfNoIntermediateConversionIsPossible() {
 
 		converter.setApplicationContext(initContextWithRepo());
 
@@ -96,12 +100,12 @@ public class DomainClassConverterUnitTests {
 	}
 
 	// DATACMNS-233
-	public void returnsNullForNullSource() {
+	void returnsNullForNullSource() {
 		assertThat(converter.convert(null, STRING_TYPE, USER_TYPE)).isNull();
 	}
 
 	// DATACMNS-233
-	public void returnsNullForEmptyStringSource() {
+	void returnsNullForEmptyStringSource() {
 		assertThat(converter.convert("", STRING_TYPE, USER_TYPE)).isNull();
 	}
 
@@ -111,7 +115,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	@Test
-	public void convertsStringToUserCorrectly() throws Exception {
+	void convertsStringToUserCorrectly() throws Exception {
 
 		ApplicationContext context = initContextWithRepo();
 		converter.setApplicationContext(context);
@@ -127,7 +131,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	@Test // DATACMNS-133
-	public void discoversFactoryAndRepoFromParentApplicationContext() {
+	void discoversFactoryAndRepoFromParentApplicationContext() {
 
 		ApplicationContext parent = initContextWithRepo();
 		GenericApplicationContext context = new GenericApplicationContext(parent);
@@ -140,7 +144,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	@Test // DATACMNS-583
-	public void converterDoesntMatchIfTargetTypeIsAssignableFromSource() {
+	void converterDoesntMatchIfTargetTypeIsAssignableFromSource() {
 
 		converter.setApplicationContext(initContextWithRepo());
 
@@ -149,7 +153,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	@Test // DATACMNS-627
-	public void supportsConversionFromIdType() {
+	void supportsConversionFromIdType() {
 
 		converter.setApplicationContext(initContextWithRepo());
 
@@ -157,7 +161,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	@Test // DATACMNS-627
-	public void supportsConversionFromEntityToIdType() {
+	void supportsConversionFromEntityToIdType() {
 
 		converter.setApplicationContext(initContextWithRepo());
 
@@ -165,7 +169,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	@Test // DATACMNS-627
-	public void supportsConversionFromEntityToString() {
+	void supportsConversionFromEntityToString() {
 
 		converter.setApplicationContext(initContextWithRepo());
 
@@ -174,7 +178,7 @@ public class DomainClassConverterUnitTests {
 	}
 
 	@Test // DATACMNS-683
-	public void toIdConverterDoesNotMatchIfTargetTypeIsAssignableFromSource() throws Exception {
+	void toIdConverterDoesNotMatchIfTargetTypeIsAssignableFromSource() throws NoSuchMethodException {
 
 		converter.setApplicationContext(initContextWithRepo());
 

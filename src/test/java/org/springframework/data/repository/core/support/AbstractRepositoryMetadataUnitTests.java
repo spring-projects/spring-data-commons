@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,10 +38,10 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * @author Thomas Darimont
  * @author Fabian Buch
  */
-public class AbstractRepositoryMetadataUnitTests {
+class AbstractRepositoryMetadataUnitTests {
 
 	@Test // DATACMNS-98
-	public void discoversSimpleReturnTypeCorrectly() throws Exception {
+	void discoversSimpleReturnTypeCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
 		Method method = UserRepository.class.getMethod("findSingle");
@@ -49,14 +49,14 @@ public class AbstractRepositoryMetadataUnitTests {
 	}
 
 	@Test // DATACMNS-98
-	public void resolvesTypeParameterReturnType() throws Exception {
+	void resolvesTypeParameterReturnType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ConcreteRepository.class);
 		Method method = ConcreteRepository.class.getMethod("intermediateMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	@Test // DATACMNS-98
-	public void determinesReturnTypeFromPageable() throws Exception {
+	void determinesReturnTypeFromPageable() throws Exception {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("findByFirstname", Pageable.class, String.class);
@@ -64,28 +64,28 @@ public class AbstractRepositoryMetadataUnitTests {
 	}
 
 	@Test // DATACMNS-453
-	public void nonPageableRepository() {
+	void nonPageableRepository() {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
 		assertThat(metadata.isPagingRepository()).isFalse();
 	}
 
 	@Test // DATACMNS-453
-	public void pageableRepository() {
+	void pageableRepository() {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(PagedRepository.class);
 		assertThat(metadata.isPagingRepository()).isTrue();
 	}
 
 	@Test // DATACMNS-98
-	public void determinesReturnTypeFromGenericType() throws Exception {
+	void determinesReturnTypeFromGenericType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("someMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(GenericType.class);
 	}
 
 	@Test // DATACMNS-98
-	public void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
+	void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("anotherMethod");
@@ -93,7 +93,7 @@ public class AbstractRepositoryMetadataUnitTests {
 	}
 
 	@Test // DATACMNS-471
-	public void detectsArrayReturnTypeCorrectly() throws Exception {
+	void detectsArrayReturnTypeCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PagedRepository.class);
 		Method method = PagedRepository.class.getMethod("returnsArray");
@@ -102,7 +102,7 @@ public class AbstractRepositoryMetadataUnitTests {
 	}
 
 	@Test // DATACMNS-1299
-	public void doesNotUnwrapCustomTypeImplementingIterable() throws Exception {
+	void doesNotUnwrapCustomTypeImplementingIterable() throws Exception {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ContainerRepository.class);
 
@@ -145,7 +145,7 @@ public class AbstractRepositoryMetadataUnitTests {
 
 	class DummyRepositoryMetadata extends AbstractRepositoryMetadata {
 
-		public DummyRepositoryMetadata(Class<?> repositoryInterface) {
+		DummyRepositoryMetadata(Class<?> repositoryInterface) {
 			super(repositoryInterface);
 		}
 

@@ -18,7 +18,7 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.Repository;
@@ -31,11 +31,11 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class RepositoryFactoryBeanSupportUnitTests {
+class RepositoryFactoryBeanSupportUnitTests {
 
 	@Test // DATACMNS-341
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void setsConfiguredClassLoaderOnRepositoryFactory() {
+	void setsConfiguredClassLoaderOnRepositoryFactory() {
 
 		ClassLoader classLoader = mock(ClassLoader.class);
 
@@ -50,7 +50,7 @@ public class RepositoryFactoryBeanSupportUnitTests {
 
 	@Test // DATACMNS-432
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void initializationFailsWithMissingRepositoryInterface() {
+	void initializationFailsWithMissingRepositoryInterface() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)//
 				.isThrownBy(() -> new DummyRepositoryFactoryBean(null))//
@@ -58,7 +58,7 @@ public class RepositoryFactoryBeanSupportUnitTests {
 	}
 
 	@Test // DATACMNS-1117
-	public void returnsRepositoryInformationForFragmentSetup() {
+	void returnsRepositoryInformationForFragmentSetup() {
 
 		RepositoryFactoryBeanSupport<SampleWithQuerydslRepository, Object, Long> factoryBean = //
 				new DummyRepositoryFactoryBean<>(SampleWithQuerydslRepository.class);
@@ -70,7 +70,7 @@ public class RepositoryFactoryBeanSupportUnitTests {
 	}
 
 	@Test // DATACMNS-1345
-	public void reportsMappingContextUnavailableForPersistentEntityLookup() {
+	void reportsMappingContextUnavailableForPersistentEntityLookup() {
 
 		RepositoryFactoryBeanSupport<SampleRepository, Object, Long> bean = new RepositoryFactoryBeanSupport<SampleRepository, Object, Long>(
 				SampleRepository.class) {

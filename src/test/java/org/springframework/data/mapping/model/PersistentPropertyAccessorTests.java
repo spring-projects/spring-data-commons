@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -43,20 +43,10 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  */
-@RunWith(Parameterized.class)
 public class PersistentPropertyAccessorTests {
 
 	private final static SampleMappingContext MAPPING_CONTEXT = new SampleMappingContext();
 
-	private final Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction;
-
-	public PersistentPropertyAccessorTests(Function<Object, PersistentPropertyAccessor<?>> propertyAccessor,
-			String displayName) {
-
-		this.propertyAccessorFunction = propertyAccessor;
-	}
-
-	@Parameters(name = "{1}")
 	@SuppressWarnings("unchecked")
 	public static List<Object[]> parameters() {
 
@@ -74,8 +64,9 @@ public class PersistentPropertyAccessorTests {
 		return parameters;
 	}
 
-	@Test // DATACMNS-1322
-	public void shouldSetProperty() {
+	@ParameterizedTest // DATACMNS-1322
+	@MethodSource("parameters")
+	void shouldSetProperty(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
 		DataClass bean = new DataClass();
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
@@ -88,8 +79,9 @@ public class PersistentPropertyAccessorTests {
 		assertThat(accessor.getProperty(property)).isEqualTo("value");
 	}
 
-	@Test // DATACMNS-1322
-	public void shouldSetKotlinDataClassProperty() {
+	@ParameterizedTest // DATACMNS-1322
+	@MethodSource("parameters")
+	void shouldSetKotlinDataClassProperty(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
 		DataClassKt bean = new DataClassKt("foo");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
@@ -102,8 +94,10 @@ public class PersistentPropertyAccessorTests {
 		assertThat(accessor.getProperty(property)).isEqualTo("value");
 	}
 
-	@Test // DATACMNS-1322, DATACMNS-1391
-	public void shouldSetExtendedKotlinDataClassProperty() {
+	@ParameterizedTest // DATACMNS-1322, DATACMNS-1391
+	@MethodSource("parameters")
+	void shouldSetExtendedKotlinDataClassProperty(
+			Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
 		ExtendedDataClassKt bean = new ExtendedDataClassKt(0, "bar");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
@@ -116,8 +110,9 @@ public class PersistentPropertyAccessorTests {
 		assertThat(accessor.getProperty(property)).isEqualTo(1L);
 	}
 
-	@Test // DATACMNS-1391
-	public void shouldUseKotlinGeneratedCopyMethod() {
+	@ParameterizedTest // DATACMNS-1391
+	@MethodSource("parameters")
+	void shouldUseKotlinGeneratedCopyMethod(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
 		UnusedCustomCopy bean = new UnusedCustomCopy(new Timestamp(100));
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
@@ -130,8 +125,10 @@ public class PersistentPropertyAccessorTests {
 		assertThat(accessor.getProperty(property)).isEqualTo(new Timestamp(200));
 	}
 
-	@Test // DATACMNS-1391
-	public void kotlinCopyMethodShouldNotSetUnsettableProperty() {
+	@ParameterizedTest // DATACMNS-1391
+	@MethodSource("parameters")
+	void kotlinCopyMethodShouldNotSetUnsettableProperty(
+			Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
 		SingleSettableProperty bean = new SingleSettableProperty(UUID.randomUUID());
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
@@ -140,8 +137,10 @@ public class PersistentPropertyAccessorTests {
 		assertThatThrownBy(() -> accessor.setProperty(property, 1)).isInstanceOf(UnsupportedOperationException.class);
 	}
 
-	@Test // DATACMNS-1451
-	public void shouldSet17thImmutableNullableKotlinProperty() {
+	@ParameterizedTest // DATACMNS-1451
+	@MethodSource("parameters")
+	void shouldSet17thImmutableNullableKotlinProperty(
+			Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
 		With33Args bean = new With33Args();
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
@@ -153,8 +152,9 @@ public class PersistentPropertyAccessorTests {
 		assertThat(updated.get17()).isEqualTo("foo");
 	}
 
-	@Test // DATACMNS-1322
-	public void shouldWitherProperty() {
+	@ParameterizedTest // DATACMNS-1322
+	@MethodSource("parameters")
+	void shouldWitherProperty(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
 		ValueClass bean = new ValueClass("foo", "bar");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
@@ -167,8 +167,9 @@ public class PersistentPropertyAccessorTests {
 		assertThat(accessor.getProperty(property)).isEqualTo("value");
 	}
 
-	@Test // DATACMNS-1322
-	public void shouldRejectImmutablePropertyUpdate() {
+	@ParameterizedTest // DATACMNS-1322
+	@MethodSource("parameters")
+	void shouldRejectImmutablePropertyUpdate(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
 		ValueClass bean = new ValueClass("foo", "bar");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
@@ -177,8 +178,10 @@ public class PersistentPropertyAccessorTests {
 		assertThatThrownBy(() -> accessor.setProperty(property, "value")).isInstanceOf(UnsupportedOperationException.class);
 	}
 
-	@Test // DATACMNS-1322
-	public void shouldRejectImmutableKotlinClassPropertyUpdate() {
+	@ParameterizedTest // DATACMNS-1322
+	@MethodSource("parameters")
+	void shouldRejectImmutableKotlinClassPropertyUpdate(
+			Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
 		ValueClassKt bean = new ValueClassKt("foo");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
@@ -188,7 +191,7 @@ public class PersistentPropertyAccessorTests {
 	}
 
 	@Test // DATACMNS-1422
-	public void shouldUseReflectionIfFrameworkTypesNotVisible() throws Exception {
+	void shouldUseReflectionIfFrameworkTypesNotVisible() throws Exception {
 
 		HidingClassLoader classLoader = HidingClassLoader.hide(Assert.class);
 		classLoader.excludePackage("org.springframework.data.mapping.model");
@@ -216,7 +219,7 @@ public class PersistentPropertyAccessorTests {
 
 	@Value
 
-	static class ValueClass {
+	private static class ValueClass {
 		@With String id;
 		String immutable;
 	}

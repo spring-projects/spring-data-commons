@@ -27,11 +27,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /**
  * Unit tests for {@link ParameterizedTypeInformation}.
@@ -39,18 +41,19 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ParameterizedTypeInformationUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class ParameterizedTypeInformationUnitTests {
 
 	@Mock ParameterizedType one;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		when(one.getActualTypeArguments()).thenReturn(new Type[0]);
 	}
 
 	@Test
-	public void considersTypeInformationsWithDifferingParentsNotEqual() {
+	void considersTypeInformationsWithDifferingParentsNotEqual() {
 
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, emptyMap());
 		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<>(Object.class, emptyMap());
@@ -62,7 +65,7 @@ public class ParameterizedTypeInformationUnitTests {
 	}
 
 	@Test
-	public void considersTypeInformationsWithSameParentsNotEqual() {
+	void considersTypeInformationsWithSameParentsNotEqual() {
 
 		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, emptyMap());
 
@@ -73,7 +76,7 @@ public class ParameterizedTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-88
-	public void resolvesMapValueTypeCorrectly() {
+	void resolvesMapValueTypeCorrectly() {
 
 		TypeInformation<Foo> type = ClassTypeInformation.from(Foo.class);
 		TypeInformation<?> propertyType = type.getProperty("param");
@@ -90,14 +93,14 @@ public class ParameterizedTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-446
-	public void createsToStringRepresentation() {
+	void createsToStringRepresentation() {
 
 		assertThat(from(Foo.class).getProperty("param").toString())
 				.isEqualTo("org.springframework.data.util.ParameterizedTypeInformationUnitTests$Localized<java.lang.String>");
 	}
 
 	@Test // DATACMNS-485
-	public void hashCodeShouldBeConsistentWithEqualsForResolvedTypes() {
+	void hashCodeShouldBeConsistentWithEqualsForResolvedTypes() {
 
 		TypeInformation<?> first = from(First.class).getProperty("property");
 		TypeInformation<?> second = from(Second.class).getProperty("property");
@@ -109,7 +112,7 @@ public class ParameterizedTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-485
-	public void getActualTypeShouldNotUnwrapParameterizedTypes() {
+	void getActualTypeShouldNotUnwrapParameterizedTypes() {
 
 		TypeInformation<?> type = from(First.class).getProperty("property");
 
@@ -117,7 +120,7 @@ public class ParameterizedTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-697
-	public void usesLocalGenericInformationOfFields() {
+	void usesLocalGenericInformationOfFields() {
 
 		TypeInformation<NormalizedProfile> information = ClassTypeInformation.from(NormalizedProfile.class);
 
@@ -126,7 +129,7 @@ public class ParameterizedTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-899
-	public void returnsEmptyOptionalMapValueTypeForNonMapProperties() {
+	void returnsEmptyOptionalMapValueTypeForNonMapProperties() {
 
 		TypeInformation<?> typeInformation = ClassTypeInformation.from(Bar.class).getProperty("param");
 		assertThat(typeInformation).isInstanceOf(ParameterizedTypeInformation.class);
@@ -134,7 +137,7 @@ public class ParameterizedTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-1135
-	public void prefersLocalGenericsDeclarationOverParentBound() {
+	void prefersLocalGenericsDeclarationOverParentBound() {
 
 		ClassTypeInformation<Candidate> candidate = ClassTypeInformation.from(Candidate.class);
 
@@ -145,7 +148,7 @@ public class ParameterizedTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-1196
-	public void detectsNestedGenerics() {
+	void detectsNestedGenerics() {
 
 		TypeInformation<?> myList = ClassTypeInformation.from(EnumGeneric.class).getRequiredProperty("inner.myList");
 
@@ -198,13 +201,13 @@ public class ParameterizedTypeInformationUnitTests {
 		T value;
 	}
 
-	class Education {}
+	private class Education {}
 
 	// DATACMNS-1135
 
 	abstract class CandidateInfo {}
 
-	class Responsibility extends CandidateInfo {}
+	private class Responsibility extends CandidateInfo {}
 
 	class Experience extends CandidateInfo {
 		CandidateInfoContainer<Responsibility> responsibilities;
@@ -229,7 +232,7 @@ public class ParameterizedTypeInformationUnitTests {
 		}
 	}
 
-	static class EnumGeneric extends Generic<MyEnum> {}
+	private static class EnumGeneric extends Generic<MyEnum> {}
 
 	public enum MyEnum {
 		E1, E2

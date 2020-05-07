@@ -18,22 +18,22 @@ package org.springframework.data.querydsl;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.querydsl.QuerydslUtils.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link QuerydslUtils}.
  *
  * @author Oliver Gierke
  */
-public class QuerydslUtilsUnitTests {
+class QuerydslUtilsUnitTests {
 
 	@Test // DATACMNS-883
-	public void rendersDotPathForPathTraversalContainingAnyExpression() {
+	void rendersDotPathForPathTraversalContainingAnyExpression() {
 		assertThat(QuerydslUtils.toDotPath(QUser.user.addresses.any().street)).isEqualTo("addresses.street");
 	}
 
 	@Test // DATACMNS-941
-	public void skipsIntermediateDelegates() {
+	void skipsIntermediateDelegates() {
 
 		assertThat(toDotPath(QUser.user.as(QSpecialUser.class).as(QSpecialUser.class).specialProperty))
 				.isEqualTo("specialProperty");

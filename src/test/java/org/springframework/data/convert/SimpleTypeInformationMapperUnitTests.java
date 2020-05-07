@@ -17,7 +17,7 @@ package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -27,12 +27,12 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  */
-public class SimpleTypeInformationMapperUnitTests {
+class SimpleTypeInformationMapperUnitTests {
 
 	TypeInformationMapper mapper = new SimpleTypeInformationMapper();
 
 	@Test
-	public void resolvesTypeByLoadingClass() {
+	void resolvesTypeByLoadingClass() {
 
 		TypeInformation<?> type = mapper.resolveTypeFrom(Alias.of("java.lang.String"));
 
@@ -42,23 +42,23 @@ public class SimpleTypeInformationMapperUnitTests {
 	}
 
 	@Test
-	public void returnsNullForNonStringKey() {
+	void returnsNullForNonStringKey() {
 		assertThat(mapper.resolveTypeFrom(Alias.of(new Object()))).isNull();
 	}
 
 	@Test
-	public void returnsNullForEmptyTypeKey() {
+	void returnsNullForEmptyTypeKey() {
 		assertThat(mapper.resolveTypeFrom(Alias.of(""))).isNull();
 	}
 
 	@Test
-	public void returnsNullForUnloadableClass() {
+	void returnsNullForUnloadableClass() {
 
 		assertThat(mapper.resolveTypeFrom(Alias.of("Foo"))).isNull();
 	}
 
 	@Test
-	public void usesFullyQualifiedClassNameAsTypeKey() {
+	void usesFullyQualifiedClassNameAsTypeKey() {
 
 		assertThat(mapper.createAliasFor(ClassTypeInformation.from(String.class)))
 				.isEqualTo(Alias.of(String.class.getName()));

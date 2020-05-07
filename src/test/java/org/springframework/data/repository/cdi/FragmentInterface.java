@@ -18,6 +18,6 @@ package org.springframework.data.repository.cdi;
 /**
  * @author Mark Paluch
  */
-public interface FragmentInterface {
+interface FragmentInterface {
 	int getPriority();
 }

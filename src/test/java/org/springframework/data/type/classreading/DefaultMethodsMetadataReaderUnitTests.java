@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.data.type.MethodsMetadata;
 
@@ -29,10 +29,10 @@ import org.springframework.data.type.MethodsMetadata;
  *
  * @author Mark Paluch
  */
-public class DefaultMethodsMetadataReaderUnitTests {
+class DefaultMethodsMetadataReaderUnitTests {
 
 	@Test // DATACMNS-1206
-	public void shouldReadClassMethods() throws IOException {
+	void shouldReadClassMethods() throws IOException {
 
 		MethodsMetadata metadata = getMethodsMetadata(Foo.class);
 
@@ -46,7 +46,7 @@ public class DefaultMethodsMetadataReaderUnitTests {
 	}
 
 	@Test // DATACMNS-1206
-	public void shouldReadInterfaceMethods() throws IOException {
+	void shouldReadInterfaceMethods() throws IOException {
 
 		MethodsMetadata metadata = getMethodsMetadata(Baz.class);
 
@@ -60,7 +60,7 @@ public class DefaultMethodsMetadataReaderUnitTests {
 	}
 
 	@Test // DATACMNS-1206
-	public void shouldMetadata() throws IOException {
+	void shouldMetadata() throws IOException {
 
 		MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory();
 		MethodsMetadataReader metadataReader = factory.getMetadataReader(getClass().getName());
@@ -70,7 +70,7 @@ public class DefaultMethodsMetadataReaderUnitTests {
 	}
 
 	@Test // DATACMNS-1206
-	public void shouldReturnMethodMetadataByName() throws IOException {
+	void shouldReturnMethodMetadataByName() throws IOException {
 
 		MethodsMetadata metadata = getMethodsMetadata(Foo.class);
 

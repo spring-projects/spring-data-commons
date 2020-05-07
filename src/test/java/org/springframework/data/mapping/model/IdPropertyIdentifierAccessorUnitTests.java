@@ -17,7 +17,7 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -26,24 +26,24 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class IdPropertyIdentifierAccessorUnitTests {
+class IdPropertyIdentifierAccessorUnitTests {
 
 	SampleMappingContext mappingContext = new SampleMappingContext();
 
 	@Test // DATACMNS-599
-	public void rejectsEntityWithoutIdentifierProperty() {
+	void rejectsEntityWithoutIdentifierProperty() {
 		assertThatIllegalArgumentException().isThrownBy(
 				() -> new IdPropertyIdentifierAccessor(mappingContext.getRequiredPersistentEntity(Sample.class), new Sample()));
 	}
 
 	@Test // DATACMNS-599
-	public void rejectsNullBean() {
+	void rejectsNullBean() {
 		assertThatIllegalArgumentException().isThrownBy(
 				() -> new IdPropertyIdentifierAccessor(mappingContext.getRequiredPersistentEntity(SampleWithId.class), null));
 	}
 
 	@Test // DATACMNS-599
-	public void returnsIdentifierValue() {
+	void returnsIdentifierValue() {
 
 		SampleWithId sample = new SampleWithId();
 		sample.id = 1L;
@@ -54,7 +54,7 @@ public class IdPropertyIdentifierAccessorUnitTests {
 		assertThat(accessor.getIdentifier()).isEqualTo(sample.id);
 	}
 
-	static class Sample {}
+	private static class Sample {}
 
 	static class SampleWithId {
 		@Id Long id;

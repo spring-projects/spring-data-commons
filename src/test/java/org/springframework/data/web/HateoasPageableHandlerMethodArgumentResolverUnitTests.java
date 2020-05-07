@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,11 +33,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Oliver Gierke
  */
-public class HateoasPageableHandlerMethodArgumentResolverUnitTests
+class HateoasPageableHandlerMethodArgumentResolverUnitTests
 		extends PageableHandlerMethodArgumentResolverUnitTests {
 
 	@Test
-	public void buildsUpRequestParameters() {
+	void buildsUpRequestParameters() {
 
 		String basicString = String.format("page=%d&size=%d", PAGE_NUMBER, PAGE_SIZE);
 
@@ -47,7 +47,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	}
 
 	@Test // DATACMNS-343
-	public void replacesExistingPaginationInformation() throws Exception {
+	void replacesExistingPaginationInformation() throws Exception {
 
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
 		UriComponentsContributor resolver = new HateoasPageableHandlerMethodArgumentResolver();
@@ -66,12 +66,12 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	}
 
 	@Test // DATACMNS-335
-	public void preventsPageSizeFromExceedingMayValueIfConfiguredOnWrite() throws Exception {
+	void preventsPageSizeFromExceedingMayValueIfConfiguredOnWrite() throws Exception {
 		assertUriStringFor(PageRequest.of(0, 200), "page=0&size=100");
 	}
 
 	@Test // DATACMNS-418
-	public void appendsTemplateVariablesCorrectly() {
+	void appendsTemplateVariablesCorrectly() {
 
 		assertTemplateEnrichment("/foo", "{?page,size,sort}");
 		assertTemplateEnrichment("/foo?bar=1", "{&page,size,sort}");
@@ -82,7 +82,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	}
 
 	@Test // DATACMNS-418
-	public void returnsCustomizedTemplateVariables() {
+	void returnsCustomizedTemplateVariables() {
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/foo").build();
 
@@ -94,7 +94,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	}
 
 	@Test // DATACMNS-563
-	public void enablingOneIndexedParameterReturnsOneForFirstPage() {
+	void enablingOneIndexedParameterReturnsOneForFirstPage() {
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setOneIndexedParameters(true);
@@ -110,7 +110,7 @@ public class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	}
 
 	@Test // DATACMNS-1455
-	public void enhancesUnpaged() {
+	void enhancesUnpaged() {
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
 

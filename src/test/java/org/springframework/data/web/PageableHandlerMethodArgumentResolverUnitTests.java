@@ -18,8 +18,8 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.web.PageableHandlerMethodArgumentResolver.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
@@ -36,17 +36,17 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Oliver Gierke
  * @author Nick Williams
  */
-public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
+class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
 	MethodParameter supportedMethodParameter;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		this.supportedMethodParameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
 	}
 
 	@Test // DATACMNS-335
-	public void preventsPageSizeFromExceedingMayValueIfConfigured() throws Exception {
+	void preventsPageSizeFromExceedingMayValueIfConfigured() throws Exception {
 
 		// Read side
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -57,31 +57,31 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test
-	public void rejectsEmptyPageParameterName() {
+	void rejectsEmptyPageParameterName() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new PageableHandlerMethodArgumentResolver().setPageParameterName(""));
 	}
 
 	@Test
-	public void rejectsNullPageParameterName() {
+	void rejectsNullPageParameterName() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new PageableHandlerMethodArgumentResolver().setPageParameterName(null));
 	}
 
 	@Test
-	public void rejectsEmptySizeParameterName() {
+	void rejectsEmptySizeParameterName() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new PageableHandlerMethodArgumentResolver().setSizeParameterName(""));
 	}
 
 	@Test
-	public void rejectsNullSizeParameterName() {
+	void rejectsNullSizeParameterName() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new PageableHandlerMethodArgumentResolver().setSizeParameterName(null));
 	}
 
 	@Test
-	public void qualifierIsUsedInParameterLookup() throws Exception {
+	void qualifierIsUsedInParameterLookup() throws Exception {
 
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("validQualifier", Pageable.class), 0);
 
@@ -93,7 +93,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-377
-	public void usesDefaultPageSizeIfRequestPageSizeIsLessThanOne() throws Exception {
+	void usesDefaultPageSizeIfRequestPageSizeIsLessThanOne() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("page", "0");
@@ -103,7 +103,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-377
-	public void rejectsInvalidCustomDefaultForPageSize() throws Exception {
+	void rejectsInvalidCustomDefaultForPageSize() throws Exception {
 
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("invalidDefaultPageSize", Pageable.class),
 				0);
@@ -113,7 +113,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-408
-	public void fallsBackToFirstPageIfNegativePageNumberIsGiven() throws Exception {
+	void fallsBackToFirstPageIfNegativePageNumberIsGiven() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("page", "-1");
@@ -122,7 +122,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-408
-	public void pageParamIsNotNumeric() throws Exception {
+	void pageParamIsNotNumeric() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("page", "a");
@@ -131,7 +131,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-408
-	public void sizeParamIsNotNumeric() throws Exception {
+	void sizeParamIsNotNumeric() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addParameter("size", "a");
@@ -140,7 +140,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-477
-	public void returnsNullIfFallbackIsUnpagedAndNoParametersGiven() throws Exception {
+	void returnsNullIfFallbackIsUnpagedAndNoParametersGiven() throws Exception {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -150,7 +150,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-477
-	public void returnsFallbackIfOnlyPageIsGiven() throws Exception {
+	void returnsFallbackIfOnlyPageIsGiven() throws Exception {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -163,7 +163,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-477
-	public void returnsFallbackIfFallbackIsUnpagedAndOnlySizeIsGiven() throws Exception {
+	void returnsFallbackIfFallbackIsUnpagedAndOnlySizeIsGiven() throws Exception {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -176,7 +176,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-563
-	public void considersOneIndexedParametersSetting() {
+	void considersOneIndexedParametersSetting() {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setOneIndexedParameters(true);
@@ -190,7 +190,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-640
-	public void usesNullSortIfNoDefaultIsConfiguredAndPageAndSizeAreGiven() {
+	void usesNullSortIfNoDefaultIsConfiguredAndPageAndSizeAreGiven() {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -207,7 +207,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-692
-	public void oneIndexedParametersDefaultsIndexOutOfRange() {
+	void oneIndexedParametersDefaultsIndexOutOfRange() {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setOneIndexedParameters(true);
@@ -221,7 +221,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-761
-	public void returnsCorrectPageSizeForOneIndexParameters() {
+	void returnsCorrectPageSizeForOneIndexParameters() {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setOneIndexedParameters(true);
@@ -235,7 +235,7 @@ public class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefa
 	}
 
 	@Test // DATACMNS-929
-	public void detectsFallbackPageableIfNullOneIsConfigured() {
+	void detectsFallbackPageableIfNullOneIsConfigured() {
 
 		PageableHandlerMethodArgumentResolver resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());

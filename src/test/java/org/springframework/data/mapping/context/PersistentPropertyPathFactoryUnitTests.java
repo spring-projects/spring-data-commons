@@ -21,7 +21,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyPath;
@@ -37,18 +37,18 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @soundtrack Cypress Hill - Illusions (Q-Tip Remix, Unreleased & Revamped)
  */
-public class PersistentPropertyPathFactoryUnitTests {
+class PersistentPropertyPathFactoryUnitTests {
 
 	PersistentPropertyPathFactory<BasicPersistentEntity<Object, SamplePersistentProperty>, SamplePersistentProperty> factory = //
 			new PersistentPropertyPathFactory<>(new SampleMappingContext());
 
 	@Test
-	public void doesNotTryToLookupPersistentEntityForLeafProperty() {
+	void doesNotTryToLookupPersistentEntityForLeafProperty() {
 		assertThat(factory.from(Person.class, "name")).isNotNull();
 	}
 
 	@Test // DATACMNS-380
-	public void returnsPersistentPropertyPathForDotPath() {
+	void returnsPersistentPropertyPathForDotPath() {
 
 		PersistentPropertyPath<SamplePersistentProperty> path = factory.from(PersonSample.class, "persons.name");
 
@@ -58,17 +58,17 @@ public class PersistentPropertyPathFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-380
-	public void rejectsInvalidPropertyReferenceWithMappingException() {
+	void rejectsInvalidPropertyReferenceWithMappingException() {
 		assertThatExceptionOfType(MappingException.class).isThrownBy(() -> factory.from(PersonSample.class, "foo"));
 	}
 
 	@Test // DATACMNS-695
-	public void persistentPropertyPathTraversesGenericTypesCorrectly() {
+	void persistentPropertyPathTraversesGenericTypesCorrectly() {
 		assertThat(factory.from(Outer.class, "field.wrapped.field")).hasSize(3);
 	}
 
 	@Test // DATACMNS-727
-	public void exposesContextForFailingPropertyPathLookup() {
+	void exposesContextForFailingPropertyPathLookup() {
 
 		assertThatExceptionOfType(InvalidPersistentPropertyPath.class)//
 				.isThrownBy(() -> factory.from(PersonSample.class, "persons.firstname"))//
@@ -79,14 +79,14 @@ public class PersistentPropertyPathFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1116
-	public void cachesPersistentPropertyPaths() {
+	void cachesPersistentPropertyPaths() {
 
 		assertThat(factory.from(PersonSample.class, "persons.name")) //
 				.isSameAs(factory.from(PersonSample.class, "persons.name"));
 	}
 
 	@Test // DATACMNS-1275
-	public void findsNestedPropertyByFilter() {
+	void findsNestedPropertyByFilter() {
 
 		PersistentPropertyPaths<?, SamplePersistentProperty> paths = factory.from(Sample.class,
 				property -> property.findAnnotation(Inject.class) != null);
@@ -95,7 +95,7 @@ public class PersistentPropertyPathFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1275
-	public void findsNestedPropertiesByFilter() {
+	void findsNestedPropertiesByFilter() {
 
 		PersistentPropertyPaths<?, SamplePersistentProperty> paths = factory.from(Wrapper.class,
 				property -> property.findAnnotation(Inject.class) != null);
@@ -106,12 +106,12 @@ public class PersistentPropertyPathFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1275
-	public void createsEmptyPropertyPathCorrectly() {
+	void createsEmptyPropertyPathCorrectly() {
 		assertThat(factory.from(Wrapper.class, "")).isEmpty();
 	}
 
 	@Test // DATACMNS-1275
-	public void returnsShortestsPathsFirst() {
+	void returnsShortestsPathsFirst() {
 
 		Streamable<String> paths = factory.from(First.class, it -> true, it -> true) //
 				.map(PersistentPropertyPath::toDotPath);
@@ -120,7 +120,7 @@ public class PersistentPropertyPathFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1275
-	public void doesNotTraverseAssociationsByDefault() {
+	void doesNotTraverseAssociationsByDefault() {
 
 		Streamable<String> paths = factory.from(First.class, it -> true) //
 				.map(PersistentPropertyPath::toDotPath);
@@ -131,7 +131,7 @@ public class PersistentPropertyPathFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1275
-	public void traversesAssociationsIfTraversalGuardAllowsIt() {
+	void traversesAssociationsIfTraversalGuardAllowsIt() {
 
 		PersistentPropertyPaths<First, SamplePersistentProperty> paths = //
 				factory.from(First.class, it -> true, it -> true);
@@ -141,7 +141,7 @@ public class PersistentPropertyPathFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1275
-	public void returnsEmptyPropertyPathsIfNoneSelected() {
+	void returnsEmptyPropertyPathsIfNoneSelected() {
 
 		PersistentPropertyPaths<Third, SamplePersistentProperty> paths = factory.from(Third.class, it -> false);
 
@@ -150,7 +150,7 @@ public class PersistentPropertyPathFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1275
-	public void returnsShortestPathFirst() {
+	void returnsShortestPathFirst() {
 
 		PersistentPropertyPaths<First, SamplePersistentProperty> paths = factory.from(First.class, it -> !it.isEntity(),
 				it -> true);

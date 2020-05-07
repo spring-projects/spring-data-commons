@@ -22,11 +22,12 @@ import lombok.Data;
 
 import java.lang.reflect.Method;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Example;
 import org.springframework.data.repository.Repository;
@@ -41,17 +42,17 @@ import org.springframework.util.ReflectionUtils;
  * @author Mark Paluch
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class RepositoryCompositionUnitTests {
+@ExtendWith(MockitoExtension.class)
+class RepositoryCompositionUnitTests {
 
 	@Mock QueryByExampleExecutor<Person> queryByExampleExecutor;
 	@Mock PersonRepository backingRepo;
 
 	RepositoryComposition repositoryComposition;
 
-	@Before
+	@BeforeEach
 	@SuppressWarnings("rawtypes")
-	public void before() {
+	void before() {
 
 		RepositoryInformation repositoryInformation = new DefaultRepositoryInformation(
 				new DefaultRepositoryMetadata(PersonRepository.class), backingRepo.getClass(), RepositoryComposition.empty());
@@ -66,14 +67,14 @@ public class RepositoryCompositionUnitTests {
 	}
 
 	@Test // DATACMNS-102
-	public void shouldReportIfEmpty() {
+	void shouldReportIfEmpty() {
 
 		assertThat(RepositoryComposition.empty().isEmpty()).isTrue();
 		assertThat(repositoryComposition.isEmpty()).isFalse();
 	}
 
 	@Test // DATACMNS-102
-	public void shouldCallSaveOnBackingRepo() throws Throwable {
+	void shouldCallSaveOnBackingRepo() throws Throwable {
 
 		Method save = ReflectionUtils.findMethod(PersonRepository.class, "save", Person.class);
 
@@ -86,7 +87,7 @@ public class RepositoryCompositionUnitTests {
 	}
 
 	@Test // DATACMNS-102
-	public void shouldCallObjectSaveOnBackingRepo() throws Throwable {
+	void shouldCallObjectSaveOnBackingRepo() throws Throwable {
 
 		Method save = ReflectionUtils.findMethod(PersonRepository.class, "save", Object.class);
 
@@ -99,7 +100,7 @@ public class RepositoryCompositionUnitTests {
 	}
 
 	@Test // DATACMNS-102
-	public void shouldCallFindOneOnMixin() throws Throwable {
+	void shouldCallFindOneOnMixin() throws Throwable {
 
 		Method findOne = ReflectionUtils.findMethod(PersonRepository.class, "findOne", Example.class);
 
@@ -114,7 +115,7 @@ public class RepositoryCompositionUnitTests {
 	}
 
 	@Test // DATACMNS-102
-	public void shouldCallMethodsInOrder() throws Throwable {
+	void shouldCallMethodsInOrder() throws Throwable {
 
 		RepositoryInformation repositoryInformation = new DefaultRepositoryInformation(
 				new DefaultRepositoryMetadata(OrderedRepository.class), OrderedRepository.class, RepositoryComposition.empty());
@@ -136,7 +137,7 @@ public class RepositoryCompositionUnitTests {
 	}
 
 	@Test // DATACMNS-102
-	public void shouldValidateStructuralFragments() {
+	void shouldValidateStructuralFragments() {
 
 		RepositoryComposition mixed = RepositoryComposition.of(RepositoryFragment.structural(QueryByExampleExecutor.class),
 				RepositoryFragment.implemented(backingRepo));
@@ -148,7 +149,7 @@ public class RepositoryCompositionUnitTests {
 	}
 
 	@Test // DATACMNS-102
-	public void shouldValidateImplementationFragments() {
+	void shouldValidateImplementationFragments() {
 
 		RepositoryComposition mixed = RepositoryComposition.of(RepositoryFragment.implemented(backingRepo));
 
@@ -157,7 +158,7 @@ public class RepositoryCompositionUnitTests {
 
 	@Test // DATACMNS-102
 	@SuppressWarnings("rawtypes")
-	public void shouldAppendCorrectly() {
+	void shouldAppendCorrectly() {
 
 		RepositoryFragment<PersonRepository> initial = RepositoryFragment.implemented(backingRepo);
 		RepositoryFragment<QueryByExampleExecutor> structural = RepositoryFragment.structural(QueryByExampleExecutor.class);

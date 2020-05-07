@@ -18,7 +18,7 @@ package org.springframework.data.repository.init;
 /**
  * @author Oliver Gierke
  */
-public class Person {
+class Person {
 
 	String firstname;
 	String lastname;

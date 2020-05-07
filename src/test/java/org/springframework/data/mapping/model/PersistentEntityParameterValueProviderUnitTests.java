@@ -20,10 +20,11 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Iterator;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -37,14 +38,14 @@ import org.springframework.data.util.ClassTypeInformation;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class PersistentEntityParameterValueProviderUnitTests<P extends PersistentProperty<P>> {
+@ExtendWith(MockitoExtension.class)
+class PersistentEntityParameterValueProviderUnitTests<P extends PersistentProperty<P>> {
 
 	@Mock PropertyValueProvider<P> propertyValueProvider;
 	@Mock P property;
 
 	@Test // DATACMNS-134
-	public void usesParentObjectAsImplicitFirstConstructorArgument() {
+	void usesParentObjectAsImplicitFirstConstructorArgument() {
 
 		Object outer = new Outer();
 
@@ -69,7 +70,7 @@ public class PersistentEntityParameterValueProviderUnitTests<P extends Persisten
 	}
 
 	@Test
-	public void rejectsPropertyIfNameDoesNotMatch() {
+	void rejectsPropertyIfNameDoesNotMatch() {
 
 		PersistentEntity<Entity, P> entity = new BasicPersistentEntity<>(ClassTypeInformation.from(Entity.class));
 		ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider,

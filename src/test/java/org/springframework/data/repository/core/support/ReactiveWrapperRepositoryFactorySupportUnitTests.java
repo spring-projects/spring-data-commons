@@ -25,11 +25,13 @@ import rx.Single;
 
 import java.io.Serializable;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.reactivestreams.Publisher;
 
 import org.springframework.data.repository.Repository;
@@ -41,21 +43,22 @@ import org.springframework.data.repository.reactive.ReactiveSortingRepository;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class ReactiveWrapperRepositoryFactorySupportUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class ReactiveWrapperRepositoryFactorySupportUnitTests {
 
 	DummyRepositoryFactory factory;
 
 	@Mock ReactiveSortingRepository<Object, Serializable> backingRepo;
 	@Mock ObjectRepositoryCustom customImplementation;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		factory = new DummyRepositoryFactory(backingRepo);
 	}
 
 	@Test // DATACMNS-836
-	public void invokesCustomMethodIfItRedeclaresACRUDOne() {
+	void invokesCustomMethodIfItRedeclaresACRUDOne() {
 
 		ObjectRepository repository = factory.getRepository(ObjectRepository.class, customImplementation);
 		repository.findById(1);
@@ -65,7 +68,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 	}
 
 	@Test // DATACMNS-836, DATACMNS-1154
-	public void callsRxJava1MethodOnBaseImplementationWithExactArguments() {
+	void callsRxJava1MethodOnBaseImplementationWithExactArguments() {
 
 		Serializable id = 1L;
 		when(backingRepo.existsById(id)).thenReturn(Mono.just(true));
@@ -79,7 +82,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 
 	@Test // DATACMNS-836, DATACMNS-1063, DATACMNS-1154
 	@SuppressWarnings("unchecked")
-	public void callsRxJava1MethodOnBaseImplementationWithTypeConversion() {
+	void callsRxJava1MethodOnBaseImplementationWithTypeConversion() {
 
 		when(backingRepo.existsById(any(Publisher.class))).thenReturn(Mono.just(true));
 
@@ -92,7 +95,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 	}
 
 	@Test // DATACMNS-988, DATACMNS-1154
-	public void callsRxJava2MethodOnBaseImplementationWithExactArguments() {
+	void callsRxJava2MethodOnBaseImplementationWithExactArguments() {
 
 		Long id = 1L;
 		when(backingRepo.findById(id)).thenReturn(Mono.just(true));
@@ -104,7 +107,7 @@ public class ReactiveWrapperRepositoryFactorySupportUnitTests {
 	}
 
 	@Test // DATACMNS-988, DATACMNS-1154
-	public void callsRxJava2MethodOnBaseImplementationWithTypeConversion() {
+	void callsRxJava2MethodOnBaseImplementationWithTypeConversion() {
 
 		Serializable id = 1L;
 		when(backingRepo.deleteById(id)).thenReturn(Mono.empty());

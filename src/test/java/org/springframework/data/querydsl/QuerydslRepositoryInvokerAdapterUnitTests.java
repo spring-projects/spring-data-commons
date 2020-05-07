@@ -19,11 +19,12 @@ import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -36,8 +37,8 @@ import com.querydsl.core.types.Predicate;
  * @author Oliver Gierke
  * @soundtrack Emilie Nicolas - Grown Up
  */
-@RunWith(MockitoJUnitRunner.class)
-public class QuerydslRepositoryInvokerAdapterUnitTests {
+@ExtendWith(MockitoExtension.class)
+class QuerydslRepositoryInvokerAdapterUnitTests {
 
 	@Mock RepositoryInvoker delegate;
 	@Mock QuerydslPredicateExecutor<Object> executor;
@@ -45,13 +46,13 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 
 	QuerydslRepositoryInvokerAdapter adapter;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.adapter = new QuerydslRepositoryInvokerAdapter(delegate, executor, predicate);
 	}
 
 	@Test // DATACMNS-669
-	public void forwardsFindAllToExecutorWithPredicate() {
+	void forwardsFindAllToExecutorWithPredicate() {
 
 		Sort sort = Sort.by("firstname");
 		adapter.invokeFindAll(sort);
@@ -61,7 +62,7 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void forwardsFindAllWithPageableToExecutorWithPredicate() {
+	void forwardsFindAllWithPageableToExecutorWithPredicate() {
 
 		PageRequest pageable = PageRequest.of(0, 10);
 		adapter.invokeFindAll(pageable);
@@ -72,7 +73,7 @@ public class QuerydslRepositoryInvokerAdapterUnitTests {
 
 	@Test // DATACMNS-669
 	@SuppressWarnings("unchecked")
-	public void forwardsMethodsToDelegate() {
+	void forwardsMethodsToDelegate() {
 
 		adapter.hasDeleteMethod();
 		verify(delegate, times(1)).hasDeleteMethod();

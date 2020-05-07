@@ -20,8 +20,8 @@ import static org.springframework.data.web.querydsl.QuerydslPredicateArgumentRes
 
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -53,13 +53,13 @@ import com.querydsl.core.types.dsl.BooleanExpression;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class QuerydslPredicateArgumentResolverUnitTests {
+class QuerydslPredicateArgumentResolverUnitTests {
 
 	QuerydslPredicateArgumentResolver resolver;
 	MockHttpServletRequest request;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		resolver = new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
 				Optional.empty());
@@ -67,30 +67,30 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void supportsParameterReturnsTrueWhenMethodParameterIsPredicateAndAnnotatedCorrectly() {
+	void supportsParameterReturnsTrueWhenMethodParameterIsPredicateAndAnnotatedCorrectly() {
 		assertThat(resolver.supportsParameter(getMethodParameterFor("simpleFind", Predicate.class))).isTrue();
 	}
 
 	@Test // DATACMNS-669
-	public void supportsParameterReturnsTrueWhenMethodParameterIsPredicateButNotAnnotatedAsSuch() {
+	void supportsParameterReturnsTrueWhenMethodParameterIsPredicateButNotAnnotatedAsSuch() {
 		assertThat(resolver.supportsParameter(getMethodParameterFor("predicateWithoutAnnotation", Predicate.class)))
 				.isTrue();
 	}
 
 	@Test // DATACMNS-669
-	public void supportsParameterShouldThrowExceptionWhenMethodParameterIsNoPredicateButAnnotatedAsSuch() {
+	void supportsParameterShouldThrowExceptionWhenMethodParameterIsNoPredicateButAnnotatedAsSuch() {
 		assertThatIllegalArgumentException().isThrownBy(
 				() -> resolver.supportsParameter(getMethodParameterFor("nonPredicateWithAnnotation", String.class)));
 	}
 
 	@Test // DATACMNS-669
-	public void supportsParameterReturnsFalseWhenMethodParameterIsNoPredicate() {
+	void supportsParameterReturnsFalseWhenMethodParameterIsNoPredicate() {
 		assertThat(resolver.supportsParameter(getMethodParameterFor("nonPredicateWithoutAnnotation", String.class)))
 				.isFalse();
 	}
 
 	@Test // DATACMNS-669
-	public void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
+	void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
 
 		request.addParameter("firstname", "rand");
 
@@ -101,7 +101,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void resolveArgumentShouldCreateMultipleParametersPredicateCorrectly() throws Exception {
+	void resolveArgumentShouldCreateMultipleParametersPredicateCorrectly() throws Exception {
 
 		request.addParameter("firstname", "rand");
 		request.addParameter("lastname", "al'thor");
@@ -113,7 +113,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void resolveArgumentShouldCreateNestedObjectPredicateCorrectly() throws Exception {
+	void resolveArgumentShouldCreateNestedObjectPredicateCorrectly() throws Exception {
 
 		request.addParameter("address.city", "two rivers");
 
@@ -126,7 +126,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void resolveArgumentShouldResolveTypePropertyFromPageCorrectly() throws Exception {
+	void resolveArgumentShouldResolveTypePropertyFromPageCorrectly() throws Exception {
 
 		request.addParameter("address.city", "tar valon");
 
@@ -137,7 +137,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void resolveArgumentShouldHonorCustomSpecification() throws Exception {
+	void resolveArgumentShouldHonorCustomSpecification() throws Exception {
 
 		request.addParameter("firstname", "egwene");
 		request.addParameter("lastname", "al'vere");
@@ -150,7 +150,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void shouldCreatePredicateForNonStringPropertyCorrectly() throws Exception {
+	void shouldCreatePredicateForNonStringPropertyCorrectly() throws Exception {
 
 		request.addParameter("inceptionYear", "978");
 
@@ -161,7 +161,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void shouldCreatePredicateForNonStringListPropertyCorrectly() throws Exception {
+	void shouldCreatePredicateForNonStringListPropertyCorrectly() throws Exception {
 
 		request.addParameter("inceptionYear", new String[] { "978", "998" });
 
@@ -172,7 +172,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void shouldExcludePropertiesCorrectly() throws Exception {
+	void shouldExcludePropertiesCorrectly() throws Exception {
 
 		request.addParameter("address.street", "downhill");
 		request.addParameter("inceptionYear", "973");
@@ -185,7 +185,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 	@Test // DATACMNS-669
 	@SuppressWarnings("rawtypes")
-	public void extractTypeInformationShouldUseTypeExtractedFromMethodReturnTypeIfPredicateNotAnnotated() {
+	void extractTypeInformationShouldUseTypeExtractedFromMethodReturnTypeIfPredicateNotAnnotated() {
 
 		TypeInformation<?> type = ReflectionTestUtils.invokeMethod(resolver, "extractTypeInfo",
 				getMethodParameterFor("predicateWithoutAnnotation", Predicate.class));
@@ -195,7 +195,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 
 	@Test // DATACMNS-669
 	@SuppressWarnings("rawtypes")
-	public void detectsDomainTypesCorrectly() {
+	void detectsDomainTypesCorrectly() {
 
 		TypeInformation USER_TYPE = ClassTypeInformation.from(User.class);
 		TypeInformation MODELA_AND_VIEW_TYPE = ClassTypeInformation.from(ModelAndView.class);
@@ -206,7 +206,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1593
-	public void returnsEmptyPredicateForEmptyInput() throws Exception {
+	void returnsEmptyPredicateForEmptyInput() throws Exception {
 
 		MethodParameter parameter = getMethodParameterFor("predicateWithoutAnnotation", Predicate.class);
 
@@ -217,7 +217,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1635
-	public void forwardsNullValueForNullablePredicate() throws Exception {
+	void forwardsNullValueForNullablePredicate() throws Exception {
 
 		MethodParameter parameter = getMethodParameterFor("nullablePredicateWithoutAnnotation", Predicate.class);
 
@@ -227,7 +227,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1635
-	public void returnsOptionalIfDeclared() throws Exception {
+	void returnsOptionalIfDeclared() throws Exception {
 
 		MethodParameter parameter = getMethodParameterFor("optionalPredicateWithoutAnnotation", Optional.class);
 
@@ -289,7 +289,7 @@ public class QuerydslPredicateArgumentResolverUnitTests {
 		User optionalPredicateWithoutAnnotation(Optional<Predicate> predicate);
 	}
 
-	public static class SampleRepo implements QuerydslBinderCustomizer<QUser> {
+	static class SampleRepo implements QuerydslBinderCustomizer<QUser> {
 
 		@Override
 		public void customize(QuerydslBindings bindings, QUser user) {

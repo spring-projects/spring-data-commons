@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,10 +34,10 @@ import org.springframework.data.mapping.PersonDocument;
 /**
  * @author Christoph Strobl
  */
-public class EntityCallbackDiscovererUnitTests {
+class EntityCallbackDiscovererUnitTests {
 
 	@Test // DATACMNS-1467
-	public void shouldDiscoverCallbackType() {
+	void shouldDiscoverCallbackType() {
 
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
@@ -50,7 +50,7 @@ public class EntityCallbackDiscovererUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void shouldDiscoverCallbackTypeByName() {
+	void shouldDiscoverCallbackTypeByName() {
 
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
@@ -65,7 +65,7 @@ public class EntityCallbackDiscovererUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void shouldSupportCallbackTypes() {
+	void shouldSupportCallbackTypes() {
 
 		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer();
 
@@ -79,7 +79,7 @@ public class EntityCallbackDiscovererUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void shouldSupportInstanceCallbackTypes() {
+	void shouldSupportInstanceCallbackTypes() {
 
 		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer();
 
@@ -99,7 +99,7 @@ public class EntityCallbackDiscovererUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void shouldDispatchInOrder() {
+	void shouldDispatchInOrder() {
 
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(OrderedConfig.class);
 
@@ -155,14 +155,14 @@ public class EntityCallbackDiscovererUnitTests {
 		@Order(3)
 		static class Third implements EntityCallback<Person> {
 
-			public Person beforeSave(Person object) {
+			Person beforeSave(Person object) {
 				return object;
 			}
 		}
 
 		static class Second implements EntityCallback<Person>, Ordered {
 
-			public Person beforeSave(Person object) {
+			Person beforeSave(Person object) {
 				return object;
 			}
 
@@ -175,7 +175,7 @@ public class EntityCallbackDiscovererUnitTests {
 		@Order(1)
 		static class First implements EntityCallback<Person> {
 
-			public Person beforeSave(Person object) {
+			Person beforeSave(Person object) {
 				return object;
 			}
 		}

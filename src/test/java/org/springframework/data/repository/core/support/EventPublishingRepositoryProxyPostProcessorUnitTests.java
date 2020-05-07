@@ -31,10 +31,12 @@ import java.util.UUID;
 
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInvocation;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -53,24 +55,25 @@ import org.springframework.data.repository.core.support.EventPublishingRepositor
  * @author Yuki Yoshida
  * @soundtrack Henrik Freischlader Trio - Nobody Else To Blame (Openness)
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class EventPublishingRepositoryProxyPostProcessorUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 	@Mock ApplicationEventPublisher publisher;
 	@Mock MethodInvocation invocation;
 
 	@Test // DATACMNS-928
-	public void rejectsNullAggregateTypes() {
+	void rejectsNullAggregateTypes() {
 		assertThatIllegalArgumentException().isThrownBy(() -> EventPublishingMethod.of(null));
 	}
 
 	@Test // DATACMNS-928
-	public void publishingEventsForNullIsNoOp() {
+	void publishingEventsForNullIsNoOp() {
 		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(null, publisher);
 	}
 
 	@Test // DATACMNS-928
-	public void exposesEventsExposedByEntityToPublisher() {
+	void exposesEventsExposedByEntityToPublisher() {
 
 		SomeEvent first = new SomeEvent();
 		SomeEvent second = new SomeEvent();
@@ -83,7 +86,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	public void exposesSingleEventByEntityToPublisher() {
+	void exposesSingleEventByEntityToPublisher() {
 
 		SomeEvent event = new SomeEvent();
 		OneEvent entity = OneEvent.of(event);
@@ -94,7 +97,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	public void doesNotExposeNullEvent() {
+	void doesNotExposeNullEvent() {
 
 		OneEvent entity = OneEvent.of(null);
 
@@ -104,12 +107,12 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	public void doesNotCreatePublishingMethodIfNoAnnotationDetected() {
+	void doesNotCreatePublishingMethodIfNoAnnotationDetected() {
 		assertThat(EventPublishingMethod.of(Object.class)).isNull();
 	}
 
 	@Test // DATACMNS-928
-	public void interceptsSaveMethod() throws Throwable {
+	void interceptsSaveMethod() throws Throwable {
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
@@ -123,7 +126,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	public void doesNotInterceptNonSaveMethod() throws Throwable {
+	void doesNotInterceptNonSaveMethod() throws Throwable {
 
 		doReturn(SampleRepository.class.getMethod("findById", Object.class)).when(invocation).getMethod();
 
@@ -135,7 +138,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	public void registersAdviceIfDomainTypeExposesEvents() {
+	void registersAdviceIfDomainTypeExposesEvents() {
 
 		RepositoryInformation information = new DummyRepositoryInformation(SampleRepository.class);
 		RepositoryProxyPostProcessor processor = new EventPublishingRepositoryProxyPostProcessor(publisher);
@@ -148,7 +151,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	public void doesNotAddAdviceIfDomainTypeDoesNotExposeEvents() {
+	void doesNotAddAdviceIfDomainTypeDoesNotExposeEvents() {
 
 		RepositoryInformation information = new DummyRepositoryInformation(CrudRepository.class);
 		RepositoryProxyPostProcessor processor = new EventPublishingRepositoryProxyPostProcessor(publisher);
@@ -161,7 +164,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	public void publishesEventsForCallToSaveWithIterable() throws Throwable {
+	void publishesEventsForCallToSaveWithIterable() throws Throwable {
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
@@ -175,7 +178,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-975
-	public void publishesEventsAfterSaveInvocation() throws Throwable {
+	void publishesEventsAfterSaveInvocation() throws Throwable {
 
 		doThrow(new IllegalStateException()).when(invocation).proceed();
 
@@ -189,7 +192,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-1113
-	public void invokesEventsForMethodsThatStartsWithSave() throws Throwable {
+	void invokesEventsForMethodsThatStartsWithSave() throws Throwable {
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
@@ -203,7 +206,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-1067
-	public void clearsEventsEvenIfNoneWereExposedToPublish() {
+	void clearsEventsEvenIfNoneWereExposedToPublish() {
 
 		EventsWithClearing entity = spy(EventsWithClearing.of(Collections.emptyList()));
 
@@ -213,7 +216,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-1067
-	public void clearsEventsIfThereWereSomeToBePublished() {
+	void clearsEventsIfThereWereSomeToBePublished() {
 
 		EventsWithClearing entity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
 
@@ -223,7 +226,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-1067
-	public void clearsEventsForOperationOnMutlipleAggregates() {
+	void clearsEventsForOperationOnMutlipleAggregates() {
 
 		EventsWithClearing firstEntity = spy(EventsWithClearing.of(Collections.emptyList()));
 		EventsWithClearing secondEntity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
@@ -237,7 +240,7 @@ public class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-1163
-	public void publishesEventFromParameter() throws Throwable {
+	void publishesEventFromParameter() throws Throwable {
 
 		Object event = new Object();
 		MultipleEvents parameter = MultipleEvents.of(Collections.singleton(event));

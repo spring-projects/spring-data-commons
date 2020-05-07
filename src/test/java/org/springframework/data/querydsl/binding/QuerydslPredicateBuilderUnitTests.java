@@ -25,8 +25,8 @@ import java.util.List;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.QUserWrapper;
@@ -50,7 +50,7 @@ import com.querydsl.core.types.Predicate;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class QuerydslPredicateBuilderUnitTests {
+class QuerydslPredicateBuilderUnitTests {
 
 	static final ClassTypeInformation<User> USER_TYPE = ClassTypeInformation.from(User.class);
 	static final QuerydslBindings DEFAULT_BINDINGS = new QuerydslBindings();
@@ -58,31 +58,31 @@ public class QuerydslPredicateBuilderUnitTests {
 	QuerydslPredicateBuilder builder;
 	MultiValueMap<String, String> values;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.builder = new QuerydslPredicateBuilder(new DefaultFormattingConversionService(),
 				SimpleEntityPathResolver.INSTANCE);
 		this.values = new LinkedMultiValueMap<>();
 	}
 
 	@Test // DATACMNS-669
-	public void rejectsNullConversionService() {
+	void rejectsNullConversionService() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new QuerydslPredicateBuilder(null, SimpleEntityPathResolver.INSTANCE));
 	}
 
 	@Test // DATACMNS-669
-	public void getPredicateShouldThrowErrorWhenBindingContextIsNull() {
+	void getPredicateShouldThrowErrorWhenBindingContextIsNull() {
 		assertThatIllegalArgumentException().isThrownBy(() -> builder.getPredicate(null, values, null));
 	}
 
 	@Test // DATACMNS-669, DATACMNS-1168
-	public void getPredicateShouldReturnNullWhenPropertiesAreEmpty() {
+	void getPredicateShouldReturnNullWhenPropertiesAreEmpty() {
 		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS)).isNull();
 	}
 
 	@Test // DATACMNS-669
-	public void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
+	void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() throws Exception {
 
 		assumeThat(Version.javaVersion().toString())
 				.as("QueryDSL isn't Java 11 ready https://github.com/querydsl/querydsl/issues/2151").startsWith("1.8");
@@ -99,7 +99,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void resolveArgumentShouldCreateNestedStringParameterPredicateCorrectly() throws Exception {
+	void resolveArgumentShouldCreateNestedStringParameterPredicateCorrectly() throws Exception {
 
 		assumeThat(Version.javaVersion().toString())
 				.as("QueryDSL isn't Java 11 ready https://github.com/querydsl/querydsl/issues/2151").startsWith("1.8");
@@ -116,7 +116,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void ignoresNonDomainTypeProperties() {
+	void ignoresNonDomainTypeProperties() {
 
 		values.add("firstname", "rand");
 		values.add("lastname".toUpperCase(), "al'thor");
@@ -127,7 +127,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void forwardsNullForEmptyParameterToSingleValueBinder() {
+	void forwardsNullForEmptyParameterToSingleValueBinder() {
 
 		values.add("lastname", null);
 
@@ -139,7 +139,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 	@Test // DATACMNS-734
 	@SuppressWarnings("unchecked")
-	public void resolvesCommaSeparatedArgumentToArrayCorrectly() {
+	void resolvesCommaSeparatedArgumentToArrayCorrectly() {
 
 		values.add("address.lonLat", "40.740337,-73.995146");
 
@@ -152,7 +152,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 	@Test // DATACMNS-734
 	@SuppressWarnings("unchecked")
-	public void leavesCommaSeparatedArgumentUntouchedWhenTargetIsNotAnArray() {
+	void leavesCommaSeparatedArgumentUntouchedWhenTargetIsNotAnArray() {
 
 		values.add("address.city", "rivers,two");
 
@@ -164,7 +164,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-734
-	public void bindsDateCorrectly() throws ParseException {
+	void bindsDateCorrectly() throws ParseException {
 
 		DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd");
 		String date = format.print(new DateTime());
@@ -177,7 +177,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-883
-	public void automaticallyInsertsAnyStepInCollectionReference() {
+	void automaticallyInsertsAnyStepInCollectionReference() {
 
 		values.add("addresses.street", "VALUE");
 
@@ -187,7 +187,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-941
-	public void buildsPredicateForBindingUsingDowncast() {
+	void buildsPredicateForBindingUsingDowncast() {
 
 		values.add("specialProperty", "VALUE");
 
@@ -200,7 +200,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-941
-	public void buildsPredicateForBindingUsingNestedDowncast() {
+	void buildsPredicateForBindingUsingNestedDowncast() {
 
 		values.add("user.specialProperty", "VALUE");
 
@@ -215,7 +215,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-1443
-	public void doesNotDropValuesContainingABlank() {
+	void doesNotDropValuesContainingABlank() {
 
 		values.add("firstname", " ");
 
@@ -224,7 +224,7 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-1443
-	public void dropsValuesContainingAnEmptyString() {
+	void dropsValuesContainingAnEmptyString() {
 
 		values.add("firstname", "");
 

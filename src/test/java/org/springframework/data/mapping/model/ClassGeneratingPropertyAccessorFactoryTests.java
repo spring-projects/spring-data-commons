@@ -16,7 +16,7 @@
 package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
+import static org.assertj.core.api.Assumptions.*;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -24,10 +24,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.mapping.PersistentProperty;
@@ -36,32 +35,18 @@ import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.subpackage.TypeInOtherPackage;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Unit tests for {@link ClassGeneratingPropertyAccessorFactory}
  *
  * @author Mark Paluch
  */
-@RunWith(Parameterized.class)
 public class ClassGeneratingPropertyAccessorFactoryTests {
 
 	private final static ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
 	private final static SampleMappingContext mappingContext = new SampleMappingContext();
 
-	private final Object bean;
-	private final String propertyName;
-	private final Class<?> expectedConstructorType;
 
-	public ClassGeneratingPropertyAccessorFactoryTests(Object bean, String propertyName, Class<?> expectedConstructorType,
-			String displayName) {
-
-		this.bean = bean;
-		this.propertyName = propertyName;
-		this.expectedConstructorType = expectedConstructorType;
-	}
-
-	@Parameters(name = "{3}")
 	@SuppressWarnings("unchecked")
 	public static List<Object[]> parameters() throws ReflectiveOperationException {
 
@@ -102,15 +87,19 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		return parameters;
 	}
 
-	@Test // DATACMNS-1201
-	public void shouldSupportGeneratedPropertyAccessors() {
+	@ParameterizedTest(name = "{3}") // DATACMNS-1201
+	@MethodSource("parameters")
+	void shouldSupportGeneratedPropertyAccessors(Object bean, String propertyName, Class<?> expectedConstructorType,
+			String displayName) {
 		assertThat(factory.isSupported(mappingContext.getRequiredPersistentEntity(bean.getClass()))).isTrue();
 	}
 
-	@Test // DATACMNS-809, // DATACMNS-1322
-	public void shouldSetAndGetProperty() throws Exception {
+	@ParameterizedTest(name = "{3}") // DATACMNS-809, DATACMNS-1322
+	@MethodSource("parameters")
+	void shouldSetAndGetProperty(Object bean, String propertyName, Class<?> expectedConstructorType, String displayName)
+			throws Exception {
 
-		assumeTrue(StringUtils.hasText(propertyName));
+		assumeThat(propertyName).isNotEmpty();
 
 		assertThat(getProperty(bean, propertyName)).satisfies(property -> {
 
@@ -127,9 +116,11 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		});
 	}
 
-	@Test // DATACMNS-809
+	@ParameterizedTest(name = "{3}") // DATACMNS-809
+	@MethodSource("parameters")
 	@SuppressWarnings("rawtypes")
-	public void accessorShouldDeclareConstructor() throws Exception {
+	void accessorShouldDeclareConstructor(Object bean, String propertyName, Class<?> expectedConstructorType,
+			String displayName) throws Exception {
 
 		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
 
@@ -139,30 +130,37 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		assertThat(declaredConstructors[0].getParameterTypes()[0]).isEqualTo(expectedConstructorType);
 	}
 
-	@Test // DATACMNS-809
-	public void shouldFailOnNullBean() {
+	@ParameterizedTest(name = "{3}") // DATACMNS-809
+	@MethodSource("parameters")
+	void shouldFailOnNullBean(Object bean, String propertyName, Class<?> expectedConstructorType, String displayName) {
 		assertThatIllegalArgumentException().isThrownBy(
 				() -> factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(bean.getClass()), null));
 	}
 
-	@Test // DATACMNS-809
-	public void getPropertyShouldFailOnUnhandledProperty() {
+	@ParameterizedTest(name = "{3}") // DATACMNS-809
+	@MethodSource("parameters")
+	void getPropertyShouldFailOnUnhandledProperty(Object bean, String propertyName, Class<?> expectedConstructorType,
+			String displayName) {
 
 		assertThat(getProperty(new Dummy(), "dummy"))
 				.satisfies(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
 						.isThrownBy(() -> getPersistentPropertyAccessor(bean).getProperty(property)));
 	}
 
-	@Test // DATACMNS-809
-	public void setPropertyShouldFailOnUnhandledProperty() {
+	@ParameterizedTest(name = "{3}") // DATACMNS-809
+	@MethodSource("parameters")
+	void setPropertyShouldFailOnUnhandledProperty(Object bean, String propertyName, Class<?> expectedConstructorType,
+			String displayName) {
 
 		assertThat(getProperty(new Dummy(), "dummy"))
 				.satisfies(property -> assertThatExceptionOfType(UnsupportedOperationException.class)//
 						.isThrownBy(() -> getPersistentPropertyAccessor(bean).setProperty(property, Optional.empty())));
 	}
 
-	@Test // DATACMNS-809
-	public void shouldUseClassPropertyAccessorFactory() throws Exception {
+	@ParameterizedTest(name = "{3}") // DATACMNS-809
+	@MethodSource("parameters")
+	void shouldUseClassPropertyAccessorFactory(Object bean, String propertyName, Class<?> expectedConstructorType,
+			String displayName) throws Exception {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(bean.getClass());

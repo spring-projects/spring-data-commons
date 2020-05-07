@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -55,7 +55,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	BasicPersistentEntity<Object, SamplePersistentProperty> entity;
 	SampleMappingContext context;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 
 		context = new SampleMappingContext();

@@ -18,7 +18,7 @@ package org.springframework.data.domain;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Thomas Darimont
@@ -29,17 +29,17 @@ public abstract class AbstractPageRequestUnitTests {
 	public abstract AbstractPageRequest newPageRequest(int page, int size);
 
 	@Test // DATACMNS-402
-	public void preventsNegativePage() {
+	void preventsNegativePage() {
 		assertThatIllegalArgumentException().isThrownBy(() -> newPageRequest(-1, 10));
 	}
 
 	@Test // DATACMNS-402
-	public void preventsNegativeSize() {
+	void preventsNegativeSize() {
 		assertThatIllegalArgumentException().isThrownBy(() -> newPageRequest(0, -1));
 	}
 
 	@Test // DATACMNS-402
-	public void navigatesPageablesCorrectly() {
+	void navigatesPageablesCorrectly() {
 
 		Pageable request = newPageRequest(1, 10);
 
@@ -55,7 +55,7 @@ public abstract class AbstractPageRequestUnitTests {
 	}
 
 	@Test // DATACMNS-402
-	public void equalsHonoursPageAndSize() {
+	void equalsHonoursPageAndSize() {
 
 		AbstractPageRequest request = newPageRequest(0, 10);
 
@@ -73,12 +73,12 @@ public abstract class AbstractPageRequestUnitTests {
 	}
 
 	@Test // DATACMNS-377
-	public void preventsPageSizeLessThanOne() {
+	void preventsPageSizeLessThanOne() {
 		assertThatIllegalArgumentException().isThrownBy(() -> newPageRequest(0, 0));
 	}
 
 	@Test // DATACMNS-1327
-	public void getOffsetShouldNotCauseOverflow() {
+	void getOffsetShouldNotCauseOverflow() {
 
 		AbstractPageRequest request = newPageRequest(Integer.MAX_VALUE, Integer.MAX_VALUE);
 

@@ -17,7 +17,7 @@ package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.Supplier;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter;
@@ -33,10 +33,10 @@ import org.springframework.data.convert.ConverterBuilder.WritingConverterBuilder
  * @since 2.0
  * @soundtrack John Mayer - In the Blood (The Search for Everything)
  */
-public class ConverterBuilderUnitTests {
+class ConverterBuilderUnitTests {
 
 	@Test // DATACMNS-1034
-	public void setsUpBidirectionalConvertersFromReading() {
+	void setsUpBidirectionalConvertersFromReading() {
 
 		ConverterAware builder = ConverterBuilder.reading(String.class, Long.class, it -> Long.valueOf(it))
 				.andWriting(Object::toString);
@@ -46,7 +46,7 @@ public class ConverterBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-1034
-	public void setsUpBidirectionalConvertersFromWriting() {
+	void setsUpBidirectionalConvertersFromWriting() {
 
 		ConverterAware builder = ConverterBuilder.writing(Long.class, String.class, Object::toString)
 				.andReading(it -> Long.valueOf(it));
@@ -56,7 +56,7 @@ public class ConverterBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-1034
-	public void setsUpReadingConverter() {
+	void setsUpReadingConverter() {
 
 		ReadingConverterBuilder<String, Long> builder = ConverterBuilder.reading(String.class, Long.class,
 				string -> Long.valueOf(string));
@@ -66,7 +66,7 @@ public class ConverterBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-1034
-	public void setsUpWritingConverter() {
+	void setsUpWritingConverter() {
 
 		WritingConverterBuilder<Long, String> builder = ConverterBuilder.writing(Long.class, String.class,
 				Object::toString);

@@ -22,7 +22,7 @@ import java.beans.PropertyDescriptor;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
@@ -31,10 +31,10 @@ import org.springframework.beans.factory.annotation.Value;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class DefaultProjectionInformationUnitTests {
+class DefaultProjectionInformationUnitTests {
 
 	@Test // DATACMNS-89
-	public void discoversInputProperties() {
+	void discoversInputProperties() {
 
 		ProjectionInformation information = new DefaultProjectionInformation(CustomerProjection.class);
 
@@ -42,7 +42,7 @@ public class DefaultProjectionInformationUnitTests {
 	}
 
 	@Test // DATACMNS-1206
-	public void omitsInputPropertiesAcceptingArguments() {
+	void omitsInputPropertiesAcceptingArguments() {
 
 		ProjectionInformation information = new DefaultProjectionInformation(ProjectionAcceptingArguments.class);
 
@@ -50,7 +50,7 @@ public class DefaultProjectionInformationUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void discoversAllInputProperties() {
+	void discoversAllInputProperties() {
 
 		ProjectionInformation information = new DefaultProjectionInformation(ExtendedProjection.class);
 
@@ -58,7 +58,7 @@ public class DefaultProjectionInformationUnitTests {
 	}
 
 	@Test // DATACMNS-1206
-	public void discoversInputPropertiesInOrder() {
+	void discoversInputPropertiesInOrder() {
 
 		ProjectionInformation information = new DefaultProjectionInformation(SameMethodNamesInAlternateOrder.class);
 
@@ -66,7 +66,7 @@ public class DefaultProjectionInformationUnitTests {
 	}
 
 	@Test // DATACMNS-1206
-	public void discoversAllInputPropertiesInOrder() {
+	void discoversAllInputPropertiesInOrder() {
 
 		assertThat(toNames(new DefaultProjectionInformation(CompositeProjection.class).getInputProperties()))
 				.containsExactly("firstname", "lastname", "age");
@@ -75,7 +75,7 @@ public class DefaultProjectionInformationUnitTests {
 	}
 
 	@Test // DATACMNS-967
-	public void doesNotConsiderDefaultMethodInputProperties() {
+	void doesNotConsiderDefaultMethodInputProperties() {
 
 		ProjectionInformation information = new DefaultProjectionInformation(WithDefaultMethod.class);
 

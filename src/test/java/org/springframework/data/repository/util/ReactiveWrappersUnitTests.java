@@ -15,26 +15,27 @@
  */
 package org.springframework.data.repository.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import org.junit.Test;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Observable;
 import rx.Single;
+
+import org.junit.jupiter.api.Test;
+import org.reactivestreams.Publisher;
 
 /**
  * Unit tests for {@link ReactiveWrappers}.
  *
  * @author Mark Paluch
  */
-public class ReactiveWrappersUnitTests {
+class ReactiveWrappersUnitTests {
 
 	@Test // DATACMNS-836
-	public void isSingleLikeShouldReportCorrectNoTypes() {
+	void isSingleLikeShouldReportCorrectNoTypes() {
 
 		assertThat(ReactiveWrappers.isNoValueType(Mono.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Flux.class)).isFalse();
@@ -49,7 +50,7 @@ public class ReactiveWrappersUnitTests {
 	}
 
 	@Test // DATACMNS-836
-	public void isSingleLikeShouldReportCorrectSingleTypes() {
+	void isSingleLikeShouldReportCorrectSingleTypes() {
 
 		assertThat(ReactiveWrappers.isSingleValueType(Mono.class)).isTrue();
 		assertThat(ReactiveWrappers.isSingleValueType(Flux.class)).isFalse();
@@ -65,7 +66,7 @@ public class ReactiveWrappersUnitTests {
 	}
 
 	@Test // DATACMNS-836
-	public void isCollectionLikeShouldReportCorrectCollectionTypes() {
+	void isCollectionLikeShouldReportCorrectCollectionTypes() {
 
 		assertThat(ReactiveWrappers.isMultiValueType(Mono.class)).isFalse();
 		assertThat(ReactiveWrappers.isMultiValueType(Flux.class)).isTrue();

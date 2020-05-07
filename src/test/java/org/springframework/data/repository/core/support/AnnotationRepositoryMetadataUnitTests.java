@@ -17,7 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
@@ -26,10 +26,10 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  *
  * @author Oliver Gierke
  */
-public class AnnotationRepositoryMetadataUnitTests {
+class AnnotationRepositoryMetadataUnitTests {
 
 	@Test
-	public void handlesRepositoryProxyAnnotationCorrectly() {
+	void handlesRepositoryProxyAnnotationCorrectly() {
 
 		RepositoryMetadata metadata = new AnnotationRepositoryMetadata(AnnotatedRepository.class);
 
@@ -38,7 +38,7 @@ public class AnnotationRepositoryMetadataUnitTests {
 	}
 
 	@Test // DATACMNS-37, DATACMNS-1375
-	public void preventsUnannotatedInterface() {
+	void preventsUnannotatedInterface() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
 				.isThrownBy(() -> new AnnotationRepositoryMetadata(UnannotatedRepository.class)) //
@@ -50,7 +50,7 @@ public class AnnotationRepositoryMetadataUnitTests {
 
 		private String firstname;
 
-		public String getAddress() {
+		String getAddress() {
 
 			return null;
 		}

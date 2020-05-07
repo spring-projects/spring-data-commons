@@ -1,5 +1,3 @@
-import org.springframework.data.web.ProxyingHandlerMethodArgumentResolverUnitTests;
-
 /*
  * Copyright 2017-2020 the original author or authors.
  *
@@ -18,6 +16,6 @@ import org.springframework.data.web.ProxyingHandlerMethodArgumentResolverUnitTes
 
 /**
  * @author Oliver Gierke
- * @see ProxyingHandlerMethodArgumentResolverUnitTests
+ * @see org.springframework.data.web.ProxyingHandlerMethodArgumentResolverUnitTests
  */
 public interface SampleInterface {}

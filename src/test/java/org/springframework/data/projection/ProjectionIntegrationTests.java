@@ -17,7 +17,7 @@ package org.springframework.data.projection;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
@@ -31,10 +31,10 @@ import com.jayway.jsonpath.ParseContext;
  *
  * @author Oliver Gierke
  */
-public class ProjectionIntegrationTests {
+class ProjectionIntegrationTests {
 
 	@Test // DATACMNS-909
-	public void jacksonSerializationDoesNotExposeDecoratedClass() throws Exception {
+	void jacksonSerializationDoesNotExposeDecoratedClass() throws Exception {
 
 		ProxyProjectionFactory factory = new ProxyProjectionFactory();
 		SampleProjection projection = factory.createProjection(SampleProjection.class);

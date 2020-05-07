@@ -22,11 +22,12 @@ import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
@@ -36,8 +37,8 @@ import org.springframework.data.mapping.PersistentPropertyPath;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty<P>> {
+@ExtendWith(MockitoExtension.class)
+class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty<P>> {
 
 	@Mock P first, second;
 
@@ -46,19 +47,19 @@ public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty
 	PersistentPropertyPath<P> oneLeg;
 	PersistentPropertyPath<P> twoLegs;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		oneLeg = new DefaultPersistentPropertyPath<>(Collections.singletonList(first));
 		twoLegs = new DefaultPersistentPropertyPath<>(Arrays.asList(first, second));
 	}
 
 	@Test
-	public void rejectsNullProperties() {
+	void rejectsNullProperties() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultPersistentPropertyPath<>(null));
 	}
 
 	@Test
-	public void usesPropertyNameForSimpleDotPath() {
+	void usesPropertyNameForSimpleDotPath() {
 
 		when(first.getName()).thenReturn("foo");
 		when(second.getName()).thenReturn("bar");
@@ -67,7 +68,7 @@ public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty
 	}
 
 	@Test
-	public void usesConverterToCreatePropertyPath() {
+	void usesConverterToCreatePropertyPath() {
 
 		when(converter.convert(any())).thenReturn("foo");
 
@@ -75,28 +76,28 @@ public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty
 	}
 
 	@Test
-	public void returnsCorrectLeafProperty() {
+	void returnsCorrectLeafProperty() {
 
 		assertThat(twoLegs.getLeafProperty()).isEqualTo(second);
 		assertThat(oneLeg.getLeafProperty()).isEqualTo(first);
 	}
 
 	@Test
-	public void returnsCorrectBaseProperty() {
+	void returnsCorrectBaseProperty() {
 
 		assertThat(twoLegs.getBaseProperty()).isEqualTo(first);
 		assertThat(oneLeg.getBaseProperty()).isEqualTo(first);
 	}
 
 	@Test
-	public void detectsBasePathCorrectly() {
+	void detectsBasePathCorrectly() {
 
 		assertThat(oneLeg.isBasePathOf(twoLegs)).isTrue();
 		assertThat(twoLegs.isBasePathOf(oneLeg)).isFalse();
 	}
 
 	@Test
-	public void calculatesExtensionCorrectly() {
+	void calculatesExtensionCorrectly() {
 
 		PersistentPropertyPath<P> extension = twoLegs.getExtensionForBaseOf(oneLeg);
 
@@ -104,17 +105,17 @@ public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty
 	}
 
 	@Test
-	public void returnsTheCorrectParentPath() {
+	void returnsTheCorrectParentPath() {
 		assertThat(twoLegs.getParentPath()).isEqualTo(oneLeg);
 	}
 
 	@Test
-	public void returnsEmptyPathForRootLevelProperty() {
+	void returnsEmptyPathForRootLevelProperty() {
 		assertThat(oneLeg.getParentPath()).isEmpty();
 	}
 
 	@Test
-	public void returnItselfForEmptyPath() {
+	void returnItselfForEmptyPath() {
 
 		PersistentPropertyPath<P> parent = oneLeg.getParentPath();
 		PersistentPropertyPath<P> parentsParent = parent.getParentPath();
@@ -124,23 +125,23 @@ public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty
 	}
 
 	@Test
-	public void pathReturnsCorrectSize() {
+	void pathReturnsCorrectSize() {
 		assertThat(oneLeg.getLength()).isEqualTo(1);
 		assertThat(twoLegs.getLength()).isEqualTo(2);
 	}
 
 	@Test // DATACMNS-444
-	public void skipsMappedPropertyNameIfConverterReturnsNull() {
+	void skipsMappedPropertyNameIfConverterReturnsNull() {
 		assertThat(twoLegs.toDotPath(source -> null)).isNull();
 	}
 
 	@Test // DATACMNS-444
-	public void skipsMappedPropertyNameIfConverterReturnsEmptyStrings() {
+	void skipsMappedPropertyNameIfConverterReturnsEmptyStrings() {
 		assertThat(twoLegs.toDotPath(source -> "")).isNull();
 	}
 
 	@Test // DATACMNS-1466
-	public void returnsNullForLeafPropertyOnEmptyPath() {
+	void returnsNullForLeafPropertyOnEmptyPath() {
 
 		PersistentPropertyPath<P> path = new DefaultPersistentPropertyPath<P>(Collections.emptyList());
 
@@ -148,7 +149,7 @@ public class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty
 	}
 
 	@Test // DATACMNS-1466
-	public void returnsNullForBasePropertyOnEmptyPath() {
+	void returnsNullForBasePropertyOnEmptyPath() {
 
 		PersistentPropertyPath<P> path = new DefaultPersistentPropertyPath<P>(Collections.emptyList());
 

@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -38,12 +38,12 @@ import org.springframework.data.repository.sample.SampleAnnotatedRepository;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class RepositoryComponentProviderUnitTests {
+class RepositoryComponentProviderUnitTests {
 
 	BeanDefinitionRegistry registry = mock(BeanDefinitionRegistry.class);
 
 	@Test
-	public void findsAnnotatedRepositoryInterface() {
+	void findsAnnotatedRepositoryInterface() {
 
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
 		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.sample");
@@ -54,7 +54,7 @@ public class RepositoryComponentProviderUnitTests {
 	}
 
 	@Test
-	public void limitsFoundRepositoriesToIncludeFiltersOnly() {
+	void limitsFoundRepositoriesToIncludeFiltersOnly() {
 
 		List<? extends TypeFilter> filters = Collections.singletonList(new AssignableTypeFilter(MyOtherRepository.class));
 
@@ -66,7 +66,7 @@ public class RepositoryComponentProviderUnitTests {
 	}
 
 	@Test // DATACMNS-90
-	public void shouldConsiderNestedRepositoryInterfacesIfEnabled() {
+	void shouldConsiderNestedRepositoryInterfacesIfEnabled() {
 
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
 		provider.setConsiderNestedRepositoryInterfaces(true);
@@ -79,18 +79,18 @@ public class RepositoryComponentProviderUnitTests {
 	}
 
 	@Test // DATACMNS-1098
-	public void rejectsNullBeanDefinitionRegistry() {
+	void rejectsNullBeanDefinitionRegistry() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new RepositoryComponentProvider(Collections.emptyList(), null));
 	}
 
 	@Test // DATACMNS-1098
-	public void exposesBeanDefinitionRegistry() {
+	void exposesBeanDefinitionRegistry() {
 
 		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
 
 		assertThat(provider.getRegistry()).isEqualTo(registry);
 	}
 
-	public interface MyNestedRepository extends Repository<Person, Long> {}
+	interface MyNestedRepository extends Repository<Person, Long> {}
 }

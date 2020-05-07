@@ -22,4 +22,4 @@ import org.springframework.data.repository.config.AnnotationRepositoryConfigurat
  *
  * @author Mark Paluch
  */
-public interface RepositoryWithFragmentExclusion extends ExcludedRepository<Person, Long> {}
+interface RepositoryWithFragmentExclusion extends ExcludedRepository<Person, Long> {}

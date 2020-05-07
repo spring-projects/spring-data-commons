@@ -20,11 +20,12 @@ import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -44,16 +45,16 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
+@ExtendWith(MockitoExtension.class)
+class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 	@Mock BeanDefinitionRegistry registry;
 
 	StandardEnvironment environment;
 	DummyRegistrar registrar;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		environment = new StandardEnvironment();
 
@@ -62,7 +63,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	}
 
 	@Test
-	public void registersBeanDefinitionForFoundBean() {
+	void registersBeanDefinitionForFoundBean() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 
@@ -76,7 +77,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	}
 
 	@Test // DATACMNS-1147
-	public void registersBeanDefinitionWithoutFragmentImplementations() {
+	void registersBeanDefinitionWithoutFragmentImplementations() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(FragmentExclusionConfiguration.class, true);
 
@@ -87,7 +88,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	}
 
 	@Test // DATACMNS-1172
-	public void shouldLimitImplementationBasePackages() {
+	void shouldLimitImplementationBasePackages() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(LimitsImplementationBasePackages.class, true);
 
@@ -98,7 +99,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	}
 
 	@Test // DATACMNS-360
-	public void registeredProfileRepositoriesIfProfileActivated() {
+	void registeredProfileRepositoriesIfProfileActivated() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 		environment.setActiveProfiles("profile");
@@ -111,7 +112,7 @@ public class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	}
 
 	@Test // DATACMNS-1497
-	public void usesBeanNameGeneratorProvided() {
+	void usesBeanNameGeneratorProvided() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 		BeanNameGenerator delegate = new AnnotationBeanNameGenerator();

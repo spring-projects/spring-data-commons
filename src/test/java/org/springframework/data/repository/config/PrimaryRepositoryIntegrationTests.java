@@ -17,7 +17,7 @@ package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -30,10 +30,10 @@ import org.springframework.data.repository.CrudRepository;
  *
  * @author Oliver Drotbohm
  */
-public class PrimaryRepositoryIntegrationTests {
+class PrimaryRepositoryIntegrationTests {
 
 	@Test // DATACMNS-1591
-	public void returnsPrimaryInstance() {
+	void returnsPrimaryInstance() {
 
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
 

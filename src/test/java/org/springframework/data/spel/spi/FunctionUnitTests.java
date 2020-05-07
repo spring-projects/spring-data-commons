@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.util.ReflectionUtils;
 
@@ -29,10 +29,10 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Oliver Drotbohm
  */
-public class FunctionUnitTests {
+class FunctionUnitTests {
 
 	@Test // DATACMNS-1518
-	public void detectsVarArgsOverload() {
+	void detectsVarArgsOverload() {
 
 		Method method = ReflectionUtils.findMethod(Sample.class, "someMethod", String[].class);
 
@@ -44,7 +44,7 @@ public class FunctionUnitTests {
 	}
 
 	@Test // DATACMNS-1518
-	public void detectsObjectVarArgsOverload() {
+	void detectsObjectVarArgsOverload() {
 
 		Method method = ReflectionUtils.findMethod(Sample.class, "onePlusObjectVarargs", String.class, Object[].class);
 

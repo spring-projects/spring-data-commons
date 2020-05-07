@@ -25,7 +25,7 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -40,36 +40,36 @@ import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.Refl
  * @author Jens Schauder
  * @since 1.5
  */
-public class DefaultAuditableBeanWrapperFactoryUnitTests {
+class DefaultAuditableBeanWrapperFactoryUnitTests {
 
 	DefaultAuditableBeanWrapperFactory factory = new DefaultAuditableBeanWrapperFactory();
 
 	@Test
-	public void rejectsNullSource() {
+	void rejectsNullSource() {
 		assertThatIllegalArgumentException().isThrownBy(() -> factory.getBeanWrapperFor(null));
 	}
 
 	@Test
-	public void returnsAuditableInterfaceBeanWrapperForAuditable() {
+	void returnsAuditableInterfaceBeanWrapperForAuditable() {
 
 		assertThat(factory.getBeanWrapperFor(new AuditedUser()))
 				.hasValueSatisfying(it -> assertThat(it).isInstanceOf(AuditableInterfaceBeanWrapper.class));
 	}
 
 	@Test
-	public void returnsReflectionAuditingBeanWrapperForNonAuditableButAnnotated() {
+	void returnsReflectionAuditingBeanWrapperForNonAuditableButAnnotated() {
 
 		assertThat(factory.getBeanWrapperFor(new AnnotatedUser()))
 				.hasValueSatisfying(it -> assertThat(it).isInstanceOf(ReflectionAuditingBeanWrapper.class));
 	}
 
 	@Test
-	public void returnsEmptyForNonAuditableType() {
+	void returnsEmptyForNonAuditableType() {
 		assertThat(factory.getBeanWrapperFor(new Object())).isNotPresent();
 	}
 
 	@Test // DATACMNS-643
-	public void setsJsr310AndThreeTenBpTypes() {
+	void setsJsr310AndThreeTenBpTypes() {
 
 		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
 		Instant instant = Instant.now();
@@ -87,7 +87,7 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-867
-	public void errorsWhenUnableToConvertDateViaIntermediateJavaUtilDateConversion() {
+	void errorsWhenUnableToConvertDateViaIntermediateJavaUtilDateConversion() {
 
 		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
 		ZonedDateTime zonedDateTime = ZonedDateTime.now();
@@ -101,7 +101,7 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1259
-	public void lastModifiedDateAsLongIsAvailableViaWrapper() {
+	void lastModifiedDateAsLongIsAvailableViaWrapper() {
 
 		LongBasedAuditable source = new LongBasedAuditable();
 		source.dateModified = 42000L;
@@ -114,7 +114,7 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1259
-	public void canSetLastModifiedDateAsInstantViaWrapperOnLongField() {
+	void canSetLastModifiedDateAsInstantViaWrapperOnLongField() {
 
 		LongBasedAuditable source = new LongBasedAuditable();
 
@@ -127,7 +127,7 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1259
-	public void canSetLastModifiedDateAsLocalDateTimeViaWrapperOnLongField() {
+	void canSetLastModifiedDateAsLocalDateTimeViaWrapperOnLongField() {
 
 		LongBasedAuditable source = new LongBasedAuditable();
 
@@ -140,7 +140,7 @@ public class DefaultAuditableBeanWrapperFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1259
-	public void lastModifiedAsLocalDateTimeDateIsAvailableViaWrapperAsLocalDateTime() {
+	void lastModifiedAsLocalDateTimeDateIsAvailableViaWrapperAsLocalDateTime() {
 
 		LocalDateTime now = LocalDateTime.now();
 

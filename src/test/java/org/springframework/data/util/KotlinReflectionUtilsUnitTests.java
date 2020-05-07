@@ -21,8 +21,8 @@ import static org.assertj.core.api.Assumptions.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.core.KotlinDetector;
 import org.springframework.util.ClassUtils;
@@ -35,19 +35,19 @@ import org.springframework.util.ReflectionUtils;
  */
 public class KotlinReflectionUtilsUnitTests {
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 		assumeThat(Version.javaVersion()).isLessThan(Version.parse("9.0"));
 	}
 
 	@Test // DATACMNS-1508
-	public void classShouldLoadWithKotlin() {
+	void classShouldLoadWithKotlin() {
 		assertThat(KotlinDetector.isKotlinPresent()).isTrue();
 		assertThat(KotlinReflectionUtils.isSupportedKotlinClass(TypeCreatingSyntheticClass.class)).isTrue();
 	}
 
 	@Test // DATACMNS-1508
-	public void classShouldLoadWithoutKotlin() throws Exception {
+	void classShouldLoadWithoutKotlin() throws Exception {
 		runTest("loadClassWithoutKotlin");
 	}
 
@@ -58,7 +58,7 @@ public class KotlinReflectionUtilsUnitTests {
 		assertThat(KotlinReflectionUtils.isSupportedKotlinClass(TypeCreatingSyntheticClass.class)).isFalse();
 	}
 
-	protected void runTest(String testName)
+	void runTest(String testName)
 			throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException {
 
 		KotlinExcludingURLClassLoader classLoader = new KotlinExcludingURLClassLoader(
@@ -69,7 +69,7 @@ public class KotlinReflectionUtilsUnitTests {
 	}
 
 	static class KotlinExcludingURLClassLoader extends URLClassLoader {
-		public KotlinExcludingURLClassLoader(URL[] urls) {
+		KotlinExcludingURLClassLoader(URL[] urls) {
 			super(urls, null);
 		}
 

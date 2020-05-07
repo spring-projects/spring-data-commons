@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * @author Oliver Gierke
  */
-public abstract class UnitTestUtils {
+abstract class UnitTestUtils {
 
 	private UnitTestUtils() {
 
@@ -17,7 +17,7 @@ public abstract class UnitTestUtils {
 	 * @param first
 	 * @param second
 	 */
-	public static void assertEqualsAndHashcode(Object first, Object second) {
+	static void assertEqualsAndHashcode(Object first, Object second) {
 
 		assertThat(first).isEqualTo(second);
 		assertThat(second).isEqualTo(first);
@@ -30,7 +30,7 @@ public abstract class UnitTestUtils {
 	 * @param first
 	 * @param second
 	 */
-	public static void assertNotEqualsAndHashcode(Object first, Object second) {
+	static void assertNotEqualsAndHashcode(Object first, Object second) {
 
 		assertThat(first).isNotEqualTo(second);
 		assertThat(second).isNotEqualTo(first);

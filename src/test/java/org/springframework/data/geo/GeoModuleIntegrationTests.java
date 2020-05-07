@@ -17,8 +17,8 @@ package org.springframework.data.geo;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,19 +27,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Oliver Gierke
  */
-public class GeoModuleIntegrationTests {
+class GeoModuleIntegrationTests {
 
 	ObjectMapper mapper;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(new GeoModule());
 	}
 
 	@Test // DATACMNS-475
-	public void deserializesDistance() throws Exception {
+	void deserializesDistance() throws Exception {
 
 		String json = "{\"value\":10.0,\"metric\":\"KILOMETERS\"}";
 		Distance reference = new Distance(10.0, Metrics.KILOMETERS);
@@ -49,7 +49,7 @@ public class GeoModuleIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	public void deserializesPoint() throws Exception {
+	void deserializesPoint() throws Exception {
 
 		String json = "{\"x\":10.0,\"y\":20.0}";
 		Point reference = new Point(10.0, 20.0);
@@ -59,7 +59,7 @@ public class GeoModuleIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	public void deserializesCircle() throws Exception {
+	void deserializesCircle() throws Exception {
 
 		String json = "{\"center\":{\"x\":10.0,\"y\":20.0},\"radius\":{\"value\":10.0,\"metric\":\"KILOMETERS\"}}";
 		Circle reference = new Circle(new Point(10.0, 20.0), new Distance(10, Metrics.KILOMETERS));
@@ -69,7 +69,7 @@ public class GeoModuleIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	public void deserializesBox() throws Exception {
+	void deserializesBox() throws Exception {
 
 		String json = "{\"first\":{\"x\":1.0,\"y\":2.0},\"second\":{\"x\":2.0,\"y\":3.0}}";
 		Box reference = new Box(new Point(1, 2), new Point(2, 3));
@@ -79,7 +79,7 @@ public class GeoModuleIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	public void deserializesPolygon() throws Exception {
+	void deserializesPolygon() throws Exception {
 
 		String json = "{\"points\":[{\"x\":1.0,\"y\":2.0},{\"x\":2.0,\"y\":3.0},{\"x\":3.0,\"y\":4.0}]}";
 		Polygon reference = new Polygon(new Point(1, 2), new Point(2, 3), new Point(3, 4));

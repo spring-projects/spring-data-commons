@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -39,7 +39,7 @@ import org.springframework.mock.env.MockEnvironment;
  *
  * @author Jens Schauder
  */
-public class CustomRepositoryImplementationDetectorUnitTests {
+class CustomRepositoryImplementationDetectorUnitTests {
 
 	MetadataReaderFactory metadataFactory = new SimpleMetadataReaderFactory();
 	Environment environment = new MockEnvironment();
@@ -58,7 +58,7 @@ public class CustomRepositoryImplementationDetectorUnitTests {
 	}
 
 	@Test // DATACMNS-764, DATACMNS-1371
-	public void returnsNullWhenNoImplementationFound() {
+	void returnsNullWhenNoImplementationFound() {
 
 		RepositoryConfiguration mock = mock(RepositoryConfiguration.class);
 
@@ -71,7 +71,7 @@ public class CustomRepositoryImplementationDetectorUnitTests {
 	}
 
 	@Test // DATACMNS-764, DATACMNS-1371
-	public void returnsBeanDefinitionWhenOneImplementationIsFound() {
+	void returnsBeanDefinitionWhenOneImplementationIsFound() {
 
 		ImplementationLookupConfiguration lookup = configuration
 				.forRepositoryConfiguration(configFor(SingleSampleRepository.class));
@@ -83,7 +83,7 @@ public class CustomRepositoryImplementationDetectorUnitTests {
 	}
 
 	@Test // DATACMNS-764, DATACMNS-1371
-	public void returnsBeanDefinitionMatchingByNameWhenMultipleImplementationAreFound() {
+	void returnsBeanDefinitionMatchingByNameWhenMultipleImplementationAreFound() {
 
 		when(configuration.generateBeanName(any())).then(it -> {
 
@@ -102,7 +102,7 @@ public class CustomRepositoryImplementationDetectorUnitTests {
 	}
 
 	@Test // DATACMNS-764, DATACMNS-1371
-	public void throwsExceptionWhenMultipleImplementationAreFound() {
+	void throwsExceptionWhenMultipleImplementationAreFound() {
 
 		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> {
 

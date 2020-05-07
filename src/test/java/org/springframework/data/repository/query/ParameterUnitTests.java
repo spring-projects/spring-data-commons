@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 
 /**
@@ -30,10 +30,10 @@ import org.springframework.core.MethodParameter;
  *
  * @author Jens Schauder
  */
-public class ParameterUnitTests {
+class ParameterUnitTests {
 
 	@Test // DATAJPA-1185
-	public void classParameterWithSameTypeParameterAsReturnedListIsDynamicProjectionParameter() throws Exception {
+	void classParameterWithSameTypeParameterAsReturnedListIsDynamicProjectionParameter() throws Exception {
 
 		Parameter parameter = new Parameter(getMethodParameter("dynamicProjectionWithList"));
 
@@ -41,7 +41,7 @@ public class ParameterUnitTests {
 	}
 
 	@Test // DATAJPA-1185
-	public void classParameterWithSameTypeParameterAsReturnedStreamIsDynamicProjectionParameter() throws Exception {
+	void classParameterWithSameTypeParameterAsReturnedStreamIsDynamicProjectionParameter() throws Exception {
 
 		Parameter parameter = new Parameter(getMethodParameter("dynamicProjectionWithStream"));
 

@@ -25,10 +25,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -56,13 +59,14 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class RepositoriesUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class RepositoriesUnitTests {
 
 	GenericApplicationContext context;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 		beanFactory.registerBeanDefinition("addressRepository", getRepositoryBeanDefinition(AddressRepository.class));
@@ -81,7 +85,7 @@ public class RepositoriesUnitTests {
 	}
 
 	@Test
-	public void doesNotConsiderCrudRepositoriesOnly() {
+	void doesNotConsiderCrudRepositoriesOnly() {
 
 		Repositories repositories = new Repositories(context);
 
@@ -90,19 +94,19 @@ public class RepositoriesUnitTests {
 	}
 
 	@Test
-	public void doesNotFindInformationForNonManagedDomainClass() {
+	void doesNotFindInformationForNonManagedDomainClass() {
 		Repositories repositories = new Repositories(context);
 		assertThat(repositories.hasRepositoryFor(String.class)).isFalse();
 		assertThat(repositories.getRepositoryFor(String.class)).isNotPresent();
 	}
 
 	@Test
-	public void rejectsNullBeanFactory() {
+	void rejectsNullBeanFactory() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new Repositories(null));
 	}
 
 	@Test // DATACMNS-256
-	public void exposesPersistentEntityForDomainTypes() {
+	void exposesPersistentEntityForDomainTypes() {
 
 		Repositories repositories = new Repositories(context);
 		assertThat(repositories.getPersistentEntity(Person.class)).isNotNull();
@@ -110,12 +114,12 @@ public class RepositoriesUnitTests {
 	}
 
 	@Test // DATACMNS-634
-	public void findsRepositoryForSubTypes() {
+	void findsRepositoryForSubTypes() {
 		assertThat(new Repositories(context).getPersistentEntity(AdvancedAddress.class)).isNotNull();
 	}
 
 	@Test // DATACMNS-673
-	public void discoversRepositoryForAlternativeDomainType() {
+	void discoversRepositoryForAlternativeDomainType() {
 
 		RepositoryMetadata metadata = new CustomRepositoryMetadata(SampleRepository.class);
 		RepositoryFactoryInformation<?, ?> information = new SampleRepoFactoryInformation<>(metadata);
@@ -133,7 +137,7 @@ public class RepositoriesUnitTests {
 	}
 
 	@Test // DATACMNS-794
-	public void exposesRepositoryFactoryInformationForRepository() {
+	void exposesRepositoryFactoryInformationForRepository() {
 
 		Optional<RepositoryInformation> information = new Repositories(context)
 				.getRepositoryInformation(PersonRepository.class);
@@ -143,7 +147,7 @@ public class RepositoriesUnitTests {
 	}
 
 	@Test // DATACMNS-1215
-	public void exposesRepositoryForProxyType() {
+	void exposesRepositoryForProxyType() {
 
 		ProxyFactory factory = new ProxyFactory();
 		factory.setTarget(new Person());
@@ -160,7 +164,7 @@ public class RepositoriesUnitTests {
 	}
 
 	@Test // DATACMNS-1448
-	public void keepsPrimaryRepositoryInCaseOfMultipleOnes() {
+	void keepsPrimaryRepositoryInCaseOfMultipleOnes() {
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 		beanFactory.registerBeanDefinition("first", getRepositoryBeanDefinition(FirstRepository.class));
@@ -196,11 +200,11 @@ public class RepositoriesUnitTests {
 		private final RepositoryMetadata repositoryMetadata;
 		private final SampleMappingContext mappingContext;
 
-		public SampleRepoFactoryInformation(Class<?> repositoryInterface) {
+		SampleRepoFactoryInformation(Class<?> repositoryInterface) {
 			this(new DefaultRepositoryMetadata(repositoryInterface));
 		}
 
-		public SampleRepoFactoryInformation(RepositoryMetadata metadata) {
+		SampleRepoFactoryInformation(RepositoryMetadata metadata) {
 			this.repositoryMetadata = metadata;
 			this.mappingContext = new SampleMappingContext();
 		}
@@ -230,7 +234,7 @@ public class RepositoriesUnitTests {
 		/**
 		 * @param repositoryInterface
 		 */
-		public CustomRepositoryMetadata(Class<?> repositoryInterface) {
+		CustomRepositoryMetadata(Class<?> repositoryInterface) {
 
 			super(repositoryInterface);
 

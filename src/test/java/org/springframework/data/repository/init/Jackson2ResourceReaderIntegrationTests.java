@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -28,10 +28,10 @@ import org.springframework.core.io.ClassPathResource;
  * @author Oliver Gierke
  * @since 1.6
  */
-public class Jackson2ResourceReaderIntegrationTests {
+class Jackson2ResourceReaderIntegrationTests {
 
 	@Test
-	public void readsFileWithMultipleObjects() throws Exception {
+	void readsFileWithMultipleObjects() throws Exception {
 
 		ResourceReader reader = new Jackson2ResourceReader();
 		Object result = reader.readFrom(new ClassPathResource("data.json", getClass()), null);

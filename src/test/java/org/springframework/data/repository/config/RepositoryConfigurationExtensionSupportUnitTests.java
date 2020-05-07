@@ -22,7 +22,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
@@ -47,33 +47,33 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
  *
  * @author Oliver Gierke
  */
-public class RepositoryConfigurationExtensionSupportUnitTests {
+class RepositoryConfigurationExtensionSupportUnitTests {
 
 	RepositoryConfigurationExtensionSupport extension = new SampleRepositoryConfigurationExtension();
 
 	@Test // DATACMNS-526
-	public void doesNotConsiderRepositoryForPlainTypeStrictMatch() {
+	void doesNotConsiderRepositoryForPlainTypeStrictMatch() {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(PlainTypeRepository.class);
 		assertThat(extension.isStrictRepositoryCandidate(metadata)).isFalse();
 	}
 
 	@Test // DATACMNS-526
-	public void considersRepositoryWithAnnotatedTypeStrictMatch() {
+	void considersRepositoryWithAnnotatedTypeStrictMatch() {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(AnnotatedTypeRepository.class);
 		assertThat(extension.isStrictRepositoryCandidate(metadata)).isTrue();
 	}
 
 	@Test // DATACMNS-526
-	public void considersRepositoryInterfaceExtendingStoreInterfaceStrictMatch() {
+	void considersRepositoryInterfaceExtendingStoreInterfaceStrictMatch() {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ExtendingInterface.class);
 		assertThat(extension.isStrictRepositoryCandidate(metadata)).isTrue();
 	}
 
 	@Test // DATACMNS-1174
-	public void rejectsReactiveRepositories() {
+	void rejectsReactiveRepositories() {
 
 		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(ReactiveConfiguration.class, true);
 		Environment environment = new StandardEnvironment();
@@ -89,7 +89,7 @@ public class RepositoryConfigurationExtensionSupportUnitTests {
 	}
 
 	@Test // DATACMNS-1596
-	public void doesNotClaimEntityIfNoIdentifyingAnnotationsAreExposed() {
+	void doesNotClaimEntityIfNoIdentifyingAnnotationsAreExposed() {
 
 		NonIdentifyingConfigurationExtension extension = new NonIdentifyingConfigurationExtension();
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(AnnotatedTypeRepository.class);

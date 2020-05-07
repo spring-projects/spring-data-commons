@@ -18,7 +18,7 @@ package org.springframework.data.transaction;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.transaction.ChainedTransactionManagerTests.TestPlatformTransactionManager.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.transaction.HeuristicCompletionException;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -36,12 +36,12 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author Oliver Gierke
  * @since 1.6
  */
-public class ChainedTransactionManagerTests {
+class ChainedTransactionManagerTests {
 
 	ChainedTransactionManager tm;
 
 	@Test
-	public void shouldCompleteSuccessfully() {
+	void shouldCompleteSuccessfully() {
 
 		TestPlatformTransactionManager transactionManager = createNonFailingTransactionManager("single");
 		setupTransactionManagers(transactionManager);
@@ -52,7 +52,7 @@ public class ChainedTransactionManagerTests {
 	}
 
 	@Test
-	public void shouldThrowRolledBackExceptionForSingleTMFailure() {
+	void shouldThrowRolledBackExceptionForSingleTMFailure() {
 
 		setupTransactionManagers(createFailingTransactionManager("single"));
 
@@ -62,7 +62,7 @@ public class ChainedTransactionManagerTests {
 	}
 
 	@Test
-	public void shouldCommitAllRegisteredTransactionManagers() {
+	void shouldCommitAllRegisteredTransactionManagers() {
 
 		TestPlatformTransactionManager first = createNonFailingTransactionManager("first");
 		TestPlatformTransactionManager second = createNonFailingTransactionManager("second");
@@ -75,7 +75,7 @@ public class ChainedTransactionManagerTests {
 	}
 
 	@Test
-	public void shouldCommitInReverseOrder() {
+	void shouldCommitInReverseOrder() {
 
 		TestPlatformTransactionManager first = createNonFailingTransactionManager("first");
 		TestPlatformTransactionManager second = createNonFailingTransactionManager("second");
@@ -87,7 +87,7 @@ public class ChainedTransactionManagerTests {
 	}
 
 	@Test
-	public void shouldThrowMixedRolledBackExceptionForNonFirstTMFailure() {
+	void shouldThrowMixedRolledBackExceptionForNonFirstTMFailure() {
 
 		setupTransactionManagers(TestPlatformTransactionManager.createFailingTransactionManager("first"),
 				createNonFailingTransactionManager("second"));
@@ -98,7 +98,7 @@ public class ChainedTransactionManagerTests {
 	}
 
 	@Test
-	public void shouldRollbackAllTransactionManagers() {
+	void shouldRollbackAllTransactionManagers() {
 
 		TestPlatformTransactionManager first = createNonFailingTransactionManager("first");
 		TestPlatformTransactionManager second = createNonFailingTransactionManager("second");
@@ -112,7 +112,7 @@ public class ChainedTransactionManagerTests {
 	}
 
 	@Test
-	public void shouldThrowExceptionOnFailingRollback() {
+	void shouldThrowExceptionOnFailingRollback() {
 
 		PlatformTransactionManager first = createFailingTransactionManager("first");
 		setupTransactionManagers(first);
@@ -157,7 +157,7 @@ public class ChainedTransactionManagerTests {
 		private Long commitTime;
 		private Long rollbackTime;
 
-		public TestPlatformTransactionManager(String name) {
+		TestPlatformTransactionManager(String name) {
 			this.name = name;
 		}
 
@@ -196,15 +196,15 @@ public class ChainedTransactionManagerTests {
 			rollbackTime = System.currentTimeMillis();
 		}
 
-		public boolean isCommitted() {
+		boolean isCommitted() {
 			return commitTime != null;
 		}
 
-		public boolean wasRolledBack() {
+		boolean wasRolledBack() {
 			return rollbackTime != null;
 		}
 
-		public Long getCommitTime() {
+		Long getCommitTime() {
 			return commitTime;
 		}
 
@@ -212,7 +212,7 @@ public class ChainedTransactionManagerTests {
 
 	static class TestTransactionStatus extends AbstractTransactionStatus {
 
-		public TestTransactionStatus(TransactionDefinition definition) {}
+		TestTransactionStatus(TransactionDefinition definition) {}
 
 		public boolean isNewTransaction() {
 			return false;

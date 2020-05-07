@@ -20,7 +20,7 @@ import static org.springframework.data.web.SortDefaultUnitTests.*;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.AbstractPageRequest;
@@ -42,7 +42,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * @author Oliver Gierke
  * @author Nick Williams
  */
-public abstract class PageableDefaultUnitTests {
+abstract class PageableDefaultUnitTests {
 
 	static final int PAGE_SIZE = 47;
 	static final int PAGE_NUMBER = 23;
@@ -53,50 +53,50 @@ public abstract class PageableDefaultUnitTests {
 			Sort.by(SORT_FIELDS));
 
 	@Test
-	public void supportsPageable() {
+	void supportsPageable() {
 		assertThat(getResolver().supportsParameter(getParameterOfMethod("supportedMethod"))).isTrue();
 	}
 
 	@Test
-	public void doesNotSupportNonPageable() {
+	void doesNotSupportNonPageable() {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
 		assertThat(getResolver().supportsParameter(parameter)).isFalse();
 	}
 
 	@Test
-	public void returnsDefaultIfNoRequestParametersAndNoDefault() throws Exception {
+	void returnsDefaultIfNoRequestParametersAndNoDefault() throws Exception {
 		assertSupportedAndResult(getParameterOfMethod("supportedMethod"),
 				(Pageable) ReflectionTestUtils.getField(getResolver(), "fallbackPageable"));
 	}
 
 	@Test
-	public void simpleDefault() throws Exception {
+	void simpleDefault() throws Exception {
 		assertSupportedAndResult(getParameterOfMethod("simpleDefault"), REFERENCE_WITHOUT_SORT);
 	}
 
 	@Test
-	public void simpleDefaultWithSort() throws Exception {
+	void simpleDefaultWithSort() throws Exception {
 		assertSupportedAndResult(getParameterOfMethod("simpleDefaultWithSort"), REFERENCE_WITH_SORT_FIELDS);
 	}
 
 	@Test
-	public void simpleDefaultWithSortAndDirection() throws Exception {
+	void simpleDefaultWithSortAndDirection() throws Exception {
 		assertSupportedAndResult(getParameterOfMethod("simpleDefaultWithSortAndDirection"), REFERENCE_WITH_SORT);
 	}
 
 	@Test
-	public void simpleDefaultWithExternalSort() throws Exception {
+	void simpleDefaultWithExternalSort() throws Exception {
 		assertSupportedAndResult(getParameterOfMethod("simpleDefaultWithExternalSort"), REFERENCE_WITH_SORT);
 	}
 
 	@Test
-	public void simpleDefaultWithContaineredExternalSort() throws Exception {
+	void simpleDefaultWithContaineredExternalSort() throws Exception {
 		assertSupportedAndResult(getParameterOfMethod("simpleDefaultWithContaineredExternalSort"), REFERENCE_WITH_SORT);
 	}
 
 	@Test
-	public void rejectsInvalidQulifiers() throws Exception {
+	void rejectsInvalidQulifiers() throws Exception {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "invalidQualifiers",
 				Pageable.class, Pageable.class);
@@ -110,7 +110,7 @@ public abstract class PageableDefaultUnitTests {
 	}
 
 	@Test
-	public void rejectsNoQualifiers() throws Exception {
+	void rejectsNoQualifiers() throws Exception {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "noQualifiers", Pageable.class,
 				Pageable.class);

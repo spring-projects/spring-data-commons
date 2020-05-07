@@ -19,10 +19,12 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -34,13 +36,14 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  * @author Oliver Gierke
  * @since 1.5
  */
-@RunWith(MockitoJUnitRunner.class)
-public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
 
 	SampleMappingContext mappingContext;
 
-	@Before
-	public void init() {
+	@BeforeEach
+	void init() {
 
 		this.mappingContext = new SampleMappingContext();
 		this.mappingContext.getPersistentEntity(AuditedUser.class);
@@ -53,7 +56,7 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	}
 
 	@Test
-	public void delegatesToMarkCreatedForNewEntity() {
+	void delegatesToMarkCreatedForNewEntity() {
 
 		AuditedUser user = new AuditedUser();
 
@@ -64,7 +67,7 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	}
 
 	@Test
-	public void delegatesToMarkModifiedForNonNewEntity() {
+	void delegatesToMarkModifiedForNonNewEntity() {
 
 		AuditedUser user = new AuditedUser();
 		user.id = 1L;
@@ -76,17 +79,17 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	}
 
 	@Test // DATACMNS-365
-	public void rejectsNullMappingContext() {
+	void rejectsNullMappingContext() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new IsNewAwareAuditingHandler((PersistentEntities) null));
 	}
 
 	@Test // DATACMNS-365
-	public void setsUpHandlerWithMappingContext() {
+	void setsUpHandlerWithMappingContext() {
 		new IsNewAwareAuditingHandler(PersistentEntities.of());
 	}
 
 	@Test // DATACMNS-638
-	public void handlingOptionalIsANoOp() {
+	void handlingOptionalIsANoOp() {
 
 		IsNewAwareAuditingHandler handler = getHandler();
 
@@ -96,7 +99,7 @@ public class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests
 	}
 
 	@Test // DATACMNS-957
-	public void skipsEntityWithoutIdentifier() {
+	void skipsEntityWithoutIdentifier() {
 		getHandler().markAudited(Optional.of(new EntityWithoutId()));
 	}
 

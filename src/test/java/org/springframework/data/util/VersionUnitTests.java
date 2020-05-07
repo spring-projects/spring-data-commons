@@ -17,7 +17,7 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link Version}.
@@ -25,10 +25,10 @@ import org.junit.Test;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class VersionUnitTests {
+class VersionUnitTests {
 
 	@Test // DATCMNS-384
-	public void sameVersionsEqualOneDigits() {
+	void sameVersionsEqualOneDigits() {
 
 		Version first = new Version(6);
 		Version second = new Version(6);
@@ -38,7 +38,7 @@ public class VersionUnitTests {
 	}
 
 	@Test // DATCMNS-384
-	public void sameVersionsEqualTwoDigits() {
+	void sameVersionsEqualTwoDigits() {
 
 		Version first = new Version(5, 2);
 		Version second = new Version(5, 2);
@@ -48,7 +48,7 @@ public class VersionUnitTests {
 	}
 
 	@Test // DATCMNS-384
-	public void sameVersionsEqualThreeDigits() {
+	void sameVersionsEqualThreeDigits() {
 
 		Version first = new Version(1, 2, 3);
 		Version second = new Version(1, 2, 3);
@@ -58,7 +58,7 @@ public class VersionUnitTests {
 	}
 
 	@Test // DATCMNS-384
-	public void sameVersionsEqualFourDigits() {
+	void sameVersionsEqualFourDigits() {
 
 		Version first = new Version(1, 2, 3, 1000);
 		Version second = new Version(1, 2, 3, 1000);
@@ -68,35 +68,35 @@ public class VersionUnitTests {
 	}
 
 	@Test // DATCMNS-384
-	public void parsesVersionCorrectlyOneDigits() {
+	void parsesVersionCorrectlyOneDigits() {
 
 		Version version = Version.parse("5");
 		assertThat(version).isEqualTo(new Version(5));
 	}
 
 	@Test // DATCMNS-384
-	public void parsesVersionCorrectlyTwoDigits() {
+	void parsesVersionCorrectlyTwoDigits() {
 
 		Version version = Version.parse("5.2");
 		assertThat(version).isEqualTo(new Version(5, 2));
 	}
 
 	@Test // DATCMNS-384
-	public void parsesVersionCorrectlyThreeDigits() {
+	void parsesVersionCorrectlyThreeDigits() {
 
 		Version version = Version.parse("12.1.3");
 		assertThat(version).isEqualTo(new Version(12, 1, 3));
 	}
 
 	@Test // DATCMNS-384
-	public void parsesVersionCorrectlyFourDigits() {
+	void parsesVersionCorrectlyFourDigits() {
 
 		Version version = Version.parse("12.1.3.1000");
 		assertThat(version).isEqualTo(new Version(12, 1, 3, 1000));
 	}
 
 	@Test // DATCMNS-384
-	public void comparesToCorrectly() {
+	void comparesToCorrectly() {
 
 		Version version = new Version(1, 2, 3, 1000);
 		Version nextBuild = new Version(1, 2, 3, 1001);
@@ -127,7 +127,7 @@ public class VersionUnitTests {
 	}
 
 	@Test // DATCMNS-384
-	public void removesTrailingZerosAfterSecondValueForToString() {
+	void removesTrailingZerosAfterSecondValueForToString() {
 
 		assertThat(new Version(2)).hasToString("2.0");
 		assertThat(new Version(2, 0)).hasToString("2.0");
@@ -139,17 +139,17 @@ public class VersionUnitTests {
 	}
 
 	@Test // DATACMNS-496
-	public void parseShouldRemoveNonNumericVersionParts() {
+	void parseShouldRemoveNonNumericVersionParts() {
 		assertThat(Version.parse("2.0.0-rc1")).isEqualTo(new Version(2, 0, 0));
 	}
 
 	@Test // DATACMNS-719, DATACMNS-496
-	public void removesNonNumericSuffix() {
+	void removesNonNumericSuffix() {
 		assertThat(Version.parse("4.2.0.RELEASE")).isEqualTo(new Version(4, 2, 0));
 	}
 
 	@Test // DATACMNS-719, DATACMNS-496
-	public void rejectsNonNumericPartOnNonLastPosition() {
+	void rejectsNonNumericPartOnNonLastPosition() {
 
 		assertThatIllegalArgumentException().isThrownBy(() -> Version.parse("1.RELEASE.2"))
 				.withMessageContaining("1.RELEASE.2");

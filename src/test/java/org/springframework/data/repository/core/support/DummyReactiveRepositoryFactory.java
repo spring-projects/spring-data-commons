@@ -40,7 +40,7 @@ public class DummyReactiveRepositoryFactory extends ReactiveRepositoryFactorySup
 
 	public final DummyRepositoryFactory.MyRepositoryQuery queryOne = mock(DummyRepositoryFactory.MyRepositoryQuery.class);
 	public final RepositoryQuery queryTwo = mock(RepositoryQuery.class);
-	public final QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
+	final QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
 
 	@SuppressWarnings("unchecked") private final QuerydslPredicateExecutor<Object> querydsl = mock(
 			QuerydslPredicateExecutor.class);

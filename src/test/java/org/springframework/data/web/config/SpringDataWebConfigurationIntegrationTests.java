@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.assertj.core.api.Condition;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,10 +46,10 @@ import com.jayway.jsonpath.DocumentContext;
  * @author Jens Schauder
  * @author Oliver Gierke
  */
-public class SpringDataWebConfigurationIntegrationTests {
+class SpringDataWebConfigurationIntegrationTests {
 
 	@Test // DATACMNS-987
-	public void shouldNotLoadJacksonConverterWhenJacksonNotPresent() {
+	void shouldNotLoadJacksonConverterWhenJacksonNotPresent() {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
@@ -60,7 +60,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 	}
 
 	@Test // DATACMNS-987
-	public void shouldNotLoadJacksonConverterWhenJaywayNotPresent() {
+	void shouldNotLoadJacksonConverterWhenJaywayNotPresent() {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
@@ -71,7 +71,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 	}
 
 	@Test // DATACMNS-987
-	public void shouldNotLoadXBeamConverterWhenXBeamNotPresent() throws Exception {
+	void shouldNotLoadXBeamConverterWhenXBeamNotPresent() throws Exception {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
@@ -82,7 +82,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 	}
 
 	@Test // DATACMNS-987
-	public void shouldLoadAllConvertersWhenDependenciesArePresent() throws Exception {
+	void shouldLoadAllConvertersWhenDependenciesArePresent() throws Exception {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
 
@@ -93,7 +93,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 	}
 
 	@Test // DATACMNS-1152
-	public void usesCustomObjectMapper() {
+	void usesCustomObjectMapper() {
 
 		createConfigWithClassLoader(getClass().getClassLoader(), it -> {
 
@@ -111,7 +111,7 @@ public class SpringDataWebConfigurationIntegrationTests {
 	}
 
 	@Test // DATACMNS-1386
-	public void doesNotFailWithJacksonMissing() throws Exception {
+	void doesNotFailWithJacksonMissing() throws Exception {
 		ReflectionUtils.getUniqueDeclaredMethods(loadWithout(SpringDataWebConfiguration.class, ObjectMapper.class));
 	}
 

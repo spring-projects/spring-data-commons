@@ -17,7 +17,7 @@ package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.domain.Range.Bound;
 
@@ -28,16 +28,16 @@ import org.springframework.data.domain.Range.Bound;
  * @author Mark Paluch
  * @since 1.10
  */
-public class RangeUnitTests {
+class RangeUnitTests {
 
 	@Test // DATACMNS-651
-	public void rejectsNullReferenceValuesForContains() {
+	void rejectsNullReferenceValuesForContains() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L)).contains(null));
 	}
 
 	@Test // DATACMNS-651
-	public void excludesLowerBoundIfConfigured() {
+	void excludesLowerBoundIfConfigured() {
 
 		Range<Long> range = Range.from(Bound.exclusive(10L)).to(Bound.inclusive(20L));
 
@@ -49,7 +49,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-651
-	public void excludesUpperBoundIfConfigured() {
+	void excludesUpperBoundIfConfigured() {
 
 		Range<Long> range = Range.of(Bound.inclusive(10L), Bound.exclusive(20L));
 
@@ -61,7 +61,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-651, DATACMNS-1050
-	public void handlesOpenUpperBoundCorrectly() {
+	void handlesOpenUpperBoundCorrectly() {
 
 		Range<Long> range = Range.of(Bound.inclusive(10L), Bound.unbounded());
 
@@ -76,7 +76,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-651, DATACMNS-1050
-	public void handlesOpenLowerBoundCorrectly() {
+	void handlesOpenLowerBoundCorrectly() {
 
 		Range<Long> range = Range.of(Bound.unbounded(), Bound.inclusive(20L));
 
@@ -90,7 +90,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1050
-	public void createsInclusiveBoundaryCorrectly() {
+	void createsInclusiveBoundaryCorrectly() {
 
 		Bound<Integer> bound = Bound.inclusive(10);
 
@@ -99,7 +99,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1050
-	public void createsExclusiveBoundaryCorrectly() {
+	void createsExclusiveBoundaryCorrectly() {
 
 		Bound<Double> bound = Bound.exclusive(10d);
 
@@ -108,7 +108,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1050
-	public void createsRangeFromBoundariesCorrectly() {
+	void createsRangeFromBoundariesCorrectly() {
 
 		Bound<Long> lower = Bound.inclusive(10L);
 		Bound<Long> upper = Bound.inclusive(20L);
@@ -122,7 +122,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1050
-	public void shouldExclusiveBuildRangeLowerFirst() {
+	void shouldExclusiveBuildRangeLowerFirst() {
 
 		Range<Long> range = Range.from(Bound.exclusive(10L)).to(Bound.exclusive(20L));
 
@@ -136,7 +136,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1050
-	public void shouldBuildRange() {
+	void shouldBuildRange() {
 
 		Range<Long> range = Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L));
 
@@ -150,7 +150,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1050
-	public void createsUnboundedRange() {
+	void createsUnboundedRange() {
 
 		Range<Long> range = Range.unbounded();
 
@@ -160,7 +160,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1499
-	public void createsOpenRange() {
+	void createsOpenRange() {
 
 		Range<Long> range = Range.open(5L, 10L);
 
@@ -169,7 +169,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1499
-	public void createsClosedRange() {
+	void createsClosedRange() {
 
 		Range<Long> range = Range.closed(5L, 10L);
 
@@ -178,7 +178,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1499
-	public void createsLeftOpenRange() {
+	void createsLeftOpenRange() {
 
 		Range<Long> range = Range.leftOpen(5L, 10L);
 
@@ -187,7 +187,7 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1499
-	public void createsRightOpenRange() {
+	void createsRightOpenRange() {
 
 		Range<Long> range = Range.rightOpen(5L, 10L);
 
@@ -196,17 +196,17 @@ public class RangeUnitTests {
 	}
 
 	@Test // DATACMNS-1499
-	public void createsLeftUnboundedRange() {
+	void createsLeftUnboundedRange() {
 		assertThat(Range.leftUnbounded(Bound.inclusive(10L)).contains(-10000L)).isTrue();
 	}
 
 	@Test // DATACMNS-1499
-	public void createsRightUnboundedRange() {
+	void createsRightUnboundedRange() {
 		assertThat(Range.rightUnbounded(Bound.inclusive(10L)).contains(10000L)).isTrue();
 	}
 
 	@Test // DATACMNS-1499
-	public void createsSingleValueRange() {
+	void createsSingleValueRange() {
 		assertThat(Range.just(10L).contains(10L)).isTrue();
 	}
 }

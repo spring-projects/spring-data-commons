@@ -17,17 +17,17 @@ package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link AbstractAggregateRoot}.
  *
  * @author Oliver Gierke
  */
-public class AbstractAggregateRootUnitTests {
+class AbstractAggregateRootUnitTests {
 
 	@Test // DATACMNS-928
-	public void registersEvent() {
+	void registersEvent() {
 
 		Object event = new Object();
 
@@ -38,7 +38,7 @@ public class AbstractAggregateRootUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	public void clearsEvents() {
+	void clearsEvents() {
 
 		Object event = new Object();
 
@@ -53,7 +53,7 @@ public class AbstractAggregateRootUnitTests {
 	}
 
 	@Test // DATACMNS-928, DATACMNS-1162
-	public void copiesEventsFromExistingAggregate() {
+	void copiesEventsFromExistingAggregate() {
 
 		SampleAggregate aggregate = new SampleAggregate();
 		aggregate.registerEvent(new Object());
@@ -64,7 +64,7 @@ public class AbstractAggregateRootUnitTests {
 	}
 
 	@Test // DATACMNS-928, DATACMNS-1162
-	public void addsEventAndReturnsAggregate() {
+	void addsEventAndReturnsAggregate() {
 
 		Object first = new Object();
 		Object second = new Object();
@@ -80,7 +80,7 @@ public class AbstractAggregateRootUnitTests {
 
 	@Test // DATACMNS-928, DATACMNS-1162
 	@SuppressWarnings("null")
-	public void rejectsNullEvent() {
+	void rejectsNullEvent() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
 				.isThrownBy(() -> new SampleAggregate().andEvent(null));
@@ -88,7 +88,7 @@ public class AbstractAggregateRootUnitTests {
 
 	@Test // DATACMNS-928
 	@SuppressWarnings("null")
-	public void rejectsNullEventForRegistration() {
+	void rejectsNullEventForRegistration() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
 				.isThrownBy(() -> new SampleAggregate().registerEvent(null));
@@ -96,7 +96,7 @@ public class AbstractAggregateRootUnitTests {
 
 	@Test // DATACMNS-928, DATACMNS-1162
 	@SuppressWarnings("null")
-	public void rejectsNullAggregate() {
+	void rejectsNullAggregate() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
 				.isThrownBy(() -> new SampleAggregate().andEventsFrom(null));

@@ -17,7 +17,7 @@ package org.springframework.data.mapping.context;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.mapping.context.AbstractMappingContext.PersistentPropertyFilter.PropertyMatch;
 
 /**
@@ -26,15 +26,15 @@ import org.springframework.data.mapping.context.AbstractMappingContext.Persisten
  * @since 1.4
  * @author Oliver Gierke
  */
-public class PropertyMatchUnitTests {
+class PropertyMatchUnitTests {
 
 	@Test
-	public void rejectsBothParametersBeingNull() {
+	void rejectsBothParametersBeingNull() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new PropertyMatch(null, null));
 	}
 
 	@Test
-	public void matchesFieldByConcreteNameAndType() throws Exception {
+	void matchesFieldByConcreteNameAndType() throws Exception {
 
 		PropertyMatch match = new PropertyMatch("name", "java.lang.String");
 		assertThat(match.matches("this$0", Object.class)).isFalse();
@@ -43,7 +43,7 @@ public class PropertyMatchUnitTests {
 	}
 
 	@Test
-	public void matchesFieldByNamePattern() throws Exception {
+	void matchesFieldByNamePattern() throws Exception {
 
 		PropertyMatch match = new PropertyMatch("this\\$.*", "java.lang.Object");
 		assertThat(match.matches("this$0", Object.class)).isTrue();
@@ -52,7 +52,7 @@ public class PropertyMatchUnitTests {
 	}
 
 	@Test
-	public void matchesFieldByNameOnly() throws Exception {
+	void matchesFieldByNameOnly() throws Exception {
 
 		PropertyMatch match = new PropertyMatch("this\\$.*", null);
 		assertThat(match.matches("this$0", Object.class)).isTrue();
@@ -61,7 +61,7 @@ public class PropertyMatchUnitTests {
 	}
 
 	@Test
-	public void matchesFieldByTypeNameOnly() throws Exception {
+	void matchesFieldByTypeNameOnly() throws Exception {
 
 		PropertyMatch match = new PropertyMatch(null, "java.lang.Object");
 		assertThat(match.matches("this$0", Object.class)).isTrue();

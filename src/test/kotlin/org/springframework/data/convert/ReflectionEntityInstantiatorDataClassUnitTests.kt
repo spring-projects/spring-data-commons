@@ -18,7 +18,7 @@ package org.springframework.data.convert
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
 import org.springframework.data.mapping.model.ParameterValueProvider

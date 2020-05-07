@@ -21,10 +21,10 @@ import static org.mockito.Mockito.*;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -37,14 +37,14 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
  * @author Mark Paluch
  * @author Jens Schauder
  */
-@RunWith(MockitoJUnitRunner.class)
-public class QueryExecutorMethodInterceptorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class QueryExecutorMethodInterceptorUnitTests {
 
 	@Mock RepositoryInformation information;
 	@Mock QueryLookupStrategy strategy;
 
 	@Test // DATACMNS-1508
-	public void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() {
+	void rejectsRepositoryInterfaceWithQueryMethodsIfNoQueryLookupStrategyIsDefined() {
 
 		when(information.hasQueryMethods()).thenReturn(true);
 
@@ -54,7 +54,7 @@ public class QueryExecutorMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-1508
-	public void skipsQueryLookupsIfQueryLookupStrategyIsNotPresent() {
+	void skipsQueryLookupsIfQueryLookupStrategyIsNotPresent() {
 
 		new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(), Optional.empty(),
 				PropertiesBasedNamedQueries.EMPTY, Collections.emptyList());

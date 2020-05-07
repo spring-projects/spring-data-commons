@@ -27,11 +27,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.AdditionalAnswers;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
@@ -56,18 +56,18 @@ import org.springframework.util.MultiValueMap;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ReflectionRepositoryInvokerUnitTests {
+@ExtendWith(MockitoExtension.class)
+class ReflectionRepositoryInvokerUnitTests {
 
 	ConversionService conversionService;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.conversionService = new DefaultFormattingConversionService();
 	}
 
 	@Test // DATACMNS-589
-	public void invokesSaveMethodCorrectly() throws Exception {
+	void invokesSaveMethodCorrectly() throws Exception {
 
 		ManualCrudRepository repository = mock(ManualCrudRepository.class);
 		Method method = ManualCrudRepository.class.getMethod("save", Domain.class);
@@ -78,7 +78,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesFindOneCorrectly() throws Exception {
+	void invokesFindOneCorrectly() throws Exception {
 
 		ManualCrudRepository repository = mock(ManualCrudRepository.class);
 		Method method = ManualCrudRepository.class.getMethod("findById", Long.class);
@@ -88,7 +88,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesDeleteWithDomainCorrectly() throws Exception {
+	void invokesDeleteWithDomainCorrectly() throws Exception {
 
 		RepoWithDomainDeleteAndFindOne repository = mock(RepoWithDomainDeleteAndFindOne.class);
 		when(repository.findById(1L)).thenReturn(new Domain());
@@ -100,7 +100,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesFindAllWithoutParameterCorrectly() throws Exception {
+	void invokesFindAllWithoutParameterCorrectly() throws Exception {
 
 		Method method = ManualCrudRepository.class.getMethod("findAll");
 		ManualCrudRepository repository = mock(ManualCrudRepository.class);
@@ -112,7 +112,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesFindAllWithSortCorrectly() throws Exception {
+	void invokesFindAllWithSortCorrectly() throws Exception {
 
 		Method method = RepoWithFindAllWithSort.class.getMethod("findAll", Sort.class);
 		RepoWithFindAllWithSort repository = mock(RepoWithFindAllWithSort.class);
@@ -126,7 +126,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesFindAllWithPageableCorrectly() throws Exception {
+	void invokesFindAllWithPageableCorrectly() throws Exception {
 
 		Method method = RepoWithFindAllWithPageable.class.getMethod("findAll", Pageable.class);
 		RepoWithFindAllWithPageable repository = mock(RepoWithFindAllWithPageable.class);
@@ -138,7 +138,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesQueryMethod() throws Exception {
+	void invokesQueryMethod() throws Exception {
 
 		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 		parameters.add("firstName", "John");
@@ -151,7 +151,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void considersFormattingAnnotationsOnQueryMethodParameters() throws Exception {
+	void considersFormattingAnnotationsOnQueryMethodParameters() throws Exception {
 
 		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 		parameters.add("date", "2013-07-18T10:49:00.000+02:00");
@@ -164,7 +164,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATAREST-335, DATAREST-346, DATACMNS-589
-	public void invokesOverriddenDeleteMethodCorrectly() throws Exception {
+	void invokesOverriddenDeleteMethodCorrectly() throws Exception {
 
 		MyRepo repository = mock(MyRepo.class);
 		Method method = CustomRepo.class.getMethod("deleteById", Long.class);
@@ -173,7 +173,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void rejectsInvocationOfMissingDeleteMethod() {
+	void rejectsInvocationOfMissingDeleteMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
@@ -182,7 +182,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void rejectsInvocationOfMissingFindOneMethod() {
+	void rejectsInvocationOfMissingFindOneMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
@@ -191,7 +191,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void rejectsInvocationOfMissingFindAllMethod() {
+	void rejectsInvocationOfMissingFindAllMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
@@ -200,7 +200,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void rejectsInvocationOfMissingSaveMethod() {
+	void rejectsInvocationOfMissingSaveMethod() {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(EmptyRepository.class));
 
@@ -209,7 +209,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-647
-	public void translatesCollectionRequestParametersCorrectly() throws Exception {
+	void translatesCollectionRequestParametersCorrectly() throws Exception {
 
 		for (String[] ids : Arrays.asList(new String[] { "1,2" }, new String[] { "1", "2" })) {
 
@@ -225,7 +225,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-700
-	public void failedParameterConversionCapturesContext() throws Exception {
+	void failedParameterConversionCapturesContext() throws Exception {
 
 		RepositoryInvoker invoker = getInvokerFor(mock(SimpleRepository.class));
 
@@ -245,7 +245,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-867
-	public void convertsWrapperTypeToJdkOptional() {
+	void convertsWrapperTypeToJdkOptional() {
 
 		GuavaRepository mock = mock(GuavaRepository.class);
 		when(mock.findById(any())).thenReturn(com.google.common.base.Optional.of(new Domain()));
@@ -258,7 +258,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-867
-	public void wrapsSingleElementCollectionIntoOptional() throws Exception {
+	void wrapsSingleElementCollectionIntoOptional() throws Exception {
 
 		ManualCrudRepository mock = mock(ManualCrudRepository.class);
 		when(mock.findAll()).thenReturn(Arrays.asList(new Domain()));
@@ -274,7 +274,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-1277
-	public void invokesFindByIdBeforeDeletingOnOverride() {
+	void invokesFindByIdBeforeDeletingOnOverride() {
 
 		DeleteByEntityOverrideSubRepository mock = mock(DeleteByEntityOverrideSubRepository.class);
 		doReturn(Optional.of(new Domain())).when(mock).findById(any());
@@ -286,7 +286,7 @@ public class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-1277
-	public void invokesDeleteByIdOnOverride() {
+	void invokesDeleteByIdOnOverride() {
 
 		DeleteByIdOverrideSubRepository mock = mock(DeleteByIdOverrideSubRepository.class);
 

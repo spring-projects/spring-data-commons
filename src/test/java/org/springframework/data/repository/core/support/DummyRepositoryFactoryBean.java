@@ -28,7 +28,7 @@ import org.springframework.data.repository.Repository;
 public class DummyRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
-	private T repository;
+	private final T repository;
 
 	public DummyRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
 

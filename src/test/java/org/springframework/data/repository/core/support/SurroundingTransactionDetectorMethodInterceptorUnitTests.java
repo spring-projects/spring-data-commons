@@ -18,7 +18,7 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.repository.core.support.SurroundingTransactionDetectorMethodInterceptor.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -28,10 +28,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @author Oliver Gierke
  * @soundtrack Hendrik Freischlader Trio - Openness (Openness)
  */
-public class SurroundingTransactionDetectorMethodInterceptorUnitTests {
+class SurroundingTransactionDetectorMethodInterceptorUnitTests {
 
 	@Test // DATACMNS-959
-	public void registersActiveSurroundingTransaction() throws Throwable {
+	void registersActiveSurroundingTransaction() throws Throwable {
 
 		TransactionSynchronizationManager.setActualTransactionActive(true);
 
@@ -39,7 +39,7 @@ public class SurroundingTransactionDetectorMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-959
-	public void registersNoSurroundingTransaction() throws Throwable {
+	void registersNoSurroundingTransaction() throws Throwable {
 
 		TransactionSynchronizationManager.setActualTransactionActive(false);
 

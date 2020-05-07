@@ -19,10 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.web.PageableDefaultUnitTests.*;
 import static org.springframework.data.web.PageableHandlerMethodArgumentResolver.*;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
@@ -38,19 +37,17 @@ import org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentR
  *
  * @author Mark Paluch
  */
-public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
-
-	@Rule public final ExpectedException exception = ExpectedException.none();
+class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 
 	MethodParameter supportedMethodParameter;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		this.supportedMethodParameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
 	}
 
 	@Test // DATACMNS-1211
-	public void preventsPageSizeFromExceedingMayValueIfConfigured() {
+	void preventsPageSizeFromExceedingMayValueIfConfigured() {
 
 		// Read side
 		MockServerHttpRequest request = MockServerHttpRequest.get("foo?page=0&size=200").build();
@@ -58,28 +55,32 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 		assertSupportedAndResult(supportedMethodParameter, PageRequest.of(0, 100), request);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-1211
-	public void rejectsEmptyPageParameterName() {
-		new ReactivePageableHandlerMethodArgumentResolver().setPageParameterName("");
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-1211
-	public void rejectsNullPageParameterName() {
-		new ReactivePageableHandlerMethodArgumentResolver().setPageParameterName(null);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-1211
-	public void rejectsEmptySizeParameterName() {
-		new ReactivePageableHandlerMethodArgumentResolver().setSizeParameterName("");
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACMNS-1211
-	public void rejectsNullSizeParameterName() {
-		new ReactivePageableHandlerMethodArgumentResolver().setSizeParameterName(null);
+	@Test // DATACMNS-1211
+	void rejectsEmptyPageParameterName() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new ReactivePageableHandlerMethodArgumentResolver().setPageParameterName(""));
 	}
 
 	@Test // DATACMNS-1211
-	public void qualifierIsUsedInParameterLookup() throws Exception {
+	void rejectsNullPageParameterName() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new ReactivePageableHandlerMethodArgumentResolver().setPageParameterName(null));
+	}
+
+	@Test // DATACMNS-1211
+	void rejectsEmptySizeParameterName() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new ReactivePageableHandlerMethodArgumentResolver().setSizeParameterName(""));
+	}
+
+	@Test // DATACMNS-1211
+	void rejectsNullSizeParameterName() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new ReactivePageableHandlerMethodArgumentResolver().setSizeParameterName(null));
+	}
+
+	@Test // DATACMNS-1211
+	void qualifierIsUsedInParameterLookup() throws Exception {
 
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("validQualifier", Pageable.class), 0);
 
@@ -89,7 +90,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void usesDefaultPageSizeIfRequestPageSizeIsLessThanOne() {
+	void usesDefaultPageSizeIfRequestPageSizeIsLessThanOne() {
 
 		MockServerHttpRequest request = MockServerHttpRequest.get("foo?page=0&size=0").build();
 
@@ -97,19 +98,17 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void rejectsInvalidCustomDefaultForPageSize() throws Exception {
+	void rejectsInvalidCustomDefaultForPageSize() throws Exception {
 
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("invalidDefaultPageSize", Pageable.class),
 				0);
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("invalidDefaultPageSize");
-
-		assertSupportedAndResult(parameter, DEFAULT_PAGE_REQUEST);
+		assertThatIllegalStateException().isThrownBy(() -> assertSupportedAndResult(parameter, DEFAULT_PAGE_REQUEST))
+				.withMessageContaining("invalidDefaultPageSize");
 	}
 
 	@Test // DATACMNS-1211
-	public void fallsBackToFirstPageIfNegativePageNumberIsGiven() {
+	void fallsBackToFirstPageIfNegativePageNumberIsGiven() {
 
 		MockServerHttpRequest request = MockServerHttpRequest.get("foo?page=-1").build();
 
@@ -117,7 +116,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void pageParamIsNotNumeric() {
+	void pageParamIsNotNumeric() {
 
 		MockServerHttpRequest request = MockServerHttpRequest.get("foo?page=a").build();
 
@@ -125,7 +124,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void sizeParamIsNotNumeric() {
+	void sizeParamIsNotNumeric() {
 
 		MockServerHttpRequest request = MockServerHttpRequest.get("foo?size=a").build();
 
@@ -133,7 +132,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void returnsNullIfFallbackIsUnpagedAndNoParametersGiven() {
+	void returnsNullIfFallbackIsUnpagedAndNoParametersGiven() {
 
 		ReactivePageableHandlerMethodArgumentResolver resolver = getReactiveResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -142,7 +141,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void returnsFallbackIfOnlyPageIsGiven() {
+	void returnsFallbackIfOnlyPageIsGiven() {
 
 		ReactivePageableHandlerMethodArgumentResolver resolver = getReactiveResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -153,7 +152,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void returnsFallbackIfFallbackIsUnpagedAndOnlySizeIsGiven() {
+	void returnsFallbackIfFallbackIsUnpagedAndOnlySizeIsGiven() {
 
 		ReactivePageableHandlerMethodArgumentResolver resolver = getReactiveResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -164,7 +163,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void considersOneIndexedParametersSetting() {
+	void considersOneIndexedParametersSetting() {
 
 		ReactivePageableHandlerMethodArgumentResolver resolver = getReactiveResolver();
 		resolver.setOneIndexedParameters(true);
@@ -175,7 +174,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void usesNullSortIfNoDefaultIsConfiguredAndPageAndSizeAreGiven() {
+	void usesNullSortIfNoDefaultIsConfiguredAndPageAndSizeAreGiven() {
 
 		ReactivePageableHandlerMethodArgumentResolver resolver = getReactiveResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -190,7 +189,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void oneIndexedParametersDefaultsIndexOutOfRange() {
+	void oneIndexedParametersDefaultsIndexOutOfRange() {
 
 		ReactivePageableHandlerMethodArgumentResolver resolver = getReactiveResolver();
 		resolver.setOneIndexedParameters(true);
@@ -201,7 +200,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void returnsCorrectPageSizeForOneIndexParameters() {
+	void returnsCorrectPageSizeForOneIndexParameters() {
 
 		ReactivePageableHandlerMethodArgumentResolver resolver = getReactiveResolver();
 		resolver.setOneIndexedParameters(true);
@@ -212,7 +211,7 @@ public class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	public void detectsFallbackPageableIfNullOneIsConfigured() {
+	void detectsFallbackPageableIfNullOneIsConfigured() {
 
 		ReactivePageableHandlerMethodArgumentResolver resolver = getReactiveResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());

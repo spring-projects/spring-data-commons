@@ -23,7 +23,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 public class SamplePersistentProperty extends AnnotationBasedPersistentProperty<SamplePersistentProperty> {
 
-	public SamplePersistentProperty(Property property, BasicPersistentEntity<?, SamplePersistentProperty> owner,
+	SamplePersistentProperty(Property property, BasicPersistentEntity<?, SamplePersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder) {
 		super(property, owner, simpleTypeHolder);
 	}

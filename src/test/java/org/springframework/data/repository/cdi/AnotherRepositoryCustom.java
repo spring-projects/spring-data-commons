@@ -16,6 +16,6 @@
 
 package org.springframework.data.repository.cdi;
 
-public interface AnotherRepositoryCustom {
+interface AnotherRepositoryCustom {
 	int returnZero();
 }

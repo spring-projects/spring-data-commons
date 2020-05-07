@@ -17,17 +17,17 @@ package org.springframework.data.repository.cdi;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Common integration tests for Spring Data repository CDI extension.
  *
  * @author Oliver Gierke
  */
-public abstract class CdiRepositoryExtensionSupportIntegrationTests {
+abstract class CdiRepositoryExtensionSupportIntegrationTests {
 
 	@Test
-	public void createsSpringDataRepositoryBean() {
+	void createsSpringDataRepositoryBean() {
 
 		assertThat(getBean(SampleRepository.class)).isNotNull();
 
@@ -36,7 +36,7 @@ public abstract class CdiRepositoryExtensionSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-557
-	public void createsSpringDataRepositoryWithCustimImplBean() {
+	void createsSpringDataRepositoryWithCustimImplBean() {
 
 		assertThat(getBean(AnotherRepository.class)).isNotNull();
 

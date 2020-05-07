@@ -21,10 +21,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
@@ -35,23 +36,23 @@ import org.springframework.data.util.ClassTypeInformation;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProperty<T>> {
+@ExtendWith(MockitoExtension.class)
+class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProperty<T>> {
 
 	ConfigurableTypeInformationMapper mapper;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		mapper = new ConfigurableTypeInformationMapper(Collections.singletonMap(String.class, "1"));
 	}
 
 	@Test
-	public void rejectsNullTypeMap() {
+	void rejectsNullTypeMap() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new ConfigurableTypeInformationMapper(null));
 	}
 
 	@Test
-	public void rejectsNonBijectionalMap() {
+	void rejectsNonBijectionalMap() {
 
 		Map<Class<?>, String> map = new HashMap<>();
 		map.put(String.class, "1");
@@ -61,14 +62,14 @@ public class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProp
 	}
 
 	@Test
-	public void writesMapKeyForType() {
+	void writesMapKeyForType() {
 
 		assertThat(mapper.createAliasFor(ClassTypeInformation.from(String.class))).isEqualTo(Alias.of("1"));
 		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Object.class))).isEqualTo(Alias.NONE);
 	}
 
 	@Test
-	public void readsTypeForMapKey() {
+	void readsTypeForMapKey() {
 
 		assertThat(mapper.resolveTypeFrom(Alias.of("1"))).isEqualTo(ClassTypeInformation.from(String.class));
 		assertThat(mapper.resolveTypeFrom(Alias.of("unmapped"))).isNull();

@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,10 +36,10 @@ import org.springframework.data.mapping.callback.CapturingEntityCallback.ThirdCa
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-public class DefaultReactiveEntityCallbacksUnitTests {
+class DefaultReactiveEntityCallbacksUnitTests {
 
 	@Test // DATACMNS-1467
-	public void dispatchResolvesOnSubscribe() {
+	void dispatchResolvesOnSubscribe() {
 
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
@@ -56,7 +56,7 @@ public class DefaultReactiveEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void invokeGenericEvent() {
+	void invokeGenericEvent() {
 
 		DefaultReactiveEntityCallbacks callbacks = new DefaultReactiveEntityCallbacks();
 		callbacks.addEntityCallback(new GenericPersonCallback());
@@ -68,7 +68,7 @@ public class DefaultReactiveEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void passesInvocationResultOnAlongTheChain() {
+	void passesInvocationResultOnAlongTheChain() {
 
 		CapturingEntityCallback first = new FirstCallback();
 		CapturingEntityCallback second = new SecondCallback();
@@ -91,7 +91,7 @@ public class DefaultReactiveEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void errorsOnNullEntity() {
+	void errorsOnNullEntity() {
 
 		DefaultReactiveEntityCallbacks callbacks = new DefaultReactiveEntityCallbacks();
 		callbacks.addEntityCallback(new CapturingEntityCallback());
@@ -101,7 +101,7 @@ public class DefaultReactiveEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void errorsOnNullValueReturnedByCallbackEntity() {
+	void errorsOnNullValueReturnedByCallbackEntity() {
 
 		CapturingEntityCallback first = new FirstCallback();
 		CapturingEntityCallback second = new SecondCallback(null);

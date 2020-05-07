@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.EntityInformation;
@@ -33,15 +33,15 @@ import org.springframework.util.ReflectionUtils;
  * @author Nick Williams
  * @author Mark Paluch
  */
-public class AbstractEntityInformationUnitTests {
+class AbstractEntityInformationUnitTests {
 
 	@Test
-	public void rejectsNullDomainClass() {
+	void rejectsNullDomainClass() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new DummyEntityInformation<>(null));
 	}
 
 	@Test
-	public void considersEntityNewIfGetIdReturnsNull() throws Exception {
+	void considersEntityNewIfGetIdReturnsNull() throws Exception {
 
 		EntityInformation<Object, Serializable> metadata = new DummyEntityInformation<>(Object.class);
 
@@ -50,7 +50,7 @@ public class AbstractEntityInformationUnitTests {
 	}
 
 	@Test // DATACMNS-357
-	public void detectsNewStateForPrimitiveIds() {
+	void detectsNewStateForPrimitiveIds() {
 
 		CustomEntityInformation<PrimitiveIdEntity, Serializable> fooEn = new CustomEntityInformation<>(
 				PrimitiveIdEntity.class);
@@ -63,7 +63,7 @@ public class AbstractEntityInformationUnitTests {
 	}
 
 	@Test // DATACMNS-357
-	public void detectsNewStateForPrimitiveWrapperIds() {
+	void detectsNewStateForPrimitiveWrapperIds() {
 
 		CustomEntityInformation<PrimitiveWrapperIdEntity, Serializable> fooEn = new CustomEntityInformation<>(
 				PrimitiveWrapperIdEntity.class);
@@ -76,7 +76,7 @@ public class AbstractEntityInformationUnitTests {
 	}
 
 	@Test // DATACMNS-357
-	public void rejectsUnsupportedPrimitiveIdType() {
+	void rejectsUnsupportedPrimitiveIdType() {
 
 		CustomEntityInformation<UnsupportedPrimitiveIdEntity, ?> information = new CustomEntityInformation<UnsupportedPrimitiveIdEntity, Boolean>(
 				UnsupportedPrimitiveIdEntity.class);

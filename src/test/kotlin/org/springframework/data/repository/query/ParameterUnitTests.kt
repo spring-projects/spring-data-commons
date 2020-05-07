@@ -16,7 +16,7 @@
 package org.springframework.data.repository.query
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.springframework.core.DefaultParameterNameDiscoverer
 import org.springframework.core.MethodParameter
 import kotlin.reflect.jvm.javaMethod

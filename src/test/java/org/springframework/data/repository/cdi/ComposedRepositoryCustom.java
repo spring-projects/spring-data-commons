@@ -18,7 +18,7 @@ package org.springframework.data.repository.cdi;
 /**
  * @author Mark Paluch
  */
-public interface ComposedRepositoryCustom {
+interface ComposedRepositoryCustom {
 
 	int returnFourtyTwo();
 

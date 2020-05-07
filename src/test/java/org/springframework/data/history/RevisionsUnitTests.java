@@ -22,25 +22,25 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link Revisions}.
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class RevisionsUnitTests {
+@ExtendWith(MockitoExtension.class)
+class RevisionsUnitTests {
 
 	@Mock RevisionMetadata<Integer> first, second;
 	Revision<Integer, Object> firstRevision, secondRevision;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		when(first.getRevisionNumber()).thenReturn(Optional.of(0));
 		when(second.getRevisionNumber()).thenReturn(Optional.of(10));
@@ -50,13 +50,13 @@ public class RevisionsUnitTests {
 	}
 
 	@Test
-	public void returnsCorrectLatestRevision() {
+	void returnsCorrectLatestRevision() {
 		assertThat(Revisions.of(Arrays.asList(firstRevision, secondRevision)).getLatestRevision())
 				.isEqualTo(secondRevision);
 	}
 
 	@Test
-	public void iteratesInCorrectOrder() {
+	void iteratesInCorrectOrder() {
 
 		Revisions<Integer, Object> revisions = Revisions.of(Arrays.asList(firstRevision, secondRevision));
 		Iterator<Revision<Integer, Object>> iterator = revisions.iterator();
@@ -69,13 +69,13 @@ public class RevisionsUnitTests {
 	}
 
 	@Test
-	public void reversedRevisionsStillReturnsCorrectLatestRevision() {
+	void reversedRevisionsStillReturnsCorrectLatestRevision() {
 		assertThat(Revisions.of(Arrays.asList(firstRevision, secondRevision)).reverse().getLatestRevision())
 				.isEqualTo(secondRevision);
 	}
 
 	@Test
-	public void iteratesReversedRevisionsInCorrectOrder() {
+	void iteratesReversedRevisionsInCorrectOrder() {
 
 		Revisions<Integer, Object> revisions = Revisions.of(Arrays.asList(firstRevision, secondRevision));
 		Iterator<Revision<Integer, Object>> iterator = revisions.reverse().iterator();
@@ -88,7 +88,7 @@ public class RevisionsUnitTests {
 	}
 
 	@Test
-	public void forcesInvalidlyOrderedRevisionsToBeOrdered() {
+	void forcesInvalidlyOrderedRevisionsToBeOrdered() {
 
 		Revisions<Integer, Object> revisions = Revisions.of(Arrays.asList(secondRevision, firstRevision));
 		Iterator<Revision<Integer, Object>> iterator = revisions.iterator();

@@ -30,10 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,15 +55,16 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * @author Thomas Darimont
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultRepositoryInformationUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class DefaultRepositoryInformationUnitTests {
 
 	@SuppressWarnings("rawtypes") static final Class<DummyGenericRepositorySupport> REPOSITORY = DummyGenericRepositorySupport.class;
 
 	@Mock FooRepositoryCustom customImplementation;
 
 	@Test
-	public void discoversRepositoryBaseClassMethod() throws Exception {
+	void discoversRepositoryBaseClassMethod() throws Exception {
 
 		Method method = FooRepository.class.getMethod("findById", Integer.class);
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
@@ -73,7 +77,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test
-	public void discoveresNonRepositoryBaseClassMethod() throws Exception {
+	void discoveresNonRepositoryBaseClassMethod() throws Exception {
 
 		Method method = FooRepository.class.getMethod("findById", Long.class);
 
@@ -85,7 +89,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test
-	public void discoversCustomlyImplementedCrudMethod() throws SecurityException, NoSuchMethodException {
+	void discoversCustomlyImplementedCrudMethod() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -98,7 +102,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test
-	public void considersIntermediateMethodsAsFinderMethods() {
+	void considersIntermediateMethodsAsFinderMethods() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -108,7 +112,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test
-	public void discoversIntermediateMethodsAsBackingMethods() throws NoSuchMethodException, SecurityException {
+	void discoversIntermediateMethodsAsBackingMethods() throws NoSuchMethodException, SecurityException {
 
 		DefaultRepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
 		DefaultRepositoryInformation information = new DefaultRepositoryInformation(metadata,
@@ -124,7 +128,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-151
-	public void doesNotConsiderManuallyDefinedSaveMethodAQueryMethod() {
+	void doesNotConsiderManuallyDefinedSaveMethodAQueryMethod() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, PagingAndSortingRepository.class,
@@ -134,7 +138,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-151
-	public void doesNotConsiderRedeclaredSaveMethodAQueryMethod() throws Exception {
+	void doesNotConsiderRedeclaredSaveMethodAQueryMethod() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -149,7 +153,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test
-	public void onlyReturnsMostConcreteQueryMethod() throws Exception {
+	void onlyReturnsMostConcreteQueryMethod() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -165,7 +169,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-193
-	public void detectsQueryMethodCorrectly() {
+	void detectsQueryMethodCorrectly() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -178,7 +182,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-364
-	public void ignoresCrudMethodsAnnotatedWithQuery() throws Exception {
+	void ignoresCrudMethodsAnnotatedWithQuery() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -190,7 +194,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-385
-	public void findsTargetSaveForIterableIfEntityImplementsIterable() throws Exception {
+	void findsTargetSaveForIterableIfEntityImplementsIterable() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(BossRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -203,7 +207,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-441
-	public void getQueryShouldNotReturnAnyBridgeMethods() {
+	void getQueryShouldNotReturnAnyBridgeMethods() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomDefaultRepositoryMethodsRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -213,7 +217,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-854
-	public void discoversCustomlyImplementedCrudMethodWithGenerics() throws SecurityException, NoSuchMethodException {
+	void discoversCustomlyImplementedCrudMethodWithGenerics() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -226,7 +230,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-912
-	public void discoversCustomlyImplementedCrudMethodWithGenericParameters() throws Exception {
+	void discoversCustomlyImplementedCrudMethodWithGenericParameters() throws Exception {
 
 		GenericsSaveRepositoryImpl customImplementation = new GenericsSaveRepositoryImpl();
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericsSaveRepository.class);
@@ -238,7 +242,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-939
-	public void ignoresStaticMethod() throws SecurityException, NoSuchMethodException {
+	void ignoresStaticMethod() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -250,7 +254,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-939
-	public void ignoresDefaultMethod() throws SecurityException, NoSuchMethodException {
+	void ignoresDefaultMethod() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(FooRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
@@ -262,7 +266,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-943
-	public void usesCorrectSaveOverload() throws Exception {
+	void usesCorrectSaveOverload() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(DummyRepository.class);
 		RepositoryInformation information = new DefaultRepositoryInformation(metadata, DummyRepositoryImpl.class,
@@ -275,7 +279,7 @@ public class DefaultRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-1008, DATACMNS-912, DATACMNS-854
-	public void discoversCustomlyImplementedCrudMethodWithoutGenericParameters() throws Exception {
+	void discoversCustomlyImplementedCrudMethodWithoutGenericParameters() throws Exception {
 
 		SimpleSaveRepositoryImpl customImplementation = new SimpleSaveRepositoryImpl();
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(SimpleSaveRepository.class);
@@ -326,7 +330,7 @@ public class DefaultRepositoryInformationUnitTests {
 
 		private String firstname;
 
-		public String getAddress() {
+		String getAddress() {
 
 			return null;
 		}

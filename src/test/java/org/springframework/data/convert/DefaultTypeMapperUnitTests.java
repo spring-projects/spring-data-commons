@@ -21,11 +21,14 @@ import static org.mockito.Mockito.*;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -36,8 +39,9 @@ import org.springframework.data.util.TypeInformation;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultTypeMapperUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class DefaultTypeMapperUnitTests {
 
 	static final TypeInformation<String> STRING_TYPE_INFO = ClassTypeInformation.from(String.class);
 	static final Alias ALIAS = Alias.of(String.class.getName());
@@ -48,8 +52,8 @@ public class DefaultTypeMapperUnitTests {
 	DefaultTypeMapper<Map<String, String>> typeMapper;
 	Map<String, String> source;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.typeMapper = new DefaultTypeMapper<>(accessor, Collections.singletonList(mapper));
 		this.source = Collections.singletonMap("key", ALIAS.toString());
@@ -59,7 +63,7 @@ public class DefaultTypeMapperUnitTests {
 	}
 
 	@Test
-	public void cachesResolvedTypeInformation() {
+	void cachesResolvedTypeInformation() {
 
 		TypeInformation<?> information = typeMapper.readType(source);
 		assertThat(information).isEqualTo(STRING_TYPE_INFO);
@@ -70,7 +74,7 @@ public class DefaultTypeMapperUnitTests {
 	}
 
 	@Test // DATACMNS-349
-	public void returnsTypeAliasForInformation() {
+	void returnsTypeAliasForInformation() {
 
 		Alias alias = Alias.of("alias");
 		doReturn(alias).when(mapper).createAliasFor(STRING_TYPE_INFO);
@@ -79,7 +83,7 @@ public class DefaultTypeMapperUnitTests {
 	}
 
 	@Test // DATACMNS-783
-	public void specializesRawSourceTypeUsingGenericContext() {
+	void specializesRawSourceTypeUsingGenericContext() {
 
 		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
 		TypeInformation<?> propertyType = root.getProperty("abstractBar");

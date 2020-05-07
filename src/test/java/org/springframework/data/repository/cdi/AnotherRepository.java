@@ -20,6 +20,6 @@ import java.io.Serializable;
 
 import org.springframework.data.repository.Repository;
 
-public interface AnotherRepository extends Repository<Object, Serializable>, AnotherRepositoryCustom {
+interface AnotherRepository extends Repository<Object, Serializable>, AnotherRepositoryCustom {
 
 }

@@ -17,7 +17,7 @@ package org.springframework.data.geo;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.SerializationUtils;
 
 /**
@@ -26,20 +26,20 @@ import org.springframework.util.SerializationUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class CircleUnitTests {
+class CircleUnitTests {
 
 	@Test // DATACMNS-437
-	public void rejectsNullOrigin() {
+	void rejectsNullOrigin() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new Circle(null, new Distance(0)));
 	}
 
 	@Test // DATACMNS-437
-	public void rejectsNegativeRadius() {
+	void rejectsNegativeRadius() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new Circle(1, 1, -1));
 	}
 
 	@Test // DATACMNS-437
-	public void considersTwoCirclesEqualCorrectly() {
+	void considersTwoCirclesEqualCorrectly() {
 
 		Circle left = new Circle(1, 1, 1);
 		Circle right = new Circle(1, 1, 1);
@@ -54,13 +54,13 @@ public class CircleUnitTests {
 	}
 
 	@Test // DATACMNS-437
-	public void testToString() {
+	void testToString() {
 
 		assertThat(new Circle(1, 1, 1).toString()).isEqualTo("Circle: [center=Point [x=1.000000, y=1.000000], radius=1.0]");
 	}
 
 	@Test // DATACMNS-482
-	public void testSerialization() {
+	void testSerialization() {
 
 		Circle circle = new Circle(1, 1, 1);
 

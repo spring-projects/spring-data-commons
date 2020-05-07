@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -36,10 +36,10 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  */
-public class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
+class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 
 	@Test // DATACMNS-457
-	public void returnsManagedType() {
+	void returnsManagedType() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		context.setInitialEntitySet(Collections.singleton(Person.class));
@@ -49,7 +49,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 	}
 
 	@Test // DATACMNS-457
-	public void indicatesManagedType() {
+	void indicatesManagedType() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		context.setInitialEntitySet(Collections.singleton(Person.class));
@@ -59,7 +59,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 	}
 
 	@Test // DATACMNS-243
-	public void createsPersistentEntityForInterfaceCorrectly() {
+	void createsPersistentEntityForInterfaceCorrectly() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context
@@ -69,7 +69,7 @@ public class AbstractMappingContextIntegrationTests<T extends PersistentProperty
 	}
 
 	@Test // DATACMNS-65
-	public void foo() throws InterruptedException {
+	void foo() throws InterruptedException {
 
 		final DummyMappingContext context = new DummyMappingContext();
 

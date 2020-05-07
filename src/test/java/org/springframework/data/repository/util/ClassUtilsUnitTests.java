@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
@@ -34,16 +34,16 @@ import org.springframework.scheduling.annotation.Async;
  *
  * @author Oliver Gierke
  */
-public class ClassUtilsUnitTests {
+class ClassUtilsUnitTests {
 
 	@Test
-	public void rejectsInvalidReturnType() {
+	void rejectsInvalidReturnType() {
 		assertThatIllegalStateException().isThrownBy(() -> assertReturnTypeAssignable(
 				SomeDao.class.getMethod("findByFirstname", Pageable.class, String.class), User.class));
 	}
 
 	@Test
-	public void determinesValidFieldsCorrectly() {
+	void determinesValidFieldsCorrectly() {
 
 		assertThat(hasProperty(User.class, "firstname")).isTrue();
 		assertThat(hasProperty(User.class, "Firstname")).isTrue();
@@ -51,7 +51,7 @@ public class ClassUtilsUnitTests {
 	}
 
 	@Test // DATACMNS-769
-	public void unwrapsWrapperTypesBeforeAssignmentCheck() throws Exception {
+	void unwrapsWrapperTypesBeforeAssignmentCheck() throws Exception {
 		assertReturnTypeAssignable(UserRepository.class.getMethod("findAsync", Pageable.class), Page.class);
 	}
 
@@ -60,7 +60,7 @@ public class ClassUtilsUnitTests {
 
 		private String firstname;
 
-		public String getAddress() {
+		String getAddress() {
 
 			return null;
 		}

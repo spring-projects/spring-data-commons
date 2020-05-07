@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Field;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.util.ReflectionUtils;
@@ -31,7 +31,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @since 1.5
  */
-public class AnnotationAuditingMetadataUnitTests {
+class AnnotationAuditingMetadataUnitTests {
 
 	static final Field createdByField = ReflectionUtils.findField(AnnotatedUser.class, "createdBy");
 	static final Field createdDateField = ReflectionUtils.findField(AnnotatedUser.class, "createdDate");
@@ -39,7 +39,7 @@ public class AnnotationAuditingMetadataUnitTests {
 	static final Field lastModifiedDateField = ReflectionUtils.findField(AnnotatedUser.class, "lastModifiedDate");
 
 	@Test
-	public void checkAnnotationDiscovery() {
+	void checkAnnotationDiscovery() {
 
 		AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
 
@@ -51,7 +51,7 @@ public class AnnotationAuditingMetadataUnitTests {
 	}
 
 	@Test
-	public void checkCaching() {
+	void checkCaching() {
 
 		AnnotationAuditingMetadata firstCall = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
 		assertThat(firstCall).isNotNull();
@@ -61,7 +61,7 @@ public class AnnotationAuditingMetadataUnitTests {
 	}
 
 	@Test
-	public void checkIsAuditable() {
+	void checkIsAuditable() {
 
 		AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
 		assertThat(metadata).isNotNull();
@@ -73,7 +73,7 @@ public class AnnotationAuditingMetadataUnitTests {
 	}
 
 	@Test
-	public void rejectsInvalidDateTypeField() {
+	void rejectsInvalidDateTypeField() {
 
 		class Sample {
 			@CreatedDate String field;

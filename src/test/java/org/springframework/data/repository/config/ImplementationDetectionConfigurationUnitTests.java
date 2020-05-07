@@ -17,7 +17,7 @@ package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
@@ -30,10 +30,10 @@ import org.springframework.data.util.Streamable;
  * @author Mark Paluch
  * @author Oliver Gierke
  */
-public class ImplementationDetectionConfigurationUnitTests {
+class ImplementationDetectionConfigurationUnitTests {
 
 	@Test // DATACMNS-1439
-	public void shouldConsiderBeanNameDecapitalization() {
+	void shouldConsiderBeanNameDecapitalization() {
 
 		assertThat(getBeanName("com.acme.UDPRepository")).isEqualTo("UDPRepository");
 		assertThat(getBeanName("com.acme.UdpRepository")).isEqualTo("udpRepository");

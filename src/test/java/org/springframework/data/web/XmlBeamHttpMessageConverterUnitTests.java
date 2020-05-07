@@ -21,14 +21,16 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTests.UnannotatedInterface;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+
 import org.xml.sax.SAXParseException;
 import org.xmlbeam.annotation.XBRead;
 
@@ -38,15 +40,15 @@ import org.xmlbeam.annotation.XBRead;
  * @author Oliver Gierke
  * @soundtrack Dr. Kobayashi Maru & The Mothership Connection - Anthem (EPisode One)
  */
-@RunWith(MockitoJUnitRunner.class)
-public class XmlBeamHttpMessageConverterUnitTests {
+@ExtendWith(MockitoExtension.class)
+class XmlBeamHttpMessageConverterUnitTests {
 
 	XmlBeamHttpMessageConverter converter = new XmlBeamHttpMessageConverter();
 
 	@Mock HttpInputMessage message;
 
 	@Test // DATACMNS-885
-	public void findsTopLevelElements() throws Exception {
+	void findsTopLevelElements() throws Exception {
 
 		preparePayload("<user><firstname>Dave</firstname><lastname>Matthews</lastname></user>");
 
@@ -57,7 +59,7 @@ public class XmlBeamHttpMessageConverterUnitTests {
 	}
 
 	@Test // DATACMNS-885
-	public void findsNestedElements() throws Exception {
+	void findsNestedElements() throws Exception {
 
 		preparePayload("<user><username><firstname>Dave</firstname><lastname>Matthews</lastname></username></user>");
 
@@ -68,29 +70,29 @@ public class XmlBeamHttpMessageConverterUnitTests {
 	}
 
 	@Test // DATACMNS-885
-	public void supportsAnnotatedInterface() {
+	void supportsAnnotatedInterface() {
 		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML)).isTrue();
 	}
 
 	@Test // DATACMNS-885
-	public void supportsXmlBasedMediaType() {
+	void supportsXmlBasedMediaType() {
 		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_ATOM_XML)).isTrue();
 	}
 
 	@Test // DATACMNS-885
-	public void doesNotSupportUnannotatedInterface() {
+	void doesNotSupportUnannotatedInterface() {
 		assertThat(converter.canRead(UnannotatedInterface.class, MediaType.APPLICATION_XML)).isFalse();
 	}
 
 	@Test // DATACMNS-885
-	public void supportsInterfaceAfterLookupForDifferrentMediaType() {
+	void supportsInterfaceAfterLookupForDifferrentMediaType() {
 
 		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_JSON)).isFalse();
 		assertThat(converter.canRead(Customer.class, MediaType.APPLICATION_XML)).isTrue();
 	}
 
 	@Test // DATACMNS-1292
-	public void doesNotSupportEntityExpansion() throws Exception {
+	void doesNotSupportEntityExpansion() throws Exception {
 
 		preparePayload("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" //
 				+ "<!DOCTYPE foo [\n" //
@@ -107,7 +109,7 @@ public class XmlBeamHttpMessageConverterUnitTests {
 	}
 
 	@ProjectedPayload
-	public interface Customer {
+	interface Customer {
 
 		@XBRead("//firstname")
 		String getFirstname();
@@ -116,5 +118,5 @@ public class XmlBeamHttpMessageConverterUnitTests {
 		String getLastname();
 	}
 
-	public interface UnnannotatedInterface {}
+	interface UnnannotatedInterface {}
 }

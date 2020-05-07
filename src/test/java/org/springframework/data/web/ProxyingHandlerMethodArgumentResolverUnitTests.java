@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTests.SampleInterface;
@@ -38,7 +38,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 			() -> new DefaultConversionService(), true);
 
 	@Test // DATACMNS-776
-	public void supportAnnotatedInterface() throws Exception {
+	void supportAnnotatedInterface() throws Exception {
 
 		Method method = Controller.class.getMethod("with", AnnotatedInterface.class);
 		MethodParameter parameter = new MethodParameter(method, 0);
@@ -47,7 +47,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-776
-	public void supportsUnannotatedInterfaceFromUserPackage() throws Exception {
+	void supportsUnannotatedInterfaceFromUserPackage() throws Exception {
 
 		Method method = Controller.class.getMethod("with", SampleInterface.class);
 		MethodParameter parameter = new MethodParameter(method, 0);
@@ -56,7 +56,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-776
-	public void doesNotSupportUnannotatedInterfaceFromSpringNamespace() throws Exception {
+	void doesNotSupportUnannotatedInterfaceFromSpringNamespace() throws Exception {
 
 		Method method = Controller.class.getMethod("with", UnannotatedInterface.class);
 		MethodParameter parameter = new MethodParameter(method, 0);
@@ -65,7 +65,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-776
-	public void doesNotSupportCoreJavaType() throws Exception {
+	void doesNotSupportCoreJavaType() throws Exception {
 
 		Method method = Controller.class.getMethod("with", List.class);
 		MethodParameter parameter = new MethodParameter(method, 0);

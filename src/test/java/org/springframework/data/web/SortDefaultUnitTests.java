@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
@@ -35,7 +35,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public abstract class SortDefaultUnitTests {
+abstract class SortDefaultUnitTests {
 
 	static final String SORT_0 = "username";
 	static final String SORT_1 = "username,asc";
@@ -48,7 +48,7 @@ public abstract class SortDefaultUnitTests {
 	static final Sort SORT = Sort.by(SORT_DIRECTION, SORT_FIELDS);
 
 	@Test
-	public void parsesSimpleSortStringCorrectly() {
+	void parsesSimpleSortStringCorrectly() {
 
 		assertSortStringParsedInto(Sort.by(Order.asc("username")), SORT_1);
 		assertSortStringParsedInto(Sort.by(Order.asc("username"), //
@@ -65,34 +65,34 @@ public abstract class SortDefaultUnitTests {
 	}
 
 	@Test
-	public void supportsSortParameter() {
+	void supportsSortParameter() {
 		assertThat(getResolver().supportsParameter(getParameterOfMethod("supportedMethod"))).isTrue();
 	}
 
 	@Test
-	public void returnsNullForNoDefault() throws Exception {
+	void returnsNullForNoDefault() throws Exception {
 		assertSupportedAndResolvedTo(getParameterOfMethod("supportedMethod"), Sort.unsorted());
 	}
 
 	@Test
-	public void discoversSimpleDefault() throws Exception {
+	void discoversSimpleDefault() throws Exception {
 		assertSupportedAndResolvedTo(getParameterOfMethod("simpleDefault"), Sort.by(SORT_FIELDS).ascending());
 	}
 
 	@Test
-	public void discoversSimpleDefaultWithDirection() throws Exception {
+	void discoversSimpleDefaultWithDirection() throws Exception {
 		assertSupportedAndResolvedTo(getParameterOfMethod("simpleDefaultWithDirection"), SORT);
 	}
 
 	@Test
-	public void rejectsNonSortParameter() {
+	void rejectsNonSortParameter() {
 
 		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
 		assertThat(getResolver().supportsParameter(parameter)).isFalse();
 	}
 
 	@Test
-	public void rejectsDoubleAnnotatedMethod() {
+	void rejectsDoubleAnnotatedMethod() {
 
 		MethodParameter parameter = getParameterOfMethod("invalid");
 
@@ -107,7 +107,7 @@ public abstract class SortDefaultUnitTests {
 	}
 
 	@Test
-	public void discoversContaineredDefault() throws Exception {
+	void discoversContaineredDefault() throws Exception {
 
 		MethodParameter parameter = getParameterOfMethod("containeredDefault");
 		Sort reference = Sort.by("foo", "bar");

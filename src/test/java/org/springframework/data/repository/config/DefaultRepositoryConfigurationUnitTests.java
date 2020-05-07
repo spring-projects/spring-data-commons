@@ -23,11 +23,14 @@ import lombok.Value;
 
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
@@ -39,20 +42,21 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * @author Jens Schauder
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultRepositoryConfigurationUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class DefaultRepositoryConfigurationUnitTests {
 
 	@Mock RepositoryConfigurationSource source;
 
 	RepositoryConfigurationExtension extension = new SimplerRepositoryConfigurationExtension("factory", "module");
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 		when(source.getBootstrapMode()).thenReturn(BootstrapMode.DEFAULT);
 	}
 
 	@Test
-	public void supportsBasicConfiguration() {
+	void supportsBasicConfiguration() {
 
 		RepositoryConfiguration<RepositoryConfigurationSource> configuration = getConfiguration(source);
 
@@ -63,12 +67,12 @@ public class DefaultRepositoryConfigurationUnitTests {
 	}
 
 	@Test // DATACMNS-1018
-	public void usesExtensionFactoryBeanClassNameIfNoneDefinedInSource() {
+	void usesExtensionFactoryBeanClassNameIfNoneDefinedInSource() {
 		assertThat(getConfiguration(source).getRepositoryFactoryBeanClassName()).isEqualTo("factory");
 	}
 
 	@Test // DATACMNS-1018
-	public void prefersSourcesRepositoryFactoryBeanClass() {
+	void prefersSourcesRepositoryFactoryBeanClass() {
 
 		when(source.getRepositoryFactoryBeanClassName()).thenReturn(Optional.of("custom"));
 

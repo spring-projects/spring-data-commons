@@ -18,7 +18,7 @@ package org.springframework.data;
 import static de.schauderhaft.degraph.check.JCheck.*;
 import static org.junit.Assert.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Jens Schauder

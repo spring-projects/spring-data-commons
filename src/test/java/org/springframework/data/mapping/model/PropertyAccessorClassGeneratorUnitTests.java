@@ -17,7 +17,7 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
@@ -28,10 +28,10 @@ import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFac
  *
  * @author Oliver Drotbohm
  */
-public class PropertyAccessorClassGeneratorUnitTests {
+class PropertyAccessorClassGeneratorUnitTests {
 
 	@Test // DATACMNS-1602
-	public void reusesAlreadyDeclaredClass() {
+	void reusesAlreadyDeclaredClass() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Sample.class);
@@ -42,5 +42,5 @@ public class PropertyAccessorClassGeneratorUnitTests {
 				.doesNotThrowAnyException();
 	}
 
-	static class Sample {}
+	private static class Sample {}
 }

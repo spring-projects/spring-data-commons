@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.TargetClassAware;
 import org.springframework.aop.framework.Advised;
@@ -35,31 +35,31 @@ import org.springframework.test.util.ReflectionTestUtils;
  *
  * @author Oliver Gierke
  */
-public class ProxyProjectionFactoryUnitTests {
+class ProxyProjectionFactoryUnitTests {
 
 	ProjectionFactory factory = new ProxyProjectionFactory();
 
 	@Test
 	@SuppressWarnings("null")
 	// DATACMNS-630
-	public void rejectsNullProjectionType() {
+	void rejectsNullProjectionType() {
 		assertThatIllegalArgumentException().isThrownBy(() -> factory.createProjection(null));
 	}
 
 	@Test
 	@SuppressWarnings("null")
 	// DATACMNS-630
-	public void rejectsNullProjectionTypeWithSource() {
+	void rejectsNullProjectionTypeWithSource() {
 		assertThatIllegalArgumentException().isThrownBy(() -> factory.createProjection(null, new Object()));
 	}
 
 	@Test // DATACMNS-630
-	public void returnsNullForNullSource() {
+	void returnsNullForNullSource() {
 		assertThat(factory.createNullableProjection(CustomerExcerpt.class, null)).isNull();
 	}
 
 	@Test // DATAREST-221, DATACMNS-630
-	public void createsProjectingProxy() {
+	void createsProjectingProxy() {
 
 		Customer customer = new Customer();
 		customer.firstname = "Dave";
@@ -76,7 +76,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATAREST-221, DATACMNS-630
-	public void proxyExposesTargetClassAware() {
+	void proxyExposesTargetClassAware() {
 
 		CustomerExcerpt proxy = factory.createProjection(CustomerExcerpt.class);
 
@@ -85,12 +85,12 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATAREST-221, DATACMNS-630
-	public void rejectsNonInterfacesAsProjectionTarget() {
+	void rejectsNonInterfacesAsProjectionTarget() {
 		assertThatIllegalArgumentException().isThrownBy(() -> factory.createProjection(Object.class, new Object()));
 	}
 
 	@Test // DATACMNS-630
-	public void createsMapBasedProxyFromSource() {
+	void createsMapBasedProxyFromSource() {
 
 		HashMap<String, Object> addressSource = new HashMap<>();
 		addressSource.put("zipCode", "ZIP");
@@ -111,7 +111,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void createsEmptyMapBasedProxy() {
+	void createsEmptyMapBasedProxy() {
 
 		CustomerProxy proxy = factory.createProjection(CustomerProxy.class);
 
@@ -122,7 +122,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void returnsAllPropertiesAsInputProperties() {
+	void returnsAllPropertiesAsInputProperties() {
 
 		ProjectionInformation projectionInformation = factory.getProjectionInformation(CustomerExcerpt.class);
 		List<PropertyDescriptor> result = projectionInformation.getInputProperties();
@@ -131,7 +131,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-655
-	public void invokesDefaultMethodOnProxy() {
+	void invokesDefaultMethodOnProxy() {
 
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
 
@@ -143,7 +143,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-648
-	public void exposesProxyTarget() {
+	void exposesProxyTarget() {
 
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
 
@@ -152,7 +152,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-722
-	public void doesNotProjectPrimitiveArray() {
+	void doesNotProjectPrimitiveArray() {
 
 		Customer customer = new Customer();
 		customer.picture = "binarydata".getBytes();
@@ -163,7 +163,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-722
-	public void projectsNonPrimitiveArray() {
+	void projectsNonPrimitiveArray() {
 
 		Address address = new Address();
 		address.city = "New York";
@@ -178,7 +178,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-782
-	public void convertsPrimitiveValues() {
+	void convertsPrimitiveValues() {
 
 		Customer customer = new Customer();
 		customer.id = 1L;
@@ -189,7 +189,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void exposesProjectionInformationCorrectly() {
+	void exposesProjectionInformationCorrectly() {
 
 		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
 
@@ -198,7 +198,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-829
-	public void projectsMapOfStringToObjectCorrectly() {
+	void projectsMapOfStringToObjectCorrectly() {
 
 		Customer customer = new Customer();
 		customer.data = Collections.singletonMap("key", null);
@@ -211,7 +211,7 @@ public class ProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1121
-	public void doesNotCreateWrappingProxyIfTargetImplementsProjectionInterface() {
+	void doesNotCreateWrappingProxyIfTargetImplementsProjectionInterface() {
 
 		Customer customer = new Customer();
 
@@ -222,17 +222,17 @@ public class ProxyProjectionFactoryUnitTests {
 
 	static class Customer implements Contact {
 
-		public Long id;
-		public String firstname, lastname;
-		public Address address;
-		public byte[] picture;
-		public Address[] shippingAddresses;
-		public Map<String, Object> data;
+		Long id;
+		String firstname, lastname;
+		Address address;
+		byte[] picture;
+		Address[] shippingAddresses;
+		Map<String, Object> data;
 	}
 
 	static class Address {
 
-		public String zipCode, city;
+		String zipCode, city;
 	}
 
 	interface CustomerExcerpt {

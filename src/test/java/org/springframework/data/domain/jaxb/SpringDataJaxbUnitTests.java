@@ -35,8 +35,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.custommonkey.xmlunit.Diff;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -53,7 +53,7 @@ import org.springframework.hateoas.Link;
  *
  * @author Oliver Gierke
  */
-public class SpringDataJaxbUnitTests {
+class SpringDataJaxbUnitTests {
 
 	Marshaller marshaller;
 	Unmarshaller unmarshaller;
@@ -65,8 +65,8 @@ public class SpringDataJaxbUnitTests {
 
 	String reference = readFile(resource);
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 
 		JAXBContext context = JAXBContext.newInstance("org.springframework.data.domain.jaxb");
 
@@ -77,7 +77,7 @@ public class SpringDataJaxbUnitTests {
 	}
 
 	@Test
-	public void usesCustomTypeAdapterForPageRequests() throws Exception {
+	void usesCustomTypeAdapterForPageRequests() throws Exception {
 
 		StringWriter writer = new StringWriter();
 		Wrapper wrapper = new Wrapper();
@@ -90,7 +90,7 @@ public class SpringDataJaxbUnitTests {
 	}
 
 	@Test
-	public void readsPageRequest() throws Exception {
+	void readsPageRequest() throws Exception {
 
 		Object result = unmarshaller.unmarshal(resource.getFile());
 
@@ -100,7 +100,7 @@ public class SpringDataJaxbUnitTests {
 	}
 
 	@Test
-	public void writesPlainPage() throws Exception {
+	void writesPlainPage() throws Exception {
 
 		PageWrapper wrapper = new PageWrapper();
 		Content content = new Content();

@@ -28,10 +28,11 @@ import java.util.Set;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 
@@ -42,8 +43,8 @@ import org.springframework.core.convert.support.DefaultConversionService;
  * @author Saulo Medeiros de Araujo
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ProjectingMethodInterceptorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class ProjectingMethodInterceptorUnitTests {
 
 	@Mock MethodInterceptor interceptor;
 	@Mock MethodInvocation invocation;
@@ -51,7 +52,7 @@ public class ProjectingMethodInterceptorUnitTests {
 	ConversionService conversionService = new DefaultConversionService();
 
 	@Test // DATAREST-221
-	public void wrapsDelegateResultInProxyIfTypesDontMatch() throws Throwable {
+	void wrapsDelegateResultInProxyIfTypesDontMatch() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
@@ -63,7 +64,7 @@ public class ProjectingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void retunsDelegateResultAsIsIfTypesMatch() throws Throwable {
+	void retunsDelegateResultAsIsIfTypesMatch() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
 
@@ -74,7 +75,7 @@ public class ProjectingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void returnsNullAsIs() throws Throwable {
+	void returnsNullAsIs() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
 
@@ -84,7 +85,7 @@ public class ProjectingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void considersPrimitivesAsWrappers() throws Throwable {
+	void considersPrimitivesAsWrappers() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
 
@@ -97,7 +98,7 @@ public class ProjectingMethodInterceptorUnitTests {
 
 	@Test // DATAREST-394, DATAREST-408
 	@SuppressWarnings("unchecked")
-	public void appliesProjectionToNonEmptySets() throws Throwable {
+	void appliesProjectionToNonEmptySets() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
@@ -112,7 +113,7 @@ public class ProjectingMethodInterceptorUnitTests {
 
 	@Test // DATAREST-394, DATAREST-408
 	@SuppressWarnings("unchecked")
-	public void appliesProjectionToNonEmptyLists() throws Throwable {
+	void appliesProjectionToNonEmptyLists() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
@@ -128,7 +129,7 @@ public class ProjectingMethodInterceptorUnitTests {
 
 	@Test // DATAREST-394, DATAREST-408
 	@SuppressWarnings("unchecked")
-	public void allowsMaskingAnArrayIntoACollection() throws Throwable {
+	void allowsMaskingAnArrayIntoACollection() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
@@ -143,7 +144,7 @@ public class ProjectingMethodInterceptorUnitTests {
 
 	@Test // DATAREST-394, DATAREST-408
 	@SuppressWarnings("unchecked")
-	public void appliesProjectionToNonEmptyMap() throws Throwable {
+	void appliesProjectionToNonEmptyMap() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
@@ -159,7 +160,7 @@ public class ProjectingMethodInterceptorUnitTests {
 	}
 
 	@Test
-	public void returnsSingleElementCollectionForTargetThatReturnsNonCollection() throws Throwable {
+	void returnsSingleElementCollectionForTargetThatReturnsNonCollection() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
@@ -175,7 +176,7 @@ public class ProjectingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-1598
-	public void returnsEnumSet() throws Throwable {
+	void returnsEnumSet() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);

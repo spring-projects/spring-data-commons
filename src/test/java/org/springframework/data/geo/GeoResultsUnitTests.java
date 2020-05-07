@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.SerializationUtils;
 
 /**
@@ -29,11 +29,11 @@ import org.springframework.util.SerializationUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class GeoResultsUnitTests {
+class GeoResultsUnitTests {
 
 	@Test // DATACMNS-437
 	@SuppressWarnings("unchecked")
-	public void calculatesAverageForGivenGeoResults() {
+	void calculatesAverageForGivenGeoResults() {
 
 		GeoResult<Object> first = new GeoResult<>(new Object(), new Distance(2));
 		GeoResult<Object> second = new GeoResult<>(new Object(), new Distance(5));
@@ -43,7 +43,7 @@ public class GeoResultsUnitTests {
 	}
 
 	@Test // DATACMNS-482
-	public void testSerialization() {
+	void testSerialization() {
 
 		GeoResult<String> result = new GeoResult<>("test", new Distance(2));
 		GeoResults<String> geoResults = new GeoResults<>(Collections.singletonList(result));

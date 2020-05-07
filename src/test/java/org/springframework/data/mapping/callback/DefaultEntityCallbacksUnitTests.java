@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,10 +38,10 @@ import org.springframework.data.mapping.callback.CapturingEntityCallback.ThirdCa
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-public class DefaultEntityCallbacksUnitTests {
+class DefaultEntityCallbacksUnitTests {
 
 	@Test // DATACMNS-1467
-	public void shouldDispatchCallback() {
+	void shouldDispatchCallback() {
 
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
@@ -54,7 +54,7 @@ public class DefaultEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void shouldDispatchCallsToLambdaReceivers() {
+	void shouldDispatchCallsToLambdaReceivers() {
 
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(LambdaConfig.class);
 
@@ -67,7 +67,7 @@ public class DefaultEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void invokeGenericEvent() {
+	void invokeGenericEvent() {
 
 		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new GenericPersonCallback());
@@ -78,7 +78,7 @@ public class DefaultEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void invokeGenericEventWithArgs() {
+	void invokeGenericEventWithArgs() {
 
 		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new GenericPersonCallbackWithArgs());
@@ -90,7 +90,7 @@ public class DefaultEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void invokeInvalidEvent() {
+	void invokeInvalidEvent() {
 
 		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new InvalidEntityCallback() {});
@@ -101,7 +101,7 @@ public class DefaultEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void passesInvocationResultOnAlongTheChain() {
+	void passesInvocationResultOnAlongTheChain() {
 
 		CapturingEntityCallback first = new FirstCallback();
 		CapturingEntityCallback second = new SecondCallback();
@@ -121,7 +121,7 @@ public class DefaultEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void errorsOnNullEntity() {
+	void errorsOnNullEntity() {
 
 		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new CapturingEntityCallback());
@@ -131,7 +131,7 @@ public class DefaultEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void errorsOnNullValueReturnedByCallbackEntity() {
+	void errorsOnNullValueReturnedByCallbackEntity() {
 
 		CapturingEntityCallback first = new FirstCallback();
 		CapturingEntityCallback second = new SecondCallback(null);
@@ -153,7 +153,7 @@ public class DefaultEntityCallbacksUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	public void detectsMultipleCallbacksWithinOneClass() {
+	void detectsMultipleCallbacksWithinOneClass() {
 
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MultipleCallbacksInOneClassConfig.class);
 

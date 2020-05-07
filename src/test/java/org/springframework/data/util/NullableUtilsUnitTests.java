@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.util.nonnull.NullableAnnotatedType;
 import org.springframework.data.util.nonnull.packagelevel.NonNullOnPackage;
@@ -34,10 +34,10 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Mark Paluch
  */
-public class NullableUtilsUnitTests {
+class NullableUtilsUnitTests {
 
 	@Test // DATACMNS-1154
-	public void packageAnnotatedShouldConsiderNonNullAnnotation() {
+	void packageAnnotatedShouldConsiderNonNullAnnotation() {
 
 		Method method = ReflectionUtils.findMethod(NonNullOnPackage.class, "nonNullReturnValue");
 
@@ -47,42 +47,42 @@ public class NullableUtilsUnitTests {
 	}
 
 	@Test // DATACMNS-1154
-	public void packageAnnotatedShouldConsiderNonNullAnnotationForClass() {
+	void packageAnnotatedShouldConsiderNonNullAnnotationForClass() {
 
 		assertThat(NullableUtils.isNonNull(NonNullOnPackage.class, ElementType.PARAMETER)).isTrue();
 		assertThat(NullableUtils.isNonNull(NonNullOnPackage.class, ElementType.PACKAGE)).isFalse();
 	}
 
 	@Test // DATACMNS-1154
-	public void packageAnnotatedShouldConsiderNonNullAnnotationForMethod() {
+	void packageAnnotatedShouldConsiderNonNullAnnotationForMethod() {
 
 		assertThat(NullableUtils.isNonNull(NonNullOnPackage.class, ElementType.PARAMETER)).isTrue();
 		assertThat(NullableUtils.isNonNull(NonNullOnPackage.class, ElementType.PACKAGE)).isFalse();
 	}
 
 	@Test // DATACMNS-1154
-	public void shouldConsiderJsr305NonNullParameters() {
+	void shouldConsiderJsr305NonNullParameters() {
 
 		assertThat(NullableUtils.isNonNull(NonNullableParameters.class, ElementType.PARAMETER)).isTrue();
 		assertThat(NullableUtils.isNonNull(NonNullableParameters.class, ElementType.FIELD)).isFalse();
 	}
 
 	@Test // DATACMNS-1154
-	public void shouldConsiderJsr305NonNullAnnotation() {
+	void shouldConsiderJsr305NonNullAnnotation() {
 
 		assertThat(NullableUtils.isNonNull(Jsr305NonnullAnnotatedType.class, ElementType.PARAMETER)).isTrue();
 		assertThat(NullableUtils.isNonNull(Jsr305NonnullAnnotatedType.class, ElementType.FIELD)).isTrue();
 	}
 
 	@Test // DATACMNS-1154
-	public void shouldConsiderNonAnnotatedTypeNullable() {
+	void shouldConsiderNonAnnotatedTypeNullable() {
 
 		assertThat(NullableUtils.isNonNull(NonAnnotatedType.class, ElementType.PARAMETER)).isFalse();
 		assertThat(NullableUtils.isNonNull(NonAnnotatedType.class, ElementType.FIELD)).isFalse();
 	}
 
 	@Test // DATACMNS-1154
-	public void shouldConsiderParametersWithoutNullableAnnotation() {
+	void shouldConsiderParametersWithoutNullableAnnotation() {
 
 		Method method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "nonNullMethod", String.class);
 
@@ -94,7 +94,7 @@ public class NullableUtilsUnitTests {
 	}
 
 	@Test // DATACMNS-1154
-	public void shouldConsiderParametersNullableAnnotation() {
+	void shouldConsiderParametersNullableAnnotation() {
 
 		Method method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "nullableReturn");
 
@@ -102,7 +102,7 @@ public class NullableUtilsUnitTests {
 	}
 
 	@Test // DATACMNS-1154
-	public void shouldConsiderParametersJsr305NullableMetaAnnotation() {
+	void shouldConsiderParametersJsr305NullableMetaAnnotation() {
 
 		Method method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "jsr305NullableReturn");
 
@@ -110,7 +110,7 @@ public class NullableUtilsUnitTests {
 	}
 
 	@Test // DATACMNS-1154
-	public void shouldConsiderParametersJsr305NonnullAnnotation() {
+	void shouldConsiderParametersJsr305NonnullAnnotation() {
 
 		Method method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "jsr305NullableReturnWhen");
 

@@ -20,7 +20,7 @@ import static org.springframework.data.domain.Sort.Direction.*;
 
 import java.net.URI;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.util.UriComponents;
@@ -31,10 +31,10 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Oliver Gierke
  */
-public class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandlerMethodArgumentResolverUnitTests {
+class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandlerMethodArgumentResolverUnitTests {
 
 	@Test
-	public void buildsUpRequestParameters() throws Exception {
+	void buildsUpRequestParameters() throws Exception {
 
 		assertUriStringFor(SORT, "sort=firstname,lastname,desc");
 		assertUriStringFor(Sort.by(ASC, "foo").and(Sort.by(DESC, "bar").and(Sort.by(ASC, "foobar"))),
@@ -44,12 +44,12 @@ public class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandl
 	}
 
 	@Test // DATACMNS-407
-	public void replacesExistingRequestParameters() throws Exception {
+	void replacesExistingRequestParameters() throws Exception {
 		assertUriStringFor(SORT, "/?sort=firstname,lastname,desc", "/?sort=foo,asc");
 	}
 
 	@Test // DATACMNS-418
-	public void returnCorrectTemplateVariables() {
+	void returnCorrectTemplateVariables() {
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/").build();
 

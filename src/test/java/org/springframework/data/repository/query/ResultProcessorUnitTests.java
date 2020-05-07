@@ -29,11 +29,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -51,10 +51,10 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-public class ResultProcessorUnitTests {
+class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-89
-	public void leavesNonProjectingResultUntouched() throws Exception {
+	void leavesNonProjectingResultUntouched() throws Exception {
 
 		ResultProcessor information = new ResultProcessor(getQueryMethod("findAll"), new SpelAwareProxyProjectionFactory());
 
@@ -66,7 +66,7 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void createsProjectionFromProperties() throws Exception {
+	void createsProjectionFromProperties() throws Exception {
 
 		ResultProcessor information = getProcessor("findOneProjection");
 
@@ -76,7 +76,7 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void createsListOfProjectionsFormNestedLists() throws Exception {
+	void createsListOfProjectionsFormNestedLists() throws Exception {
 
 		ResultProcessor information = getProcessor("findAllProjection");
 
@@ -90,7 +90,7 @@ public class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-89
 	@SuppressWarnings("unchecked")
-	public void createsListOfProjectionsFromMaps() throws Exception {
+	void createsListOfProjectionsFromMaps() throws Exception {
 
 		ResultProcessor information = getProcessor("findAllProjection");
 
@@ -104,7 +104,7 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void createsListOfProjectionsFromEntity() throws Exception {
+	void createsListOfProjectionsFromEntity() throws Exception {
 
 		ResultProcessor information = getProcessor("findAllProjection");
 
@@ -116,7 +116,7 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void createsPageOfProjectionsFromEntity() throws Exception {
+	void createsPageOfProjectionsFromEntity() throws Exception {
 
 		ResultProcessor information = getProcessor("findPageProjection", Pageable.class);
 
@@ -128,7 +128,7 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void createsDynamicProjectionFromEntity() throws Exception {
+	void createsDynamicProjectionFromEntity() throws Exception {
 
 		ResultProcessor information = getProcessor("findOneOpenProjection");
 
@@ -139,7 +139,7 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void findsDynamicProjection() throws Exception {
+	void findsDynamicProjection() throws Exception {
 
 		ParameterAccessor accessor = mock(ParameterAccessor.class);
 
@@ -153,7 +153,7 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void refrainsFromProjectingIfThePreparingConverterReturnsACompatibleInstance() throws Exception {
+	void refrainsFromProjectingIfThePreparingConverterReturnsACompatibleInstance() throws Exception {
 
 		Object result = getProcessor("findAllDtos").processResult(new Sample("Dave", "Matthews"),
 				source -> new SampleDto());
@@ -162,13 +162,13 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-828
-	public void returnsNullResultAsIs() throws Exception {
+	void returnsNullResultAsIs() throws Exception {
 		Object result = getProcessor("findOneDto").processResult(null);
 		assertThat(result).isNull();
 	}
 
 	@Test // DATACMNS-842
-	public void supportsSlicesAsReturnWrapper() throws Exception {
+	void supportsSlicesAsReturnWrapper() throws Exception {
 
 		Slice<Sample> slice = new SliceImpl<>(Collections.singletonList(new Sample("Dave", "Matthews")));
 
@@ -183,7 +183,7 @@ public class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-859
 	@SuppressWarnings("unchecked")
-	public void supportsStreamAsReturnWrapper() throws Exception {
+	void supportsStreamAsReturnWrapper() throws Exception {
 
 		Stream<Sample> samples = Collections.singletonList(new Sample("Dave", "Matthews")).stream();
 
@@ -196,7 +196,7 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-860
-	public void supportsWrappingDto() throws Exception {
+	void supportsWrappingDto() throws Exception {
 
 		Object result = getProcessor("findOneWrappingDto").processResult(new Sample("Dave", "Matthews"));
 
@@ -204,7 +204,7 @@ public class ResultProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-921
-	public void fallsBackToApproximateCollectionIfNecessary() throws Exception {
+	void fallsBackToApproximateCollectionIfNecessary() throws Exception {
 
 		ResultProcessor processor = getProcessor("findAllProjection");
 
@@ -216,7 +216,7 @@ public class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void supportsMonoWrapper() throws Exception {
+	void supportsMonoWrapper() throws Exception {
 
 		Mono<Sample> samples = Mono.just(new Sample("Dave", "Matthews"));
 
@@ -231,7 +231,7 @@ public class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void supportsSingleWrapper() throws Exception {
+	void supportsSingleWrapper() throws Exception {
 
 		Single<Sample> samples = Single.just(new Sample("Dave", "Matthews"));
 
@@ -246,7 +246,7 @@ public class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void refrainsFromProjectingUsingReactiveWrappersIfThePreparingConverterReturnsACompatibleInstance()
+	void refrainsFromProjectingUsingReactiveWrappersIfThePreparingConverterReturnsACompatibleInstance()
 			throws Exception {
 
 		ResultProcessor processor = getProcessor("findMonoSampleDto");
@@ -262,7 +262,7 @@ public class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void supportsFluxProjections() throws Exception {
+	void supportsFluxProjections() throws Exception {
 
 		Flux<Sample> samples = Flux.just(new Sample("Dave", "Matthews"));
 
@@ -278,7 +278,7 @@ public class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void supportsObservableProjections() throws Exception {
+	void supportsObservableProjections() throws Exception {
 
 		Observable<Sample> samples = Observable.just(new Sample("Dave", "Matthews"));
 
@@ -294,7 +294,7 @@ public class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-988
 	@SuppressWarnings("unchecked")
-	public void supportsFlowableProjections() throws Exception {
+	void supportsFlowableProjections() throws Exception {
 
 		Flowable<Sample> samples = Flowable.just(new Sample("Dave", "Matthews"));
 

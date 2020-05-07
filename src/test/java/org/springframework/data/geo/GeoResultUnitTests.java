@@ -17,7 +17,7 @@ package org.springframework.data.geo;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.SerializationUtils;
 
 /**
@@ -26,7 +26,7 @@ import org.springframework.util.SerializationUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class GeoResultUnitTests {
+class GeoResultUnitTests {
 
 	GeoResult<String> first = new GeoResult<>("Foo", new Distance(2.5));
 	GeoResult<String> second = new GeoResult<>("Foo", new Distance(2.5));
@@ -34,13 +34,13 @@ public class GeoResultUnitTests {
 	GeoResult<String> fourth = new GeoResult<>("Foo", new Distance(5.2));
 
 	@Test // DATACMNS-437
-	public void considersSameInstanceEqual() {
+	void considersSameInstanceEqual() {
 
 		assertThat(first.equals(first)).isTrue();
 	}
 
 	@Test // DATACMNS-437
-	public void considersSameValuesAsEqual() {
+	void considersSameValuesAsEqual() {
 
 		assertThat(first.equals(second)).isTrue();
 		assertThat(second.equals(first)).isTrue();
@@ -53,12 +53,12 @@ public class GeoResultUnitTests {
 	@Test
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	// DATACMNS-437
-	public void rejectsNullContent() {
+	void rejectsNullContent() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new GeoResult(null, new Distance(2.5)));
 	}
 
 	@Test // DATACMNS-482
-	public void testSerialization() {
+	void testSerialization() {
 
 		GeoResult<String> result = new GeoResult<>("test", new Distance(2));
 

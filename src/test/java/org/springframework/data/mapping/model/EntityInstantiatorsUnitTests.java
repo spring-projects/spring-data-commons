@@ -21,10 +21,11 @@ import static org.mockito.Mockito.*;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.mapping.PersistentEntity;
 
 /**
@@ -32,26 +33,26 @@ import org.springframework.data.mapping.PersistentEntity;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class EntityInstantiatorsUnitTests {
+@ExtendWith(MockitoExtension.class)
+class EntityInstantiatorsUnitTests {
 
 	@Mock PersistentEntity<?, ?> entity;
 	@Mock EntityInstantiator customInstantiator;
 
 	@Test
-	public void rejectsNullFallbackInstantiator() {
+	void rejectsNullFallbackInstantiator() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new EntityInstantiators((EntityInstantiator) null));
 	}
 
 	@Test
-	public void usesReflectionEntityInstantiatorAsDefaultFallback() {
+	void usesReflectionEntityInstantiatorAsDefaultFallback() {
 
 		EntityInstantiators instantiators = new EntityInstantiators();
 		assertThat(instantiators.getInstantiatorFor(entity)).isInstanceOf(ClassGeneratingEntityInstantiator.class);
 	}
 
 	@Test
-	public void returnsCustomInstantiatorForTypeIfRegistered() {
+	void returnsCustomInstantiatorForTypeIfRegistered() {
 
 		doReturn(String.class).when(entity).getType();
 
@@ -62,7 +63,7 @@ public class EntityInstantiatorsUnitTests {
 	}
 
 	@Test
-	public void usesCustomFallbackInstantiatorsIfConfigured() {
+	void usesCustomFallbackInstantiatorsIfConfigured() {
 
 		doReturn(Object.class).when(entity).getType();
 

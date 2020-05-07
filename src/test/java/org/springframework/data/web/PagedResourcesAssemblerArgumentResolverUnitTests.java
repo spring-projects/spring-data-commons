@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
@@ -36,12 +36,12 @@ import org.springframework.web.util.UriComponents;
  * @author Oliver Gierke
  * @since 1.7
  */
-public class PagedResourcesAssemblerArgumentResolverUnitTests {
+class PagedResourcesAssemblerArgumentResolverUnitTests {
 
 	PagedResourcesAssemblerArgumentResolver resolver;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		WebTestUtils.initWebTest();
 
@@ -50,7 +50,7 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-418
-	public void createsPlainAssemblerWithoutContext() throws Exception {
+	void createsPlainAssemblerWithoutContext() throws Exception {
 
 		Method method = Controller.class.getMethod("noContext", PagedResourcesAssembler.class);
 		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, null, null);
@@ -60,28 +60,28 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-418
-	public void selectsUniquePageableParameter() throws Exception {
+	void selectsUniquePageableParameter() throws Exception {
 
 		Method method = Controller.class.getMethod("unique", PagedResourcesAssembler.class, Pageable.class);
 		assertSelectsParameter(method, 1);
 	}
 
 	@Test // DATACMNS-418
-	public void selectsUniquePageableParameterForQualifiedAssembler() throws Exception {
+	void selectsUniquePageableParameterForQualifiedAssembler() throws Exception {
 
 		Method method = Controller.class.getMethod("unnecessarilyQualified", PagedResourcesAssembler.class, Pageable.class);
 		assertSelectsParameter(method, 1);
 	}
 
 	@Test // DATACMNS-418
-	public void selectsUniqueQualifiedPageableParameter() throws Exception {
+	void selectsUniqueQualifiedPageableParameter() throws Exception {
 
 		Method method = Controller.class.getMethod("qualifiedUnique", PagedResourcesAssembler.class, Pageable.class);
 		assertSelectsParameter(method, 1);
 	}
 
 	@Test // DATACMNS-418
-	public void selectsQualifiedPageableParameter() throws Exception {
+	void selectsQualifiedPageableParameter() throws Exception {
 
 		Method method = Controller.class.getMethod("qualified", PagedResourcesAssembler.class, Pageable.class,
 				Pageable.class);
@@ -89,22 +89,22 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-418
-	public void rejectsAmbiguousPageableParameters() throws Exception {
+	void rejectsAmbiguousPageableParameters() throws Exception {
 		assertRejectsAmbiguity("unqualifiedAmbiguity");
 	}
 
 	@Test // DATACMNS-418
-	public void rejectsAmbiguousPageableParametersForQualifiedAssembler() throws Exception {
+	void rejectsAmbiguousPageableParametersForQualifiedAssembler() throws Exception {
 		assertRejectsAmbiguity("assemblerQualifiedAmbiguity");
 	}
 
 	@Test // DATACMNS-418
-	public void rejectsAmbiguityWithoutMatchingQualifiers() throws Exception {
+	void rejectsAmbiguityWithoutMatchingQualifiers() throws Exception {
 		assertRejectsAmbiguity("noMatchingQualifiers");
 	}
 
 	@Test // DATACMNS-419
-	public void doesNotFailForTemplatedMethodMapping() throws Exception {
+	void doesNotFailForTemplatedMethodMapping() throws Exception {
 
 		Method method = Controller.class.getMethod("methodWithPathVariable", PagedResourcesAssembler.class);
 		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, null, null);
@@ -113,7 +113,7 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-513
-	public void detectsMappingOfInvokedSubType() throws Exception {
+	void detectsMappingOfInvokedSubType() throws Exception {
 
 		Method method = Controller.class.getMethod("methodWithMapping", PagedResourcesAssembler.class);
 
@@ -136,7 +136,7 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 		});
 	}
 
-	private void assertSelectsParameter(Method method, int expectedIndex) throws Exception {
+	private void assertSelectsParameter(Method method, int expectedIndex) {
 
 		MethodParameter parameter = new MethodParameter(method, 0);
 
@@ -162,7 +162,7 @@ public class PagedResourcesAssemblerArgumentResolverUnitTests {
 	}
 
 	@RequestMapping("/")
-	static interface Controller {
+	interface Controller {
 
 		void noContext(PagedResourcesAssembler<Object> resolver);
 

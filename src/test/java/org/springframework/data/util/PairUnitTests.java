@@ -17,17 +17,17 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link Pair}.
  *
  * @author Oliver Gierke
  */
-public class PairUnitTests {
+class PairUnitTests {
 
 	@Test // DATACMNS-790
-	public void setsUpSimpleInstance() {
+	void setsUpSimpleInstance() {
 
 		Pair<Integer, Integer> pair = Pair.of(1, 2);
 
@@ -36,17 +36,17 @@ public class PairUnitTests {
 	}
 
 	@Test // DATACMNS-790
-	public void rejectsNullFirstElement() {
+	void rejectsNullFirstElement() {
 		assertThatIllegalArgumentException().isThrownBy(() -> Pair.of(null, 1));
 	}
 
 	@Test // DATACMNS-790
-	public void rejectsNullSecondElement() {
+	void rejectsNullSecondElement() {
 		assertThatIllegalArgumentException().isThrownBy(() -> Pair.of(1, null));
 	}
 
 	@Test // DATACMNS-790
-	public void hasCorrectEquals() {
+	void hasCorrectEquals() {
 
 		Pair<Integer, Integer> first = Pair.of(1, 2);
 		Pair<Integer, Integer> second = Pair.of(1, 2);
@@ -57,7 +57,7 @@ public class PairUnitTests {
 	}
 
 	@Test // DATACMNS-790
-	public void hasCorrectHashCode() {
+	void hasCorrectHashCode() {
 
 		Pair<Integer, Integer> first = Pair.of(1, 2);
 		Pair<Integer, Integer> second = Pair.of(1, 2);

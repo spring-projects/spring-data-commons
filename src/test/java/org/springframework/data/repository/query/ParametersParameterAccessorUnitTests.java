@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -30,17 +30,17 @@ import org.springframework.data.domain.Pageable;
  *
  * @author Oliver Gierke
  */
-public class ParametersParameterAccessorUnitTests {
+class ParametersParameterAccessorUnitTests {
 
 	Parameters<?, ?> parameters;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		parameters = new DefaultParameters(Sample.class.getMethod("method", String.class, int.class));
 	}
 
 	@Test
-	public void accessorIteratorHasNext() throws SecurityException, NoSuchMethodException {
+	void accessorIteratorHasNext() throws SecurityException, NoSuchMethodException {
 
 		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { "Foo", 2 });
 
@@ -53,7 +53,7 @@ public class ParametersParameterAccessorUnitTests {
 	}
 
 	@Test
-	public void detectsNullValue() throws Exception {
+	void detectsNullValue() throws Exception {
 
 		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { null, 5 });
 		assertThat(accessor.hasBindableNullValue()).isTrue();
@@ -66,7 +66,7 @@ public class ParametersParameterAccessorUnitTests {
 	}
 
 	@Test // DATACMNS-804
-	public void iteratesonlyOverBindableValues() throws Exception {
+	void iteratesonlyOverBindableValues() throws Exception {
 
 		Method method = Sample.class.getMethod("method", Pageable.class, String.class);
 		DefaultParameters parameters = new DefaultParameters(method);

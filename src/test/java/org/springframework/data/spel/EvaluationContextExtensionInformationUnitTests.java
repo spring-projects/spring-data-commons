@@ -17,7 +17,7 @@ package org.springframework.data.spel;
 
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 
 /**
@@ -25,10 +25,10 @@ import org.springframework.data.spel.spi.EvaluationContextExtension;
  *
  * @author Oliver Gierke
  */
-public class EvaluationContextExtensionInformationUnitTests {
+class EvaluationContextExtensionInformationUnitTests {
 
 	@Test // DATACMNS-1024
-	public void supportsMethodOverloadsOnRoot() {
+	void supportsMethodOverloadsOnRoot() {
 
 		EvaluationContextExtensionInformation information = new EvaluationContextExtensionInformation(
 				SampleExtension.class);

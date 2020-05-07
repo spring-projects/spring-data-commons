@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.ReflectionAuditingBeanWrapper;
@@ -34,7 +34,7 @@ import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConv
  * @author Oliver Gierke
  * @since 1.5
  */
-public class ReflectionAuditingBeanWrapperUnitTests {
+class ReflectionAuditingBeanWrapperUnitTests {
 
 	AnnotationAuditingMetadata metadata;
 	AnnotatedUser user;
@@ -42,29 +42,29 @@ public class ReflectionAuditingBeanWrapperUnitTests {
 
 	LocalDateTime time = LocalDateTime.now();
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.user = new AnnotatedUser();
 		this.wrapper = new ReflectionAuditingBeanWrapper(user);
 	}
 
 	@Test
-	public void setsDateTimeFieldCorrectly() {
+	void setsDateTimeFieldCorrectly() {
 
 		wrapper.setCreatedDate(time);
 		assertThat(user.createdDate).isEqualTo(new DateTime(LocalDateTimeToDateConverter.INSTANCE.convert(time)));
 	}
 
 	@Test
-	public void setsDateFieldCorrectly() {
+	void setsDateFieldCorrectly() {
 
 		wrapper.setLastModifiedDate(time);
 		assertThat(user.lastModifiedDate).isEqualTo(LocalDateTimeToDateConverter.INSTANCE.convert(time));
 	}
 
 	@Test
-	public void setsLongFieldCorrectly() {
+	void setsLongFieldCorrectly() {
 
 		class Sample {
 
@@ -84,7 +84,7 @@ public class ReflectionAuditingBeanWrapperUnitTests {
 	}
 
 	@Test
-	public void setsAuditorFieldsCorrectly() {
+	void setsAuditorFieldsCorrectly() {
 
 		Object object = new Object();
 

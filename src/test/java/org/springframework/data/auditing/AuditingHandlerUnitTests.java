@@ -22,8 +22,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -39,15 +39,15 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  * @since 1.5
  */
 @SuppressWarnings("unchecked")
-public class AuditingHandlerUnitTests {
+class AuditingHandlerUnitTests {
 
 	AuditingHandler handler;
 	AuditorAware<AuditedUser> auditorAware;
 
 	AuditedUser user;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		handler = getHandler();
 		user = new AuditedUser();
@@ -64,7 +64,7 @@ public class AuditingHandlerUnitTests {
 	 * Checks that the advice does not set auditor on the target entity if no {@code AuditorAware} was configured.
 	 */
 	@Test
-	public void doesNotSetAuditorIfNotConfigured() {
+	void doesNotSetAuditorIfNotConfigured() {
 
 		handler.markCreated(user);
 
@@ -79,7 +79,7 @@ public class AuditingHandlerUnitTests {
 	 * Checks that the advice sets the auditor on the target entity if an {@code AuditorAware} was configured.
 	 */
 	@Test
-	public void setsAuditorIfConfigured() {
+	void setsAuditorIfConfigured() {
 
 		handler.setAuditorAware(auditorAware);
 
@@ -98,7 +98,7 @@ public class AuditingHandlerUnitTests {
 	 * Checks that the advice does not set modification information on creation if the falg is set to {@code false}.
 	 */
 	@Test
-	public void honoursModifiedOnCreationFlag() {
+	void honoursModifiedOnCreationFlag() {
 
 		handler.setAuditorAware(auditorAware);
 		handler.setModifyOnCreation(false);
@@ -117,7 +117,7 @@ public class AuditingHandlerUnitTests {
 	 * Tests that the advice only sets modification data if a not-new entity is handled.
 	 */
 	@Test
-	public void onlySetsModificationDataOnNotNewEntities() {
+	void onlySetsModificationDataOnNotNewEntities() {
 
 		AuditedUser audited = new AuditedUser();
 		audited.id = 1L;
@@ -135,7 +135,7 @@ public class AuditingHandlerUnitTests {
 	}
 
 	@Test
-	public void doesNotSetTimeIfConfigured() {
+	void doesNotSetTimeIfConfigured() {
 
 		handler.setDateTimeForNow(false);
 		handler.setAuditorAware(auditorAware);
@@ -149,7 +149,7 @@ public class AuditingHandlerUnitTests {
 	}
 
 	@Test // DATAJPA-9
-	public void usesDateTimeProviderIfConfigured() {
+	void usesDateTimeProviderIfConfigured() {
 
 		DateTimeProvider provider = mock(DateTimeProvider.class);
 		doReturn(Optional.empty()).when(provider).getNow();
@@ -161,7 +161,7 @@ public class AuditingHandlerUnitTests {
 	}
 
 	@Test
-	public void setsAuditingInfoOnEntityUsingInheritance() {
+	void setsAuditingInfoOnEntityUsingInheritance() {
 
 		AuditingHandler handler = new AuditingHandler(PersistentEntities.of(new SampleMappingContext()));
 		handler.setModifyOnCreation(false);

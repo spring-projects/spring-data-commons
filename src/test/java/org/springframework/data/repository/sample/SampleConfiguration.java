@@ -17,18 +17,18 @@ public class SampleConfiguration {
 	@Autowired ApplicationContext context;
 
 	@Bean
-	public Repositories repositories() {
+	Repositories repositories() {
 		return new Repositories(context);
 	}
 
 	@Bean
-	public RepositoryFactoryBeanSupport<Repository<User, Long>, User, Long> userRepositoryFactory() {
+	RepositoryFactoryBeanSupport<Repository<User, Long>, User, Long> userRepositoryFactory() {
 
 		return new DummyRepositoryFactoryBean<>(UserRepository.class);
 	}
 
 	@Bean
-	public RepositoryFactoryBeanSupport<Repository<Product, Long>, Product, Long> productRepositoryFactory(
+	RepositoryFactoryBeanSupport<Repository<Product, Long>, Product, Long> productRepositoryFactory(
 			ProductRepository productRepository) {
 
 		DummyRepositoryFactoryBean<Repository<Product, Long>, Product, Long> factory = new DummyRepositoryFactoryBean<>(
@@ -39,7 +39,7 @@ public class SampleConfiguration {
 	}
 
 	@Bean
-	public ProductRepository productRepository() {
+	ProductRepository productRepository() {
 		return mock(ProductRepository.class);
 	}
 }

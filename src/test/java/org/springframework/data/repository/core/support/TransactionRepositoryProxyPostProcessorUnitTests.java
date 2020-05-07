@@ -22,10 +22,10 @@ import static org.mockito.Mockito.*;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -42,27 +42,27 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class TransactionRepositoryProxyPostProcessorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class TransactionRepositoryProxyPostProcessorUnitTests {
 
 	@Mock ListableBeanFactory beanFactory;
 	@Mock ProxyFactory proxyFactory;
 	@Mock RepositoryInformation repositoryInformation;
 
 	@Test
-	public void rejectsNullBeanFactory() {
+	void rejectsNullBeanFactory() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new TransactionalRepositoryProxyPostProcessor(null, "transactionManager", true));
 	}
 
 	@Test
-	public void rejectsNullTxManagerName() {
+	void rejectsNullTxManagerName() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new TransactionalRepositoryProxyPostProcessor(beanFactory, null, true));
 	}
 
 	@Test
-	public void setsUpBasicInstance() throws Exception {
+	void setsUpBasicInstance() throws Exception {
 
 		RepositoryProxyPostProcessor postProcessor = new TransactionalRepositoryProxyPostProcessor(beanFactory, "txManager",
 				true);
@@ -72,17 +72,17 @@ public class TransactionRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-464
-	public void fallsBackToTargetMethodTransactionSettings() throws Exception {
+	void fallsBackToTargetMethodTransactionSettings() throws Exception {
 		assertTransactionAttributeFor(SampleImplementation.class);
 	}
 
 	@Test // DATACMNS-464
-	public void fallsBackToTargetClassTransactionSettings() throws Exception {
+	void fallsBackToTargetClassTransactionSettings() throws Exception {
 		assertTransactionAttributeFor(SampleImplementationWithClassAnnotation.class);
 	}
 
 	@Test // DATACMNS-732
-	public void considersJtaTransactional() throws Exception {
+	void considersJtaTransactional() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("methodWithJtaOneDotTwoAtTransactional");
 

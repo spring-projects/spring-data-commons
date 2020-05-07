@@ -18,10 +18,11 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
@@ -31,15 +32,15 @@ import org.springframework.data.mapping.PersistentProperty;
  * @author Oliver Gierke
  * @since 1.9
  */
-@RunWith(MockitoJUnitRunner.class)
-public class SnakeCaseFieldNamingStrategyUnitTests {
+@ExtendWith(MockitoExtension.class)
+class SnakeCaseFieldNamingStrategyUnitTests {
 
-	FieldNamingStrategy strategy = new SnakeCaseFieldNamingStrategy();
+	private FieldNamingStrategy strategy = new SnakeCaseFieldNamingStrategy();
 
 	@Mock PersistentProperty<?> property;
 
 	@Test // DATACMNS-523
-	public void rendersSnakeCaseFieldNames() {
+	void rendersSnakeCaseFieldNames() {
 
 		assertFieldNameForPropertyName("fooBar", "foo_bar");
 		assertFieldNameForPropertyName("FooBar", "foo_bar");

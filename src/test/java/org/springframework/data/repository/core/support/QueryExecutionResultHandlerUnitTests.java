@@ -39,7 +39,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.SoftAssertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
@@ -52,12 +52,12 @@ import org.springframework.data.util.Streamable;
  * @author Mark Paluch
  * @author Jens Schauder
  */
-public class QueryExecutionResultHandlerUnitTests {
+class QueryExecutionResultHandlerUnitTests {
 
 	QueryExecutionResultHandler handler = new QueryExecutionResultHandler(RepositoryFactorySupport.CONVERSION_SERVICE);
 
 	@Test // DATACMNS-610
-	public void convertsListsToSet() throws Exception {
+	void convertsListsToSet() throws Exception {
 
 		Method method = getMethod("set");
 		List<Entity> source = Collections.singletonList(new Entity());
@@ -66,7 +66,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	}
 
 	@Test // DATACMNS-483
-	public void turnsNullIntoJdk8Optional() throws Exception {
+	void turnsNullIntoJdk8Optional() throws Exception {
 
 		Object result = handler.postProcessInvocationResult(null, getMethod("jdk8Optional"));
 		assertThat(result).isEqualTo(Optional.empty());
@@ -74,7 +74,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-483
 	@SuppressWarnings("unchecked")
-	public void wrapsValueIntoJdk8Optional() throws Exception {
+	void wrapsValueIntoJdk8Optional() throws Exception {
 
 		Entity entity = new Entity();
 
@@ -86,7 +86,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	}
 
 	@Test // DATACMNS-483
-	public void turnsNullIntoGuavaOptional() throws Exception {
+	void turnsNullIntoGuavaOptional() throws Exception {
 
 		Object result = handler.postProcessInvocationResult(null, getMethod("guavaOptional"));
 		assertThat(result).isEqualTo(com.google.common.base.Optional.absent());
@@ -94,7 +94,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-483
 	@SuppressWarnings("unchecked")
-	public void wrapsValueIntoGuavaOptional() throws Exception {
+	void wrapsValueIntoGuavaOptional() throws Exception {
 
 		Entity entity = new Entity();
 
@@ -106,13 +106,13 @@ public class QueryExecutionResultHandlerUnitTests {
 	}
 
 	@Test // DATACMNS-917
-	public void defaultsNullToEmptyMap() throws Exception {
+	void defaultsNullToEmptyMap() throws Exception {
 		assertThat(handler.postProcessInvocationResult(null, getMethod("map"))).isInstanceOf(Map.class);
 	}
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaSingleIntoPublisher() throws Exception {
+	void convertsRxJavaSingleIntoPublisher() throws Exception {
 
 		Single<Entity> entity = Single.just(new Entity());
 
@@ -125,7 +125,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaSingleIntoMono() throws Exception {
+	void convertsRxJavaSingleIntoMono() throws Exception {
 
 		Single<Entity> entity = Single.just(new Entity());
 
@@ -138,7 +138,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaSingleIntoFlux() throws Exception {
+	void convertsRxJavaSingleIntoFlux() throws Exception {
 
 		Single<Entity> entity = Single.just(new Entity());
 
@@ -151,7 +151,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaObservableIntoPublisher() throws Exception {
+	void convertsRxJavaObservableIntoPublisher() throws Exception {
 
 		Observable<Entity> entity = Observable.just(new Entity());
 
@@ -164,7 +164,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaObservableIntoMono() throws Exception {
+	void convertsRxJavaObservableIntoMono() throws Exception {
 
 		Observable<Entity> entity = Observable.just(new Entity());
 
@@ -177,7 +177,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaObservableIntoFlux() throws Exception {
+	void convertsRxJavaObservableIntoFlux() throws Exception {
 
 		Observable<Entity> entity = Observable.just(new Entity());
 
@@ -190,7 +190,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaObservableIntoSingle() throws Exception {
+	void convertsRxJavaObservableIntoSingle() throws Exception {
 
 		Observable<Entity> entity = Observable.just(new Entity());
 
@@ -203,7 +203,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaSingleIntoObservable() throws Exception {
+	void convertsRxJavaSingleIntoObservable() throws Exception {
 
 		Single<Entity> entity = Single.just(new Entity());
 
@@ -216,7 +216,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsReactorMonoIntoSingle() throws Exception {
+	void convertsReactorMonoIntoSingle() throws Exception {
 
 		Mono<Entity> entity = Mono.just(new Entity());
 
@@ -229,7 +229,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsReactorMonoIntoCompletable() throws Exception {
+	void convertsReactorMonoIntoCompletable() throws Exception {
 
 		Mono<Entity> entity = Mono.just(new Entity());
 
@@ -242,7 +242,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsReactorMonoIntoCompletableWithException() throws Exception {
+	void convertsReactorMonoIntoCompletableWithException() throws Exception {
 
 		Mono<Entity> entity = Mono.error(new InvalidDataAccessApiUsageException("err"));
 
@@ -255,7 +255,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaCompletableIntoMono() throws Exception {
+	void convertsRxJavaCompletableIntoMono() throws Exception {
 
 		Completable entity = Completable.complete();
 
@@ -268,7 +268,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsRxJavaCompletableIntoMonoWithException() throws Exception {
+	void convertsRxJavaCompletableIntoMonoWithException() throws Exception {
 
 		Completable entity = Completable.error(new InvalidDataAccessApiUsageException("err"));
 
@@ -282,7 +282,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsReactorMonoIntoObservable() throws Exception {
+	void convertsReactorMonoIntoObservable() throws Exception {
 
 		Mono<Entity> entity = Mono.just(new Entity());
 
@@ -295,7 +295,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsReactorFluxIntoSingle() throws Exception {
+	void convertsReactorFluxIntoSingle() throws Exception {
 
 		Flux<Entity> entity = Flux.just(new Entity());
 
@@ -308,7 +308,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsReactorFluxIntoObservable() throws Exception {
+	void convertsReactorFluxIntoObservable() throws Exception {
 
 		Flux<Entity> entity = Flux.just(new Entity());
 
@@ -321,7 +321,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsReactorFluxIntoMono() throws Exception {
+	void convertsReactorFluxIntoMono() throws Exception {
 
 		Flux<Entity> entity = Flux.just(new Entity());
 
@@ -334,7 +334,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	public void convertsReactorMonoIntoFlux() throws Exception {
+	void convertsReactorMonoIntoFlux() throws Exception {
 
 		Mono<Entity> entity = Mono.just(new Entity());
 
@@ -346,7 +346,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	}
 
 	@Test // DATACMNS-1056
-	public void convertsOptionalToThirdPartyOption() throws Exception {
+	void convertsOptionalToThirdPartyOption() throws Exception {
 
 		Entity value = new Entity();
 		Optional<Entity> entity = Optional.of(value);
@@ -358,7 +358,7 @@ public class QueryExecutionResultHandlerUnitTests {
 
 	@Test // DATACMNS-1165
 	@SuppressWarnings("unchecked")
-	public void convertsIterableIntoStreamable() throws Exception {
+	void convertsIterableIntoStreamable() throws Exception {
 
 		Iterable<?> source = asList(new Object());
 
@@ -369,7 +369,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	}
 
 	@Test // DATACMNS-938
-	public void resolvesNestedWrapperIfOuterDoesntNeedConversion() throws Exception {
+	void resolvesNestedWrapperIfOuterDoesntNeedConversion() throws Exception {
 
 		Entity entity = new Entity();
 
@@ -379,7 +379,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	}
 
 	@Test // DATACMNS-1430
-	public void convertsElementsAndValueIntoCustomStreamable() throws Exception {
+	void convertsElementsAndValueIntoCustomStreamable() throws Exception {
 
 		Object result = handler.postProcessInvocationResult(Arrays.asList("foo"), getMethod("customStreamable"));
 
@@ -389,7 +389,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	}
 
 	@Test // DATACMNS-1482
-	public void nestedConversion() throws Exception {
+	void nestedConversion() throws Exception {
 
 		Object result = handler.postProcessInvocationResult(asList(BigDecimal.ZERO, BigDecimal.ONE),
 				getMethod("listOfInteger"));
@@ -406,7 +406,7 @@ public class QueryExecutionResultHandlerUnitTests {
 	}
 
 	@Test // DATACMNS-1552
-	public void keepsVavrOptionType() throws Exception {
+	void keepsVavrOptionType() throws Exception {
 
 		Option<Entity> source = Option.of(new Entity());
 

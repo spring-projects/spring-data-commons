@@ -24,9 +24,9 @@ import rx.Observable;
 
 import java.lang.reflect.Method;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Publisher;
 
 import org.springframework.data.repository.Repository;
@@ -42,13 +42,13 @@ import org.springframework.data.repository.reactive.RxJava2CrudRepository;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ReactiveRepositoryInformationUnitTests {
+@ExtendWith(MockitoExtension.class)
+class ReactiveRepositoryInformationUnitTests {
 
 	static final Class<ReactiveJavaInterfaceWithGenerics> BASE_CLASS = ReactiveJavaInterfaceWithGenerics.class;
 
 	@Test // DATACMNS-836
-	public void discoversRxJava1MethodWithoutComparingReturnType() throws Exception {
+	void discoversRxJava1MethodWithoutComparingReturnType() throws Exception {
 
 		Method reference = extractTargetMethodFromRepository(RxJava1InterfaceWithGenerics.class, "deleteAll");
 
@@ -57,7 +57,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-836
-	public void discoversRxJava1MethodWithConvertibleArguments() throws Exception {
+	void discoversRxJava1MethodWithConvertibleArguments() throws Exception {
 
 		Method reference = extractTargetMethodFromRepository(RxJava1InterfaceWithGenerics.class, "saveAll",
 				Observable.class);
@@ -68,7 +68,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-988
-	public void discoversRxJava2MethodWithoutComparingReturnType() throws Exception {
+	void discoversRxJava2MethodWithoutComparingReturnType() throws Exception {
 
 		Method reference = extractTargetMethodFromRepository(RxJava2InterfaceWithGenerics.class, "deleteAll");
 
@@ -77,7 +77,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-988
-	public void discoversRxJava2MethodWithConvertibleArguments() throws Exception {
+	void discoversRxJava2MethodWithConvertibleArguments() throws Exception {
 
 		Method reference = extractTargetMethodFromRepository(RxJava2InterfaceWithGenerics.class, "saveAll", Flowable.class);
 
@@ -87,7 +87,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-836
-	public void discoversMethodAssignableArguments() throws Exception {
+	void discoversMethodAssignableArguments() throws Exception {
 
 		Method reference = extractTargetMethodFromRepository(ReactiveSortingRepository.class, "saveAll", Publisher.class);
 
@@ -97,7 +97,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-836
-	public void discoversMethodExactIterableArguments() throws Exception {
+	void discoversMethodExactIterableArguments() throws Exception {
 
 		Method reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "saveAll",
 				Iterable.class);
@@ -108,7 +108,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-836
-	public void discoversMethodExactObjectArguments() throws Exception {
+	void discoversMethodExactObjectArguments() throws Exception {
 
 		Method reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "save", Object.class);
 
@@ -118,7 +118,7 @@ public class ReactiveRepositoryInformationUnitTests {
 	}
 
 	@Test // DATACMNS-1023
-	public void usesCorrectSaveOverload() throws Exception {
+	void usesCorrectSaveOverload() throws Exception {
 
 		Method reference = extractTargetMethodFromRepository(DummyRepository.class, "saveAll", Iterable.class);
 
@@ -161,11 +161,11 @@ public class ReactiveRepositoryInformationUnitTests {
 
 		String id;
 
-		public String getId() {
+		String getId() {
 			return id;
 		}
 
-		public void setId(String id) {
+		void setId(String id) {
 			this.id = id;
 		}
 

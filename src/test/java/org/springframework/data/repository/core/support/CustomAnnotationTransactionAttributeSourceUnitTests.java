@@ -17,7 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAttribute;
@@ -27,10 +27,10 @@ import org.springframework.transaction.interceptor.TransactionAttribute;
  *
  * @author Oliver Gierke
  */
-public class CustomAnnotationTransactionAttributeSourceUnitTests {
+class CustomAnnotationTransactionAttributeSourceUnitTests {
 
 	@Test
-	public void usesCustomTransactionConfigurationOnInterface() throws SecurityException, NoSuchMethodException {
+	void usesCustomTransactionConfigurationOnInterface() throws SecurityException, NoSuchMethodException {
 
 		CustomAnnotationTransactionAttributeSource source = new TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource();
 

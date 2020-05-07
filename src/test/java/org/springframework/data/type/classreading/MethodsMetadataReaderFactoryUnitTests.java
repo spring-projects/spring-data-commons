@@ -22,20 +22,19 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.data.type.classreading.MethodsMetadataReader;
-import org.springframework.data.type.classreading.MethodsMetadataReaderFactory;
 
 /**
  * Unit tests for {@link MethodsMetadataReaderFactory}.
  *
  * @author Mark Paluch
  */
-public class MethodsMetadataReaderFactoryUnitTests {
+class MethodsMetadataReaderFactoryUnitTests {
 
 	@Test // DATACMNS-1206
-	public void shouldReadFromDefaultClassLoader() throws IOException {
+	void shouldReadFromDefaultClassLoader() throws IOException {
 
 		MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory();
 		MethodsMetadataReader reader = factory.getMetadataReader(getClass().getName());
@@ -44,7 +43,7 @@ public class MethodsMetadataReaderFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1206
-	public void shouldReadFromClassLoader() throws IOException {
+	void shouldReadFromClassLoader() throws IOException {
 
 		MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory(getClass().getClassLoader());
 		MethodsMetadataReader reader = factory.getMetadataReader(getClass().getName());
@@ -53,7 +52,7 @@ public class MethodsMetadataReaderFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1206
-	public void shouldNotFindClass() {
+	void shouldNotFindClass() {
 
 		MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory(new URLClassLoader(new URL[0], null));
 
@@ -61,7 +60,7 @@ public class MethodsMetadataReaderFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1206
-	public void shouldReadFromResourceLoader() throws IOException {
+	void shouldReadFromResourceLoader() throws IOException {
 
 		MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory(new DefaultResourceLoader());
 		MethodsMetadataReader reader = factory.getMetadataReader(getClass().getName());

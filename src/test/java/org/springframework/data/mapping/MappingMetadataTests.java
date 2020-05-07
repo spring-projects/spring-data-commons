@@ -17,8 +17,8 @@ package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 
@@ -32,7 +32,7 @@ public class MappingMetadataTests {
 
 	SampleMappingContext ctx;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		ctx = new SampleMappingContext();
 	}

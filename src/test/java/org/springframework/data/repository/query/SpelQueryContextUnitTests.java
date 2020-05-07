@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.function.BiFunction;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link SpelQueryContext}.
@@ -28,28 +28,28 @@ import org.junit.Test;
  * @author Jens Schauder
  * @author Mark Paluch
  */
-public class SpelQueryContextUnitTests {
+class SpelQueryContextUnitTests {
 
 	static final QueryMethodEvaluationContextProvider EVALUATION_CONTEXT_PROVIDER = QueryMethodEvaluationContextProvider.DEFAULT;
 	static final BiFunction<Integer, String, String> PARAMETER_NAME_SOURCE = (index, spel) -> "__$synthetic$__" + index;
 	static final BiFunction<String, String, String> REPLACEMENT_SOURCE = (prefix, name) -> prefix + name;
 
 	@Test // DATACMNS-1258
-	public void nullParameterNameSourceThrowsException() {
+	void nullParameterNameSourceThrowsException() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
 				.isThrownBy(() -> SpelQueryContext.of(null, REPLACEMENT_SOURCE));
 	}
 
 	@Test // DATACMNS-1258
-	public void nullReplacementSourceThrowsException() {
+	void nullReplacementSourceThrowsException() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
 				.isThrownBy(() -> SpelQueryContext.of(PARAMETER_NAME_SOURCE, null));
 	}
 
 	@Test // DATACMNS-1258
-	public void rejectsNullEvaluationContextProvider() {
+	void rejectsNullEvaluationContextProvider() {
 
 		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
@@ -58,7 +58,7 @@ public class SpelQueryContextUnitTests {
 	}
 
 	@Test // DATACMNS-1258
-	public void createsEvaluatingContextUsingProvider() {
+	void createsEvaluatingContextUsingProvider() {
 
 		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
@@ -66,7 +66,7 @@ public class SpelQueryContextUnitTests {
 	}
 
 	@Test // DATACMNS-1683
-	public void reportsQuotationCorrectly() {
+	void reportsQuotationCorrectly() {
 
 		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 

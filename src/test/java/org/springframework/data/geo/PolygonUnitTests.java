@@ -17,7 +17,7 @@ package org.springframework.data.geo;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.SerializationUtils;
 
 /**
@@ -26,19 +26,19 @@ import org.springframework.util.SerializationUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class PolygonUnitTests {
+class PolygonUnitTests {
 
 	Point first = new Point(1, 1);
 	Point second = new Point(2, 2);
 	Point third = new Point(3, 3);
 
 	@Test // DATACMNS-437
-	public void rejectsNullPoints() {
+	void rejectsNullPoints() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new Polygon(null, null, null));
 	}
 
 	@Test // DATACMNS-437
-	public void createsSimplePolygon() {
+	void createsSimplePolygon() {
 
 		Polygon polygon = new Polygon(third, second, first);
 
@@ -46,7 +46,7 @@ public class PolygonUnitTests {
 	}
 
 	@Test // DATACMNS-437
-	public void isEqualForSamePoints() {
+	void isEqualForSamePoints() {
 
 		Polygon left = new Polygon(third, second, first);
 		Polygon right = new Polygon(third, second, first);
@@ -56,14 +56,14 @@ public class PolygonUnitTests {
 	}
 
 	@Test // DATACMNS-437
-	public void testToString() {
+	void testToString() {
 
 		assertThat(new Polygon(third, second, first).toString()).isEqualTo(
 				"Polygon: [Point [x=3.000000, y=3.000000],Point [x=2.000000, y=2.000000],Point [x=1.000000, y=1.000000]]");
 	}
 
 	@Test // DATACMNS-482
-	public void testSerialization() {
+	void testSerialization() {
 
 		Polygon polygon = new Polygon(third, second, first);
 

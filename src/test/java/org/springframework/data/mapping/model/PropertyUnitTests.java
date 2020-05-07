@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import lombok.Value;
 import lombok.With;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
@@ -29,10 +29,10 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Mark Paluch
  */
-public class PropertyUnitTests {
+class PropertyUnitTests {
 
 	@Test // DATACMNS-1322
-	public void shouldNotFindWitherMethod() {
+	void shouldNotFindWitherMethod() {
 
 		assertThat(Property
 				.of(ClassTypeInformation.from(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "id"))
@@ -43,7 +43,7 @@ public class PropertyUnitTests {
 	}
 
 	@Test // DATACMNS-1322
-	public void shouldDiscoverWitherMethod() {
+	void shouldDiscoverWitherMethod() {
 
 		Property property = Property.of(ClassTypeInformation.from(WitherType.class),
 				ReflectionUtils.findField(WitherType.class, "id"));
@@ -55,7 +55,7 @@ public class PropertyUnitTests {
 	}
 
 	@Test // DATACMNS-1421
-	public void shouldDiscoverDerivedWitherMethod() {
+	void shouldDiscoverDerivedWitherMethod() {
 
 		Property property = Property.of(ClassTypeInformation.from(DerivedWitherClass.class),
 				ReflectionUtils.findField(DerivedWitherClass.class, "id"));
@@ -68,7 +68,7 @@ public class PropertyUnitTests {
 	}
 
 	@Test // DATACMNS-1421
-	public void shouldNotDiscoverWitherMethodWithIncompatibleReturnType() {
+	void shouldNotDiscoverWitherMethodWithIncompatibleReturnType() {
 
 		Property property = Property.of(ClassTypeInformation.from(AnotherLevel.class),
 				ReflectionUtils.findField(AnotherLevel.class, "id"));
@@ -97,7 +97,7 @@ public class PropertyUnitTests {
 
 	@Value
 	@With
-	static class WitherType {
+	private static class WitherType {
 
 		String id;
 		String name;
@@ -117,7 +117,7 @@ public class PropertyUnitTests {
 
 		private final String id;
 
-		protected DerivedWitherClass(String id) {
+		DerivedWitherClass(String id) {
 			this.id = id;
 		}
 

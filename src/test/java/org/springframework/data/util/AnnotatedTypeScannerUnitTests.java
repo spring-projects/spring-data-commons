@@ -17,7 +17,7 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Persistent;
 
 /**

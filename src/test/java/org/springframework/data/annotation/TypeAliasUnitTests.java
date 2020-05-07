@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.util.AnnotatedTypeScanner;
 
 /**
@@ -27,11 +27,11 @@ import org.springframework.data.util.AnnotatedTypeScanner;
  *
  * @author Oliver Gierke
  */
-public class TypeAliasUnitTests {
+class TypeAliasUnitTests {
 
 	@Test // DATACMNS-547
 	@SuppressWarnings("unchecked")
-	public void scanningforAtPersistentFindsTypeAliasAnnotatedTypes() {
+	void scanningforAtPersistentFindsTypeAliasAnnotatedTypes() {
 
 		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Persistent.class);
 		Set<Class<?>> types = scanner.findTypes(getClass().getPackage().getName());

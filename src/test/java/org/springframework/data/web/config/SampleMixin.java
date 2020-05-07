@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Bean;
 /**
  * @author Oliver Gierke
  */
-public class SampleMixin implements SpringDataJacksonModules {
+class SampleMixin implements SpringDataJacksonModules {
 
 	@Bean
 	String sampleBean() {

@@ -23,28 +23,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link MapAccessingMethodInterceptor}.
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class MapAccessingMethodInterceptorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class MapAccessingMethodInterceptorUnitTests {
 
 	@Mock MethodInvocation invocation;
 
 	@Test // DATACMNS-630
-	public void rejectsNullMap() {
+	void rejectsNullMap() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new MapAccessingMethodInterceptor(null));
 	}
 
 	@Test // DATACMNS-630
-	public void forwardsObjectMethodsToBackingMap() throws Throwable {
+	void forwardsObjectMethodsToBackingMap() throws Throwable {
 
 		Map<String, Object> map = Collections.emptyMap();
 
@@ -58,7 +58,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void setterInvocationStoresValueInMap() throws Throwable {
+	void setterInvocationStoresValueInMap() throws Throwable {
 
 		Map<String, Object> map = new HashMap<>();
 
@@ -72,7 +72,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void getterInvocationReturnsValueFromMap() throws Throwable {
+	void getterInvocationReturnsValueFromMap() throws Throwable {
 
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", "Foo");
@@ -85,7 +85,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void getterReturnsNullIfMapDoesNotContainValue() throws Throwable {
+	void getterReturnsNullIfMapDoesNotContainValue() throws Throwable {
 
 		Map<String, Object> map = new HashMap<>();
 
@@ -95,7 +95,7 @@ public class MapAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void rejectsNonAccessorInvocation() throws Throwable {
+	void rejectsNonAccessorInvocation() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("someMethod"));
 		assertThatIllegalArgumentException()

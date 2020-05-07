@@ -19,8 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,9 +32,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.WebTestUtils;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.WebApplicationContext;
@@ -43,25 +44,25 @@ import org.springframework.web.context.WebApplicationContext;
  *
  * @author Oliver Gierke
  */
-public class PageableResourcesAssemblerIntegrationTests {
+class PageableResourcesAssemblerIntegrationTests {
 
 	@Configuration
 	@EnableSpringDataWebSupport
 	static class Config {
 
 		@Bean
-		public SampleController controller() {
+		SampleController controller() {
 			return new SampleController();
 		}
 	}
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		WebTestUtils.initWebTest();
 	}
 
 	@Test
-	public void injectsPagedResourcesAssembler() {
+	void injectsPagedResourcesAssembler() {
 
 		WebApplicationContext context = WebTestUtils.createApplicationContext(Config.class);
 		SampleController controller = context.getBean(SampleController.class);
@@ -76,7 +77,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 	}
 
 	@Test // DATACMNS-471
-	public void setsUpPagedResourcesAssemblerFromManualXmlConfig() {
+	void setsUpPagedResourcesAssemblerFromManualXmlConfig() {
 
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("manual.xml", getClass());
 		assertThat(context.getBean(PagedResourcesAssembler.class)).isNotNull();
@@ -84,7 +85,7 @@ public class PageableResourcesAssemblerIntegrationTests {
 	}
 
 	@Test // DATACMNS-471
-	public void setsUpPagedResourcesAssemblerFromJavaConfigXmlConfig() {
+	void setsUpPagedResourcesAssemblerFromJavaConfigXmlConfig() {
 
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("via-config-class.xml", getClass());
 		assertThat(context.getBean(PagedResourcesAssembler.class)).isNotNull();

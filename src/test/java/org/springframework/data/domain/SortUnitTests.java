@@ -22,7 +22,7 @@ import lombok.Getter;
 
 import java.util.Collection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 
@@ -34,7 +34,7 @@ import org.springframework.data.domain.Sort.Order;
  * @author Thomas Darimont
  * @author Mark Paluch
  */
-public class SortUnitTests {
+class SortUnitTests {
 
 	/**
 	 * Asserts that the class applies the default sort order if no order or {@code null} was provided.
@@ -42,7 +42,7 @@ public class SortUnitTests {
 	 * @throws Exception
 	 */
 	@Test
-	public void appliesDefaultForOrder() {
+	void appliesDefaultForOrder() {
 		assertThat(Sort.by("foo").iterator().next().getDirection()).isEqualTo(Sort.DEFAULT_DIRECTION);
 	}
 
@@ -53,7 +53,7 @@ public class SortUnitTests {
 	 */
 	@Test
 	@SuppressWarnings("null")
-	public void preventsNullProperties() {
+	void preventsNullProperties() {
 		assertThatIllegalArgumentException().isThrownBy(() -> Sort.by(Direction.ASC, (String[]) null));
 	}
 
@@ -63,7 +63,7 @@ public class SortUnitTests {
 	 * @throws Exception
 	 */
 	@Test
-	public void preventsNullProperty() {
+	void preventsNullProperty() {
 		assertThatIllegalArgumentException().isThrownBy(() -> Sort.by(Direction.ASC, (String) null));
 	}
 
@@ -73,7 +73,7 @@ public class SortUnitTests {
 	 * @throws Exception
 	 */
 	@Test
-	public void preventsEmptyProperty() {
+	void preventsEmptyProperty() {
 		assertThatIllegalArgumentException().isThrownBy(() -> Sort.by(Direction.ASC, ""));
 	}
 
@@ -83,19 +83,19 @@ public class SortUnitTests {
 	 * @throws Exception
 	 */
 	@Test
-	public void preventsNoProperties() {
+	void preventsNoProperties() {
 		assertThatIllegalArgumentException().isThrownBy(() -> Sort.by(Direction.ASC));
 	}
 
 	@Test
-	public void allowsCombiningSorts() {
+	void allowsCombiningSorts() {
 
 		Sort sort = Sort.by("foo").and(Sort.by("bar"));
 		assertThat(sort).containsExactly(Order.by("foo"), Order.by("bar"));
 	}
 
 	@Test
-	public void handlesAdditionalNullSort() {
+	void handlesAdditionalNullSort() {
 
 		Sort sort = Sort.by("foo").and(Sort.unsorted());
 
@@ -103,12 +103,12 @@ public class SortUnitTests {
 	}
 
 	@Test // DATACMNS-281, DATACMNS-1021
-	public void configuresIgnoreCaseForOrder() {
+	void configuresIgnoreCaseForOrder() {
 		assertThat(Order.asc("foo").ignoreCase().isIgnoreCase()).isTrue();
 	}
 
 	@Test // DATACMNS-281, DATACMNS-1021
-	public void orderDoesNotIgnoreCaseByDefault() {
+	void orderDoesNotIgnoreCaseByDefault() {
 
 		assertThat(Order.by("foo").isIgnoreCase()).isFalse();
 		assertThat(Order.asc("foo").isIgnoreCase()).isFalse();
@@ -116,14 +116,14 @@ public class SortUnitTests {
 	}
 
 	@Test // DATACMNS-1021
-	public void createsOrderWithDirection() {
+	void createsOrderWithDirection() {
 
 		assertThat(Order.asc("foo").getDirection()).isEqualTo(Direction.ASC);
 		assertThat(Order.desc("foo").getDirection()).isEqualTo(Direction.DESC);
 	}
 
 	@Test // DATACMNS-436
-	public void ordersWithDifferentIgnoreCaseDoNotEqual() {
+	void ordersWithDifferentIgnoreCaseDoNotEqual() {
 
 		Order foo = Order.by("foo");
 		Order fooIgnoreCase = Order.by("foo").ignoreCase();
@@ -133,27 +133,27 @@ public class SortUnitTests {
 	}
 
 	@Test // DATACMNS-491
-	public void orderWithNullHandlingHintNullsFirst() {
+	void orderWithNullHandlingHintNullsFirst() {
 		assertThat(Order.by("foo").nullsFirst().getNullHandling()).isEqualTo(NULLS_FIRST);
 	}
 
 	@Test // DATACMNS-491
-	public void orderWithNullHandlingHintNullsLast() {
+	void orderWithNullHandlingHintNullsLast() {
 		assertThat(Order.by("foo").nullsLast().getNullHandling()).isEqualTo(NULLS_LAST);
 	}
 
 	@Test // DATACMNS-491
-	public void orderWithNullHandlingHintNullsNative() {
+	void orderWithNullHandlingHintNullsNative() {
 		assertThat(Order.by("foo").nullsNative().getNullHandling()).isEqualTo(NATIVE);
 	}
 
 	@Test // DATACMNS-491
-	public void orderWithDefaultNullHandlingHint() {
+	void orderWithDefaultNullHandlingHint() {
 		assertThat(Order.by("foo").getNullHandling()).isEqualTo(NATIVE);
 	}
 
 	@Test // DATACMNS-908
-	public void createsNewOrderForDifferentProperty() {
+	void createsNewOrderForDifferentProperty() {
 
 		Order source = Order.desc("foo").nullsFirst().ignoreCase();
 		Order result = source.withProperty("bar");
@@ -166,7 +166,7 @@ public class SortUnitTests {
 
 	@Test
 	@SuppressWarnings("null")
-	public void preventsNullDirection() {
+	void preventsNullDirection() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)//
 				.isThrownBy(() -> Sort.by((Direction) null, "foo"))//
@@ -174,7 +174,7 @@ public class SortUnitTests {
 	}
 
 	@Test // DATACMNS-1450
-	public void translatesTypedSortCorrectly() {
+	void translatesTypedSortCorrectly() {
 
 		assertThat(Sort.sort(Sample.class).by(Sample::getNested).by(Nested::getFirstname)) //
 				.containsExactly(Order.by("nested.firstname"));

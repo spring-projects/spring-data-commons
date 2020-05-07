@@ -19,10 +19,11 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.Annotation;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -32,17 +33,17 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ParameterUnitTests<P extends PersistentProperty<P>> {
+@ExtendWith(MockitoExtension.class)
+class ParameterUnitTests<P extends PersistentProperty<P>> {
 
 	@Mock PersistentEntity<Object, P> entity;
 	@Mock PersistentEntity<String, P> stringEntity;
 
-	TypeInformation<Object> type = ClassTypeInformation.from(Object.class);
-	Annotation[] annotations = new Annotation[0];
+	private TypeInformation<Object> type = ClassTypeInformation.from(Object.class);
+	private Annotation[] annotations = new Annotation[0];
 
 	@Test
-	public void twoParametersWithIdenticalSetupEqual() {
+	void twoParametersWithIdenticalSetupEqual() {
 
 		Parameter<Object, P> left = new Parameter<>("name", type, annotations, entity);
 		Parameter<Object, P> right = new Parameter<>("name", type, annotations, entity);
@@ -52,7 +53,7 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	}
 
 	@Test
-	public void twoParametersWithIdenticalSetupAndNullNameEqual() {
+	void twoParametersWithIdenticalSetupAndNullNameEqual() {
 
 		Parameter<Object, P> left = new Parameter<>(null, type, annotations, entity);
 		Parameter<Object, P> right = new Parameter<>(null, type, annotations, entity);
@@ -62,7 +63,7 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	}
 
 	@Test
-	public void twoParametersWithIdenticalAndNullEntitySetupEqual() {
+	void twoParametersWithIdenticalAndNullEntitySetupEqual() {
 
 		Parameter<Object, P> left = new Parameter<>("name", type, annotations, null);
 		Parameter<Object, P> right = new Parameter<>("name", type, annotations, null);
@@ -72,7 +73,7 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	}
 
 	@Test
-	public void twoParametersWithDifferentNameAreNotEqual() {
+	void twoParametersWithDifferentNameAreNotEqual() {
 
 		Parameter<Object, P> left = new Parameter<>("first", type, annotations, entity);
 		Parameter<Object, P> right = new Parameter<>("second", type, annotations, entity);
@@ -81,7 +82,7 @@ public class ParameterUnitTests<P extends PersistentProperty<P>> {
 	}
 
 	@Test
-	public void twoParametersWithDifferenTypeAreNotEqual() {
+	void twoParametersWithDifferenTypeAreNotEqual() {
 
 		Parameter<Object, P> left = new Parameter<>("name", type, annotations, entity);
 		Parameter<String, P> right = new Parameter<>("name", ClassTypeInformation.from(String.class), annotations,

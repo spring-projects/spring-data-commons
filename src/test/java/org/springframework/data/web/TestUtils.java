@@ -32,21 +32,21 @@ import org.springframework.web.context.request.ServletWebRequest;
  */
 class TestUtils {
 
-	public static NativeWebRequest getWebRequest() {
+	static NativeWebRequest getWebRequest() {
 		return new ServletWebRequest(new MockHttpServletRequest());
 	}
 
-	public static MockServerHttpRequest getWebfluxRequest() {
+	static MockServerHttpRequest getWebfluxRequest() {
 		return MockServerHttpRequest.get("foo").build();
 	}
 
-	public static MethodParameter getParameterOfMethod(Class<?> controller, String name, Class<?>... argumentTypes) {
+	static MethodParameter getParameterOfMethod(Class<?> controller, String name, Class<?>... argumentTypes) {
 
 		Method method = getMethod(controller, name, argumentTypes);
 		return new MethodParameter(method, 0);
 	}
 
-	public static Method getMethod(Class<?> controller, String name, Class<?>... argumentTypes) {
+	static Method getMethod(Class<?> controller, String name, Class<?>... argumentTypes) {
 
 		try {
 			return controller.getMethod(name, argumentTypes);

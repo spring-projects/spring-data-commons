@@ -23,10 +23,11 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -37,8 +38,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-@RunWith(MockitoJUnitRunner.class)
-public class SpelEvaluatingMethodInterceptorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class SpelEvaluatingMethodInterceptorUnitTests {
 
 	@Mock MethodInterceptor delegate;
 	@Mock MethodInvocation invocation;
@@ -46,7 +47,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 	SpelExpressionParser parser = new SpelExpressionParser();
 
 	@Test // DATAREST-221, DATACMNS-630
-	public void invokesMethodOnTarget() throws Throwable {
+	void invokesMethodOnTarget() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("propertyFromTarget"));
 
@@ -57,7 +58,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATAREST-221, DATACMNS-630
-	public void invokesMethodOnBean() throws Throwable {
+	void invokesMethodOnBean() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("invokeBean"));
 
@@ -71,7 +72,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void forwardNonAtValueAnnotatedMethodToDelegate() throws Throwable {
+	void forwardNonAtValueAnnotatedMethodToDelegate() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("getName"));
 
@@ -84,13 +85,13 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void rejectsEmptySpelExpression() {
+	void rejectsEmptySpelExpression() {
 		assertThatIllegalStateException().isThrownBy(() -> new SpelEvaluatingMethodInterceptor(delegate, new Target(),
 				new DefaultListableBeanFactory(), parser, InvalidProjection.class));
 	}
 
 	@Test // DATACMNS-630
-	public void allowsMapAccessViaPropertyExpression() throws Throwable {
+	void allowsMapAccessViaPropertyExpression() throws Throwable {
 
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", "Dave");
@@ -104,7 +105,7 @@ public class SpelEvaluatingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-1150
-	public void forwardsParameterIntoSpElExpressionEvaluation() throws Throwable {
+	void forwardsParameterIntoSpElExpressionEvaluation() throws Throwable {
 
 		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
 		factory.registerSingleton("someBean", new SomeBean());

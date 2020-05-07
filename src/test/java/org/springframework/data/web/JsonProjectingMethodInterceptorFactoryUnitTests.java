@@ -25,8 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 
@@ -41,13 +41,13 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider;
  * @since 1.13
  * @soundtrack Richard Spaven - Assemble (Whole Other*)
  */
-public class JsonProjectingMethodInterceptorFactoryUnitTests {
+class JsonProjectingMethodInterceptorFactoryUnitTests {
 
 	ProjectionFactory projectionFactory;
 	Customer customer;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		String json = "{\"firstname\" : \"Dave\", "//
 				+ "\"address\" : { \"zipCode\" : \"01097\", \"city\" : \"Dresden\" }," //
@@ -63,47 +63,47 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	}
 
 	@Test // DATCMNS-885
-	public void accessSimpleProperty() {
+	void accessSimpleProperty() {
 		assertThat(customer.getFirstname()).isEqualTo("Dave");
 	}
 
 	@Test // DATCMNS-885
-	public void accessPropertyWithExplicitAnnotation() {
+	void accessPropertyWithExplicitAnnotation() {
 		assertThat(customer.getBar()).isEqualTo("Dave");
 	}
 
 	@Test // DATCMNS-885
-	public void accessPropertyWithComplexReturnType() {
+	void accessPropertyWithComplexReturnType() {
 		assertThat(customer.getAddress()).isEqualTo(new Address("01097", "Dresden"));
 	}
 
 	@Test // DATCMNS-885
-	public void accessComplexPropertyWithProjection() {
+	void accessComplexPropertyWithProjection() {
 		assertThat(customer.getAddressProjection().getCity()).isEqualTo("Dresden");
 	}
 
 	@Test // DATCMNS-885
-	public void accessPropertyWithNestedJsonPath() {
+	void accessPropertyWithNestedJsonPath() {
 		assertThat(customer.getNestedZipCode()).isEqualTo("01097");
 	}
 
 	@Test // DATCMNS-885
-	public void accessCollectionProperty() {
+	void accessCollectionProperty() {
 		assertThat(customer.getAddresses().get(0)).isEqualTo(new Address("01097", "Dresden"));
 	}
 
 	@Test // DATCMNS-885
-	public void accessPropertyOnNestedProjection() {
+	void accessPropertyOnNestedProjection() {
 		assertThat(customer.getAddressProjections().get(0).getZipCode()).isEqualTo("01097");
 	}
 
 	@Test // DATCMNS-885
-	public void accessPropertyThatUsesJsonPathProjectionInTurn() {
+	void accessPropertyThatUsesJsonPathProjectionInTurn() {
 		assertThat(customer.getAnotherAddressProjection().getZipCodeButNotCity()).isEqualTo("01097");
 	}
 
 	@Test // DATCMNS-885
-	public void accessCollectionPropertyThatUsesJsonPathProjectionInTurn() {
+	void accessCollectionPropertyThatUsesJsonPathProjectionInTurn() {
 
 		List<AnotherAddressProjection> projections = customer.getAnotherAddressProjections();
 
@@ -112,7 +112,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	}
 
 	@Test // DATCMNS-885
-	public void accessAsCollectionPropertyThatUsesJsonPathProjectionInTurn() {
+	void accessAsCollectionPropertyThatUsesJsonPathProjectionInTurn() {
 
 		Set<AnotherAddressProjection> projections = customer.getAnotherAddressProjectionAsCollection();
 
@@ -121,7 +121,7 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	}
 
 	@Test // DATCMNS-885
-	public void accessNestedPropertyButStayOnRootLevel() {
+	void accessNestedPropertyButStayOnRootLevel() {
 
 		Name name = customer.getName();
 
@@ -130,19 +130,19 @@ public class JsonProjectingMethodInterceptorFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-885
-	public void accessNestedFields() {
+	void accessNestedFields() {
 
 		assertThat(customer.getNestedCity()).isEqualTo("Dresden");
 		assertThat(customer.getNestedCities()).hasSize(2);
 	}
 
 	@Test // DATACMNS-1144
-	public void returnsNullForNonExistantValue() {
+	void returnsNullForNonExistantValue() {
 		assertThat(customer.getName().getLastname()).isNull();
 	}
 
 	@Test // DATACMNS-1144
-	public void triesMultipleDeclaredPathsIfNotAvailable() {
+	void triesMultipleDeclaredPathsIfNotAvailable() {
 		assertThat(customer.getName().getSomeName()).isEqualTo(customer.getName().getFirstname());
 	}
 

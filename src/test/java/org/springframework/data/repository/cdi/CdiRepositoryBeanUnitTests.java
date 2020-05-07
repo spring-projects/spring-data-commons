@@ -32,11 +32,12 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Named;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
@@ -58,8 +59,8 @@ import org.springframework.data.repository.query.RepositoryQuery;
  * @author Mark Paluch
  * @author Ariel Carrera
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CdiRepositoryBeanUnitTests {
+@ExtendWith(MockitoExtension.class)
+class CdiRepositoryBeanUnitTests {
 
 	static final String PASSIVATION_ID = "javax.enterprise.inject.Default:org.springframework.data.repository.cdi.CdiRepositoryBeanUnitTests$SampleRepository";
 
@@ -71,25 +72,25 @@ public class CdiRepositoryBeanUnitTests {
 	@Mock RepositoryFactorySupport repositoryFactory;
 
 	@Test
-	public void voidRejectsNullQualifiers() {
+	void voidRejectsNullQualifiers() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new DummyCdiRepositoryBean<>(null, SampleRepository.class, beanManager));
 	}
 
 	@Test
-	public void voidRejectsNullRepositoryType() {
+	void voidRejectsNullRepositoryType() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, null, beanManager));
 	}
 
 	@Test
-	public void voidRejectsNullBeanManager() {
+	void voidRejectsNullBeanManager() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class, null));
 	}
 
 	@Test
-	public void returnsBasicMetadata() {
+	void returnsBasicMetadata() {
 
 		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class,
 				beanManager);
@@ -100,7 +101,7 @@ public class CdiRepositoryBeanUnitTests {
 	}
 
 	@Test
-	public void returnsAllImplementedTypes() {
+	void returnsAllImplementedTypes() {
 
 		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class,
 				beanManager);
@@ -111,7 +112,7 @@ public class CdiRepositoryBeanUnitTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void detectsStereotypes() {
+	void detectsStereotypes() {
 
 		DummyCdiRepositoryBean<StereotypedSampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS,
 				StereotypedSampleRepository.class, beanManager);
@@ -121,14 +122,14 @@ public class CdiRepositoryBeanUnitTests {
 
 	@Test // DATACMNS-299
 	@SuppressWarnings("rawtypes")
-	public void scopeDefaultsToApplicationScoped() {
+	void scopeDefaultsToApplicationScoped() {
 
 		Bean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class, beanManager);
 		assertThat(bean.getScope()).isEqualTo(ApplicationScoped.class);
 	}
 
 	@Test // DATACMNS-322
-	public void createsPassivationId() {
+	void createsPassivationId() {
 
 		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>( //
 				SINGLE_ANNOTATION, //
@@ -140,7 +141,7 @@ public class CdiRepositoryBeanUnitTests {
 	}
 
 	@Test // DATACMNS-764
-	public void passesCorrectBeanNameToTheImplementationDetector() {
+	void passesCorrectBeanNameToTheImplementationDetector() {
 
 		CustomRepositoryImplementationDetector detector = mock(CustomRepositoryImplementationDetector.class);
 
@@ -175,7 +176,7 @@ public class CdiRepositoryBeanUnitTests {
 	}
 
 	@Test // DATACMNS-1233
-	public void appliesRepositoryConfiguration() {
+	void appliesRepositoryConfiguration() {
 
 		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
 				SampleRepository.class, beanManager) {
@@ -264,7 +265,7 @@ public class CdiRepositoryBeanUnitTests {
 
 	static class DummyQueryCreationListener implements QueryCreationListener<RepositoryQuery> {
 
-		public static final DummyQueryCreationListener INSTANCE = new DummyQueryCreationListener();
+		static final DummyQueryCreationListener INSTANCE = new DummyQueryCreationListener();
 
 		@Override
 		public void onCreation(RepositoryQuery query) {}

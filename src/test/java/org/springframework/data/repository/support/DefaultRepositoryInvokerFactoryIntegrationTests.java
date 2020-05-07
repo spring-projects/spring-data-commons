@@ -20,39 +20,36 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.sample.Product;
 import org.springframework.data.repository.sample.ProductRepository;
 import org.springframework.data.repository.sample.SampleConfiguration;
 import org.springframework.data.repository.sample.User;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * Integration tests for {@link DefaultRepositoryInvokerFactory}.
  *
  * @author Oliver Gierke
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SampleConfiguration.class)
-public class DefaultRepositoryInvokerFactoryIntegrationTests {
+@SpringJUnitConfig(classes = SampleConfiguration.class)
+class DefaultRepositoryInvokerFactoryIntegrationTests {
 
 	@Autowired ProductRepository productRepository;
 	@Autowired Repositories repositories;
 
 	RepositoryInvokerFactory factory;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.factory = new DefaultRepositoryInvokerFactory(repositories);
 	}
 
 	@Test // DATACMNS-410, DATACMNS-589
-	public void findOneShouldDelegateToAppropriateRepository() {
+	void findOneShouldDelegateToAppropriateRepository() {
 
 		// Mockito.reset(productRepository);
 		Product product = new Product();
@@ -64,7 +61,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 	}
 
 	@Test // DATACMNS-374, DATACMNS-589
-	public void shouldThrowMeaningfulExceptionWhenTheRepositoryForAGivenDomainClassCannotBeFound() {
+	void shouldThrowMeaningfulExceptionWhenTheRepositoryForAGivenDomainClassCannotBeFound() {
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> factory.getInvokerFor(Object.class)) //
@@ -73,7 +70,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 	}
 
 	@Test // DATACMNS-589
-	public void returnsSameInvokerInstanceForSubsequentCalls() {
+	void returnsSameInvokerInstanceForSubsequentCalls() {
 
 		RepositoryInvoker invoker = factory.getInvokerFor(Product.class);
 
@@ -81,7 +78,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 	}
 
 	@Test // DATACMNS-589
-	public void createsReflectionRepositoryInvokerForRepositoryNotExtendingADedicatedBaseRepository() {
+	void createsReflectionRepositoryInvokerForRepositoryNotExtendingADedicatedBaseRepository() {
 
 		RepositoryInvoker invoker = factory.getInvokerFor(Product.class);
 
@@ -91,7 +88,7 @@ public class DefaultRepositoryInvokerFactoryIntegrationTests {
 	}
 
 	@Test // DATACMNS-589
-	public void createsCrudRepositoryInvokerForRepositoryExtendingCrudRepository() {
+	void createsCrudRepositoryInvokerForRepositoryExtendingCrudRepository() {
 
 		RepositoryInvoker invoker = factory.getInvokerFor(User.class);
 

@@ -23,7 +23,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 /**
  * @author Oliver Gierke
  */
-public class Jsr310ThreeTenBpAuditedUser {
+class Jsr310ThreeTenBpAuditedUser {
 
 	@CreatedDate LocalDateTime createdDate;
 	@LastModifiedDate org.threeten.bp.LocalDateTime lastModifiedDate;

@@ -26,12 +26,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
-import org.springframework.data.mapping.model.With32Args;
-import org.springframework.data.mapping.model.With33Args;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**

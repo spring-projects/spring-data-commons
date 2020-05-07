@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.beans.PropertyDescriptor;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.NotWritablePropertyException;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,17 +33,17 @@ import org.springframework.beans.factory.annotation.Value;
  * @author Thomas Darimont
  * @author Mark Paluch
  */
-public class SpelAwareProxyProjectionFactoryUnitTests {
+class SpelAwareProxyProjectionFactoryUnitTests {
 
 	SpelAwareProxyProjectionFactory factory;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		factory = new SpelAwareProxyProjectionFactory();
 	}
 
 	@Test // DATAREST-221, DATACMNS-630
-	public void exposesSpelInvokingMethod() {
+	void exposesSpelInvokingMethod() {
 
 		Customer customer = new Customer();
 		customer.firstname = "Dave";
@@ -54,7 +54,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void excludesAtValueAnnotatedMethodsForInputProperties() {
+	void excludesAtValueAnnotatedMethodsForInputProperties() {
 
 		List<PropertyDescriptor> properties = factory //
 				.getProjectionInformation(CustomerExcerpt.class) //
@@ -66,7 +66,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-89
-	public void considersProjectionUsingAtValueNotClosed() {
+	void considersProjectionUsingAtValueNotClosed() {
 
 		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
 
@@ -74,7 +74,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-820
-	public void setsValueUsingProjection() {
+	void setsValueUsingProjection() {
 
 		Customer customer = new Customer();
 		customer.firstname = "Dave";
@@ -86,7 +86,7 @@ public class SpelAwareProxyProjectionFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-820
-	public void settingNotWriteablePropertyFails() {
+	void settingNotWriteablePropertyFails() {
 
 		Customer customer = new Customer();
 		customer.firstname = "Dave";

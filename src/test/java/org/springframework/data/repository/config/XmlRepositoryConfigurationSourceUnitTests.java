@@ -19,11 +19,13 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.test.util.ReflectionTestUtils;
+
 import org.w3c.dom.Element;
 
 /**
@@ -31,13 +33,13 @@ import org.w3c.dom.Element;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class XmlRepositoryConfigurationSourceUnitTests {
+@ExtendWith(MockitoExtension.class)
+class XmlRepositoryConfigurationSourceUnitTests {
 
 	@Mock Element element;
 
 	@Test // DATACMNS-456
-	public void translatesCamelCaseAttributeNameIntoXmlEquivalent() {
+	void translatesCamelCaseAttributeNameIntoXmlEquivalent() {
 
 		RepositoryConfigurationSource source = mock(XmlRepositoryConfigurationSource.class);
 		ReflectionTestUtils.setField(source, "element", element);

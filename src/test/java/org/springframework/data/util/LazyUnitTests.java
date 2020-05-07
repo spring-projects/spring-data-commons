@@ -21,10 +21,10 @@ import static org.mockito.Mockito.*;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link Lazy}.
@@ -32,14 +32,14 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class LazyUnitTests {
+@ExtendWith(MockitoExtension.class)
+class LazyUnitTests {
 
 	@Mock Supplier<String> supplier;
 	@Mock Supplier<Optional<String>> optionalSupplier;
 
 	@Test
-	public void createsLazyOptional() {
+	void createsLazyOptional() {
 
 		doReturn(Optional.empty()).when(optionalSupplier).get();
 
@@ -47,7 +47,7 @@ public class LazyUnitTests {
 	}
 
 	@Test
-	public void createsLazyFromValue() {
+	void createsLazyFromValue() {
 
 		Object value = new Object();
 
@@ -55,7 +55,7 @@ public class LazyUnitTests {
 	}
 
 	@Test
-	public void returnsLastValueInChain() {
+	void returnsLastValueInChain() {
 
 		Object reference = new Object();
 
@@ -68,7 +68,7 @@ public class LazyUnitTests {
 	}
 
 	@Test
-	public void returnsCachedInstanceOnMultipleAccesses() {
+	void returnsCachedInstanceOnMultipleAccesses() {
 
 		Lazy<Object> lazy = Lazy.of(() -> new Object());
 
@@ -76,24 +76,24 @@ public class LazyUnitTests {
 	}
 
 	@Test
-	public void rejectsNullValueLookup() {
+	void rejectsNullValueLookup() {
 
 		assertThatExceptionOfType(IllegalStateException.class) //
 				.isThrownBy(() -> Lazy.of(() -> null).get());
 	}
 
 	@Test
-	public void allowsNullableValueLookupViaOptional() {
+	void allowsNullableValueLookupViaOptional() {
 		assertThat(Lazy.of(() -> null).getOptional()).isEmpty();
 	}
 
 	@Test // DATACMNS-1556
-	public void allowsNullableValue() {
+	void allowsNullableValue() {
 		assertThat(Lazy.of(() -> null).getNullable()).isNull();
 	}
 
 	@Test
-	public void ignoresElseIfValuePresent() {
+	void ignoresElseIfValuePresent() {
 
 		Object first = new Object();
 		Object second = new Object();
@@ -106,7 +106,7 @@ public class LazyUnitTests {
 	}
 
 	@Test
-	public void returnsElseValue() {
+	void returnsElseValue() {
 
 		Object reference = new Object();
 

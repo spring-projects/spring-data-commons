@@ -22,7 +22,7 @@ import org.springframework.data.repository.Repository;
 /**
  * @author Mark Paluch
  */
-public interface ComposedRepository
+interface ComposedRepository
 		extends Repository<Object, Serializable>, FragmentInterface, AnotherFragmentInterface {
 
 	// duplicate method shadowed by AnotherFragmentInterfaceImpl. The legacy custom implementation comes last, after all

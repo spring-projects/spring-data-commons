@@ -18,8 +18,8 @@ package org.springframework.data.domain;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.ExampleMatcher.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test for {@link Example}.
@@ -28,13 +28,13 @@ import org.junit.Test;
  * @author Mark Paluch
  * @author Oliver Gierke
  */
-public class ExampleUnitTests {
+class ExampleUnitTests {
 
 	Person person;
 	Example<Person> example;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		person = new Person();
 		person.firstname = "rand";
@@ -43,17 +43,17 @@ public class ExampleUnitTests {
 	}
 
 	@Test // DATACMNS-810
-	public void rejectsNullProbe() {
+	void rejectsNullProbe() {
 		assertThatIllegalArgumentException().isThrownBy(() -> Example.of(null));
 	}
 
 	@Test // DATACMNS-810
-	public void retunsSampleObjectsClassAsProbeType() {
+	void retunsSampleObjectsClassAsProbeType() {
 		assertThat(example.getProbeType()).isEqualTo(Person.class);
 	}
 
 	@Test // DATACMNS-900
-	public void shouldCompareUsingHashCodeAndEquals() throws Exception {
+	void shouldCompareUsingHashCodeAndEquals() throws Exception {
 
 		Example<Person> example = Example.of(person, matching().withIgnoreCase("firstname"));
 		Example<Person> sameAsExample = Example.of(person, matching().withIgnoreCase("firstname"));

@@ -23,8 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -48,7 +48,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Nick Williams
  * @author Marcel Overdijk
  */
-public class PagedResourcesAssemblerUnitTests {
+class PagedResourcesAssemblerUnitTests {
 
 	static final Pageable PAGEABLE = PageRequest.of(0, 20);
 	static final Page<Person> EMPTY_PAGE = new PageImpl<>(Collections.emptyList(), PAGEABLE, 0);
@@ -56,13 +56,13 @@ public class PagedResourcesAssemblerUnitTests {
 	HateoasPageableHandlerMethodArgumentResolver resolver = new HateoasPageableHandlerMethodArgumentResolver();
 	PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, null);
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		WebTestUtils.initWebTest();
 	}
 
 	@Test
-	public void addsNextLinkForFirstPage() {
+	void addsNextLinkForFirstPage() {
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(0));
 
@@ -72,7 +72,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test
-	public void addsPreviousAndNextLinksForMiddlePage() {
+	void addsPreviousAndNextLinksForMiddlePage() {
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
 
@@ -82,7 +82,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test
-	public void addsPreviousLinkForLastPage() {
+	void addsPreviousLinkForLastPage() {
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(2));
 
@@ -92,7 +92,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test
-	public void usesBaseUriIfConfigured() {
+	void usesBaseUriIfConfigured() {
 
 		UriComponents baseUri = UriComponentsBuilder.fromUriString("https://foo:9090").build();
 
@@ -105,7 +105,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test
-	public void usesCustomLinkProvided() {
+	void usesCustomLinkProvided() {
 
 		Link link = Link.of("https://foo:9090", "rel");
 
@@ -117,7 +117,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-358
-	public void createsPagedResourcesForOneIndexedArgumentResolver() {
+	void createsPagedResourcesForOneIndexedArgumentResolver() {
 
 		resolver.setOneIndexedParameters(true);
 
@@ -128,7 +128,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-418, DATACMNS-515
-	public void createsACanonicalLinkWithoutTemplateParameters() {
+	void createsACanonicalLinkWithoutTemplateParameters() {
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
 
@@ -136,7 +136,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-418
-	public void invokesCustomElementResourceAssembler() {
+	void invokesCustomElementResourceAssembler() {
 
 		PersonResourceAssembler personAssembler = new PersonResourceAssembler();
 
@@ -150,7 +150,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATAMCNS-563
-	public void createsPaginationLinksForOneIndexedArgumentResolverCorrectly() {
+	void createsPaginationLinksForOneIndexedArgumentResolverCorrectly() {
 
 		HateoasPageableHandlerMethodArgumentResolver argumentResolver = new HateoasPageableHandlerMethodArgumentResolver();
 		argumentResolver.setOneIndexedParameters(true);
@@ -169,7 +169,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-515
-	public void generatedLinksShouldNotBeTemplated() {
+	void generatedLinksShouldNotBeTemplated() {
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
 
@@ -179,7 +179,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-699
-	public void generatesEmptyPagedResourceWithEmbeddedWrapper() {
+	void generatesEmptyPagedResourceWithEmbeddedWrapper() {
 
 		PagedModel<?> result = assembler.toEmptyModel(EMPTY_PAGE, Person.class);
 
@@ -192,17 +192,17 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-699
-	public void emptyPageCreatorRejectsPageWithContent() {
+	void emptyPageCreatorRejectsPageWithContent() {
 		assertThatIllegalArgumentException().isThrownBy(() -> assembler.toEmptyModel(createPage(1), Person.class));
 	}
 
 	@Test // DATACMNS-699
-	public void emptyPageCreatorRejectsNullType() {
+	void emptyPageCreatorRejectsNullType() {
 		assertThatIllegalArgumentException().isThrownBy(() -> assembler.toEmptyModel(EMPTY_PAGE, null));
 	}
 
 	@Test // DATACMNS-701
-	public void addsFirstAndLastLinksForMultiplePages() {
+	void addsFirstAndLastLinksForMultiplePages() {
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
 
@@ -211,7 +211,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-701
-	public void addsFirstAndLastLinksForFirstPage() {
+	void addsFirstAndLastLinksForFirstPage() {
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(0));
 
@@ -220,7 +220,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-701
-	public void addsFirstAndLastLinksForLastPage() {
+	void addsFirstAndLastLinksForLastPage() {
 
 		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(2));
 
@@ -229,7 +229,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-701
-	public void alwaysAddsFirstAndLastLinkIfConfiguredTo() {
+	void alwaysAddsFirstAndLastLinkIfConfiguredTo() {
 
 		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, null);
 		assembler.setForceFirstAndLastRels(true);
@@ -241,7 +241,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-802
-	public void usesCustomPagedResources() {
+	void usesCustomPagedResources() {
 
 		RepresentationModelAssembler<Page<Person>, PagedModel<EntityModel<Person>>> assembler = new CustomPagedResourcesAssembler<>(
 				resolver, null);
@@ -250,7 +250,7 @@ public class PagedResourcesAssemblerUnitTests {
 	}
 
 	@Test // DATACMNS-1042
-	public void selfLinkContainsCoordinatesForCurrentPage() {
+	void selfLinkContainsCoordinatesForCurrentPage() {
 
 		PagedModel<EntityModel<Person>> resource = assembler.toModel(createPage(0));
 
@@ -297,7 +297,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 	static class CustomPagedResourcesAssembler<T> extends PagedResourcesAssembler<T> {
 
-		public CustomPagedResourcesAssembler(HateoasPageableHandlerMethodArgumentResolver resolver, UriComponents baseUri) {
+		CustomPagedResourcesAssembler(HateoasPageableHandlerMethodArgumentResolver resolver, UriComponents baseUri) {
 			super(resolver, baseUri);
 		}
 
@@ -314,7 +314,7 @@ public class PagedResourcesAssemblerUnitTests {
 
 	static class CustomPagedResources<R extends RepresentationModel> extends PagedModel<R> {
 
-		public CustomPagedResources(Collection<R> content, PageMetadata metadata) {
+		CustomPagedResources(Collection<R> content, PageMetadata metadata) {
 			super(content, metadata);
 		}
 	}

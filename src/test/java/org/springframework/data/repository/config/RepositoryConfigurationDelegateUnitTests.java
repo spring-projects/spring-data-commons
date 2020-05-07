@@ -17,10 +17,12 @@ package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.Advised;
@@ -45,13 +47,14 @@ import org.springframework.data.repository.sample.ProductRepository;
  * @author Oliver Gierke
  * @soundtrack Richard Spaven - Tribute (Whole Other*)
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class RepositoryConfigurationDelegateUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class RepositoryConfigurationDelegateUnitTests {
 
 	@Mock RepositoryConfigurationExtension extension;
 
 	@Test // DATACMNS-892
-	public void registersRepositoryBeanNameAsAttribute() {
+	void registersRepositoryBeanNameAsAttribute() {
 
 		StandardEnvironment environment = new StandardEnvironment();
 		GenericApplicationContext context = new GenericApplicationContext();
@@ -72,12 +75,12 @@ public class RepositoryConfigurationDelegateUnitTests {
 	}
 
 	@Test // DATACMNS-1368
-	public void registersLazyAutowireCandidateResolver() {
+	void registersLazyAutowireCandidateResolver() {
 		assertLazyRepositoryBeanSetup(LazyConfig.class);
 	}
 
 	@Test // DATACMNS-1368
-	public void registersDeferredRepositoryInitializationListener() {
+	void registersDeferredRepositoryInitializationListener() {
 
 		ListableBeanFactory beanFactory = assertLazyRepositoryBeanSetup(DeferredConfig.class);
 

@@ -34,7 +34,7 @@ import org.springframework.aop.framework.ProxyFactory;
 class RepositoryInvocationTestUtils {
 
 	@SuppressWarnings("unchecked")
-	public static <T> T getVerifyingRepositoryProxy(T target, VerifyingMethodInterceptor interceptor) {
+	static <T> T getVerifyingRepositoryProxy(T target, VerifyingMethodInterceptor interceptor) {
 
 		ProxyFactory factory = new ProxyFactory();
 		factory.setInterfaces(target.getClass().getInterfaces());
@@ -44,11 +44,11 @@ class RepositoryInvocationTestUtils {
 		return (T) factory.getProxy();
 	}
 
-	public static VerifyingMethodInterceptor expectInvocationOnType(Class<?> type) {
+	static VerifyingMethodInterceptor expectInvocationOnType(Class<?> type) {
 		return new VerifyingMethodInterceptor(type, new Method[0]);
 	}
 
-	public static VerifyingMethodInterceptor expectInvocationOf(Method... methods) {
+	static VerifyingMethodInterceptor expectInvocationOf(Method... methods) {
 		return new VerifyingMethodInterceptor(null, methods);
 	}
 
@@ -58,7 +58,7 @@ class RepositoryInvocationTestUtils {
 	 * @author Oliver Gierke
 	 */
 	@SuppressWarnings("rawtypes")
-	public static final class VerifyingMethodInterceptor implements MethodInterceptor {
+	static final class VerifyingMethodInterceptor implements MethodInterceptor {
 
 		private final Class expectedInvocationTarget;
 		private final List<Method> methods;

@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
 
 /**
@@ -27,46 +27,46 @@ import org.springframework.data.domain.Sort;
  *
  * @author Oliver Gierke
  */
-public class OrderBySourceUnitTests {
+class OrderBySourceUnitTests {
 
 	@Test
-	public void handlesSingleDirectionAndPropertyCorrectly() {
+	void handlesSingleDirectionAndPropertyCorrectly() {
 		assertThat(new OrderBySource("UsernameDesc").toSort()).isEqualTo(Sort.by("username").descending());
 	}
 
 	@Test
-	public void handlesCamelCasePropertyCorrecty() {
+	void handlesCamelCasePropertyCorrecty() {
 		assertThat(new OrderBySource("LastnameUsernameDesc").toSort()).isEqualTo(Sort.by("lastnameUsername").descending());
 	}
 
 	@Test
-	public void handlesMultipleDirectionsCorrectly() {
+	void handlesMultipleDirectionsCorrectly() {
 
 		OrderBySource orderBySource = new OrderBySource("LastnameAscUsernameDesc");
 		assertThat(orderBySource.toSort()).isEqualTo(Sort.by("lastname").ascending().and(Sort.by("username").descending()));
 	}
 
 	@Test
-	public void rejectsMissingProperty() {
+	void rejectsMissingProperty() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new OrderBySource("Desc"));
 	}
 
 	@Test
-	public void usesNestedPropertyCorrectly() throws Exception {
+	void usesNestedPropertyCorrectly() throws Exception {
 
 		OrderBySource source = new OrderBySource("BarNameDesc", Optional.of(Foo.class));
 		assertThat(source.toSort()).isEqualTo(Sort.by("bar.name").descending());
 	}
 
 	@Test // DATACMNS-641
-	public void defaultsSortOrderToAscendingSort() {
+	void defaultsSortOrderToAscendingSort() {
 
 		OrderBySource source = new OrderBySource("lastname");
 		assertThat(source.toSort()).isEqualTo(Sort.by("lastname"));
 	}
 
 	@Test
-	public void orderBySourceFromEmptyStringResultsInUnsorted() {
+	void orderBySourceFromEmptyStringResultsInUnsorted() {
 		assertThat(new OrderBySource("").toSort()).isEqualTo(Sort.unsorted());
 	}
 

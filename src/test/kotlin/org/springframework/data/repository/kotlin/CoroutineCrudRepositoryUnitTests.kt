@@ -23,8 +23,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.reactivestreams.Publisher
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory
@@ -46,7 +46,7 @@ class CoroutineCrudRepositoryUnitTests {
 	lateinit var factory: DummyReactiveRepositoryFactory
 	lateinit var coRepository: MyCoRepository
 
-	@Before
+	@BeforeEach
 	fun before() {
 		factory = DummyReactiveRepositoryFactory(backingRepository)
 		coRepository = factory.getRepository(MyCoRepository::class.java)

@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
@@ -37,30 +37,30 @@ import com.google.common.base.Optional;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-public class DefaultRepositoryMetadataUnitTests {
+class DefaultRepositoryMetadataUnitTests {
 
 	@Test
-	public void preventsNullRepositoryInterface() {
+	void preventsNullRepositoryInterface() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(null));
 	}
 
 	@Test
-	public void rejectsNonInterface() {
+	void rejectsNonInterface() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(Object.class));
 	}
 
 	@Test
-	public void rejectsNonRepositoryInterface() {
+	void rejectsNonRepositoryInterface() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(Collection.class));
 	}
 
 	@Test // DATACMNS-406
-	public void rejectsUnparameterizedRepositoryInterface() {
+	void rejectsUnparameterizedRepositoryInterface() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(Repository.class));
 	}
 
 	@Test
-	public void looksUpDomainClassCorrectly() throws Exception {
+	void looksUpDomainClassCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
 		assertThat(metadata.getDomainType()).isEqualTo(User.class);
@@ -70,35 +70,35 @@ public class DefaultRepositoryMetadataUnitTests {
 	}
 
 	@Test
-	public void findsDomainClassOnExtensionOfDaoInterface() throws Exception {
+	void findsDomainClassOnExtensionOfDaoInterface() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtensionOfUserCustomExtendedDao.class);
 		assertThat(metadata.getDomainType()).isEqualTo(User.class);
 	}
 
 	@Test
-	public void detectsParameterizedEntitiesCorrectly() {
+	void detectsParameterizedEntitiesCorrectly() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericEntityRepository.class);
 		assertThat(metadata.getDomainType()).isEqualTo(GenericEntity.class);
 	}
 
 	@Test
-	public void looksUpIdClassCorrectly() throws Exception {
+	void looksUpIdClassCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
 		assertThat(metadata.getIdType()).isEqualTo(Integer.class);
 	}
 
 	@Test // DATACMNS-442
-	public void detectsIdTypeOnIntermediateRepository() {
+	void detectsIdTypeOnIntermediateRepository() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		assertThat(metadata.getIdType()).isEqualTo(Long.class);
 	}
 
 	@Test // DATACMNS-483
-	public void discoversDomainTypeOnReturnTypeWrapper() throws Exception {
+	void discoversDomainTypeOnReturnTypeWrapper() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(OptionalRepository.class);
 
@@ -107,7 +107,7 @@ public class DefaultRepositoryMetadataUnitTests {
 	}
 
 	@Test // DATACMNS-483
-	public void discoversDomainTypeOnNestedReturnTypeWrapper() throws Exception {
+	void discoversDomainTypeOnNestedReturnTypeWrapper() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(OptionalRepository.class);
 
@@ -116,7 +116,7 @@ public class DefaultRepositoryMetadataUnitTests {
 	}
 
 	@Test // DATACMNS-501
-	public void discoversDomainAndIdTypeForIntermediateRepository() {
+	void discoversDomainAndIdTypeForIntermediateRepository() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(IdTypeFixingRepository.class);
 
@@ -129,7 +129,7 @@ public class DefaultRepositoryMetadataUnitTests {
 
 		private String firstname;
 
-		public String getAddress() {
+		String getAddress() {
 
 			return null;
 		}

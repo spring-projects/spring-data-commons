@@ -18,10 +18,11 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
@@ -30,7 +31,7 @@ import org.springframework.data.mapping.PersistentProperty;
  * @author Oliver Gierke
  * @since 1.9
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CamelCaseAbbreviatingFieldNamingStrategyUnitTests {
 
 	FieldNamingStrategy strategy = new CamelCaseAbbreviatingFieldNamingStrategy();
@@ -38,7 +39,7 @@ public class CamelCaseAbbreviatingFieldNamingStrategyUnitTests {
 	@Mock PersistentProperty<?> property;
 
 	@Test // DATACMNS-523
-	public void abbreviatesToCamelCase() {
+	void abbreviatesToCamelCase() {
 
 		assertFieldNameForPropertyName("fooBar", "fb");
 		assertFieldNameForPropertyName("fooBARFooBar", "fbfb");

@@ -21,8 +21,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.querydsl.QUser;
 
 import com.querydsl.core.types.Predicate;
@@ -32,17 +32,17 @@ import com.querydsl.core.types.Predicate;
  * @author Oliver Gierke
  * @author Colin Gao
  */
-public class QuerydslDefaultBindingUnitTests {
+class QuerydslDefaultBindingUnitTests {
 
 	QuerydslDefaultBinding binding;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		binding = new QuerydslDefaultBinding();
 	}
 
 	@Test // DATACMNS-669
-	public void shouldCreatePredicateCorrectlyWhenPropertyIsInRoot() {
+	void shouldCreatePredicateCorrectlyWhenPropertyIsInRoot() {
 
 		Optional<Predicate> predicate = binding.bind(QUser.user.firstname, Collections.singleton("tam"));
 
@@ -50,7 +50,7 @@ public class QuerydslDefaultBindingUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void shouldCreatePredicateCorrectlyWhenPropertyIsInNestedElement() {
+	void shouldCreatePredicateCorrectlyWhenPropertyIsInNestedElement() {
 
 		Optional<Predicate> predicate = binding.bind(QUser.user.address.city, Collections.singleton("two rivers"));
 
@@ -59,7 +59,7 @@ public class QuerydslDefaultBindingUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void shouldCreatePredicateWithContainingWhenPropertyIsCollectionLikeAndValueIsObject() {
+	void shouldCreatePredicateWithContainingWhenPropertyIsCollectionLikeAndValueIsObject() {
 
 		Optional<Predicate> predicate = binding.bind(QUser.user.nickNames, Collections.singleton("dragon reborn"));
 
@@ -67,7 +67,7 @@ public class QuerydslDefaultBindingUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	public void shouldCreatePredicateWithInWhenPropertyIsAnObjectAndValueIsACollection() {
+	void shouldCreatePredicateWithInWhenPropertyIsAnObjectAndValueIsACollection() {
 
 		Optional<Predicate> predicate = binding.bind(QUser.user.firstname, Arrays.asList("dragon reborn", "shadowkiller"));
 
@@ -75,12 +75,12 @@ public class QuerydslDefaultBindingUnitTests {
 	}
 
 	@Test
-	public void testname() {
+	void testname() {
 		assertThat(binding.bind(QUser.user.lastname, Collections.emptySet())).isNotPresent();
 	}
 
 	@Test // DATACMNS-1578
-	public void shouldCreatePredicateWithIsNullWhenPropertyIsANestedObjectAndValueIsNull() {
+	void shouldCreatePredicateWithIsNullWhenPropertyIsANestedObjectAndValueIsNull() {
 
 		Optional<Predicate> predicate = binding.bind(QUser.user.address.city, Collections.singleton(null));
 

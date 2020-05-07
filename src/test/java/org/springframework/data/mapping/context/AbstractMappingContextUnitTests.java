@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
@@ -53,19 +53,19 @@ import org.springframework.data.util.TypeInformation;
  * @author Thomas Darimont
  * @author Mark Paluch
  */
-public class AbstractMappingContextUnitTests {
+class AbstractMappingContextUnitTests {
 
 	SampleMappingContext context;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		context = new SampleMappingContext();
 		context.setSimpleTypeHolder(new SimpleTypeHolder(Collections.singleton(LocalDateTime.class), true));
 	}
 
 	@Test // DATACMNS-92
-	public void doesNotAddInvalidEntity() {
+	void doesNotAddInvalidEntity() {
 
 		context = TypeRejectingMappingContext.rejecting(() -> new MappingException("Not supported!"), Unsupported.class);
 
@@ -74,7 +74,7 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	@Test
-	public void registersEntitiesOnInitialization() {
+	void registersEntitiesOnInitialization() {
 
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
 
@@ -88,24 +88,24 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	@Test // DATACMNS-214
-	public void returnsNullPersistentEntityForSimpleTypes() {
+	void returnsNullPersistentEntityForSimpleTypes() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		assertThat(context.getPersistentEntity(String.class)).isNull();
 	}
 
 	@Test // DATACMNS-214
-	public void rejectsNullValueForGetPersistentEntityOfClass() {
+	void rejectsNullValueForGetPersistentEntityOfClass() {
 		assertThatIllegalArgumentException().isThrownBy(() -> context.getPersistentEntity((Class<?>) null));
 	}
 
 	@Test // DATACMNS-214
-	public void rejectsNullValueForGetPersistentEntityOfTypeInformation() {
+	void rejectsNullValueForGetPersistentEntityOfTypeInformation() {
 		assertThatIllegalArgumentException().isThrownBy(() -> context.getPersistentEntity((TypeInformation<?>) null));
 	}
 
 	@Test // DATACMNS-228
-	public void doesNotCreatePersistentPropertyForGroovyMetaClass() {
+	void doesNotCreatePersistentPropertyForGroovyMetaClass() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
@@ -116,7 +116,7 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	@Test // DATACMNS-332
-	public void usesMostConcreteProperty() {
+	void usesMostConcreteProperty() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
@@ -127,7 +127,7 @@ public class AbstractMappingContextUnitTests {
 
 	@Test // DATACMNS-345
 	@SuppressWarnings("rawtypes")
-	public void returnsEntityForComponentType() {
+	void returnsEntityForComponentType() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
@@ -139,7 +139,7 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	@Test // DATACMNS-390
-	public void exposesCopyOfPersistentEntitiesToAvoidConcurrentModificationException() {
+	void exposesCopyOfPersistentEntitiesToAvoidConcurrentModificationException() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		context.getPersistentEntity(ClassTypeInformation.MAP);
@@ -154,38 +154,38 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	@Test // DATACMNS-447
-	public void shouldReturnNullForSimpleTypesIfInStrictIsEnabled() {
+	void shouldReturnNullForSimpleTypesIfInStrictIsEnabled() {
 
 		context.setStrict(true);
 		assertThat(context.getPersistentEntity(Integer.class)).isNull();
 	}
 
 	@Test // DATACMNS-462
-	public void hasPersistentEntityForCollectionPropertiesAfterInitialization() {
+	void hasPersistentEntityForCollectionPropertiesAfterInitialization() {
 
 		context.getPersistentEntity(Sample.class);
 		assertHasEntityFor(Person.class, context, true);
 	}
 
 	@Test // DATACMNS-479
-	public void doesNotAddMapImplementationClassesAsPersistentEntity() {
+	void doesNotAddMapImplementationClassesAsPersistentEntity() {
 
 		context.getPersistentEntity(Sample.class);
 		assertHasEntityFor(TreeMap.class, context, false);
 	}
 
 	@Test // DATACMNS-1171
-	public void shouldCreateEntityForKotlinDataClass() {
+	void shouldCreateEntityForKotlinDataClass() {
 		assertThat(context.getPersistentEntity(SimpleDataClass.class)).isNotNull();
 	}
 
 	@Test // DATACMNS-1171
-	public void shouldNotCreateEntityForSyntheticKotlinClass() {
+	void shouldNotCreateEntityForSyntheticKotlinClass() {
 		assertThat(context.getPersistentEntity(TypeCreatingSyntheticClass.class)).isNotNull();
 	}
 
 	@Test // DATACMNS-1208
-	public void ensureHasPersistentEntityReportsFalseForTypesThatShouldntBeCreated() {
+	void ensureHasPersistentEntityReportsFalseForTypesThatShouldntBeCreated() {
 
 		assertThat(context.hasPersistentEntityFor(String.class)).isFalse();
 		assertThat(context.getPersistentEntity(String.class)).isNull();
@@ -193,7 +193,7 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	@Test // DATACMNS-1214
-	public void doesNotReturnPersistentEntityForCustomSimpleTypeProperty() {
+	void doesNotReturnPersistentEntityForCustomSimpleTypeProperty() {
 
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Person.class);
 		SamplePersistentProperty property = entity.getRequiredPersistentProperty("date");
@@ -202,7 +202,7 @@ public class AbstractMappingContextUnitTests {
 	}
 
 	@Test // DATACMNS-1574
-	public void cleansUpCacheForRuntimeException() {
+	void cleansUpCacheForRuntimeException() {
 
 		TypeRejectingMappingContext context = TypeRejectingMappingContext.rejecting(() -> new RuntimeException(),
 				Unsupported.class);
@@ -278,7 +278,7 @@ public class AbstractMappingContextUnitTests {
 		 * @param types must not be {@literal null}.
 		 * @return
 		 */
-		public static <T extends RuntimeException> TypeRejectingMappingContext rejecting(Supplier<T> exception,
+		static <T extends RuntimeException> TypeRejectingMappingContext rejecting(Supplier<T> exception,
 				Class<?>... types) {
 			return new TypeRejectingMappingContext(exception, Arrays.asList(types));
 		}

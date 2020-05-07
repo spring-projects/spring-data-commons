@@ -18,7 +18,7 @@ package org.springframework.data.repository.query;
 import static org.assertj.core.api.Assertions.*;
 
 import org.assertj.core.api.SoftAssertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.repository.query.SpelQueryContext.QuotationMap;
 
 /**
@@ -26,22 +26,22 @@ import org.springframework.data.repository.query.SpelQueryContext.QuotationMap;
  *
  * @author Jens Schauder
  */
-public class QuotationMapUnitTests {
+class QuotationMapUnitTests {
 
 	SoftAssertions softly = new SoftAssertions();
 
 	@Test // DATAJPA-1235
-	public void emptyStringDoesNotContainQuotes() {
+	void emptyStringDoesNotContainQuotes() {
 		isNotQuoted("", "empty String", -1, 0, 1);
 	}
 
 	@Test // DATAJPA-1235
-	public void nullStringDoesNotContainQuotes() {
+	void nullStringDoesNotContainQuotes() {
 		isNotQuoted(null, "null String", -1, 0, 1);
 	}
 
 	@Test // DATAJPA-1235
-	public void simpleStringDoesNotContainQuotes() {
+	void simpleStringDoesNotContainQuotes() {
 
 		String query = "something";
 
@@ -49,7 +49,7 @@ public class QuotationMapUnitTests {
 	}
 
 	@Test // DATAJPA-1235
-	public void fullySingleQuotedStringDoesContainQuotes() {
+	void fullySingleQuotedStringDoesContainQuotes() {
 
 		String query = "'something'";
 
@@ -58,7 +58,7 @@ public class QuotationMapUnitTests {
 	}
 
 	@Test // DATAJPA-1235
-	public void fullyDoubleQuotedStringDoesContainQuotes() {
+	void fullyDoubleQuotedStringDoesContainQuotes() {
 
 		String query = "\"something\"";
 
@@ -67,7 +67,7 @@ public class QuotationMapUnitTests {
 	}
 
 	@Test // DATAJPA-1235
-	public void stringWithEmptyQuotes() {
+	void stringWithEmptyQuotes() {
 
 		String query = "abc''def";
 
@@ -76,7 +76,7 @@ public class QuotationMapUnitTests {
 	}
 
 	@Test // DATAJPA-1235
-	public void doubleInSingleQuotes() {
+	void doubleInSingleQuotes() {
 
 		String query = "abc'\"'def";
 
@@ -85,7 +85,7 @@ public class QuotationMapUnitTests {
 	}
 
 	@Test // DATAJPA-1235
-	public void singleQuotesInDoubleQuotes() {
+	void singleQuotesInDoubleQuotes() {
 
 		String query = "abc\"'\"def";
 
@@ -94,7 +94,7 @@ public class QuotationMapUnitTests {
 	}
 
 	@Test // DATAJPA-1235
-	public void escapedQuotes() {
+	void escapedQuotes() {
 
 		String query = "a'b''cd''e'f";
 		isNotQuoted(query, "escaped quote", -1, 0, 11, 12);
@@ -102,7 +102,7 @@ public class QuotationMapUnitTests {
 	}
 
 	@Test // DATAJPA-1235
-	public void openEndedQuoteThrowsException() {
+	void openEndedQuoteThrowsException() {
 		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> new QuotationMap("a'b"));
 	}
 

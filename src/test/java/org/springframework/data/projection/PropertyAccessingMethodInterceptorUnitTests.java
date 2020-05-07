@@ -20,10 +20,11 @@ import static org.mockito.Mockito.*;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.beans.NotReadablePropertyException;
 import org.springframework.beans.NotWritablePropertyException;
 
@@ -33,13 +34,13 @@ import org.springframework.beans.NotWritablePropertyException;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class PropertyAccessingMethodInterceptorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class PropertyAccessingMethodInterceptorUnitTests {
 
 	@Mock MethodInvocation invocation;
 
 	@Test // DATAREST-221
-	public void triggersPropertyAccessOnTarget() throws Throwable {
+	void triggersPropertyAccessOnTarget() throws Throwable {
 
 		Source source = new Source();
 		source.firstname = "Dave";
@@ -51,7 +52,7 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void throwsAppropriateExceptionIfThePropertyCannotBeFound() throws Throwable {
+	void throwsAppropriateExceptionIfThePropertyCannotBeFound() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("getLastname"));
 		assertThatExceptionOfType(NotReadablePropertyException.class)
@@ -59,7 +60,7 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void forwardsObjectMethodInvocation() throws Throwable {
+	void forwardsObjectMethodInvocation() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Object.class.getMethod("toString"));
 
@@ -67,7 +68,7 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void rejectsNonAccessorMethod() throws Throwable {
+	void rejectsNonAccessorMethod() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("someGarbage"));
 
@@ -76,7 +77,7 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-820
-	public void triggersWritePropertyAccessOnTarget() throws Throwable {
+	void triggersWritePropertyAccessOnTarget() throws Throwable {
 
 		Source source = new Source();
 		source.firstname = "Dave";
@@ -90,7 +91,7 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-820
-	public void throwsAppropriateExceptionIfTheInvocationHasNoArguments() throws Throwable {
+	void throwsAppropriateExceptionIfTheInvocationHasNoArguments() throws Throwable {
 
 		Source source = new Source();
 
@@ -102,7 +103,7 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATACMNS-820
-	public void throwsAppropriateExceptionIfThePropertyCannotWritten() throws Throwable {
+	void throwsAppropriateExceptionIfThePropertyCannotWritten() throws Throwable {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setGarbage", String.class));
 		when(invocation.getArguments()).thenReturn(new Object[] { "Carl" });

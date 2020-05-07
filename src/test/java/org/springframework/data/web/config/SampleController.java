@@ -31,10 +31,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author Oliver Gierke
  */
 @Controller
-public class SampleController {
+class SampleController {
 
 	@RequestMapping("/proxy")
-	public String someMethod(SampleDto sampleDto) {
+	String someMethod(SampleDto sampleDto) {
 
 		assertThat(sampleDto).isNotNull();
 		assertThat(sampleDto.getName()).isEqualTo("Foo");

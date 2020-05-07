@@ -21,7 +21,8 @@ import static org.springframework.data.repository.support.RepositoryInvocationTe
 
 import java.lang.reflect.Method;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +31,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
-import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
+import org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 import org.springframework.format.support.DefaultFormattingConversionService;
 
 /**
@@ -38,10 +39,10 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  *
  * @author Oliver Gierke
  */
-public class PaginginAndSortingRepositoryInvokerUnitTests {
+class PaginginAndSortingRepositoryInvokerUnitTests {
 
 	@Test // DATACMNS-589
-	public void invokesFindAllWithPageableByDefault() throws Exception {
+	void invokesFindAllWithPageableByDefault() throws Exception {
 
 		Repository repository = mock(Repository.class);
 		Method method = PagingAndSortingRepository.class.getMethod("findAll", Pageable.class);
@@ -51,7 +52,7 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesFindAllWithSortByDefault() throws Exception {
+	void invokesFindAllWithSortByDefault() throws Exception {
 
 		Repository repository = mock(Repository.class);
 		Method method = PagingAndSortingRepository.class.getMethod("findAll", Sort.class);
@@ -61,7 +62,7 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesRedeclaredFindAllWithPageable() throws Exception {
+	void invokesRedeclaredFindAllWithPageable() throws Exception {
 
 		RepositoryWithRedeclaredFindAllWithPageable repository = mock(RepositoryWithRedeclaredFindAllWithPageable.class);
 		Method method = RepositoryWithRedeclaredFindAllWithPageable.class.getMethod("findAll", Pageable.class);
@@ -73,7 +74,7 @@ public class PaginginAndSortingRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesRedeclaredFindAllWithSort() throws Exception {
+	void invokesRedeclaredFindAllWithSort() throws Exception {
 
 		RepositoryWithRedeclaredFindAllWithSort repository = mock(RepositoryWithRedeclaredFindAllWithSort.class);
 		Method method = RepositoryWithRedeclaredFindAllWithSort.class.getMethod("findAll", Sort.class);

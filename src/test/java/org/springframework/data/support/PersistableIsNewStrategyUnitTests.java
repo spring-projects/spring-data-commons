@@ -17,7 +17,7 @@ package org.springframework.data.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Persistable;
 
 /**
@@ -25,12 +25,12 @@ import org.springframework.data.domain.Persistable;
  *
  * @author Oliver Gierke
  */
-public class PersistableIsNewStrategyUnitTests {
+class PersistableIsNewStrategyUnitTests {
 
 	IsNewStrategy strategy = PersistableIsNewStrategy.INSTANCE;
 
 	@Test
-	public void invokesPersistableIsNewForTest() {
+	void invokesPersistableIsNewForTest() {
 
 		PersistableEntity entity = new PersistableEntity();
 		assertThat(strategy.isNew(entity)).isTrue();
@@ -40,7 +40,7 @@ public class PersistableIsNewStrategyUnitTests {
 	}
 
 	@Test
-	public void rejectsNonPersistableEntity() {
+	void rejectsNonPersistableEntity() {
 		assertThatIllegalArgumentException().isThrownBy(() -> strategy.isNew(new Object()));
 	}
 

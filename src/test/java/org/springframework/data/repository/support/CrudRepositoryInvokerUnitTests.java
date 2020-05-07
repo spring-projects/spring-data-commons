@@ -25,11 +25,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,7 +41,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.repository.support.RepositoryInvocationTestUtils.VerifyingMethodInterceptor;
+import org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -50,14 +51,14 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CrudRepositoryInvokerUnitTests {
+@ExtendWith(MockitoExtension.class)
+class CrudRepositoryInvokerUnitTests {
 
 	@Mock PersonRepository personRepository;
 	@Mock OrderRepository orderRepository;
 
 	@Test // DATACMNS-589, DATAREST-216
-	public void invokesRedeclaredSave() {
+	void invokesRedeclaredSave() {
 
 		when(orderRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
 
@@ -65,38 +66,38 @@ public class CrudRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589, DATAREST-216
-	public void invokesRedeclaredFindOne() {
+	void invokesRedeclaredFindOne() {
 		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeFindById(1L);
 	}
 
 	@Test // DATACMNS-589
-	public void invokesRedeclaredDelete() throws Exception {
+	void invokesRedeclaredDelete() throws Exception {
 		getInvokerFor(orderRepository, expectInvocationOnType(OrderRepository.class)).invokeDeleteById(1L);
 	}
 
 	@Test // DATACMNS-589
-	public void invokesSaveOnCrudRepository() throws Exception {
+	void invokesSaveOnCrudRepository() throws Exception {
 
 		Method method = CrudRepository.class.getMethod("save", Object.class);
 		getInvokerFor(personRepository, expectInvocationOf(method)).invokeSave(new Person());
 	}
 
 	@Test // DATACMNS-589
-	public void invokesFindOneOnCrudRepository() throws Exception {
+	void invokesFindOneOnCrudRepository() throws Exception {
 
 		Method method = CrudRepository.class.getMethod("findById", Object.class);
 		getInvokerFor(personRepository, expectInvocationOf(method)).invokeFindById(1L);
 	}
 
 	@Test // DATACMNS-589, DATAREST-216
-	public void invokesDeleteOnCrudRepository() throws Exception {
+	void invokesDeleteOnCrudRepository() throws Exception {
 
 		Method method = CrudRepository.class.getMethod("deleteById", Object.class);
 		getInvokerFor(personRepository, expectInvocationOf(method)).invokeDeleteById(1L);
 	}
 
 	@Test // DATACMNS-589
-	public void invokesFindAllOnCrudRepository() throws Exception {
+	void invokesFindAllOnCrudRepository() throws Exception {
 
 		Method method = CrudRepository.class.getMethod("findAll");
 
@@ -105,7 +106,7 @@ public class CrudRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesCustomFindAllTakingASort() throws Exception {
+	void invokesCustomFindAllTakingASort() throws Exception {
 
 		CrudWithFindAllWithSort repository = mock(CrudWithFindAllWithSort.class);
 
@@ -117,7 +118,7 @@ public class CrudRepositoryInvokerUnitTests {
 	}
 
 	@Test // DATACMNS-589
-	public void invokesCustomFindAllTakingAPageable() throws Exception {
+	void invokesCustomFindAllTakingAPageable() throws Exception {
 
 		CrudWithFindAllWithPageable repository = mock(CrudWithFindAllWithPageable.class);
 
@@ -154,7 +155,7 @@ public class CrudRepositoryInvokerUnitTests {
 
 	static class Person {}
 
-	public interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
+	interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
 
 		Page<Person> findByFirstName(@Param("firstName") String firstName, Pageable pageable);
 

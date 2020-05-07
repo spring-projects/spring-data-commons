@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.geo.Metrics.*;
 
 import org.assertj.core.data.Offset;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Range.Bound;
 import org.springframework.util.SerializationUtils;
@@ -31,19 +31,19 @@ import org.springframework.util.SerializationUtils;
  * @author Thomas Darimont
  * @author Mark Paluch
  */
-public class DistanceUnitTests {
+class DistanceUnitTests {
 
 	private static final Offset<Double> EPS = Offset.offset(0.000000001);
 	private static final double TEN_MILES_NORMALIZED = 0.002523219294755161;
 	private static final double TEN_KM_NORMALIZED = 0.001567855942887398;
 
 	@Test // DATACMNS-437
-	public void defaultsMetricToNeutralOne() {
+	void defaultsMetricToNeutralOne() {
 		assertThat(new Distance(2.5).getMetric()).isEqualTo((Metric) Metrics.NEUTRAL);
 	}
 
 	@Test // DATACMNS-437
-	public void addsDistancesWithoutExplicitMetric() {
+	void addsDistancesWithoutExplicitMetric() {
 
 		Distance left = new Distance(2.5, KILOMETERS);
 		Distance right = new Distance(2.5, KILOMETERS);
@@ -52,7 +52,7 @@ public class DistanceUnitTests {
 	}
 
 	@Test // DATACMNS-437
-	public void addsDistancesWithExplicitMetric() {
+	void addsDistancesWithExplicitMetric() {
 
 		Distance left = new Distance(2.5, KILOMETERS);
 		Distance right = new Distance(2.5, KILOMETERS);
@@ -61,7 +61,7 @@ public class DistanceUnitTests {
 	}
 
 	@Test // DATACMNS-474
-	public void distanceWithSameMetricShoudEqualAfterConversion() {
+	void distanceWithSameMetricShoudEqualAfterConversion() {
 
 		assertThat(new Distance(1).in(NEUTRAL)).isEqualTo(new Distance(1));
 		assertThat(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS)).isEqualTo(new Distance(10, KILOMETERS));
@@ -69,14 +69,14 @@ public class DistanceUnitTests {
 	}
 
 	@Test // DATACMNS-474
-	public void distanceWithDifferentMetricShoudEqualAfterConversion() {
+	void distanceWithDifferentMetricShoudEqualAfterConversion() {
 
 		assertThat(new Distance(10, MILES)).isEqualTo(new Distance(TEN_MILES_NORMALIZED).in(MILES));
 		assertThat(new Distance(10, KILOMETERS)).isEqualTo(new Distance(TEN_KM_NORMALIZED).in(KILOMETERS));
 	}
 
 	@Test // DATACMNS-474
-	public void conversionShouldProduceCorrectNormalizedValue() {
+	void conversionShouldProduceCorrectNormalizedValue() {
 
 		assertThat(new Distance(TEN_KM_NORMALIZED, NEUTRAL).in(KILOMETERS).getNormalizedValue())
 				.isCloseTo(new Distance(10, KILOMETERS).getNormalizedValue(), EPS);
@@ -98,7 +98,7 @@ public class DistanceUnitTests {
 	}
 
 	@Test // DATACMNS-474
-	public void toStringAfterConversion() {
+	void toStringAfterConversion() {
 
 		assertThat(new Distance(10, KILOMETERS).in(MILES).toString())
 				.isEqualTo(new Distance(6.21371256214785, MILES).toString());
@@ -107,7 +107,7 @@ public class DistanceUnitTests {
 	}
 
 	@Test // DATACMNS-482
-	public void testSerialization() {
+	void testSerialization() {
 
 		Distance dist = new Distance(10, KILOMETERS);
 
@@ -116,12 +116,12 @@ public class DistanceUnitTests {
 	}
 
 	@Test // DATACMNS-626
-	public void returnsMetricsAbbreviationAsUnit() {
+	void returnsMetricsAbbreviationAsUnit() {
 		assertThat(new Distance(10, KILOMETERS).getUnit()).isEqualTo("km");
 	}
 
 	@Test // DATACMNS-651
-	public void createsARangeCorrectly() {
+	void createsARangeCorrectly() {
 
 		Distance twoKilometers = new Distance(2, KILOMETERS);
 		Distance tenKilometers = new Distance(10, KILOMETERS);
@@ -134,7 +134,7 @@ public class DistanceUnitTests {
 	}
 
 	@Test // DATACMNS-651
-	public void createsARangeFromPiecesCorrectly() {
+	void createsARangeFromPiecesCorrectly() {
 
 		Distance twoKilometers = new Distance(2, KILOMETERS);
 		Distance tenKilometers = new Distance(10, KILOMETERS);
@@ -147,7 +147,7 @@ public class DistanceUnitTests {
 	}
 
 	@Test // DATACMNS-651
-	public void implementsComparableCorrectly() {
+	void implementsComparableCorrectly() {
 
 		Distance twoKilometers = new Distance(2, KILOMETERS);
 		Distance tenKilometers = new Distance(10, KILOMETERS);

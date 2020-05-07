@@ -16,9 +16,9 @@
 package org.springframework.data.projection;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
+import static org.assertj.core.api.Assumptions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.MethodHandleLookup;
 import org.springframework.data.util.Version;
 
@@ -28,21 +28,21 @@ import org.springframework.data.util.Version;
  * @author Mark Paluch
  * @author Oliver Gierke
  */
-public class DefaultMethodInvokingMethodInterceptorUnitTests {
+class DefaultMethodInvokingMethodInterceptorUnitTests {
 
 	@Test // DATACMNS-1376
-	public void shouldApplyEncapsulatedLookupOnJava9AndHigher() {
+	void shouldApplyEncapsulatedLookupOnJava9AndHigher() {
 
-		assumeTrue(Version.javaVersion().isGreaterThanOrEqualTo(Version.parse("9.0")));
+		assumeThat(Version.javaVersion()).isGreaterThanOrEqualTo(Version.parse("9.0"));
 
 		assertThat(MethodHandleLookup.getMethodHandleLookup()).isEqualTo(MethodHandleLookup.ENCAPSULATED);
 		assertThat(MethodHandleLookup.ENCAPSULATED.isAvailable()).isTrue();
 	}
 
 	@Test // DATACMNS-1376
-	public void shouldApplyOpenLookupOnJava8() {
+	void shouldApplyOpenLookupOnJava8() {
 
-		assumeTrue(Version.javaVersion().isLessThan(Version.parse("1.8.9999")));
+		assumeThat(Version.javaVersion()).isLessThan(Version.parse("1.8.9999"));
 
 		assertThat(MethodHandleLookup.getMethodHandleLookup()).isEqualTo(MethodHandleLookup.OPEN);
 		assertThat(MethodHandleLookup.OPEN.isAvailable()).isTrue();

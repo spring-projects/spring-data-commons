@@ -18,8 +18,8 @@ package org.springframework.data.repository.kotlin
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.data.repository.core.RepositoryMetadata
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory
 import org.springframework.data.repository.core.support.RepositoryComposition
@@ -38,7 +38,7 @@ class CoroutineCrudRepositoryCustomImplementationUnitTests {
 	lateinit var factory: DummyReactiveRepositoryFactory
 	lateinit var coRepository: MyCoRepository
 
-	@Before
+	@BeforeEach
 	fun before() {
 		factory = CustomDummyReactiveRepositoryFactory(backingRepository)
 		coRepository = factory.getRepository(MyCoRepository::class.java)

@@ -24,6 +24,6 @@ import org.springframework.data.repository.Repository;
  * @author Mark Paluch
  */
 @NoRepositoryBean
-public interface ExcludedRepository<T, ID> extends Repository<T, ID> {
+interface ExcludedRepository<T, ID> extends Repository<T, ID> {
 	String getImplementationId();
 }

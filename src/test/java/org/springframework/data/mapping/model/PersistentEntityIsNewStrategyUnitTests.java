@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import lombok.AllArgsConstructor;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.domain.Persistable;
@@ -33,12 +33,12 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  * @soundtrack Scary Pockets - Crash Into Me (Dave Matthews Band Cover feat. Julia Nunes) -
  *             https://www.youtube.com/watch?v=syGlBNVGEqU
  */
-public class PersistentEntityIsNewStrategyUnitTests {
+class PersistentEntityIsNewStrategyUnitTests {
 
-	SampleMappingContext context = new SampleMappingContext();
+	private SampleMappingContext context = new SampleMappingContext();
 
 	@Test // DATACMNS-133
-	public void detectsNewEntityForPrimitiveId() {
+	void detectsNewEntityForPrimitiveId() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PrimitiveIdEntity.class);
 
@@ -47,7 +47,7 @@ public class PersistentEntityIsNewStrategyUnitTests {
 	}
 
 	@Test // DATACMNS-133
-	public void detectsNotNewEntityForPrimitiveId() {
+	void detectsNotNewEntityForPrimitiveId() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PrimitiveIdEntity.class);
 
@@ -58,7 +58,7 @@ public class PersistentEntityIsNewStrategyUnitTests {
 	}
 
 	@Test // DATACMNS-133
-	public void detectsNewEntityForWrapperId() {
+	void detectsNewEntityForWrapperId() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PrimitiveWrapperIdEntity.class);
 
@@ -67,7 +67,7 @@ public class PersistentEntityIsNewStrategyUnitTests {
 	}
 
 	@Test // DATACMNS-133
-	public void detectsNotNewEntityForWrapperId() {
+	void detectsNotNewEntityForWrapperId() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PrimitiveWrapperIdEntity.class);
 
@@ -78,7 +78,7 @@ public class PersistentEntityIsNewStrategyUnitTests {
 	}
 
 	@Test // DATACMNS-133
-	public void rejectsUnsupportedIdentifierType() {
+	void rejectsUnsupportedIdentifierType() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(UnsupportedPrimitiveIdEntity.class);
 
@@ -88,7 +88,7 @@ public class PersistentEntityIsNewStrategyUnitTests {
 	}
 
 	@Test // DATACMNS-1333
-	public void discoversNewPersistableEntity() {
+	void discoversNewPersistableEntity() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PersistableEntity.class);
 
@@ -96,7 +96,7 @@ public class PersistentEntityIsNewStrategyUnitTests {
 	}
 
 	@Test // DATACMNS-1333
-	public void discoversNonNewPersistableEntity() {
+	void discoversNonNewPersistableEntity() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PersistableEntity.class);
 
@@ -104,7 +104,7 @@ public class PersistentEntityIsNewStrategyUnitTests {
 	}
 
 	@Test // DATACMNS-1333
-	public void prefersVersionOverIdentifier() {
+	void prefersVersionOverIdentifier() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(VersionedEntity.class);
 
@@ -118,7 +118,7 @@ public class PersistentEntityIsNewStrategyUnitTests {
 	}
 
 	@Test // DATACMNS-1333
-	public void considersEntityWithoutIdNew() {
+	void considersEntityWithoutIdNew() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(NoIdEntity.class);
 
@@ -170,5 +170,5 @@ public class PersistentEntityIsNewStrategyUnitTests {
 		}
 	}
 
-	static class NoIdEntity {}
+	private static class NoIdEntity {}
 }

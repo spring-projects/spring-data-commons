@@ -17,7 +17,7 @@ package org.springframework.data.querydsl;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.querydsl.core.annotations.QueryEntity;
 
@@ -27,28 +27,28 @@ import com.querydsl.core.annotations.QueryEntity;
  * @author Oliver Gierke
  * @author Jens Schauder
  */
-public class SimpleEntityPathResolverUnitTests {
+class SimpleEntityPathResolverUnitTests {
 
 	EntityPathResolver resolver = SimpleEntityPathResolver.INSTANCE;
 
 	@Test
-	public void createsRepositoryFromDomainClassCorrectly() throws Exception {
+	void createsRepositoryFromDomainClassCorrectly() throws Exception {
 		assertThat(resolver.createPath(User.class)).isInstanceOf(QUser.class);
 	}
 
 	@Test
-	public void resolvesEntityPathForInnerClassCorrectly() throws Exception {
+	void resolvesEntityPathForInnerClassCorrectly() throws Exception {
 		assertThat(resolver.createPath(NamedUser.class)).isInstanceOf(QSimpleEntityPathResolverUnitTests_NamedUser.class);
 	}
 
 	@Test
-	public void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme() {
+	void rejectsClassWithoutQueryClassConfrmingToTheNamingScheme() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> resolver.createPath(QSimpleEntityPathResolverUnitTests_Sample.class));
 	}
 
 	@Test // DATACMNS-1235
-	public void handlesPackageSuffixCorrectly() {
+	void handlesPackageSuffixCorrectly() {
 		assertThat(new SimpleEntityPathResolver(".suffix").createPath(User.class))
 				.isInstanceOf(org.springframework.data.querydsl.suffix.QUser.class);
 	}

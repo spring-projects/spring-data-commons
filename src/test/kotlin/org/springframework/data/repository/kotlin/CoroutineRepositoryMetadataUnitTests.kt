@@ -17,7 +17,7 @@ package org.springframework.data.repository.kotlin
 
 import kotlinx.coroutines.flow.Flow
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata
 import org.springframework.data.repository.sample.User
 import org.springframework.data.util.ReflectionUtils

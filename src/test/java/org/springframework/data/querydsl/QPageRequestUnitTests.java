@@ -17,7 +17,8 @@ package org.springframework.data.querydsl;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.AbstractPageRequestUnitTests;
 
@@ -25,6 +26,7 @@ import org.springframework.data.domain.AbstractPageRequestUnitTests;
  * @author Thomas Darimont
  */
 public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.AbstractPageRequestUnitTests#newPageRequest(int, int)
@@ -35,7 +37,7 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 	}
 
 	@Test
-	public void constructsQPageRequestWithOrderSpecifiers() {
+	void constructsQPageRequestWithOrderSpecifiers() {
 
 		QUser user = QUser.user;
 		QPageRequest pageRequest = QPageRequest.of(0, 10, user.firstname.asc());
@@ -44,7 +46,7 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 	}
 
 	@Test
-	public void constructsQPageRequestWithQSort() {
+	void constructsQPageRequestWithQSort() {
 
 		QUser user = QUser.user;
 		QPageRequest pageRequest = QPageRequest.of(0, 10, QSort.by(user.firstname.asc()));
@@ -53,7 +55,7 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 	}
 
 	@Test // DATACMNS-1581
-	public void rejectsNullSort() {
+	void rejectsNullSort() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
 				.isThrownBy(() -> QPageRequest.of(0, 10, (QSort) null));

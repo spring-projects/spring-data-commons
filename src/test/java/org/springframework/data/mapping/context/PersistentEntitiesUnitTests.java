@@ -20,10 +20,11 @@ import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.PersistentEntity;
@@ -34,19 +35,19 @@ import org.springframework.data.util.ClassTypeInformation;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class PersistentEntitiesUnitTests {
+@ExtendWith(MockitoExtension.class)
+class PersistentEntitiesUnitTests {
 
 	@Mock SampleMappingContext first;
 	@Mock SampleMappingContext second;
 
 	@Test // DATACMNS-458
-	public void rejectsNullMappingContexts() {
+	void rejectsNullMappingContexts() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new PersistentEntities(null));
 	}
 
 	@Test // DATACMNS-458
-	public void returnsPersistentEntitiesFromMappingContexts() {
+	void returnsPersistentEntitiesFromMappingContexts() {
 
 		when(first.hasPersistentEntityFor(Sample.class)).thenReturn(false);
 		when(second.hasPersistentEntityFor(Sample.class)).thenReturn(true);
@@ -61,7 +62,7 @@ public class PersistentEntitiesUnitTests {
 	}
 
 	@Test // DATACMNS-458
-	public void indicatesManagedType() {
+	void indicatesManagedType() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		context.setInitialEntitySet(Collections.singleton(Sample.class));
@@ -77,7 +78,7 @@ public class PersistentEntitiesUnitTests {
 	}
 
 	@Test // DATACMNS-1318
-	public void detectsReferredToEntity() {
+	void detectsReferredToEntity() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		context.getPersistentEntity(Sample.class);
@@ -92,7 +93,7 @@ public class PersistentEntitiesUnitTests {
 	}
 
 	@Test // DATACMNS-1318
-	public void rejectsAmbiguousIdentifierType() {
+	void rejectsAmbiguousIdentifierType() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		context.getPersistentEntity(FirstWithLongId.class);
@@ -111,7 +112,7 @@ public class PersistentEntitiesUnitTests {
 	}
 
 	@Test // DATACMNS-1318
-	public void allowsExplicitlyQualifiedReference() {
+	void allowsExplicitlyQualifiedReference() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		context.getPersistentEntity(FirstWithLongId.class);
@@ -127,7 +128,7 @@ public class PersistentEntitiesUnitTests {
 	}
 
 	@Test // DATACMNS-1318
-	public void allowsGenericReference() {
+	void allowsGenericReference() {
 
 		SampleMappingContext context = new SampleMappingContext();
 		context.getPersistentEntity(FirstWithGenericId.class);

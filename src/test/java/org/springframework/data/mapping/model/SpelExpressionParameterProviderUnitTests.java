@@ -18,11 +18,14 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTests.SamplePersistentProperty;
@@ -33,20 +36,21 @@ import org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTest
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class SpelExpressionParameterProviderUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class SpelExpressionParameterProviderUnitTests {
 
 	@Mock SpELExpressionEvaluator evaluator;
 	@Mock ParameterValueProvider<SamplePersistentProperty> delegate;
 	@Mock ConversionService conversionService;
 
-	SpELExpressionParameterValueProvider<SamplePersistentProperty> provider;
+	private SpELExpressionParameterValueProvider<SamplePersistentProperty> provider;
 
-	Parameter<Object, SamplePersistentProperty> parameter;
+	private Parameter<Object, SamplePersistentProperty> parameter;
 
-	@Before
+	@BeforeEach
 	@SuppressWarnings("unchecked")
-	public void setUp() {
+	void setUp() {
 		provider = new SpELExpressionParameterValueProvider<>(evaluator, conversionService, delegate);
 
 		parameter = mock(Parameter.class);
@@ -56,7 +60,7 @@ public class SpelExpressionParameterProviderUnitTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void delegatesIfParameterDoesNotHaveASpELExpression() {
+	void delegatesIfParameterDoesNotHaveASpELExpression() {
 
 		Parameter<Object, SamplePersistentProperty> parameter = mock(Parameter.class);
 		when(parameter.hasSpelExpression()).thenReturn(false);
@@ -67,7 +71,7 @@ public class SpelExpressionParameterProviderUnitTests {
 	}
 
 	@Test
-	public void evaluatesSpELExpression() {
+	void evaluatesSpELExpression() {
 
 		when(parameter.getSpelExpression()).thenReturn("expression");
 
@@ -77,7 +81,7 @@ public class SpelExpressionParameterProviderUnitTests {
 	}
 
 	@Test
-	public void handsSpELValueToConversionService() {
+	void handsSpELValueToConversionService() {
 
 		doReturn("source").when(parameter).getSpelExpression();
 		doReturn("value").when(evaluator).evaluate(any());
@@ -89,7 +93,7 @@ public class SpelExpressionParameterProviderUnitTests {
 	}
 
 	@Test
-	public void doesNotConvertNullValue() {
+	void doesNotConvertNullValue() {
 
 		doReturn("source").when(parameter).getSpelExpression();
 		doReturn(null).when(evaluator).evaluate(any());
@@ -101,7 +105,7 @@ public class SpelExpressionParameterProviderUnitTests {
 	}
 
 	@Test
-	public void returnsMassagedObjectOnOverride() {
+	void returnsMassagedObjectOnOverride() {
 
 		provider = new SpELExpressionParameterValueProvider<SamplePersistentProperty>(evaluator, conversionService,
 				delegate) {

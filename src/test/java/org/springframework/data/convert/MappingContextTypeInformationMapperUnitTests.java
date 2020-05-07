@@ -20,8 +20,8 @@ import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
@@ -35,23 +35,23 @@ import org.springframework.data.util.ClassTypeInformation;
  *
  * @author Oliver Gierke
  */
-public class MappingContextTypeInformationMapperUnitTests {
+class MappingContextTypeInformationMapperUnitTests {
 
 	SampleMappingContext mappingContext;
 	TypeInformationMapper mapper;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		mappingContext = new SampleMappingContext();
 	}
 
 	@Test
-	public void rejectsNullMappingContext() {
+	void rejectsNullMappingContext() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new MappingContextTypeInformationMapper(null));
 	}
 
 	@Test
-	public void extractsAliasInfoFromMappingContext() {
+	void extractsAliasInfoFromMappingContext() {
 
 		mappingContext.setInitialEntitySet(Collections.singleton(Entity.class));
 		mappingContext.initialize();
@@ -62,7 +62,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 	}
 
 	@Test
-	public void extractsAliasForUnknownType() {
+	void extractsAliasForUnknownType() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
@@ -73,7 +73,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 	}
 
 	@Test
-	public void doesNotReturnTypeAliasForSimpleType() {
+	void doesNotReturnTypeAliasForSimpleType() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
@@ -83,7 +83,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 	}
 
 	@Test
-	public void detectsTypeForUnknownEntity() {
+	void detectsTypeForUnknownEntity() {
 
 		SampleMappingContext mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
@@ -99,7 +99,7 @@ public class MappingContextTypeInformationMapperUnitTests {
 
 	@Test // DATACMNS-485
 	@SuppressWarnings("unchecked")
-	public void createsTypeMapperForGenericTypesWithDifferentBindings() {
+	void createsTypeMapperForGenericTypesWithDifferentBindings() {
 
 		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(TypeAlias.class);
 

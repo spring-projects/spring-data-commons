@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 /**
@@ -31,28 +31,28 @@ import org.springframework.http.MediaType;
  * @soundtrack Richard Spaven - Tribute (Whole Other*)
  * @since 1.13
  */
-public class ProjectingJackson2HttpMessageConverterUnitTests {
+class ProjectingJackson2HttpMessageConverterUnitTests {
 
 	ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter();
 	MediaType ANYTHING_JSON = MediaType.parseMediaType("application/*+json");
 
 	@Test // DATCMNS-885
-	public void canReadJsonIntoAnnotatedInterface() {
+	void canReadJsonIntoAnnotatedInterface() {
 		assertThat(converter.canRead(SampleInterface.class, ANYTHING_JSON)).isTrue();
 	}
 
 	@Test // DATCMNS-885
-	public void cannotReadUnannotatedInterface() {
+	void cannotReadUnannotatedInterface() {
 		assertThat(converter.canRead(UnannotatedInterface.class, ANYTHING_JSON)).isFalse();
 	}
 
 	@Test // DATCMNS-885
-	public void cannotReadClass() {
+	void cannotReadClass() {
 		assertThat(converter.canRead(SampleClass.class, ANYTHING_JSON)).isFalse();
 	}
 
 	@Test // DATACMNS-972
-	public void doesNotConsiderTypeVariableBoundTo() throws Throwable {
+	void doesNotConsiderTypeVariableBoundTo() throws Throwable {
 
 		Method method = BaseController.class.getDeclaredMethod("createEntity", AbstractDto.class);
 		Type type = method.getGenericParameterTypes()[0];
@@ -61,7 +61,7 @@ public class ProjectingJackson2HttpMessageConverterUnitTests {
 	}
 
 	@Test // DATACMNS-972
-	public void genericTypeOnConcreteOne() throws Throwable {
+	void genericTypeOnConcreteOne() throws Throwable {
 
 		Method method = ConcreteController.class.getMethod("createEntity", AbstractDto.class);
 		Type type = method.getGenericParameterTypes()[0];

@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.ConfigurablePropertyAccessor;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.NotWritablePropertyException;
@@ -42,10 +42,10 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  *
  * @author Oliver Gierke
  */
-public class MapDataBinderUnitTests {
+class MapDataBinderUnitTests {
 
 	@Test // DATACMNS-630
-	public void honorsFormattingAnnotationOnAccessor() {
+	void honorsFormattingAnnotationOnAccessor() {
 
 		Date reference = new Date();
 
@@ -59,7 +59,7 @@ public class MapDataBinderUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void bindsNestedCollectionElement() {
+	void bindsNestedCollectionElement() {
 
 		MutablePropertyValues values = new MutablePropertyValues();
 		values.add("foo.bar.fooBar[0]", "String");
@@ -73,7 +73,7 @@ public class MapDataBinderUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void bindsNestedPrimitive() {
+	void bindsNestedPrimitive() {
 
 		MutablePropertyValues values = new MutablePropertyValues();
 		values.add("foo.firstname", "Dave");
@@ -89,7 +89,7 @@ public class MapDataBinderUnitTests {
 	}
 
 	@Test // DATACMNS-630
-	public void skipsPropertyNotExposedByTheTypeHierarchy() {
+	void skipsPropertyNotExposedByTheTypeHierarchy() {
 
 		MutablePropertyValues values = new MutablePropertyValues();
 		values.add("somethingWeird", "Value");
@@ -98,7 +98,7 @@ public class MapDataBinderUnitTests {
 	}
 
 	@Test // DATACMNS-1264
-	public void dropsMapExpressionsForCollectionReferences() {
+	void dropsMapExpressionsForCollectionReferences() {
 
 		ConfigurablePropertyAccessor accessor = new MapDataBinder(Bar.class, new DefaultFormattingConversionService())
 				.getPropertyAccessor();
@@ -109,7 +109,7 @@ public class MapDataBinderUnitTests {
 	}
 
 	@Test // DATACMNS-1264
-	public void rejectsExpressionContainingTypeExpression() {
+	void rejectsExpressionContainingTypeExpression() {
 
 		ConfigurablePropertyAccessor accessor = new MapDataBinder(Bar.class, new DefaultFormattingConversionService())
 				.getPropertyAccessor();

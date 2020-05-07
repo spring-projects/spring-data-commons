@@ -20,21 +20,21 @@ import static org.assertj.core.api.Assertions.*;
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * CDI integration tests for composed repositories.
  * 
  * @author Mark Paluch
  */
-public class RepositoryFragmentsIntegrationTests {
+class RepositoryFragmentsIntegrationTests {
 
 	private static SeContainer container;
 
-	@BeforeClass
-	public static void setUp() {
+	@BeforeAll
+	static void setUp() {
 
 		container = SeContainerInitializer.newInstance() //
 				.disableDiscovery() //
@@ -43,7 +43,7 @@ public class RepositoryFragmentsIntegrationTests {
 	}
 
 	@Test // DATACMNS-1233
-	public void shouldInvokeCustomImplementationLast() {
+	void shouldInvokeCustomImplementationLast() {
 
 		ComposedRepository repository = getBean(ComposedRepository.class);
 		ComposedRepositoryImpl customImplementation = getBean(ComposedRepositoryImpl.class);
@@ -55,7 +55,7 @@ public class RepositoryFragmentsIntegrationTests {
 	}
 
 	@Test // DATACMNS-1233
-	public void shouldRespectInterfaceOrder() {
+	void shouldRespectInterfaceOrder() {
 
 		ComposedRepository repository = getBean(ComposedRepository.class);
 		FragmentInterfaceImpl fragment = getBean(FragmentInterfaceImpl.class);
@@ -70,8 +70,8 @@ public class RepositoryFragmentsIntegrationTests {
 		return container.select(type).get();
 	}
 
-	@AfterClass
-	public static void tearDown() {
+	@AfterAll
+	static void tearDown() {
 		container.close();
 	}
 }

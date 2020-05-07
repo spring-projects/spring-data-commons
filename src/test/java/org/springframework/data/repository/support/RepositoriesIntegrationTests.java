@@ -18,15 +18,14 @@ package org.springframework.data.repository.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.sample.Product;
 import org.springframework.data.repository.sample.ProductRepository;
 import org.springframework.data.repository.sample.SampleConfiguration;
 import org.springframework.data.repository.sample.User;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * Integration tests for {@link Repositories}.
@@ -34,15 +33,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SampleConfiguration.class)
-public class RepositoriesIntegrationTests {
+@SpringJUnitConfig(classes = SampleConfiguration.class)
+class RepositoriesIntegrationTests {
 
 	@Autowired Repositories repositories;
 	@Autowired ProductRepository productRepository;
 
 	@Test
-	public void detectsRepositories() {
+	void detectsRepositories() {
 
 		assertThat(repositories).isNotNull();
 		assertThat(repositories.hasRepositoryFor(User.class)).isTrue();
@@ -50,7 +48,7 @@ public class RepositoriesIntegrationTests {
 	}
 
 	@Test // DATACMNS-376
-	public void returnsPersistentEntityForProxiedClass() {
+	void returnsPersistentEntityForProxiedClass() {
 
 		User user = mock(User.class);
 		assertThat(repositories.getPersistentEntity(user.getClass())).isNotNull();

@@ -17,18 +17,18 @@ package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link RepositoryFragment}.
  *
  * @author Mark Paluch
  */
-public class RepositoryFragmentUnitTests {
+class RepositoryFragmentUnitTests {
 
 	@Test // DATACMNS-1289
 	@SuppressWarnings("unchecked")
-	public void fragmentCreationFromUnrelatedTypesShouldFail() {
+	void fragmentCreationFromUnrelatedTypesShouldFail() {
 
 		assertThatThrownBy(() -> RepositoryFragment.implemented((Class) CustomFragment.class, new UnrelatedImpl()))
 				.hasMessageMatching("Fragment implementation .*UnrelatedImpl does not implement .*!")
@@ -36,7 +36,7 @@ public class RepositoryFragmentUnitTests {
 	}
 
 	@Test // DATACMNS-1289
-	public void fragmentCreationFromRelatedTypesShouldCreateNewFragment() {
+	void fragmentCreationFromRelatedTypesShouldCreateNewFragment() {
 		assertThat(RepositoryFragment.implemented(CustomFragment.class, new CustomFragmentImpl())).isNotNull();
 	}
 

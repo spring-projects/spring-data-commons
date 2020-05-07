@@ -55,7 +55,7 @@ import org.threeten.bp.LocalDateTime;
  * @author Mark Paluch
  * @since 2.0
  */
-public class CustomConversionsUnitTests {
+class CustomConversionsUnitTests {
 
 	static final SimpleTypeHolder DATE_EXCLUDING_SIMPLE_TYPE_HOLDER = new SimpleTypeHolder(
 			Collections.singleton(Date.class), true) {
@@ -67,7 +67,7 @@ public class CustomConversionsUnitTests {
 	};
 
 	@Test // DATACMNS-1035
-	public void findsBasicReadAndWriteConversions() {
+	void findsBasicReadAndWriteConversions() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(FormatToStringConverter.INSTANCE, StringToFormatConverter.INSTANCE));
@@ -80,7 +80,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATACMNS-1035
-	public void considersSubtypesCorrectly() {
+	void considersSubtypesCorrectly() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(NumberToStringConverter.INSTANCE, StringToNumberConverter.INSTANCE));
@@ -90,7 +90,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATACMNS-1101
-	public void considersSubtypeCachingCorrectly() {
+	void considersSubtypeCachingCorrectly() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(NumberToStringConverter.INSTANCE, StringToNumberConverter.INSTANCE));
@@ -101,7 +101,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATACMNS-1035
-	public void populatesConversionServiceCorrectly() {
+	void populatesConversionServiceCorrectly() {
 
 		GenericConversionService conversionService = new DefaultConversionService();
 
@@ -113,7 +113,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATAMONGO-259, DATACMNS-1035
-	public void doesNotConsiderTypeSimpleIfOnlyReadConverterIsRegistered() {
+	void doesNotConsiderTypeSimpleIfOnlyReadConverterIsRegistered() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(StringToFormatConverter.INSTANCE));
@@ -121,7 +121,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATAMONGO-298, DATACMNS-1035
-	public void discoversConvertersForSubtypesOfMongoTypes() {
+	void discoversConvertersForSubtypesOfMongoTypes() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(StringToIntegerConverter.INSTANCE));
@@ -130,7 +130,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATAMONGO-795, DATACMNS-1035
-	public void favorsCustomConverterForIndeterminedTargetType() {
+	void favorsCustomConverterForIndeterminedTargetType() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(DateTimeToStringConverter.INSTANCE));
@@ -138,7 +138,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATAMONGO-881, DATACMNS-1035
-	public void customConverterOverridesDefault() {
+	void customConverterOverridesDefault() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(CustomDateTimeConverter.INSTANCE));
@@ -149,7 +149,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATAMONGO-1001, DATACMNS-1035
-	public void shouldSelectPropertCustomWriteTargetForCglibProxiedType() {
+	void shouldSelectPropertCustomWriteTargetForCglibProxiedType() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(FormatToStringConverter.INSTANCE));
@@ -157,7 +157,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATAMONGO-1001, DATACMNS-1035
-	public void shouldSelectPropertCustomReadTargetForCglibProxiedType() {
+	void shouldSelectPropertCustomReadTargetForCglibProxiedType() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
 				Arrays.asList(CustomObjectToStringConverter.INSTANCE));
@@ -165,7 +165,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATAMONGO-1131, DATACMNS-1035
-	public void registersConvertersForJsr310() {
+	void registersConvertersForJsr310() {
 
 		CustomConversions customConversions = new CustomConversions(StoreConversions.NONE, Collections.emptyList());
 
@@ -173,7 +173,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATAMONGO-1131, DATACMNS-1035
-	public void registersConvertersForThreeTenBackPort() {
+	void registersConvertersForThreeTenBackPort() {
 
 		CustomConversions customConversions = new CustomConversions(StoreConversions.NONE, Collections.emptyList());
 
@@ -181,7 +181,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATAMONGO-1302, DATACMNS-1035
-	public void registersConverterFactoryCorrectly() {
+	void registersConverterFactoryCorrectly() {
 
 		StoreConversions conversions = StoreConversions.of(new SimpleTypeHolder(Collections.singleton(Format.class), true));
 
@@ -192,7 +192,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATACMNS-1034
-	public void registersConverterFromConverterAware() {
+	void registersConverterFromConverterAware() {
 
 		ConverterAware converters = ConverterBuilder //
 				.reading(Locale.class, CustomType.class, left -> new CustomType()) //
@@ -211,7 +211,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATACMNS-1615
-	public void skipsUnsupportedDefaultWritingConverter() {
+	void skipsUnsupportedDefaultWritingConverter() {
 
 		ConverterRegistry registry = mock(ConverterRegistry.class);
 
@@ -222,7 +222,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATACMNS-1665
-	public void registersStoreConverter() {
+	void registersStoreConverter() {
 
 		ConverterRegistry registry = mock(ConverterRegistry.class);
 
@@ -237,7 +237,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATACMNS-1615
-	public void doesNotSkipUnsupportedUserConverter() {
+	void doesNotSkipUnsupportedUserConverter() {
 
 		ConverterRegistry registry = mock(ConverterRegistry.class);
 
@@ -248,7 +248,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATACMNS-1615
-	public void skipsConverterBasedOnConfiguration() {
+	void skipsConverterBasedOnConfiguration() {
 
 		ConverterRegistry registry = mock(ConverterRegistry.class);
 
@@ -260,7 +260,7 @@ public class CustomConversionsUnitTests {
 	}
 
 	@Test // DATACMNS-1615
-	public void doesNotSkipUserConverterConverterEvenWhenConfigurationWouldNotAllowIt() {
+	void doesNotSkipUserConverterConverterEvenWhenConfigurationWouldNotAllowIt() {
 
 		ConverterRegistry registry = mock(ConverterRegistry.class);
 
@@ -381,7 +381,7 @@ public class CustomConversionsUnitTests {
 
 			private final Class<T> targetType;
 
-			public StringToFormat(Class<T> targetType) {
+			StringToFormat(Class<T> targetType) {
 				this.targetType = targetType;
 			}
 

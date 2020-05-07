@@ -22,7 +22,7 @@ import static org.springframework.data.querydsl.QQSortUnitTests_WrapperToWrapWra
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -40,15 +40,15 @@ import com.querydsl.core.types.dsl.StringPath;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-public class QSortUnitTests {
+class QSortUnitTests {
 
 	@Test // DATACMNS-402
-	public void shouldThrowIfNullIsGiven() {
+	void shouldThrowIfNullIsGiven() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new QSort((List<OrderSpecifier<?>>) null));
 	}
 
 	@Test // DATACMNS-402
-	public void sortBySingleProperty() {
+	void sortBySingleProperty() {
 
 		QUser user = QUser.user;
 		QSort qsort = new QSort(user.firstname.asc());
@@ -59,7 +59,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-402
-	public void sortByMultiplyProperties() {
+	void sortByMultiplyProperties() {
 
 		QUser user = QUser.user;
 		QSort qsort = new QSort(user.firstname.asc(), user.lastname.desc());
@@ -72,7 +72,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-402
-	public void sortByMultiplyPropertiesWithAnd() {
+	void sortByMultiplyPropertiesWithAnd() {
 
 		QUser user = QUser.user;
 		QSort qsort = new QSort(user.firstname.asc()).and(new QSort(user.lastname.desc()));
@@ -85,7 +85,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-402
-	public void sortByMultiplyPropertiesWithAndAndVarArgs() {
+	void sortByMultiplyPropertiesWithAndAndVarArgs() {
 
 		QUser user = QUser.user;
 		QSort qsort = new QSort(user.firstname.asc()).and(user.lastname.desc());
@@ -98,7 +98,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-402
-	public void ensureInteroperabilityWithSort() {
+	void ensureInteroperabilityWithSort() {
 
 		QUser user = QUser.user;
 		QSort qsort = new QSort(user.firstname.asc(), user.lastname.desc());
@@ -110,7 +110,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-402
-	public void concatenatesPlainSortCorrectly() {
+	void concatenatesPlainSortCorrectly() {
 
 		QUser user = QUser.user;
 		QSort sort = new QSort(user.firstname.asc());
@@ -121,7 +121,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-566
-	public void shouldSupportSortByOperatorExpressions() {
+	void shouldSupportSortByOperatorExpressions() {
 
 		QUser user = QUser.user;
 		QSort sort = new QSort(user.dateOfBirth.yearMonth().asc());
@@ -133,7 +133,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-621
-	public void shouldCreateSortForNestedPathCorrectly() {
+	void shouldCreateSortForNestedPathCorrectly() {
 
 		QSort sort = new QSort(userWrapper.user.firstname.asc());
 
@@ -141,7 +141,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-621
-	public void shouldCreateSortForDeepNestedPathCorrectly() {
+	void shouldCreateSortForDeepNestedPathCorrectly() {
 
 		QSort sort = new QSort(wrapperForUserWrapper.wrapper.user.firstname.asc());
 
@@ -149,7 +149,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-621
-	public void shouldCreateSortForReallyDeepNestedPathCorrectly() {
+	void shouldCreateSortForReallyDeepNestedPathCorrectly() {
 
 		QSort sort = new QSort(wrapperToWrapWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname.asc());
 
@@ -157,7 +157,7 @@ public class QSortUnitTests {
 	}
 
 	@Test // DATACMNS-755
-	public void handlesPlainStringPathsCorrectly() {
+	void handlesPlainStringPathsCorrectly() {
 
 		StringPath path = new PathBuilderFactory().create(User.class).getString("firstname");
 

@@ -22,17 +22,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test for {@link PageImpl}.
  *
  * @author Oliver Gierke
  */
-public class PageImplUnitTests {
+class PageImplUnitTests {
 
 	@Test
-	public void assertEqualsForSimpleSetup() throws Exception {
+	void assertEqualsForSimpleSetup() throws Exception {
 
 		PageImpl<String> page = new PageImpl<>(Collections.singletonList("Foo"));
 
@@ -41,7 +41,7 @@ public class PageImplUnitTests {
 	}
 
 	@Test
-	public void assertEqualsForComplexSetup() throws Exception {
+	void assertEqualsForComplexSetup() throws Exception {
 
 		Pageable pageable = PageRequest.of(0, 10);
 		List<String> content = Collections.singletonList("Foo");
@@ -56,17 +56,17 @@ public class PageImplUnitTests {
 	}
 
 	@Test
-	public void preventsNullContentForSimpleSetup() {
+	void preventsNullContentForSimpleSetup() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new PageImpl<>(null));
 	}
 
 	@Test
-	public void preventsNullContentForAdvancedSetup() {
+	void preventsNullContentForAdvancedSetup() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new PageImpl<>(null, null, 0));
 	}
 
 	@Test
-	public void returnsNextPageable() {
+	void returnsNextPageable() {
 
 		Page<Object> page = new PageImpl<>(Collections.singletonList(new Object()), PageRequest.of(0, 1), 10);
 
@@ -80,7 +80,7 @@ public class PageImplUnitTests {
 	}
 
 	@Test
-	public void returnsPreviousPageable() {
+	void returnsPreviousPageable() {
 
 		Page<Object> page = new PageImpl<>(Collections.singletonList(new Object()), PageRequest.of(1, 1), 2);
 
@@ -94,7 +94,7 @@ public class PageImplUnitTests {
 	}
 
 	@Test
-	public void createsPageForEmptyContentCorrectly() {
+	void createsPageForEmptyContentCorrectly() {
 
 		List<String> list = Collections.emptyList();
 		Page<String> page = new PageImpl<>(list);
@@ -114,7 +114,7 @@ public class PageImplUnitTests {
 	}
 
 	@Test // DATACMNS-323
-	public void returnsCorrectTotalPages() {
+	void returnsCorrectTotalPages() {
 
 		Page<String> page = new PageImpl<>(Collections.singletonList("a"));
 
@@ -124,7 +124,7 @@ public class PageImplUnitTests {
 	}
 
 	@Test // DATACMNS-635
-	public void transformsPageCorrectly() {
+	void transformsPageCorrectly() {
 
 		Page<Integer> transformed = new PageImpl<>(Arrays.asList("foo", "bar"), PageRequest.of(0, 2), 10)
 				.map(String::length);
@@ -134,36 +134,36 @@ public class PageImplUnitTests {
 	}
 
 	@Test // DATACMNS-713
-	public void adaptsTotalForLastPageOnIntermediateDeletion() {
+	void adaptsTotalForLastPageOnIntermediateDeletion() {
 		assertThat(new PageImpl<>(Arrays.asList("foo", "bar"), PageRequest.of(0, 5), 3).getTotalElements()).isEqualTo(2L);
 	}
 
 	@Test // DATACMNS-713
-	public void adaptsTotalForLastPageOnIntermediateInsertion() {
+	void adaptsTotalForLastPageOnIntermediateInsertion() {
 		assertThat(new PageImpl<>(Arrays.asList("foo", "bar"), PageRequest.of(0, 5), 1).getTotalElements()).isEqualTo(2L);
 	}
 
 	@Test // DATACMNS-713
-	public void adaptsTotalForLastPageOnIntermediateDeletionOnLastPate() {
+	void adaptsTotalForLastPageOnIntermediateDeletionOnLastPate() {
 		assertThat(new PageImpl<>(Arrays.asList("foo", "bar"), PageRequest.of(1, 10), 13).getTotalElements())
 				.isEqualTo(12L);
 	}
 
 	@Test // DATACMNS-713
-	public void adaptsTotalForLastPageOnIntermediateInsertionOnLastPate() {
+	void adaptsTotalForLastPageOnIntermediateInsertionOnLastPate() {
 		assertThat(new PageImpl<>(Arrays.asList("foo", "bar"), PageRequest.of(1, 10), 11).getTotalElements())
 				.isEqualTo(12L);
 	}
 
 	@Test // DATACMNS-713
-	public void doesNotAdapttotalIfPageIsEmpty() {
+	void doesNotAdapttotalIfPageIsEmpty() {
 
 		assertThat(new PageImpl<>(Collections.<String> emptyList(), PageRequest.of(1, 10), 0).getTotalElements())
 				.isEqualTo(0L);
 	}
 
 	@Test // DATACMNS-1476
-	public void returnsSelfPagablesIfThePageIsAlreadyTheFirstOrLastOne() {
+	void returnsSelfPagablesIfThePageIsAlreadyTheFirstOrLastOne() {
 
 		Pageable pageable = PageRequest.of(0, 2);
 		Slice<String> page = new PageImpl<>(Arrays.asList("foo", "bar"), pageable, 2);
@@ -176,7 +176,7 @@ public class PageImplUnitTests {
 	}
 
 	@Test // DATACMNS-1613
-	public void usesContentLengthForSizeIfNoPageableGiven() {
+	void usesContentLengthForSizeIfNoPageableGiven() {
 
 		Page<Integer> page = new PageImpl<>(Arrays.asList(1, 2));
 

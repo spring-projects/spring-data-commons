@@ -21,7 +21,7 @@ import lombok.Getter;
 
 import java.util.Collection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.util.MethodInvocationRecorder.Recorded;
 
 /**
@@ -30,19 +30,19 @@ import org.springframework.data.util.MethodInvocationRecorder.Recorded;
  * @author Oliver Gierke
  * @soundtrack The Intersphere - Don't Think Twice (The Grand Delusion)
  */
-public class MethodInvocationRecorderUnitTests {
+class MethodInvocationRecorderUnitTests {
 
-	Recorded<Foo> recorder = MethodInvocationRecorder.forProxyOf(Foo.class);
+	private Recorded<Foo> recorder = MethodInvocationRecorder.forProxyOf(Foo.class);
 
 	@Test // DATACMNS-1449
-	public void rejectsFinalTypes() {
+	void rejectsFinalTypes() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class) //
 				.isThrownBy(() -> MethodInvocationRecorder.forProxyOf(FinalType.class));
 	}
 
 	@Test // DATACMNS-1449
-	public void createsPropertyPathForSimpleMethodReference() {
+	void createsPropertyPathForSimpleMethodReference() {
 
 		Recorded<Bar> wrapper = recorder.record(Foo::getBar);
 
@@ -50,7 +50,7 @@ public class MethodInvocationRecorderUnitTests {
 	}
 
 	@Test // DATACMNS-1449
-	public void createsPropertyPathForNestedMethodReference() {
+	void createsPropertyPathForNestedMethodReference() {
 
 		Recorded<FooBar> wrapper = recorder.record(Foo::getBar).record(Bar::getFooBar);
 
@@ -58,7 +58,7 @@ public class MethodInvocationRecorderUnitTests {
 	}
 
 	@Test // DATACMNS-1449
-	public void createsPropertyPathForNestedCall() {
+	void createsPropertyPathForNestedCall() {
 
 		Recorded<FooBar> wrapper = recorder.record((Foo source) -> source.getBar().getFooBar());
 
@@ -66,7 +66,7 @@ public class MethodInvocationRecorderUnitTests {
 	}
 
 	@Test // DATACMNS-1449
-	public void usesCustomPropertyNamingStrategy() {
+	void usesCustomPropertyNamingStrategy() {
 
 		Recorded<Bar> recorded = MethodInvocationRecorder.forProxyOf(Foo.class).record(Foo::getBar);
 
@@ -74,12 +74,12 @@ public class MethodInvocationRecorderUnitTests {
 	}
 
 	@Test // DATACMNS-1449
-	public void registersLookupToFinalType() {
+	void registersLookupToFinalType() {
 		assertThat(recorder.record(Foo::getName).getPropertyPath()).hasValue("name");
 	}
 
 	@Test // DATACMNS-1449
-	public void recordsInvocationOnInterface() {
+	void recordsInvocationOnInterface() {
 
 		Recorded<Sample> recorder = MethodInvocationRecorder.forProxyOf(Sample.class);
 

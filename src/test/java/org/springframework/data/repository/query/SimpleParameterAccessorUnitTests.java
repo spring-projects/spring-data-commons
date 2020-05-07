@@ -17,8 +17,8 @@ package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,12 +28,12 @@ import org.springframework.data.domain.Sort;
  *
  * @author Oliver Gierke
  */
-public class SimpleParameterAccessorUnitTests {
+class SimpleParameterAccessorUnitTests {
 
 	Parameters<?, ?> parameters, sortParameters, pageableParameters;
 
-	@Before
-	public void setUp() throws SecurityException, NoSuchMethodException {
+	@BeforeEach
+	void setUp() throws SecurityException, NoSuchMethodException {
 
 		parameters = new DefaultParameters(Sample.class.getMethod("sample", String.class));
 		sortParameters = new DefaultParameters(Sample.class.getMethod("sample1", String.class, Sort.class));
@@ -41,33 +41,33 @@ public class SimpleParameterAccessorUnitTests {
 	}
 
 	@Test
-	public void testname() throws Exception {
+	void testname() throws Exception {
 		new ParametersParameterAccessor(parameters, new Object[] { "test" });
 	}
 
 	@Test
-	public void rejectsNullParameters() {
+	void rejectsNullParameters() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new ParametersParameterAccessor(null, new Object[0]));
 	}
 
 	@Test
-	public void rejectsNullValues() {
+	void rejectsNullValues() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new ParametersParameterAccessor(parameters, null));
 	}
 
 	@Test
-	public void rejectsTooLittleNumberOfArguments() {
+	void rejectsTooLittleNumberOfArguments() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new ParametersParameterAccessor(parameters, new Object[0]));
 	}
 
 	@Test
-	public void rejectsTooManyArguments() {
+	void rejectsTooManyArguments() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new ParametersParameterAccessor(parameters, new Object[] { "test", "test" }));
 	}
 
 	@Test
-	public void returnsNullForPageableAndSortIfNoneAvailable() throws Exception {
+	void returnsNullForPageableAndSortIfNoneAvailable() throws Exception {
 
 		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { "test" });
 
@@ -76,7 +76,7 @@ public class SimpleParameterAccessorUnitTests {
 	}
 
 	@Test
-	public void returnsSortIfAvailable() {
+	void returnsSortIfAvailable() {
 
 		Sort sort = Sort.by("foo");
 		ParameterAccessor accessor = new ParametersParameterAccessor(sortParameters, new Object[] { "test", sort });
@@ -86,7 +86,7 @@ public class SimpleParameterAccessorUnitTests {
 	}
 
 	@Test
-	public void returnsPageableIfAvailable() {
+	void returnsPageableIfAvailable() {
 
 		Pageable pageable = PageRequest.of(0, 10);
 		ParameterAccessor accessor = new ParametersParameterAccessor(pageableParameters, new Object[] { "test", pageable });
@@ -96,7 +96,7 @@ public class SimpleParameterAccessorUnitTests {
 	}
 
 	@Test
-	public void returnsSortFromPageableIfAvailable() throws Exception {
+	void returnsSortFromPageableIfAvailable() throws Exception {
 
 		Sort sort = Sort.by("foo");
 		Pageable pageable = PageRequest.of(0, 10, sort);

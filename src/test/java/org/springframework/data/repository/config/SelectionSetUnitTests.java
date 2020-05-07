@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link SelectionSet}
@@ -29,25 +29,25 @@ import org.junit.Test;
  * @author Jens Schauder
  * @author Oliver Gierke
  */
-public class SelectionSetUnitTests {
+class SelectionSetUnitTests {
 
 	@Test // DATACMNS-764
-	public void returnsUniqueResult() {
+	void returnsUniqueResult() {
 		assertThat(SelectionSet.of(singleton("single value")).uniqueResult()).hasValue("single value");
 	}
 
 	@Test // DATACMNS-764
-	public void emptyCollectionReturnsNull() {
+	void emptyCollectionReturnsNull() {
 		assertThat(SelectionSet.of(emptySet()).uniqueResult()).isEmpty();
 	}
 
 	@Test // DATACMNS-764
-	public void multipleElementsThrowException() {
+	void multipleElementsThrowException() {
 		assertThatIllegalStateException().isThrownBy(() -> SelectionSet.of(asList("one", "two")).uniqueResult());
 	}
 
 	@Test // DATACMNS-764
-	public void throwsCustomExceptionWhenConfigured() {
+	void throwsCustomExceptionWhenConfigured() {
 
 		assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> {
 			SelectionSet.of(asList("one", "two"), c -> {
@@ -57,13 +57,13 @@ public class SelectionSetUnitTests {
 	}
 
 	@Test // DATACMNS-764
-	public void usesFallbackWhenConfigured() {
+	void usesFallbackWhenConfigured() {
 		assertThat(SelectionSet.of(asList("one", "two"), c -> Optional.of(String.valueOf(c.size()))).uniqueResult())
 				.hasValue("2");
 	}
 
 	@Test // DATACMNS-764
-	public void returnsUniqueResultAfterFilter() {
+	void returnsUniqueResultAfterFilter() {
 
 		SelectionSet<String> selection = SelectionSet.of(asList("one", "two", "three"))
 				.filterIfNecessary(s -> s.contains("w"));
@@ -72,7 +72,7 @@ public class SelectionSetUnitTests {
 	}
 
 	@Test // DATACMNS-764
-	public void ignoresFilterWhenResultIsAlreadyUnique() {
+	void ignoresFilterWhenResultIsAlreadyUnique() {
 
 		SelectionSet<String> selection = SelectionSet.of(asList("one")).filterIfNecessary(s -> s.contains("w"));
 

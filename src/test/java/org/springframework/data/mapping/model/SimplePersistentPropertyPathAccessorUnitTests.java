@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.AccessOptions.SetOptions.SetNulls;
 import org.springframework.data.mapping.PersistentEntity;
@@ -45,15 +45,15 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
  * @since 2.3
  * @soundtrack Ron Spielman Trio - Raindrops (Electric Tales)
  */
-public class SimplePersistentPropertyPathAccessorUnitTests {
+class SimplePersistentPropertyPathAccessorUnitTests {
 
-	SampleMappingContext context = new SampleMappingContext();
+	private SampleMappingContext context = new SampleMappingContext();
 
-	Customer first = new Customer("1");
-	Customer second = new Customer("2");
+	private Customer first = new Customer("1");
+	private Customer second = new Customer("2");
 
 	@Test // DATACMNS-1438
-	public void setsPropertyContainingCollectionPathForAllElements() {
+	void setsPropertyContainingCollectionPathForAllElements() {
 
 		Customers customers = new Customers(Arrays.asList(first, second), Collections.emptyMap());
 
@@ -61,7 +61,7 @@ public class SimplePersistentPropertyPathAccessorUnitTests {
 	}
 
 	@Test // DATACMNS-1438
-	public void setsPropertyContainingMapPathForAllValues() {
+	void setsPropertyContainingMapPathForAllValues() {
 
 		Map<String, Customer> map = new HashMap<>();
 		map.put("1", first);
@@ -73,7 +73,7 @@ public class SimplePersistentPropertyPathAccessorUnitTests {
 	}
 
 	@Test // DATACMNS-1461
-	public void skipsNullValueIfConfigured() {
+	void skipsNullValueIfConfigured() {
 
 		CustomerWrapper wrapper = new CustomerWrapper(null);
 
@@ -115,7 +115,7 @@ public class SimplePersistentPropertyPathAccessorUnitTests {
 	}
 
 	@Value
-	static class Customers {
+	private static class Customers {
 		@Wither List<Customer> customers;
 		@Wither Map<String, Customer> customerMap;
 	}

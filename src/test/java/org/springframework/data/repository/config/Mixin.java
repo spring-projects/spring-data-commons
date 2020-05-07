@@ -18,7 +18,7 @@ package org.springframework.data.repository.config;
 /**
  * @author Mark Paluch
  */
-public interface Mixin {
+interface Mixin {
 
 	String getOne();
 }
