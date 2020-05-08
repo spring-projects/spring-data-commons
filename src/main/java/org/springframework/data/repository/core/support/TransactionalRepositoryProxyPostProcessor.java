@@ -114,9 +114,9 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 * working with transaction metadata in JDK 1.5+ annotation format.
 	 * <p>
 	 * This class reads Spring's JDK 1.5+ {@link Transactional} annotation and exposes corresponding transaction
-	 * attributes to Spring's transaction infrastructure. Also supports JTA 1.2's and EJB3's
-	 * {@link javax.ejb.TransactionAttribute} annotation (if present). This class may also serve as base class for a
-	 * custom TransactionAttributeSource, or get customized through {@link TransactionAnnotationParser} strategies.
+	 * attributes to Spring's transaction infrastructure. Also supports JTA 1.2's {@link javax.transaction.Transactional}
+	 * and EJB3's {@link javax.ejb.TransactionAttribute} annotation (if present). This class may also serve as base class
+	 * for a custom TransactionAttributeSource, or get customized through {@link TransactionAnnotationParser} strategies.
 	 *
 	 * @author Colin Sampaleanu
 	 * @author Juergen Hoeller
