@@ -71,7 +71,7 @@ import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 
 /**
  * Factory bean to create instances of a given repository interface. Creates a proxy implementing the configured
- * repository interface and apply an advice handing the control to the {@code QueryExecuterMethodInterceptor}. Query
+ * repository interface and apply an advice handing the control to the {@code QueryExecutorMethodInterceptor}. Query
  * detection strategy can be configured by setting {@link QueryLookupStrategy.Key}.
  *
  * @author Oliver Gierke
