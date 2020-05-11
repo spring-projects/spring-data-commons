@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.PropertyMatches;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -31,6 +32,7 @@ import org.springframework.util.StringUtils;
  * Exception being thrown when creating {@link PropertyPath} instances.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class PropertyReferenceException extends RuntimeException {
 
@@ -41,7 +43,7 @@ public class PropertyReferenceException extends RuntimeException {
 	private final String propertyName;
 	private final TypeInformation<?> type;
 	private final List<PropertyPath> alreadyResolvedPath;
-	private final Set<String> propertyMatches;
+	private final Lazy<Set<String>> propertyMatches;
 
 	/**
 	 * Creates a new {@link PropertyReferenceException}.
@@ -60,7 +62,7 @@ public class PropertyReferenceException extends RuntimeException {
 		this.propertyName = propertyName;
 		this.type = type;
 		this.alreadyResolvedPath = alreadyResolvedPah;
-		this.propertyMatches = detectPotentialMatches(propertyName, type.getType());
+		this.propertyMatches = Lazy.of(() -> detectPotentialMatches(propertyName, type.getType()));
 	}
 
 	/**
@@ -87,7 +89,7 @@ public class PropertyReferenceException extends RuntimeException {
 	 * @return will never be {@literal null}.
 	 */
 	Collection<String> getPropertyMatches() {
-		return propertyMatches;
+		return propertyMatches.get();
 	}
 
 	/*
@@ -100,8 +102,9 @@ public class PropertyReferenceException extends RuntimeException {
 		StringBuilder builder = new StringBuilder(
 				String.format(ERROR_TEMPLATE, propertyName, type.getType().getSimpleName()));
 
-		if (!propertyMatches.isEmpty()) {
-			String matches = StringUtils.collectionToDelimitedString(propertyMatches, ",", "'", "'");
+		Collection<String> potentialMatches = getPropertyMatches();
+		if (!potentialMatches.isEmpty()) {
+			String matches = StringUtils.collectionToDelimitedString(potentialMatches, ",", "'", "'");
 			builder.append(String.format(HINTS_TEMPLATE, matches));
 		}
 
