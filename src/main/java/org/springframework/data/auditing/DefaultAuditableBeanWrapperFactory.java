@@ -42,14 +42,26 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Pavel Horal
  * @since 1.5
  */
 class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory {
 
-	protected final ConversionService conversionService;
+	private final ConversionService conversionService;
 
 	public DefaultAuditableBeanWrapperFactory() {
-		this.conversionService = getDateConversionService();
+
+		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
+
+		JodaTimeConverters.getConvertersToRegister().forEach(conversionService::addConverter);
+		Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
+		ThreeTenBackPortConverters.getConvertersToRegister().forEach(conversionService::addConverter);
+
+		this.conversionService = conversionService;
+	}
+
+	ConversionService getConversionService() {
+		return conversionService;
 	}
 
 	/**
@@ -58,6 +70,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 * @param source the auditing candidate.
 	 * @return
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> Optional<AuditableBeanWrapper<T>> getBeanWrapperFor(T source) {
 
@@ -80,21 +93,6 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	}
 
 	/**
-	 * Creates conversion service for conversions between {@link TemporalAccessor} values and other supported date type values.
-	 *
-	 * @return
-	 */
-	static ConversionService getDateConversionService() {
-		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
-
-		JodaTimeConverters.getConvertersToRegister().forEach(conversionService::addConverter);
-		Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
-		ThreeTenBackPortConverters.getConvertersToRegister().forEach(conversionService::addConverter);
-
-		return conversionService;
-	}
-
-	/**
 	 * An {@link AuditableBeanWrapper} that works with objects implementing
 	 *
 	 * @author Oliver Gierke
@@ -107,6 +105,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		@SuppressWarnings("unchecked")
 		public AuditableInterfaceBeanWrapper(ConversionService conversionService, Auditable<Object, ?, TemporalAccessor> auditable) {
+
 			super(conversionService);
 
 			this.auditable = auditable;

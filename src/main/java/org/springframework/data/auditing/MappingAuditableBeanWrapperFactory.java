@@ -17,10 +17,10 @@ package org.springframework.data.auditing;
 
 import java.lang.annotation.Annotation;
 import java.time.temporal.TemporalAccessor;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.annotation.CreatedBy;
@@ -49,6 +49,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Pavel Horal
  * @since 1.8
  */
 public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrapperFactory {
@@ -88,7 +89,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 						key -> new MappingAuditingMetadata(context, it.getClass()));
 
 				return Optional.<AuditableBeanWrapper<T>> ofNullable(metadata.isAuditable() //
-						? new MappingMetadataAuditableBeanWrapper<T>(conversionService, entity.getPropertyPathAccessor(it), metadata)
+						? new MappingMetadataAuditableBeanWrapper<>(getConversionService(), entity.getPropertyPathAccessor(it),
+								metadata)
 						: null);
 
 			}).orElseGet(() -> super.getBeanWrapperFor(source));
@@ -126,8 +128,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			this.lastModifiedDatePaths = findPropertyPaths(type, LastModifiedDate.class, context);
 
 			this.isAuditable = Lazy.of( //
-					() -> Arrays.asList(createdByPaths, createdDatePaths, lastModifiedByPaths, lastModifiedDatePaths) //
-							.stream() //
+					() -> //
+					Stream.of(createdByPaths, createdDatePaths, lastModifiedByPaths, lastModifiedDatePaths) //
 							.anyMatch(it -> !it.isEmpty())//
 			);
 		}
@@ -249,7 +251,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return accessor.getBean();
 		}
 
-		private <S, P extends PersistentProperty<?>> S setProperty(
+		private <S> S setProperty(
 				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, S value) {
 
 			paths.forEach(it -> this.accessor.setProperty(it, value, OPTIONS));
@@ -257,7 +259,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return value;
 		}
 
-		private <P extends PersistentProperty<?>> TemporalAccessor setDateProperty(
+		private TemporalAccessor setDateProperty(
 				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> property, TemporalAccessor value) {
 
 			property.forEach(it -> {

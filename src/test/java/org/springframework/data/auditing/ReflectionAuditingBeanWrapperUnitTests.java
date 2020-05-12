@@ -33,22 +33,22 @@ import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConv
  * Unit tests for {@link ReflectionAuditingBeanWrapper}.
  *
  * @author Oliver Gierke
+ * @author Pavel Horal
  * @since 1.5
  */
 class ReflectionAuditingBeanWrapperUnitTests {
 
 	ConversionService conversionService;
-	AnnotationAuditingMetadata metadata;
 	AnnotatedUser user;
-	AuditableBeanWrapper wrapper;
+	AuditableBeanWrapper<?> wrapper;
 
 	LocalDateTime time = LocalDateTime.now();
 
 	@BeforeEach
 	void setUp() {
-		this.conversionService = DefaultAuditableBeanWrapperFactory.getDateConversionService();
+		this.conversionService = new DefaultAuditableBeanWrapperFactory().getConversionService();
 		this.user = new AnnotatedUser();
-		this.wrapper = new ReflectionAuditingBeanWrapper(conversionService, user);
+		this.wrapper = new ReflectionAuditingBeanWrapper<>(conversionService, user);
 	}
 
 	@Test
@@ -76,7 +76,7 @@ class ReflectionAuditingBeanWrapperUnitTests {
 		}
 
 		Sample sample = new Sample();
-		AuditableBeanWrapper wrapper = new ReflectionAuditingBeanWrapper(conversionService, sample);
+		AuditableBeanWrapper<Sample> wrapper = new ReflectionAuditingBeanWrapper<>(conversionService, sample);
 
 		wrapper.setCreatedDate(time);
 		assertThat(sample.createdDate).isEqualTo(time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli());
