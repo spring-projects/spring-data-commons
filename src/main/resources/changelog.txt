@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.0.RELEASE (2020-05-12)
+---------------------------------------------
+* DATACMNS-1722 - More defensive lookup of XmlBeamHttpMessageConverter in SpringDataWebConfiguration.
+* DATACMNS-1721 - Lazily evaluate potential property matches in PropertyReferenceException.
+* DATACMNS-1720 - Fix Javadoc for CustomAnnotationTransactionAttributeSource to correctly describe JTA support.
+* DATACMNS-1718 - Migrate tests to JUnit 5.
+* DATACMNS-1717 - Mention performance behavior of Lambda EntityCallbacks in reference documentation.
+* DATACMNS-1715 - Remove Travis CI.
+* DATACMNS-1713 - Release 2.3 GA (Neumann).
+* DATACMNS-1676 - Use shared ConversionService in DefaultAuditableBeanWrapperFactory.
+
+
 Changes in version 2.3.0.RC2 (2020-04-28)
 -----------------------------------------
 * DATACMNS-1710 - Avoid potentially expensive constructor parameter creation where possible.
@@ -2700,6 +2712,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
