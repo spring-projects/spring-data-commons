@@ -15,8 +15,6 @@
  */
 package org.springframework.data.geo;
 
-import lombok.Getter;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +36,7 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 	/**
 	 * The average distance of the underlying results.
 	 */
-	private final @Getter Distance averageDistance;
+	private final Distance averageDistance;
 
 	/**
 	 * Creates a new {@link GeoPage} from the given {@link GeoResults}.
@@ -93,5 +91,9 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 	@Override
 	public int hashCode() {
 		return super.hashCode() + ObjectUtils.nullSafeHashCode(this.averageDistance);
+	}
+
+	public Distance getAverageDistance() {
+		return this.averageDistance;
 	}
 }

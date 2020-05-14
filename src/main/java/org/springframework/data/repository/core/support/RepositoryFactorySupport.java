@@ -15,13 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -34,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.slf4j.Logger;
 
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
@@ -68,6 +62,7 @@ import org.springframework.transaction.interceptor.TransactionalProxy;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Factory bean to create instances of a given repository interface. Creates a proxy implementing the configured
@@ -79,7 +74,6 @@ import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
  * @author Christoph Strobl
  * @author Jens Schauder
  */
-@Slf4j
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
 	private static final BiFunction<Method, Object[], Object[]> REACTIVE_ARGS_CONVERTER = (method, args) -> {
@@ -114,6 +108,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	};
 
 	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
+	private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(RepositoryFactorySupport.class);
 
 	static {
 		QueryExecutionConverters.registerConvertersIn(CONVERSION_SERVICE);
@@ -529,10 +524,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	public class ImplementationMethodExecutionInterceptor implements MethodInterceptor {
 
-		private final @NonNull RepositoryComposition composition;
+		private final RepositoryComposition composition;
+
+		public ImplementationMethodExecutionInterceptor(RepositoryComposition composition) {
+			this.composition = composition;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -561,7 +559,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 *
 	 * @author Oliver Gierke
 	 */
-	@Getter
 	private static class QueryCollectingQueryCreationListener implements QueryCreationListener<RepositoryQuery> {
 
 		/**
@@ -576,6 +573,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		public void onCreation(RepositoryQuery query) {
 			this.queryMethods.add(query.getQueryMethod());
 		}
+
+		public List<QueryMethod> getQueryMethods() {
+			return this.queryMethods;
+		}
 	}
 
 	/**
@@ -584,12 +585,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @author Oliver Gierke
 	 * @author Mark Paluch
 	 */
-	@EqualsAndHashCode
-	@Value
-	private static class RepositoryInformationCacheKey {
+	private static final class RepositoryInformationCacheKey {
 
-		String repositoryInterfaceName;
-		final long compositionHash;
+		private final String repositoryInterfaceName;
+		private final long compositionHash;
 
 		/**
 		 * Creates a new {@link RepositoryInformationCacheKey} for the given {@link RepositoryMetadata} and composition.
@@ -601,6 +600,59 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			this.repositoryInterfaceName = metadata.getRepositoryInterface().getName();
 			this.compositionHash = composition.hashCode();
+		}
+
+		public RepositoryInformationCacheKey(String repositoryInterfaceName, long compositionHash) {
+			this.repositoryInterfaceName = repositoryInterfaceName;
+			this.compositionHash = compositionHash;
+		}
+
+		public String getRepositoryInterfaceName() {
+			return this.repositoryInterfaceName;
+		}
+
+		public long getCompositionHash() {
+			return this.compositionHash;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof RepositoryInformationCacheKey)) {
+				return false;
+			}
+			RepositoryInformationCacheKey that = (RepositoryInformationCacheKey) o;
+			if (compositionHash != that.compositionHash) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(repositoryInterfaceName, that.repositoryInterfaceName);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(repositoryInterfaceName);
+			result = 31 * result + (int) (compositionHash ^ (compositionHash >>> 32));
+			return result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "RepositoryFactorySupport.RepositoryInformationCacheKey(repositoryInterfaceName="
+					+ this.getRepositoryInterfaceName() + ", compositionHash=" + this.getCompositionHash() + ")";
 		}
 	}
 }

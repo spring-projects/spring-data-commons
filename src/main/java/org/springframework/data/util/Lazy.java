@@ -15,17 +15,13 @@
  */
 package org.springframework.data.util;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Simple value type to delay the creation of an object using a {@link Supplier} returning the produced object for
@@ -36,16 +32,24 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.0
  */
-@RequiredArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@EqualsAndHashCode
 public class Lazy<T> implements Supplier<T> {
 
 	private static final Lazy<?> EMPTY = new Lazy<>(() -> null, null, true);
 
 	private final Supplier<? extends T> supplier;
+
 	private @Nullable T value = null;
 	private boolean resolved = false;
+
+	public Lazy(Supplier<? extends T> supplier) {
+		this.supplier = supplier;
+	}
+
+	private Lazy(Supplier<? extends T> supplier, T value, boolean resolved) {
+		this.supplier = supplier;
+		this.value = value;
+		this.resolved = resolved;
+	}
 
 	/**
 	 * Creates a new {@link Lazy} to produce an object lazily.
@@ -215,5 +219,45 @@ public class Lazy<T> implements Supplier<T> {
 		this.resolved = true;
 
 		return value;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Lazy)) {
+			return false;
+		}
+
+		Lazy<?> lazy = (Lazy<?>) o;
+
+		if (resolved != lazy.resolved) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(supplier, lazy.supplier)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(value, lazy.value);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(supplier);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(value);
+		result = 31 * result + (resolved ? 1 : 0);
+		return result;
 	}
 }

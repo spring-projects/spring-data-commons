@@ -16,14 +16,12 @@
 
 package org.springframework.data.mapping.model;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * {@link ParameterValueProvider} implementation that evaluates the {@link Parameter}s key against
@@ -31,11 +29,19 @@ import org.springframework.lang.Nullable;
  *
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
 public class DefaultSpELExpressionEvaluator implements SpELExpressionEvaluator {
 
-	private final @NonNull Object source;
-	private final @NonNull SpELContext factory;
+	private final Object source;
+	private final SpELContext factory;
+
+	public DefaultSpELExpressionEvaluator(Object source, SpELContext factory) {
+
+		Assert.notNull(source, "Source must not be null!");
+		Assert.notNull(factory, "SpELContext must not be null!");
+
+		this.source = source;
+		this.factory = factory;
+	}
 
 	/*
 	 * (non-Javadoc)

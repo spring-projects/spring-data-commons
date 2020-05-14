@@ -15,11 +15,6 @@
  */
 package org.springframework.data.repository.util;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import scala.Function0;
 import scala.Option;
 import scala.runtime.AbstractFunction0;
@@ -37,8 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
@@ -52,11 +45,13 @@ import org.springframework.data.geo.GeoResults;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -333,12 +328,11 @@ public abstract class QueryExecutionConverters {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	private static abstract class AbstractWrapperTypeConverter implements GenericConverter {
 
-		private final @NonNull ConversionService conversionService;
-		private final @NonNull Object nullValue;
-		private final @NonNull Iterable<Class<?>> wrapperTypes;
+		private final ConversionService conversionService;
+		private final Object nullValue;
+		private final Iterable<Class<?>> wrapperTypes;
 
 		/**
 		 * Creates a new {@link AbstractWrapperTypeConverter} using the given {@link ConversionService} and wrapper type.
@@ -356,11 +350,18 @@ public abstract class QueryExecutionConverters {
 			this.wrapperTypes = Collections.singleton(nullValue.getClass());
 		}
 
+		public AbstractWrapperTypeConverter(ConversionService conversionService, Object nullValue,
+				Iterable<Class<?>> wrapperTypes) {
+			this.conversionService = conversionService;
+			this.nullValue = nullValue;
+			this.wrapperTypes = wrapperTypes;
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
-		@Nonnull
+
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 
@@ -678,7 +679,6 @@ public abstract class QueryExecutionConverters {
 		}
 	}
 
-	@RequiredArgsConstructor
 	private static class IterableToStreamableConverter implements ConditionalGenericConverter {
 
 		private static final TypeDescriptor STREAMABLE = TypeDescriptor.valueOf(Streamable.class);
@@ -686,11 +686,13 @@ public abstract class QueryExecutionConverters {
 		private final Map<TypeDescriptor, Boolean> TARGET_TYPE_CACHE = new ConcurrentHashMap<>();
 		private final ConversionService conversionService = DefaultConversionService.getSharedInstance();
 
+		public IterableToStreamableConverter() {}
+
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
-		@org.springframework.lang.NonNull
+		@NonNull
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(new ConvertiblePair(Iterable.class, Object.class));
@@ -739,16 +741,72 @@ public abstract class QueryExecutionConverters {
 		}
 	}
 
-	@Value
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class WrapperType {
+	public static final class WrapperType {
+
+		private WrapperType(Class<?> type, Cardinality cardinality) {
+			this.type = type;
+			this.cardinality = cardinality;
+		}
+
+		public Class<?> getType() {
+			return this.type;
+		}
+
+		public Cardinality getCardinality() {
+			return cardinality;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof WrapperType)) {
+				return false;
+			}
+
+			WrapperType that = (WrapperType) o;
+
+			if (!ObjectUtils.nullSafeEquals(type, that.type)) {
+				return false;
+			}
+
+			return cardinality == that.cardinality;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(type);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(cardinality);
+			return result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "QueryExecutionConverters.WrapperType(type=" + this.getType() + ", cardinality=" + this.getCardinality()
+					+ ")";
+		}
 
 		enum Cardinality {
 			NONE, SINGLE, MULTI;
 		}
 
-		Class<?> type;
-		@Getter(AccessLevel.NONE) Cardinality cardinality;
+		private final Class<?> type;
+		private final Cardinality cardinality;
 
 		public static WrapperType singleValue(Class<?> type) {
 			return new WrapperType(type, Cardinality.SINGLE);

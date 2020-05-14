@@ -15,7 +15,6 @@
  */
 package org.springframework.data.geo;
 
-import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -24,6 +23,7 @@ import java.util.List;
 
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -33,7 +33,6 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @since 1.8
  */
-@EqualsAndHashCode
 public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	private static final long serialVersionUID = 8347363491300219485L;
@@ -103,6 +102,41 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	@SuppressWarnings("unchecked")
 	public Iterator<GeoResult<T>> iterator() {
 		return (Iterator<GeoResult<T>>) results.iterator();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof GeoResults)) {
+			return false;
+		}
+
+		GeoResults<?> that = (GeoResults<?>) o;
+
+		if (!ObjectUtils.nullSafeEquals(results, that.results)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(averageDistance, that.averageDistance);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(results);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(averageDistance);
+		return result;
 	}
 
 	/*

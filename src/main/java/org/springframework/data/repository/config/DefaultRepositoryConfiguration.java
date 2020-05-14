@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Optional;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -38,16 +35,23 @@ import org.springframework.util.StringUtils;
  * @author Jens Schauder
  * @author Mark Paluch
  */
-@RequiredArgsConstructor
 public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSource>
 		implements RepositoryConfiguration<T> {
 
 	public static final String DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX = "Impl";
 	public static final Key DEFAULT_QUERY_LOOKUP_STRATEGY = Key.CREATE_IF_NOT_FOUND;
 
-	private final @NonNull T configurationSource;
-	private final @NonNull BeanDefinition definition;
-	private final @NonNull RepositoryConfigurationExtension extension;
+	private final T configurationSource;
+	private final BeanDefinition definition;
+	private final RepositoryConfigurationExtension extension;
+
+	public DefaultRepositoryConfiguration(T configurationSource, BeanDefinition definition,
+			RepositoryConfigurationExtension extension) {
+
+		this.configurationSource = configurationSource;
+		this.definition = definition;
+		this.extension = extension;
+	}
 
 	/*
 	 * (non-Javadoc)

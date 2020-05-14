@@ -15,11 +15,6 @@
  */
 package org.springframework.data.querydsl.binding;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -29,6 +24,7 @@ import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 import com.querydsl.core.types.Path;
@@ -41,12 +37,13 @@ import com.querydsl.core.types.dsl.CollectionPathBase;
  * @author Christoph Strobl
  * @since 1.13
  */
-@ToString
-@EqualsAndHashCode
-@RequiredArgsConstructor(staticName = "of", access = AccessLevel.PRIVATE)
 class PropertyPathInformation implements PathInformation {
 
 	private final PropertyPath path;
+
+	private PropertyPathInformation(PropertyPath path) {
+		this.path = path;
+	}
 
 	/**
 	 * Creates a new {@link PropertyPathInformation} for the given path and type.
@@ -68,6 +65,10 @@ class PropertyPathInformation implements PathInformation {
 	 */
 	public static PropertyPathInformation of(String path, TypeInformation<?> type) {
 		return PropertyPathInformation.of(PropertyPath.from(path, type));
+	}
+
+	private static PropertyPathInformation of(PropertyPath path) {
+		return new PropertyPathInformation(path);
 	}
 
 	/*
@@ -148,5 +149,42 @@ class PropertyPathInformation implements PathInformation {
 
 			return (Path<?>) value;
 		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof PropertyPathInformation)) {
+			return false;
+		}
+
+		PropertyPathInformation that = (PropertyPathInformation) o;
+		return ObjectUtils.nullSafeEquals(path, that.path);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(path);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "PropertyPathInformation(path=" + this.path + ")";
 	}
 }

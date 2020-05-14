@@ -15,8 +15,6 @@
  */
 package org.springframework.data.projection;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -28,6 +26,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.type.MethodMetadata;
@@ -128,8 +128,9 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 * @since 2.1
 	 * @soundtrack The Meters - Cissy Strut (Here Comes The Meter Man)
 	 */
-	@Slf4j
 	private static class PropertyDescriptorSource {
+
+		private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(PropertyDescriptorSource.class);
 
 		private final Class<?> type;
 		private final Optional<MethodsMetadata> metadata;

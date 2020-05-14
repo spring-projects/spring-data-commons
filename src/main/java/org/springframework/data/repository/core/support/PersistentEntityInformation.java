@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.EntityInformation;
@@ -30,12 +27,15 @@ import org.springframework.lang.Nullable;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-@RequiredArgsConstructor
 public class PersistentEntityInformation<T, ID> implements EntityInformation<T, ID> {
 
-	private final @NonNull PersistentEntity<T, ? extends PersistentProperty<?>> persistentEntity;
+	private final PersistentEntity<T, ? extends PersistentProperty<?>> persistentEntity;
 
-	/* 
+	public PersistentEntityInformation(PersistentEntity<T, ? extends PersistentProperty<?>> persistentEntity) {
+		this.persistentEntity = persistentEntity;
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.AbstractEntityInformation#isNew(java.lang.Object)
 	 */
@@ -55,7 +55,7 @@ public class PersistentEntityInformation<T, ID> implements EntityInformation<T, 
 		return (ID) persistentEntity.getIdentifierAccessor(entity).getIdentifier();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
 	 */

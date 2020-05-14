@@ -15,15 +15,10 @@
  */
 package org.springframework.data.web;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.beans.PropertyDescriptor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
 
 import org.springframework.beans.AbstractPropertyAccessor;
 import org.springframework.beans.BeanUtils;
@@ -47,6 +42,7 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.WebDataBinder;
@@ -80,7 +76,7 @@ class MapDataBinder extends WebDataBinder {
 	 * (non-Javadoc)
 	 * @see org.springframework.validation.DataBinder#getTarget()
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getTarget() {
@@ -110,15 +106,21 @@ class MapDataBinder extends WebDataBinder {
 	 * @author Oliver Gierke
 	 * @since 1.10
 	 */
-	@RequiredArgsConstructor
 	private static class MapPropertyAccessor extends AbstractPropertyAccessor {
 
 		private static final SpelExpressionParser PARSER = new SpelExpressionParser(
 				new SpelParserConfiguration(false, true));
 
-		private final @NonNull Class<?> type;
-		private final @NonNull Map<String, Object> map;
-		private final @NonNull ConversionService conversionService;
+		private final Class<?> type;
+		private final Map<String, Object> map;
+		private final ConversionService conversionService;
+
+		public MapPropertyAccessor(Class<?> type, Map<String, Object> map, ConversionService conversionService) {
+
+			this.type = type;
+			this.map = map;
+			this.conversionService = conversionService;
+		}
 
 		/*
 		 * (non-Javadoc)

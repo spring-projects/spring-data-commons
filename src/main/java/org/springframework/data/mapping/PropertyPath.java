@@ -15,10 +15,6 @@
  */
 package org.springframework.data.mapping;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Value;
-
 import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +31,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -45,7 +42,6 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Mariusz Mączkowski
  */
-@EqualsAndHashCode
 public class PropertyPath implements Streamable<PropertyPath> {
 
 	private static final String PARSE_DEPTH_EXCEEDED = "Trying to parse a path with depth greater than 1000! This has been disabled for security reasons to prevent parsing overflows.";
@@ -58,7 +54,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 	private final TypeInformation<?> owningType;
 	private final String name;
-	private final @Getter TypeInformation<?> typeInformation;
+	private final TypeInformation<?> typeInformation;
 	private final TypeInformation<?> actualTypeInformation;
 	private final boolean isCollection;
 
@@ -155,6 +151,10 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return this.actualTypeInformation.getType();
 	}
 
+	public TypeInformation<?> getTypeInformation() {
+		return this.typeInformation;
+	}
+
 	/**
 	 * Returns the next nested {@link PropertyPath}.
 	 *
@@ -245,6 +245,61 @@ public class PropertyPath implements Streamable<PropertyPath> {
 				throw new UnsupportedOperationException();
 			}
 		};
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof PropertyPath)) {
+			return false;
+		}
+
+		PropertyPath that = (PropertyPath) o;
+
+		if (isCollection != that.isCollection) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(owningType, that.owningType)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(name, that.name)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(typeInformation, that.typeInformation)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(actualTypeInformation, that.actualTypeInformation)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(next, that.next);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(owningType);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(name);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(typeInformation);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(actualTypeInformation);
+		result = 31 * result + (isCollection ? 1 : 0);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(next);
+		return result;
 	}
 
 	/**
@@ -431,10 +486,70 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
 	}
 
-	@Value(staticConstructor = "of")
-	private static class Key {
+	private static final class Key {
 
-		TypeInformation<?> type;
-		String path;
+		private final TypeInformation<?> type;
+		private final String path;
+
+		private Key(TypeInformation<?> type, String path) {
+			this.type = type;
+			this.path = path;
+		}
+
+		public static Key of(TypeInformation<?> type, String path) {
+			return new Key(type, path);
+		}
+
+		public TypeInformation<?> getType() {
+			return this.type;
+		}
+
+		public String getPath() {
+			return this.path;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof Key)) {
+				return false;
+			}
+
+			Key key = (Key) o;
+
+			if (!ObjectUtils.nullSafeEquals(type, key.type)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(path, key.path);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(type);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(path);
+			return result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "PropertyPath.Key(type=" + this.getType() + ", path=" + this.getPath() + ")";
+		}
 	}
 }

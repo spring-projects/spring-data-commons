@@ -15,8 +15,6 @@
  */
 package org.springframework.data.domain;
 
-import lombok.Getter;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +23,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -40,7 +37,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	private static final long serialVersionUID = 867755909294344406L;
 
 	private final List<T> content = new ArrayList<>();
-	private final @Getter Pageable pageable;
+	private final Pageable pageable;
 
 	/**
 	 * Creates a new {@link Chunk} with the given content and the given governing {@link Pageable}.
@@ -139,6 +136,15 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Slice#getPageable()
+	 */
+	@Override
+	public Pageable getPageable() {
+		return pageable;
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Slice#getSort()
 	 */
 	@Override
@@ -172,7 +178,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(@Nullable Object obj) {
+	public boolean equals(Object obj) {
 
 		if (this == obj) {
 			return true;

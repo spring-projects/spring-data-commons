@@ -15,9 +15,6 @@
  */
 package org.springframework.data.projection;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +27,7 @@ import javax.annotation.Nonnull;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.util.ClassTypeInformation;
@@ -47,12 +45,19 @@ import org.springframework.util.ObjectUtils;
  * @author Mark Paluch
  * @since 1.10
  */
-@RequiredArgsConstructor
 class ProjectingMethodInterceptor implements MethodInterceptor {
 
-	private final @NonNull ProjectionFactory factory;
-	private final @NonNull MethodInterceptor delegate;
-	private final @NonNull ConversionService conversionService;
+	private final ProjectionFactory factory;
+	private final MethodInterceptor delegate;
+	private final ConversionService conversionService;
+
+	ProjectingMethodInterceptor(ProjectionFactory factory, MethodInterceptor delegate,
+			ConversionService conversionService) {
+
+		this.factory = factory;
+		this.delegate = delegate;
+		this.conversionService = conversionService;
+	}
 
 	/*
 	 * (non-Javadoc)

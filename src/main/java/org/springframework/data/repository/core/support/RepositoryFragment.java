@@ -15,10 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
@@ -26,6 +22,7 @@ import java.util.stream.Stream;
 
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -55,7 +52,7 @@ public interface RepositoryFragment<T> {
 	 * @param implementation must not be {@literal null}.
 	 * @return
 	 */
-	public static <T> RepositoryFragment<T> implemented(T implementation) {
+	static <T> RepositoryFragment<T> implemented(T implementation) {
 		return new ImplementedRepositoryFragment<T>(Optional.empty(), implementation);
 	}
 
@@ -66,7 +63,7 @@ public interface RepositoryFragment<T> {
 	 * @param implementation must not be {@literal null}.
 	 * @return
 	 */
-	public static <T> RepositoryFragment<T> implemented(Class<T> interfaceClass, T implementation) {
+	static <T> RepositoryFragment<T> implemented(Class<T> interfaceClass, T implementation) {
 		return new ImplementedRepositoryFragment<>(Optional.of(interfaceClass), implementation);
 	}
 
@@ -76,7 +73,7 @@ public interface RepositoryFragment<T> {
 	 * @param interfaceOrImplementation must not be {@literal null}.
 	 * @return
 	 */
-	public static <T> RepositoryFragment<T> structural(Class<T> interfaceOrImplementation) {
+	static <T> RepositoryFragment<T> structural(Class<T> interfaceOrImplementation) {
 		return new StructuralRepositoryFragment<>(interfaceOrImplementation);
 	}
 
@@ -122,11 +119,13 @@ public interface RepositoryFragment<T> {
 	 */
 	RepositoryFragment<T> withImplementation(T implementation);
 
-	@RequiredArgsConstructor
-	@EqualsAndHashCode(callSuper = false)
-	static class StructuralRepositoryFragment<T> implements RepositoryFragment<T> {
+	class StructuralRepositoryFragment<T> implements RepositoryFragment<T> {
 
-		private final @NonNull Class<T> interfaceOrImplementation;
+		private final Class<T> interfaceOrImplementation;
+
+		public StructuralRepositoryFragment(Class<T> interfaceOrImplementation) {
+			this.interfaceOrImplementation = interfaceOrImplementation;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -146,17 +145,45 @@ public interface RepositoryFragment<T> {
 			return new ImplementedRepositoryFragment<>(Optional.of(interfaceOrImplementation), implementation);
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
 		public String toString() {
 			return String.format("StructuralRepositoryFragment %s", ClassUtils.getShortName(interfaceOrImplementation));
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof StructuralRepositoryFragment)) {
+				return false;
+			}
+
+			StructuralRepositoryFragment<?> that = (StructuralRepositoryFragment<?>) o;
+			return ObjectUtils.nullSafeEquals(interfaceOrImplementation, that.interfaceOrImplementation);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHashCode(interfaceOrImplementation);
+		}
 	}
 
-	@EqualsAndHashCode(callSuper = false)
-	static class ImplementedRepositoryFragment<T> implements RepositoryFragment<T> {
+	class ImplementedRepositoryFragment<T> implements RepositoryFragment<T> {
 
 		private final Optional<Class<T>> interfaceClass;
 		private final T implementation;
@@ -222,6 +249,46 @@ public interface RepositoryFragment<T> {
 			return String.format("ImplementedRepositoryFragment %s%s",
 					interfaceClass.map(ClassUtils::getShortName).map(it -> it + ":").orElse(""),
 					ClassUtils.getShortName(implementation.getClass()));
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof ImplementedRepositoryFragment)) {
+				return false;
+			}
+
+			ImplementedRepositoryFragment<?> that = (ImplementedRepositoryFragment<?>) o;
+
+			if (!ObjectUtils.nullSafeEquals(interfaceClass, that.interfaceClass)) {
+				return false;
+			}
+
+			if (!ObjectUtils.nullSafeEquals(implementation, that.implementation)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(optionalImplementation, that.optionalImplementation);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(interfaceClass);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(implementation);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(optionalImplementation);
+			return result;
 		}
 	}
 }

@@ -15,12 +15,9 @@
  */
 package org.springframework.data.mapping;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * A container object which may or may not contain a type alias value. If a value is present, {@code isPresent()} will
@@ -35,9 +32,7 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @author Mark Paluch
  */
-@Value
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class Alias {
+public final class Alias {
 
 	/**
 	 * Common instance for {@code empty()}.
@@ -46,6 +41,10 @@ public class Alias {
 	public static final Alias NONE = new Alias(null);
 
 	private final Object value;
+
+	private Alias(Object value) {
+		this.value = value;
+	}
 
 	/**
 	 * Create an {@link Alias} given the {@code alias} object.
@@ -142,5 +141,37 @@ public class Alias {
 	@Override
 	public String toString() {
 		return isPresent() ? value.toString() : "NONE";
+	}
+
+	public Object getValue() {
+		return this.value;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Alias)) {
+			return false;
+		}
+
+		Alias alias = (Alias) o;
+		return ObjectUtils.nullSafeEquals(value, alias.value);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(value);
 	}
 }

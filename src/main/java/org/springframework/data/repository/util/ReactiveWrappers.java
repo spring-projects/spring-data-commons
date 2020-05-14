@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.util;
 
-import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -55,8 +54,7 @@ import org.springframework.util.ClassUtils;
  * @see Mono
  * @see Flux
  */
-@UtilityClass
-public class ReactiveWrappers {
+public abstract class ReactiveWrappers {
 
 	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Mono",
 			ReactiveWrappers.class.getClassLoader());
@@ -72,12 +70,14 @@ public class ReactiveWrappers {
 			&& ClassUtils.isPresent("kotlinx.coroutines.reactive.ReactiveFlowKt", ReactiveWrappers.class.getClassLoader())
 			&& ClassUtils.isPresent("kotlinx.coroutines.reactor.ReactorFlowKt", ReactiveWrappers.class.getClassLoader());
 
+	private ReactiveWrappers() {}
+
 	/**
 	 * Enumeration of supported reactive libraries.
 	 *
 	 * @author Mark Paluch
 	 */
-	public enum ReactiveLibrary {
+	public static enum ReactiveLibrary {
 		PROJECT_REACTOR, RXJAVA1, RXJAVA2, KOTLIN_COROUTINES;
 	}
 

@@ -15,18 +15,13 @@
  */
 package org.springframework.data.domain;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import lombok.With;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Default implementation of {@link ExampleMatcher}.
@@ -35,9 +30,6 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.0
  */
-@ToString
-@EqualsAndHashCode
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class TypedExampleMatcher implements ExampleMatcher {
 
 	private final NullHandler nullHandler;
@@ -45,12 +37,22 @@ class TypedExampleMatcher implements ExampleMatcher {
 	private final PropertySpecifiers propertySpecifiers;
 	private final Set<String> ignoredPaths;
 	private final boolean defaultIgnoreCase;
-	private final @With(AccessLevel.PACKAGE) MatchMode mode;
+	private final MatchMode mode;
 
 	TypedExampleMatcher() {
 
 		this(NullHandler.IGNORE, StringMatcher.DEFAULT, new PropertySpecifiers(), Collections.emptySet(), false,
 				MatchMode.ALL);
+	}
+
+	private TypedExampleMatcher(NullHandler nullHandler, StringMatcher defaultStringMatcher,
+			PropertySpecifiers propertySpecifiers, Set<String> ignoredPaths, boolean defaultIgnoreCase, MatchMode mode) {
+		this.nullHandler = nullHandler;
+		this.defaultStringMatcher = defaultStringMatcher;
+		this.propertySpecifiers = propertySpecifiers;
+		this.ignoredPaths = ignoredPaths;
+		this.defaultIgnoreCase = defaultIgnoreCase;
+		this.mode = mode;
 	}
 
 	/*
@@ -228,6 +230,12 @@ class TypedExampleMatcher implements ExampleMatcher {
 		return mode;
 	}
 
+	TypedExampleMatcher withMode(MatchMode mode) {
+		return this.mode == mode ? this
+				: new TypedExampleMatcher(this.nullHandler, this.defaultStringMatcher, this.propertySpecifiers,
+						this.ignoredPaths, this.defaultIgnoreCase, mode);
+	}
+
 	private PropertySpecifier getOrCreatePropertySpecifier(String propertyPath, PropertySpecifiers propertySpecifiers) {
 
 		if (propertySpecifiers.hasSpecifierForPath(propertyPath)) {
@@ -235,5 +243,72 @@ class TypedExampleMatcher implements ExampleMatcher {
 		}
 
 		return new PropertySpecifier(propertyPath);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof TypedExampleMatcher)) {
+			return false;
+		}
+
+		TypedExampleMatcher that = (TypedExampleMatcher) o;
+
+		if (defaultIgnoreCase != that.defaultIgnoreCase) {
+			return false;
+		}
+
+		if (nullHandler != that.nullHandler) {
+			return false;
+		}
+
+		if (defaultStringMatcher != that.defaultStringMatcher) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(propertySpecifiers, that.propertySpecifiers)) {
+
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(ignoredPaths, that.ignoredPaths)) {
+			return false;
+		}
+
+		return mode == that.mode;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(nullHandler);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(defaultStringMatcher);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(propertySpecifiers);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(ignoredPaths);
+		result = 31 * result + (defaultIgnoreCase ? 1 : 0);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(mode);
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "TypedExampleMatcher{" + "nullHandler=" + nullHandler + ", defaultStringMatcher=" + defaultStringMatcher
+				+ ", propertySpecifiers=" + propertySpecifiers + ", ignoredPaths=" + ignoredPaths + ", defaultIgnoreCase="
+				+ defaultIgnoreCase + ", mode=" + mode + '}';
 	}
 }

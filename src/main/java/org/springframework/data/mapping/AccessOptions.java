@@ -15,10 +15,6 @@
  */
 package org.springframework.data.mapping;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.With;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -64,13 +60,26 @@ public class AccessOptions {
 	 *
 	 * @author Oliver Drotbohm
 	 */
-	@AllArgsConstructor
 	public static class GetOptions {
 
 		private static final GetOptions DEFAULT = new GetOptions(new HashMap<>(), GetNulls.REJECT);
 
 		private final Map<PersistentProperty<?>, Function<Object, Object>> handlers;
-		private final @With @Getter GetNulls nullValues;
+		private final GetNulls nullValues;
+
+		public GetOptions(Map<PersistentProperty<?>, Function<Object, Object>> handlers, GetNulls nullValues) {
+
+			this.handlers = handlers;
+			this.nullValues = nullValues;
+		}
+
+		public GetNulls getNullValues() {
+			return this.nullValues;
+		}
+
+		public GetOptions withNullValues(GetNulls nullValues) {
+			return this.nullValues == nullValues ? this : new GetOptions(this.handlers, nullValues);
+		}
 
 		/**
 		 * How to handle null values during a {@link PersistentPropertyPath} traversal.
@@ -203,9 +212,32 @@ public class AccessOptions {
 	 *
 	 * @author Oliver Drotbohm
 	 */
-	@With
-	@AllArgsConstructor
 	public static class SetOptions {
+
+		public SetOptions(SetNulls nullHandling, Propagation collectionPropagation, Propagation mapPropagation) {
+			this.nullHandling = nullHandling;
+			this.collectionPropagation = collectionPropagation;
+			this.mapPropagation = mapPropagation;
+		}
+
+		public SetOptions withNullHandling(SetNulls nullHandling) {
+			return this.nullHandling == nullHandling ? this
+					: new SetOptions(nullHandling, this.collectionPropagation, this.mapPropagation);
+		}
+
+		public SetOptions withCollectionPropagation(Propagation collectionPropagation) {
+			return this.collectionPropagation == collectionPropagation ? this
+					: new SetOptions(this.nullHandling, collectionPropagation, this.mapPropagation);
+		}
+
+		public SetOptions withMapPropagation(Propagation mapPropagation) {
+			return this.mapPropagation == mapPropagation ? this
+					: new SetOptions(this.nullHandling, this.collectionPropagation, mapPropagation);
+		}
+
+		public SetNulls getNullHandling() {
+			return this.nullHandling;
+		}
 
 		/**
 		 * How to handle intermediate {@literal null} values when setting
@@ -252,7 +284,7 @@ public class AccessOptions {
 
 		private static final SetOptions DEFAULT = new SetOptions();
 
-		private final @Getter SetNulls nullHandling;
+		private final SetNulls nullHandling;
 		private final Propagation collectionPropagation, mapPropagation;
 
 		private SetOptions() {

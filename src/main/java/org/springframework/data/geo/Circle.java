@@ -15,10 +15,9 @@
  */
 package org.springframework.data.geo;
 
-import lombok.EqualsAndHashCode;
-
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Represents a geospatial circle value
@@ -28,7 +27,6 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
-@EqualsAndHashCode
 public class Circle implements Shape {
 
 	private static final long serialVersionUID = 5215611530535947924L;
@@ -91,6 +89,41 @@ public class Circle implements Shape {
 	 */
 	public Distance getRadius() {
 		return radius;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Circle)) {
+			return false;
+		}
+
+		Circle circle = (Circle) o;
+
+		if (!ObjectUtils.nullSafeEquals(center, circle.center)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(radius, circle.radius);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(center);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(radius);
+		return result;
 	}
 
 	/*

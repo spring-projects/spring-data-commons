@@ -15,8 +15,6 @@
  */
 package org.springframework.data.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.List;
 import java.util.Map;
 
@@ -28,12 +26,11 @@ import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Proxy type detection utilities, extensible via {@link ProxyDetector} registered via Spring factories.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Victor Wooten - Cruising Altitude (Trypnotix)
  */
-@UtilityClass
-public class ProxyUtils {
+public abstract class ProxyUtils {
 
 	private static Map<Class<?>, Class<?>> USER_TYPES = new ConcurrentReferenceHashMap<>();
 
@@ -44,9 +41,11 @@ public class ProxyUtils {
 		DETECTORS.add(ClassUtils::getUserClass);
 	}
 
+	private ProxyUtils() {}
+
 	/**
 	 * Returns the user class for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -68,7 +67,7 @@ public class ProxyUtils {
 
 	/**
 	 * Returns the user class for the given source object.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
@@ -84,11 +83,11 @@ public class ProxyUtils {
 	 *
 	 * @author Oliver Gierke
 	 */
-	public interface ProxyDetector {
+	public static interface ProxyDetector {
 
 		/**
 		 * Returns the user class for the given type.
-		 * 
+		 *
 		 * @param type will never be {@literal null}.
 		 * @return
 		 */

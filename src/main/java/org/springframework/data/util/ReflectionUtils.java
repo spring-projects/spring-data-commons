@@ -15,10 +15,6 @@
  */
 package org.springframework.data.util;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.UtilityClass;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -49,8 +45,11 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Mark Paluch
  * @since 1.5
  */
-@UtilityClass
-public class ReflectionUtils {
+public final class ReflectionUtils {
+
+	private ReflectionUtils() {
+		throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+	}
 
 	/**
 	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
@@ -92,10 +91,13 @@ public class ReflectionUtils {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	public static class AnnotationFieldFilter implements DescribedFieldFilter {
 
-		private final @NonNull Class<? extends Annotation> annotationType;
+		private final Class<? extends Annotation> annotationType;
+
+		public AnnotationFieldFilter(Class<? extends Annotation> annotationType) {
+			this.annotationType = annotationType;
+		}
 
 		/*
 		 * (non-Javadoc)

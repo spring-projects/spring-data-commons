@@ -17,9 +17,6 @@ package org.springframework.data.spel;
 
 import static org.springframework.data.util.StreamUtils.*;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -109,7 +106,6 @@ class EvaluationContextExtensionInformation {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@Getter
 	public static class ExtensionTypeInformation {
 
 		/**
@@ -150,13 +146,24 @@ class EvaluationContextExtensionInformation {
 			return CollectionUtils.unmodifiableMultiValueMap(map);
 		}
 
-		@RequiredArgsConstructor
+		public Map<String, Object> getProperties() {
+			return this.properties;
+		}
+
+		public MultiValueMap<String, Function> getFunctions() {
+			return this.functions;
+		}
+
 		static class PublicMethodAndFieldFilter implements MethodFilter, FieldFilter {
 
 			public static final PublicMethodAndFieldFilter STATIC = new PublicMethodAndFieldFilter(true);
 			public static final PublicMethodAndFieldFilter NON_STATIC = new PublicMethodAndFieldFilter(false);
 
 			private final boolean staticOnly;
+
+			public PublicMethodAndFieldFilter(boolean staticOnly) {
+				this.staticOnly = staticOnly;
+			}
 
 			/*
 			 * (non-Javadoc)

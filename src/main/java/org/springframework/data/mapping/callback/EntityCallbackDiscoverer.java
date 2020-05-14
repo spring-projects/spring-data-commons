@@ -440,6 +440,10 @@ class EntityCallbackDiscoverer {
 			this.entityType = entityType;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
 		@Override
 		public boolean equals(Object other) {
 
@@ -453,6 +457,10 @@ class EntityCallbackDiscoverer {
 					&& ObjectUtils.nullSafeEquals(this.entityType, otherKey.entityType));
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
 		@Override
 		public int hashCode() {
 			return this.callbackType.hashCode() * 17 + ObjectUtils.nullSafeHashCode(this.entityType);

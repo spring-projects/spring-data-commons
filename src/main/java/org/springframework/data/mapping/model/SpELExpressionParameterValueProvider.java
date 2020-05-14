@@ -15,9 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
@@ -30,13 +27,20 @@ import org.springframework.lang.Nullable;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RequiredArgsConstructor
 public class SpELExpressionParameterValueProvider<P extends PersistentProperty<P>>
 		implements ParameterValueProvider<P> {
 
-	private final @NonNull SpELExpressionEvaluator evaluator;
-	private final @NonNull ConversionService conversionService;
-	private final @NonNull ParameterValueProvider<P> delegate;
+	private final SpELExpressionEvaluator evaluator;
+	private final ConversionService conversionService;
+	private final ParameterValueProvider<P> delegate;
+
+	public SpELExpressionParameterValueProvider(SpELExpressionEvaluator evaluator, ConversionService conversionService,
+			ParameterValueProvider<P> delegate) {
+
+		this.evaluator = evaluator;
+		this.conversionService = conversionService;
+		this.delegate = delegate;
+	}
 
 	/*
 	 * (non-Javadoc)

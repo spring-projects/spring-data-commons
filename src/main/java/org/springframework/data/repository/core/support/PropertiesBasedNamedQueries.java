@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Properties;
 
 import org.springframework.data.repository.core.NamedQueries;
@@ -28,14 +25,17 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
 public class PropertiesBasedNamedQueries implements NamedQueries {
 
 	private static final String NO_QUERY_FOUND = "No query with name %s found! Make sure you call hasQuery(…) before calling this method!";
 
 	public static final NamedQueries EMPTY = new PropertiesBasedNamedQueries(new Properties());
 
-	private final @NonNull Properties properties;
+	private final Properties properties;
+
+	public PropertiesBasedNamedQueries(Properties properties) {
+		this.properties = properties;
+	}
 
 	/*
 	 * (non-Javadoc)

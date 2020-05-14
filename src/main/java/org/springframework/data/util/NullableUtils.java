@@ -15,8 +15,6 @@
  */
 package org.springframework.data.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
@@ -81,8 +79,7 @@ import org.springframework.util.MultiValueMap;
  * @see Nullable
  * @see Nonnull
  */
-@UtilityClass
-public class NullableUtils {
+public abstract class NullableUtils {
 
 	private static final String NON_NULL_CLASS_NAME = "javax.annotation.Nonnull";
 	private static final String TYPE_QUALIFIER_CLASS_NAME = "javax.annotation.meta.TypeQualifierDefault";
@@ -96,6 +93,8 @@ public class NullableUtils {
 	private static final Set<String> WHEN_NULLABLE = new HashSet<>(Arrays.asList("UNKNOWN", "MAYBE", "NEVER"));
 	private static final Set<String> WHEN_NON_NULLABLE = new HashSet<>(Collections.singletonList("ALWAYS"));
 
+	private NullableUtils() {}
+
 	/**
 	 * Determine whether {@link ElementType} in the scope of {@link Method} requires non-{@literal null} values.
 	 * Non-nullability rules are discovered from class and package annotations. Non-null is applied when
@@ -106,7 +105,7 @@ public class NullableUtils {
 	 * @return {@literal true} if {@link ElementType} allows {@literal null} values by default.
 	 * @see #isNonNull(Annotation, ElementType)
 	 */
-	public boolean isNonNull(Method method, ElementType elementType) {
+	public static boolean isNonNull(Method method, ElementType elementType) {
 		return isNonNull(method.getDeclaringClass(), elementType) || isNonNull((AnnotatedElement) method, elementType);
 	}
 
@@ -120,7 +119,7 @@ public class NullableUtils {
 	 * @return {@literal true} if {@link ElementType} allows {@literal null} values by default.
 	 * @see #isNonNull(Annotation, ElementType)
 	 */
-	public boolean isNonNull(Class<?> type, ElementType elementType) {
+	public static boolean isNonNull(Class<?> type, ElementType elementType) {
 		return isNonNull(type.getPackage(), elementType) || isNonNull((AnnotatedElement) type, elementType);
 	}
 
@@ -133,7 +132,7 @@ public class NullableUtils {
 	 * @param elementType the element type.
 	 * @return {@literal true} if {@link ElementType} allows {@literal null} values by default.
 	 */
-	public boolean isNonNull(AnnotatedElement element, ElementType elementType) {
+	public static boolean isNonNull(AnnotatedElement element, ElementType elementType) {
 
 		for (Annotation annotation : element.getAnnotations()) {
 

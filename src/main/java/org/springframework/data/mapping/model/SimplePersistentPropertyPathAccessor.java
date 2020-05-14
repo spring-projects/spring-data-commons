@@ -17,14 +17,12 @@ package org.springframework.data.mapping.model;
 
 import static org.springframework.data.mapping.AccessOptions.SetOptions.SetNulls.*;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.data.mapping.AccessOptions;
@@ -49,11 +47,15 @@ import org.springframework.util.Assert;
  * @since 2.3
  * @soundtrack Ron Spielman - Nineth Song (Tip of My Tongue)
  */
-@Slf4j
-@RequiredArgsConstructor
 class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathAccessor<T> {
 
-	private final @NonNull PersistentPropertyAccessor<T> delegate;
+	private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(SimplePersistentPropertyPathAccessor.class);
+
+	private final PersistentPropertyAccessor<T> delegate;
+
+	public SimplePersistentPropertyPathAccessor(PersistentPropertyAccessor<T> delegate) {
+		this.delegate = delegate;
+	}
 
 	/*
 	 * (non-Javadoc)

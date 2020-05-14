@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.Value;
-
 import java.beans.Introspector;
 import java.util.Optional;
 
@@ -24,6 +22,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Fragment configuration consisting of an interface name and the implementation class name.
@@ -32,11 +31,10 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @since 2.0
  */
-@Value
-public class RepositoryFragmentConfiguration {
+public final class RepositoryFragmentConfiguration {
 
-	String interfaceName, className;
-	Optional<AbstractBeanDefinition> beanDefinition;
+	private final String interfaceName, className;
+	private final Optional<AbstractBeanDefinition> beanDefinition;
 
 	/**
 	 * Creates a {@link RepositoryFragmentConfiguration} given {@code interfaceName} and {@code className} of the
@@ -72,6 +70,13 @@ public class RepositoryFragmentConfiguration {
 		this.beanDefinition = Optional.of(beanDefinition);
 	}
 
+	public RepositoryFragmentConfiguration(String interfaceName, String className,
+			Optional<AbstractBeanDefinition> beanDefinition) {
+		this.interfaceName = interfaceName;
+		this.className = className;
+		this.beanDefinition = beanDefinition;
+	}
+
 	/**
 	 * @return name of the implementation bean.
 	 */
@@ -84,5 +89,66 @@ public class RepositoryFragmentConfiguration {
 	 */
 	public String getFragmentBeanName() {
 		return getImplementationBeanName() + "Fragment";
+	}
+
+	public String getInterfaceName() {
+		return this.interfaceName;
+	}
+
+	public String getClassName() {
+		return this.className;
+	}
+
+	public Optional<AbstractBeanDefinition> getBeanDefinition() {
+		return this.beanDefinition;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof RepositoryFragmentConfiguration)) {
+			return false;
+		}
+
+		RepositoryFragmentConfiguration that = (RepositoryFragmentConfiguration) o;
+		if (!ObjectUtils.nullSafeEquals(interfaceName, that.interfaceName)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(className, that.className)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(beanDefinition, that.beanDefinition);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(interfaceName);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(className);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(beanDefinition);
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "RepositoryFragmentConfiguration(interfaceName=" + this.getInterfaceName() + ", className="
+				+ this.getClassName() + ", beanDefinition=" + this.getBeanDefinition() + ")";
 	}
 }

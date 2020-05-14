@@ -15,9 +15,6 @@
  */
 package org.springframework.data.util;
 
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +28,7 @@ import java.util.stream.Collectors;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.TypeUtils;
 
 /**
@@ -43,8 +41,6 @@ import org.springframework.util.TypeUtils;
  * @since 2.1.7
  * @soundtrack Signs, High Times - Tedeschi Trucks Band (Signs)
  */
-@EqualsAndHashCode(of = "types")
-@RequiredArgsConstructor
 public class ParameterTypes {
 
 	private static final TypeDescriptor OBJECT_DESCRIPTOR = TypeDescriptor.valueOf(Object.class);
@@ -62,6 +58,11 @@ public class ParameterTypes {
 
 		this.types = types;
 		this.alternatives = Lazy.of(() -> getAlternatives());
+	}
+
+	public ParameterTypes(List<TypeDescriptor> types, Lazy<Collection<ParameterTypes>> alternatives) {
+		this.types = types;
+		this.alternatives = alternatives;
 	}
 
 	/**
@@ -276,13 +277,37 @@ public class ParameterTypes {
 		return types.get(types.size() - 1);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof ParameterTypes)) {
+			return false;
+		}
+		ParameterTypes that = (ParameterTypes) o;
+		return ObjectUtils.nullSafeEquals(types, that.types);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(types);
+	}
+
 	/**
 	 * Extension of {@link ParameterTypes} that remembers the seed tail and only adds typed varargs if the current tail is
 	 * assignable to the seed one.
 	 *
 	 * @author Oliver Drotbohm
 	 */
-	@EqualsAndHashCode(callSuper = true)
 	static class ParentParameterTypes extends ParameterTypes {
 
 		private final TypeDescriptor tail;
@@ -316,6 +341,40 @@ public class ParameterTypes {
 			return !tail.isAssignableTo(super.getTail()) //
 					? Optional.empty() //
 					: super.withLastVarArgs();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof ParentParameterTypes)) {
+				return false;
+			}
+
+			if (!super.equals(o)) {
+				return false;
+			}
+
+			ParentParameterTypes that = (ParentParameterTypes) o;
+			return ObjectUtils.nullSafeEquals(tail, that.tail);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = super.hashCode();
+			result = 31 * result + ObjectUtils.nullSafeHashCode(tail);
+			return result;
 		}
 	}
 }

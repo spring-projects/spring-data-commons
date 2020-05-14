@@ -15,7 +15,6 @@
  */
 package org.springframework.data.geo;
 
-import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +24,7 @@ import java.util.List;
 
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,7 +34,6 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @since 1.8
  */
-@EqualsAndHashCode
 public class Polygon implements Iterable<Point>, Shape {
 
 	private static final long serialVersionUID = -2705040068154648988L;
@@ -99,6 +98,34 @@ public class Polygon implements Iterable<Point>, Shape {
 	 */
 	public Iterator<Point> iterator() {
 		return this.points.iterator();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Polygon)) {
+			return false;
+		}
+
+		Polygon that = (Polygon) o;
+		return ObjectUtils.nullSafeEquals(points, that.points);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(points);
 	}
 
 	/*

@@ -19,7 +19,6 @@ import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import kotlinx.coroutines.flow.Flow;
 import kotlinx.coroutines.reactive.ReactiveFlowKt;
-import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Observable;
@@ -60,8 +59,7 @@ import org.springframework.util.ClassUtils;
  * @see ReactiveWrappers
  * @see ReactiveAdapterRegistry
  */
-@UtilityClass
-public class ReactiveWrapperConverters {
+public abstract class ReactiveWrapperConverters {
 
 	private static final List<ReactiveTypeWrapper<?>> REACTIVE_WRAPPERS = new ArrayList<>();
 	private static final GenericConversionService GENERIC_CONVERSION_SERVICE = new GenericConversionService();
@@ -91,6 +89,8 @@ public class ReactiveWrapperConverters {
 
 		registerConvertersIn(GENERIC_CONVERSION_SERVICE);
 	}
+
+	private ReactiveWrapperConverters() {}
 
 	/**
 	 * Registers converters for wrapper types found on the classpath.
@@ -199,7 +199,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author Christoph Strobl
 	 */
-	private interface ReactiveTypeWrapper<T> {
+	private static interface ReactiveTypeWrapper<T> {
 
 		/**
 		 * @return the wrapper class.
@@ -219,7 +219,7 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Wrapper for Project Reactor's {@link Mono}.
 	 */
-	private enum MonoWrapper implements ReactiveTypeWrapper<Mono<?>> {
+	private static enum MonoWrapper implements ReactiveTypeWrapper<Mono<?>> {
 
 		INSTANCE;
 
@@ -237,7 +237,7 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Wrapper for Project Reactor's {@link Flux}.
 	 */
-	private enum FluxWrapper implements ReactiveTypeWrapper<Flux<?>> {
+	private static enum FluxWrapper implements ReactiveTypeWrapper<Flux<?>> {
 
 		INSTANCE;
 
@@ -254,7 +254,7 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Wrapper for Reactive Stream's {@link Publisher}.
 	 */
-	private enum PublisherWrapper implements ReactiveTypeWrapper<Publisher<?>> {
+	private static enum PublisherWrapper implements ReactiveTypeWrapper<Publisher<?>> {
 
 		INSTANCE;
 
@@ -281,7 +281,7 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Wrapper for RxJava 1's {@link Single}.
 	 */
-	private enum RxJava1SingleWrapper implements ReactiveTypeWrapper<Single<?>> {
+	private static enum RxJava1SingleWrapper implements ReactiveTypeWrapper<Single<?>> {
 
 		INSTANCE;
 
@@ -299,7 +299,7 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Wrapper for RxJava 1's {@link Observable}.
 	 */
-	private enum RxJava1ObservableWrapper implements ReactiveTypeWrapper<Observable<?>> {
+	private static enum RxJava1ObservableWrapper implements ReactiveTypeWrapper<Observable<?>> {
 
 		INSTANCE;
 
@@ -317,7 +317,7 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Wrapper for RxJava 2's {@link io.reactivex.Single}.
 	 */
-	private enum RxJava2SingleWrapper implements ReactiveTypeWrapper<io.reactivex.Single<?>> {
+	private static enum RxJava2SingleWrapper implements ReactiveTypeWrapper<io.reactivex.Single<?>> {
 
 		INSTANCE;
 
@@ -335,7 +335,7 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Wrapper for RxJava 2's {@link io.reactivex.Maybe}.
 	 */
-	private enum RxJava2MaybeWrapper implements ReactiveTypeWrapper<Maybe<?>> {
+	private static enum RxJava2MaybeWrapper implements ReactiveTypeWrapper<Maybe<?>> {
 
 		INSTANCE;
 
@@ -353,7 +353,7 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Wrapper for RxJava 2's {@link io.reactivex.Observable}.
 	 */
-	private enum RxJava2ObservableWrapper implements ReactiveTypeWrapper<io.reactivex.Observable<?>> {
+	private static enum RxJava2ObservableWrapper implements ReactiveTypeWrapper<io.reactivex.Observable<?>> {
 
 		INSTANCE;
 
@@ -371,7 +371,7 @@ public class ReactiveWrapperConverters {
 	/**
 	 * Wrapper for RxJava 2's {@link io.reactivex.Flowable}.
 	 */
-	private enum RxJava2FlowableWrapper implements ReactiveTypeWrapper<Flowable<?>> {
+	private static enum RxJava2FlowableWrapper implements ReactiveTypeWrapper<Flowable<?>> {
 
 		INSTANCE;
 
@@ -396,7 +396,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	private enum PublisherToFluxConverter implements Converter<Publisher<?>, Flux<?>> {
+	private static enum PublisherToFluxConverter implements Converter<Publisher<?>, Flux<?>> {
 
 		INSTANCE;
 
@@ -413,7 +413,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.0
 	 */
-	private enum PublisherToMonoConverter implements Converter<Publisher<?>, Mono<?>> {
+	private static enum PublisherToMonoConverter implements Converter<Publisher<?>, Mono<?>> {
 
 		INSTANCE;
 
@@ -434,7 +434,7 @@ public class ReactiveWrapperConverters {
 	 * @author Mark Paluch
 	 * @author 2.3
 	 */
-	private enum PublisherToFlowConverter implements Converter<Publisher<?>, Flow<?>> {
+	private static enum PublisherToFlowConverter implements Converter<Publisher<?>, Flow<?>> {
 
 		INSTANCE;
 
@@ -448,7 +448,8 @@ public class ReactiveWrapperConverters {
 	/**
 	 * A {@link ConverterFactory} that adapts between reactive types using {@link ReactiveAdapterRegistry}.
 	 */
-	private enum ReactiveAdapterConverterFactory implements ConverterFactory<Object, Object>, ConditionalConverter {
+	private static enum ReactiveAdapterConverterFactory
+			implements ConverterFactory<Object, Object>, ConditionalConverter {
 
 		INSTANCE;
 

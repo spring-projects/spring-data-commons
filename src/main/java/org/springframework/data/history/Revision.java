@@ -17,15 +17,11 @@ package org.springframework.data.history;
 
 import static org.springframework.data.util.Optionals.*;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import java.time.Instant;
 import java.util.Optional;
 
 import org.springframework.lang.Nullable;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Wrapper to contain {@link RevisionMetadata} as well as the revisioned entity.
@@ -35,19 +31,23 @@ import org.springframework.lang.Nullable;
  * @author Christoph Strobl
  * @author Jens Schauder
  */
-@Value
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Revision<N extends Number & Comparable<N>, T> implements Comparable<Revision<N, ?>> {
 
 	/**
 	 * The {@link RevisionMetadata} for the current {@link Revision}.
 	 */
-	@NonNull RevisionMetadata<N> metadata;
+	private final RevisionMetadata<N> metadata;
 
 	/**
 	 * The underlying entity.
 	 */
-	@NonNull T entity;
+
+	private final T entity;
+
+	private Revision(RevisionMetadata<N> metadata, T entity) {
+		this.metadata = metadata;
+		this.entity = entity;
+	}
 
 	/**
 	 * Creates a new {@link Revision} for the given {@link RevisionMetadata} and entity.
@@ -116,8 +116,50 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	 */
 	@Override
 	public String toString() {
-
 		return String.format("Revision %s of entity %s - Revision metadata %s",
 				getRevisionNumber().map(Object::toString).orElse("<unknown>"), entity, metadata);
+	}
+
+	public RevisionMetadata<N> getMetadata() {
+		return this.metadata;
+	}
+
+	public T getEntity() {
+		return this.entity;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Revision)) {
+			return false;
+		}
+
+		Revision<?, ?> revision = (Revision<?, ?>) o;
+
+		if (!ObjectUtils.nullSafeEquals(metadata, revision.metadata)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(entity, revision.entity);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(metadata);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(entity);
+		return result;
 	}
 }

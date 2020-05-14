@@ -15,16 +15,13 @@
  */
 package org.springframework.data.util;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * A tuple of things.
@@ -36,13 +33,19 @@ import java.util.stream.Stream;
  * @param <T> Type of the second thing.
  * @since 1.12
  */
-@ToString
-@EqualsAndHashCode
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Pair<S, T> {
 
-	private final @NonNull S first;
-	private final @NonNull T second;
+	private final S first;
+	private final T second;
+
+	private Pair(S first, T second) {
+
+		Assert.notNull(first, "First must not be null!");
+		Assert.notNull(second, "Second must not be null!");
+
+		this.first = first;
+		this.second = second;
+	}
 
 	/**
 	 * Creates a new {@link Pair} for the given elements.
@@ -80,5 +83,49 @@ public final class Pair<S, T> {
 	 */
 	public static <S, T> Collector<Pair<S, T>, ?, Map<S, T>> toMap() {
 		return Collectors.toMap(Pair::getFirst, Pair::getSecond);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Pair)) {
+			return false;
+		}
+
+		Pair<?, ?> pair = (Pair<?, ?>) o;
+
+		if (!ObjectUtils.nullSafeEquals(first, pair.first)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(second, pair.second);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(first);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(second);
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return String.format("%s->%s", this.first, this.second);
 	}
 }

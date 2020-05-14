@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.RequiredArgsConstructor;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -26,6 +24,7 @@ import java.util.function.Supplier;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.AfterDomainEventPublication;
@@ -51,10 +50,13 @@ import org.springframework.util.ReflectionUtils;
  * @since 1.13
  * @soundtrack Henrik Freischlader Trio - Master Plan (Openness)
  */
-@RequiredArgsConstructor
 public class EventPublishingRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
 
 	private final ApplicationEventPublisher publisher;
+
+	public EventPublishingRepositoryProxyPostProcessor(ApplicationEventPublisher publisher) {
+		this.publisher = publisher;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -78,11 +80,21 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	 * @author Oliver Gierke
 	 * @since 1.13
 	 */
-	@RequiredArgsConstructor(staticName = "of")
 	static class EventPublishingMethodInterceptor implements MethodInterceptor {
 
 		private final EventPublishingMethod eventMethod;
 		private final ApplicationEventPublisher publisher;
+
+		private EventPublishingMethodInterceptor(EventPublishingMethod eventMethod, ApplicationEventPublisher publisher) {
+
+			this.eventMethod = eventMethod;
+			this.publisher = publisher;
+		}
+
+		public static EventPublishingMethodInterceptor of(EventPublishingMethod eventMethod,
+				ApplicationEventPublisher publisher) {
+			return new EventPublishingMethodInterceptor(eventMethod, publisher);
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -112,7 +124,6 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	 * @author Oliver Gierke
 	 * @since 1.13
 	 */
-	@RequiredArgsConstructor
 	static class EventPublishingMethod {
 
 		private static Map<Class<?>, EventPublishingMethod> CACHE = new ConcurrentReferenceHashMap<>();
@@ -120,6 +131,12 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 		private final Method publishingMethod;
 		private final @Nullable Method clearingMethod;
+
+		EventPublishingMethod(Method publishingMethod, Method clearingMethod) {
+
+			this.publishingMethod = publishingMethod;
+			this.clearingMethod = clearingMethod;
+		}
 
 		/**
 		 * Creates an {@link EventPublishingMethod} for the given type.

@@ -15,9 +15,6 @@
  */
 package org.springframework.data.domain;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +41,6 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Mark Paluch
  */
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class Sort implements Streamable<org.springframework.data.domain.Sort.Order>, Serializable {
 
 	private static final long serialVersionUID = 5737186511678863905L;
@@ -54,6 +50,10 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	public static final Direction DEFAULT_DIRECTION = Direction.ASC;
 
 	private final List<Order> orders;
+
+	protected Sort(List<Order> orders) {
+		this.orders = orders;
+	}
 
 	/**
 	 * Creates a new {@link Sort} instance.

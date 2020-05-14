@@ -15,8 +15,6 @@
  */
 package org.springframework.data.convert;
 
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.ParameterValueProvider;
@@ -26,10 +24,13 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
  *
  * @author Oliver Drotbohm
  */
-@RequiredArgsConstructor
 class EntityInstantiatorAdapter implements EntityInstantiator {
 
 	private final org.springframework.data.mapping.model.EntityInstantiator delegate;
+
+	EntityInstantiatorAdapter(org.springframework.data.mapping.model.EntityInstantiator delegate) {
+		this.delegate = delegate;
+	}
 
 	/*
 	 * (non-Javadoc)

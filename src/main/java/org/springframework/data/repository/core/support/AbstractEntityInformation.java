@@ -15,10 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.util.Assert;
 
 /**
  * Base class for implementations of {@link EntityInformation}. Considers an entity to be new whenever
@@ -28,10 +26,16 @@ import org.springframework.data.repository.core.EntityInformation;
  * @author Nick Williams
  * @author Mark Paluch
  */
-@RequiredArgsConstructor
 public abstract class AbstractEntityInformation<T, ID> implements EntityInformation<T, ID> {
 
-	private final @NonNull Class<T> domainClass;
+	private final Class<T> domainClass;
+
+	public AbstractEntityInformation(Class<T> domainClass) {
+
+		Assert.notNull(domainClass, "Domain class must not be null");
+
+		this.domainClass = domainClass;
+	}
 
 	/*
 	 * (non-Javadoc)

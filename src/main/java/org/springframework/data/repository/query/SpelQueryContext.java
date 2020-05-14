@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,7 +41,6 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.1
  */
-@RequiredArgsConstructor(staticName = "of")
 public class SpelQueryContext {
 
 	private final static String SPEL_PATTERN_STRING = "([:?])#\\{([^}]+)}";
@@ -55,7 +51,7 @@ public class SpelQueryContext {
 	 * be used in place of the SpEL expression. A typical implementation is expected to look like
 	 * <code>(index, spel) -> "__some_placeholder_" + index</code>
 	 */
-	private final @NonNull BiFunction<Integer, String, String> parameterNameSource;
+	private final BiFunction<Integer, String, String> parameterNameSource;
 
 	/**
 	 * A function from a prefix used to demarcate a SpEL expression in a query and a parameter name as returned from
@@ -64,7 +60,22 @@ public class SpelQueryContext {
 	 * typical implementation is expected to look like <code>(prefix, name) -> prefix + name</code> or
 	 * <code>(prefix, name) -> "{" + name + "}"</code>
 	 */
-	private final @NonNull BiFunction<String, String, String> replacementSource;
+	private final BiFunction<String, String, String> replacementSource;
+
+	private SpelQueryContext(BiFunction<Integer, String, String> parameterNameSource,
+			BiFunction<String, String, String> replacementSource) {
+
+		Assert.notNull(parameterNameSource, "Parameter name source must not be null");
+		Assert.notNull(replacementSource, "Replacement source must not be null");
+
+		this.parameterNameSource = parameterNameSource;
+		this.replacementSource = replacementSource;
+	}
+
+	public static SpelQueryContext of(BiFunction<Integer, String, String> parameterNameSource,
+			BiFunction<String, String, String> replacementSource) {
+		return new SpelQueryContext(parameterNameSource, replacementSource);
+	}
 
 	/**
 	 * Parses the query for SpEL expressions using the pattern:

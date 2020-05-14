@@ -15,8 +15,6 @@
  */
 package org.springframework.data.mapping;
 
-import lombok.EqualsAndHashCode;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -32,6 +30,7 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -186,7 +185,6 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 * @param <T> the type of the parameter
 	 * @author Oliver Gierke
 	 */
-	@EqualsAndHashCode(exclude = { "enclosingClassCache", "hasSpelExpression" })
 	public static class Parameter<T, P extends PersistentProperty<P>> {
 
 		private final @Nullable String name;
@@ -283,6 +281,51 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 */
 		public boolean hasSpelExpression() {
 			return this.hasSpelExpression.get();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof Parameter)) {
+				return false;
+			}
+
+			Parameter<?, ?> parameter = (Parameter<?, ?>) o;
+
+			if (!ObjectUtils.nullSafeEquals(name, parameter.name)) {
+				return false;
+			}
+
+			if (!ObjectUtils.nullSafeEquals(type, parameter.type)) {
+				return false;
+			}
+
+			if (!ObjectUtils.nullSafeEquals(key, parameter.key)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(entity, parameter.entity);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(name);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(type);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(key);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(entity);
+			return result;
 		}
 
 		/**

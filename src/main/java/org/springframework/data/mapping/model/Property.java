@@ -15,8 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import lombok.Getter;
-
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -42,7 +40,7 @@ import org.springframework.util.StringUtils;
  */
 public class Property {
 
-	private final @Getter Optional<Field> field;
+	private final Optional<Field> field;
 	private final Optional<PropertyDescriptor> descriptor;
 
 	private final Class<?> rawType;
@@ -176,6 +174,15 @@ public class Property {
 	 */
 	public Optional<Method> getWither() {
 		return wither.get();
+	}
+
+	/**
+	 * Returns the field of the property if available and if its first (only) parameter matches the type of the property.
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	public Optional<Field> getField() {
+		return this.field;
 	}
 
 	/**

@@ -15,10 +15,6 @@
  */
 package org.springframework.data.util;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -28,7 +24,16 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,6 +42,7 @@ import org.springframework.core.GenericTypeResolver;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -573,12 +579,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @author Oliver Gierke
 	 * @since 1.11
 	 */
-	@EqualsAndHashCode
-	@RequiredArgsConstructor
 	private static class SyntheticParamterizedType implements ParameterizedType {
 
-		private final @NonNull ClassTypeInformation<?> typeInformation;
-		private final @NonNull List<TypeInformation<?>> typeParameters;
+		private final ClassTypeInformation<?> typeInformation;
+		private final List<TypeInformation<?>> typeParameters;
+
+		public SyntheticParamterizedType(ClassTypeInformation<?> typeInformation, List<TypeInformation<?>> typeParameters) {
+			this.typeInformation = typeInformation;
+			this.typeParameters = typeParameters;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -612,6 +621,41 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 				result[i] = typeParameters.get(i).getType();
 			}
 
+			return result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof SyntheticParamterizedType)) {
+				return false;
+			}
+
+			SyntheticParamterizedType that = (SyntheticParamterizedType) o;
+
+			if (!ObjectUtils.nullSafeEquals(typeInformation, that.typeInformation)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(typeParameters, that.typeParameters);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(typeInformation);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(typeParameters);
 			return result;
 		}
 	}

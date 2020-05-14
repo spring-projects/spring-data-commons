@@ -15,8 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 
@@ -26,11 +24,16 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
  *
  * @author Oliver Drotbohm
  */
-@RequiredArgsConstructor
 public class InstantiationAwarePropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
 	private final PersistentPropertyAccessorFactory delegate;
 	private final EntityInstantiators instantiators;
+
+	public InstantiationAwarePropertyAccessorFactory(PersistentPropertyAccessorFactory delegate,
+			EntityInstantiators instantiators) {
+		this.delegate = delegate;
+		this.instantiators = instantiators;
+	}
 
 	/*
 	 * (non-Javadoc)

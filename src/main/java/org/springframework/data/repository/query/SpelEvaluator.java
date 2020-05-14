@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -37,14 +34,20 @@ import org.springframework.util.Assert;
  * @since 2.1
  * @see SpelQueryContext#parse(String, Parameters)
  */
-@RequiredArgsConstructor
 public class SpelEvaluator {
 
 	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	private final @NonNull QueryMethodEvaluationContextProvider evaluationContextProvider;
-	private final @NonNull Parameters<?, ?> parameters;
-	private final @NonNull SpelExtractor extractor;
+	private final QueryMethodEvaluationContextProvider evaluationContextProvider;
+	private final Parameters<?, ?> parameters;
+	private final SpelExtractor extractor;
+
+	public SpelEvaluator(QueryMethodEvaluationContextProvider evaluationContextProvider, Parameters<?, ?> parameters,
+			SpelExtractor extractor) {
+		this.evaluationContextProvider = evaluationContextProvider;
+		this.parameters = parameters;
+		this.extractor = extractor;
+	}
 
 	/**
 	 * Evaluate all the SpEL expressions in {@link #parameterNameToSpelMap} based on values provided as an argument.
@@ -66,7 +69,7 @@ public class SpelEvaluator {
 
 	/**
 	 * Returns the query string produced by the intermediate SpEL expression collection step.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getQueryString() {

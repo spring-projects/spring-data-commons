@@ -17,8 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.springframework.asm.Opcodes.*;
 
-import lombok.experimental.UtilityClass;
-
 import java.lang.reflect.Modifier;
 
 import org.springframework.asm.MethodVisitor;
@@ -31,8 +29,9 @@ import org.springframework.asm.Type;
  * @author Mark Paluch
  * @since 2.1
  */
-@UtilityClass
-class BytecodeUtil {
+abstract class BytecodeUtil {
+
+	private BytecodeUtil() {}
 
 	/**
 	 * Returns the appropriate autoboxing type.

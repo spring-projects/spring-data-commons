@@ -15,9 +15,6 @@
  */
 package org.springframework.data.projection;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -25,6 +22,8 @@ import javax.annotation.Nullable;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
+import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -33,10 +32,16 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @since 1.10
  */
-@RequiredArgsConstructor
 class MapAccessingMethodInterceptor implements MethodInterceptor {
 
-	private final @NonNull Map<String, Object> map;
+	private final Map<String, Object> map;
+
+	MapAccessingMethodInterceptor(Map<String, Object> map) {
+
+		Assert.notNull(map, "Map must not be null");
+
+		this.map = map;
+	}
 
 	/*
 	 * (non-Javadoc)

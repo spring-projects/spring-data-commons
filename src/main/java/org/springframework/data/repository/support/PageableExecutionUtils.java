@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.List;
 import java.util.function.LongSupplier;
 
@@ -34,8 +32,9 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @since 1.13
  */
-@UtilityClass
-public class PageableExecutionUtils {
+public abstract class PageableExecutionUtils {
+
+	private PageableExecutionUtils() {}
 
 	/**
 	 * Constructs a {@link Page} based on the given {@code content}, {@link Pageable} and {@link Supplier} applying

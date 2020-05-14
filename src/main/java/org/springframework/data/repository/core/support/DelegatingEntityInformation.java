@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.lang.Nullable;
 
@@ -27,10 +24,13 @@ import org.springframework.lang.Nullable;
  *
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
 public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, ID> {
 
-	private final @NonNull EntityInformation<T, ID> delegate;
+	private final EntityInformation<T, ID> delegate;
+
+	public DelegatingEntityInformation(EntityInformation<T, ID> delegate) {
+		this.delegate = delegate;
+	}
 
 	/*
 	 * (non-Javadoc)

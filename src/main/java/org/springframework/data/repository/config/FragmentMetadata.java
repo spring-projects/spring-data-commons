@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.RequiredArgsConstructor;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -30,19 +28,22 @@ import org.springframework.util.Assert;
 
 /**
  * Value object for a discovered Repository fragment interface.
- * 
+ *
  * @author Mark Paluch
  * @author Oliver Gierke
  * @since 2.1
  */
-@RequiredArgsConstructor
 public class FragmentMetadata {
 
 	private final MetadataReaderFactory factory;
 
+	public FragmentMetadata(MetadataReaderFactory factory) {
+		this.factory = factory;
+	}
+
 	/**
 	 * Returns all interfaces to be considered fragment ones for the given source interface.
-	 * 
+	 *
 	 * @param interfaceName must not be {@literal null} or empty.
 	 * @return
 	 */

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.querydsl;
 
-import lombok.experimental.UtilityClass;
-
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
@@ -29,11 +27,12 @@ import com.querydsl.core.types.PathType;
  *
  * @author Oliver Gierke
  */
-@UtilityClass
-public class QuerydslUtils {
+public abstract class QuerydslUtils {
 
 	public static final boolean QUERY_DSL_PRESENT = org.springframework.util.ClassUtils
 			.isPresent("com.querydsl.core.types.Predicate", QuerydslUtils.class.getClassLoader());
+
+	private QuerydslUtils() {}
 
 	/**
 	 * Returns the property path for the given {@link Path}.

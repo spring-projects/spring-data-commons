@@ -15,7 +15,6 @@
  */
 package org.springframework.data.web;
 
-import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
@@ -30,6 +29,7 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.projection.Accessor;
@@ -122,10 +122,13 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		return false;
 	}
 
-	@RequiredArgsConstructor
 	private static class InputMessageProjecting implements MethodInterceptor {
 
 		private final DocumentContext context;
+
+		public InputMessageProjecting(DocumentContext context) {
+			this.context = context;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -191,10 +194,13 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 			return Collections.singletonList("$.".concat(new Accessor(method).getPropertyName()));
 		}
 
-		@RequiredArgsConstructor
 		private static class ResolvableTypeRef extends TypeRef<Object> {
 
 			private final ResolvableType type;
+
+			ResolvableTypeRef(ResolvableType type) {
+				this.type = type;
+			}
 
 			/*
 			 * (non-Javadoc)

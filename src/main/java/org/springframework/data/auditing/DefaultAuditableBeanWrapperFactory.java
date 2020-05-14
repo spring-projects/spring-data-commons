@@ -15,9 +15,6 @@
  */
 package org.springframework.data.auditing;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
@@ -100,7 +97,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	static class AuditableInterfaceBeanWrapper
 			extends DateConvertingAuditableBeanWrapper<Auditable<Object, ?, TemporalAccessor>> {
 
-		private final @NonNull Auditable<Object, ?, TemporalAccessor> auditable;
+		private final Auditable<Object, ?, TemporalAccessor> auditable;
 		private final Class<? extends TemporalAccessor> type;
 
 		@SuppressWarnings("unchecked")
@@ -187,10 +184,13 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	 * @author Oliver Gierke
 	 * @since 1.8
 	 */
-	@RequiredArgsConstructor
 	abstract static class DateConvertingAuditableBeanWrapper<T> implements AuditableBeanWrapper<T> {
 
 		private final ConversionService conversionService;
+
+		DateConvertingAuditableBeanWrapper(ConversionService conversionService) {
+			this.conversionService = conversionService;
+		}
 
 		/**
 		 * Returns the {@link TemporalAccessor} in a type, compatible to the given field.

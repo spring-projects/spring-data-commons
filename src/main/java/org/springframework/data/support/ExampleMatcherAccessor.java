@@ -15,9 +15,6 @@
  */
 package org.springframework.data.support;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Collection;
 
 import org.springframework.data.domain.ExampleMatcher;
@@ -33,10 +30,13 @@ import org.springframework.data.domain.ExampleMatcher.StringMatcher;
  * @author Jens Schauder
  * @since 1.12
  */
-@RequiredArgsConstructor
 public class ExampleMatcherAccessor {
 
-	private final @NonNull ExampleMatcher matcher;
+	private final ExampleMatcher matcher;
+
+	public ExampleMatcherAccessor(ExampleMatcher matcher) {
+		this.matcher = matcher;
+	}
 
 	/**
 	 * Returns the {@link PropertySpecifier}s of the underlying {@link ExampleMatcher}.

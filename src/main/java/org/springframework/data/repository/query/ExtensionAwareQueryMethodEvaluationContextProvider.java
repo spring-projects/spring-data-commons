@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +25,7 @@ import java.util.stream.Stream;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
@@ -141,13 +140,16 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	static class DelegatingMethodInterceptor implements MethodInterceptor {
 
 		private static final Map<Method, Method> METHOD_CACHE = new ConcurrentReferenceHashMap<Method, Method>();
 
 		private final Object target;
 		private final Map<String, java.util.function.Function<Object, Object>> directMappings = new HashMap<>();
+
+		DelegatingMethodInterceptor(Object target) {
+			this.target = target;
+		}
 
 		/**
 		 * Registers a result mapping for the method with the given name. Invocation results for matching methods will be

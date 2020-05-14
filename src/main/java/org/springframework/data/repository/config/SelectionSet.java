@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Function;
@@ -31,11 +29,15 @@ import java.util.stream.Collectors;
  * @author Oliver Gierke
  * @since 2.0
  */
-@RequiredArgsConstructor(staticName = "of")
 class SelectionSet<T> {
 
 	private final Collection<T> collection;
 	private final Function<Collection<T>, Optional<T>> fallback;
+
+	private SelectionSet(Collection<T> collection, Function<Collection<T>, Optional<T>> fallback) {
+		this.collection = collection;
+		this.fallback = fallback;
+	}
 
 	/**
 	 * creates a {@link SelectionSet} with a default fallback of {@literal null}, when no element is found and an
@@ -43,6 +45,10 @@ class SelectionSet<T> {
 	 */
 	static <T> SelectionSet<T> of(Collection<T> collection) {
 		return new SelectionSet<>(collection, defaultFallback());
+	}
+
+	public static <T> SelectionSet<T> of(Collection<T> collection, Function<Collection<T>, Optional<T>> fallback) {
+		return new SelectionSet<T>(collection, fallback);
 	}
 
 	/**

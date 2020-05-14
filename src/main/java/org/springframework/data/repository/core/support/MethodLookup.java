@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.NonNull;
-import lombok.Value;
-
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -25,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Strategy interface providing {@link MethodPredicate predicates} to resolve a method called on a composite to its
@@ -77,10 +75,18 @@ public interface MethodLookup {
 	/**
 	 * Value object representing an invoked {@link Method}.
 	 */
-	@Value(staticConstructor = "of")
+	final
 	class InvokedMethod {
 
-		private final @NonNull Method method;
+		private final Method method;
+
+		private InvokedMethod(Method method) {
+			this.method = method;
+		}
+
+		public static InvokedMethod of(Method method) {
+			return new InvokedMethod(method);
+		}
 
 		public Class<?> getDeclaringClass() {
 			return method.getDeclaringClass();
@@ -96,6 +102,47 @@ public interface MethodLookup {
 
 		public int getParameterCount() {
 			return method.getParameterCount();
+		}
+
+		public Method getMethod() {
+			return this.method;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof InvokedMethod)) {
+				return false;
+			}
+
+			InvokedMethod that = (InvokedMethod) o;
+			return ObjectUtils.nullSafeEquals(method, that.method);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHashCode(method);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "MethodLookup.InvokedMethod(method=" + this.getMethod() + ")";
 		}
 	}
 }

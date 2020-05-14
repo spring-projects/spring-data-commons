@@ -18,9 +18,6 @@ package org.springframework.data.mapping.model;
 import static org.springframework.asm.Opcodes.*;
 import static org.springframework.data.mapping.model.BytecodeUtil.*;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -1397,11 +1394,15 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	static class PropertyStackAddress implements Comparable<PropertyStackAddress> {
 
-		private final @NonNull Label label;
+		private final Label label;
 		private final int hash;
+
+		public PropertyStackAddress(Label label, int hash) {
+			this.label = label;
+			this.hash = hash;
+		}
 
 		/*
 		 * (non-Javadoc)

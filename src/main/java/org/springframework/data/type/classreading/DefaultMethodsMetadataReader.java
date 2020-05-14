@@ -15,8 +15,6 @@
  */
 package org.springframework.data.type.classreading;
 
-import lombok.Getter;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +44,6 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 2.1
  */
-@Getter
 class DefaultMethodsMetadataReader implements MethodsMetadataReader {
 
 	private final Resource resource;
@@ -75,6 +72,22 @@ class DefaultMethodsMetadataReader implements MethodsMetadataReader {
 			throw new NestedIOException("ASM ClassReader failed to parse class file - "
 					+ "probably due to a new Java class file version that isn't supported yet: " + resource, ex);
 		}
+	}
+
+	public Resource getResource() {
+		return this.resource;
+	}
+
+	public ClassMetadata getClassMetadata() {
+		return this.classMetadata;
+	}
+
+	public AnnotationMetadata getAnnotationMetadata() {
+		return this.annotationMetadata;
+	}
+
+	public MethodsMetadata getMethodsMetadata() {
+		return this.methodsMetadata;
 	}
 
 	/**

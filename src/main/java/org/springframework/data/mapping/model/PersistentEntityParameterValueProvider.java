@@ -15,9 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -33,13 +30,19 @@ import org.springframework.lang.Nullable;
  *
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
 public class PersistentEntityParameterValueProvider<P extends PersistentProperty<P>>
 		implements ParameterValueProvider<P> {
 
-	private final @NonNull PersistentEntity<?, P> entity;
-	private final @NonNull PropertyValueProvider<P> provider;
+	private final PersistentEntity<?, P> entity;
+	private final PropertyValueProvider<P> provider;
 	private final @Nullable Object parent;
+
+	public PersistentEntityParameterValueProvider(PersistentEntity<?, P> entity, PropertyValueProvider<P> provider,
+			Object parent) {
+		this.entity = entity;
+		this.provider = provider;
+		this.parent = parent;
+	}
 
 	/*
 	 * (non-Javadoc)

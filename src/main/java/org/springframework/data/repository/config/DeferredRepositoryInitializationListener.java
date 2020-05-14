@@ -15,9 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationListener;
@@ -28,18 +26,21 @@ import org.springframework.data.repository.Repository;
 /**
  * {@link ApplicationListener} to trigger the initialization of Spring Data repositories right before the application
  * context is started.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.1
  * @soundtrack Dave Matthews Band - Here On Out (Come Tomorrow)
  */
-@Slf4j
-@RequiredArgsConstructor
 class DeferredRepositoryInitializationListener implements ApplicationListener<ContextRefreshedEvent>, Ordered {
 
-	private final @NonNull ListableBeanFactory beanFactory;
+	private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(DeferredRepositoryInitializationListener.class);
+	private final ListableBeanFactory beanFactory;
 
-	/* 
+	DeferredRepositoryInitializationListener(ListableBeanFactory beanFactory) {
+		this.beanFactory = beanFactory;
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
 	 */
@@ -53,7 +54,7 @@ class DeferredRepositoryInitializationListener implements ApplicationListener<Co
 		LOG.info("Spring Data repositories initialized!");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.Ordered#getOrder()
 	 */

@@ -22,7 +22,6 @@ import kotlin.reflect.KParameter;
 import kotlin.reflect.KParameter.Kind;
 import kotlin.reflect.full.KClasses;
 import kotlin.reflect.jvm.ReflectJvmMapping;
-import lombok.Getter;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -43,7 +42,6 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.1
  */
-@Getter
 class KotlinCopyMethod {
 
 	private final Method publicCopyMethod;
@@ -84,6 +82,22 @@ class KotlinCopyMethod {
 		Optional<Method> publicCopyMethod = syntheticCopyMethod.flatMap(KotlinCopyMethod::findPublicCopyMethod);
 
 		return publicCopyMethod.map(method -> new KotlinCopyMethod(method, syntheticCopyMethod.get()));
+	}
+
+	public Method getPublicCopyMethod() {
+		return this.publicCopyMethod;
+	}
+
+	public Method getSyntheticCopyMethod() {
+		return this.syntheticCopyMethod;
+	}
+
+	public int getParameterCount() {
+		return this.parameterCount;
+	}
+
+	public KFunction<?> getCopyFunction() {
+		return this.copyFunction;
 	}
 
 	/**
@@ -219,7 +233,6 @@ class KotlinCopyMethod {
 	 *
 	 * @author Mark Paluch
 	 */
-	@Getter
 	static class KotlinCopyByProperty {
 
 		private final int parameterPosition;
@@ -242,6 +255,18 @@ class KotlinCopyMethod {
 			}
 
 			return -1;
+		}
+
+		public int getParameterPosition() {
+			return this.parameterPosition;
+		}
+
+		public int getParameterCount() {
+			return this.parameterCount;
+		}
+
+		public KotlinDefaultMask getDefaultMask() {
+			return this.defaultMask;
 		}
 	}
 }

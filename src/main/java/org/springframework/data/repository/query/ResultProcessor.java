@@ -15,19 +15,12 @@
  */
 package org.springframework.data.repository.query;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
@@ -49,7 +42,6 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @since 1.12
  */
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResultProcessor {
 
 	private final QueryMethod method;
@@ -84,6 +76,14 @@ public class ResultProcessor {
 		this.type = ReturnedType.of(type, method.getDomainClass(), factory);
 		this.converter = new ProjectingConverter(this.type, factory);
 		this.factory = factory;
+	}
+
+	private ResultProcessor(QueryMethod method, ProjectingConverter converter, ProjectionFactory factory,
+			ReturnedType type) {
+		this.method = method;
+		this.converter = converter;
+		this.factory = factory;
+		this.type = type;
 	}
 
 	/**
@@ -192,11 +192,19 @@ public class ResultProcessor {
 		}
 	}
 
-	@RequiredArgsConstructor(staticName = "of")
 	private static class ChainingConverter implements Converter<Object, Object> {
 
-		private final @NonNull Class<?> targetType;
-		private final @NonNull Converter<Object, Object> delegate;
+		private final Class<?> targetType;
+		private final Converter<Object, Object> delegate;
+
+		private ChainingConverter(Class<?> targetType, Converter<Object, Object> delegate) {
+			this.targetType = targetType;
+			this.delegate = delegate;
+		}
+
+		public static ChainingConverter of(Class<?> targetType, Converter<Object, Object> delegate) {
+			return new ChainingConverter(targetType, delegate);
+		}
 
 		/**
 		 * Returns a new {@link ChainingConverter} that hands the elements resulting from the current conversion to the
@@ -243,19 +251,17 @@ public class ResultProcessor {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
-		@Nonnull
 		@Override
 		public Object convert(Object source) {
 			return source;
 		}
 	}
 
-	@RequiredArgsConstructor
 	private static class ProjectingConverter implements Converter<Object, Object> {
 
-		private final @NonNull ReturnedType type;
-		private final @NonNull ProjectionFactory factory;
-		private final @NonNull ConversionService conversionService;
+		private final ReturnedType type;
+		private final ProjectionFactory factory;
+		private final ConversionService conversionService;
 
 		/**
 		 * Creates a new {@link ProjectingConverter} for the given {@link ReturnedType} and {@link ProjectionFactory}.
@@ -265,6 +271,12 @@ public class ResultProcessor {
 		 */
 		ProjectingConverter(ReturnedType type, ProjectionFactory factory) {
 			this(type, factory, DefaultConversionService.getSharedInstance());
+		}
+
+		public ProjectingConverter(ReturnedType type, ProjectionFactory factory, ConversionService conversionService) {
+			this.type = type;
+			this.factory = factory;
+			this.conversionService = conversionService;
 		}
 
 		/**

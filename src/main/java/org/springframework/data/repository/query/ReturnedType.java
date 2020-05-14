@@ -15,11 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +34,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ObjectUtils;
 
 /**
  * A representation of the type returned by a {@link QueryMethod}.
@@ -48,12 +44,15 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  * @author Mark Paluch
  * @since 1.12
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public abstract class ReturnedType {
 
 	private static final Map<CacheKey, ReturnedType> CACHE = new ConcurrentReferenceHashMap<>(32);
 
-	private final @NonNull Class<?> domainType;
+	private final Class<?> domainType;
+
+	private ReturnedType(Class<?> domainType) {
+		this.domainType = domainType;
+	}
 
 	/**
 	 * Creates a new {@link ReturnedType} for the given returned type, domain type and {@link ProjectionFactory}.
@@ -330,9 +329,82 @@ public abstract class ReturnedType {
 		}
 	}
 
-	@Value(staticConstructor = "of")
-	private static class CacheKey {
-		Class<?> returnedType, domainType;
-		int projectionFactoryHashCode;
+	private static final class CacheKey {
+
+		private final Class<?> returnedType, domainType;
+		private final int projectionFactoryHashCode;
+
+		private CacheKey(Class<?> returnedType, Class<?> domainType, int projectionFactoryHashCode) {
+
+			this.returnedType = returnedType;
+			this.domainType = domainType;
+			this.projectionFactoryHashCode = projectionFactoryHashCode;
+		}
+
+		public static CacheKey of(Class<?> returnedType, Class<?> domainType, int projectionFactoryHashCode) {
+			return new CacheKey(returnedType, domainType, projectionFactoryHashCode);
+		}
+
+		public Class<?> getReturnedType() {
+			return this.returnedType;
+		}
+
+		public Class<?> getDomainType() {
+			return this.domainType;
+		}
+
+		public int getProjectionFactoryHashCode() {
+			return this.projectionFactoryHashCode;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof CacheKey)) {
+				return false;
+			}
+
+			CacheKey cacheKey = (CacheKey) o;
+
+			if (projectionFactoryHashCode != cacheKey.projectionFactoryHashCode) {
+				return false;
+			}
+
+			if (!ObjectUtils.nullSafeEquals(returnedType, cacheKey.returnedType)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(domainType, cacheKey.domainType);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(returnedType);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(domainType);
+			result = 31 * result + projectionFactoryHashCode;
+			return result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "ReturnedType.CacheKey(returnedType=" + this.getReturnedType() + ", domainType=" + this.getDomainType()
+					+ ", projectionFactoryHashCode=" + this.getProjectionFactoryHashCode() + ")";
+		}
 	}
 }

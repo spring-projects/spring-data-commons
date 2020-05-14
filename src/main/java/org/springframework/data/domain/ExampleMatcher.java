@@ -15,11 +15,6 @@
  */
 package org.springframework.data.domain;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,6 +24,7 @@ import java.util.function.Function;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Specification for property path matching to use in query by example (QBE). An {@link ExampleMatcher} can be created
@@ -282,7 +278,6 @@ public interface ExampleMatcher {
 	 *
 	 * @author Mark Paluch
 	 */
-	@EqualsAndHashCode
 	class GenericPropertyMatcher {
 
 		@Nullable StringMatcher stringMatcher = null;
@@ -440,6 +435,49 @@ public interface ExampleMatcher {
 			this.valueTransformer = propertyValueTransformer;
 			return this;
 		}
+
+		protected boolean canEqual(final Object other) {
+			return other instanceof GenericPropertyMatcher;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof GenericPropertyMatcher)) {
+				return false;
+			}
+
+			GenericPropertyMatcher that = (GenericPropertyMatcher) o;
+
+			if (stringMatcher != that.stringMatcher)
+				return false;
+
+			if (!ObjectUtils.nullSafeEquals(ignoreCase, that.ignoreCase)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(valueTransformer, that.valueTransformer);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(stringMatcher);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(ignoreCase);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(valueTransformer);
+			return result;
+		}
 	}
 
 	/**
@@ -589,15 +627,12 @@ public interface ExampleMatcher {
 	 * @author Mark Paluch
 	 * @since 1.12
 	 */
-	@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	@EqualsAndHashCode
 	class PropertySpecifier {
 
-		String path;
-		@Nullable StringMatcher stringMatcher;
-		@Nullable Boolean ignoreCase;
-		PropertyValueTransformer valueTransformer;
+		private final String path;
+		private final @Nullable StringMatcher stringMatcher;
+		private final @Nullable Boolean ignoreCase;
+		private final PropertyValueTransformer valueTransformer;
 
 		/**
 		 * Creates new {@link PropertySpecifier} for given path.
@@ -612,6 +647,14 @@ public interface ExampleMatcher {
 			this.stringMatcher = null;
 			this.ignoreCase = null;
 			this.valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
+		}
+
+		private PropertySpecifier(String path, @Nullable StringMatcher stringMatcher, @Nullable Boolean ignoreCase,
+				PropertyValueTransformer valueTransformer) {
+			this.path = path;
+			this.stringMatcher = stringMatcher;
+			this.ignoreCase = ignoreCase;
+			this.valueTransformer = valueTransformer;
 		}
 
 		/**
@@ -696,6 +739,55 @@ public interface ExampleMatcher {
 		public Optional<Object> transformValue(Optional<Object> source) {
 			return getPropertyValueTransformer().apply(source);
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof PropertySpecifier)) {
+				return false;
+			}
+
+			PropertySpecifier that = (PropertySpecifier) o;
+
+			if (!ObjectUtils.nullSafeEquals(path, that.path)) {
+				return false;
+			}
+
+			if (stringMatcher != that.stringMatcher)
+				return false;
+
+			if (!ObjectUtils.nullSafeEquals(ignoreCase, that.ignoreCase)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(valueTransformer, that.valueTransformer);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(path);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(stringMatcher);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(ignoreCase);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(valueTransformer);
+			return result;
+		}
+
+		protected boolean canEqual(final Object other) {
+			return other instanceof PropertySpecifier;
+		}
+
 	}
 
 	/**
@@ -705,7 +797,6 @@ public interface ExampleMatcher {
 	 * @author Mark Paluch
 	 * @since 1.12
 	 */
-	@EqualsAndHashCode
 	class PropertySpecifiers {
 
 		private final Map<String, PropertySpecifier> propertySpecifiers = new LinkedHashMap<>();
@@ -736,6 +827,34 @@ public interface ExampleMatcher {
 
 		public Collection<PropertySpecifier> getSpecifiers() {
 			return propertySpecifiers.values();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof PropertySpecifiers)) {
+				return false;
+			}
+
+			PropertySpecifiers that = (PropertySpecifiers) o;
+			return ObjectUtils.nullSafeEquals(propertySpecifiers, that.propertySpecifiers);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHashCode(propertySpecifiers);
 		}
 	}
 

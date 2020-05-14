@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
+import org.slf4j.Logger;
 
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
@@ -42,6 +39,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StopWatch;
 
@@ -55,7 +53,6 @@ import org.springframework.util.StopWatch;
  * @author Jens Schauder
  * @author Mark Paluch
  */
-@Slf4j
 public class RepositoryConfigurationDelegate {
 
 	private static final String REPOSITORY_REGISTRATION = "Spring Data {} - Registering repository: {} - Interface: {} - Factory: {}";
@@ -63,6 +60,8 @@ public class RepositoryConfigurationDelegate {
 	private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = "Non-default AutowireCandidateResolver ({}) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working!";
 
 	static final String FACTORY_BEAN_OBJECT_TYPE = "factoryBeanObjectType";
+
+	private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(RepositoryConfigurationDelegate.class);
 
 	private final RepositoryConfigurationSource configurationSource;
 	private final ResourceLoader resourceLoader;
@@ -259,11 +258,14 @@ public class RepositoryConfigurationDelegate {
 	 * @author Oliver Gierke
 	 * @since 2.1
 	 */
-	@Slf4j
-	@RequiredArgsConstructor
 	static class LazyRepositoryInjectionPointResolver extends ContextAnnotationAutowireCandidateResolver {
 
+		private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(LazyRepositoryInjectionPointResolver.class);
 		private final Map<String, RepositoryConfiguration<?>> configurations;
+
+		public LazyRepositoryInjectionPointResolver(Map<String, RepositoryConfiguration<?>> configurations) {
+			this.configurations = configurations;
+		}
 
 		/**
 		 * Returns a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with the

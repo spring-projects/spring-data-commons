@@ -15,13 +15,6 @@
  */
 package org.springframework.data.util;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import lombok.Value;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -31,14 +24,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.annotation.Nonnull;
-
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -49,7 +42,6 @@ import org.springframework.util.StringUtils;
  * @since 2.2
  * @soundtrack The Intersphere - Don't Think Twice (The Grand Delusion)
  */
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MethodInvocationRecorder {
 
 	public static PropertyNameDetectionStrategy DEFAULT = DefaultPropertyNameDetectionStrategy.INSTANCE;
@@ -62,6 +54,10 @@ public class MethodInvocationRecorder {
 	 */
 	private MethodInvocationRecorder() {
 		this(Optional.empty());
+	}
+
+	private MethodInvocationRecorder(Optional<RecordingMethodInterceptor> interceptor) {
+		this.interceptor = interceptor;
 	}
 
 	/**
@@ -169,13 +165,17 @@ public class MethodInvocationRecorder {
 		}
 	}
 
-	@Value
-	private static class InvocationInformation {
+	private static final class InvocationInformation {
 
-		static final InvocationInformation NOT_INVOKED = new InvocationInformation(new Unrecorded(), null);
+		private static final InvocationInformation NOT_INVOKED = new InvocationInformation(new Unrecorded(), null);
 
-		@NonNull Recorded<?> recorded;
-		@Nullable Method invokedMethod;
+		private final Recorded<?> recorded;
+		@Nullable private final Method invokedMethod;
+
+		public InvocationInformation(Recorded<?> recorded, Method invokedMethod) {
+			this.recorded = recorded;
+			this.invokedMethod = invokedMethod;
+		}
 
 		@Nullable
 		Object getCurrentInstance() {
@@ -205,6 +205,60 @@ public class MethodInvocationRecorder {
 					.orElseThrow(() -> new IllegalArgumentException(
 							String.format("No property name found for method %s!", invokedMethod)));
 		}
+
+		public Recorded<?> getRecorded() {
+			return this.recorded;
+		}
+
+		@Nullable
+		public Method getInvokedMethod() {
+			return this.invokedMethod;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof InvocationInformation)) {
+				return false;
+			}
+
+			InvocationInformation that = (InvocationInformation) o;
+
+			if (!ObjectUtils.nullSafeEquals(recorded, that.recorded)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(invokedMethod, that.invokedMethod);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(recorded);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(invokedMethod);
+			return result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "MethodInvocationRecorder.InvocationInformation(recorded=" + this.getRecorded() + ", invokedMethod="
+					+ this.getInvokedMethod() + ")";
+		}
 	}
 
 	public interface PropertyNameDetectionStrategy {
@@ -213,7 +267,7 @@ public class MethodInvocationRecorder {
 		String getPropertyName(Method method);
 	}
 
-	private static enum DefaultPropertyNameDetectionStrategy implements PropertyNameDetectionStrategy {
+	private enum DefaultPropertyNameDetectionStrategy implements PropertyNameDetectionStrategy {
 
 		INSTANCE;
 
@@ -221,7 +275,7 @@ public class MethodInvocationRecorder {
 		 * (non-Javadoc)
 		 * @see org.springframework.hateoas.core.Recorder.PropertyNameDetectionStrategy#getPropertyName(java.lang.reflect.Method)
 		 */
-		@Nonnull
+
 		@Override
 		public String getPropertyName(Method method) {
 			return getPropertyName(method.getReturnType(), method.getName());
@@ -240,12 +294,15 @@ public class MethodInvocationRecorder {
 		}
 	}
 
-	@ToString
-	@RequiredArgsConstructor
 	public static class Recorded<T> {
 
 		private final @Nullable T currentInstance;
 		private final @Nullable MethodInvocationRecorder recorder;
+
+		public Recorded(T currentInstance, MethodInvocationRecorder recorder) {
+			this.currentInstance = currentInstance;
+			this.recorder = recorder;
+		}
 
 		public Optional<String> getPropertyPath() {
 			return getPropertyPath(MethodInvocationRecorder.DEFAULT);
@@ -302,6 +359,16 @@ public class MethodInvocationRecorder {
 			Assert.notNull(converter, "Converter must not be null!");
 
 			return new Recorded<S>(converter.apply(currentInstance).values().iterator().next(), recorder);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "MethodInvocationRecorder.Recorded(currentInstance=" + this.currentInstance + ", recorder=" + this.recorder
+					+ ")";
 		}
 
 		public interface ToCollectionConverter<T, S> extends Function<T, Collection<S>> {}

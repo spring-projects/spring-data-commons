@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Collections;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -132,11 +129,16 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 		return new SpringImplementationDetectionConfiguration(this, factory);
 	}
 
-	@RequiredArgsConstructor
 	private class SpringImplementationDetectionConfiguration implements ImplementationDetectionConfiguration {
 
 		private final RepositoryConfigurationSource source;
-		private final @Getter MetadataReaderFactory metadataReaderFactory;
+		private final MetadataReaderFactory metadataReaderFactory;
+
+		SpringImplementationDetectionConfiguration(RepositoryConfigurationSource source,
+				MetadataReaderFactory metadataReaderFactory) {
+			this.source = source;
+			this.metadataReaderFactory = metadataReaderFactory;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -173,6 +175,10 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 		@Override
 		public String generateBeanName(BeanDefinition definition) {
 			return source.generateBeanName(definition);
+		}
+
+		public MetadataReaderFactory getMetadataReaderFactory() {
+			return this.metadataReaderFactory;
 		}
 	}
 }

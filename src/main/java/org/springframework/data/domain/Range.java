@@ -15,14 +15,10 @@
  */
 package org.springframework.data.domain;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import java.util.Optional;
 
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Simple value object to work with ranges and boundaries.
@@ -31,21 +27,28 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 1.10
  */
-@Value
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class Range<T extends Comparable<T>> {
+public final class Range<T extends Comparable<T>> {
 
 	private final static Range<?> UNBOUNDED = Range.of(Bound.unbounded(), Bound.UNBOUNDED);
 
 	/**
 	 * The lower bound of the range.
 	 */
-	private final @NonNull Bound<T> lowerBound;
+	private final Bound<T> lowerBound;
 
 	/**
 	 * The upper bound of the range.
 	 */
-	private final @NonNull Bound<T> upperBound;
+	private final Bound<T> upperBound;
+
+	private Range(Bound<T> lowerBound, Bound<T> upperBound) {
+
+		Assert.notNull(lowerBound, "Lower bound must not be null!");
+		Assert.notNull(upperBound, "Upper bound must not be null!");
+
+		this.lowerBound = lowerBound;
+		this.upperBound = upperBound;
+	}
 
 	/**
 	 * Returns an unbounded {@link Range}.
@@ -203,6 +206,49 @@ public class Range<T extends Comparable<T>> {
 		return String.format("%s-%s", lowerBound.toPrefixString(), upperBound.toSuffixString());
 	}
 
+	public Range.Bound<T> getLowerBound() {
+		return this.lowerBound;
+	}
+
+	public Range.Bound<T> getUpperBound() {
+		return this.upperBound;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Range)) {
+			return false;
+		}
+
+		Range<?> range = (Range<?>) o;
+
+		if (!ObjectUtils.nullSafeEquals(lowerBound, range.lowerBound)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(upperBound, range.upperBound);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(lowerBound);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(upperBound);
+		return result;
+	}
+
 	/**
 	 * Value object representing a boundary. A boundary can either be {@link #unbounded() unbounded},
 	 * {@link #inclusive(Comparable) including its value} or {@link #exclusive(Comparable) its value}.
@@ -211,15 +257,18 @@ public class Range<T extends Comparable<T>> {
 	 * @since 2.0
 	 * @soundtrack Mohamed Ragab - Excelsior Sessions (March 2017)
 	 */
-	@Value
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Bound<T extends Comparable<T>> {
+	public static final class Bound<T extends Comparable<T>> {
 
 		@SuppressWarnings({ "rawtypes", "unchecked" }) //
 		private static final Bound<?> UNBOUNDED = new Bound(Optional.empty(), true);
 
 		private final Optional<T> value;
 		private final boolean inclusive;
+
+		private Bound(Optional<T> value, boolean inclusive) {
+			this.value = value;
+			this.inclusive = inclusive;
+		}
 
 		/**
 		 * Creates an unbounded {@link Bound}.
@@ -367,6 +416,47 @@ public class Range<T extends Comparable<T>> {
 			return value.map(Object::toString).orElse("unbounded");
 		}
 
+		public Optional<T> getValue() {
+			return this.value;
+		}
+
+		public boolean isInclusive() {
+			return this.inclusive;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof Bound)) {
+				return false;
+			}
+
+			Bound<?> bound = (Bound<?>) o;
+
+			if (inclusive != bound.inclusive)
+				return false;
+
+			return ObjectUtils.nullSafeEquals(value, bound.value);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(value);
+			result = 31 * result + (inclusive ? 1 : 0);
+			return result;
+		}
 	}
 
 	/**

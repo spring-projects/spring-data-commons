@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.query.parser;
 
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -256,6 +254,10 @@ public class PartTree implements Streamable<OrPart> {
 			return children.iterator();
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
 		@Override
 		public String toString() {
 			return StringUtils.collectionToDelimitedString(children, " and ");
@@ -365,7 +367,7 @@ public class PartTree implements Streamable<OrPart> {
 		private static final String ORDER_BY = "OrderBy";
 
 		private final List<OrPart> nodes;
-		private final @Getter OrderBySource orderBySource;
+		private final OrderBySource orderBySource;
 		private boolean alwaysIgnoreCase;
 
 		public Predicate(String predicate, Class<?> domainClass) {
@@ -395,6 +397,10 @@ public class PartTree implements Streamable<OrPart> {
 			}
 
 			return predicate;
+		}
+
+		public OrderBySource getOrderBySource() {
+			return orderBySource;
 		}
 
 		/*

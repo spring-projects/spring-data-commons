@@ -17,8 +17,6 @@ package org.springframework.data.repository.core.support;
 
 import static org.springframework.core.GenericTypeResolver.*;
 
-import lombok.Value;
-
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -41,6 +39,7 @@ import org.springframework.data.repository.core.support.MethodLookup.MethodPredi
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Implementations of method lookup functions.
@@ -56,7 +55,7 @@ interface MethodLookups {
 	 *
 	 * @return direct method lookup.
 	 */
-	public static MethodLookup direct() {
+	static MethodLookup direct() {
 
 		MethodPredicate direct = (invoked, candidate) -> candidate.getName().equals(invoked.getName())
 				&& candidate.getParameterCount() == invoked.getParameterCount()
@@ -75,7 +74,7 @@ interface MethodLookups {
 	 * @return the composed, repository-aware method lookup.
 	 * @see #direct()
 	 */
-	public static MethodLookup forRepositoryTypes(RepositoryMetadata repositoryMetadata) {
+	static MethodLookup forRepositoryTypes(RepositoryMetadata repositoryMetadata) {
 		return direct().and(new RepositoryAwareMethodLookup(repositoryMetadata));
 	}
 
@@ -92,7 +91,7 @@ interface MethodLookups {
 	 * @see #direct()
 	 * @see #forRepositoryTypes(RepositoryMetadata)
 	 */
-	public static MethodLookup forReactiveTypes(RepositoryMetadata repositoryMetadata) {
+	static MethodLookup forReactiveTypes(RepositoryMetadata repositoryMetadata) {
 		return direct().and(new ReactiveTypeInteropMethodLookup(repositoryMetadata));
 	}
 
@@ -102,7 +101,7 @@ interface MethodLookups {
 	 *
 	 * @author Mark Paluch
 	 */
-	static class RepositoryAwareMethodLookup implements MethodLookup {
+	class RepositoryAwareMethodLookup implements MethodLookup {
 
 		@SuppressWarnings("rawtypes") private static final TypeVariable<Class<Repository>>[] PARAMETERS = Repository.class
 				.getTypeParameters();
@@ -225,7 +224,7 @@ interface MethodLookups {
 	 *
 	 * @author Mark Paluch
 	 */
-	static class ReactiveTypeInteropMethodLookup extends RepositoryAwareMethodLookup {
+	class ReactiveTypeInteropMethodLookup extends RepositoryAwareMethodLookup {
 
 		private final RepositoryMetadata repositoryMetadata;
 
@@ -395,11 +394,19 @@ interface MethodLookups {
 		 * parameters indexes are correlated so {@link ParameterOverrideCriteria} applies only to methods with same
 		 * parameter count.
 		 */
-		@Value(staticConstructor = "of")
-		static class ParameterOverrideCriteria {
+		static final class ParameterOverrideCriteria {
 
 			private final MethodParameter declared;
 			private final MethodParameter base;
+
+			private ParameterOverrideCriteria(MethodParameter declared, MethodParameter base) {
+				this.declared = declared;
+				this.base = base;
+			}
+
+			public static ParameterOverrideCriteria of(MethodParameter declared, MethodParameter base) {
+				return new ParameterOverrideCriteria(declared, base);
+			}
 
 			/**
 			 * @return base method parameter type.
@@ -424,6 +431,59 @@ interface MethodLookups {
 
 			public boolean isAssignableFromDeclared() {
 				return getBaseType().isAssignableFrom(getDeclaredType());
+			}
+
+			public MethodParameter getDeclared() {
+				return this.declared;
+			}
+
+			public MethodParameter getBase() {
+				return this.base;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#equals(java.lang.Object)
+			 */
+			@Override
+			public boolean equals(Object o) {
+
+				if (this == o) {
+					return true;
+				}
+
+				if (!(o instanceof ParameterOverrideCriteria)) {
+					return false;
+				}
+
+				ParameterOverrideCriteria that = (ParameterOverrideCriteria) o;
+
+				if (!ObjectUtils.nullSafeEquals(declared, that.declared)) {
+					return false;
+				}
+
+				return ObjectUtils.nullSafeEquals(base, that.base);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#hashCode()
+			 */
+			@Override
+			public int hashCode() {
+				int result = ObjectUtils.nullSafeHashCode(declared);
+				result = 31 * result + ObjectUtils.nullSafeHashCode(base);
+				return result;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#toString()
+			 */
+			@Override
+			public String toString() {
+				return "MethodLookups.ReactiveTypeInteropMethodLookup.ParameterOverrideCriteria(declared=" + this.getDeclared()
+						+ ", base=" + this.getBase() + ")";
 			}
 		}
 	}

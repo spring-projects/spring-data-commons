@@ -15,14 +15,13 @@
  */
 package org.springframework.data.geo;
 
-import lombok.Value;
-
 import java.io.Serializable;
 
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Range.Bound;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Value object to represent distances in a given metric.
@@ -31,8 +30,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @since 1.8
  */
-@Value
-public class Distance implements Serializable, Comparable<Distance> {
+public final class Distance implements Serializable, Comparable<Distance> {
 
 	private static final long serialVersionUID = 2460886201934027744L;
 
@@ -191,5 +189,50 @@ public class Distance implements Serializable, Comparable<Distance> {
 		}
 
 		return builder.toString();
+	}
+
+	public double getValue() {
+		return this.value;
+	}
+
+	public Metric getMetric() {
+		return this.metric;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Distance)) {
+			return false;
+		}
+
+		Distance distance = (Distance) o;
+
+		if (value != distance.value) {
+			return false;
+		}
+		return ObjectUtils.nullSafeEquals(metric, distance.metric);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result;
+		long temp;
+		temp = Double.doubleToLongBits(value);
+		result = (int) (temp ^ (temp >>> 32));
+		result = 31 * result + ObjectUtils.nullSafeHashCode(metric);
+		return result;
 	}
 }

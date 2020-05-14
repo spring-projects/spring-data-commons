@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.Getter;
-
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -33,7 +31,6 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Thomas Darimont
  */
-@Getter
 public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 
 	private static final String MUST_BE_A_REPOSITORY = String.format("Given type must be assignable to %s!",
@@ -70,5 +67,13 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 		}
 
 		return arguments.get(index).getType();
+	}
+
+	public Class<?> getIdType() {
+		return this.idType;
+	}
+
+	public Class<?> getDomainType() {
+		return this.domainType;
 	}
 }

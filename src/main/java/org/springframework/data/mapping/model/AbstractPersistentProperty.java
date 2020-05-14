@@ -15,9 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -55,18 +52,18 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final TypeInformation<?> information;
 	private final Class<?> rawType;
 	private final Lazy<Association<P>> association;
-	private final @Getter PersistentEntity<?, P> owner;
+	private final PersistentEntity<?, P> owner;
 
 	@SuppressWarnings("null") //
-	private final @Getter(value = AccessLevel.PROTECTED, onMethod = @__(@SuppressWarnings("null"))) Property property;
+	private final Property property;
 	private final Lazy<Integer> hashCode;
 	private final Lazy<Boolean> usePropertyAccess;
 	private final Lazy<Optional<? extends TypeInformation<?>>> entityTypeInformation;
 
-	private final @Getter(onMethod = @__(@Nullable)) Method getter;
-	private final @Getter(onMethod = @__(@Nullable)) Method setter;
-	private final @Getter(onMethod = @__(@Nullable)) Field field;
-	private final @Getter(onMethod = @__(@Nullable)) Method wither;
+	private final Method getter;
+	private final Method setter;
+	private final Field field;
+	private final Method wither;
 	private final boolean immutable;
 
 	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,
@@ -103,6 +100,15 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	}
 
 	protected abstract Association<P> createAssociation();
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getOwner()
+	 */
+	@Override
+	public PersistentEntity<?, P> getOwner() {
+		return this.owner;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -154,6 +160,42 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return entityTypeInformation.get()//
 				.map(Collections::singleton)//
 				.orElseGet(Collections::emptySet);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getGetter()
+	 */
+	@Override
+	public Method getGetter() {
+		return this.getter;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getSetter()
+	 */
+	@Override
+	public Method getSetter() {
+		return this.setter;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getWither()
+	 */
+	@Override
+	public Method getWither() {
+		return this.wither;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getField()
+	 */
+	@Nullable
+	public Field getField() {
+		return this.field;
 	}
 
 	/*
@@ -292,6 +334,11 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	public boolean usePropertyAccess() {
 		return usePropertyAccess.get();
+	}
+
+	@SuppressWarnings("null")
+	protected Property getProperty() {
+		return this.property;
 	}
 
 	/*

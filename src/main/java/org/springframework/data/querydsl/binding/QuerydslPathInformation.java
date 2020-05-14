@@ -15,16 +15,13 @@
  */
 package org.springframework.data.querydsl.binding;
 
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-
 import java.beans.PropertyDescriptor;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ObjectUtils;
 
 import com.querydsl.core.types.Path;
 
@@ -34,12 +31,17 @@ import com.querydsl.core.types.Path;
  * @author Oliver Gierke
  * @since 1.13
  */
-@ToString
-@EqualsAndHashCode
-@RequiredArgsConstructor(staticName = "of")
 class QuerydslPathInformation implements PathInformation {
 
 	private final Path<?> path;
+
+	private QuerydslPathInformation(Path<?> path) {
+		this.path = path;
+	}
+
+	public static QuerydslPathInformation of(Path<?> path) {
+		return new QuerydslPathInformation(path);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -100,5 +102,42 @@ class QuerydslPathInformation implements PathInformation {
 	 */
 	public Path<?> reifyPath(EntityPathResolver resolver) {
 		return path;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof QuerydslPathInformation)) {
+			return false;
+		}
+
+		QuerydslPathInformation that = (QuerydslPathInformation) o;
+		return ObjectUtils.nullSafeEquals(path, that.path);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(path);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "QuerydslPathInformation(path=" + this.path + ")";
 	}
 }

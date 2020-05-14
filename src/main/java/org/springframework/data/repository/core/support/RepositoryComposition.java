@@ -15,11 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +37,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -64,8 +60,6 @@ import org.springframework.util.ReflectionUtils;
  * @since 2.0
  * @see RepositoryFragment
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-@EqualsAndHashCode(of = "fragments")
 public class RepositoryComposition {
 
 	private static final BiFunction<Method, Object[], Object[]> PASSTHRU_ARG_CONVERTER = (methodParameter, o) -> o;
@@ -73,9 +67,16 @@ public class RepositoryComposition {
 			MethodLookups.direct(), PASSTHRU_ARG_CONVERTER);
 
 	private final Map<Method, Method> methodCache = new ConcurrentReferenceHashMap<>();
-	private final @Getter RepositoryFragments fragments;
-	private final @Getter MethodLookup methodLookup;
-	private final @Getter BiFunction<Method, Object[], Object[]> argumentConverter;
+	private final RepositoryFragments fragments;
+	private final MethodLookup methodLookup;
+	private final BiFunction<Method, Object[], Object[]> argumentConverter;
+
+	private RepositoryComposition(RepositoryFragments fragments, MethodLookup methodLookup,
+			BiFunction<Method, Object[], Object[]> argumentConverter) {
+		this.fragments = fragments;
+		this.methodLookup = methodLookup;
+		this.argumentConverter = argumentConverter;
+	}
 
 	/**
 	 * Create an empty {@link RepositoryComposition}.
@@ -239,13 +240,51 @@ public class RepositoryComposition {
 						ClassUtils.getQualifiedName(it.getSignatureContributor())))));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof RepositoryComposition)) {
+			return false;
+		}
+
+		RepositoryComposition that = (RepositoryComposition) o;
+		return ObjectUtils.nullSafeEquals(fragments, that.fragments);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(fragments);
+	}
+
+	public RepositoryFragments getFragments() {
+		return this.fragments;
+	}
+
+	public MethodLookup getMethodLookup() {
+		return this.methodLookup;
+	}
+
+	public BiFunction<Method, Object[], Object[]> getArgumentConverter() {
+		return this.argumentConverter;
+	}
+
 	/**
 	 * Value object representing an ordered list of {@link RepositoryFragment fragments}.
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	@EqualsAndHashCode
 	public static class RepositoryFragments implements Streamable<RepositoryFragment<?>> {
 
 		static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
@@ -253,6 +292,10 @@ public class RepositoryComposition {
 		private final Map<Method, RepositoryFragment<?>> fragmentCache = new ConcurrentReferenceHashMap<>();
 		private final Map<Method, ImplementationInvocationMetadata> invocationMetadataCache = new ConcurrentHashMap<>();
 		private final List<RepositoryFragment<?>> fragments;
+
+		private RepositoryFragments(List<RepositoryFragment<?>> fragments) {
+			this.fragments = fragments;
+		}
 
 		/**
 		 * Create empty {@link RepositoryFragments}.
@@ -415,6 +458,46 @@ public class RepositoryComposition {
 		@Override
 		public String toString() {
 			return fragments.toString();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof RepositoryFragments)) {
+				return false;
+			}
+
+			RepositoryFragments that = (RepositoryFragments) o;
+
+			if (!ObjectUtils.nullSafeEquals(fragmentCache, that.fragmentCache)) {
+				return false;
+			}
+
+			if (!ObjectUtils.nullSafeEquals(invocationMetadataCache, that.invocationMetadataCache)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(fragments, that.fragments);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(fragmentCache);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(invocationMetadataCache);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(fragments);
+			return result;
 		}
 	}
 }

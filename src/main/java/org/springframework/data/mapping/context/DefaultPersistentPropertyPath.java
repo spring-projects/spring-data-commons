@@ -15,8 +15,6 @@
  */
 package org.springframework.data.mapping.context;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -29,6 +27,7 @@ import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -37,7 +36,6 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-@EqualsAndHashCode
 class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements PersistentPropertyPath<P> {
 
 	private static final Converter<PersistentProperty<?>, String> DEFAULT_CONVERTER = (source) -> source.getName();
@@ -245,6 +243,34 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 				? false //
 				: properties.stream() //
 						.anyMatch(property -> type.equals(property.getTypeInformation().getActualType()));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof DefaultPersistentPropertyPath)) {
+			return false;
+		}
+
+		DefaultPersistentPropertyPath<?> that = (DefaultPersistentPropertyPath<?>) o;
+		return ObjectUtils.nullSafeEquals(properties, that.properties);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(properties);
 	}
 
 	/*

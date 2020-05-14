@@ -15,16 +15,13 @@
  */
 package org.springframework.data.repository.core.support;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
@@ -35,6 +32,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Interceptor enforcing required return value and method parameter constraints declared on repository query methods.
@@ -105,13 +103,17 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		return result;
 	}
 
-	@Value
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	static class Nullability {
+	static final class Nullability {
 
-		boolean nullableReturn;
-		boolean[] nullableParameters;
-		MethodParameter[] methodParameters;
+		private final boolean nullableReturn;
+		private final boolean[] nullableParameters;
+		private final MethodParameter[] methodParameters;
+
+		private Nullability(boolean nullableReturn, boolean[] nullableParameters, MethodParameter[] methodParameters) {
+			this.nullableReturn = nullableReturn;
+			this.nullableParameters = nullableParameters;
+			this.methodParameters = methodParameters;
+		}
 
 		static Nullability of(Method method, ParameterNameDiscoverer discoverer) {
 
@@ -159,6 +161,65 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 		private static boolean requiresNoValue(MethodParameter parameter) {
 			return parameter.getParameterType().equals(Void.class) || parameter.getParameterType().equals(Void.TYPE);
+		}
+
+		public boolean[] getNullableParameters() {
+			return this.nullableParameters;
+		}
+
+		public MethodParameter[] getMethodParameters() {
+			return this.methodParameters;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof Nullability)) {
+				return false;
+			}
+
+			Nullability that = (Nullability) o;
+
+			if (nullableReturn != that.nullableReturn) {
+				return false;
+			}
+
+			if (!ObjectUtils.nullSafeEquals(nullableParameters, that.nullableParameters)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(methodParameters, that.methodParameters);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = (nullableReturn ? 1 : 0);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(nullableParameters);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(methodParameters);
+			return result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "MethodInvocationValidator.Nullability(nullableReturn=" + this.isNullableReturn() + ", nullableParameters="
+					+ java.util.Arrays.toString(this.getNullableParameters()) + ", methodParameters="
+					+ java.util.Arrays.deepToString(this.getMethodParameters()) + ")";
 		}
 	}
 }

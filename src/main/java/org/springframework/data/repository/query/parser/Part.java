@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.query.parser;
 
-import lombok.EqualsAndHashCode;
 
 import java.beans.Introspector;
 import java.util.ArrayList;
@@ -28,6 +27,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * A single part of a method name that has to be transformed into a query part. The actual transformation is defined by
@@ -38,7 +38,6 @@ import org.springframework.util.Assert;
  * @author Martin Baumgartner
  * @author Jens Schauder
  */
-@EqualsAndHashCode
 public class Part {
 
 	private static final Pattern IGNORE_CASE = Pattern.compile("Ignor(ing|e)Case");
@@ -129,6 +128,46 @@ public class Part {
 	 */
 	public IgnoreCaseType shouldIgnoreCase() {
 		return ignoreCase;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Part)) {
+			return false;
+		}
+
+		Part part = (Part) o;
+
+		if (!ObjectUtils.nullSafeEquals(propertyPath, part.propertyPath)) {
+			return false;
+		}
+
+		if (type != part.type) {
+			return false;
+		}
+
+		return ignoreCase == part.ignoreCase;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(propertyPath);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(type);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(ignoreCase);
+		return result;
 	}
 
 	/*

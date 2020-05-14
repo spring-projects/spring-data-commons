@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.support;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.Optional;
@@ -33,11 +30,10 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @since 1.10
  */
-@RequiredArgsConstructor
 class AnnotationAttribute {
 
-	private final @NonNull Class<? extends Annotation> annotationType;
-	private final @NonNull Optional<String> attributeName;
+	private final Class<? extends Annotation> annotationType;
+	private final Optional<String> attributeName;
 
 	/**
 	 * Creates a new {@link AnnotationAttribute} to the {@code value} attribute of the given {@link Annotation} type.
@@ -46,6 +42,15 @@ class AnnotationAttribute {
 	 */
 	public AnnotationAttribute(Class<? extends Annotation> annotationType) {
 		this(annotationType, Optional.empty());
+	}
+
+	public AnnotationAttribute(Class<? extends Annotation> annotationType, Optional<String> attributeName) {
+
+		Assert.notNull(annotationType, "Annotation type must not be null");
+		Assert.notNull(attributeName, "Attribute name must not be null");
+
+		this.annotationType = annotationType;
+		this.attributeName = attributeName;
 	}
 
 	/**

@@ -15,13 +15,6 @@
  */
 package org.springframework.data.convert;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,6 +30,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
@@ -49,6 +44,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Value object to capture custom conversion. That is essentially a {@link List} of converters and some additional logic
@@ -62,9 +58,9 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.0
  */
-@Slf4j
 public class CustomConversions {
 
+	private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(CustomConversions.class);
 	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type! You might want to check your annotation setup at the converter implementation.";
 	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type! You might want to check your annotation setup at the converter implementation.";
 	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory!";
@@ -511,11 +507,14 @@ public class CustomConversions {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	static class TargetTypes {
 
-		private final @NonNull Class<?> sourceType;
+		private final Class<?> sourceType;
 		private final Map<Class<?>, Class<?>> conversionTargets = new ConcurrentHashMap<>();
+
+		TargetTypes(Class<?> sourceType) {
+			this.sourceType = sourceType;
+		}
 
 		/**
 		 * Get or compute a target type given its {@code targetType}. Returns a cached {@link Optional} if the value
@@ -624,14 +623,22 @@ public class CustomConversions {
 	 * @author Oliver Gierke
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	private static class ConverterRegistration {
 
 		private final Object converter;
-		private final @NonNull ConvertiblePair convertiblePair;
-		private final @NonNull StoreConversions storeConversions;
+		private final ConvertiblePair convertiblePair;
+		private final StoreConversions storeConversions;
 		private final boolean reading;
 		private final boolean writing;
+
+		private ConverterRegistration(Object converter, ConvertiblePair convertiblePair, StoreConversions storeConversions,
+				boolean reading, boolean writing) {
+			this.converter = converter;
+			this.convertiblePair = convertiblePair;
+			this.storeConversions = storeConversions;
+			this.reading = reading;
+			this.writing = writing;
+		}
 
 		/**
 		 * Returns whether the converter shall be used for writing.
@@ -692,15 +699,18 @@ public class CustomConversions {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@Value
-	@Getter(AccessLevel.PACKAGE)
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class StoreConversions {
 
 		public static final StoreConversions NONE = StoreConversions.of(SimpleTypeHolder.DEFAULT, Collections.emptyList());
 
-		SimpleTypeHolder storeTypeHolder;
-		Collection<?> storeConverters;
+		private final SimpleTypeHolder storeTypeHolder;
+		private final Collection<?> storeConverters;
+
+		private StoreConversions(SimpleTypeHolder storeTypeHolder, Collection<?> storeConverters) {
+
+			this.storeTypeHolder = storeTypeHolder;
+			this.storeConverters = storeConverters;
+		}
 
 		/**
 		 * Creates a new {@link StoreConversions} for the given store-specific {@link SimpleTypeHolder} and the given
@@ -799,6 +809,57 @@ public class CustomConversions {
 
 		private boolean isStoreSimpleType(Class<?> type) {
 			return storeTypeHolder.isSimpleType(type);
+		}
+
+		SimpleTypeHolder getStoreTypeHolder() {
+			return this.storeTypeHolder;
+		}
+
+		Collection<?> getStoreConverters() {
+			return this.storeConverters;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof StoreConversions)) {
+				return false;
+			}
+
+			StoreConversions that = (StoreConversions) o;
+			if (!ObjectUtils.nullSafeEquals(storeTypeHolder, that.storeTypeHolder)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(storeConverters, that.storeConverters);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(storeTypeHolder);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(storeConverters);
+			return result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "StoreConversions{" + "storeTypeHolder=" + storeTypeHolder + ", storeConverters=" + storeConverters + '}';
 		}
 	}
 

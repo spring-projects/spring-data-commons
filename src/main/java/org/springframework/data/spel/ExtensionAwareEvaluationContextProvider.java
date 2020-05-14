@@ -15,9 +15,6 @@
  */
 package org.springframework.data.spel;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,7 +58,6 @@ import org.springframework.util.Assert;
  * @author Jens Schauder
  * @since 2.1
  */
-@RequiredArgsConstructor
 public class ExtensionAwareEvaluationContextProvider implements EvaluationContextProvider {
 
 	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new ConcurrentHashMap<>();
@@ -93,6 +89,11 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 */
 	public ExtensionAwareEvaluationContextProvider(Collection<? extends EvaluationContextExtension> extensions) {
 		this(Lazy.of(extensions));
+	}
+
+	public ExtensionAwareEvaluationContextProvider(
+			Lazy<? extends Collection<? extends EvaluationContextExtension>> extensions) {
+		this.extensions = extensions;
 	}
 
 	/* (non-Javadoc)
@@ -317,10 +318,13 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @author Oliver Gierke
 	 * @since 1.9
 	 */
-	@RequiredArgsConstructor
 	private static class FunctionMethodExecutor implements MethodExecutor {
 
-		private final @NonNull Function function;
+		private final Function function;
+
+		public FunctionMethodExecutor(Function function) {
+			this.function = function;
+		}
 
 		/*
 		 * (non-Javadoc)

@@ -15,12 +15,18 @@
  */
 package org.springframework.data.mapping.model;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -453,7 +459,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return propertyAccessorFactory.getPropertyAccessor(this, bean);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentEntity#getPropertyPathAccessor(java.lang.Object)
 	 */
@@ -552,7 +558,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 *
 	 * @param bean must not be {@literal null}.
 	 */
-	private final void verifyBeanType(Object bean) {
+	private void verifyBeanType(Object bean) {
 
 		Assert.notNull(bean, "Target bean must not be null!");
 		Assert.isInstanceOf(getType(), bean,
@@ -603,12 +609,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	private static final class AssociationComparator<P extends PersistentProperty<P>>
 			implements Comparator<Association<P>>, Serializable {
 
 		private static final long serialVersionUID = 4508054194886854513L;
-		private final @NonNull Comparator<P> delegate;
+		private final Comparator<P> delegate;
+
+		AssociationComparator(Comparator<P> delegate) {
+			this.delegate = delegate;
+		}
 
 		/*
 		 * (non-Javadoc)

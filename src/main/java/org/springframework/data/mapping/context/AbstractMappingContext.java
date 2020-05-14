@@ -15,10 +15,6 @@
  */
 package org.springframework.data.mapping.context;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -487,15 +483,21 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	private final class PersistentPropertyCreator implements FieldCallback {
 
-		private final @NonNull E entity;
-		private final @NonNull Map<String, PropertyDescriptor> descriptors;
-		private final @NonNull Map<String, PropertyDescriptor> remainingDescriptors;
+		private final E entity;
+		private final Map<String, PropertyDescriptor> descriptors;
+		private final Map<String, PropertyDescriptor> remainingDescriptors;
 
 		public PersistentPropertyCreator(E entity, Map<String, PropertyDescriptor> descriptors) {
 			this(entity, descriptors, descriptors);
+		}
+
+		private PersistentPropertyCreator(E entity, Map<String, PropertyDescriptor> descriptors,
+				Map<String, PropertyDescriptor> remainingDescriptors) {
+			this.entity = entity;
+			this.descriptors = descriptors;
+			this.remainingDescriptors = remainingDescriptors;
 		}
 
 		/*

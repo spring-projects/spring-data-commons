@@ -18,9 +18,6 @@ package org.springframework.data.mapping.model;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.KParameter.Kind;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +30,13 @@ import java.util.function.Predicate;
  * @author Mark Paluch
  * @since 2.1
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class KotlinDefaultMask {
 
-	@Getter
 	private final int[] defaulting;
+
+	private KotlinDefaultMask(int[] defaulting) {
+		this.defaulting = defaulting;
+	}
 
 	/**
 	 * Callback method to notify {@link IntConsumer} for each defaulting mask.
@@ -96,5 +95,9 @@ public class KotlinDefaultMask {
 		masks.add(mask);
 
 		return new KotlinDefaultMask(masks.stream().mapToInt(i -> i).toArray());
+	}
+
+	public int[] getDefaulting() {
+		return this.defaulting;
 	}
 }

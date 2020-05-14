@@ -15,12 +15,8 @@
  */
 package org.springframework.data.domain;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Default implementation of {@link Example} holing instances of {@literal probe} and {@link ExampleMatcher}.
@@ -28,12 +24,68 @@ import lombok.ToString;
  * @author Christoph Strobl
  * @since 2.0
  */
-@ToString
-@EqualsAndHashCode
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-@Getter
 class TypedExample<T> implements Example<T> {
 
-	private final @NonNull T probe;
-	private final @NonNull ExampleMatcher matcher;
+	private final T probe;
+	private final ExampleMatcher matcher;
+
+	TypedExample(T probe, ExampleMatcher matcher) {
+
+		Assert.notNull(probe, "Probe must not be null");
+		Assert.notNull(matcher, "ExampleMatcher must not be null");
+
+		this.probe = probe;
+		this.matcher = matcher;
+	}
+
+	public T getProbe() {
+		return this.probe;
+	}
+
+	public ExampleMatcher getMatcher() {
+		return this.matcher;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof TypedExample)) {
+			return false;
+		}
+
+		TypedExample<?> that = (TypedExample<?>) o;
+		if (!ObjectUtils.nullSafeEquals(probe, that.probe)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(matcher, that.matcher);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(probe);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(matcher);
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "TypedExample{" + "probe=" + probe + ", matcher=" + matcher + '}';
+	}
 }
