@@ -20,11 +20,9 @@ import lombok.EqualsAndHashCode;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -43,16 +41,13 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Myeonghyeon Lee
  */
 public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 	private final Constructor<T> constructor;
 	private final List<Parameter<Object, P>> parameters;
-	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new HashMap<>();
-
-	private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-	private final Lock read = lock.readLock();
-	private final Lock write = lock.writeLock();
+	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new ConcurrentHashMap<>();
 
 	/**
 	 * Creates a new {@link PreferredConstructor} from the given {@link Constructor} and {@link Parameter}s.
@@ -129,36 +124,22 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 		Assert.notNull(property, "Property must not be null!");
 
-		try {
+		Boolean cached = isPropertyParameterCache.get(property);
 
-			read.lock();
-			Boolean cached = isPropertyParameterCache.get(property);
-
-			if (cached != null) {
-				return cached;
-			}
-
-		} finally {
-			read.unlock();
+		if (cached != null) {
+			return cached;
 		}
 
-		try {
-
-			write.lock();
-
-			for (Parameter<?, P> parameter : parameters) {
-				if (parameter.maps(property)) {
-					isPropertyParameterCache.put(property, true);
-					return true;
-				}
+		boolean result = false;
+		for (Parameter<?, P> parameter : parameters) {
+			if (parameter.maps(property)) {
+				isPropertyParameterCache.put(property, true);
+				result = true;
+				break;
 			}
-
-			isPropertyParameterCache.put(property, false);
-			return false;
-
-		} finally {
-			write.unlock();
 		}
+
+		return result;
 	}
 
 	/**
