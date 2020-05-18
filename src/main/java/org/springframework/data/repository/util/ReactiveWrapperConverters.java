@@ -52,6 +52,8 @@ import org.springframework.util.ClassUtils;
  * <p>
  * This class discovers reactive wrapper availability and their conversion support based on the class path. Reactive
  * wrapper types might be supported/on the class path but conversion may require additional dependencies.
+ * <p>
+ * <strong>Note:</strong> As of Spring Data 2.4, support for RxJava 1.x is deprecated in favor of RxJava 2 and 3.
  *
  * @author Mark Paluch
  * @author Oliver Gierke
@@ -78,6 +80,14 @@ public abstract class ReactiveWrapperConverters {
 			REACTIVE_WRAPPERS.add(RxJava2MaybeWrapper.INSTANCE);
 			REACTIVE_WRAPPERS.add(RxJava2ObservableWrapper.INSTANCE);
 			REACTIVE_WRAPPERS.add(RxJava2FlowableWrapper.INSTANCE);
+		}
+
+		if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA3)) {
+
+			REACTIVE_WRAPPERS.add(RxJava3SingleWrapper.INSTANCE);
+			REACTIVE_WRAPPERS.add(RxJava3MaybeWrapper.INSTANCE);
+			REACTIVE_WRAPPERS.add(RxJava3ObservableWrapper.INSTANCE);
+			REACTIVE_WRAPPERS.add(RxJava3FlowableWrapper.INSTANCE);
 		}
 
 		if (ReactiveWrappers.isAvailable(ReactiveLibrary.PROJECT_REACTOR)) {
@@ -278,6 +288,10 @@ public abstract class ReactiveWrapperConverters {
 		}
 	}
 
+	// -------------------------------------------------------------------------
+	// RxJava 1 converters
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Wrapper for RxJava 1's {@link Single}.
 	 */
@@ -313,6 +327,10 @@ public abstract class ReactiveWrapperConverters {
 			return ((Observable<?>) wrapper).map(function::apply);
 		}
 	}
+
+	// -------------------------------------------------------------------------
+	// RxJava 2 converters
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Wrapper for RxJava 2's {@link io.reactivex.Single}.
@@ -383,6 +401,82 @@ public abstract class ReactiveWrapperConverters {
 		@Override
 		public io.reactivex.Flowable<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((io.reactivex.Flowable<?>) wrapper).map(function::apply);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// RxJava 3 converters
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Wrapper for RxJava 3's {@link io.reactivex.rxjava3.core.Single}.
+	 */
+	private static enum RxJava3SingleWrapper implements ReactiveTypeWrapper<io.reactivex.rxjava3.core.Single<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Class<? super io.reactivex.rxjava3.core.Single<?>> getWrapperClass() {
+			return io.reactivex.rxjava3.core.Single.class;
+		}
+
+		@Override
+		public io.reactivex.rxjava3.core.Single<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.reactivex.rxjava3.core.Single<?>) wrapper).map(function::apply);
+		}
+	}
+
+	/**
+	 * Wrapper for RxJava 3's {@link io.reactivex.rxjava3.core.Maybe}.
+	 */
+	private static enum RxJava3MaybeWrapper implements ReactiveTypeWrapper<io.reactivex.rxjava3.core.Maybe<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Class<? super io.reactivex.rxjava3.core.Maybe<?>> getWrapperClass() {
+			return io.reactivex.rxjava3.core.Maybe.class;
+		}
+
+		@Override
+		public io.reactivex.rxjava3.core.Maybe<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.reactivex.rxjava3.core.Maybe<?>) wrapper).map(function::apply);
+		}
+	}
+
+	/**
+	 * Wrapper for RxJava 3's {@link io.reactivex.rxjava3.core.Observable}.
+	 */
+	private static enum RxJava3ObservableWrapper implements ReactiveTypeWrapper<io.reactivex.rxjava3.core.Observable<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Class<? super io.reactivex.rxjava3.core.Observable<?>> getWrapperClass() {
+			return io.reactivex.rxjava3.core.Observable.class;
+		}
+
+		@Override
+		public io.reactivex.rxjava3.core.Observable<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.reactivex.rxjava3.core.Observable<?>) wrapper).map(function::apply);
+		}
+	}
+
+	/**
+	 * Wrapper for RxJava 3's {@link io.reactivex.rxjava3.core.Flowable}.
+	 */
+	private static enum RxJava3FlowableWrapper implements ReactiveTypeWrapper<io.reactivex.rxjava3.core.Flowable<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Class<? super io.reactivex.rxjava3.core.Flowable<?>> getWrapperClass() {
+			return io.reactivex.rxjava3.core.Flowable.class;
+		}
+
+		@Override
+		public io.reactivex.rxjava3.core.Flowable<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.reactivex.rxjava3.core.Flowable<?>) wrapper).map(function::apply);
 		}
 	}
 

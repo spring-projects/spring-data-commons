@@ -34,7 +34,7 @@ import org.reactivestreams.Publisher;
  */
 class ReactiveWrappersUnitTests {
 
-	@Test // DATACMNS-836
+	@Test // DATACMNS-836, DATACMNS-1653
 	void isSingleLikeShouldReportCorrectNoTypes() {
 
 		assertThat(ReactiveWrappers.isNoValueType(Mono.class)).isFalse();
@@ -47,9 +47,13 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Maybe.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Flowable.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Observable.class)).isFalse();
+		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Single.class)).isFalse();
+		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Maybe.class)).isFalse();
+		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Flowable.class)).isFalse();
+		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Observable.class)).isFalse();
 	}
 
-	@Test // DATACMNS-836
+	@Test // DATACMNS-836, DATACMNS-1653
 	void isSingleLikeShouldReportCorrectSingleTypes() {
 
 		assertThat(ReactiveWrappers.isSingleValueType(Mono.class)).isTrue();
@@ -63,9 +67,14 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Maybe.class)).isTrue();
 		assertThat(ReactiveWrappers.isSingleValueType(Flowable.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Observable.class)).isFalse();
+		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Single.class)).isTrue();
+		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Completable.class)).isFalse();
+		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Maybe.class)).isTrue();
+		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Flowable.class)).isFalse();
+		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Observable.class)).isFalse();
 	}
 
-	@Test // DATACMNS-836
+	@Test // DATACMNS-836, DATACMNS-1653
 	void isCollectionLikeShouldReportCorrectCollectionTypes() {
 
 		assertThat(ReactiveWrappers.isMultiValueType(Mono.class)).isFalse();
@@ -78,5 +87,9 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Completable.class)).isFalse();
 		assertThat(ReactiveWrappers.isMultiValueType(Flowable.class)).isTrue();
 		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.Observable.class)).isTrue();
+		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.rxjava3.core.Single.class)).isFalse();
+		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Completable.class)).isFalse();
+		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.rxjava3.core.Flowable.class)).isTrue();
+		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.rxjava3.core.Observable.class)).isTrue();
 	}
 }
