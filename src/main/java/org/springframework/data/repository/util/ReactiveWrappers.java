@@ -37,6 +37,8 @@ import org.springframework.util.ClassUtils;
  * <p>
  * Supported types are discovered by their availability on the class path. This class is typically used to determine
  * multiplicity and whether a reactive wrapper type is acceptable for a specific operation.
+ * <p>
+ * <strong>Note:</strong> As of Spring Data 2.4, support for RxJava 1.x is deprecated in favor of RxJava 2 and 3.
  *
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -51,6 +53,11 @@ import org.springframework.util.ClassUtils;
  * @see io.reactivex.Observable
  * @see io.reactivex.Completable
  * @see io.reactivex.Flowable
+ * @see io.reactivex.rxjava3.core.Single
+ * @see io.reactivex.rxjava3.core.Maybe
+ * @see io.reactivex.rxjava3.core.Observable
+ * @see io.reactivex.rxjava3.core.Completable
+ * @see io.reactivex.rxjava3.core.Flowable
  * @see Mono
  * @see Flux
  */
@@ -59,10 +66,14 @@ public abstract class ReactiveWrappers {
 	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Mono",
 			ReactiveWrappers.class.getClassLoader());
 
+	@Deprecated
 	private static final boolean RXJAVA1_PRESENT = ClassUtils.isPresent("rx.Completable",
 			ReactiveWrappers.class.getClassLoader());
 
 	private static final boolean RXJAVA2_PRESENT = ClassUtils.isPresent("io.reactivex.Flowable",
+			ReactiveWrappers.class.getClassLoader());
+
+	private static final boolean RXJAVA3_PRESENT = ClassUtils.isPresent("io.reactivex.rxjava3.core.Flowable",
 			ReactiveWrappers.class.getClassLoader());
 
 	private static final boolean KOTLIN_COROUTINES_PRESENT = ClassUtils.isPresent("kotlinx.coroutines.flow.Flow",
@@ -77,8 +88,15 @@ public abstract class ReactiveWrappers {
 	 *
 	 * @author Mark Paluch
 	 */
-	public static enum ReactiveLibrary {
-		PROJECT_REACTOR, RXJAVA1, RXJAVA2, KOTLIN_COROUTINES;
+	public enum ReactiveLibrary {
+
+		PROJECT_REACTOR,
+
+		/**
+		 * @deprecated since 2.4, use RxJava 2 or 3 instead.
+		 */
+		@Deprecated
+		RXJAVA1, RXJAVA2, RXJAVA3, KOTLIN_COROUTINES;
 	}
 
 	/**
@@ -108,6 +126,8 @@ public abstract class ReactiveWrappers {
 				return RXJAVA1_PRESENT;
 			case RXJAVA2:
 				return RXJAVA2_PRESENT;
+			case RXJAVA3:
+				return RXJAVA3_PRESENT;
 			case KOTLIN_COROUTINES:
 				return PROJECT_REACTOR_PRESENT && KOTLIN_COROUTINES_PRESENT;
 			default:
