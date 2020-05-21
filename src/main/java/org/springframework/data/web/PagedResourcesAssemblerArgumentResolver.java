@@ -48,7 +48,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(PagedResourcesAssemblerArgumentResolver.class);
+	private static final Logger logger = LoggerFactory.getLogger(PagedResourcesAssemblerArgumentResolver.class);
 
 	private static final String SUPERFLOUS_QUALIFIER = "Found qualified {} parameter, but a unique unqualified {} parameter. Using that one, but you might want to check your controller method configuration!";
 	private static final String PARAMETER_AMBIGUITY = "Discovered multiple parameters of type Pageable but no qualifier annotations to disambiguate!";
@@ -151,7 +151,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 			MethodParameter matchingParameter = returnIfQualifiersMatch(pageableParameter, assemblerQualifier);
 
 			if (matchingParameter == null) {
-				LOGGER.info(SUPERFLOUS_QUALIFIER, PagedResourcesAssembler.class.getSimpleName(), Pageable.class.getName());
+				logger.info(SUPERFLOUS_QUALIFIER, PagedResourcesAssembler.class.getSimpleName(), Pageable.class.getName());
 			}
 
 			return pageableParameter;

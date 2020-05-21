@@ -51,7 +51,7 @@ import org.springframework.util.Assert;
  */
 public class ChainedTransactionManager implements PlatformTransactionManager {
 
-	private final static Logger LOGGER = LoggerFactory.getLogger(ChainedTransactionManager.class);
+	private final static Logger logger = LoggerFactory.getLogger(ChainedTransactionManager.class);
 
 	private final List<PlatformTransactionManager> transactionManagers;
 	private final SynchronizationManager synchronizationManager;
@@ -116,7 +116,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 						transactionManager.rollback(transactionStatuses.get(transactionManager));
 					}
 				} catch (Exception ex2) {
-					LOGGER.warn("Rollback exception (" + transactionManager + ") " + ex2.getMessage(), ex2);
+					logger.warn("Rollback exception (" + transactionManager + ") " + ex2.getMessage(), ex2);
 				}
 			}
 
@@ -161,7 +161,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 				try {
 					multiTransactionStatus.rollback(transactionManager);
 				} catch (Exception ex) {
-					LOGGER.warn("Rollback exception (after commit) (" + transactionManager + ") " + ex.getMessage(), ex);
+					logger.warn("Rollback exception (after commit) (" + transactionManager + ") " + ex.getMessage(), ex);
 				}
 			}
 		}
@@ -197,7 +197,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 					rollbackException = ex;
 					rollbackExceptionTransactionManager = transactionManager;
 				} else {
-					LOGGER.warn("Rollback exception (" + transactionManager + ") " + ex.getMessage(), ex);
+					logger.warn("Rollback exception (" + transactionManager + ") " + ex.getMessage(), ex);
 				}
 			}
 		}

@@ -33,7 +33,7 @@ import org.springframework.data.repository.Repository;
  */
 class DeferredRepositoryInitializationListener implements ApplicationListener<ContextRefreshedEvent>, Ordered {
 
-	private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(DeferredRepositoryInitializationListener.class);
+	private static final Logger logger = org.slf4j.LoggerFactory.getLogger(DeferredRepositoryInitializationListener.class);
 	private final ListableBeanFactory beanFactory;
 
 	DeferredRepositoryInitializationListener(ListableBeanFactory beanFactory) {
@@ -47,11 +47,11 @@ class DeferredRepositoryInitializationListener implements ApplicationListener<Co
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
-		LOG.info("Triggering deferred initialization of Spring Data repositories…");
+		logger.info("Triggering deferred initialization of Spring Data repositories…");
 
 		beanFactory.getBeansOfType(Repository.class);
 
-		LOG.info("Spring Data repositories initialized!");
+		logger.info("Spring Data repositories initialized!");
 	}
 
 	/*

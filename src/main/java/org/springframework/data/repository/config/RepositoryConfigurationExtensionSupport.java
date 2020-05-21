@@ -52,7 +52,7 @@ import org.springframework.util.StringUtils;
  */
 public abstract class RepositoryConfigurationExtensionSupport implements RepositoryConfigurationExtension {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryConfigurationExtensionSupport.class);
+	private static final Logger logger = LoggerFactory.getLogger(RepositoryConfigurationExtensionSupport.class);
 	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s.";
 	private static final String MULTI_STORE_DROPPED = "Spring Data %s - Could not safely identify store assignment for repository candidate %s. If you want this repository to be a %s repository,";
 
@@ -307,7 +307,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 		if (types.isEmpty() && annotations.isEmpty()) {
 			if (!noMultiStoreSupport) {
-				LOGGER.warn("Spring Data {} does not support multi-store setups!", moduleName);
+				logger.warn("Spring Data {} does not support multi-store setups!", moduleName);
 				noMultiStoreSupport = true;
 				return false;
 			}
@@ -345,7 +345,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 					.concat(".");
 		}
 
-		LOGGER.info(message);
+		logger.info(message);
 
 		return false;
 	}
@@ -388,7 +388,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		try {
 			return org.springframework.util.ClassUtils.forName(repositoryInterface, classLoader);
 		} catch (ClassNotFoundException | LinkageError e) {
-			LOGGER.warn(String.format(CLASS_LOADING_ERROR, getModuleName(), repositoryInterface, classLoader), e);
+			logger.warn(String.format(CLASS_LOADING_ERROR, getModuleName(), repositoryInterface, classLoader), e);
 		}
 
 		return null;

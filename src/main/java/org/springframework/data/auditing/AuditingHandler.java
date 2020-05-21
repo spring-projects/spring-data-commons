@@ -40,7 +40,7 @@ import org.springframework.util.Assert;
  */
 public class AuditingHandler implements InitializingBean {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AuditingHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(AuditingHandler.class);
 
 	private final DefaultAuditableBeanWrapperFactory factory;
 
@@ -165,12 +165,12 @@ public class AuditingHandler implements InitializingBean {
 			Optional<Object> auditor = touchAuditor(it, isNew);
 			Optional<TemporalAccessor> now = dateTimeForNow ? touchDate(it, isNew) : Optional.empty();
 
-			if (LOGGER.isDebugEnabled()) {
+			if (logger.isDebugEnabled()) {
 
 				Object defaultedNow = now.map(Object::toString).orElse("not set");
 				Object defaultedAuditor = auditor.map(Object::toString).orElse("unknown");
 
-				LOGGER.debug("Touched {} - Last modification at {} by {}", target, defaultedNow, defaultedAuditor);
+				logger.debug("Touched {} - Last modification at {} by {}", target, defaultedNow, defaultedAuditor);
 			}
 
 			return it.getBean();
@@ -229,7 +229,7 @@ public class AuditingHandler implements InitializingBean {
 	public void afterPropertiesSet() {
 
 		if (!auditorAware.isPresent()) {
-			LOGGER.debug("No AuditorAware set! Auditing will not be applied!");
+			logger.debug("No AuditorAware set! Auditing will not be applied!");
 		}
 	}
 }
