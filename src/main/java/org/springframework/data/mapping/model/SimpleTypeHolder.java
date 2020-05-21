@@ -36,42 +36,41 @@ import org.springframework.util.Assert;
  */
 public class SimpleTypeHolder {
 
-	private static final Set<Class<?>> DEFAULTS = new HashSet<Class<?>>() {
+	private static final Set<Class<?>> DEFAULTS;
+	static {
+		Set<Class<?>> defaults = new HashSet<>();
+		defaults.add(boolean.class);
+		defaults.add(boolean[].class);
+		defaults.add(long.class);
+		defaults.add(long[].class);
+		defaults.add(short.class);
+		defaults.add(short[].class);
+		defaults.add(int.class);
+		defaults.add(int[].class);
+		defaults.add(byte.class);
+		defaults.add(byte[].class);
+		defaults.add(float.class);
+		defaults.add(float[].class);
+		defaults.add(double.class);
+		defaults.add(double[].class);
+		defaults.add(char.class);
+		defaults.add(char[].class);
+		defaults.add(Boolean.class);
+		defaults.add(Long.class);
+		defaults.add(Short.class);
+		defaults.add(Integer.class);
+		defaults.add(Byte.class);
+		defaults.add(Float.class);
+		defaults.add(Double.class);
+		defaults.add(Character.class);
+		defaults.add(String.class);
+		defaults.add(Date.class);
+		defaults.add(Locale.class);
+		defaults.add(Class.class);
+		defaults.add(Enum.class);
+		DEFAULTS = Collections.unmodifiableSet(defaults);
+	}
 
-		private static final long serialVersionUID = -1738594126505221500L;
-
-		{
-			add(boolean.class);
-			add(boolean[].class);
-			add(long.class);
-			add(long[].class);
-			add(short.class);
-			add(short[].class);
-			add(int.class);
-			add(int[].class);
-			add(byte.class);
-			add(byte[].class);
-			add(float.class);
-			add(float[].class);
-			add(double.class);
-			add(double[].class);
-			add(char.class);
-			add(char[].class);
-			add(Boolean.class);
-			add(Long.class);
-			add(Short.class);
-			add(Integer.class);
-			add(Byte.class);
-			add(Float.class);
-			add(Double.class);
-			add(Character.class);
-			add(String.class);
-			add(Date.class);
-			add(Locale.class);
-			add(Class.class);
-			add(Enum.class);
-		}
-	};
 	public static final SimpleTypeHolder DEFAULT = new SimpleTypeHolder();
 
 	private volatile Map<Class<?>, Boolean> simpleTypes;
