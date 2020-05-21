@@ -92,7 +92,7 @@ public class MappingInstantiationException extends RuntimeException {
 			}
 
 			return String.format(TEXT_TEMPLATE, it.getType().getName(),
-					constructor.map(c -> toString(c)).orElse("NO_CONSTRUCTOR"), //
+					constructor.map(MappingInstantiationException::toString).orElse("NO_CONSTRUCTOR"), //
 					String.join(",", toStringArgs));
 
 		}).orElse(defaultMessage);

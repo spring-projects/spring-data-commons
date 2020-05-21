@@ -176,8 +176,8 @@ public class DefaultCrudMethods implements CrudMethods {
 	private static Optional<Method> getMostSpecificMethod(Method method, Class<?> type) {
 
 		return Optionals.toStream(Optional.ofNullable(ClassUtils.getMostSpecificMethod(method, type)))//
-				.map(it -> BridgeMethodResolver.findBridgedMethod(it))//
-				.peek(it -> ReflectionUtils.makeAccessible(it))//
+				.map(BridgeMethodResolver::findBridgedMethod)//
+				.peek(ReflectionUtils::makeAccessible)//
 				.findFirst();
 	}
 
