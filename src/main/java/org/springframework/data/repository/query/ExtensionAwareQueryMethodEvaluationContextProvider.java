@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -145,7 +146,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		private static final Map<Method, Method> methodCache = new ConcurrentReferenceHashMap<Method, Method>();
 
 		private final Object target;
-		private final Map<String, java.util.function.Function<Object, Object>> directMappings = new HashMap<>();
+		private final Map<String, Function<Object, Object>> directMappings = new HashMap<>();
 
 		DelegatingMethodInterceptor(Object target) {
 			this.target = target;
@@ -158,7 +159,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		 * @param methodName
 		 * @param mapping
 		 */
-		public void registerResultMapping(String methodName, java.util.function.Function<Object, Object> mapping) {
+		public void registerResultMapping(String methodName, Function<Object, Object> mapping) {
 			this.directMappings.put(methodName, mapping);
 		}
 
@@ -185,7 +186,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 				return result;
 			}
 
-			java.util.function.Function<Object, Object> mapper = directMappings.get(targetMethod.getName());
+			Function<Object, Object> mapper = this.directMappings.get(targetMethod.getName());
 
 			return mapper != null ? mapper.apply(result) : result;
 		}
