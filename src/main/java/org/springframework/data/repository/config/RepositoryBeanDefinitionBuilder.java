@@ -45,7 +45,7 @@ import org.springframework.util.Assert;
  */
 class RepositoryBeanDefinitionBuilder {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryBeanDefinitionBuilder.class);
+	private static final Logger logger = LoggerFactory.getLogger(RepositoryBeanDefinitionBuilder.class);
 
 	private final BeanDefinitionRegistry registry;
 	private final RepositoryConfigurationExtension extension;
@@ -148,8 +148,8 @@ class RepositoryBeanDefinitionBuilder {
 
 		return beanDefinition.map(it -> {
 
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Registering custom repository implementation: " + lookup.getImplementationBeanName() + " "
+			if (logger.isDebugEnabled()) {
+				logger.debug("Registering custom repository implementation: " + lookup.getImplementationBeanName() + " "
 						+ it.getBeanClassName());
 			}
 
@@ -192,8 +192,8 @@ class RepositoryBeanDefinitionBuilder {
 			return;
 		}
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(String.format("Registering repository fragment implementation: %s %s", beanName,
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Registering repository fragment implementation: %s %s", beanName,
 					fragmentConfiguration.getClassName()));
 		}
 
@@ -214,8 +214,8 @@ class RepositoryBeanDefinitionBuilder {
 			return;
 		}
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Registering repository fragment: " + beanName);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Registering repository fragment: " + beanName);
 		}
 
 		BeanDefinitionBuilder fragmentBuilder = BeanDefinitionBuilder.rootBeanDefinition(RepositoryFragment.class,

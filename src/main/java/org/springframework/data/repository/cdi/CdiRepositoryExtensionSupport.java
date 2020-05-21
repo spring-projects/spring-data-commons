@@ -51,7 +51,7 @@ import org.springframework.data.repository.config.CustomRepositoryImplementation
  */
 public abstract class CdiRepositoryExtensionSupport implements Extension {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CdiRepositoryExtensionSupport.class);
+	private static final Logger logger = LoggerFactory.getLogger(CdiRepositoryExtensionSupport.class);
 
 	private final Map<Class<?>, Set<Annotation>> repositoryTypes = new HashMap<>();
 	private final Set<CdiRepositoryBean<?>> eagerRepositories = new HashSet<>();
@@ -78,8 +78,8 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 			// Determine the qualifiers of the repository type.
 			Set<Annotation> qualifiers = getQualifiers(repositoryType);
 
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(
+			if (logger.isDebugEnabled()) {
+				logger.debug(
 						String.format("Discovered repository type '%s' with qualifiers %s.", repositoryType.getName(), qualifiers));
 			}
 			// Store the repository type using its qualifiers.
@@ -138,7 +138,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 		for (CdiRepositoryBean<?> bean : eagerRepositories) {
 
-			LOGGER.debug("Eagerly instantiating CDI repository bean for {}.", bean.getBeanClass());
+			logger.debug("Eagerly instantiating CDI repository bean for {}.", bean.getBeanClass());
 			bean.initialize();
 		}
 	}

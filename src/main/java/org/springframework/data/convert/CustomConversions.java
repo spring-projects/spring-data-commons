@@ -60,7 +60,7 @@ import org.springframework.util.ObjectUtils;
  */
 public class CustomConversions {
 
-	private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(CustomConversions.class);
+	private static final Logger logger = org.slf4j.LoggerFactory.getLogger(CustomConversions.class);
 	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type! You might want to check your annotation setup at the converter implementation.";
 	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type! You might want to check your annotation setup at the converter implementation.";
 	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory!";
@@ -255,8 +255,8 @@ public class CustomConversions {
 
 			readingPairs.add(pair);
 
-			if (LOG.isWarnEnabled() && !converterRegistration.isSimpleSourceType()) {
-				LOG.warn(String.format(READ_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
+			if (logger.isWarnEnabled() && !converterRegistration.isSimpleSourceType()) {
+				logger.warn(String.format(READ_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
 			}
 		}
 
@@ -265,8 +265,8 @@ public class CustomConversions {
 			writingPairs.add(pair);
 			customSimpleTypes.add(pair.getSourceType());
 
-			if (LOG.isWarnEnabled() && !converterRegistration.isSimpleTargetType()) {
-				LOG.warn(String.format(WRITE_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
+			if (logger.isWarnEnabled() && !converterRegistration.isSimpleTargetType()) {
+				logger.warn(String.format(WRITE_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
 			}
 		}
 
@@ -288,14 +288,14 @@ public class CustomConversions {
 				|| (registrationIntent.isReading() && registrationIntent.isSimpleSourceType())
 				|| (registrationIntent.isWriting() && registrationIntent.isSimpleTargetType());
 
-		if (LOG.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) {
 
 			if (register) {
-				LOG.debug(String.format(ADD_CONVERTER, registrationIntent.isUserConverter() ? "user defined " : "",
+				logger.debug(String.format(ADD_CONVERTER, registrationIntent.isUserConverter() ? "user defined " : "",
 						registrationIntent.getSourceType(), registrationIntent.getTargetType(),
 						registrationIntent.isReading() ? "reading" : "writing"));
 			} else {
-				LOG.debug(String.format(SKIP_CONVERTER, registrationIntent.getSourceType(), registrationIntent.getTargetType(),
+				logger.debug(String.format(SKIP_CONVERTER, registrationIntent.getSourceType(), registrationIntent.getTargetType(),
 						registrationIntent.isReading() ? "reading" : "writing",
 						registrationIntent.isReading() ? registrationIntent.getSourceType() : registrationIntent.getTargetType()));
 			}

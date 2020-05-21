@@ -62,7 +62,7 @@ import org.springframework.util.StringUtils;
  */
 public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapable {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CdiRepositoryBean.class);
+	private static final Logger logger = LoggerFactory.getLogger(CdiRepositoryBean.class);
 	private static final CdiRepositoryConfiguration DEFAULT_CONFIGURATION = DefaultCdiRepositoryConfiguration.INSTANCE;
 
 	private final Set<Annotation> qualifiers;
@@ -209,11 +209,11 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		T repoInstance = this.repoInstance;
 
 		if (repoInstance != null) {
-			LOGGER.debug("Returning eagerly created CDI repository instance for {}.", repositoryType.getName());
+			logger.debug("Returning eagerly created CDI repository instance for {}.", repositoryType.getName());
 			return repoInstance;
 		}
 
-		LOGGER.debug("Creating CDI repository bean instance for {}.", repositoryType.getName());
+		logger.debug("Creating CDI repository bean instance for {}.", repositoryType.getName());
 		repoInstance = create(creationalContext, repositoryType);
 		this.repoInstance = repoInstance;
 
@@ -227,8 +227,8 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	public void destroy(@SuppressWarnings("null") T instance,
 			@SuppressWarnings("null") CreationalContext<T> creationalContext) {
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(String.format("Destroying bean instance %s for repository type '%s'.", instance.toString(),
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Destroying bean instance %s for repository type '%s'.", instance.toString(),
 					repositoryType.getName()));
 		}
 

@@ -108,7 +108,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	};
 
 	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
-	private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(RepositoryFactorySupport.class);
+	private static final Logger logger = org.slf4j.LoggerFactory.getLogger(RepositoryFactorySupport.class);
 
 	static {
 		QueryExecutionConverters.registerConvertersIn(CONVERSION_SERVICE);
@@ -288,8 +288,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	@SuppressWarnings({ "unchecked" })
 	public <T> T getRepository(Class<T> repositoryInterface, RepositoryFragments fragments) {
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Initializing repository instance for {}…", repositoryInterface.getName());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Initializing repository instance for {}…", repositoryInterface.getName());
 		}
 
 		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
@@ -331,8 +331,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		T repository = (T) result.getProxy(classLoader);
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Finished creation of repository instance for {}.", repositoryInterface.getName());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Finished creation of repository instance for {}.", repositoryInterface.getName());
 		}
 
 		return repository;

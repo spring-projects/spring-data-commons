@@ -43,7 +43,7 @@ import org.springframework.util.Assert;
  */
 public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, ApplicationEventPublisherAware {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaderRepositoryPopulator.class);
+	private static final Logger logger = LoggerFactory.getLogger(ResourceReaderRepositoryPopulator.class);
 
 	private final ResourceReader reader;
 	private final @Nullable ClassLoader classLoader;
@@ -118,7 +118,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 		for (Resource resource : resources) {
 
-			LOGGER.info(String.format("Reading resource: %s", resource));
+			logger.info(String.format("Reading resource: %s", resource));
 
 			Object result = readObjectFrom(resource);
 
@@ -127,7 +127,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 					if (element != null) {
 						persist(element, invokerFactory);
 					} else {
-						LOGGER.info("Skipping null element found in unmarshal result!");
+						logger.info("Skipping null element found in unmarshal result!");
 					}
 				}
 			} else {
@@ -163,7 +163,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	private void persist(Object object, RepositoryInvokerFactory invokerFactory) {
 
 		RepositoryInvoker invoker = invokerFactory.getInvokerFor(object.getClass());
-		LOGGER.debug(String.format("Persisting %s using repository %s", object, invoker));
+		logger.debug(String.format("Persisting %s using repository %s", object, invoker));
 		invoker.invokeSave(object);
 	}
 }
