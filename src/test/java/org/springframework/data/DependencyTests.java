@@ -15,10 +15,12 @@
  */
 package org.springframework.data;
 
-import static de.schauderhaft.degraph.check.JCheck.*;
-import static org.junit.Assert.*;
-
 import org.junit.jupiter.api.Test;
+
+import static de.schauderhaft.degraph.check.JCheck.*;
+import static org.assertj.core.api.Assertions.*;
+
+import static org.assertj.core.api.HamcrestCondition.matching;
 
 /**
  * @author Jens Schauder
@@ -30,12 +32,11 @@ public class DependencyTests {
 
 		assertThat(
 				classpath() //
-						.noJars() //
+						.noJars()
 						.including("org.springframework.data.**") //
 						.filterClasspath("*target/classes") //
-						.printOnFailure("degraph.graphml"), //
-				violationFree() //
-		);
+						.printOnFailure("degraph.graphml")) //
+				.is(matching(violationFree()));
 	}
 
 }
