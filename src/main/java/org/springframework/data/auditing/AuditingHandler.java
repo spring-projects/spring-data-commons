@@ -196,8 +196,8 @@ public class AuditingHandler implements InitializingBean {
 			Assert.notNull(auditor,
 					() -> String.format("Auditor must not be null! Returned by: %s!", AopUtils.getTargetClass(it)));
 
-			auditor.filter(__ -> isNew).ifPresent(foo -> wrapper.setCreatedBy(foo));
-			auditor.filter(__ -> !isNew || modifyOnCreation).ifPresent(foo -> wrapper.setLastModifiedBy(foo));
+			auditor.filter(temporalAccessor -> isNew).ifPresent(foo -> wrapper.setCreatedBy(foo));
+			auditor.filter(temporalAccessor -> !isNew || modifyOnCreation).ifPresent(foo -> wrapper.setLastModifiedBy(foo));
 
 			return auditor;
 		});
@@ -217,8 +217,8 @@ public class AuditingHandler implements InitializingBean {
 
 		Assert.notNull(now, () -> String.format("Now must not be null! Returned by: %s!", dateTimeProvider.getClass()));
 
-		now.filter(__ -> isNew).ifPresent(it -> wrapper.setCreatedDate(it));
-		now.filter(__ -> !isNew || modifyOnCreation).ifPresent(it -> wrapper.setLastModifiedDate(it));
+		now.filter(temporalAccessor -> isNew).ifPresent(it -> wrapper.setCreatedDate(it));
+		now.filter(temporalAccessor -> !isNew || modifyOnCreation).ifPresent(it -> wrapper.setLastModifiedDate(it));
 
 		return now;
 	}
