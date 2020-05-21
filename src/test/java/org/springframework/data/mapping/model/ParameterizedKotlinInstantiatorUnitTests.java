@@ -19,15 +19,13 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
@@ -39,35 +37,46 @@ import org.springframework.test.util.ReflectionTestUtils;
  *
  * @author Mark Paluch
  */
-@RunWith(Parameterized.class)
-public class ParameterizedKotlinInstantiatorUnitTests {
+class ParameterizedKotlinInstantiatorUnitTests {
 
-	private final String valueToSet = "THE VALUE";
-	private final PersistentEntity<Object, SamplePersistentProperty> entity;
-	private final int propertyCount;
-	private final int propertyUnderTestIndex;
-	private final String propertyUnderTestName;
-	private final EntityInstantiator entityInstantiator;
+	private static final String VALUE_TO_SET = "THE VALUE";
 
-	public ParameterizedKotlinInstantiatorUnitTests(PersistentEntity<Object, SamplePersistentProperty> entity,
-			int propertyCount, int propertyUnderTestIndex, String propertyUnderTestName,
-			EntityInstantiator entityInstantiator, String label) {
-		this.entity = entity;
-		this.propertyCount = propertyCount;
-		this.propertyUnderTestIndex = propertyUnderTestIndex;
-		this.propertyUnderTestName = propertyUnderTestName;
-		this.entityInstantiator = entityInstantiator;
+	@ParameterizedTest // DATACMNS-1402
+	@MethodSource("fixtures")
+	void shouldCreateInstanceWithSinglePropertySet(Fixture fixture) {
+		Object instance = fixture.createInstance(SingleParameterValueProvider::new);
+		for (int i = 0; i < fixture.propertyCount; i++) {
+			Object value = ReflectionTestUtils.getField(instance, Integer.toString(i));
+			if (fixture.index == i) {
+				assertThat(value).describedAs("Property " + i + " of " + fixture.entity).isEqualTo(VALUE_TO_SET);
+			}
+			else {
+				assertThat(value).describedAs("Property " + i + " of " + fixture.entity).isEqualTo("");
+			}
+		}
 	}
 
-	@Parameters(name = "{5}")
-	public static List<Object[]> parameters() {
+	@ParameterizedTest // DATACMNS-1402
+	@MethodSource("fixtures")
+	void shouldCreateInstanceWithAllExceptSinglePropertySet(Fixture fixture) {
+		Object instance = fixture.createInstance(AllButParameterValueProvider::new);
+		for (int i = 0; i < fixture.propertyCount; i++) {
+			Object value = ReflectionTestUtils.getField(instance, Integer.toString(i));
+			if (fixture.index == i) {
+				assertThat(value).describedAs("Property " + i + " of " + fixture.entity).isEqualTo("");
+			}
+			else {
+				assertThat(value).describedAs("Property " + i + " of " + fixture.entity).isEqualTo(Integer.toString(i));
+			}
+		}
+	}
 
+	static List<Fixture> fixtures() {
 		SampleMappingContext context = new SampleMappingContext();
 
 		KotlinClassGeneratingEntityInstantiator generatingInstantiator = new KotlinClassGeneratingEntityInstantiator();
 		ReflectionEntityInstantiator reflectionInstantiator = ReflectionEntityInstantiator.INSTANCE;
-
-		List<Object[]> fixtures = new ArrayList<>();
+		List<Fixture> fixtures = new ArrayList<>();
 		fixtures.addAll(createFixture(context, With32Args.class, 32, generatingInstantiator));
 		fixtures.addAll(createFixture(context, With32Args.class, 32, reflectionInstantiator));
 		fixtures.addAll(createFixture(context, With33Args.class, 33, generatingInstantiator));
@@ -76,51 +85,47 @@ public class ParameterizedKotlinInstantiatorUnitTests {
 		return fixtures;
 	}
 
-	private static List<Object[]> createFixture(SampleMappingContext context, Class<?> entityType, int propertyCount,
+	private static List<Fixture> createFixture(SampleMappingContext context, Class<?> entityType, int propertyCount,
 			EntityInstantiator entityInstantiator) {
-
-		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = context.getPersistentEntity(entityType);
-
-		return IntStream.range(0, propertyCount).mapToObj(i -> {
-
-			return new Object[] { persistentEntity, propertyCount, i, Integer.toString(i), entityInstantiator,
-					String.format("Property %d for %s using %s", i, entityType.getSimpleName(),
-							entityInstantiator.getClass().getSimpleName()) };
-		}).collect(Collectors.toList());
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = context
+				.getPersistentEntity(entityType);
+		return IntStream.range(0, propertyCount)
+				.mapToObj(index -> new Fixture(persistentEntity, propertyCount, entityInstantiator, index, entityType))
+				.collect(Collectors.toList());
 	}
 
-	@Test // DATACMNS-1402
-	public void shouldCreateInstanceWithSinglePropertySet() {
+	static class Fixture {
 
-		Object instance = entityInstantiator.createInstance(entity, new SingleParameterValueProvider());
+		private final BasicPersistentEntity<Object, SamplePersistentProperty> entity;
 
-		for (int i = 0; i < propertyCount; i++) {
+		private final int propertyCount;
 
-			Object value = ReflectionTestUtils.getField(instance, Integer.toString(i));
+		private final EntityInstantiator entityInstantiator;
 
-			if (propertyUnderTestIndex == i) {
-				assertThat(value).describedAs("Property " + i + " of " + entity).isEqualTo(valueToSet);
-			} else {
-				assertThat(value).describedAs("Property " + i + " of " + entity).isEqualTo("");
-			}
+		private final int index;
+
+		private final Class<?> entityType;
+
+		Fixture(BasicPersistentEntity<Object, SamplePersistentProperty> entity, int propertyCount,
+				EntityInstantiator entityInstantiator, int index, Class<?> entityType) {
+			this.entity = entity;
+			this.propertyCount = propertyCount;
+			this.entityInstantiator = entityInstantiator;
+			this.index = index;
+			this.entityType = entityType;
 		}
-	}
 
-	@Test // DATACMNS-1402
-	public void shouldCreateInstanceWithAllExceptSinglePropertySet() {
-
-		Object instance = entityInstantiator.createInstance(entity, new AllButParameterValueProvider());
-
-		for (int i = 0; i < propertyCount; i++) {
-
-			Object value = ReflectionTestUtils.getField(instance, Integer.toString(i));
-
-			if (propertyUnderTestIndex == i) {
-				assertThat(value).describedAs("Property " + i + " of " + entity).isEqualTo("");
-			} else {
-				assertThat(value).describedAs("Property " + i + " of " + entity).isEqualTo(Integer.toString(i));
-			}
+		public Object createInstance(
+				Function<Fixture, ParameterValueProvider<SamplePersistentProperty>> providerFactory) {
+			return this.entityInstantiator.createInstance(this.entity, providerFactory.apply(this));
 		}
+
+		@Override
+		public String toString() {
+			return String.format("Property %d for %s using %s", this.index, this.entityType.getSimpleName(),
+					this.entityInstantiator.getClass().getSimpleName());
+		}
+
 	}
 
 	/**
@@ -128,11 +133,17 @@ public class ParameterizedKotlinInstantiatorUnitTests {
 	 */
 	class SingleParameterValueProvider implements ParameterValueProvider<SamplePersistentProperty> {
 
-		@Override
-		public <T> T getParameterValue(Parameter<T, SamplePersistentProperty> parameter) {
+		private final Fixture fixture;
 
-			if (parameter.getName().equals(propertyUnderTestName)) {
-				return (T) valueToSet;
+		SingleParameterValueProvider(Fixture fixture) {
+			this.fixture = fixture;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <T> T getParameterValue(Parameter<T, SamplePersistentProperty> parameter) {
+			if (parameter.getName().equals(String.valueOf(this.fixture.index))) {
+				return (T) VALUE_TO_SET;
 			}
 			return null;
 		}
@@ -143,10 +154,16 @@ public class ParameterizedKotlinInstantiatorUnitTests {
 	 */
 	class AllButParameterValueProvider implements ParameterValueProvider<SamplePersistentProperty> {
 
-		@Override
-		public <T> T getParameterValue(Parameter<T, SamplePersistentProperty> parameter) {
+		private final Fixture fixture;
 
-			if (!parameter.getName().equals(propertyUnderTestName)) {
+		AllButParameterValueProvider(Fixture fixture) {
+			this.fixture = fixture;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <T> T getParameterValue(Parameter<T, SamplePersistentProperty> parameter) {
+			if (!parameter.getName().equals(String.valueOf(this.fixture.index))) {
 				return (T) parameter.getName();
 			}
 			return null;
