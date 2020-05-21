@@ -94,7 +94,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	@Override
 	@SuppressWarnings("null")
 	public PagedModel<EntityModel<T>> toModel(Page<T> entity) {
-		return toModel(entity, it -> EntityModel.of(it));
+		return toModel(entity, EntityModel::of);
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	 * @return
 	 */
 	public PagedModel<EntityModel<T>> toModel(Page<T> page, Link selfLink) {
-		return toModel(page, it -> EntityModel.of(it), selfLink);
+		return toModel(page, EntityModel::of, selfLink);
 	}
 
 	/**
@@ -230,7 +230,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 			resources.add(createLink(base, page.previousPageable(), IanaLinkRelations.PREV));
 		}
 
-		Link selfLink = link.map(it -> it.withSelfRel())//
+		Link selfLink = link.map(Link::withSelfRel)//
 				.orElseGet(() -> createLink(base, page.getPageable(), IanaLinkRelations.SELF));
 
 		resources.add(selfLink);

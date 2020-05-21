@@ -169,7 +169,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
 
 			converters.add(0, context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
-					.getIfAvailable(() -> new XmlBeamHttpMessageConverter()));
+					.getIfAvailable(XmlBeamHttpMessageConverter::new));
 		}
 	}
 

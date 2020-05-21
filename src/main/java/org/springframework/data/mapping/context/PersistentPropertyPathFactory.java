@@ -47,7 +47,7 @@ import org.springframework.util.StringUtils;
  */
 class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> {
 
-	private static final Predicate<PersistentProperty<? extends PersistentProperty<?>>> IS_ENTITY = it -> it.isEntity();
+	private static final Predicate<PersistentProperty<? extends PersistentProperty<?>>> IS_ENTITY = PersistentProperty::isEntity;
 
 	private final Map<TypeAndPath, PersistentPropertyPath<P>> propertyPaths = new ConcurrentReferenceHashMap<>();
 	private final MappingContext<E, P> context;

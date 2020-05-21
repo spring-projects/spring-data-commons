@@ -16,6 +16,7 @@
 package org.springframework.data.repository.query;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.springframework.data.repository.query.SpelQueryContext.SpelExtractor;
@@ -62,7 +63,7 @@ public class SpelEvaluator {
 		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, values);
 
 		return extractor.getParameters().collect(Collectors.toMap(//
-				it -> it.getKey(), //
+				Entry::getKey, //
 				it -> getSpElValue(evaluationContext, it.getValue()) //
 		));
 	}

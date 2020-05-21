@@ -250,7 +250,7 @@ class EvaluationContextExtensionInformation {
 		 * @return the methods
 		 */
 		public MultiValueMap<String, Function> getFunctions(Optional<Object> target) {
-			return target.map(this::getFunctions).orElseGet(() -> new LinkedMultiValueMap<>());
+			return target.map(this::getFunctions).orElseGet(LinkedMultiValueMap::new);
 		}
 
 		private MultiValueMap<String, Function> getFunctions(Object target) {

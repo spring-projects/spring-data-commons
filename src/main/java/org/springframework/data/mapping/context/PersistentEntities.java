@@ -198,9 +198,9 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 		Collection<PersistentEntity<?, ?>> entities = contexts.stream() //
 				.flatMap(it -> it.getPersistentEntities().stream()) //
-				.map(it -> it.getIdProperty()) //
+				.map(PersistentEntity::getIdProperty) //
 				.filter(it -> it != null && type.equals(it.getTypeInformation().getActualType())) //
-				.map(it -> it.getOwner()) //
+				.map(PersistentProperty::getOwner) //
 				.collect(Collectors.toList());
 
 		if (entities.size() > 1) {
