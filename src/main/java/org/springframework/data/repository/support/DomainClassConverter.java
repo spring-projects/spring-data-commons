@@ -30,6 +30,7 @@ import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.util.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -47,7 +48,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		implements ConditionalGenericConverter, ApplicationContextAware {
 
 	private final T conversionService;
-	private Repositories repositories = Repositories.NONE;
+	private Lazy<Repositories> repositories = Lazy.of(Repositories.NONE);
 	private Optional<ToEntityConverter> toEntityConverter = Optional.empty();
 	private Optional<ToIdConverter> toIdConverter = Optional.empty();
 
@@ -97,7 +98,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 * @return
 	 */
 	private Optional<? extends ConditionalGenericConverter> getConverter(TypeDescriptor targetType) {
-		return repositories.hasRepositoryFor(targetType.getType()) ? toEntityConverter : toIdConverter;
+		return repositories.get().hasRepositoryFor(targetType.getType()) ? toEntityConverter : toIdConverter;
 	}
 
 	/*
@@ -106,13 +107,18 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 */
 	public void setApplicationContext(ApplicationContext context) {
 
-		this.repositories = new Repositories(context);
+		this.repositories = Lazy.of(() -> {
 
-		this.toEntityConverter = Optional.of(new ToEntityConverter(this.repositories, this.conversionService));
-		this.toEntityConverter.ifPresent(it -> this.conversionService.addConverter(it));
+			Repositories repositories = new Repositories(context);
 
-		this.toIdConverter = Optional.of(new ToIdConverter());
-		this.toIdConverter.ifPresent(it -> this.conversionService.addConverter(it));
+			this.toEntityConverter = Optional.of(new ToEntityConverter(repositories, conversionService));
+			this.toEntityConverter.ifPresent(it -> conversionService.addConverter(it));
+
+			this.toIdConverter = Optional.of(new ToIdConverter(repositories, conversionService));
+			this.toIdConverter.ifPresent(it -> conversionService.addConverter(it));
+
+			return repositories;
+		});
 	}
 
 	/**
@@ -121,9 +127,11 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 * @author Oliver Gierke
 	 * @since 1.10
 	 */
-	private class ToEntityConverter implements ConditionalGenericConverter {
+	private static class ToEntityConverter implements ConditionalGenericConverter {
 
 		private final RepositoryInvokerFactory repositoryInvokerFactory;
+		private final Repositories repositories;
+		private final ConversionService conversionService;
 
 		/**
 		 * Creates a new {@link ToEntityConverter} for the given {@link Repositories} and {@link ConversionService}.
@@ -132,7 +140,10 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		 * @param conversionService must not be {@literal null}.
 		 */
 		public ToEntityConverter(Repositories repositories, ConversionService conversionService) {
+
 			this.repositoryInvokerFactory = new DefaultRepositoryInvokerFactory(repositories, conversionService);
+			this.repositories = repositories;
+			this.conversionService = conversionService;
 		}
 
 		/*
@@ -206,7 +217,16 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 * @author Oliver Gierke
 	 * @since 1.10
 	 */
-	class ToIdConverter implements ConditionalGenericConverter {
+	static class ToIdConverter implements ConditionalGenericConverter {
+
+		private final Repositories repositories;
+		private final ConversionService conversionService;
+
+		public ToIdConverter(Repositories repositories, ConversionService conversionService) {
+
+			this.repositories = repositories;
+			this.conversionService = conversionService;
+		}
 
 		/*
 		 * (non-Javadoc)
