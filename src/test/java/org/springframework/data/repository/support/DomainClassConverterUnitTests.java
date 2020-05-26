@@ -29,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -181,6 +180,7 @@ class DomainClassConverterUnitTests {
 	void toIdConverterDoesNotMatchIfTargetTypeIsAssignableFromSource() throws NoSuchMethodException {
 
 		converter.setApplicationContext(initContextWithRepo());
+		assertMatches(false);
 
 		@SuppressWarnings("rawtypes")
 		Optional<ToIdConverter> toIdConverter = (Optional<ToIdConverter>) ReflectionTestUtils.getField(converter,
