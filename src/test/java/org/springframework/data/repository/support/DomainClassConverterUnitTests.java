@@ -177,6 +177,7 @@ public class DomainClassConverterUnitTests {
 	public void toIdConverterDoesNotMatchIfTargetTypeIsAssignableFromSource() throws Exception {
 
 		converter.setApplicationContext(initContextWithRepo());
+		assertMatches(false);
 
 		@SuppressWarnings("rawtypes")
 		Optional<ToIdConverter> toIdConverter = (Optional<ToIdConverter>) ReflectionTestUtils.getField(converter,
