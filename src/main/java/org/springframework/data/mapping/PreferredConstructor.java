@@ -118,7 +118,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 * {@link PersistentEntity} backing this {@link PreferredConstructor}.
 	 *
 	 * @param property must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the {@link PersistentProperty} is used in the constructor.
 	 */
 	public boolean isConstructorParameter(PersistentProperty<?> property) {
 
@@ -148,7 +148,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	 * constructor argument of the enclosing class type.
 	 *
 	 * @param parameter must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the {@link PersistentProperty} maps to the enclosing class.
 	 */
 	public boolean isEnclosingClassParameter(Parameter<?, P> parameter) {
 
@@ -212,6 +212,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 			this.hasSpelExpression = Lazy.of(() -> StringUtils.hasText(getSpelExpression()));
 		}
 
+		@Nullable
 		private static String getValue(Annotation[] annotations) {
 
 			return Arrays.stream(annotations)//
@@ -279,7 +280,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 			P referencedProperty = entity == null ? null : name == null ? null : entity.getPersistentProperty(name);
 
-			return property != null && property.equals(referencedProperty);
+			return property.equals(referencedProperty);
 		}
 
 		private boolean isEnclosingClassParameter() {
