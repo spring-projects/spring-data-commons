@@ -21,6 +21,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -35,8 +38,11 @@ import org.springframework.data.mapping.Person;
 import org.springframework.data.mapping.PersonDocument;
 
 /**
+ * Unit tests for {@link EntityCallbackDiscoverer}.
+ *
  * @author Christoph Strobl
  * @author Myeonghyeon Lee
+ * @author Mark Paluch
  */
 class EntityCallbackDiscovererUnitTests {
 
@@ -59,30 +65,31 @@ class EntityCallbackDiscovererUnitTests {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
 		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer(ctx);
-
-		int concurrencyCount = 4000;
-		CountDownLatch startLatch = new CountDownLatch(concurrencyCount);
-		CountDownLatch doneLatch = new CountDownLatch(concurrencyCount);
+		int poolSize = Runtime.getRuntime().availableProcessors();
+		ThreadPoolExecutor executor = new ThreadPoolExecutor(poolSize, poolSize, 20, TimeUnit.SECONDS,
+				new LinkedBlockingDeque<>());
+		CountDownLatch startLatch = new CountDownLatch(poolSize);
+		CountDownLatch doneLatch = new CountDownLatch(poolSize);
 
 		List<Exception> exceptions = new CopyOnWriteArrayList<>();
-		for (int i = 0; i < concurrencyCount; i++) {
-			Thread thread = new Thread(() -> {
+		for (int i = 0; i < poolSize; i++) {
+			executor.submit(() -> {
 				try {
 					startLatch.countDown();
-					startLatch.await();
+					startLatch.await(5, TimeUnit.SECONDS);
 
 					discoverer.getEntityCallbacks(PersonDocument.class,
-						ResolvableType.forType(BeforeSaveCallback.class));
+							ResolvableType.forType(BeforeSaveCallback.class));
 				} catch (Exception ex) {
 					exceptions.add(ex);
 				} finally {
 					doneLatch.countDown();
 				}
 			});
-			thread.start();
 		}
 
-		doneLatch.await();
+		doneLatch.await(10, TimeUnit.SECONDS);
+		executor.shutdownNow();
 
 		assertThat(exceptions).isEmpty();
 	}
