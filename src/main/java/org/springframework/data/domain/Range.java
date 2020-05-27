@@ -75,7 +75,7 @@ public final class Range<T extends Comparable<T>> {
 	}
 
 	/**
-	 * Creates a new {@link Range} with inclusive bounds for both values.
+	 * Creates a new {@link Range} with exclusive bounds for both values.
 	 *
 	 * @param <T>
 	 * @param from must not be {@literal null}.
@@ -171,6 +171,7 @@ public final class Range<T extends Comparable<T>> {
 	 * @param <T>
 	 * @param value must not be {@literal null}.
 	 * @return
+	 * @see Range#closed(Comparable, Comparable)
 	 */
 	public static <T extends Comparable<T>> Range<T> just(T value) {
 		return Range.closed(value, value);
