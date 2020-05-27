@@ -384,10 +384,11 @@ class EntityCallbackDiscoverer {
 			if (this.entityCallbackBeans.isEmpty()) {
 
 				if (cachedEntityCallbacks.size() != entityCallbacks.size()) {
-					List<EntityCallback<?>> entityCallbacks = new ArrayList<>(this.entityCallbacks.size());
+
+					List<EntityCallback<?>> entityCallbacks = new ArrayList<>(this.entityCallbacks);
 					AnnotationAwareOrderComparator.sort(entityCallbacks);
 
-					synchronized(this) {
+					synchronized (cachedEntityCallbacks) {
 						cachedEntityCallbacks.clear();
 						cachedEntityCallbacks.addAll(entityCallbacks);
 					}
