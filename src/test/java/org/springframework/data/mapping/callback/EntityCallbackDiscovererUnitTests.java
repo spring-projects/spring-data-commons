@@ -18,6 +18,9 @@ package org.springframework.data.mapping.callback;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -33,6 +36,7 @@ import org.springframework.data.mapping.PersonDocument;
 
 /**
  * @author Christoph Strobl
+ * @author Myeonghyeon Lee
  */
 class EntityCallbackDiscovererUnitTests {
 
@@ -47,6 +51,40 @@ class EntityCallbackDiscovererUnitTests {
 				ResolvableType.forType(BeforeSaveCallback.class));
 
 		assertThat(entityCallbacks).hasSize(1).element(0).isInstanceOf(MyBeforeSaveCallback.class);
+	}
+
+	@Test // DATACMNS-1735
+	void shouldDiscoverCallbackTypeConcurrencyCache() throws InterruptedException {
+
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
+
+		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer(ctx);
+
+		int concurrencyCount = 4000;
+		CountDownLatch startLatch = new CountDownLatch(concurrencyCount);
+		CountDownLatch doneLatch = new CountDownLatch(concurrencyCount);
+
+		List<Exception> exceptions = new CopyOnWriteArrayList<>();
+		for (int i = 0; i < concurrencyCount; i++) {
+			Thread thread = new Thread(() -> {
+				try {
+					startLatch.countDown();
+					startLatch.await();
+
+					discoverer.getEntityCallbacks(PersonDocument.class,
+						ResolvableType.forType(BeforeSaveCallback.class));
+				} catch (Exception ex) {
+					exceptions.add(ex);
+				} finally {
+					doneLatch.countDown();
+				}
+			});
+			thread.start();
+		}
+
+		doneLatch.await();
+
+		assertThat(exceptions).isEmpty();
 	}
 
 	@Test // DATACMNS-1467
