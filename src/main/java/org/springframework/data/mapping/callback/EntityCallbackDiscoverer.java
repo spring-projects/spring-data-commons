@@ -44,6 +44,7 @@ import org.springframework.util.comparator.Comparators;
 /**
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Myeonghyeon Lee
  * @since 2.2
  */
 class EntityCallbackDiscoverer {
@@ -383,9 +384,13 @@ class EntityCallbackDiscoverer {
 			if (this.entityCallbackBeans.isEmpty()) {
 
 				if (cachedEntityCallbacks.size() != entityCallbacks.size()) {
-					cachedEntityCallbacks.clear();
-					cachedEntityCallbacks.addAll(entityCallbacks);
-					AnnotationAwareOrderComparator.sort(cachedEntityCallbacks);
+					List<EntityCallback<?>> entityCallbacks = new ArrayList<>(this.entityCallbacks.size());
+					AnnotationAwareOrderComparator.sort(entityCallbacks);
+
+					synchronized(this) {
+						cachedEntityCallbacks.clear();
+						cachedEntityCallbacks.addAll(entityCallbacks);
+					}
 				}
 
 				return cachedEntityCallbacks;
