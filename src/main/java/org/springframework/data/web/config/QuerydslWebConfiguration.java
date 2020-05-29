@@ -18,6 +18,7 @@ package org.springframework.data.web.config;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,14 +41,16 @@ import com.querydsl.core.types.Predicate;
  * {@link Predicate}s from web requests.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.11
  * @soundtrack Anika Nilles - Alter Ego
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class QuerydslWebConfiguration implements WebMvcConfigurer {
 
 	@Autowired @Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService;
 	@Autowired ObjectProvider<EntityPathResolver> resolver;
+	@Autowired BeanFactory beanFactory;
 
 	/**
 	 * Default {@link QuerydslPredicateArgumentResolver} to create Querydsl {@link Predicate} instances for Spring MVC
@@ -58,7 +61,9 @@ public class QuerydslWebConfiguration implements WebMvcConfigurer {
 	@Lazy
 	@Bean
 	public QuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
-		return new QuerydslPredicateArgumentResolver(querydslBindingsFactory(), Optional.of(conversionService.getObject()));
+		return new QuerydslPredicateArgumentResolver(
+				beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
+				Optional.of(conversionService.getObject()));
 	}
 
 	@Lazy
@@ -73,6 +78,7 @@ public class QuerydslWebConfiguration implements WebMvcConfigurer {
 	 */
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-		argumentResolvers.add(0, querydslPredicateArgumentResolver());
+		argumentResolvers.add(0,
+				beanFactory.getBean("querydslPredicateArgumentResolver", QuerydslPredicateArgumentResolver.class));
 	}
 }

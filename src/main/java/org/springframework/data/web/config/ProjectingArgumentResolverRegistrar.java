@@ -38,9 +38,10 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * {@link ProxyingHandlerMethodArgumentResolver}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Apparat With Soap & Skin - Goodbye (Dark Theme Song - https://www.youtube.com/watch?v=66VnOdk6oto)
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class ProjectingArgumentResolverRegistrar {
 
 	/**

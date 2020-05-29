@@ -17,10 +17,8 @@ package org.springframework.data.web.config;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,8 +53,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @author Vedran Pavic
  * @author Jens Schauder
+ * @author Mark Paluch
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLoaderAware {
 
 	private final ApplicationContext context;
@@ -93,7 +92,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
 
 		PageableHandlerMethodArgumentResolver pageableResolver = //
-				new PageableHandlerMethodArgumentResolver(sortResolver());
+				new PageableHandlerMethodArgumentResolver(getSortResolverBean());
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
 	}
@@ -137,8 +136,8 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 
-		argumentResolvers.add(sortResolver());
-		argumentResolvers.add(pageableResolver());
+		argumentResolvers.add(getSortResolverBean());
+		argumentResolvers.add(getPageableResolverBean());
 
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
 		resolver.setBeanFactory(context);
@@ -157,7 +156,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())
 				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
-			ObjectMapper mapper = getUniqueBean(ObjectMapper.class, context, ObjectMapper::new);
+			ObjectMapper mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
 
 			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
 			converter.setBeanFactory(context);
@@ -171,6 +170,14 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 			converters.add(0, context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
 					.getIfAvailable(() -> new XmlBeamHttpMessageConverter()));
 		}
+	}
+
+	protected SortHandlerMethodArgumentResolver getSortResolverBean() {
+		return context.getBean("sortResolver", SortHandlerMethodArgumentResolver.class);
+	}
+
+	protected PageableHandlerMethodArgumentResolver getPageableResolverBean() {
+		return context.getBean("pageableResolver", PageableHandlerMethodArgumentResolver.class);
 	}
 
 	protected void customizePageableResolver(PageableHandlerMethodArgumentResolver pageableResolver) {
@@ -188,21 +195,4 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		}
 	}
 
-	/**
-	 * Returns the uniquely available bean of the given type from the given {@link ApplicationContext} or the one provided
-	 * by the given {@link Supplier} in case the initial lookup fails.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @param context must not be {@literal null}.
-	 * @param fallback must not be {@literal null}.
-	 * @return
-	 */
-	private static <T> T getUniqueBean(Class<T> type, ApplicationContext context, Supplier<T> fallback) {
-
-		try {
-			return context.getBean(type);
-		} catch (NoSuchBeanDefinitionException o_O) {
-			return fallback.get();
-		}
-	}
 }
