@@ -37,9 +37,12 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * @author Nick Williams
  * @author Ben Hale
  * @author Vedran Pavic
+ * @author Mark Paluch
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfiguration {
+
+	private final ApplicationContext context;
 
 	/**
 	 * @param context must not be {@literal null}.
@@ -48,6 +51,7 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	public HateoasAwareSpringDataWebConfiguration(ApplicationContext context,
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
 		super(context, conversionService);
+		this.context = context;
 	}
 
 	/*
@@ -59,7 +63,7 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	public HateoasPageableHandlerMethodArgumentResolver pageableResolver() {
 
 		HateoasPageableHandlerMethodArgumentResolver pageableResolver = new HateoasPageableHandlerMethodArgumentResolver(
-				sortResolver());
+				getSortResolverBean());
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
 	}
@@ -79,12 +83,12 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 
 	@Bean
 	public PagedResourcesAssembler<?> pagedResourcesAssembler() {
-		return new PagedResourcesAssembler<>(pageableResolver(), null);
+		return new PagedResourcesAssembler<>(getPageableResolverBean(), null);
 	}
 
 	@Bean
 	public PagedResourcesAssemblerArgumentResolver pagedResourcesAssemblerArgumentResolver() {
-		return new PagedResourcesAssemblerArgumentResolver(pageableResolver(), null);
+		return new PagedResourcesAssemblerArgumentResolver(getPageableResolverBean(), null);
 	}
 
 	/*
@@ -94,6 +98,23 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 		super.addArgumentResolvers(argumentResolvers);
-		argumentResolvers.add(pagedResourcesAssemblerArgumentResolver());
+		argumentResolvers
+				.add(context.getBean("pagedResourcesAssemblerArgumentResolver", PagedResourcesAssemblerArgumentResolver.class));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#getSortResolverBean()
+	 */
+	protected HateoasSortHandlerMethodArgumentResolver getSortResolverBean() {
+		return context.getBean("sortResolver", HateoasSortHandlerMethodArgumentResolver.class);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#getPageableResolverBean()
+	 */
+	protected HateoasPageableHandlerMethodArgumentResolver getPageableResolverBean() {
+		return context.getBean("pageableResolver", HateoasPageableHandlerMethodArgumentResolver.class);
 	}
 }
