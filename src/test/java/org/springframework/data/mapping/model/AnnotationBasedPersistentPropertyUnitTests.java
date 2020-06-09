@@ -254,7 +254,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		SamplePersistentProperty property = getProperty(Sample.class, "field");
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> property.getRequiredGetter()) //
 				.withMessageContaining("field") //
 				.withMessageContaining(Sample.class.getName());
@@ -265,7 +265,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		SamplePersistentProperty property = getProperty(Sample.class, "field");
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> property.getRequiredSetter()) //
 				.withMessageContaining("field") //
 				.withMessageContaining(Sample.class.getName());
@@ -276,7 +276,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		SamplePersistentProperty property = getProperty(Sample.class, "field");
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> property.getRequiredWither()) //
 				.withMessageContaining("field") //
 				.withMessageContaining(Sample.class.getName());
@@ -287,7 +287,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		SamplePersistentProperty property = getProperty(NoField.class, "firstname");
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> property.getRequiredField()) //
 				.withMessageContaining("firstname") //
 				.withMessageContaining(NoField.class.getName());

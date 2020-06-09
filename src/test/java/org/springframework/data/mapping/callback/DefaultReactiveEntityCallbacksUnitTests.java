@@ -96,7 +96,7 @@ class DefaultReactiveEntityCallbacksUnitTests {
 		DefaultReactiveEntityCallbacks callbacks = new DefaultReactiveEntityCallbacks();
 		callbacks.addEntityCallback(new CapturingEntityCallback());
 
-		assertThatExceptionOfType(IllegalArgumentException.class)
+		assertThatIllegalArgumentException()
 				.isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, null));
 	}
 

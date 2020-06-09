@@ -86,7 +86,7 @@ public class PersistentPropertyAccessorUnitTests {
 
 		setUp(new Order(null), "");
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> accessor.setProperty(path, "Oliver August"));
 	}
 
@@ -189,7 +189,7 @@ public class PersistentPropertyAccessorUnitTests {
 
 		TraversalContext traversal = new TraversalContext();
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> traversal.registerHandler(property, Map.class, Function.identity()));
 	}
 

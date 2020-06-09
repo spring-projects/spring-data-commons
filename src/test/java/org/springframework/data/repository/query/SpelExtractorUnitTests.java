@@ -45,7 +45,7 @@ class SpelExtractorUnitTests {
 
 		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
-		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> context.parse(null));
+		assertThatIllegalArgumentException().isThrownBy(() -> context.parse(null));
 	}
 
 	@Test // DATACMNS-1258

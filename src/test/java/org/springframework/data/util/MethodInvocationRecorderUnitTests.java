@@ -37,7 +37,7 @@ class MethodInvocationRecorderUnitTests {
 	@Test // DATACMNS-1449
 	void rejectsFinalTypes() {
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> MethodInvocationRecorder.forProxyOf(FinalType.class));
 	}
 

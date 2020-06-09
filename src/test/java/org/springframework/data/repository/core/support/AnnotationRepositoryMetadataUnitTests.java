@@ -40,7 +40,7 @@ class AnnotationRepositoryMetadataUnitTests {
 	@Test // DATACMNS-37, DATACMNS-1375
 	void preventsUnannotatedInterface() {
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> new AnnotationRepositoryMetadata(UnannotatedRepository.class)) //
 				.withMessageContaining(UnannotatedRepository.class.getName());
 	}
