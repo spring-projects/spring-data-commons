@@ -108,8 +108,10 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		private static final Predicate<? super PersistentProperty<?>> HAS_COLLECTION_PROPERTY = it -> it.isCollectionLike()
 				|| it.isMap();
 
-		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> createdByPaths, createdDatePaths,
-				lastModifiedByPaths, lastModifiedDatePaths;
+		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> createdByPaths;
+		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> createdDatePaths;
+		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> lastModifiedByPaths;
+		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> lastModifiedDatePaths;
 
 		private final Lazy<Boolean> isAuditable;
 

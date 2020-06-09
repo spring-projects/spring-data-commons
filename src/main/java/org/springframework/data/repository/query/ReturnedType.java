@@ -331,7 +331,8 @@ public abstract class ReturnedType {
 
 	private static final class CacheKey {
 
-		private final Class<?> returnedType, domainType;
+		private final Class<?> returnedType;
+		private final Class<?> domainType;
 		private final int projectionFactoryHashCode;
 
 		private CacheKey(Class<?> returnedType, Class<?> domainType, int projectionFactoryHashCode) {

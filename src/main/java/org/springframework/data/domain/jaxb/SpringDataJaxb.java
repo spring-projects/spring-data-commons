@@ -60,7 +60,8 @@ public abstract class SpringDataJaxb {
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class PageRequestDto {
 
-		@XmlAttribute int page, size;
+		@XmlAttribute int page;
+		@XmlAttribute int size;
 		@XmlElement(name = "order", namespace = NAMESPACE) List<OrderDto> orders = new ArrayList<>();
 	}
 

@@ -67,7 +67,9 @@ public class QuerydslBindings {
 
 	private final Map<String, PathAndBinding<?, ?>> pathSpecs;
 	private final Map<Class<?>, PathAndBinding<?, ?>> typeSpecs;
-	private final Set<String> allowList, denyList, aliases;
+	private final Set<String> allowList;
+	private final Set<String> denyList;
+	private final Set<String> aliases;
 
 	private boolean excludeUnlistedProperties;
 
