@@ -104,7 +104,7 @@ class PersistentEntitiesUnitTests {
 
 		PersistentEntities entities = PersistentEntities.of(context);
 
-		assertThatExceptionOfType(IllegalStateException.class)//
+		assertThatIllegalStateException()//
 				.isThrownBy(() -> entities.getEntityUltimatelyReferredToBy(property)) //
 				.withMessageContaining(FirstWithLongId.class.getName()) //
 				.withMessageContaining(SecondWithLongId.class.getName()) //

@@ -154,7 +154,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 
 		RepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
 
-		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> source.getAttribute("fooBar"));
+		assertThatIllegalArgumentException().isThrownBy(() -> source.getAttribute("fooBar"));
 	}
 
 	@Test // DATACMNS-1498
@@ -163,7 +163,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 		RepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
 
 		assertThat(source.getAttribute("namedQueriesLocation", String.class)).isEmpty();
-		assertThatExceptionOfType(IllegalArgumentException.class)
+		assertThatIllegalArgumentException()
 				.isThrownBy(() -> source.getRequiredAttribute("namedQueriesLocation", String.class));
 	}
 

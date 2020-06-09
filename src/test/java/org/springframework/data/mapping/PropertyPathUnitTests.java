@@ -374,7 +374,7 @@ public class PropertyPathUnitTests {
 
 		final String path = source;
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> PropertyPath.from(path, Left.class));
 	}
 

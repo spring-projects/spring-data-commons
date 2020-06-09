@@ -142,7 +142,7 @@ class RepositoryCompositionUnitTests {
 		RepositoryComposition mixed = RepositoryComposition.of(RepositoryFragment.structural(QueryByExampleExecutor.class),
 				RepositoryFragment.implemented(backingRepo));
 
-		assertThatExceptionOfType(IllegalStateException.class) //
+		assertThatIllegalStateException() //
 				.isThrownBy(mixed::validateImplementation) //
 				.withMessageContaining(
 						"Fragment org.springframework.data.repository.query.QueryByExampleExecutor has no implementation.");

@@ -41,7 +41,7 @@ public class TargetAwareIdentifierAccessorUnitTests {
 			}
 		};
 
-		assertThatExceptionOfType(IllegalStateException.class)//
+		assertThatIllegalStateException()//
 				.isThrownBy(accessor::getRequiredIdentifier)//
 				.withMessageContaining(sample.toString());
 	}

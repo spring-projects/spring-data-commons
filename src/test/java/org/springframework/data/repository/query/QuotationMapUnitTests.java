@@ -103,7 +103,7 @@ class QuotationMapUnitTests {
 
 	@Test // DATAJPA-1235
 	void openEndedQuoteThrowsException() {
-		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> new QuotationMap("a'b"));
+		assertThatIllegalArgumentException().isThrownBy(() -> new QuotationMap("a'b"));
 	}
 
 	private static void isNotQuoted(String query, Object label, int... indexes) {

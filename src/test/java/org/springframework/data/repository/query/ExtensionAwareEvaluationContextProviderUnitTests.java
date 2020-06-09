@@ -271,7 +271,7 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 
 		provider = createContextProviderWithOverloads();
 
-		assertThatExceptionOfType(IllegalStateException.class) //
+		assertThatIllegalStateException() //
 				.isThrownBy(() -> evaluateExpression("ambiguousOverloaded(23)")) //
 				.withMessageContaining("ambiguousOverloaded") //
 				.withMessageContaining("(java.lang.Integer)");

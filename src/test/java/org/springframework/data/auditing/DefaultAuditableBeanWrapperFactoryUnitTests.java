@@ -96,7 +96,7 @@ class DefaultAuditableBeanWrapperFactoryUnitTests {
 
 		assertThat(wrapper).isNotEmpty();
 
-		assertThatExceptionOfType(IllegalArgumentException.class)
+		assertThatIllegalArgumentException()
 				.isThrownBy(() -> wrapper.ifPresent(it -> it.setLastModifiedDate(zonedDateTime)));
 	}
 

@@ -78,7 +78,7 @@ class LazyUnitTests {
 	@Test
 	void rejectsNullValueLookup() {
 
-		assertThatExceptionOfType(IllegalStateException.class) //
+		assertThatIllegalStateException() //
 				.isThrownBy(() -> Lazy.of(() -> null).get());
 	}
 

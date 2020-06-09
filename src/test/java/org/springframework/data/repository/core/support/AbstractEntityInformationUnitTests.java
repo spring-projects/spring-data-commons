@@ -81,7 +81,7 @@ class AbstractEntityInformationUnitTests {
 		CustomEntityInformation<UnsupportedPrimitiveIdEntity, ?> information = new CustomEntityInformation<UnsupportedPrimitiveIdEntity, Boolean>(
 				UnsupportedPrimitiveIdEntity.class);
 
-		assertThatExceptionOfType(IllegalArgumentException.class)//
+		assertThatIllegalArgumentException()//
 				.isThrownBy(() -> information.isNew(new UnsupportedPrimitiveIdEntity()))//
 				.withMessageContaining(boolean.class.getName());
 	}

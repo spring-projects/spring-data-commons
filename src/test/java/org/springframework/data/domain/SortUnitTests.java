@@ -168,7 +168,7 @@ class SortUnitTests {
 	@SuppressWarnings("null")
 	void preventsNullDirection() {
 
-		assertThatExceptionOfType(IllegalArgumentException.class)//
+		assertThatIllegalArgumentException()//
 				.isThrownBy(() -> Sort.by((Direction) null, "foo"))//
 				.withMessageContaining("Direction");
 	}

@@ -52,7 +52,7 @@ class RepositoryFactoryBeanSupportUnitTests {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void initializationFailsWithMissingRepositoryInterface() {
 
-		assertThatExceptionOfType(IllegalArgumentException.class)//
+		assertThatIllegalArgumentException()//
 				.isThrownBy(() -> new DummyRepositoryFactoryBean(null))//
 				.withMessageContaining("Repository interface");
 	}
@@ -83,7 +83,7 @@ class RepositoryFactoryBeanSupportUnitTests {
 
 		bean.afterPropertiesSet();
 
-		assertThatExceptionOfType(IllegalStateException.class) //
+		assertThatIllegalStateException() //
 				.isThrownBy(() -> bean.getPersistentEntity());
 	}
 

@@ -82,7 +82,7 @@ class AbstractAggregateRootUnitTests {
 	@SuppressWarnings("null")
 	void rejectsNullEvent() {
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> new SampleAggregate().andEvent(null));
 	}
 
@@ -90,7 +90,7 @@ class AbstractAggregateRootUnitTests {
 	@SuppressWarnings("null")
 	void rejectsNullEventForRegistration() {
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> new SampleAggregate().registerEvent(null));
 	}
 
@@ -98,7 +98,7 @@ class AbstractAggregateRootUnitTests {
 	@SuppressWarnings("null")
 	void rejectsNullAggregate() {
 
-		assertThatExceptionOfType(IllegalArgumentException.class) //
+		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> new SampleAggregate().andEventsFrom(null));
 	}
 

@@ -104,7 +104,7 @@ class CustomRepositoryImplementationDetectorUnitTests {
 	@Test // DATACMNS-764, DATACMNS-1371
 	void throwsExceptionWhenMultipleImplementationAreFound() {
 
-		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> {
+		assertThatIllegalStateException().isThrownBy(() -> {
 
 			ImplementationLookupConfiguration lookup = mock(ImplementationLookupConfiguration.class);
 

@@ -46,10 +46,10 @@ class AnnotationRevisionMetadataUnitTests {
 
 		assertThat(metadata.getRevisionNumber()).isEmpty();
 
-		assertThatExceptionOfType(IllegalStateException.class) //
+		assertThatIllegalStateException() //
 				.isThrownBy(metadata::getRequiredRevisionNumber);
 
-		assertThatExceptionOfType(IllegalStateException.class) //
+		assertThatIllegalStateException() //
 				.isThrownBy(metadata::getRequiredRevisionInstant);
 
 	}
