@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -304,7 +304,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		 * As this base class is not marked Serializable, the logger will be recreated after serialization - provided that
 		 * the concrete subclass is Serializable.
 		 */
-		protected final Logger logger = LoggerFactory.getLogger(getClass());
+ 		protected final Log logger = LogFactory.getLog(getClass());
 
 		/**
 		 * Cache of TransactionAttributes, keyed by DefaultCacheKey (Method + target Class).

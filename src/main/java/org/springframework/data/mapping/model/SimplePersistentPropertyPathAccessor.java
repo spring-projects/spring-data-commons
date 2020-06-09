@@ -22,7 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.data.mapping.AccessOptions;
@@ -49,7 +50,7 @@ import org.springframework.util.Assert;
  */
 class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathAccessor<T> {
 
-	private static final Logger logger = org.slf4j.LoggerFactory.getLogger(SimplePersistentPropertyPathAccessor.class);
+	private static final Log logger = LogFactory.getLog(SimplePersistentPropertyPathAccessor.class);
 
 	private final PersistentPropertyAccessor<T> delegate;
 

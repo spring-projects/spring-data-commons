@@ -20,8 +20,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -45,7 +45,7 @@ import org.springframework.util.Assert;
  */
 class RepositoryBeanDefinitionBuilder {
 
-	private static final Logger logger = LoggerFactory.getLogger(RepositoryBeanDefinitionBuilder.class);
+	private static final Log logger = LogFactory.getLog(RepositoryBeanDefinitionBuilder.class);
 
 	private final BeanDefinitionRegistry registry;
 	private final RepositoryConfigurationExtension extension;

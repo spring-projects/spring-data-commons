@@ -18,11 +18,12 @@ package org.springframework.data.auditing;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.log.LogMessage;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mapping.PersistentEntity;
@@ -40,7 +41,7 @@ import org.springframework.util.Assert;
  */
 public class AuditingHandler implements InitializingBean {
 
-	private static final Logger logger = LoggerFactory.getLogger(AuditingHandler.class);
+	private static final Log logger = LogFactory.getLog(AuditingHandler.class);
 
 	private final DefaultAuditableBeanWrapperFactory factory;
 
@@ -170,7 +171,7 @@ public class AuditingHandler implements InitializingBean {
 				Object defaultedNow = now.map(Object::toString).orElse("not set");
 				Object defaultedAuditor = auditor.map(Object::toString).orElse("unknown");
 
-				logger.debug("Touched {} - Last modification at {} by {}", target, defaultedNow, defaultedAuditor);
+				logger.debug(LogMessage.format("Touched %s - Last modification at %s by %s", target, defaultedNow, defaultedAuditor));
 			}
 
 			return it.getBean();

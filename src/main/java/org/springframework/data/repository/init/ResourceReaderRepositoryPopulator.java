@@ -20,8 +20,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
@@ -43,7 +43,7 @@ import org.springframework.util.Assert;
  */
 public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, ApplicationEventPublisherAware {
 
-	private static final Logger logger = LoggerFactory.getLogger(ResourceReaderRepositoryPopulator.class);
+ 	private static final Log logger = LogFactory.getLog(ResourceReaderRepositoryPopulator.class);
 
 	private final ResourceReader reader;
 	private final @Nullable ClassLoader classLoader;
