@@ -97,7 +97,7 @@ public abstract class QueryExecutionConverters {
 	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
 	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<Class<?>>();
 	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>();
-	private static final Map<Class<?>, Boolean> SUPPORTS_CACHE = new ConcurrentReferenceHashMap<>();
+	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentReferenceHashMap<>();
 
 	static {
 
@@ -160,7 +160,7 @@ public abstract class QueryExecutionConverters {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		return SUPPORTS_CACHE.computeIfAbsent(type, key -> {
+		return supportsCache.computeIfAbsent(type, key -> {
 
 			for (WrapperType candidate : WRAPPER_TYPES) {
 				if (candidate.getType().isAssignableFrom(key)) {
@@ -683,7 +683,7 @@ public abstract class QueryExecutionConverters {
 
 		private static final TypeDescriptor STREAMABLE = TypeDescriptor.valueOf(Streamable.class);
 
-		private final Map<TypeDescriptor, Boolean> TARGET_TYPE_CACHE = new ConcurrentHashMap<>();
+		private final Map<TypeDescriptor, Boolean> targetTypeCache = new ConcurrentHashMap<>();
 		private final ConversionService conversionService = DefaultConversionService.getSharedInstance();
 
 		public IterableToStreamableConverter() {}
@@ -717,7 +717,7 @@ public abstract class QueryExecutionConverters {
 				return true;
 			}
 
-			return TARGET_TYPE_CACHE.computeIfAbsent(targetType, it -> {
+			return targetTypeCache.computeIfAbsent(targetType, it -> {
 				return conversionService.canConvert(STREAMABLE, targetType);
 			});
 		}

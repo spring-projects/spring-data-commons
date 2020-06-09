@@ -52,7 +52,7 @@ final class AnnotationAuditingMetadata {
 	private static final AnnotationFieldFilter LAST_MODIFIED_DATE_FILTER = new AnnotationFieldFilter(
 			LastModifiedDate.class);
 
-	private static final Map<Class<?>, AnnotationAuditingMetadata> METADATA_CACHE = new ConcurrentHashMap<>();
+	private static final Map<Class<?>, AnnotationAuditingMetadata> metadataCache = new ConcurrentHashMap<>();
 
 	public static final boolean IS_JDK_8 = org.springframework.util.ClassUtils.isPresent("java.time.Clock",
 			AnnotationAuditingMetadata.class.getClassLoader());
@@ -125,7 +125,7 @@ final class AnnotationAuditingMetadata {
 	 * @param type the type to inspect, must not be {@literal null}.
 	 */
 	public static AnnotationAuditingMetadata getMetadata(Class<?> type) {
-		return METADATA_CACHE.computeIfAbsent(type, AnnotationAuditingMetadata::new);
+		return metadataCache.computeIfAbsent(type, AnnotationAuditingMetadata::new);
 	}
 
 	/**

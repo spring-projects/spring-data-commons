@@ -48,11 +48,11 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	public static final ClassTypeInformation<Map> MAP = new ClassTypeInformation(Map.class);
 	public static final ClassTypeInformation<Object> OBJECT = new ClassTypeInformation(Object.class);
 
-	private static final Map<Class<?>, ClassTypeInformation<?>> CACHE = new ConcurrentReferenceHashMap<>(64,
+	private static final Map<Class<?>, ClassTypeInformation<?>> cache = new ConcurrentReferenceHashMap<>(64,
 			ReferenceType.WEAK);
 
 	static {
-		Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT).forEach(it -> CACHE.put(it.getType(), it));
+		Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT).forEach(it -> cache.put(it.getType(), it));
 	}
 
 	private final Class<S> type;
@@ -68,7 +68,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		return (ClassTypeInformation<S>) CACHE.computeIfAbsent(type, ClassTypeInformation::new);
+		return (ClassTypeInformation<S>) cache.computeIfAbsent(type, ClassTypeInformation::new);
 	}
 
 	/**

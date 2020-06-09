@@ -50,7 +50,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	private static final String ALL_UPPERCASE = "[A-Z0-9._$]+";
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final Pattern SPLITTER_FOR_QUOTED = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", "\\."));
-	private static final Map<Key, PropertyPath> CACHE = new ConcurrentReferenceHashMap<>();
+	private static final Map<Key, PropertyPath> cache = new ConcurrentReferenceHashMap<>();
 
 	private final TypeInformation<?> owningType;
 	private final String name;
@@ -345,7 +345,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.hasText(source, "Source must not be null or empty!");
 		Assert.notNull(type, "TypeInformation must not be null or empty!");
 
-		return CACHE.computeIfAbsent(Key.of(type, source), it -> {
+		return cache.computeIfAbsent(Key.of(type, source), it -> {
 
 			List<String> iteratorSource = new ArrayList<>();
 

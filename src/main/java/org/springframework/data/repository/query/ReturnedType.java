@@ -46,7 +46,7 @@ import org.springframework.util.ObjectUtils;
  */
 public abstract class ReturnedType {
 
-	private static final Map<CacheKey, ReturnedType> CACHE = new ConcurrentReferenceHashMap<>(32);
+	private static final Map<CacheKey, ReturnedType> cache = new ConcurrentReferenceHashMap<>(32);
 
 	private final Class<?> domainType;
 
@@ -68,7 +68,7 @@ public abstract class ReturnedType {
 		Assert.notNull(domainType, "Domain type must not be null!");
 		Assert.notNull(factory, "ProjectionFactory must not be null!");
 
-		return CACHE.computeIfAbsent(CacheKey.of(returnedType, domainType, factory.hashCode()), key -> {
+		return cache.computeIfAbsent(CacheKey.of(returnedType, domainType, factory.hashCode()), key -> {
 
 			return returnedType.isInterface()
 					? new ReturnedInterface(factory.getProjectionInformation(returnedType), domainType)
