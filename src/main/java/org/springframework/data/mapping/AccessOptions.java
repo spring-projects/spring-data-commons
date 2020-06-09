@@ -285,7 +285,8 @@ public class AccessOptions {
 		private static final SetOptions DEFAULT = new SetOptions();
 
 		private final SetNulls nullHandling;
-		private final Propagation collectionPropagation, mapPropagation;
+		private final Propagation collectionPropagation;
+		private final Propagation mapPropagation;
 
 		private SetOptions() {
 
