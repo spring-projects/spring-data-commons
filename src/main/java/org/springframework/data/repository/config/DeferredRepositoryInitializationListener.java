@@ -15,13 +15,15 @@
  */
 package org.springframework.data.repository.config;
 
-import org.slf4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.cdi.CdiRepositoryExtensionSupport;
 
 /**
  * {@link ApplicationListener} to trigger the initialization of Spring Data repositories right before the application
@@ -33,7 +35,7 @@ import org.springframework.data.repository.Repository;
  */
 class DeferredRepositoryInitializationListener implements ApplicationListener<ContextRefreshedEvent>, Ordered {
 
-	private static final Logger logger = org.slf4j.LoggerFactory.getLogger(DeferredRepositoryInitializationListener.class);
+	private static final Log logger = LogFactory.getLog(DeferredRepositoryInitializationListener.class);
 	private final ListableBeanFactory beanFactory;
 
 	DeferredRepositoryInitializationListener(ListableBeanFactory beanFactory) {

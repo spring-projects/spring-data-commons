@@ -20,10 +20,13 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.log.LogMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.MethodLinkBuilderFactory;
@@ -48,9 +51,9 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private static final Logger logger = LoggerFactory.getLogger(PagedResourcesAssemblerArgumentResolver.class);
+ 	private static final Log logger = LogFactory.getLog(PagedResourcesAssemblerArgumentResolver.class);
 
-	private static final String SUPERFLOUS_QUALIFIER = "Found qualified {} parameter, but a unique unqualified {} parameter. Using that one, but you might want to check your controller method configuration!";
+	private static final String SUPERFLOUS_QUALIFIER = "Found qualified %s parameter, but a unique unqualified %s parameter. Using that one, but you might want to check your controller method configuration!";
 	private static final String PARAMETER_AMBIGUITY = "Discovered multiple parameters of type Pageable but no qualifier annotations to disambiguate!";
 
 	private final HateoasPageableHandlerMethodArgumentResolver resolver;
@@ -151,7 +154,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 			MethodParameter matchingParameter = returnIfQualifiersMatch(pageableParameter, assemblerQualifier);
 
 			if (matchingParameter == null) {
-				logger.info(SUPERFLOUS_QUALIFIER, PagedResourcesAssembler.class.getSimpleName(), Pageable.class.getName());
+				logger.info(LogMessage.format(SUPERFLOUS_QUALIFIER, PagedResourcesAssembler.class.getSimpleName(), Pageable.class.getName()));
 			}
 
 			return pageableParameter;
