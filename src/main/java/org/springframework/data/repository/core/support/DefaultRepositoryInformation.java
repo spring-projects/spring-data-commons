@@ -32,6 +32,7 @@ import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.util.Streamable;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -242,6 +243,15 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	@Override
 	public Class<?> getReturnedDomainClass(Method method) {
 		return metadata.getReturnedDomainClass(method);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnType(java.lang.reflect.Method)
+	 */
+	@Override
+	public TypeInformation<?> getReturnType(Method method) {
+		return metadata.getReturnType(method);
 	}
 
 	/*

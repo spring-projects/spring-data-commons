@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
@@ -79,9 +80,10 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnType(java.lang.reflect.Method)
 	 */
-	public Class<?> getReturnedDomainClass(Method method) {
+	@Override
+	public TypeInformation<?> getReturnType(Method method) {
 
 		TypeInformation<?> returnType = null;
 		if (KotlinDetector.isKotlinType(method.getDeclaringClass()) && KotlinReflectionUtils.isSuspend(method)) {
@@ -95,7 +97,15 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 			returnType = typeInformation.getReturnType(method);
 		}
 
-		return QueryExecutionConverters.unwrapWrapperTypes(returnType).getType();
+		return returnType;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
+	 */
+	public Class<?> getReturnedDomainClass(Method method) {
+		return QueryExecutionConverters.unwrapWrapperTypes(getReturnType(method)).getType();
 	}
 
 	/*
