@@ -44,7 +44,7 @@ import org.springframework.util.TypeUtils;
 public class ParameterTypes {
 
 	private static final TypeDescriptor OBJECT_DESCRIPTOR = TypeDescriptor.valueOf(Object.class);
-	private static final ConcurrentMap<List<TypeDescriptor>, ParameterTypes> CACHE = new ConcurrentReferenceHashMap<>();
+	private static final ConcurrentMap<List<TypeDescriptor>, ParameterTypes> cache = new ConcurrentReferenceHashMap<>();
 
 	private final List<TypeDescriptor> types;
 	private final Lazy<Collection<ParameterTypes>> alternatives;
@@ -75,7 +75,7 @@ public class ParameterTypes {
 
 		Assert.notNull(types, "Types must not be null!");
 
-		return CACHE.computeIfAbsent(types, ParameterTypes::new);
+		return cache.computeIfAbsent(types, ParameterTypes::new);
 	}
 
 	/**

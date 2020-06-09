@@ -126,7 +126,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	 */
 	static class EventPublishingMethod {
 
-		private static Map<Class<?>, EventPublishingMethod> CACHE = new ConcurrentReferenceHashMap<>();
+		private static Map<Class<?>, EventPublishingMethod> cache = new ConcurrentReferenceHashMap<>();
 		private static @SuppressWarnings("null") EventPublishingMethod NONE = new EventPublishingMethod(null, null);
 
 		private final Method publishingMethod;
@@ -150,7 +150,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 			Assert.notNull(type, "Type must not be null!");
 
-			EventPublishingMethod eventPublishingMethod = CACHE.get(type);
+			EventPublishingMethod eventPublishingMethod = cache.get(type);
 
 			if (eventPublishingMethod != null) {
 				return eventPublishingMethod.orNull();
@@ -159,7 +159,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			EventPublishingMethod result = from(getDetector(type, DomainEvents.class),
 					() -> getDetector(type, AfterDomainEventPublication.class));
 
-			CACHE.put(type, result);
+			cache.put(type, result);
 
 			return result.orNull();
 		}

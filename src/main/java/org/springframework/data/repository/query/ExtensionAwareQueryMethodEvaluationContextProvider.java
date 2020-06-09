@@ -142,7 +142,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	 */
 	static class DelegatingMethodInterceptor implements MethodInterceptor {
 
-		private static final Map<Method, Method> METHOD_CACHE = new ConcurrentReferenceHashMap<Method, Method>();
+		private static final Map<Method, Method> methodCache = new ConcurrentReferenceHashMap<Method, Method>();
 
 		private final Object target;
 		private final Map<String, java.util.function.Function<Object, Object>> directMappings = new HashMap<>();
@@ -175,7 +175,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 			}
 
 			Method method = invocation.getMethod();
-			Method targetMethod = METHOD_CACHE.computeIfAbsent(method,
+			Method targetMethod = methodCache.computeIfAbsent(method,
 					it -> Optional.ofNullable(findTargetMethod(it)).orElse(it));
 
 			Object result = method.equals(targetMethod) ? invocation.proceed()
