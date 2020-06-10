@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.18.RELEASE (2020-06-10)
+----------------------------------------------
+* DATACMNS-1734 - Delay Repositories initialization in DomainClassConverter.
+* DATACMNS-1722 - More defensive lookup of XmlBeamHttpMessageConverter in SpringDataWebConfiguration.
+* DATACMNS-1720 - Fix Javadoc for CustomAnnotationTransactionAttributeSource to correctly describe JTA support.
+* DATACMNS-1715 - Remove Travis CI.
+* DATACMNS-1711 - Release 2.1.18 (Lovelace SR18).
+
+
 Changes in version 2.3.0.RC2 (2020-04-28)
 -----------------------------------------
 * DATACMNS-1710 - Avoid potentially expensive constructor parameter creation where possible.
@@ -2700,6 +2709,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
