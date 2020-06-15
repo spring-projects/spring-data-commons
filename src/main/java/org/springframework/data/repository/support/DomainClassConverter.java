@@ -62,6 +62,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
 		this.conversionService = conversionService;
+		this.conversionService.addConverter(this);
 	}
 
 	/*
@@ -112,10 +113,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			Repositories repositories = new Repositories(context);
 
 			this.toEntityConverter = Optional.of(new ToEntityConverter(repositories, conversionService));
-			this.toEntityConverter.ifPresent(it -> conversionService.addConverter(it));
-
 			this.toIdConverter = Optional.of(new ToIdConverter(repositories, conversionService));
-			this.toIdConverter.ifPresent(it -> conversionService.addConverter(it));
 
 			return repositories;
 		});
