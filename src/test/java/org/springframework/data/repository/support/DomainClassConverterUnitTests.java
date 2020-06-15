@@ -34,6 +34,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
@@ -187,6 +188,16 @@ public class DomainClassConverterUnitTests {
 		TypeDescriptor target = TypeDescriptor.nested(new MethodParameter(method, 0), 0);
 
 		assertThat(toIdConverter).map(it -> it.matches(SUB_USER_TYPE, target)).hasValue(false);
+	}
+
+	@Test // DATACMNS-1743
+	public void registersConvertersOnConversionService() {
+
+		ConfigurableConversionService conversionService = new DefaultConversionService();
+		DomainClassConverter<?> converter = new DomainClassConverter<>(conversionService);
+		converter.setApplicationContext(initContextWithRepo());
+
+		assertThat(conversionService.canConvert(String.class, User.class)).isTrue();
 	}
 
 	private ApplicationContext initContextWithRepo() {
