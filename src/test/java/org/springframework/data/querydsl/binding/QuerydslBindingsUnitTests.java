@@ -37,6 +37,7 @@ import com.querydsl.core.types.dsl.StringPath;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class QuerydslBindingsUnitTests {
 
@@ -144,8 +145,8 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("firstname", User.class)).isTrue();
 	}
 
-	@Test // DATACMNS-669
-	public void pathIsAvailableIfItsBothBlackAndWhitelisted() {
+	@Test // DATACMNS-669, DATACMNS-1744
+	public void pathIsAvailableIfItsBothDeniedAndAllowed() {
 
 		bindings.excluding(QUser.user.firstname);
 		bindings.including(QUser.user.firstname);
@@ -179,8 +180,8 @@ public class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("address.street", User.class)).isFalse();
 	}
 
-	@Test // DATACMNS-669
-	public void whitelistsPropertiesCorrectly() {
+	@Test // DATACMNS-669, DATACMNS-1744
+	public void allowsPropertiesCorrectly() {
 
 		bindings.including(QUser.user.firstname, QUser.user.address.street);
 
@@ -210,7 +211,7 @@ public class QuerydslBindingsUnitTests {
 		assertThat(path).isNotNull();
 		assertThat(bindings.isPathAvailable("city", User.class)).isTrue();
 
-		// Aliasing implicitly blacklists original path
+		// Aliasing implicitly denies original path
 		assertThat(bindings.isPathAvailable("address.city", User.class)).isFalse();
 	}
 
