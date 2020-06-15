@@ -62,6 +62,7 @@ import com.querydsl.core.types.Path;
  *
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.11
  * @see QuerydslBinderCustomizer
  */
@@ -69,7 +70,7 @@ public class QuerydslBindings {
 
 	private final Map<String, PathAndBinding<?, ?>> pathSpecs;
 	private final Map<Class<?>, PathAndBinding<?, ?>> typeSpecs;
-	private final Set<String> whiteList, blackList, aliases;
+	private final Set<String> allowList, denyList, aliases;
 
 	private boolean excludeUnlistedProperties;
 
@@ -80,8 +81,8 @@ public class QuerydslBindings {
 
 		this.pathSpecs = new LinkedHashMap<>();
 		this.typeSpecs = new LinkedHashMap<>();
-		this.whiteList = new HashSet<>();
-		this.blackList = new HashSet<>();
+		this.allowList = new HashSet<>();
+		this.denyList = new HashSet<>();
 		this.aliases = new HashSet<>();
 
 	}
@@ -128,7 +129,7 @@ public class QuerydslBindings {
 		Assert.notEmpty(paths, "At least one path has to be provided!");
 
 		for (Path<?> path : paths) {
-			this.blackList.add(toDotPath(Optional.of(path)));
+			this.denyList.add(toDotPath(Optional.of(path)));
 		}
 	}
 
@@ -142,18 +143,17 @@ public class QuerydslBindings {
 		Assert.notEmpty(paths, "At least one path has to be provided!");
 
 		for (Path<?> path : paths) {
-			this.whiteList.add(toDotPath(Optional.of(path)));
+			this.allowList.add(toDotPath(Optional.of(path)));
 		}
 	}
 
 	/**
 	 * Returns whether to exclude all properties for which no explicit binding has been defined or it has been explicitly
-	 * white-listed. This defaults to {@literal false} which means that for properties without an explicitly defined
-	 * binding a type specific default binding will be applied.
+	 * allowed. This defaults to {@literal false} which means that for properties without an explicitly defined binding a
+	 * type specific default binding will be applied.
 	 *
 	 * @param excludeUnlistedProperties
 	 * @return
-	 * @see #including(String...)
 	 * @see #including(Path...)
 	 */
 	public final QuerydslBindings excludeUnlistedProperties(boolean excludeUnlistedProperties) {
@@ -278,9 +278,9 @@ public class QuerydslBindings {
 
 			if (!isPathVisible(StringUtils.collectionToDelimitedString(segments.subList(0, i), "."))) {
 
-				// check if full path is on whitelist although the partial one is not
-				if (!whiteList.isEmpty()) {
-					return whiteList.contains(path.toDotPath());
+				// check if full path is on allowList although the partial one is not
+				if (!allowList.isEmpty()) {
+					return allowList.contains(path.toDotPath());
 				}
 
 				return false;
@@ -291,24 +291,24 @@ public class QuerydslBindings {
 	}
 
 	/**
-	 * Returns whether the given path is visible, which means either an alias and not explicitly blacklisted, explicitly
-	 * white listed or not on the black list if no white list configured.
+	 * Returns whether the given path is visible, which means either an alias and not explicitly denied, explicitly
+	 * allowed or not on the denylist if no allowlist configured.
 	 *
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
 	private boolean isPathVisible(String path) {
 
-		// Aliases are visible if not explicitly blacklisted
-		if (aliases.contains(path) && !blackList.contains(path)) {
+		// Aliases are visible if not explicitly denied
+		if (aliases.contains(path) && !denyList.contains(path)) {
 			return true;
 		}
 
-		if (whiteList.isEmpty()) {
-			return excludeUnlistedProperties ? false : !blackList.contains(path);
+		if (allowList.isEmpty()) {
+			return excludeUnlistedProperties ? false : !denyList.contains(path);
 		}
 
-		return whiteList.contains(path);
+		return allowList.contains(path);
 	}
 
 	/**
@@ -392,7 +392,7 @@ public class QuerydslBindings {
 
 	/**
 	 * A special {@link PathBinder} that additionally registers the binding under a dedicated alias. The original path is
-	 * still registered but blacklisted so that it becomes unavailable except it's explicitly whitelisted.
+	 * still registered but denied so that it becomes unavailable except it's explicitly allowed.
 	 *
 	 * @author Oliver Gierke
 	 */
@@ -427,9 +427,9 @@ public class QuerydslBindings {
 		}
 
 		/**
-		 * Aliases the current binding to be available under the given path. By default, the binding path will be
-		 * blacklisted so that aliasing effectively hides the original path. If you want to keep the original path around,
-		 * include it in an explicit whitelist.
+		 * Aliases the current binding to be available under the given path. By default, the binding path will be denied so
+		 * that aliasing effectively hides the original path. If you want to keep the original path around, include it in an
+		 * explicit allowlist.
 		 *
 		 * @param alias must not be {@literal null}.
 		 * @return will never be {@literal null}.
@@ -459,7 +459,7 @@ public class QuerydslBindings {
 			if (alias != null) {
 				QuerydslBindings.this.pathSpecs.put(alias, binding);
 				QuerydslBindings.this.aliases.add(alias);
-				QuerydslBindings.this.blackList.add(toDotPath(binding.getPath()));
+				QuerydslBindings.this.denyList.add(toDotPath(binding.getPath()));
 			}
 		}
 	}
