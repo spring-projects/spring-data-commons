@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -73,11 +72,9 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 */
 	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 
-		RepositoryInformationPreferringAnnotationTransactionAttributeSource transactionAttributeSource = new RepositoryInformationPreferringAnnotationTransactionAttributeSource(
-				enableDefaultTransactions, repositoryInformation);
-
 		TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
-		transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+		transactionInterceptor.setTransactionAttributeSource(
+				new RepositoryAnnotationTransactionAttributeSource(repositoryInformation, enableDefaultTransactions));
 		transactionInterceptor.setTransactionManagerBeanName(transactionManagerName);
 		transactionInterceptor.setBeanFactory(beanFactory);
 		transactionInterceptor.afterPropertiesSet();
@@ -89,7 +86,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 * Custom implementation of {@link AnnotationTransactionAttributeSource} that that slightly modify the algorithm
 	 * transaction configuration is discovered.
 	 * <p>
-	 * The original Spring implementation favours the implementation class' transaction configuration over one declared at
+	 * The original Spring implementation favors the implementation class' transaction configuration over one declared at
 	 * an interface. As we need to provide the capability to override transaction configuration of the implementation at
 	 * the interface level we pretty much invert this logic to inspect the originally invoked method first before digging
 	 * down into the implementation class.
@@ -97,34 +94,34 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 * @author Oliver Drotbohm
 	 * @author Mark Paluch
 	 */
-	@SuppressWarnings({ "serial", "null" })
-	static class RepositoryInformationPreferringAnnotationTransactionAttributeSource
-			extends AnnotationTransactionAttributeSource implements Serializable {
+	static class RepositoryAnnotationTransactionAttributeSource extends AnnotationTransactionAttributeSource {
 
+		private static final long serialVersionUID = 7229616838812819438L;
+
+		private final RepositoryInformation repositoryInformation;
 		private final boolean enableDefaultTransactions;
 
-		private final @Nullable RepositoryInformation repositoryInformation;
-
 		/**
 		 * Create a default CustomAnnotationTransactionAttributeSource, supporting public methods that carry the
 		 * {@code Transactional} annotation or the EJB3 {@link javax.ejb.TransactionAttribute} annotation.
 		 */
-		public RepositoryInformationPreferringAnnotationTransactionAttributeSource() {
-			this(true, null);
-		}
+		public RepositoryAnnotationTransactionAttributeSource(RepositoryInformation repositoryInformation,
+				boolean enableDefaultTransactions) {
 
-		/**
-		 * Create a default CustomAnnotationTransactionAttributeSource, supporting public methods that carry the
-		 * {@code Transactional} annotation or the EJB3 {@link javax.ejb.TransactionAttribute} annotation.
-		 */
-		public RepositoryInformationPreferringAnnotationTransactionAttributeSource(boolean enableDefaultTransactions,
-				@Nullable RepositoryInformation repositoryInformation) {
 			super(true);
+
+			Assert.notNull(repositoryInformation, "RepositoryInformation must not be null!");
+
 			this.enableDefaultTransactions = enableDefaultTransactions;
 			this.repositoryInformation = repositoryInformation;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.transaction.interceptor.AbstractFallbackTransactionAttributeSource#computeTransactionAttribute(java.lang.reflect.Method, java.lang.Class)
+		 */
 		@Override
+		@Nullable
 		protected TransactionAttribute computeTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
 
 			// Don't allow no-public methods as required.
@@ -133,21 +130,26 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 			}
 
 			// Ignore CGLIB subclasses - introspect the actual user class.
-			Class<?> userClass = targetClass != null ? ProxyUtils.getUserClass(targetClass) : targetClass;
+			Class<?> userClass = targetClass == null ? targetClass : ProxyUtils.getUserClass(targetClass);
+
 			// The method may be on an interface, but we need attributes from the target class.
 			// If the target class is null, the method will be unchanged.
 			Method specificMethod = ClassUtils.getMostSpecificMethod(method, userClass);
+
 			// If we are dealing with method with generic parameters, find the original method.
 			specificMethod = BridgeMethodResolver.findBridgedMethod(specificMethod);
 
 			TransactionAttribute txAtt = null;
 
 			if (specificMethod != method) {
+
 				// Fallback is to look at the original method.
 				txAtt = findTransactionAttribute(method);
+
 				if (txAtt != null) {
 					return txAtt;
 				}
+
 				// Last fallback is the class of the original method.
 				txAtt = findTransactionAttribute(method.getDeclaringClass());
 
@@ -156,21 +158,21 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 				}
 			}
 
-			// Start: Implementation class check block
-
 			// First try is the method in the target class.
 			txAtt = findTransactionAttribute(specificMethod);
+
 			if (txAtt != null) {
 				return txAtt;
 			}
 
 			// Second try is the transaction attribute on the target class.
 			txAtt = findTransactionAttribute(specificMethod.getDeclaringClass());
+
 			if (txAtt != null) {
 				return txAtt;
 			}
 
-			if (!enableDefaultTransactions || repositoryInformation == null) {
+			if (!enableDefaultTransactions) {
 				return null;
 			}
 
@@ -183,18 +185,18 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 			}
 
 			txAtt = findTransactionAttribute(targetClassMethod);
+
 			if (txAtt != null) {
 				return txAtt;
 			}
 
 			txAtt = findTransactionAttribute(targetClassMethod.getDeclaringClass());
+
 			if (txAtt != null) {
 				return txAtt;
 			}
 
 			return null;
-			// End: Implementation class check block
 		}
 	}
-
 }
