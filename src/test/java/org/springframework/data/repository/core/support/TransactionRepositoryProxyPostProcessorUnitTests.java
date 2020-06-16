@@ -31,7 +31,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource;
+import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.RepositoryInformationPreferringAnnotationTransactionAttributeSource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionAttributeSource;
@@ -41,6 +41,7 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
  * Unit test for {@link TransactionalRepositoryProxyPostProcessor}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @ExtendWith(MockitoExtension.class)
 class TransactionRepositoryProxyPostProcessorUnitTests {
@@ -86,7 +87,7 @@ class TransactionRepositoryProxyPostProcessorUnitTests {
 
 		Method method = SampleRepository.class.getMethod("methodWithJtaOneDotTwoAtTransactional");
 
-		TransactionAttributeSource attributeSource = new CustomAnnotationTransactionAttributeSource();
+		TransactionAttributeSource attributeSource = new RepositoryInformationPreferringAnnotationTransactionAttributeSource();
 		TransactionAttribute attribute = attributeSource.getTransactionAttribute(method, SampleRepository.class);
 
 		assertThat(attribute).isNotNull();
@@ -99,8 +100,8 @@ class TransactionRepositoryProxyPostProcessorUnitTests {
 
 		when(repositoryInformation.getTargetClassMethod(repositorySaveMethod)).thenReturn(implementationClassMethod);
 
-		CustomAnnotationTransactionAttributeSource attributeSource = new CustomAnnotationTransactionAttributeSource();
-		attributeSource.setRepositoryInformation(repositoryInformation);
+		RepositoryInformationPreferringAnnotationTransactionAttributeSource attributeSource = new RepositoryInformationPreferringAnnotationTransactionAttributeSource(
+				true, repositoryInformation);
 
 		TransactionAttribute attribute = attributeSource.getTransactionAttribute(repositorySaveMethod,
 				SampleImplementation.class);
