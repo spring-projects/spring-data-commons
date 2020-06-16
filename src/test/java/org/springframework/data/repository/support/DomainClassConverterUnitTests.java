@@ -30,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.aop.framework.Advised;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -201,6 +202,23 @@ class DomainClassConverterUnitTests {
 		converter.setApplicationContext(initContextWithRepo());
 
 		assertThat(conversionService.canConvert(String.class, User.class)).isTrue();
+	}
+
+	@Test // DATACMNS-1743
+	void returnsNullForFailedLookup() {
+
+		ApplicationContext context = initContextWithRepo();
+		converter.setApplicationContext(context);
+
+		// Expect ID conversion
+		doReturn(4711L).when(service).convert("4711", Long.class);
+
+		// Configure aggregate lookup to fail
+		UserRepository users = context.getBean(UserRepository.class);
+		users = (UserRepository) AopProxyUtils.getSingletonTarget(users);
+		doReturn(Optional.empty()).when(users).findById(any());
+
+		assertThat(converter.convert("4711", STRING_TYPE, USER_TYPE)).isNull();
 	}
 
 	private ApplicationContext initContextWithRepo() {
