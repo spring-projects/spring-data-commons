@@ -18,21 +18,21 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource;
+import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.RepositoryInformationPreferringAnnotationTransactionAttributeSource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAttribute;
 
 /**
- * Unit tests for {@link CustomAnnotationTransactionAttributeSource}.
+ * Unit tests for {@link RepositoryInformationPreferringAnnotationTransactionAttributeSource}.
  *
  * @author Oliver Gierke
  */
-class CustomAnnotationTransactionAttributeSourceUnitTests {
+class RepositoryInformationPreferringAnnotationTransactionAttributeSourceUnitTests {
 
 	@Test
 	void usesCustomTransactionConfigurationOnInterface() throws SecurityException, NoSuchMethodException {
 
-		CustomAnnotationTransactionAttributeSource source = new TransactionalRepositoryProxyPostProcessor.CustomAnnotationTransactionAttributeSource();
+		RepositoryInformationPreferringAnnotationTransactionAttributeSource source = new RepositoryInformationPreferringAnnotationTransactionAttributeSource();
 
 		TransactionAttribute attribute = source.getTransactionAttribute(Bar.class.getMethod("bar", Object.class),
 				FooImpl.class);
