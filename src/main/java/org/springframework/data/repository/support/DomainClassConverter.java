@@ -82,7 +82,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	@Nullable
 	@Override
 	public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
-		return getConverter(targetType).map(it -> it.convert(source, sourceType, targetType)).orElse(source);
+		return getConverter(targetType).map(it -> it.convert(source, sourceType, targetType)).orElse(null);
 	}
 
 	/*
