@@ -97,19 +97,14 @@ public class DomainClassConverterUnitTests {
 		assertMatches(false);
 	}
 
-	// DATACMNS-233
+	@Test // DATACMNS-233
 	public void returnsNullForNullSource() {
 		assertThat(converter.convert(null, STRING_TYPE, USER_TYPE)).isNull();
 	}
 
-	// DATACMNS-233
+	@Test // DATACMNS-233
 	public void returnsNullForEmptyStringSource() {
 		assertThat(converter.convert("", STRING_TYPE, USER_TYPE)).isNull();
-	}
-
-	private void assertMatches(boolean matchExpected) {
-
-		assertThat(converter.matches(STRING_TYPE, USER_TYPE)).isEqualTo(matchExpected);
 	}
 
 	@Test
@@ -229,6 +224,10 @@ public class DomainClassConverterUnitTests {
 		GenericApplicationContext ctx = new GenericApplicationContext(factory);
 		ctx.refresh();
 		return ctx;
+	}
+
+	private void assertMatches(boolean matchExpected) {
+		assertThat(converter.matches(STRING_TYPE, USER_TYPE)).isEqualTo(matchExpected);
 	}
 
 	static interface Wrapper {

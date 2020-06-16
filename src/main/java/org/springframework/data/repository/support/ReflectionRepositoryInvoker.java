@@ -178,8 +178,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, java.util.Map, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
 	 */
 	@Override
-	public Optional<Object> invokeQueryMethod(Method method, MultiValueMap<String, ?> parameters,
-			Pageable pageable, Sort sort) {
+	public Optional<Object> invokeQueryMethod(Method method, MultiValueMap<String, ?> parameters, Pageable pageable,
+			Sort sort) {
 
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notNull(parameters, "Parameters must not be null!");
@@ -191,8 +191,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return returnAsOptional(invoke(method, prepareParameters(method, parameters, pageable, sort)));
 	}
 
-	private Object[] prepareParameters(Method method, MultiValueMap<String, ?> rawParameters,
-			Pageable pageable, Sort sort) {
+	private Object[] prepareParameters(Method method, MultiValueMap<String, ?> rawParameters, Pageable pageable,
+			Sort sort) {
 
 		List<MethodParameter> parameters = new MethodParameters(method, Optional.of(PARAM_ANNOTATION)).getParameters();
 
@@ -285,6 +285,10 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	protected Object convertId(Object id) {
 
 		Assert.notNull(id, "Id must not be null!");
+
+		if (idType.isInstance(id)) {
+			return id;
+		}
 
 		Object result = conversionService.convert(id, idType);
 
