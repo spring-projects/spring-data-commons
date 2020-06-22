@@ -116,7 +116,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		String contentType = "UNKNOWN";
 		List<T> content = getContent();
 
-		if (content.size() > 0) {
+		if (!content.isEmpty() && content.get(0) != null) {
 			contentType = content.get(0).getClass().getName();
 		}
 
