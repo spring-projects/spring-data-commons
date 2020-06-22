@@ -33,7 +33,7 @@ import org.junit.Test;
 public class PageImplUnitTests {
 
 	@Test
-	public void assertEqualsForSimpleSetup() throws Exception {
+	public void assertEqualsForSimpleSetup() {
 
 		PageImpl<String> page = new PageImpl<>(Collections.singletonList("Foo"));
 
@@ -42,7 +42,7 @@ public class PageImplUnitTests {
 	}
 
 	@Test
-	public void assertEqualsForComplexSetup() throws Exception {
+	public void assertEqualsForComplexSetup() {
 
 		Pageable pageable = PageRequest.of(0, 10);
 		List<String> content = Collections.singletonList("Foo");
@@ -130,8 +130,7 @@ public class PageImplUnitTests {
 		Page<Integer> transformed = new PageImpl<>(Arrays.asList("foo", "bar"), PageRequest.of(0, 2), 10)
 				.map(String::length);
 
-		assertThat(transformed.getContent()).hasSize(2);
-		assertThat(transformed.getContent()).contains(3, 3);
+		assertThat(transformed.getContent()).hasSize(2).contains(3, 3);
 	}
 
 	@Test // DATACMNS-713
@@ -175,7 +174,7 @@ public class PageImplUnitTests {
 	}
 
 	@Test // DATACMNS-1750
-	void toStringShouldNotInspectNullInstances() {
+	public void toStringShouldNotInspectNullInstances() {
 
 		Page<Integer> page = new PageImpl<>(Collections.singletonList(null));
 
