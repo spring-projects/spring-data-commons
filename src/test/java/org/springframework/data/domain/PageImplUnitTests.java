@@ -28,6 +28,7 @@ import org.junit.Test;
  * Unit test for {@link PageImpl}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class PageImplUnitTests {
 
@@ -185,4 +186,13 @@ public class PageImplUnitTests {
 		assertThat(page.hasPrevious()).isFalse();
 		assertThat(page.hasNext()).isFalse();
 	}
+
+	@Test // DATACMNS-1750
+	void toStringShouldNotInspectNullInstances() {
+
+		Page<Integer> page = new PageImpl<>(Collections.singletonList(null));
+
+		assertThat(page).hasToString("Page 1 of 1 containing UNKNOWN instances");
+	}
+
 }
