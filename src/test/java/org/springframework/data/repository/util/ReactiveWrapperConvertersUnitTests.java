@@ -24,6 +24,8 @@ import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
@@ -59,6 +61,11 @@ class ReactiveWrapperConvertersUnitTests {
 		assertThat(ReactiveWrapperConverters.supports(io.reactivex.Observable.class)).isTrue();
 		assertThat(ReactiveWrapperConverters.supports(io.reactivex.Flowable.class)).isTrue();
 		assertThat(ReactiveWrapperConverters.supports(io.reactivex.Completable.class)).isTrue();
+	}
+
+	@Test // DATACMNS-1753
+	void shouldNotSupportCompletableFuture() {
+		assertThat(ReactiveWrapperConverters.supports(CompletableFuture.class)).isFalse();
 	}
 
 	@Test // DATACMNS-836
