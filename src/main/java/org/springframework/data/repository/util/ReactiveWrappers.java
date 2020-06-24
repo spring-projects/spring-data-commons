@@ -157,7 +157,9 @@ public abstract class ReactiveWrappers {
 
 		return Arrays.stream(type.getMethods())//
 				.flatMap(ReflectionUtils::returnTypeAndParameters)//
-				.anyMatch(ReactiveWrapperConverters::supports);
+				.anyMatch(possibleReactiveSupportedType ->
+					ReactiveWrapperConverters.supports(possibleReactiveSupportedType)
+					&& findDescriptor(possibleReactiveSupportedType).isPresent());
 	}
 
 	/**
@@ -267,7 +269,10 @@ public abstract class ReactiveWrappers {
 		}
 
 		ReactiveAdapter adapter = adapterRegistry.getAdapter(type);
+		if (adapter != null && adapter.getDescriptor().isDeferred()) {
+			return Optional.ofNullable(adapter.getDescriptor());
+		}
 
-		return Optional.ofNullable(adapter == null ? null : adapter.getDescriptor());
+		return Optional.empty();
 	}
 }

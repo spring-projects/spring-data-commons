@@ -24,6 +24,8 @@ import reactor.core.publisher.Mono;
 import rx.Observable;
 import rx.Single;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
@@ -41,6 +43,7 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isNoValueType(Flux.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Single.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Completable.class)).isTrue();
+		assertThat(ReactiveWrappers.isNoValueType(CompletableFuture.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Observable.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Publisher.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Single.class)).isFalse();
@@ -60,6 +63,7 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isSingleValueType(Flux.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(Single.class)).isTrue();
 		assertThat(ReactiveWrappers.isSingleValueType(Completable.class)).isFalse();
+		assertThat(ReactiveWrappers.isSingleValueType(CompletableFuture.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(Observable.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(Publisher.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Single.class)).isTrue();
@@ -81,6 +85,7 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isMultiValueType(Flux.class)).isTrue();
 		assertThat(ReactiveWrappers.isMultiValueType(Single.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(Completable.class)).isFalse();
+		assertThat(ReactiveWrappers.isSingleValueType(CompletableFuture.class)).isFalse();
 		assertThat(ReactiveWrappers.isMultiValueType(Observable.class)).isTrue();
 		assertThat(ReactiveWrappers.isMultiValueType(Publisher.class)).isTrue();
 		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.Single.class)).isFalse();
