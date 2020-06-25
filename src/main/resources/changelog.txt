@@ -1,6 +1,26 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.0-M1 (2020-06-25)
+----------------------------------------
+* DATACMNS-1755 - Apply round of polishing.
+* DATACMNS-1753 - CompletableFuture is considered a reactive type.
+* DATACMNS-1750 - PageImpl.toString generates NPE when the first element in the content is null.
+* DATACMNS-1745 - Refactor CustomAnnotationTransactionAttributeSource to use computeTransactionAttribute template method.
+* DATACMNS-1744 - Replace whitelist with a term that does not have racist connotations.
+* DATACMNS-1743 - Translation of URI segments and request parameters into aggregates broken.
+* DATACMNS-1739 - Use standard Spring code of conduct.
+* DATACMNS-1738 - Expose method to obtain the repository query method return type.
+* DATACMNS-1735 - ConcurrencyModificationException in EntityCallbackDiscoverer caused by concurrent cachedEntityCallbacks modification.
+* DATACMNS-1734 - Delay Repositories initialization in DomainClassConverter.
+* DATACMNS-1733 - JavaDoc for Range factory methods is incorrect.
+* DATACMNS-1730 - Update releasetrain reference documentation with spring-data-bom artifact.
+* DATACMNS-1726 - Delombok source files.
+* DATACMNS-1725 - Release 2.4 M1 (2020.0.0).
+* DATACMNS-1706 - PreferredConstructor needs to improve bottleneck occurrence.
+* DATACMNS-1653 - Add support for RxJava 3.
+
+
 Changes in version 2.3.1.RELEASE (2020-06-10)
 ---------------------------------------------
 * DATACMNS-1738 - Expose method to obtain the repository query method return type.
@@ -2731,6 +2751,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
