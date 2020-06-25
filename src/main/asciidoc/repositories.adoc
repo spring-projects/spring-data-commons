@@ -649,9 +649,9 @@ interface UserRepository extends Repository<User, Long> {
 }
 ----
 <1> The repository resides in a package (or sub-package) for which we have defined non-null behavior.
-<2> Throws an `EmptyResultDataAccessException` when the query executed does not produce a result. Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
-<3> Returns `null` when the query executed does not produce a result. Also accepts `null` as the value for `emailAddress`.
-<4> Returns `Optional.empty()` when the query executed does not produce a result. Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
+<2> Throws an `EmptyResultDataAccessException` when the query does not produce a result. Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
+<3> Returns `null` when the query does not produce a result. Also accepts `null` as the value for `emailAddress`.
+<4> Returns `Optional.empty()` when the query does not produce a result. Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
 ====
 
 [[repositories.nullability.kotlin]]
@@ -672,8 +672,8 @@ interface UserRepository : Repository<User, String> {
   fun findByFirstname(firstname: String?): User? <2>
 }
 ----
-<1> The method defines both the parameter and the result as non-nullable (the Kotlin default). The Kotlin compiler rejects method invocations that pass `null` to the method. If the query execution yields an empty result, an `EmptyResultDataAccessException` is thrown.
-<2> This method accepts `null` for the `firstname` parameter and returns `null` if the query execution does not produce a result.
+<1> The method defines both the parameter and the result as non-nullable (the Kotlin default). The Kotlin compiler rejects method invocations that pass `null` to the method. If the query yields an empty result, an `EmptyResultDataAccessException` is thrown.
+<2> This method accepts `null` for the `firstname` parameter and returns `null` if the query does not produce a result.
 ====
 
 [[repositories.query-streaming]]
