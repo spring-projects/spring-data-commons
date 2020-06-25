@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.auditing;
 
 import java.util.Date;
@@ -26,7 +25,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 /**
  * Sample entity using annotation based auditing.
- * 
+ *
  * @author Oliver Gierke
  * @since 1.5
  */

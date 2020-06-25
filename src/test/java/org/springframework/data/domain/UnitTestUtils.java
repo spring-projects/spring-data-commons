@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
@@ -29,7 +28,7 @@ abstract class UnitTestUtils {
 
 	/**
 	 * Asserts that delivered objects both equal each other as well as return the same hash code.
-	 * 
+	 *
 	 * @param first
 	 * @param second
 	 */
@@ -42,7 +41,7 @@ abstract class UnitTestUtils {
 
 	/**
 	 * Asserts that both objects are not equal to each other and differ in hash code, too.
-	 * 
+	 *
 	 * @param first
 	 * @param second
 	 */
