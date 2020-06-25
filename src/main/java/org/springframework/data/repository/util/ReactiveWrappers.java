@@ -43,6 +43,7 @@ import org.springframework.util.ClassUtils;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Oliver Gierke
+ * @author Gerrit Meier
  * @since 2.0
  * @see org.reactivestreams.Publisher
  * @see rx.Single
@@ -157,9 +158,7 @@ public abstract class ReactiveWrappers {
 
 		return Arrays.stream(type.getMethods())//
 				.flatMap(ReflectionUtils::returnTypeAndParameters)//
-				.anyMatch(possibleReactiveSupportedType ->
-					ReactiveWrapperConverters.supports(possibleReactiveSupportedType)
-					&& findDescriptor(possibleReactiveSupportedType).isPresent());
+				.anyMatch(ReactiveWrappers::supports);
 	}
 
 	/**
@@ -270,7 +269,7 @@ public abstract class ReactiveWrappers {
 
 		ReactiveAdapter adapter = adapterRegistry.getAdapter(type);
 		if (adapter != null && adapter.getDescriptor().isDeferred()) {
-			return Optional.ofNullable(adapter.getDescriptor());
+			return Optional.of(adapter.getDescriptor());
 		}
 
 		return Optional.empty();
