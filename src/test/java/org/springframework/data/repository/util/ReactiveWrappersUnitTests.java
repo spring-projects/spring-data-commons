@@ -33,10 +33,11 @@ import org.reactivestreams.Publisher;
  * Unit tests for {@link ReactiveWrappers}.
  *
  * @author Mark Paluch
+ * @author Gerrit Meier
  */
 class ReactiveWrappersUnitTests {
 
-	@Test // DATACMNS-836
+	@Test // DATACMNS-836, DATACMNS-1753
 	void isSingleLikeShouldReportCorrectNoTypes() {
 
 		assertThat(ReactiveWrappers.isNoValueType(Mono.class)).isFalse();
@@ -52,7 +53,7 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Observable.class)).isFalse();
 	}
 
-	@Test // DATACMNS-836
+	@Test // DATACMNS-836, DATACMNS-1753
 	void isSingleLikeShouldReportCorrectSingleTypes() {
 
 		assertThat(ReactiveWrappers.isSingleValueType(Mono.class)).isTrue();
@@ -69,7 +70,7 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Observable.class)).isFalse();
 	}
 
-	@Test // DATACMNS-836
+	@Test // DATACMNS-836, DATACMNS-1753
 	void isCollectionLikeShouldReportCorrectCollectionTypes() {
 
 		assertThat(ReactiveWrappers.isMultiValueType(Mono.class)).isFalse();

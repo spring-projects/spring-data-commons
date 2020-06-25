@@ -130,8 +130,7 @@ public class ReactiveWrapperConverters {
 	 */
 	public static boolean supports(Class<?> type) {
 		return RegistryHolder.REACTIVE_ADAPTER_REGISTRY != null
-				&& RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(type) != null
-				&& RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(type).getDescriptor().isDeferred();
+				&& RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(type) != null;
 	}
 
 	/**
