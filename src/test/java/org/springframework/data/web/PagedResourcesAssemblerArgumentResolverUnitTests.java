@@ -22,18 +22,21 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.util.UriComponents;
 
 /**
  * Unit tests for {@link PagedResourcesAssemblerArgumentResolver}.
  *
  * @author Oliver Gierke
+ * @author Réda Housni Alaoui
  * @since 1.7
  */
 class PagedResourcesAssemblerArgumentResolverUnitTests {
@@ -53,7 +56,7 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 	void createsPlainAssemblerWithoutContext() throws Exception {
 
 		Method method = Controller.class.getMethod("noContext", PagedResourcesAssembler.class);
-		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, null, null);
+		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, TestUtils.getWebRequest(), null);
 
 		assertThat(result).isInstanceOf(PagedResourcesAssembler.class);
 		assertThat(result).isNotInstanceOf(MethodParameterAwarePagedResourcesAssembler.class);
@@ -107,7 +110,7 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 	void doesNotFailForTemplatedMethodMapping() throws Exception {
 
 		Method method = Controller.class.getMethod("methodWithPathVariable", PagedResourcesAssembler.class);
-		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, null, null);
+		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, TestUtils.getWebRequest(), null);
 
 		assertThat(result).isNotNull();
 	}
@@ -125,7 +128,8 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 			}
 		};
 
-		Object result = resolver.resolveArgument(methodParameter, null, null, null);
+		NativeWebRequest webRequest = new ServletWebRequest(new MockHttpServletRequest("GET", "/foo/mapping"));
+		Object result = resolver.resolveArgument(methodParameter, null, webRequest, null);
 
 		assertThat(result).isInstanceOf(PagedResourcesAssembler.class);
 
@@ -136,11 +140,26 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1757
+	void preservesQueryString() throws Exception {
+		Method method = Controller.class.getMethod("methodWithMapping", PagedResourcesAssembler.class);
+		NativeWebRequest webRequest = new ServletWebRequest(new MockHttpServletRequest("GET", "/foo/mapping?bar=baz"));
+		Object result = resolver.resolveArgument(new MethodParameter(method, 0), null, webRequest, null);
+
+		assertThat(result).isNotNull();
+
+		Optional<UriComponents> uriComponents = (Optional<UriComponents>) ReflectionTestUtils.getField(result, "baseUri");
+
+		assertThat(uriComponents).hasValueSatisfying(it -> {
+			assertThat(it.getPath()).isEqualTo("/foo/mapping?bar=baz");
+		});
+	}
+
 	private void assertSelectsParameter(Method method, int expectedIndex) {
 
 		MethodParameter parameter = new MethodParameter(method, 0);
 
-		Object result = resolver.resolveArgument(parameter, null, null, null);
+		Object result = resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null);
 		assertMethodParameterAwarePagedResourcesAssemblerFor(result, new MethodParameter(method, expectedIndex));
 	}
 
@@ -158,7 +177,7 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 				Pageable.class);
 
 		assertThatIllegalStateException()
-				.isThrownBy(() -> resolver.resolveArgument(new MethodParameter(method, 0), null, null, null));
+				.isThrownBy(() -> resolver.resolveArgument(new MethodParameter(method, 0), null, TestUtils.getWebRequest(), null));
 	}
 
 	@RequestMapping("/")

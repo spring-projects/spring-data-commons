@@ -15,10 +15,11 @@
  */
 package org.springframework.data.web;
 
+import javax.annotation.Nonnull;
+import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.List;
-
-import javax.annotation.Nonnull;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -45,6 +47,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Christoph Strobl
+ * @author Réda Housni Alaoui
  */
 public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -88,7 +91,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
-		UriComponents fromUriString = resolveBaseUri(parameter);
+		UriComponents fromUriString = resolveBaseUri(webRequest).orElseGet(() -> resolveBaseUri(parameter));
 		MethodParameter pageableParameter = findMatchingPageableParameter(parameter);
 
 		if (pageableParameter != null) {
@@ -96,6 +99,15 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 		} else {
 			return new PagedResourcesAssembler<>(resolver, fromUriString);
 		}
+	}
+
+	private Optional<UriComponents> resolveBaseUri(NativeWebRequest webRequest) {
+		return Optional.of(webRequest)
+				.map(NativeWebRequest::getNativeRequest)
+				.filter(HttpServletRequest.class::isInstance)
+				.map(HttpServletRequest.class::cast)
+				.map(ServletUriComponentsBuilder::fromRequest)
+				.map(UriComponentsBuilder::build);
 	}
 
 	/**
