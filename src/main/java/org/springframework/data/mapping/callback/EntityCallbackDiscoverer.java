@@ -394,7 +394,7 @@ class EntityCallbackDiscoverer {
 					}
 				}
 
-				return cachedEntityCallbacks;
+				return new ArrayList<>(cachedEntityCallbacks);
 			}
 
 			List<EntityCallback<?>> allCallbacks = new ArrayList<>(

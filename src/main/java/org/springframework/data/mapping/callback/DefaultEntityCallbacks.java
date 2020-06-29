@@ -16,8 +16,6 @@
 package org.springframework.data.mapping.callback;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -33,10 +31,9 @@ import org.springframework.util.ReflectionUtils;
 /**
  * {@link EntityCallbacks} implementation using an {@link EntityCallbackDiscoverer} to retrieve {@link EntityCallback
  * EntityCallbacks} from a {@link BeanFactory}.
- * 
+ *
  * @author Mark Paluch
  * @author Christoph Strobl
- * @author Myeonghyeon Lee
  * @since 2.2
  */
 class DefaultEntityCallbacks implements EntityCallbacks {
@@ -55,7 +52,7 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 	/**
 	 * Create new instance of {@link DefaultEntityCallbacks} discovering {@link EntityCallback entity callbacks} within
 	 * the given {@link BeanFactory}.
-	 * 
+	 *
 	 * @param beanFactory must not be {@literal null}.
 	 */
 	DefaultEntityCallbacks(BeanFactory beanFactory) {
@@ -83,11 +80,8 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 
 		T value = entity;
 
-		// The entityCallbacks of the callbackDiscoverer can be changed, so the loop is executed after the local cache.
-		List<EntityCallback<T>> entityCallbacks = new ArrayList<>(callbackDiscoverer.getEntityCallbacks(entityType,
-			ResolvableType.forClass(callbackType)));
-
-		for (EntityCallback<T> callback : entityCallbacks) {
+		for (EntityCallback<T> callback : callbackDiscoverer.getEntityCallbacks(entityType,
+				ResolvableType.forClass(callbackType))) {
 
 			BiFunction<EntityCallback<T>, T, Object> callbackFunction = EntityCallbackDiscoverer
 					.computeCallbackInvokerFunction(callback, callbackMethod, args);
