@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import java.util.Collections;
+import reactor.core.publisher.Mono;
 
 import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.EvaluationContext;
@@ -23,15 +23,10 @@ import org.springframework.expression.EvaluationContext;
 /**
  * Provides a way to access a centrally defined potentially shared {@link EvaluationContext}.
  *
- * @author Thomas Darimont
- * @author Oliver Gierke
- * @author Christoph Strobl
- * @since 1.9
+ * @author Mark Paluch
+ * @since 2.4
  */
-public interface QueryMethodEvaluationContextProvider {
-
-	static QueryMethodEvaluationContextProvider DEFAULT = new ExtensionAwareQueryMethodEvaluationContextProvider(
-			Collections.emptyList());
+public interface ReactiveQueryMethodEvaluationContextProvider {
 
 	/**
 	 * Returns an {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
@@ -40,7 +35,7 @@ public interface QueryMethodEvaluationContextProvider {
 	 * @param parameterValues the values for the parameters.
 	 * @return
 	 */
-	<T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues);
+	<T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContext(T parameters, Object[] parameterValues);
 
 	/**
 	 * Returns an {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
@@ -49,6 +44,6 @@ public interface QueryMethodEvaluationContextProvider {
 	 * @param parameterValues the values for the parameters.
 	 * @return
 	 */
-	<T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues,
+	<T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContext(T parameters, Object[] parameterValues,
 			ExpressionDependencies dependencies);
 }

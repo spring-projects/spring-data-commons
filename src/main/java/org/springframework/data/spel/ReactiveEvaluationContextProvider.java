@@ -15,36 +15,26 @@
  */
 package org.springframework.data.spel;
 
+import reactor.core.publisher.Mono;
+
 import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 /**
- * Provides a way to access a centrally defined potentially shared {@link StandardEvaluationContext}.
+ * Provides a way to access a centrally defined potentially shared {@link EvaluationContext}.
  *
- * @author Thomas Darimont
- * @author Oliver Gierke
- * @author Christoph Strobl
  * @author Mark Paluch
- * @since 2.1
+ * @since 2.4
  */
 @FunctionalInterface
-public interface EvaluationContextProvider {
-
-	/**
-	 * A simple default {@link EvaluationContextProvider} returning a {@link StandardEvaluationContext} with the given
-	 * root object.
-	 */
-	static EvaluationContextProvider DEFAULT = rootObject -> rootObject == null //
-			? new StandardEvaluationContext() //
-			: new StandardEvaluationContext(rootObject);
+public interface ReactiveEvaluationContextProvider {
 
 	/**
 	 * Returns an {@link EvaluationContext} built using the given parameter values.
 	 *
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
-	 * @return
+	 * @return mono emitting the {@link EvaluationContext}.
 	 */
-	EvaluationContext getEvaluationContext(Object rootObject);
+	Mono<? extends EvaluationContext> getEvaluationContext(Object rootObject);
 
 	/**
 	 * Returns a tailored {@link EvaluationContext} built using the given parameter values and considering
@@ -54,10 +44,11 @@ public interface EvaluationContextProvider {
 	 *
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
 	 * @param dependencies the requested expression dependencies to be available.
-	 * @return
+	 * @return mono emitting the {@link EvaluationContext}.
 	 * @since 2.4
 	 */
-	default EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+	default Mono<? extends EvaluationContext> getEvaluationContext(Object rootObject,
+			ExpressionDependencies dependencies) {
 		return getEvaluationContext(rootObject);
 	}
 }

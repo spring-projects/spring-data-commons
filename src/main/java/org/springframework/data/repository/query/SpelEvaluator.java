@@ -20,7 +20,9 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.springframework.data.repository.query.SpelQueryContext.SpelExtractor;
+import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -60,11 +62,10 @@ public class SpelEvaluator {
 
 		Assert.notNull(values, "Values must not be null.");
 
-		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, values);
 
 		return extractor.getParameters().collect(Collectors.toMap(//
 				Entry::getKey, //
-				it -> getSpElValue(evaluationContext, it.getValue()) //
+				it -> getSpElValue(it.getValue(), values) //
 		));
 	}
 
@@ -78,7 +79,12 @@ public class SpelEvaluator {
 	}
 
 	@Nullable
-	private static Object getSpElValue(EvaluationContext evaluationContext, String expression) {
-		return PARSER.parseExpression(expression).getValue(evaluationContext);
+	private Object getSpElValue(String expressionString, Object[] values) {
+
+		Expression expression = PARSER.parseExpression(expressionString);
+		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, values,
+				ExpressionDependencies.discover(expression));
+
+		return expression.getValue(evaluationContext);
 	}
 }
