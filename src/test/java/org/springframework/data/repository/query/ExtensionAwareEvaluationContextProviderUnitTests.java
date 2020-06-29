@@ -42,6 +42,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
+import org.springframework.data.spel.spi.ExtensionIdAware;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -296,7 +297,7 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 
 		contextProvider.getEvaluationContext(null);
 
-		verify(beanFactory).getBeansOfType(eq(EvaluationContextExtension.class), anyBoolean(), anyBoolean());
+		verify(beanFactory).getBeansOfType(eq(ExtensionIdAware.class), anyBoolean(), anyBoolean());
 	}
 
 	@Test // DATACMNS-1534
@@ -309,7 +310,7 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 		contextProvider.getEvaluationContext(null);
 		contextProvider.getEvaluationContext(null);
 
-		verify(beanFactory).getBeansOfType(eq(EvaluationContextExtension.class), anyBoolean(), anyBoolean());
+		verify(beanFactory).getBeansOfType(eq(ExtensionIdAware.class), anyBoolean(), anyBoolean());
 	}
 
 	private static ExtensionAwareQueryMethodEvaluationContextProvider createContextProviderWithOverloads() {

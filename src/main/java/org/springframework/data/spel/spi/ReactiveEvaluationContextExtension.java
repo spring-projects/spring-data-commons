@@ -15,54 +15,31 @@
  */
 package org.springframework.data.spel.spi;
 
-import java.util.Collections;
-import java.util.Map;
+import reactor.core.publisher.Mono;
 
 import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.lang.Nullable;
 
 /**
- * SPI to allow adding a set of properties and function definitions accessible via the root of an
+ * SPI to resolve a {@link EvaluationContextExtension} to make it accessible via the root of an
  * {@link EvaluationContext} provided by a {@link ExtensionAwareQueryMethodEvaluationContextProvider}.
  * <p>
  * Extensions can be ordered by following Spring's {@link org.springframework.core.Ordered} conventions.
  *
- * @author Thomas Darimont
- * @author Oliver Gierke
- * @since 1.9
+ * @author Mark Paluch
+ * @since 2.4
+ * @see EvaluationContextExtension
  * @see org.springframework.core.Ordered
  * @see org.springframework.core.annotation.Order
  */
-public interface EvaluationContextExtension extends ExtensionIdAware {
+public interface ReactiveEvaluationContextExtension extends ExtensionIdAware {
 
 	/**
-	 * Returns the properties exposed by the extension.
+	 * Returns the {@link EvaluationContextExtension} to be consumed during the actual execution. It's strongly
+	 * recommended to declare the most concrete type possible as return type of the implementation method. This will allow
+	 * us to obtain the necessary metadata once and not for every evaluation.
 	 *
-	 * @return the properties
+	 * @return the resolved {@link EvaluationContextExtension}. Publishers emitting no value will be skipped.
 	 */
-	default Map<String, Object> getProperties() {
-		return Collections.emptyMap();
-	}
-
-	/**
-	 * Returns the functions exposed by the extension.
-	 *
-	 * @return the functions
-	 */
-	default Map<String, Function> getFunctions() {
-		return Collections.emptyMap();
-	}
-
-	/**
-	 * Returns the root object to be exposed by the extension. It's strongly recommended to declare the most concrete type
-	 * possible as return type of the implementation method. This will allow us to obtain the necessary metadata once and
-	 * not for every evaluation.
-	 *
-	 * @return
-	 */
-	@Nullable
-	default Object getRootObject() {
-		return null;
-	}
+	Mono<? extends EvaluationContextExtension> getExtension();
 }

@@ -54,6 +54,7 @@ import org.springframework.util.ReflectionUtils.MethodFilter;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Mark Paluch
  * @since 2.1
  */
 class EvaluationContextExtensionInformation {
@@ -101,6 +102,28 @@ class EvaluationContextExtensionInformation {
 	}
 
 	/**
+	 * Returns whether this extension provides {@link ExpressionDependencies.ExpressionDependency}.
+	 *
+	 * @param dependency the expression dependency.
+	 * @return {@literal true} if {@link ExpressionDependencies.ExpressionDependency} is provided by this root object or
+	 *         the extension itself.
+	 * @since 2.4
+	 */
+	public boolean provides(ExpressionDependencies.ExpressionDependency dependency) {
+
+		// We don't know, extension declares Object getRootObject
+		if (!rootObjectInformation.isPresent()) {
+			return true;
+		}
+
+		if (rootObjectInformation.filter(it -> it.provides(dependency)).isPresent()) {
+			return true;
+		}
+
+		return extensionTypeInformation.provides(dependency);
+	}
+
+	/**
 	 * Static information about the given {@link EvaluationContextExtension} type. Discovers public static methods and
 	 * fields. The fields' values are obtained directly, the methods are exposed {@link Function} invocations.
 	 *
@@ -133,6 +156,26 @@ class EvaluationContextExtensionInformation {
 
 			this.functions = discoverDeclaredFunctions(type);
 			this.properties = discoverDeclaredProperties(type);
+		}
+
+		/**
+		 * Returns whether this extension provides {@link ExpressionDependencies.ExpressionDependency}.
+		 *
+		 * @param dependency the expression dependency.
+		 * @return {@literal true} if {@link ExpressionDependencies.ExpressionDependency} is provided by this root object.
+		 * @since 2.4
+		 */
+		public boolean provides(ExpressionDependencies.ExpressionDependency dependency) {
+
+			if (dependency.isPropertyOrField()) {
+				return properties.containsKey(dependency.getSymbol());
+			}
+
+			if (dependency.isMethod()) {
+				return functions.containsKey(dependency.getSymbol());
+			}
+
+			return false;
 		}
 
 		private static MultiValueMap<String, Function> discoverDeclaredFunctions(Class<?> type) {
@@ -201,6 +244,7 @@ class EvaluationContextExtensionInformation {
 	 * Information about the root object of an extension.
 	 *
 	 * @author Oliver Gierke
+	 * @author Mark Paluch
 	 */
 	static class RootObjectInformation {
 
@@ -276,6 +320,43 @@ class EvaluationContextExtensionInformation {
 				return Collections.unmodifiableMap(properties);
 
 			}).orElseGet(Collections::emptyMap);
+		}
+
+		/**
+		 * Returns whether this root object information provides {@link ExpressionDependencies.ExpressionDependency}.
+		 *
+		 * @param dependency the expression dependency.
+		 * @return {@literal true} if {@link ExpressionDependencies.ExpressionDependency} is provided by this root object.
+		 */
+		public boolean provides(ExpressionDependencies.ExpressionDependency dependency) {
+
+			if (dependency.isPropertyOrField()) {
+
+				if (accessors.containsKey(dependency.getSymbol())) {
+					return true;
+				}
+
+				for (Field field : fields) {
+					if (field.getName().equals(dependency.getSymbol())) {
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			if (dependency.isMethod()) {
+
+				for (Method method : methods) {
+					if (method.getName().equals(dependency.getSymbol())) {
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			return false;
 		}
 	}
 

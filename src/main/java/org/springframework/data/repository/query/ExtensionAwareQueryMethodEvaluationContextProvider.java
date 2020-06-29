@@ -15,27 +15,17 @@
  */
 package org.springframework.data.repository.query;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -92,6 +82,21 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		return evaluationContext;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[], ExpressionDependencies)
+	 */
+	@Override
+	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues,
+			ExpressionDependencies dependencies) {
+
+		StandardEvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
+
+		evaluationContext.setVariables(collectVariables(parameters, parameterValues));
+
+		return evaluationContext;
+	}
+
 	/**
 	 * Exposes variables for all named parameters for the given arguments. Also exposes non-bindable parameters under the
 	 * names of their types.
@@ -100,7 +105,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	 * @param arguments must not be {@literal null}.
 	 * @return
 	 */
-	private static Map<String, Object> collectVariables(Parameters<?, ?> parameters, Object[] arguments) {
+	static Map<String, Object> collectVariables(Parameters<?, ?> parameters, Object[] arguments) {
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -119,86 +124,4 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		return variables;
 	}
 
-	/**
-	 * Looks up all {@link EvaluationContextExtension} and
-	 * {@link org.springframework.data.repository.query.spi.EvaluationContextExtension} instances from the given
-	 * {@link ListableBeanFactory} and wraps the latter into proxies so that they implement the former.
-	 *
-	 * @param beanFactory must not be {@literal null}.
-	 * @return
-	 */
-	private static List<EvaluationContextExtension> getExtensionsFrom(ListableBeanFactory beanFactory) {
-
-		Stream<EvaluationContextExtension> extensions = beanFactory
-				.getBeansOfType(EvaluationContextExtension.class, true, false).values().stream();
-
-		return extensions.collect(Collectors.toList());
-	}
-
-	/**
-	 * A {@link MethodInterceptor} that forwards all invocations of methods (by name and parameter types) that are
-	 * available on a given target object
-	 *
-	 * @author Oliver Gierke
-	 */
-	static class DelegatingMethodInterceptor implements MethodInterceptor {
-
-		private static final Map<Method, Method> methodCache = new ConcurrentReferenceHashMap<Method, Method>();
-
-		private final Object target;
-		private final Map<String, Function<Object, Object>> directMappings = new HashMap<>();
-
-		DelegatingMethodInterceptor(Object target) {
-			this.target = target;
-		}
-
-		/**
-		 * Registers a result mapping for the method with the given name. Invocation results for matching methods will be
-		 * piped through the mapping.
-		 *
-		 * @param methodName
-		 * @param mapping
-		 */
-		public void registerResultMapping(String methodName, Function<Object, Object> mapping) {
-			this.directMappings.put(methodName, mapping);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-		 */
-		@Nullable
-		@Override
-		public Object invoke(@Nullable MethodInvocation invocation) throws Throwable {
-
-			if (invocation == null) {
-				throw new IllegalArgumentException("Invocation must not be null!");
-			}
-
-			Method method = invocation.getMethod();
-			Method targetMethod = methodCache.computeIfAbsent(method,
-					it -> Optional.ofNullable(findTargetMethod(it)).orElse(it));
-
-			Object result = method.equals(targetMethod) ? invocation.proceed()
-					: ReflectionUtils.invokeMethod(targetMethod, target, invocation.getArguments());
-
-			if (result == null) {
-				return result;
-			}
-
-			Function<Object, Object> mapper = this.directMappings.get(targetMethod.getName());
-
-			return mapper != null ? mapper.apply(result) : result;
-		}
-
-		@Nullable
-		private Method findTargetMethod(Method method) {
-
-			try {
-				return target.getClass().getMethod(method.getName(), method.getParameterTypes());
-			} catch (Exception e) {
-				return null;
-			}
-		}
-	}
 }

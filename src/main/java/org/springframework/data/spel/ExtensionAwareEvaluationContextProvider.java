@@ -15,6 +15,7 @@
  */
 package org.springframework.data.spel;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -32,6 +34,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.spel.EvaluationContextExtensionInformation.ExtensionTypeInformation;
 import org.springframework.data.spel.EvaluationContextExtensionInformation.RootObjectInformation;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
+import org.springframework.data.spel.spi.ExtensionIdAware;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
@@ -62,7 +65,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new ConcurrentHashMap<>();
 
-	private final Lazy<? extends Collection<? extends EvaluationContextExtension>> extensions;
+	private final Lazy<? extends Collection<? extends ExtensionIdAware>> extensions;
 	private ListableBeanFactory beanFactory;
 
 	ExtensionAwareEvaluationContextProvider() {
@@ -87,28 +90,40 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 *
 	 * @param extensions must not be {@literal null}.
 	 */
-	public ExtensionAwareEvaluationContextProvider(Collection<? extends EvaluationContextExtension> extensions) {
+	public ExtensionAwareEvaluationContextProvider(Collection<? extends ExtensionIdAware> extensions) {
 		this(Lazy.of(extensions));
 	}
 
 	public ExtensionAwareEvaluationContextProvider(
-			Lazy<? extends Collection<? extends EvaluationContextExtension>> extensions) {
+			Lazy<? extends Collection<? extends ExtensionIdAware>> extensions) {
 		this.extensions = extensions;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.jpa.repository.support.EvaluationContextProvider#getEvaluationContext()
+	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(Object)
 	 */
 	@Override
 	public StandardEvaluationContext getEvaluationContext(Object rootObject) {
+		return doGetEvaluationContext(rootObject, getExtensions(it -> true));
+	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(Object, Collection, ExpressionDependencies)
+	 */
+	@Override
+	public StandardEvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+		return doGetEvaluationContext(rootObject, getExtensions(it -> dependencies.stream().anyMatch(it::provides)));
+	}
+
+	StandardEvaluationContext doGetEvaluationContext(Object rootObject,
+			Collection<? extends EvaluationContextExtension> extensions) {
 		StandardEvaluationContext context = new StandardEvaluationContext();
 
 		if (beanFactory != null) {
 			context.setBeanResolver(new BeanFactoryResolver(beanFactory));
 		}
 
-		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(extensions.get());
+		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(extensions);
 
 		context.addPropertyAccessor(accessor);
 		context.addPropertyAccessor(new ReflectivePropertyAccessor());
@@ -121,14 +136,37 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		return context;
 	}
 
+	Collection<? extends ExtensionIdAware> getExtensions() {
+		return this.extensions.get();
+	}
+
+	Collection<? extends EvaluationContextExtension> getExtensions(
+			Predicate<EvaluationContextExtensionInformation> extensionFilter) {
+
+		Collection<EvaluationContextExtension> extensionsToUse = new ArrayList<>();
+
+		for (ExtensionIdAware candidate : this.extensions.get()) {
+
+			if (candidate instanceof EvaluationContextExtension) {
+
+				EvaluationContextExtension extension = (EvaluationContextExtension) candidate;
+				if (extensionFilter.test(getOrCreateInformation(extension))) {
+					extensionsToUse.add(extension);
+				}
+			}
+		}
+
+		return extensionsToUse;
+	}
+
 	/**
-	 * Looks up all {@link EvaluationContextExtension} instances from the given {@link ListableBeanFactory}.
+	 * Looks up all {@link ExtensionIdAware} instances from the given {@link ListableBeanFactory}.
 	 *
 	 * @param beanFactory must not be {@literal null}.
 	 * @return
 	 */
-	private static Collection<? extends EvaluationContextExtension> getExtensionsFrom(ListableBeanFactory beanFactory) {
-		return beanFactory.getBeansOfType(EvaluationContextExtension.class, true, false).values();
+	private static Collection<? extends ExtensionIdAware> getExtensionsFrom(ListableBeanFactory beanFactory) {
+		return beanFactory.getBeansOfType(ExtensionIdAware.class, true, false).values();
 	}
 
 	/**
@@ -138,18 +176,27 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @param extension must not be {@literal null}.
 	 * @return
 	 */
-	private EvaluationContextExtensionInformation getOrCreateInformation(EvaluationContextExtension extension) {
+	EvaluationContextExtensionInformation getOrCreateInformation(EvaluationContextExtension extension) {
+		return getOrCreateInformation(extension.getClass());
+	}
 
-		Class<? extends EvaluationContextExtension> extensionType = extension.getClass();
-
-		return extensionInformationCache.computeIfAbsent(extensionType,
-				type -> new EvaluationContextExtensionInformation(extensionType));
+	/**
+	 * Looks up the {@link EvaluationContextExtensionInformation} for the given {@link EvaluationContextExtension} from
+	 * the cache or creates a new one and caches that for later lookup.
+	 *
+	 * @param extension must not be {@literal null}.
+	 * @return
+	 */
+	EvaluationContextExtensionInformation getOrCreateInformation(Class<? extends EvaluationContextExtension> extension) {
+		return extensionInformationCache.computeIfAbsent(extension,
+				type -> new EvaluationContextExtensionInformation(extension));
 	}
 
 	/**
 	 * Creates {@link EvaluationContextExtensionAdapter}s for the given {@link EvaluationContextExtension}s.
 	 *
 	 * @param extensions
+	 * @param filter to remove unwanted extensions.
 	 * @return
 	 */
 	private List<EvaluationContextExtensionAdapter> toAdapters(
@@ -157,7 +204,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		return extensions.stream()//
 				.sorted(AnnotationAwareOrderComparator.INSTANCE)//
-				.map(it -> new EvaluationContextExtensionAdapter(it, getOrCreateInformation(it)))//
+				.map(it -> new EvaluationContextExtensionAdapter(it, getOrCreateInformation(it))) //
 				.collect(Collectors.toList());
 	}
 
@@ -166,7 +213,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @author Oliver Gierke
 	 * @see 1.9
 	 */
-	private class ExtensionAwarePropertyAccessor implements PropertyAccessor, MethodResolver {
+	class ExtensionAwarePropertyAccessor implements PropertyAccessor, MethodResolver {
 
 		private final List<EvaluationContextExtensionAdapter> adapters;
 		private final Map<String, EvaluationContextExtensionAdapter> adapterMap;
@@ -411,6 +458,11 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 */
 		public Map<String, Object> getProperties() {
 			return this.properties;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("EvaluationContextExtensionAdapter for '%s'", getExtensionId());
 		}
 	}
 }
