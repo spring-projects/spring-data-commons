@@ -369,7 +369,7 @@ class EntityCallbackDiscoverer {
 
 		private final Set<EntityCallback<?>> entityCallbacks = new LinkedHashSet<>();
 
-		private final List<EntityCallback<?>> cachedEntityCallbacks = new ArrayList<>();
+		private volatile List<EntityCallback<?>> cachedEntityCallbacks = new ArrayList<>();
 
 		private final Set<String> entityCallbackBeans = new LinkedHashSet<>();
 
@@ -387,14 +387,10 @@ class EntityCallbackDiscoverer {
 
 					List<EntityCallback<?>> entityCallbacks = new ArrayList<>(this.entityCallbacks);
 					AnnotationAwareOrderComparator.sort(entityCallbacks);
-
-					synchronized (cachedEntityCallbacks) {
-						cachedEntityCallbacks.clear();
-						cachedEntityCallbacks.addAll(entityCallbacks);
-					}
+					this.cachedEntityCallbacks = entityCallbacks;
 				}
 
-				return new ArrayList<>(cachedEntityCallbacks);
+				return this.cachedEntityCallbacks;
 			}
 
 			List<EntityCallback<?>> allCallbacks = new ArrayList<>(
