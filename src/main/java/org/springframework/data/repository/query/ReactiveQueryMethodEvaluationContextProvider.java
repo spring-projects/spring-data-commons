@@ -35,7 +35,7 @@ public interface ReactiveQueryMethodEvaluationContextProvider extends QueryMetho
 			Collections.emptyList());
 
 	/**
-	 * Returns an {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
+	 * Return a {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
 	 *
 	 * @param parameters the {@link Parameters} instance obtained from the query method the context is built for.
 	 * @param parameterValues the values for the parameters.
@@ -45,7 +45,7 @@ public interface ReactiveQueryMethodEvaluationContextProvider extends QueryMetho
 			Object[] parameterValues);
 
 	/**
-	 * Returns an {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
+	 * Return a {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
 	 *
 	 * @param parameters the {@link Parameters} instance obtained from the query method the context is built for.
 	 * @param parameterValues the values for the parameters.

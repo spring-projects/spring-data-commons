@@ -42,7 +42,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	private final ReactiveExtensionAwareEvaluationContextProvider delegate;
 
 	/**
-	 * Creates a new {@link ReactiveExtensionAwareQueryMethodEvaluationContextProvider}.
+	 * Create a new {@link ReactiveExtensionAwareQueryMethodEvaluationContextProvider}.
 	 *
 	 * @param beanFactory the {@link ListableBeanFactory} to lookup the {@link EvaluationContextExtension}s from, must not
 	 *          be {@literal null}.
@@ -55,7 +55,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	}
 
 	/**
-	 * Creates a new {@link ReactiveExtensionAwareQueryMethodEvaluationContextProvider} using the given
+	 * Create a new {@link ReactiveExtensionAwareQueryMethodEvaluationContextProvider} using the given
 	 * {@link EvaluationContextExtension}s and
 	 * {@link org.springframework.data.spel.spi.ReactiveEvaluationContextExtension}s.
 	 *
@@ -68,7 +68,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 		this.delegate = new ReactiveExtensionAwareEvaluationContextProvider(extensions);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[])
 	 */
@@ -85,7 +85,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 		return evaluationContext;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[], org.springframework.data.spel.ExpressionDependencies)
 	 */
@@ -119,7 +119,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 				.cast(EvaluationContext.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider#getEvaluationContextLater(org.springframework.data.repository.query.Parameters, java.lang.Object[], org.springframework.data.spel.ExpressionDependencies)
 	 */

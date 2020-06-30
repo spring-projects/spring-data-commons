@@ -179,21 +179,21 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 		/**
 		 * Create a new {@link ExpressionDependency} for a method.
 		 *
-		 * @param symbol the method name.
-		 * @return
+		 * @param methodName the method name.
+		 * @return a method dependency on {@code methodName}.
 		 */
-		public static ExpressionDependency forMethod(String symbol) {
-			return new ExpressionDependency(DependencyType.METHOD, symbol, 0);
+		public static ExpressionDependency forMethod(String methodName) {
+			return new ExpressionDependency(DependencyType.METHOD, methodName, 0);
 		}
 
 		/**
 		 * Create a new {@link ExpressionDependency} for a property or field.
 		 *
-		 * @param symbol the property/field name.
-		 * @return
+		 * @param fieldOrPropertyName the property/field name.
+		 * @return a method dependency on {@code fieldOrPropertyName}.
 		 */
-		public static ExpressionDependency forPropertyOrField(String symbol) {
-			return new ExpressionDependency(DependencyType.PROPERTY, symbol, 0);
+		public static ExpressionDependency forPropertyOrField(String fieldOrPropertyName) {
+			return new ExpressionDependency(DependencyType.PROPERTY, fieldOrPropertyName, 0);
 		}
 
 		/**

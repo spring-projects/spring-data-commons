@@ -37,7 +37,7 @@ import org.springframework.lang.Nullable;
 public interface EvaluationContextExtension extends ExtensionIdAware {
 
 	/**
-	 * Returns the properties exposed by the extension.
+	 * Return the properties exposed by the extension.
 	 *
 	 * @return the properties
 	 */
@@ -46,7 +46,7 @@ public interface EvaluationContextExtension extends ExtensionIdAware {
 	}
 
 	/**
-	 * Returns the functions exposed by the extension.
+	 * Return the functions exposed by the extension.
 	 *
 	 * @return the functions
 	 */
@@ -55,11 +55,11 @@ public interface EvaluationContextExtension extends ExtensionIdAware {
 	}
 
 	/**
-	 * Returns the root object to be exposed by the extension. It's strongly recommended to declare the most concrete type
+	 * Return the root object to be exposed by the extension. It's strongly recommended to declare the most concrete type
 	 * possible as return type of the implementation method. This will allow us to obtain the necessary metadata once and
 	 * not for every evaluation.
 	 *
-	 * @return
+	 * @return the root object to be exposed by the extension.
 	 */
 	@Nullable
 	default Object getRootObject() {

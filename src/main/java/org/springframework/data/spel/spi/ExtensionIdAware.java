@@ -26,8 +26,8 @@ package org.springframework.data.spel.spi;
 public interface ExtensionIdAware {
 
 	/**
-	 * Returns the identifier of the extension. The id can be leveraged by users to fully qualify property lookups and
-	 * thus overcome ambiguities in case multiple extensions expose properties with the same name.
+	 * Return the identifier of the extension. The id can be leveraged by users to fully qualify property lookups and thus
+	 * overcome ambiguities in case multiple extensions expose properties with the same name.
 	 *
 	 * @return the extension id, must not be {@literal null}.
 	 */

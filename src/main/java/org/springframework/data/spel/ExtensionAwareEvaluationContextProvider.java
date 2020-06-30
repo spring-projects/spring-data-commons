@@ -59,13 +59,14 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Mark Paluch
  * @since 2.1
  */
 public class ExtensionAwareEvaluationContextProvider implements EvaluationContextProvider {
 
 	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new ConcurrentHashMap<>();
-
 	private final Lazy<? extends Collection<? extends ExtensionIdAware>> extensions;
+
 	private ListableBeanFactory beanFactory;
 
 	ExtensionAwareEvaluationContextProvider() {
@@ -80,7 +81,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 */
 	public ExtensionAwareEvaluationContextProvider(ListableBeanFactory beanFactory) {
 
-		this(Lazy.of(() -> getExtensionsFrom(beanFactory)));
+		this(Lazy.of(() -> beanFactory.getBeansOfType(ExtensionIdAware.class, true, false).values()));
 
 		this.beanFactory = beanFactory;
 	}
@@ -142,12 +143,12 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		return this.extensions.get();
 	}
 
-	Collection<? extends EvaluationContextExtension> getExtensions(
+	private Collection<? extends EvaluationContextExtension> getExtensions(
 			Predicate<EvaluationContextExtensionInformation> extensionFilter) {
 
 		Collection<EvaluationContextExtension> extensionsToUse = new ArrayList<>();
 
-		for (ExtensionIdAware candidate : this.extensions.get()) {
+		for (ExtensionIdAware candidate : getExtensions()) {
 
 			if (candidate instanceof EvaluationContextExtension) {
 
@@ -159,16 +160,6 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		}
 
 		return extensionsToUse;
-	}
-
-	/**
-	 * Looks up all {@link ExtensionIdAware} instances from the given {@link ListableBeanFactory}.
-	 *
-	 * @param beanFactory must not be {@literal null}.
-	 * @return
-	 */
-	private static Collection<? extends ExtensionIdAware> getExtensionsFrom(ListableBeanFactory beanFactory) {
-		return beanFactory.getBeansOfType(ExtensionIdAware.class, true, false).values();
 	}
 
 	/**

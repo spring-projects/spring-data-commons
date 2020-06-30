@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.expression.EvaluationContext;
 public interface ReactiveEvaluationContextProvider extends EvaluationContextProvider {
 
 	/**
-	 * Returns an {@link EvaluationContext} built using the given parameter values.
+	 * Return a {@link EvaluationContext} built using the given parameter values.
 	 *
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
 	 * @return a mono that emits exactly one {@link EvaluationContext}.
@@ -36,10 +36,10 @@ public interface ReactiveEvaluationContextProvider extends EvaluationContextProv
 	Mono<? extends EvaluationContext> getEvaluationContextLater(Object rootObject);
 
 	/**
-	 * Returns a tailored {@link EvaluationContext} built using the given parameter values and considering
-	 * {@link ExpressionDependencies.ExpressionDependency expression dependencies}. The returned {@link EvaluationContext}
-	 * may contain a reduced visibility of methods and properties/fields according to the required
-	 * {@link ExpressionDependencies.ExpressionDependency expression dependencies}.
+	 * Return a tailored {@link EvaluationContext} built using the given parameter values and considering
+	 * {@link ExpressionDependencies expression dependencies}. The returned {@link EvaluationContext} may contain a
+	 * reduced visibility of methods and properties/fields according to the required {@link ExpressionDependencies
+	 * expression dependencies}.
 	 *
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
 	 * @param dependencies the requested expression dependencies to be available.

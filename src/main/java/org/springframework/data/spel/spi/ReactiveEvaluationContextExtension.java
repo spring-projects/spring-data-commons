@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ import org.springframework.expression.EvaluationContext;
 public interface ReactiveEvaluationContextExtension extends ExtensionIdAware {
 
 	/**
-	 * Returns the {@link EvaluationContextExtension} to be consumed during the actual execution. It's strongly
-	 * recommended to declare the most concrete type possible as return type of the implementation method. This will allow
-	 * us to obtain the necessary metadata once and not for every evaluation.
+	 * Return the {@link EvaluationContextExtension} to be consumed during the actual execution. It's strongly recommended
+	 * to declare the most concrete type possible as return type of the implementation method. This will allow us to
+	 * obtain the necessary metadata once and not for every evaluation.
 	 *
 	 * @return the resolved {@link EvaluationContextExtension}. Publishers emitting no value will be skipped.
 	 */

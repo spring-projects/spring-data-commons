@@ -102,7 +102,7 @@ class EvaluationContextExtensionInformation {
 	}
 
 	/**
-	 * Returns whether this extension provides {@link ExpressionDependencies.ExpressionDependency}.
+	 * Return {@literal true} if this extension provides {@link ExpressionDependencies.ExpressionDependency}.
 	 *
 	 * @param dependency the expression dependency.
 	 * @return {@literal true} if {@link ExpressionDependencies.ExpressionDependency} is provided by this root object or
@@ -159,7 +159,7 @@ class EvaluationContextExtensionInformation {
 		}
 
 		/**
-		 * Returns whether this extension provides {@link ExpressionDependencies.ExpressionDependency}.
+		 * Return {@literal true} if this extension provides {@link ExpressionDependencies.ExpressionDependency}.
 		 *
 		 * @param dependency the expression dependency.
 		 * @return {@literal true} if {@link ExpressionDependencies.ExpressionDependency} is provided by this root object.
