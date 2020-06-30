@@ -30,7 +30,7 @@ import org.springframework.expression.EvaluationContext;
  */
 public interface QueryMethodEvaluationContextProvider {
 
-	static QueryMethodEvaluationContextProvider DEFAULT = new ExtensionAwareQueryMethodEvaluationContextProvider(
+	QueryMethodEvaluationContextProvider DEFAULT = new ExtensionAwareQueryMethodEvaluationContextProvider(
 			Collections.emptyList());
 
 	/**

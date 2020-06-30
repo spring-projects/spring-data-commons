@@ -17,33 +17,40 @@ package org.springframework.data.repository.query;
 
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+
 import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.EvaluationContext;
 
 /**
- * Provides a way to access a centrally defined potentially shared {@link EvaluationContext}.
+ * Provides a way to access a centrally defined potentially shared {@link EvaluationContext} by considering
+ * {@link org.springframework.data.spel.spi.ReactiveEvaluationContextExtension}.
  *
  * @author Mark Paluch
  * @since 2.4
  */
-public interface ReactiveQueryMethodEvaluationContextProvider {
+public interface ReactiveQueryMethodEvaluationContextProvider extends QueryMethodEvaluationContextProvider {
+
+	ReactiveQueryMethodEvaluationContextProvider DEFAULT = new ReactiveExtensionAwareQueryMethodEvaluationContextProvider(
+			Collections.emptyList());
 
 	/**
 	 * Returns an {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
 	 *
 	 * @param parameters the {@link Parameters} instance obtained from the query method the context is built for.
 	 * @param parameterValues the values for the parameters.
-	 * @return
+	 * @return a mono that emits exactly one {@link EvaluationContext}.
 	 */
-	<T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContext(T parameters, Object[] parameterValues);
+	<T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContextLater(T parameters,
+			Object[] parameterValues);
 
 	/**
 	 * Returns an {@link EvaluationContext} built using the given {@link Parameters} and parameter values.
 	 *
 	 * @param parameters the {@link Parameters} instance obtained from the query method the context is built for.
 	 * @param parameterValues the values for the parameters.
-	 * @return
+	 * @return a mono that emits exactly one {@link EvaluationContext}.
 	 */
-	<T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContext(T parameters, Object[] parameterValues,
+	<T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContextLater(T parameters, Object[] parameterValues,
 			ExpressionDependencies dependencies);
 }

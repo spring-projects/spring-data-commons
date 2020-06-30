@@ -25,16 +25,15 @@ import org.springframework.expression.EvaluationContext;
  * @author Mark Paluch
  * @since 2.4
  */
-@FunctionalInterface
-public interface ReactiveEvaluationContextProvider {
+public interface ReactiveEvaluationContextProvider extends EvaluationContextProvider {
 
 	/**
 	 * Returns an {@link EvaluationContext} built using the given parameter values.
 	 *
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
-	 * @return mono emitting the {@link EvaluationContext}.
+	 * @return a mono that emits exactly one {@link EvaluationContext}.
 	 */
-	Mono<? extends EvaluationContext> getEvaluationContext(Object rootObject);
+	Mono<? extends EvaluationContext> getEvaluationContextLater(Object rootObject);
 
 	/**
 	 * Returns a tailored {@link EvaluationContext} built using the given parameter values and considering
@@ -44,11 +43,11 @@ public interface ReactiveEvaluationContextProvider {
 	 *
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
 	 * @param dependencies the requested expression dependencies to be available.
-	 * @return mono emitting the {@link EvaluationContext}.
+	 * @return a mono that emits exactly one {@link EvaluationContext}.
 	 * @since 2.4
 	 */
-	default Mono<? extends EvaluationContext> getEvaluationContext(Object rootObject,
+	default Mono<? extends EvaluationContext> getEvaluationContextLater(Object rootObject,
 			ExpressionDependencies dependencies) {
-		return getEvaluationContext(rootObject);
+		return getEvaluationContextLater(rootObject);
 	}
 }

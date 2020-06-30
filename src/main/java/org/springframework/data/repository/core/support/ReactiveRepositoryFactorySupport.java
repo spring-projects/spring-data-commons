@@ -19,8 +19,11 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.util.ClassUtils;
@@ -54,6 +57,20 @@ public abstract class ReactiveRepositoryFactorySupport extends RepositoryFactory
 			Arrays.stream(repositoryMetadata.getRepositoryInterface().getMethods())
 					.forEach(RxJavaOneConversionSetup::validate);
 		}
+	}
+
+	/**
+	 * Sets the {@link QueryMethodEvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined
+	 * queries.
+	 *
+	 * @param evaluationContextProvider can be {@literal null}, defaults to
+	 *          {@link ReactiveQueryMethodEvaluationContextProvider#INSTANCE}.
+	 */
+	@Override
+	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
+		super.setEvaluationContextProvider(
+				evaluationContextProvider == null ? ReactiveQueryMethodEvaluationContextProvider.DEFAULT
+						: evaluationContextProvider);
 	}
 
 	/**

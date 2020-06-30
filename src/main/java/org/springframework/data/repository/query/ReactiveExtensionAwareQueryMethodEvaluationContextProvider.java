@@ -68,15 +68,50 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 		this.delegate = new ReactiveExtensionAwareEvaluationContextProvider(extensions);
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[])
+	 */
+	@Override
+	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
+
+		EvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues);
+
+		if (evaluationContext instanceof StandardEvaluationContext) {
+			((StandardEvaluationContext) evaluationContext).setVariables(
+					ExtensionAwareQueryMethodEvaluationContextProvider.collectVariables(parameters, parameterValues));
+		}
+
+		return evaluationContext;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.QueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[], org.springframework.data.spel.ExpressionDependencies)
+	 */
+	@Override
+	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues,
+			ExpressionDependencies dependencies) {
+
+		EvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
+
+		if (evaluationContext instanceof StandardEvaluationContext) {
+			((StandardEvaluationContext) evaluationContext).setVariables(
+					ExtensionAwareQueryMethodEvaluationContextProvider.collectVariables(parameters, parameterValues));
+		}
+
+		return evaluationContext;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[])
 	 */
 	@Override
-	public <T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContext(T parameters,
+	public <T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContextLater(T parameters,
 			Object[] parameterValues) {
 
-		Mono<StandardEvaluationContext> evaluationContext = delegate.getEvaluationContext(parameterValues);
+		Mono<StandardEvaluationContext> evaluationContext = delegate.getEvaluationContextLater(parameterValues);
 
 		return evaluationContext
 				.doOnNext(it -> it.setVariables(
@@ -84,15 +119,16 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 				.cast(EvaluationContext.class);
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider#getEvaluationContext(org.springframework.data.repository.query.Parameters, java.lang.Object[], ExpressionDependencies)
+	 * @see org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider#getEvaluationContextLater(org.springframework.data.repository.query.Parameters, java.lang.Object[], org.springframework.data.spel.ExpressionDependencies)
 	 */
 	@Override
-	public <T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContext(T parameters,
+	public <T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContextLater(T parameters,
 			Object[] parameterValues, ExpressionDependencies dependencies) {
 
-		Mono<StandardEvaluationContext> evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
+		Mono<StandardEvaluationContext> evaluationContext = delegate.getEvaluationContextLater(parameterValues,
+				dependencies);
 
 		return evaluationContext
 				.doOnNext(it -> it.setVariables(
