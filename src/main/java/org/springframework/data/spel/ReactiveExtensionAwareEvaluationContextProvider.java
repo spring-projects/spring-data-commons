@@ -27,7 +27,6 @@ import org.springframework.core.ResolvableType;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ExtensionIdAware;
 import org.springframework.data.spel.spi.ReactiveEvaluationContextExtension;
-import org.springframework.data.util.Lazy;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -37,6 +36,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
  * {@link ReactiveEvaluationContextExtension} and {@link EvaluationContextExtension} instances.
  *
  * @author Mark Paluch
+ * @since 2.4
  */
 public class ReactiveExtensionAwareEvaluationContextProvider implements ReactiveEvaluationContextProvider {
 
@@ -49,32 +49,67 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 		evaluationContextProvider = new ExtensionAwareEvaluationContextProvider();
 	}
 
+	/**
+	 * Create a new {@link ReactiveExtensionAwareEvaluationContextProvider} with extensions looked up lazily from the
+	 * given {@link ListableBeanFactory}.
+	 *
+	 * @param beanFactory the {@link ListableBeanFactory} to lookup extensions from.
+	 */
 	public ReactiveExtensionAwareEvaluationContextProvider(ListableBeanFactory beanFactory) {
 		evaluationContextProvider = new ExtensionAwareEvaluationContextProvider(beanFactory);
 	}
 
+	/**
+	 * Creates a new {@link ReactiveExtensionAwareEvaluationContextProvider} for the given
+	 * {@link EvaluationContextExtension}s.
+	 *
+	 * @param extensions must not be {@literal null}.
+	 */
 	public ReactiveExtensionAwareEvaluationContextProvider(Collection<? extends ExtensionIdAware> extensions) {
 		evaluationContextProvider = new ExtensionAwareEvaluationContextProvider(extensions);
 	}
 
-	public ReactiveExtensionAwareEvaluationContextProvider(
-			Lazy<? extends Collection<? extends ExtensionIdAware>> extensions) {
-		evaluationContextProvider = new ExtensionAwareEvaluationContextProvider(extensions);
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(Object)
+	 */
+	@Override
+	public EvaluationContext getEvaluationContext(Object rootObject) {
+		return evaluationContextProvider.getEvaluationContext(rootObject);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(java.lang.Object, org.springframework.data.spel.ExpressionDependencies)
+	 */
 	@Override
-	public Mono<StandardEvaluationContext> getEvaluationContext(Object rootObject) {
+	public EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+		return evaluationContextProvider.getEvaluationContext(rootObject, dependencies);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.spel.ReactiveEvaluationContextProvider#getEvaluationContextLater(java.lang.Object)
+	 */
+	@Override
+	public Mono<StandardEvaluationContext> getEvaluationContextLater(Object rootObject) {
 		return getExtensions(it -> true) //
 				.map(it -> evaluationContextProvider.doGetEvaluationContext(rootObject, it));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.spel.ReactiveEvaluationContextProvider#getEvaluationContextLater(java.lang.Object, org.springframework.data.spel.ExpressionDependencies)
+	 */
 	@Override
-	public Mono<StandardEvaluationContext> getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+	public Mono<StandardEvaluationContext> getEvaluationContextLater(Object rootObject,
+			ExpressionDependencies dependencies) {
 
 		return getExtensions(it -> dependencies.stream().anyMatch(it::provides)) //
 				.map(it -> evaluationContextProvider.doGetEvaluationContext(rootObject, it));
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Mono<List<EvaluationContextExtension>> getExtensions(
 			Predicate<EvaluationContextExtensionInformation> extensionFilter) {
 
@@ -83,6 +118,7 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 		return Flux.fromIterable(extensions).concatMap(it -> {
 
 			if (it instanceof EvaluationContextExtension) {
+
 				EvaluationContextExtension extension = (EvaluationContextExtension) it;
 				EvaluationContextExtensionInformation information = evaluationContextProvider.getOrCreateInformation(extension);
 
@@ -114,13 +150,10 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 		}).collectList();
 	}
 
-	private ResolvableType getExtensionType(ExtensionIdAware extensionCandidate) {
+	private static ResolvableType getExtensionType(ExtensionIdAware extensionCandidate) {
 
-		ResolvableType extensionType = ResolvableType
+		return ResolvableType
 				.forMethodReturnType(ReflectionUtils.findRequiredMethod(extensionCandidate.getClass(), "getExtension"))
 				.getGeneric(0);
-
-		return extensionType;
 	}
-
 }

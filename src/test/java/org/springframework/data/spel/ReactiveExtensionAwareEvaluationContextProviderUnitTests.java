@@ -57,7 +57,7 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericExtension.INSTANCE));
 
-		provider.getEvaluationContext(new Object[0], dependencies).map(expression::getValue) //
+		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
 				.as(StepVerifier::create) //
 				.expectNext("Walter") //
 				.verifyComplete();
@@ -75,7 +75,7 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericExtension.INSTANCE));
 
-		provider.getEvaluationContext(new Object[0], dependencies).map(expression::getValue) //
+		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
 				.as(StepVerifier::create) //
 				.expectNext(true) //
 				.verifyComplete();
@@ -93,7 +93,7 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericExtension.INSTANCE));
 
-		provider.getEvaluationContext(new Object[0], dependencies).map(expression::getValue) //
+		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
 				.as(StepVerifier::create) //
 				.verifyError(SpelEvaluationException.class);
 
@@ -110,7 +110,7 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Collections.singletonList(GenericReactiveExtension.INSTANCE));
 
-		provider.getEvaluationContext(new Object[0], dependencies).map(expression::getValue) //
+		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
 				.as(StepVerifier::create) //
 				.expectNext(2) //
 				.verifyComplete();

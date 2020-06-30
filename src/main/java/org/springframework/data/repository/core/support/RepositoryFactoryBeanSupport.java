@@ -182,9 +182,21 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.beanFactory = beanFactory;
 
 		if (!this.evaluationContextProvider.isPresent() && ListableBeanFactory.class.isInstance(beanFactory)) {
-			this.evaluationContextProvider = Optional
-					.of(new ExtensionAwareQueryMethodEvaluationContextProvider((ListableBeanFactory) beanFactory));
+			this.evaluationContextProvider = createDefaultQueryMethodEvaluationContextProvider(
+					(ListableBeanFactory) beanFactory);
 		}
+	}
+
+	/**
+	 * Create a default {@link QueryMethodEvaluationContextProvider} (or subclass) from {@link ListableBeanFactory}.
+	 *
+	 * @param beanFactory the bean factory to use.
+	 * @return the default instance. May be {@link Optional#empty()}.
+	 * @since 2.4
+	 */
+	protected Optional<QueryMethodEvaluationContextProvider> createDefaultQueryMethodEvaluationContextProvider(
+			ListableBeanFactory beanFactory) {
+		return Optional.of(new ExtensionAwareQueryMethodEvaluationContextProvider(beanFactory));
 	}
 
 	/*

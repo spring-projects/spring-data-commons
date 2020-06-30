@@ -18,7 +18,9 @@ package org.springframework.data.spel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.springframework.data.util.Streamable;
@@ -28,6 +30,7 @@ import org.springframework.expression.spel.ast.CompoundExpression;
 import org.springframework.expression.spel.ast.MethodReference;
 import org.springframework.expression.spel.ast.PropertyOrFieldReference;
 import org.springframework.expression.spel.standard.SpelExpression;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -47,13 +50,22 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 	}
 
 	/**
+	 * Return an empty {@link ExpressionDependencies} object.
+	 *
+	 * @return the empty dependencies.
+	 */
+	public static ExpressionDependencies empty() {
+		return EMPTY;
+	}
+
+	/**
 	 * Discover all expression dependencies that are referenced in the {@link SpelNode expression root}.
 	 *
 	 * @param expression the SpEL expression to inspect.
 	 * @return a set of {@link ExpressionDependencies}.
 	 */
 	public static ExpressionDependencies discover(Expression expression) {
-		return expression instanceof SpelExpression ? discover(((SpelExpression) expression).getAST(), true) : EMPTY;
+		return expression instanceof SpelExpression ? discover(((SpelExpression) expression).getAST(), true) : empty();
 	}
 
 	/**
@@ -74,7 +86,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 			}
 		});
 
-		return new ExpressionDependencies(Collections.unmodifiableList(dependencies));
+		return new ExpressionDependencies(dependencies);
 	}
 
 	private static void collectDependencies(SpelNode node, int compoundPosition,
@@ -94,7 +106,25 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 		}
 	}
 
-	/* 
+	/**
+	 * Create new {@link ExpressionDependencies} that contains all dependencies from this object and {@code other}. The
+	 * merged dependencies are guaranteed to not contain duplicates.
+	 *
+	 * @param other the other {@link ExpressionDependencies} object.
+	 * @return new merged {@link ExpressionDependencies} object.
+	 */
+	public ExpressionDependencies mergeWith(ExpressionDependencies other) {
+
+		Assert.notNull(other, "Other ExpressionDependencies must not be null");
+
+		Set<ExpressionDependency> dependencySet = new LinkedHashSet<>(this.dependencies.size() + other.dependencies.size());
+		dependencySet.addAll(this.dependencies);
+		dependencySet.addAll(other.dependencies);
+
+		return new ExpressionDependencies(new ArrayList<>(dependencySet));
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
@@ -103,7 +133,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 		return this.dependencies.iterator();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -119,7 +149,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 		return ObjectUtils.nullSafeEquals(dependencies, that.dependencies);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -196,7 +226,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 			return symbol;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Object#equals(java.lang.Object)
 		 */
@@ -218,7 +248,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 			return ObjectUtils.nullSafeEquals(symbol, that.symbol);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Object#hashCode()
 		 */
@@ -230,7 +260,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 			return result;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */

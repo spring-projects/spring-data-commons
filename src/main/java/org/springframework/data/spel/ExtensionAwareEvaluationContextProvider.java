@@ -99,7 +99,8 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		this.extensions = extensions;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(Object)
 	 */
 	@Override
@@ -107,8 +108,9 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		return doGetEvaluationContext(rootObject, getExtensions(it -> true));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(Object, Collection, ExpressionDependencies)
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(Object, ExpressionDependencies)
 	 */
 	@Override
 	public StandardEvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {

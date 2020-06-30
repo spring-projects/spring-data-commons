@@ -30,9 +30,9 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  */
 class ExpressionDependenciesUnitTests {
 
-	SpelExpressionParser PARSER = new SpelExpressionParser();
+	static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	@Test
+	@Test // DATACMNS-1108
 	void shouldExtractDependencies() {
 
 		String expression = "hasRole('ROLE_ADMIN') ? '%' : principal.emailAddress";
@@ -46,7 +46,7 @@ class ExpressionDependenciesUnitTests {
 				"principal");
 	}
 
-	@Test
+	@Test // DATACMNS-1108
 	void shouldExtractDependenciesFromMethodCallArgs() {
 
 		String expression = "hasRole(principal.emailAddress)";
@@ -60,7 +60,7 @@ class ExpressionDependenciesUnitTests {
 				"principal");
 	}
 
-	@Test
+	@Test // DATACMNS-1108
 	void shouldExtractFirstMethodAsDependency() {
 
 		String expression = "hello().hasRole(principal.emailAddress, principal.somethingElse).somethingElse()";
@@ -74,4 +74,13 @@ class ExpressionDependenciesUnitTests {
 				"principal");
 	}
 
+	@Test // DATACMNS-1108
+	void shouldMergeDependencies() {
+
+		ExpressionDependencies left = ExpressionDependencies.discover(PARSER.parseExpression("hasRole('ROLE_ADMIN')"));
+		ExpressionDependencies right = ExpressionDependencies.discover(PARSER.parseExpression("principal.somethingElse"));
+
+		assertThat(left.mergeWith(right)).extracting(ExpressionDependencies.ExpressionDependency::getSymbol)
+				.containsOnly("hasRole", "principal");
+	}
 }
