@@ -34,12 +34,12 @@ public interface EvaluationContextProvider {
 	 * A simple default {@link EvaluationContextProvider} returning a {@link StandardEvaluationContext} with the given
 	 * root object.
 	 */
-	static EvaluationContextProvider DEFAULT = rootObject -> rootObject == null //
+	EvaluationContextProvider DEFAULT = rootObject -> rootObject == null //
 			? new StandardEvaluationContext() //
 			: new StandardEvaluationContext(rootObject);
 
 	/**
-	 * Returns an {@link EvaluationContext} built using the given parameter values.
+	 * Return a {@link EvaluationContext} built using the given parameter values.
 	 *
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
 	 * @return
@@ -47,10 +47,10 @@ public interface EvaluationContextProvider {
 	EvaluationContext getEvaluationContext(Object rootObject);
 
 	/**
-	 * Returns a tailored {@link EvaluationContext} built using the given parameter values and considering
-	 * {@link ExpressionDependencies.ExpressionDependency expression dependencies}. The returned {@link EvaluationContext}
-	 * may contain a reduced visibility of methods and properties/fields according to the required
-	 * {@link ExpressionDependencies.ExpressionDependency expression dependencies}.
+	 * Return a tailored {@link EvaluationContext} built using the given parameter values and considering
+	 * {@link ExpressionDependencies expression dependencies}. The returned {@link EvaluationContext} may contain a
+	 * reduced visibility of methods and properties/fields according to the required {@link ExpressionDependencies
+	 * expression dependencies}.
 	 *
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
 	 * @param dependencies the requested expression dependencies to be available.
