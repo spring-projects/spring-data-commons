@@ -247,17 +247,34 @@ public final class ReflectionUtils {
 	}
 
 	/**
-	 * Returns the method with the given name of the given class and parameter types.
+	 * Returns the method with the given name of the given class and parameter types. Prefers regular methods over
+	 * {@link Method#isBridge() bridge} and {@link Method#isSynthetic() synthetic} ones.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param name must not be {@literal null}.
 	 * @param parameterTypes must not be {@literal null}.
-	 * @return
+	 * @return the method object.
 	 * @throws IllegalArgumentException in case the method cannot be resolved.
 	 */
 	public static Method findRequiredMethod(Class<?> type, String name, Class<?>... parameterTypes) {
 
-		Method result = org.springframework.util.ReflectionUtils.findMethod(type, name, parameterTypes);
+		Assert.notNull(type, "Class must not be null");
+		Assert.notNull(name, "Method name must not be null");
+
+		Method result = null;
+		Class<?> searchType = type;
+		while (searchType != null) {
+			Method[] methods = (searchType.isInterface() ? searchType.getMethods()
+					: org.springframework.util.ReflectionUtils.getDeclaredMethods(searchType));
+			for (Method method : methods) {
+				if (name.equals(method.getName()) && hasSameParams(method, parameterTypes)) {
+					if (result == null || result.isSynthetic() || result.isBridge()) {
+						result = method;
+					}
+				}
+			}
+			searchType = searchType.getSuperclass();
+		}
 
 		if (result == null) {
 
@@ -270,6 +287,10 @@ public final class ReflectionUtils {
 		}
 
 		return result;
+	}
+
+	private static boolean hasSameParams(Method method, Class<?>[] paramTypes) {
+		return (paramTypes.length == method.getParameterCount() && Arrays.equals(paramTypes, method.getParameterTypes()));
 	}
 
 	/**
