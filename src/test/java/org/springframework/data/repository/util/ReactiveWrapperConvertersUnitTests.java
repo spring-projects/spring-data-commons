@@ -18,11 +18,17 @@ package org.springframework.data.repository.util;
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 
 import io.reactivex.Maybe;
+import kotlinx.coroutines.flow.Flow;
+import kotlinx.coroutines.flow.FlowKt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
@@ -68,6 +74,13 @@ class ReactiveWrapperConvertersUnitTests {
 		assertThat(ReactiveWrapperConverters.supports(io.reactivex.rxjava3.core.Maybe.class)).isTrue();
 		assertThat(ReactiveWrapperConverters.supports(io.reactivex.rxjava3.core.Observable.class)).isTrue();
 		assertThat(ReactiveWrapperConverters.supports(io.reactivex.rxjava3.core.Flowable.class)).isTrue();
+		assertThat(ReactiveWrapperConverters.supports(io.reactivex.rxjava3.core.Completable.class)).isTrue();
+	}
+
+	@Test // DATACMNS-1763
+	void shouldSupportKotlinFlow() {
+
+		assertThat(ReactiveWrapperConverters.supports(Flow.class)).isTrue();
 		assertThat(ReactiveWrapperConverters.supports(io.reactivex.rxjava3.core.Completable.class)).isTrue();
 	}
 
@@ -216,6 +229,30 @@ class ReactiveWrapperConvertersUnitTests {
 		assertThat(map.block()).isEqualTo(1L);
 	}
 
+	@Test // DATACMNS-1763
+	void shouldDoOnSuccess() {
+
+		Mono<String> foo = Mono.just("foo");
+		AtomicBoolean success = new AtomicBoolean();
+		Mono<String> doOn = ReactiveWrapperConverters.doOnSuccess(foo, () -> success.set(true));
+
+		doOn.as(StepVerifier::create).expectNext("foo").verifyComplete();
+
+		assertThat(success.get()).isTrue();
+	}
+
+	@Test // DATACMNS-1763
+	void shouldDoOnError() {
+
+		Mono<String> foo = Mono.error(new IllegalStateException());
+		AtomicReference<Throwable> error = new AtomicReference<>();
+		Mono<String> doOn = ReactiveWrapperConverters.doOnError(foo, error::set);
+
+		doOn.as(StepVerifier::create).verifyError();
+
+		assertThat(error.get()).isInstanceOf(IllegalStateException.class);
+	}
+
 	@Test // DATACMNS-836
 	void shouldMapFlux() {
 
@@ -302,5 +339,14 @@ class ReactiveWrapperConvertersUnitTests {
 		io.reactivex.rxjava3.core.Flowable<String> foo = io.reactivex.rxjava3.core.Flowable.just("foo");
 		io.reactivex.rxjava3.core.Flowable<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
 		assertThat(map.blockingFirst()).isEqualTo(1L);
+	}
+
+	@Test // DATACMNS-1763
+	@SuppressWarnings("deprecation")
+	void shouldMapKotlinFlow() {
+
+		Flow<String> flow = FlowKt.asFlow(new String[] { "foo" });
+		Flow<Long> map = ReactiveWrapperConverters.map(flow, source -> 1L);
+		StepVerifier.create(kotlinx.coroutines.reactive.FlowKt.asPublisher(map)).expectNext(1L).verifyComplete();
 	}
 }
