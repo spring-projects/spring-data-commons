@@ -18,6 +18,11 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -69,6 +74,29 @@ class RepositoryFactoryBeanSupportUnitTests {
 		assertThat(information.getQueryMethods()).isEmpty();
 	}
 
+	@Test // DATACMNS-1688
+	void customizesRepositoryFactory() {
+
+		RepositoryFactoryBeanSupport<SampleRepository, Object, Long> factoryBean = //
+				new DummyRepositoryFactoryBean<>(SampleRepository.class);
+		factoryBean.addRepositoryFactoryCustomizer(repositoryFactory -> repositoryFactory
+				.addRepositoryProxyPostProcessor((factory, repositoryInformation) -> factory.addAdvice(new MethodInterceptor() {
+					@Nullable
+					@Override
+					public Object invoke(@Nonnull MethodInvocation invocation) {
+						throw new UnsupportedOperationException();
+					}
+				})));
+		factoryBean.afterPropertiesSet();
+
+		try {
+			factoryBean.getObject().someMethod();
+			fail("Missing UnsupportedOperationException");
+		} catch (UnsupportedOperationException e) {
+			// all good
+		}
+	}
+
 	@Test // DATACMNS-1345
 	void reportsMappingContextUnavailableForPersistentEntityLookup() {
 
@@ -87,7 +115,11 @@ class RepositoryFactoryBeanSupportUnitTests {
 				.isThrownBy(() -> bean.getPersistentEntity());
 	}
 
-	interface SampleRepository extends Repository<Object, Long> {}
+	interface SampleRepository extends Repository<Object, Long> {
+
+		void someMethod();
+
+	}
 
 	interface SampleWithQuerydslRepository extends Repository<Object, Long>, QuerydslPredicateExecutor<Object> {}
 }
