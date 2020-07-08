@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,6 +72,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private BeanFactory beanFactory;
 	private boolean lazyInit = false;
 	private Optional<QueryMethodEvaluationContextProvider> evaluationContextProvider = Optional.empty();
+	private List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
 	private ApplicationEventPublisher publisher;
 
 	private Lazy<T> repository;
@@ -152,6 +154,19 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		this.evaluationContextProvider = Optional.of(evaluationContextProvider);
+	}
+
+	/**
+	 * Register a {@link RepositoryFactoryCustomizer} to customize the {@link RepositoryFactorySupport repository factor}
+	 * before creating the repository.
+	 *
+	 * @param customizer must not be {@literal null}.
+	 * @since 2.4
+	 */
+	public void addRepositoryFactoryCustomizer(RepositoryFactoryCustomizer customizer) {
+
+		Assert.notNull(customizer, "RepositoryFactoryCustomizer must not be null");
+		this.repositoryFactoryCustomizers.add(customizer);
 	}
 
 	/**
@@ -292,6 +307,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		}
 
 		repositoryBaseClass.ifPresent(this.factory::setRepositoryBaseClass);
+
+		this.repositoryFactoryCustomizers.forEach(customizer -> customizer.customize(this.factory));
 
 		RepositoryFragments customImplementationFragment = customImplementation //
 				.map(RepositoryFragments::just) //
