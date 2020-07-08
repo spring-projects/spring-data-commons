@@ -25,9 +25,11 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
 import org.reactivestreams.Publisher
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory
+import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.data.repository.sample.User
 import reactor.core.publisher.Flux
@@ -45,14 +47,17 @@ class CoroutineCrudRepositoryUnitTests {
 	val backingRepository = mockk<ReactiveCrudRepository<User, String>>()
 	lateinit var factory: DummyReactiveRepositoryFactory
 	lateinit var coRepository: MyCoRepository
+	lateinit var invocationListener: RepositoryMethodInvocationListener
 
 	@BeforeEach
 	fun before() {
 		factory = DummyReactiveRepositoryFactory(backingRepository)
+		invocationListener = Mockito.mock(RepositoryMethodInvocationListener::class.java)
+		factory.addInvocationListener(invocationListener)
 		coRepository = factory.getRepository(MyCoRepository::class.java)
 	}
 
-	@Test // DATACMNS-1508
+	@Test // DATACMNS-1508, DATACMNS-1764
 	fun shouldInvokeFindAll() {
 
 		val sample = User()
@@ -64,6 +69,7 @@ class CoroutineCrudRepositoryUnitTests {
 		}
 
 		assertThat(result).hasSize(1).containsOnly(sample)
+		Mockito.verify(invocationListener).afterInvocation(Mockito.any())
 	}
 
 	@Test // DATACMNS-1508
@@ -176,7 +182,7 @@ class CoroutineCrudRepositoryUnitTests {
 		verify { backingRepository.deleteAll(any<Publisher<User>>()) }
 	}
 
-	@Test // DATACMNS-1508
+	@Test // DATACMNS-1508, DATACMNS-1764
 	fun shouldBridgeQueryMethod() {
 
 		val sample = User()
@@ -188,6 +194,9 @@ class CoroutineCrudRepositoryUnitTests {
 		}
 
 		assertThat(result).isNotNull().isEqualTo(sample)
+		val captor = ArgumentCaptor.forClass(RepositoryMethodInvocationListener.Invocation::class.java)
+		Mockito.verify(invocationListener).afterInvocation(captor.capture())
+		assertThat(captor.value.result).isInstanceOf(Mono::class.java)
 	}
 
 	@Test // DATACMNS-1508

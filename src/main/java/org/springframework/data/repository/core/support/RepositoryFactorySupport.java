@@ -123,6 +123,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private Optional<Class<?>> repositoryBaseClass;
 	private @Nullable QueryLookupStrategy.Key queryLookupStrategyKey;
 	private List<QueryCreationListener<?>> queryPostProcessors;
+	private List<RepositoryMethodInvocationListener> methodInvocationListeners;
 	private NamedQueries namedQueries;
 	private ClassLoader classLoader;
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
@@ -142,6 +143,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.evaluationContextProvider = QueryMethodEvaluationContextProvider.DEFAULT;
 		this.queryPostProcessors = new ArrayList<>();
 		this.queryPostProcessors.add(collectingListener);
+		this.methodInvocationListeners = new ArrayList<>();
 	}
 
 	/**
@@ -185,7 +187,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * queries.
 	 *
 	 * @param evaluationContextProvider can be {@literal null}, defaults to
-	 *          {@link DefaultQueryMethodEvaluationContextProvider#INSTANCE}.
+	 *          {@link QueryMethodEvaluationContextProvider#INSTANCE}.
 	 */
 	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		this.evaluationContextProvider = evaluationContextProvider == null ? QueryMethodEvaluationContextProvider.DEFAULT
@@ -213,6 +215,19 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		Assert.notNull(listener, "Listener must not be null!");
 		this.queryPostProcessors.add(listener);
+	}
+
+	/**
+	 * Adds a {@link RepositoryMethodInvocationListener} to the factory to plug in functionality triggered right after
+	 * running {@link RepositoryQuery query methods} and {@link Method fragment methods}.
+	 *
+	 * @param listener
+	 * @since 2.4
+	 */
+	public void addInvocationListener(RepositoryMethodInvocationListener listener) {
+
+		Assert.notNull(listener, "Listener must not be null!");
+		this.methodInvocationListeners.add(listener);
 	}
 
 	/**
@@ -326,10 +341,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 				evaluationContextProvider);
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory, queryLookupStrategy,
-				namedQueries, queryPostProcessors));
+				namedQueries, queryPostProcessors, methodInvocationListeners));
 
 		composition = composition.append(RepositoryFragment.implemented(target));
-		result.addAdvice(new ImplementationMethodExecutionInterceptor(composition));
+		result.addAdvice(new ImplementationMethodExecutionInterceptor(information, composition, methodInvocationListeners));
 
 		T repository = (T) result.getProxy(classLoader);
 
@@ -526,12 +541,17 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 *
 	 * @author Mark Paluch
 	 */
-	public class ImplementationMethodExecutionInterceptor implements MethodInterceptor {
+	static class ImplementationMethodExecutionInterceptor implements MethodInterceptor {
 
+		private final RepositoryInformation information;
 		private final RepositoryComposition composition;
+		private final List<RepositoryMethodInvocationListener> methodInvocationListeners;
 
-		public ImplementationMethodExecutionInterceptor(RepositoryComposition composition) {
+		public ImplementationMethodExecutionInterceptor(RepositoryInformation information,
+				RepositoryComposition composition, List<RepositoryMethodInvocationListener> methodInvocationListeners) {
+			this.information = information;
 			this.composition = composition;
+			this.methodInvocationListeners = methodInvocationListeners;
 		}
 
 		/*
@@ -544,14 +564,22 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			Method method = invocation.getMethod();
 			Object[] arguments = invocation.getArguments();
+			RepositoryInvocationListener invocationListener = getInvocationListener();
 
 			try {
-				return composition.invoke(method, arguments);
+				return composition.invoke(invocationListener, method, arguments);
 			} catch (Exception e) {
 				ClassUtils.unwrapReflectionException(e);
 			}
 
 			throw new IllegalStateException("Should not occur!");
+		}
+
+		private RepositoryInvocationListener getInvocationListener() {
+			return methodInvocationListeners.isEmpty()
+					? RepositoryInvocationListener.NoOpRepositoryInvocationListener.INSTANCE
+					: new RepositoryInvocationListener.RepositoryInvocationMulticaster(information.getRepositoryInterface(),
+							methodInvocationListeners);
 		}
 	}
 

@@ -29,10 +29,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -86,6 +88,7 @@ class RepositoryFactorySupportUnitTests {
 	@Mock PlainQueryCreationListener otherListener;
 
 	@Mock RepositoryProxyPostProcessor repositoryPostProcessor;
+	@Mock RepositoryMethodInvocationListener invocationListener;
 
 	@BeforeEach
 	void setUp() {
@@ -118,13 +121,16 @@ class RepositoryFactorySupportUnitTests {
 		verify(repositoryPostProcessor, times(1)).postProcess(any(ProxyFactory.class), any(RepositoryInformation.class));
 	}
 
-	@Test
+	@Test // DATACMNS-1764
 	void routesCallToRedeclaredMethodIntoTarget() {
+
+		factory.addInvocationListener(invocationListener);
 
 		ObjectRepository repository = factory.getRepository(ObjectRepository.class);
 		repository.save(repository);
 
 		verify(backingRepo, times(1)).save(any(Object.class));
+		verify(invocationListener).afterInvocation(any());
 	}
 
 	@Test
@@ -177,7 +183,7 @@ class RepositoryFactorySupportUnitTests {
 		assertThat(ReflectionTestUtils.getField(factory, "classLoader")).isEqualTo(ClassUtils.getDefaultClassLoader());
 	}
 
-	@Test // DATACMNS-489
+	@Test // DATACMNS-489, DATACMNS-1764
 	void wrapsExecutionResultIntoFutureIfConfigured() throws Exception {
 
 		final Object reference = new Object();
@@ -186,6 +192,8 @@ class RepositoryFactorySupportUnitTests {
 			Thread.sleep(500);
 			return reference;
 		});
+
+		factory.addInvocationListener(invocationListener);
 
 		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
 
@@ -204,13 +212,44 @@ class RepositoryFactorySupportUnitTests {
 		assertThat(future.get()).isEqualTo(reference);
 
 		verify(factory.queryOne, times(1)).execute(any(Object[].class));
+
+		ArgumentCaptor<RepositoryMethodInvocationListener.Invocation> captor = ArgumentCaptor
+				.forClass(RepositoryMethodInvocationListener.Invocation.class);
+		verify(invocationListener).afterInvocation(captor.capture());
+
+		RepositoryMethodInvocationListener.Invocation value = captor.getValue();
+		assertThat(value.getResult()).isEqualTo(reference);
 	}
 
-	@Test // DATACMNS-509
+	@Test // DATACMNS-1764, DATACMNS-1764
+	void capturesFailureFromInvocation() {
+
+		when(factory.queryOne.execute(any(Object[].class))).thenThrow(new IllegalStateException());
+
+		factory.addInvocationListener(invocationListener);
+
+		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
+
+		try {
+			repository.findByLastname("Foo");
+			fail("Missing exception");
+		} catch (IllegalStateException e) {}
+
+		ArgumentCaptor<RepositoryMethodInvocationListener.Invocation> captor = ArgumentCaptor
+				.forClass(RepositoryMethodInvocationListener.Invocation.class);
+		verify(invocationListener).afterInvocation(captor.capture());
+
+		RepositoryMethodInvocationListener.Invocation invocation = captor.getValue();
+		assertThat(invocation.getDuration(TimeUnit.NANOSECONDS)).isGreaterThan(0);
+		assertThat(invocation.getException()).isInstanceOf(IllegalStateException.class);
+	}
+
+	@Test // DATACMNS-509, DATACMNS-1764
 	void convertsWithSameElementType() {
 
 		List<String> names = singletonList("Dave");
 
+		factory.addInvocationListener(invocationListener);
 		when(factory.queryOne.execute(any(Object[].class))).thenReturn(names);
 
 		ConvertingRepository repository = factory.getRepository(ConvertingRepository.class);
@@ -218,6 +257,13 @@ class RepositoryFactorySupportUnitTests {
 
 		assertThat(result).hasSize(1);
 		assertThat(result.iterator().next()).isEqualTo("Dave");
+
+		ArgumentCaptor<RepositoryMethodInvocationListener.Invocation> captor = ArgumentCaptor
+				.forClass(RepositoryMethodInvocationListener.Invocation.class);
+		verify(invocationListener).afterInvocation(captor.capture());
+
+		RepositoryMethodInvocationListener.Invocation value = captor.getValue();
+		assertThat(value.getResult()).isEqualTo(names);
 	}
 
 	@Test // DATACMNS-509
@@ -460,6 +506,8 @@ class RepositoryFactorySupportUnitTests {
 		Set<String> convertListToStringSet();
 
 		Set<Object> convertListToObjectSet();
+
+		Future<Object> findByLastname(String lastname);
 
 		@Async
 		Future<Object> findByFirstname(String firstname);

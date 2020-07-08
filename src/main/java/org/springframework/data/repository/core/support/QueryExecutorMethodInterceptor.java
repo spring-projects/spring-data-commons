@@ -15,9 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import kotlin.coroutines.Continuation;
-import kotlinx.coroutines.reactive.AwaitKt;
-
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -26,9 +23,7 @@ import java.util.Optional;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.reactivestreams.Publisher;
 
-import org.springframework.core.KotlinDetector;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
@@ -37,9 +32,6 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.QueryExecutionConverters;
-import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.repository.util.ReactiveWrappers;
-import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.Pair;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -54,11 +46,13 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  */
 class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
+	private final RepositoryInformation repositoryInformation;
 	private final Map<Method, RepositoryQuery> queries;
-	private final Map<Method, QueryMethodInvoker> invocationMetadataCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Method, RepositoryMethodInvoker> invocationMetadataCache = new ConcurrentReferenceHashMap<>();
 	private final QueryExecutionResultHandler resultHandler;
 	private final NamedQueries namedQueries;
 	private final List<QueryCreationListener<?>> queryPostProcessors;
+	private final List<RepositoryMethodInvocationListener> methodInvocationListeners;
 
 	/**
 	 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model of {@link QueryMethod}s to be invoked on
@@ -66,10 +60,13 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	 */
 	public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation,
 			ProjectionFactory projectionFactory, Optional<QueryLookupStrategy> queryLookupStrategy, NamedQueries namedQueries,
-			List<QueryCreationListener<?>> queryPostProcessors) {
+			List<QueryCreationListener<?>> queryPostProcessors,
+			List<RepositoryMethodInvocationListener> methodInvocationListeners) {
 
+		this.repositoryInformation = repositoryInformation;
 		this.namedQueries = namedQueries;
 		this.queryPostProcessors = queryPostProcessors;
+		this.methodInvocationListeners = methodInvocationListeners;
 
 		this.resultHandler = new QueryExecutionResultHandler(RepositoryFactorySupport.CONVERSION_SERVICE);
 
@@ -141,18 +138,25 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 		if (hasQueryFor(method)) {
 
-			QueryMethodInvoker invocationMetadata = invocationMetadataCache.get(method);
+			RepositoryInvocationListener invocationListener = getInvocationListener();
+			RepositoryMethodInvoker invocationMetadata = invocationMetadataCache.get(method);
 
 			if (invocationMetadata == null) {
-				invocationMetadata = new QueryMethodInvoker(method);
+				invocationMetadata = RepositoryMethodInvoker.forRepositoryQuery(method, queries.get(method));
 				invocationMetadataCache.put(method, invocationMetadata);
 			}
 
-			RepositoryQuery repositoryQuery = queries.get(method);
-			return invocationMetadata.invoke(repositoryQuery, invocation.getArguments());
+			return invocationMetadata.invoke(invocationListener, invocation.getArguments());
 		}
 
 		return invocation.proceed();
+	}
+
+	private RepositoryInvocationListener getInvocationListener() {
+		return methodInvocationListeners.isEmpty() ? RepositoryInvocationListener.NoOpRepositoryInvocationListener.INSTANCE
+				: new RepositoryInvocationListener.RepositoryInvocationMulticaster(
+						repositoryInformation.getRepositoryInterface(), methodInvocationListeners);
+
 	}
 
 	/**
@@ -165,57 +169,4 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 		return queries.containsKey(method);
 	}
 
-	/**
-	 * Invoker for Query Methods. Considers
-	 */
-	static class QueryMethodInvoker {
-
-		private final boolean suspendedDeclaredMethod;
-		private final Class<?> returnedType;
-		private final boolean returnsReactiveType;
-
-		QueryMethodInvoker(Method invokedMethod) {
-
-			if (KotlinDetector.isKotlinReflectPresent()) {
-
-				this.suspendedDeclaredMethod = KotlinReflectionUtils.isSuspend(invokedMethod);
-				this.returnedType = this.suspendedDeclaredMethod ? KotlinReflectionUtils.getReturnType(invokedMethod)
-						: invokedMethod.getReturnType();
-			} else {
-
-				this.suspendedDeclaredMethod = false;
-				this.returnedType = invokedMethod.getReturnType();
-			}
-
-			this.returnsReactiveType = ReactiveWrappers.supports(returnedType);
-		}
-
-		@Nullable
-		public Object invoke(RepositoryQuery query, Object[] args) {
-			return suspendedDeclaredMethod ? invokeReactiveToSuspend(query, args) : query.execute(args);
-		}
-
-		@Nullable
-		@SuppressWarnings({ "unchecked", "ConstantConditions" })
-		private Object invokeReactiveToSuspend(RepositoryQuery query, Object[] args) {
-
-			/*
-			* Kotlin suspended functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
-			* We're invoking a method without Continuation as we expect the method to return any sort of reactive type,
-			* therefore we need to strip the Continuation parameter.
-			*/
-			Continuation<Object> continuation = (Continuation) args[args.length - 1];
-			args[args.length - 1] = null;
-			Object result = query.execute(args);
-
-			if (returnsReactiveType) {
-				return ReactiveWrapperConverters.toWrapper(result, returnedType);
-			}
-
-			Publisher<?> publisher = result instanceof Publisher ? (Publisher<?>) result
-					: ReactiveWrapperConverters.toWrapper(result, Publisher.class);
-
-			return AwaitKt.awaitFirstOrNull(publisher, continuation);
-		}
-	}
 }
