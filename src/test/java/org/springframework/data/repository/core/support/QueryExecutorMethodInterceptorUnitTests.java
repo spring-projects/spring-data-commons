@@ -50,14 +50,14 @@ class QueryExecutorMethodInterceptorUnitTests {
 
 		assertThatIllegalStateException()
 				.isThrownBy(() -> new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(),
-						Optional.empty(), PropertiesBasedNamedQueries.EMPTY, Collections.emptyList()));
+						Optional.empty(), PropertiesBasedNamedQueries.EMPTY, Collections.emptyList(), Collections.emptyList()));
 	}
 
 	@Test // DATACMNS-1508
 	void skipsQueryLookupsIfQueryLookupStrategyIsNotPresent() {
 
 		new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(), Optional.empty(),
-				PropertiesBasedNamedQueries.EMPTY, Collections.emptyList());
+				PropertiesBasedNamedQueries.EMPTY, Collections.emptyList(), Collections.emptyList());
 
 		verify(strategy, times(0)).resolveQuery(any(), any(), any(), any());
 	}

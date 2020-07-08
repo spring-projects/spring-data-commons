@@ -379,10 +379,7 @@ interface MethodLookups {
 		}
 
 		private static boolean parameterCountMatch(InvokedMethod invokedMethod, Method baseClassMethod) {
-
-			ImplementationInvocationMetadata invocationMetadata = new ImplementationInvocationMetadata(
-					invokedMethod.getMethod(), baseClassMethod);
-			return invocationMetadata.canInvoke(invokedMethod.getMethod(), baseClassMethod);
+			return RepositoryMethodInvoker.canInvoke(invokedMethod.getMethod(), baseClassMethod);
 		}
 
 		private static Stream<ParameterOverrideCriteria> methodParameters(Method invokedMethod, Method baseClassMethod) {

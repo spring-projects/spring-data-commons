@@ -194,6 +194,18 @@ public class RepositoryComposition {
 	 * @throws Throwable
 	 */
 	public Object invoke(Method method, Object... args) throws Throwable {
+		return invoke(RepositoryInvocationListener.NoOpRepositoryInvocationListener.INSTANCE, method, args);
+	}
+
+	/**
+	 * Invoke a method on the repository by routing the invocation to the appropriate {@link RepositoryFragment}.
+	 *
+	 * @param method
+	 * @param args
+	 * @return
+	 * @throws Throwable
+	 */
+	Object invoke(RepositoryInvocationListener listener, Method method, Object[] args) throws Throwable {
 
 		Method methodToCall = getMethod(method);
 
@@ -203,7 +215,7 @@ public class RepositoryComposition {
 
 		ReflectionUtils.makeAccessible(methodToCall);
 
-		return fragments.invoke(method, methodToCall, argumentConverter.apply(methodToCall, args));
+		return fragments.invoke(listener, method, methodToCall, argumentConverter.apply(methodToCall, args));
 	}
 
 	/**
@@ -290,7 +302,7 @@ public class RepositoryComposition {
 		static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
 
 		private final Map<Method, RepositoryFragment<?>> fragmentCache = new ConcurrentReferenceHashMap<>();
-		private final Map<Method, ImplementationInvocationMetadata> invocationMetadataCache = new ConcurrentHashMap<>();
+		private final Map<Method, RepositoryMethodInvoker> invocationMetadataCache = new ConcurrentHashMap<>();
 		private final List<RepositoryFragment<?>> fragments;
 
 		private RepositoryFragments(List<RepositoryFragment<?>> fragments) {
@@ -397,8 +409,10 @@ public class RepositoryComposition {
 		}
 
 		/**
-		 * Invoke {@link Method} by resolving the
+		 * Invoke {@link Method} by resolving the fragment that implements a suitable method.
 		 *
+		 * @param repositoryInformation
+		 * @param listener
 		 * @param invokedMethod invoked method as per invocation on the interface.
 		 * @param methodToCall backend method that is backing the call.
 		 * @param args
@@ -407,6 +421,25 @@ public class RepositoryComposition {
 		 */
 		@Nullable
 		public Object invoke(Method invokedMethod, Method methodToCall, Object[] args) throws Throwable {
+			return invoke(RepositoryInvocationListener.NoOpRepositoryInvocationListener.INSTANCE, invokedMethod, methodToCall,
+					args);
+		}
+
+		/**
+		 * Invoke {@link Method} by resolving the fragment that implements a suitable method.
+		 *
+		 * @param listener
+		 * @param repositoryInformation
+		 * @param listener
+		 * @param invokedMethod invoked method as per invocation on the interface.
+		 * @param methodToCall backend method that is backing the call.
+		 * @param args
+		 * @return
+		 * @throws Throwable
+		 */
+		@Nullable
+		Object invoke(RepositoryInvocationListener listener, Method invokedMethod, Method methodToCall, Object[] args)
+				throws Throwable {
 
 			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
 			Optional<?> optional = fragment.getImplementation();
@@ -415,14 +448,14 @@ public class RepositoryComposition {
 				throw new IllegalArgumentException(String.format("No implementation found for method %s", methodToCall));
 			}
 
-			ImplementationInvocationMetadata invocationMetadata = invocationMetadataCache.get(invokedMethod);
+			RepositoryMethodInvoker invocationMetadata = invocationMetadataCache.get(invokedMethod);
 
 			if (invocationMetadata == null) {
-				invocationMetadata = new ImplementationInvocationMetadata(invokedMethod, methodToCall);
+				invocationMetadata = RepositoryMethodInvoker.forFragmentMethod(invokedMethod, optional.get(), methodToCall);
 				invocationMetadataCache.put(invokedMethod, invocationMetadata);
 			}
 
-			return invocationMetadata.invoke(methodToCall, optional.get(), args);
+			return invocationMetadata.invoke(listener, args);
 		}
 
 		private RepositoryFragment<?> findImplementationFragment(Method key) {
