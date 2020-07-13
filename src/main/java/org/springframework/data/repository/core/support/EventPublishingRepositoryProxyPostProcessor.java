@@ -24,7 +24,6 @@ import java.util.function.Supplier;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.AfterDomainEventPublication;
@@ -41,9 +40,8 @@ import org.springframework.util.ReflectionUtils;
  * {@link RepositoryProxyPostProcessor} to register a {@link MethodInterceptor} to intercept
  * {@link CrudRepository#save(Object)} and {@link CrudRepository#delete(Object)} methods and publish events potentially
  * exposed via a method annotated with {@link DomainEvents}. If no such method can be detected on the aggregate root, no
- * interceptor is added. Additionally,
- * the aggregate root can expose a method annotated with {@link AfterDomainEventPublication}. If present, the method
- * will be invoked after all events have been published.
+ * interceptor is added. Additionally, the aggregate root can expose a method annotated with
+ * {@link AfterDomainEventPublication}. If present, the method will be invoked after all events have been published.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -77,7 +75,8 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	}
 
 	/**
-	 * {@link MethodInterceptor} to publish events exposed an aggregate on calls to a save or delete method on the repository.
+	 * {@link MethodInterceptor} to publish events exposed an aggregate on calls to a save or delete method on the
+	 * repository.
 	 *
 	 * @author Oliver Gierke
 	 * @since 1.13
@@ -103,25 +102,34 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
 		 */
 		@Override
-		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
+		@Nullable
+		public Object invoke(MethodInvocation invocation) throws Throwable {
 
-			Object[] arguments = invocation.getArguments();
 			Object result = invocation.proceed();
 
-			String methodName = invocation.getMethod().getName();
-			Object eventSource;
-			if (methodName.startsWith("save")) {
-				eventSource = arguments.length == 1 ? arguments[0] : result;
-			} else if ((methodName.equals("delete") || methodName.equals("deleteAll")) && arguments.length == 1) {
-				eventSource = arguments[0];
-			} else {
+			if (!isEventPublishingMethod(invocation.getMethod())) {
 				return result;
 			}
 
-			eventMethod.publishEventsFrom(eventSource, publisher);
+			Object[] arguments = invocation.getArguments();
+
+			eventMethod.publishEventsFrom(arguments[0], publisher);
 
 			return result;
 		}
+	}
+
+	private static boolean isEventPublishingMethod(Method method) {
+		return method.getParameterCount() == 1 //
+				&& (isSaveMethod(method.getName()) || isDeleteMethod(method.getName()));
+	}
+
+	private static boolean isSaveMethod(String methodName) {
+		return methodName.startsWith("save");
+	}
+
+	private static boolean isDeleteMethod(String methodName) {
+		return methodName.equals("delete") || methodName.equals("deleteAll");
 	}
 
 	/**

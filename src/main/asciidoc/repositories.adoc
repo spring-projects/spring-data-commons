@@ -1090,7 +1090,7 @@ class AnAggregateRoot {
 <2> After all events have been published, we have a method annotated with `@AfterDomainEventPublication`. It can be used to potentially clean the list of events to be published (among other uses).
 ====
 
-The methods are called every time one of a Spring Data repository's `save(…)` methods is called.
+The methods are called every time one of a Spring Data repository's `save(…)`, `saveAll(…)`, `delete(…)` or `deleteAll(…)` methods are called.
 
 [[core.extensions]]
 == Spring Data Extensions
