@@ -142,9 +142,9 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 */
 	boolean shouldUseReflectionEntityInstantiator(PersistentEntity<?, ?> entity) {
 
-		if(IN_NATIVE_IMAGE) {
+		if (IN_NATIVE_IMAGE) {
 
-			if(LOGGER.isDebugEnabled()) {
+			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug(String.format("graalvm.nativeimage - fall back to reflection for %s.", entity.getName()));
 			}
 

@@ -23,7 +23,7 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
  *
  * @author Oliver Gierke
  */
-enum BeanWrapperPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
+public enum BeanWrapperPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
 	INSTANCE;
 

@@ -48,6 +48,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.model.BeanWrapperPropertyAccessorFactory;
 import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessorFactory;
@@ -89,6 +90,8 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, InitializingBean {
 
+	private static final boolean IN_NATIVE_IMAGE = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
+
 	private final Optional<E> NONE = Optional.empty();
 	private final Map<TypeInformation<?>, Optional<E>> persistentEntities = new HashMap<>();
 	private final PersistentPropertyAccessorFactory persistentPropertyAccessorFactory;
@@ -110,7 +113,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		this.persistentPropertyPathFactory = new PersistentPropertyPathFactory<>(this);
 
 		EntityInstantiators instantiators = new EntityInstantiators();
-		ClassGeneratingPropertyAccessorFactory accessorFactory = new ClassGeneratingPropertyAccessorFactory();
+		PersistentPropertyAccessorFactory accessorFactory = IN_NATIVE_IMAGE ? BeanWrapperPropertyAccessorFactory.INSTANCE
+				: new ClassGeneratingPropertyAccessorFactory();
 
 		this.persistentPropertyAccessorFactory = new InstantiationAwarePropertyAccessorFactory(accessorFactory,
 				instantiators);
