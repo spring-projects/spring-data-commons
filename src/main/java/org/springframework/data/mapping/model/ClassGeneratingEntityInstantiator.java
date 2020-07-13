@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
@@ -51,6 +53,9 @@ import org.springframework.util.ClassUtils;
  * @since 1.11
  */
 class ClassGeneratingEntityInstantiator implements EntityInstantiator {
+
+	private static final Log LOGGER = LogFactory.getLog(ClassGeneratingEntityInstantiator.class);
+	private static final boolean IN_NATIVE_IMAGE = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
 
 	private static final Object[] EMPTY_ARGS = new Object[0];
 
@@ -136,6 +141,15 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	boolean shouldUseReflectionEntityInstantiator(PersistentEntity<?, ?> entity) {
+
+		if(IN_NATIVE_IMAGE) {
+
+			if(LOGGER.isDebugEnabled()) {
+				LOGGER.debug(String.format("graalvm.nativeimage - fall back to reflection for %s.", entity.getName()));
+			}
+
+			return true;
+		}
 
 		Class<?> type = entity.getType();
 
