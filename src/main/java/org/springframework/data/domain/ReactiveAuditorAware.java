@@ -15,20 +15,21 @@
  */
 package org.springframework.data.domain;
 
-import java.util.Optional;
+import reactor.core.publisher.Mono;
 
 /**
  * Interface for components that are aware of the application's current auditor. This will be some kind of user mostly.
  *
  * @param <T> the type of the auditing instance.
- * @author Oliver Gierke
+ * @author Mark Paluch
+ * @since 2.4
  */
-public interface AuditorAware<T> {
+public interface ReactiveAuditorAware<T> {
 
 	/**
 	 * Returns the current auditor of the application.
 	 *
-	 * @return the current auditor.
+	 * @return the current auditor. If the mono does not emit a value, the auditor is considered to be unknown.
 	 */
-	Optional<T> getCurrentAuditor();
+	Mono<T> getCurrentAuditor();
 }
