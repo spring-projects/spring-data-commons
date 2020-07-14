@@ -19,10 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Proxy;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.Advisor;
@@ -218,6 +215,57 @@ class ProxyProjectionFactoryUnitTests {
 		assertThat(factory.createProjection(Contact.class, customer)).isSameAs(customer);
 	}
 
+	@Test // DATACMNS-1762
+	void supportsOptionalAsReturnTypeIfEmpty() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+		customer.lastname = "Matthews";
+
+		customer.picture = null;
+
+		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+
+		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
+		assertThat(excerpt.getPicture()).isEmpty();
+	}
+
+	@Test // DATACMNS-1762
+	void supportsOptionalAsReturnTypeIfPresent() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+		customer.lastname = "Matthews";
+
+		customer.picture = new byte[]{1,2,3};
+
+		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+
+		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
+		assertThat(excerpt.getPicture()).hasValueSatisfying(bytes -> {
+			assertThat(bytes).isEqualTo(new byte[]{1,2,3});
+		});
+	}
+
+	@Test // DATACMNS-1762
+	void supportsOptionalWithProjectionAsReturnTypeIfPresent() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+		customer.lastname = "Matthews";
+
+		customer.address = new Address();
+		customer.address.city = "New York";
+		customer.address.zipCode = "ZIP";
+
+		CustomerWithOptionalHavingProjection excerpt = factory.createProjection(CustomerWithOptionalHavingProjection.class, customer);
+
+		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
+		assertThat(excerpt.getAddress()).hasValueSatisfying(addressExcerpt -> {
+			assertThat(addressExcerpt.getZipCode()).isEqualTo("ZIP");
+		});
+	}
+
 	interface Contact {}
 
 	static class Customer implements Contact {
@@ -260,5 +308,17 @@ class ProxyProjectionFactoryUnitTests {
 		String getFirstname();
 
 		void setFirstname(String firstname);
+	}
+
+	interface CustomerWithOptional {
+		String getFirstname();
+
+		Optional<byte[]> getPicture();
+	}
+
+	interface CustomerWithOptionalHavingProjection {
+		String getFirstname();
+
+		Optional<AddressExcerpt> getAddress();
 	}
 }

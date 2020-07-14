@@ -16,11 +16,7 @@
 package org.springframework.data.projection;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.annotation.Nonnull;
@@ -69,12 +65,15 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 
 		Object result = delegate.invoke(invocation);
 
-		if (result == null) {
-			return null;
-		}
-
 		TypeInformation<?> type = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod());
 		Class<?> rawType = type.getType();
+
+		if (result == null) {
+			if(rawType == Optional.class ) {
+				return Optional.empty();
+			}
+			return null;
+		}
 
 		if (type.isCollectionLike() && !ClassUtils.isPrimitiveArray(rawType)) {
 			return projectCollectionElements(asCollection(result), type);
