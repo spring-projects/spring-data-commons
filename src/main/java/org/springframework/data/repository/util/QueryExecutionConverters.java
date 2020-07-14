@@ -366,7 +366,7 @@ public abstract class QueryExecutionConverters {
 		public Set<ConvertiblePair> getConvertibleTypes() {
 
 			return Streamable.of(wrapperTypes)//
-					.map(it -> new ConvertiblePair(NullableWrapper.class, it))//
+					.map(it -> new ConvertiblePair(org.springframework.data.util.NullableWrapper.class, it))//
 					.stream().collect(StreamUtils.toUnmodifiableSet());
 		}
 
@@ -382,7 +382,7 @@ public abstract class QueryExecutionConverters {
 				return null;
 			}
 
-			NullableWrapper wrapper = (NullableWrapper) source;
+			org.springframework.data.util.NullableWrapper wrapper = (org.springframework.data.util.NullableWrapper) source;
 			Object value = wrapper.getValue();
 
 			// TODO: Add Recursive conversion once we move to Spring 4

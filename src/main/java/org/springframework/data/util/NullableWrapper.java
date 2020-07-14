@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.util;
+package org.springframework.data.util;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.lang.Nullable;
 
 /**
  * Simple value object to wrap a nullable delegate. Used to be able to write {@link Converter} implementations that
@@ -24,17 +26,39 @@ import org.springframework.core.convert.converter.Converter;
  * @author Oliver Gierke
  * @since 1.8
  * @see QueryExecutionConverters
- * @deprecated use {@link org.springframework.data.util.NullableWrapper} instead.
  */
-@Deprecated
-public class NullableWrapper extends org.springframework.data.util.NullableWrapper {
+public class NullableWrapper {
+
+	private final @Nullable Object value;
 
 	/**
 	 * Creates a new {@link NullableWrapper} for the given value.
 	 *
 	 * @param value can be {@literal null}.
 	 */
-	public NullableWrapper(Object value) {
-		super(value);
+	public NullableWrapper(@Nullable Object value) {
+		this.value = value;
+	}
+
+	/**
+	 * Returns the type of the contained value. WIll fall back to {@link Object} in case the value is {@literal null}.
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	public Class<?> getValueType() {
+
+		Object value = this.value;
+
+		return value == null ? Object.class : value.getClass();
+	}
+
+	/**
+	 * Returns the backing value.
+	 *
+	 * @return the value can be {@literal null}.
+	 */
+	@Nullable
+	public Object getValue() {
+		return value;
 	}
 }

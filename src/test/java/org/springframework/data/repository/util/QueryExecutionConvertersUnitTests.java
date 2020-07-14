@@ -131,20 +131,20 @@ class QueryExecutionConvertersUnitTests {
 
 	@Test // DATACMNS-483
 	void turnsNullIntoGuavaOptional() {
-		assertThat(conversionService.convert(new NullableWrapper(null), Optional.class)).isEqualTo(Optional.absent());
+		assertThat(conversionService.convert(new org.springframework.data.util.NullableWrapper(null), Optional.class)).isEqualTo(Optional.absent());
 	}
 
 	@Test // DATACMNS-483
 	@SuppressWarnings("unchecked")
 	void turnsNullIntoJdk8Optional() {
-		assertThat(conversionService.convert(new NullableWrapper(null), java.util.Optional.class)).isEmpty();
+		assertThat(conversionService.convert(new org.springframework.data.util.NullableWrapper(null), java.util.Optional.class)).isEmpty();
 	}
 
 	@Test // DATACMNS-714
 	@SuppressWarnings("unchecked")
 	void turnsNullIntoCompletableFutureForNull() throws Exception {
 
-		CompletableFuture<Object> result = conversionService.convert(new NullableWrapper(null), CompletableFuture.class);
+		CompletableFuture<Object> result = conversionService.convert(new org.springframework.data.util.NullableWrapper(null), CompletableFuture.class);
 
 		assertThat(result).isNotNull();
 		assertThat(result.isDone()).isTrue();
@@ -173,7 +173,7 @@ class QueryExecutionConvertersUnitTests {
 
 	@Test // DATACMNS-795
 	void turnsNullIntoScalaOptionEmpty() {
-		assertThat(conversionService.convert(new NullableWrapper(null), Option.class)).isEqualTo(Option.empty());
+		assertThat(conversionService.convert(new org.springframework.data.util.NullableWrapper(null), Option.class)).isEqualTo(Option.empty());
 	}
 
 	@Test // DATACMNS-795
