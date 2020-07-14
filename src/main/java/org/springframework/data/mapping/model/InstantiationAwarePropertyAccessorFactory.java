@@ -25,6 +25,8 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
  * an {@link InstantiationAwarePropertyAccessor} to allow the handling of purely immutable types.
  *
  * @author Oliver Drotbohm
+ * @author Mark Paluch
+ * @since 2.3
  */
 @RequiredArgsConstructor
 public class InstantiationAwarePropertyAccessorFactory implements PersistentPropertyAccessorFactory {
@@ -38,10 +40,8 @@ public class InstantiationAwarePropertyAccessorFactory implements PersistentProp
 	 */
 	@Override
 	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {
-
-		PersistentPropertyAccessor<T> accessor = delegate.getPropertyAccessor(entity, bean);
-
-		return new InstantiationAwarePropertyAccessor<>(accessor, instantiators);
+		return new InstantiationAwarePropertyAccessor<>(bean, it -> delegate.getPropertyAccessor(entity, it),
+				instantiators);
 	}
 
 	/*
