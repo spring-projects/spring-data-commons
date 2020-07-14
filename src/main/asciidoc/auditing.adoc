@@ -41,19 +41,49 @@ In case you use either `@CreatedBy` or `@LastModifiedBy`, the auditing infrastru
 
 The following example shows an implementation of the interface that uses Spring Security's `Authentication` object:
 
-.Implementation of AuditorAware based on Spring Security
+.Implementation of `AuditorAware` based on Spring Security
 ====
 [source, java]
 ----
 class SpringSecurityAuditorAware implements AuditorAware<User> {
 
+  @Override
   public Optional<User> getCurrentAuditor() {
 
     return Optional.ofNullable(SecurityContextHolder.getContext())
-			  .map(SecurityContext::getAuthentication)
-			  .filter(Authentication::isAuthenticated)
-			  .map(Authentication::getPrincipal)
-			  .map(User.class::cast);
+            .map(SecurityContext::getAuthentication)
+            .filter(Authentication::isAuthenticated)
+            .map(Authentication::getPrincipal)
+            .map(User.class::cast);
+  }
+}
+----
+====
+
+The implementation accesses the `Authentication` object provided by Spring Security and looks up the custom `UserDetails` instance that you have created in your `UserDetailsService` implementation. We assume here that you are exposing the domain user through the `UserDetails` implementation but that, based on the `Authentication` found, you could also look it up from anywhere.
+
+[[auditing.reactive-auditor-aware]]
+=== `ReactiveAuditorAware`
+
+When using reactive infrastructure you might want to make use of contextual information to provide `@CreatedBy` or `@LastModifiedBy` information.
+We provide an `ReactiveAuditorAware<T>` SPI interface that you have to implement to tell the infrastructure who the current user or system interacting with the application is. The generic type `T` defines what type the properties annotated with `@CreatedBy` or `@LastModifiedBy` have to be.
+
+The following example shows an implementation of the interface that uses reactive Spring Security's `Authentication` object:
+
+.Implementation of `ReactiveAuditorAware` based on Spring Security
+====
+[source, java]
+----
+class SpringSecurityAuditorAware implements ReactiveAuditorAware<User> {
+
+  @Override
+  public Mono<User> getCurrentAuditor() {
+
+    return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .filter(Authentication::isAuthenticated)
+                .map(Authentication::getPrincipal)
+                .map(User.class::cast);
   }
 }
 ----
