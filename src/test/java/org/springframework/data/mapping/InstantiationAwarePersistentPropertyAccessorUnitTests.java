@@ -20,9 +20,9 @@ import static org.assertj.core.api.Assertions.*;
 import lombok.Value;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
+import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessor;
 
 /**
@@ -31,10 +31,10 @@ import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessor
  * @author Oliver Drotbohm
  * @author Mark Paluch
  */
-public class InstantiationAwarePersistentPropertyAccessorUnitTests {
+class InstantiationAwarePersistentPropertyAccessorUnitTests {
 
 	@Test // DATACMNS-1639
-	public void shouldCreateNewInstance() {
+	void shouldCreateNewInstance() {
 
 		EntityInstantiators instantiators = new EntityInstantiators();
 		SampleMappingContext context = new SampleMappingContext();
@@ -52,7 +52,7 @@ public class InstantiationAwarePersistentPropertyAccessorUnitTests {
 	}
 
 	@Test // DATACMNS-1768
-	public void shouldSetMultipleProperties() {
+	void shouldSetMultipleProperties() {
 
 		EntityInstantiators instantiators = new EntityInstantiators();
 		SampleMappingContext context = new SampleMappingContext();

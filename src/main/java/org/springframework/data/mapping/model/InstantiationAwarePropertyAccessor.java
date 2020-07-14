@@ -52,7 +52,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 	 *
 	 * @param delegate must not be {@literal null}.
 	 * @param instantiators must not be {@literal null}.
-	 * @deprecated since 2.4. Using this constructor allows only setting a single property as
+	 * @deprecated since 2.3.2. Using this constructor allows only setting a single property as
 	 *             {@link PersistentPropertyAccessor} holds a reference to the initial bean state.
 	 */
 	@Deprecated
@@ -74,6 +74,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 	 * @param bean must not be {@literal null}.
 	 * @param accessorFunction must not be {@literal null}.
 	 * @param instantiators must not be {@literal null}.
+	 * @since 2.3.2
 	 */
 	public InstantiationAwarePropertyAccessor(T bean, Function<T, PersistentPropertyAccessor<T>> accessorFunction,
 			EntityInstantiators instantiators) {
@@ -117,7 +118,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 					String.format(NO_CONSTRUCTOR_PARAMETER, property.getName(), constructor.getConstructor()));
 		}
 
-		constructor.getParameters().stream().forEach(it -> {
+		constructor.getParameters().forEach(it -> {
 
 			if (it.getName() == null) {
 				throw new IllegalStateException(
