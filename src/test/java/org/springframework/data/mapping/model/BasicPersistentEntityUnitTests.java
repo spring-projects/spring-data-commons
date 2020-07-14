@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -186,7 +187,8 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 				.hasMessageContaining("Required property foo not found");
 	}
 
-	@Test // DATACMNS-809
+	@Test // DATACMNS-809, DATACMNS-1768
+	@SuppressWarnings("rawtypes")
 	void returnsGeneratedPropertyAccessorForPropertyAccessor() {
 
 		SampleMappingContext context = new SampleMappingContext();
@@ -196,11 +198,12 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
 
 		assertThat(accessor).isNotInstanceOf(BeanWrapper.class);
-
 		assertThat(accessor).isInstanceOfSatisfying(InstantiationAwarePropertyAccessor.class, it -> {
 
-			PersistentPropertyAccessor delegate = (PersistentPropertyAccessor) ReflectionTestUtils.getField(it, "delegate");
+			Function<Object, PersistentPropertyAccessor<Object>> delegateFunction = (Function<Object, PersistentPropertyAccessor<Object>>) ReflectionTestUtils
+					.getField(it, "delegateFunction");
 
+			PersistentPropertyAccessor<Object> delegate = delegateFunction.apply(value);
 			assertThat(delegate.getClass().getName()).contains("_Accessor_");
 			assertThat(delegate.getBean()).isEqualTo(value);
 		});

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,15 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessor;
 
 /**
+ * Unit tests for {@link InstantiationAwarePropertyAccessor}.
+ *
  * @author Oliver Drotbohm
+ * @author Mark Paluch
  */
 public class InstantiationAwarePersistentPropertyAccessorUnitTests {
 
-	@Test
-	public void testname() {
+	@Test // DATACMNS-1639
+	public void shouldCreateNewInstance() {
 
 		EntityInstantiators instantiators = new EntityInstantiators();
 		SampleMappingContext context = new SampleMappingContext();
@@ -46,6 +49,25 @@ public class InstantiationAwarePersistentPropertyAccessorUnitTests {
 		wrapper.setProperty(entity.getRequiredPersistentProperty("firstname"), "Oliver August");
 
 		assertThat(wrapper.getBean()).isEqualTo(new Sample("Oliver August", "Matthews", 42));
+	}
+
+	@Test // DATACMNS-1768
+	public void shouldSetMultipleProperties() {
+
+		EntityInstantiators instantiators = new EntityInstantiators();
+		SampleMappingContext context = new SampleMappingContext();
+
+		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Sample.class);
+
+		Sample bean = new Sample("Dave", "Matthews", 42);
+
+		PersistentPropertyAccessor<Sample> wrapper = new InstantiationAwarePropertyAccessor<>(bean,
+				entity::getPropertyAccessor, instantiators);
+
+		wrapper.setProperty(entity.getRequiredPersistentProperty("firstname"), "Oliver August");
+		wrapper.setProperty(entity.getRequiredPersistentProperty("lastname"), "Heisenberg");
+
+		assertThat(wrapper.getBean()).isEqualTo(new Sample("Oliver August", "Heisenberg", 42));
 	}
 
 	@Value
