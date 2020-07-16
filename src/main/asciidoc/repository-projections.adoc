@@ -197,6 +197,30 @@ interface NamesOnly {
 
 Again, for more complex expressions, you should use a Spring bean and let the expression invoke a method, as described  <<projections.interfaces.open.bean-reference,earlier>>.
 
+[[projections.interfaces.nullable-wrappers]]
+=== Nullable Wrappers
+
+Getters in projection interfaces can make use of nullable wrappers for improved null-safety. Currently supported wrapper types are:
+
+* `java.util.Optional`
+* `com.google.common.base.Optional`
+* `scala.Option`
+* `io.vavr.control.Option`
+
+.A projection interface using nullable wrappers
+====
+[source, java]
+----
+interface NamesOnly {
+
+  Optional<String> getFirstname();
+}
+----
+====
+
+If the underlying projection value is not `null`, then values are returned using the present-representation of the wrapper type.
+In case the backing value is `null`, then the getter method returns the empty representation of the used wrapper type.
+
 [[projections.dtos]]
 == Class-based Projections (DTOs)
 
