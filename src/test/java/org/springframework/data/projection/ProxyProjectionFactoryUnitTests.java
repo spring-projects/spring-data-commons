@@ -225,7 +225,6 @@ class ProxyProjectionFactoryUnitTests {
 	void supportsOptionalAsReturnTypeIfEmpty() {
 
 		Customer customer = new Customer();
-
 		customer.picture = null;
 
 		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
@@ -237,7 +236,6 @@ class ProxyProjectionFactoryUnitTests {
 	void supportsOptionalAsReturnTypeIfPresent() {
 
 		Customer customer = new Customer();
-
 		customer.picture = new byte[] { 1, 2, 3 };
 
 		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
