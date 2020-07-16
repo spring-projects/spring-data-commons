@@ -83,22 +83,6 @@ class QueryExecutionConvertersUnitTests {
 	}
 
 	@Test // DATACMNS-836
-	void registersReactiveWrapperTypes() {
-
-		assertThat(QueryExecutionConverters.supports(Publisher.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(Mono.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(Flux.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(Single.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(Completable.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(Observable.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(io.reactivex.Single.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(io.reactivex.Maybe.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(io.reactivex.Completable.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(io.reactivex.Flowable.class)).isTrue();
-		assertThat(QueryExecutionConverters.supports(io.reactivex.Observable.class)).isTrue();
-	}
-
-	@Test // DATACMNS-836
 	void registersUnwrapperTypes() {
 
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Optional.class)).isTrue();

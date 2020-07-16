@@ -44,6 +44,7 @@ import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.repository.util.ReactiveWrappers.ReactiveLibrary;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -147,6 +148,21 @@ public abstract class ReactiveWrapperConverters {
 	public static boolean supports(Class<?> type) {
 		return RegistryHolder.REACTIVE_ADAPTER_REGISTRY != null
 				&& RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(type) != null;
+	}
+
+	/**
+	 * Recursively unwraps well known wrapper types from the given {@link TypeInformation}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	public static TypeInformation<?> unwrapWrapperTypes(TypeInformation<?> type) {
+
+		Assert.notNull(type, "type must not be null");
+
+		Class<?> rawType = type.getType();
+
+		return supports(rawType) ? unwrapWrapperTypes(type.getRequiredComponentType()) : type;
 	}
 
 	/**

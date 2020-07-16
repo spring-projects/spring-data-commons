@@ -27,6 +27,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.KotlinReflectionUtils;
@@ -105,7 +106,14 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
 	 */
 	public Class<?> getReturnedDomainClass(Method method) {
-		return QueryExecutionConverters.unwrapWrapperTypes(getReturnType(method)).getType();
+
+		TypeInformation<?> returnType = getReturnType(method);
+
+		if (ReactiveWrapperConverters.supports(returnType.getType())) {
+			return ReactiveWrapperConverters.unwrapWrapperTypes(returnType).getType();
+		}
+
+		return QueryExecutionConverters.unwrapWrapperTypes(returnType).getType();
 	}
 
 	/*

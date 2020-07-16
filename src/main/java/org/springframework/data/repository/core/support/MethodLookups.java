@@ -38,6 +38,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.MethodLookup.MethodPredicate;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -299,8 +300,7 @@ interface MethodLookups {
 
 			Assert.notNull(parameterType, "Parameter type must not be null!");
 
-			return QueryExecutionConverters.supports(parameterType)
-					&& !QueryExecutionConverters.supportsUnwrapping(parameterType);
+			return ReactiveWrappers.supports(parameterType);
 		}
 
 		/**

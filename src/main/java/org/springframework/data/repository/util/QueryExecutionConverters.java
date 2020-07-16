@@ -168,10 +168,6 @@ public abstract class QueryExecutionConverters {
 				}
 			}
 
-			if (ReactiveWrappers.supports(type)) {
-				return true;
-			}
-
 			return false;
 		});
 	}
