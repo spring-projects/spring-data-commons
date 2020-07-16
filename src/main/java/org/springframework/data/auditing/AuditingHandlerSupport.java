@@ -21,7 +21,6 @@ import java.util.Optional;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.log.LogMessage;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -36,11 +35,11 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.4
  */
-public abstract class AuditingHandlerSupport implements InitializingBean {
+public abstract class AuditingHandlerSupport {
 
 	private static final Log logger = LogFactory.getLog(AuditingHandlerSupport.class);
 
-	private final DefaultAuditableBeanWrapperFactory factory;
+	private final AuditableBeanWrapperFactory factory;
 
 	private DateTimeProvider dateTimeProvider = CurrentDateTimeProvider.INSTANCE;
 	private boolean dateTimeForNow = true;
@@ -83,27 +82,21 @@ public abstract class AuditingHandlerSupport implements InitializingBean {
 	/**
 	 * Sets the {@link DateTimeProvider} to be used to determine the dates to be set.
 	 *
-	 * @param dateTimeProvider
+	 * @param dateTimeProvider can be {@literal null}, defaults to {@link CurrentDateTimeProvider} in that case.
 	 */
 	public void setDateTimeProvider(@Nullable DateTimeProvider dateTimeProvider) {
 		this.dateTimeProvider = dateTimeProvider == null ? CurrentDateTimeProvider.INSTANCE : dateTimeProvider;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
-	public void afterPropertiesSet() {}
-
 	/**
-	 * Returns whether the given source is considered to be auditable in the first place
+	 * Returns whether the given source is considered to be auditable in the first place.
 	 *
 	 * @param source must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the given {@literal source} considered to be auditable.
 	 */
 	protected final boolean isAuditable(Object source) {
 
-		Assert.notNull(source, "Source must not be null!");
+		Assert.notNull(source, "Source entity must not be null!");
 
 		return factory.getBeanWrapperFor(source).isPresent();
 	}
@@ -111,12 +104,12 @@ public abstract class AuditingHandlerSupport implements InitializingBean {
 	/**
 	 * Marks the given object as created.
 	 *
-	 * @param auditor
-	 * @param source
+	 * @param auditor can be {@literal null}.
+	 * @param source must not be {@literal null}.
 	 */
-	<T> T markCreated(@Nullable Object auditor, T source) {
+	<T> T markCreated(Auditor auditor, T source) {
 
-		Assert.notNull(source, "Entity must not be null!");
+		Assert.notNull(source, "Source entity must not be null!");
 
 		return touch(auditor, source, true);
 	}
@@ -127,28 +120,26 @@ public abstract class AuditingHandlerSupport implements InitializingBean {
 	 * @param auditor
 	 * @param source
 	 */
-	<T> T markModified(@Nullable Object auditor, T source) {
+	<T> T markModified(Auditor auditor, T source) {
 
-		Assert.notNull(source, "Entity must not be null!");
+		Assert.notNull(source, "Source entity must not be null!");
 
 		return touch(auditor, source, false);
 	}
 
-	private <T> T touch(@Nullable Object auditor, T target, boolean isNew) {
+	private <T> T touch(Auditor auditor, T target, boolean isNew) {
 
 		Optional<AuditableBeanWrapper<T>> wrapper = factory.getBeanWrapperFor(target);
 
 		return wrapper.map(it -> {
 
-			if (auditor != null) {
-				touchAuditor(auditor, it, isNew);
-			}
+			touchAuditor(auditor, it, isNew);
 			Optional<TemporalAccessor> now = dateTimeForNow ? touchDate(it, isNew) : Optional.empty();
 
 			if (logger.isDebugEnabled()) {
 
 				Object defaultedNow = now.map(Object::toString).orElse("not set");
-				Object defaultedAuditor = auditor != null ? auditor.toString() : "unknown";
+				Object defaultedAuditor = auditor.isPresent() ? auditor.toString() : "unknown";
 
 				logger.debug(
 						LogMessage.format("Touched %s - Last modification at %s by %s", target, defaultedNow, defaultedAuditor));
@@ -166,17 +157,20 @@ public abstract class AuditingHandlerSupport implements InitializingBean {
 	 * @param isNew
 	 * @return
 	 */
-	private void touchAuditor(Object auditor, AuditableBeanWrapper<?> wrapper, boolean isNew) {
+	private void touchAuditor(Auditor auditor, AuditableBeanWrapper<?> wrapper, boolean isNew) {
+
+		if(!auditor.isPresent()) {
+			return;
+		}
 
 		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null!");
-		Assert.notNull(auditor, "Auditor must not be null!");
 
 		if (isNew) {
-			wrapper.setCreatedBy(auditor);
+			wrapper.setCreatedBy(auditor.getValue());
 		}
 
 		if (!isNew || modifyOnCreation) {
-			wrapper.setLastModifiedBy(auditor);
+			wrapper.setLastModifiedBy(auditor.getValue());
 		}
 	}
 

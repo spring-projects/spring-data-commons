@@ -17,8 +17,6 @@ package org.springframework.data.auditing;
 
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
-
 import org.springframework.data.domain.ReactiveAuditorAware;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.util.Assert;
@@ -27,6 +25,7 @@ import org.springframework.util.Assert;
  * Auditing handler to mark entity objects created and modified.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.4
  */
 public class ReactiveAuditingHandler extends AuditingHandlerSupport {
@@ -34,8 +33,8 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 	private ReactiveAuditorAware<?> auditorAware = Mono::empty;
 
 	/**
-	 * Creates a new {@link AuditableBeanWrapper} using the given {@link PersistentEntities} when looking up auditing
-	 * metadata via reflection.
+	 * Creates a new {@link ReactiveAuditingHandler} using the given {@link PersistentEntities} when looking up auditing
+	 * metadata.
 	 *
 	 * @param entities must not be {@literal null}.
 	 */
@@ -63,9 +62,8 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 
 		Assert.notNull(source, "Entity must not be null!");
 
-		return auditorAware.getCurrentAuditor().map(Optional::of) //
-				.defaultIfEmpty(Optional.empty()) //
-				.map(auditor -> markCreated(auditor.orElse(null), source));
+		return getAuditor() //
+				.map(auditor -> markCreated(auditor, source));
 	}
 
 	/**
@@ -77,8 +75,14 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 
 		Assert.notNull(source, "Entity must not be null!");
 
-		return auditorAware.getCurrentAuditor().map(Optional::of) //
-				.defaultIfEmpty(Optional.empty()) //
-				.map(auditor -> markModified(auditor.orElse(null), source));
+		return getAuditor() //
+				.map(auditor -> markModified(auditor, source));
+	}
+
+	private Mono<? extends Auditor<?>> getAuditor() {
+
+		return auditorAware.getCurrentAuditor() //
+				.map(Auditor::of) //
+				.defaultIfEmpty(Auditor.none());
 	}
 }

@@ -36,6 +36,7 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  * Unit test for {@code AuditingHandler}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.5
  */
 @SuppressWarnings("unchecked")
@@ -175,6 +176,27 @@ class AuditingHandlerUnitTests {
 
 		assertThat(result.created).isNotNull();
 		assertThat(result.modified).isNotNull();
+	}
+
+	@Test // DATACMNS-1231
+	void getAuditorGetsAuditorNoneWhenNoAuditorAwareNotPresent() {
+		assertThat(handler.getAuditor()).isEqualTo(Auditor.none());
+	}
+
+	@Test // DATACMNS-1231
+	void getAuditorGetsAuditorWhenPresent() {
+
+		handler.setAuditorAware(auditorAware);
+		assertThat(handler.getAuditor()).isEqualTo(Auditor.of(user));
+	}
+
+	@Test // DATACMNS-1231
+	void getAuditorShouldReturnNoneIfAuditorAwareDoesNotHoldObject() {
+
+		when(auditorAware.getCurrentAuditor()).thenReturn(Optional.empty());
+
+		handler.setAuditorAware(auditorAware);
+		assertThat(handler.getAuditor()).isEqualTo(Auditor.none());
 	}
 
 	static abstract class AbstractModel {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,10 @@ import reactor.core.publisher.Mono;
 public interface ReactiveAuditorAware<T> {
 
 	/**
-	 * Returns the current auditor of the application.
+	 * Returns a {@link Mono} publishing the current auditor of the application.
 	 *
-	 * @return the current auditor. If the mono does not emit a value, the auditor is considered to be unknown.
+	 * @return the {@link Mono} emitting the current auditor, or an empty one, if the auditor is considered to be unknown.
 	 */
 	Mono<T> getCurrentAuditor();
+
 }

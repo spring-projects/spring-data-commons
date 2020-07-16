@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.time.Instant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -62,7 +61,7 @@ class ReactiveAuditingHandlerUnitTests {
 		when(auditorAware.getCurrentAuditor()).thenReturn(Mono.just(user));
 	}
 
-	@Test
+	@Test // DATACMNS-1231
 	void markCreatedShouldSetDatesIfAuditorNotSet() {
 
 		Immutable immutable = new Immutable(null, null, null, null);
@@ -79,7 +78,7 @@ class ReactiveAuditingHandlerUnitTests {
 		assertThat(immutable.getCreatedDate()).isNull();
 	}
 
-	@Test
+	@Test // DATACMNS-1231
 	void markModifiedSetsModifiedFields() {
 
 		AuditedUser audited = new AuditedUser();

@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mapping.PersistentEntity;
@@ -90,7 +89,7 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 
 		Assert.notNull(source, "Entity must not be null!");
 
-		return markCreated(auditorAware.flatMap(AuditorAware::getCurrentAuditor).orElse(null), source);
+		return markCreated(getAuditor(), source);
 	}
 
 	/**
@@ -102,7 +101,13 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 
 		Assert.notNull(source, "Entity must not be null!");
 
-		return markModified(auditorAware.flatMap(AuditorAware::getCurrentAuditor).orElse(null), source);
+		return markModified(getAuditor(), source);
+	}
+
+	Auditor<?> getAuditor() {
+
+		return auditorAware.map(AuditorAware::getCurrentAuditor).map(Auditor::ofOptional) //
+				.orElse(Auditor.none());
 	}
 
 	/*
@@ -110,8 +115,6 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	public void afterPropertiesSet() {
-
-		super.afterPropertiesSet();
 
 		if (!auditorAware.isPresent()) {
 			logger.debug("No AuditorAware set! Auditing will not be applied!");
