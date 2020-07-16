@@ -28,6 +28,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.domain.Auditor;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -36,6 +37,7 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  * Unit test for {@code AuditingHandler}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.5
  */
 @SuppressWarnings("unchecked")
@@ -54,6 +56,7 @@ class AuditingHandlerUnitTests {
 
 		auditorAware = mock(AuditorAware.class);
 		when(auditorAware.getCurrentAuditor()).thenReturn(Optional.of(user));
+		when(auditorAware.getAuditor()).thenCallRealMethod();
 	}
 
 	protected AuditingHandler getHandler() {
@@ -175,6 +178,27 @@ class AuditingHandlerUnitTests {
 
 		assertThat(result.created).isNotNull();
 		assertThat(result.modified).isNotNull();
+	}
+
+	@Test // DATACMNS-1231
+	void getAuditorGetsAuditorNoneWhenNoAuditorAwareNotPresent() {
+		assertThat(handler.getAuditor()).isEqualTo(Auditor.none());
+	}
+
+	@Test // DATACMNS-1231
+	void getAuditorGetsAuditorWhenPresent() {
+
+		handler.setAuditorAware(auditorAware);
+		assertThat(handler.getAuditor()).isEqualTo(Auditor.of(user));
+	}
+
+	@Test // DATACMNS-1231
+	void getAuditorShouldReturnNoneIfAuditorAwareDoesNotHoldObject() {
+
+		when(auditorAware.getCurrentAuditor()).thenReturn(Optional.empty());
+
+		handler.setAuditorAware(auditorAware);
+		assertThat(handler.getAuditor()).isEqualTo(Auditor.none());
 	}
 
 	static abstract class AbstractModel {

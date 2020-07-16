@@ -22,6 +22,7 @@ import java.util.Optional;
  *
  * @param <T> the type of the auditing instance.
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public interface AuditorAware<T> {
 
@@ -31,4 +32,14 @@ public interface AuditorAware<T> {
 	 * @return the current auditor.
 	 */
 	Optional<T> getCurrentAuditor();
+
+	/**
+	 * Returns the current {@link Auditor} of the application.
+	 *
+	 * @return the current {@link Auditor}, {@link Auditor#none() none} if not present.
+	 * @since 2.4
+	 */
+	default Auditor<T> getAuditor() {
+		return Auditor.ofOptional(getCurrentAuditor());
+	}
 }
