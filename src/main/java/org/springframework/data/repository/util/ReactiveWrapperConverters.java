@@ -155,6 +155,7 @@ public abstract class ReactiveWrapperConverters {
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return will never be {@literal null}.
+	 * @since 2.4
 	 */
 	public static TypeInformation<?> unwrapWrapperTypes(TypeInformation<?> type) {
 

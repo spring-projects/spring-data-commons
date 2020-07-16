@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.Advisor;
@@ -34,6 +35,8 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Unit tests for {@link ProxyProjectionFactory}.
  *
  * @author Oliver Gierke
+ * @author Wim Deblauwe
+ * @author Mark Paluch
  */
 class ProxyProjectionFactoryUnitTests {
 
@@ -218,6 +221,61 @@ class ProxyProjectionFactoryUnitTests {
 		assertThat(factory.createProjection(Contact.class, customer)).isSameAs(customer);
 	}
 
+	@Test // DATACMNS-1762
+	void supportsOptionalAsReturnTypeIfEmpty() {
+
+		Customer customer = new Customer();
+		customer.picture = null;
+
+		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+
+		assertThat(excerpt.getPicture()).isEmpty();
+	}
+
+	@Test // DATACMNS-1762
+	void supportsOptionalAsReturnTypeIfPresent() {
+
+		Customer customer = new Customer();
+		customer.picture = new byte[] { 1, 2, 3 };
+
+		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+
+		assertThat(excerpt.getPicture()).hasValueSatisfying(bytes -> {
+			assertThat(bytes).isEqualTo(new byte[] { 1, 2, 3 });
+		});
+	}
+
+	@Test // DATACMNS-1762
+	void supportsOptionalBackedByOptional() {
+
+		Customer customer = new Customer();
+		customer.optional = Optional.of("foo");
+
+		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+
+		assertThat(excerpt.getOptional()).hasValue("foo");
+	}
+
+	@Test // DATACMNS-1762
+	void supportsOptionalWithProjectionAsReturnTypeIfPresent() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+		customer.lastname = "Matthews";
+
+		customer.address = new Address();
+		customer.address.city = "New York";
+		customer.address.zipCode = "ZIP";
+
+		CustomerWithOptionalHavingProjection excerpt = factory.createProjection(CustomerWithOptionalHavingProjection.class,
+				customer);
+
+		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
+		assertThat(excerpt.getAddress()).hasValueSatisfying(addressExcerpt -> {
+			assertThat(addressExcerpt.getZipCode()).isEqualTo("ZIP");
+		});
+	}
+
 	interface Contact {}
 
 	static class Customer implements Contact {
@@ -228,6 +286,7 @@ class ProxyProjectionFactoryUnitTests {
 		byte[] picture;
 		Address[] shippingAddresses;
 		Map<String, Object> data;
+		Optional<String> optional;
 	}
 
 	static class Address {
@@ -260,5 +319,21 @@ class ProxyProjectionFactoryUnitTests {
 		String getFirstname();
 
 		void setFirstname(String firstname);
+	}
+
+	interface CustomerWithOptional {
+
+		String getFirstname();
+
+		Optional<byte[]> getPicture();
+
+		Optional<String> getOptional();
+	}
+
+	interface CustomerWithOptionalHavingProjection {
+
+		String getFirstname();
+
+		Optional<AddressExcerpt> getAddress();
 	}
 }
