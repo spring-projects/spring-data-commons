@@ -20,7 +20,6 @@ import java.util.Optional;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.domain.Auditor;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -107,7 +106,7 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 
 	Auditor<?> getAuditor() {
 
-		return auditorAware.map(AuditorAware::getAuditor) //
+		return auditorAware.map(AuditorAware::getCurrentAuditor).map(Auditor::ofOptional) //
 				.orElse(Auditor.none());
 	}
 

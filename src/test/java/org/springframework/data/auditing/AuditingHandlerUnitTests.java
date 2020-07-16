@@ -28,7 +28,6 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.domain.Auditor;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -56,7 +55,6 @@ class AuditingHandlerUnitTests {
 
 		auditorAware = mock(AuditorAware.class);
 		when(auditorAware.getCurrentAuditor()).thenReturn(Optional.of(user));
-		when(auditorAware.getAuditor()).thenCallRealMethod();
 	}
 
 	protected AuditingHandler getHandler() {

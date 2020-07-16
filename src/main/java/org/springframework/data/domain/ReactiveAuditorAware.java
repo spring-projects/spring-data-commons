@@ -33,11 +33,4 @@ public interface ReactiveAuditorAware<T> {
 	 */
 	Mono<T> getCurrentAuditor();
 
-	default Mono<Auditor<T>> getAuditor() {
-
-		return getCurrentAuditor() //
-				.map(Auditor::of) //
-				.defaultIfEmpty(Auditor.none());
-	}
-
 }

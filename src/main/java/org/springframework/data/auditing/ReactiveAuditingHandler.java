@@ -62,7 +62,7 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 
 		Assert.notNull(source, "Entity must not be null!");
 
-		return auditorAware.getAuditor() //
+		return getAuditor() //
 				.map(auditor -> markCreated(auditor, source));
 	}
 
@@ -75,7 +75,14 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 
 		Assert.notNull(source, "Entity must not be null!");
 
-		return auditorAware.getAuditor() //
+		return getAuditor() //
 				.map(auditor -> markModified(auditor, source));
+	}
+
+	private Mono<? extends Auditor<?>> getAuditor() {
+
+		return auditorAware.getCurrentAuditor() //
+				.map(Auditor::of) //
+				.defaultIfEmpty(Auditor.none());
 	}
 }

@@ -59,7 +59,6 @@ class ReactiveAuditingHandlerUnitTests {
 
 		auditorAware = mock(ReactiveAuditorAware.class);
 		when(auditorAware.getCurrentAuditor()).thenReturn(Mono.just(user));
-		when(auditorAware.getAuditor()).thenCallRealMethod();
 	}
 
 	@Test // DATACMNS-1231

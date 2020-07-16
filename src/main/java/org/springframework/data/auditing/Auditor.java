@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.domain;
+package org.springframework.data.auditing;
 
 import java.util.Optional;
 
@@ -26,7 +26,7 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  * @since 2.4
  */
-public class Auditor<T> {
+class Auditor<T> {
 
 	private static final Auditor NONE = new Auditor(null) {
 

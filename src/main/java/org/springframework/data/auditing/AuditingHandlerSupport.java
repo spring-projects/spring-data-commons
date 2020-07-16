@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.core.log.LogMessage;
 import org.springframework.data.domain.Auditable;
-import org.springframework.data.domain.Auditor;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
