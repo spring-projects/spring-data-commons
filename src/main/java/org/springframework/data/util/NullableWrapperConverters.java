@@ -494,7 +494,7 @@ public abstract class NullableWrapperConverters {
 		}
 	}
 
-	public static final class WrapperType {
+	private static final class WrapperType {
 
 		private WrapperType(Class<?> type, Cardinality cardinality) {
 			this.type = type;
