@@ -26,8 +26,9 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -47,8 +48,14 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  */
 class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware {
 
+	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
+
+	static {
+		NullableWrapperConverters.registerConvertersIn(CONVERSION_SERVICE);
+		CONVERSION_SERVICE.removeConvertible(Object.class, Object.class);
+	}
+
 	private final List<MethodInterceptorFactory> factories;
-	private final ConversionService conversionService;
 	private final Map<Class<?>, ProjectionInformation> projectionInformationCache = new ConcurrentReferenceHashMap<>();
 	private @Nullable ClassLoader classLoader;
 
@@ -60,8 +67,6 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		this.factories = new ArrayList<>();
 		this.factories.add(MapAccessingMethodInterceptorFactory.INSTANCE);
 		this.factories.add(PropertyAccessingMethodInvokerFactory.INSTANCE);
-
-		this.conversionService = DefaultConversionService.getSharedInstance();
 	}
 
 	/*
@@ -174,7 +179,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 				.createMethodInterceptor(source, projectionType);
 
 		return new ProjectingMethodInterceptor(this,
-				postProcessAccessorInterceptor(propertyInvocationInterceptor, source, projectionType), conversionService);
+				postProcessAccessorInterceptor(propertyInvocationInterceptor, source, projectionType), CONVERSION_SERVICE);
 	}
 
 	/**

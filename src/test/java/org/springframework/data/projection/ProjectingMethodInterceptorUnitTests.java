@@ -74,12 +74,11 @@ class ProjectingMethodInterceptorUnitTests {
 		assertThat(methodInterceptor.invoke(invocation)).isEqualTo("Foo");
 	}
 
-	@Test // DATAREST-221
+	@Test // DATAREST-221, DATACMNS-1762
 	void returnsNullAsIs() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
-
-		when(interceptor.invoke(invocation)).thenReturn(null);
+		mockInvocationOf("getString", null);
 
 		assertThat(methodInterceptor.invoke(invocation)).isNull();
 	}

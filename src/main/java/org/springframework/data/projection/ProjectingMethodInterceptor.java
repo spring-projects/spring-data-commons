@@ -31,6 +31,8 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.NullableWrapper;
+import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -67,23 +69,43 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	@Override
 	public Object invoke(@SuppressWarnings("null") @Nonnull MethodInvocation invocation) throws Throwable {
 
+		TypeInformation<?> type = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod());
+		TypeInformation<?> resultType = type;
+		TypeInformation<?> typeToReturn = type;
+
 		Object result = delegate.invoke(invocation);
+		boolean applyWrapper = false;
+
+		if (NullableWrapperConverters.supports(type.getType())
+				&& (result == null || !NullableWrapperConverters.supports(result.getClass()))) {
+			resultType = NullableWrapperConverters.unwrapActualType(typeToReturn);
+			applyWrapper = true;
+		}
+
+		result = potentiallyConvertResult(resultType, result);
+
+		if (applyWrapper) {
+			return conversionService.convert(new NullableWrapper(result), typeToReturn.getType());
+		}
+
+		return result;
+	}
+
+	@Nullable
+	protected Object potentiallyConvertResult(TypeInformation<?> type, @Nullable Object result) {
 
 		if (result == null) {
 			return null;
 		}
 
-		TypeInformation<?> type = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod());
-		Class<?> rawType = type.getType();
-
-		if (type.isCollectionLike() && !ClassUtils.isPrimitiveArray(rawType)) {
+		if (type.isCollectionLike() && !ClassUtils.isPrimitiveArray(type.getType())) {
 			return projectCollectionElements(asCollection(result), type);
 		} else if (type.isMap()) {
 			return projectMapValues((Map<?, ?>) result, type);
-		} else if (conversionRequiredAndPossible(result, rawType)) {
-			return conversionService.convert(result, rawType);
+		} else if (conversionRequiredAndPossible(result, type.getType())) {
+			return conversionService.convert(result, type.getType());
 		} else {
-			return getProjection(result, rawType);
+			return getProjection(result, type.getType());
 		}
 	}
 
