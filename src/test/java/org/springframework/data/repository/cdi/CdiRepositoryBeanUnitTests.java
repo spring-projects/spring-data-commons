@@ -37,7 +37,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
@@ -58,6 +57,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Ariel Carrera
+ * @author Kyrylo Merzlikin
  */
 @ExtendWith(MockitoExtension.class)
 class CdiRepositoryBeanUnitTests {
@@ -171,8 +171,8 @@ class CdiRepositoryBeanUnitTests {
 
 		ImplementationLookupConfiguration configuration = captor.getValue();
 
-		assertThat(configuration.getImplementationBeanName()).isEqualTo("cdiRepositoryBeanUnitTests.SampleRepositoryImpl");
-		assertThat(configuration.getImplementationClassName()).isEqualTo("CdiRepositoryBeanUnitTests.SampleRepositoryImpl");
+		assertThat(configuration.getImplementationBeanName()).isEqualTo("sampleRepositoryImpl");
+		assertThat(configuration.getImplementationClassName()).isEqualTo("SampleRepositoryImpl");
 	}
 
 	@Test // DATACMNS-1233

@@ -15,18 +15,13 @@
  */
 package org.springframework.data.repository.cdi;
 
-import java.io.Serializable;
-
-import org.springframework.data.repository.Repository;
-
 /**
- * @author Mark Paluch
  * @author Kyrylo Merzlikin
  */
-interface ComposedRepository extends Repository<Object, Serializable>, FragmentInterface, AnotherFragmentInterface,
-		RepositoryFragments.NestedFragmentInterface {
+public interface RepositoryFragments {
 
-	// duplicate method shadowed by AnotherFragmentInterfaceImpl. The legacy custom implementation comes last, after all
-	// other fragments.
-	int getShadowed();
+	interface NestedFragmentInterface {
+
+		String getKey();
+	}
 }

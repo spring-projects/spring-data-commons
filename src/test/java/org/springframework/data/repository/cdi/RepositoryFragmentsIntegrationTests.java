@@ -17,17 +17,21 @@ package org.springframework.data.repository.cdi;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.io.Serializable;
+
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.repository.Repository;
 
 /**
  * CDI integration tests for composed repositories.
- * 
+ *
  * @author Mark Paluch
+ * @author Kyrylo Merzlikin
  */
 class RepositoryFragmentsIntegrationTests {
 
@@ -66,6 +70,24 @@ class RepositoryFragmentsIntegrationTests {
 		assertThat(shadowed.getPriority()).isEqualTo(2);
 	}
 
+	@Test // DATACMNS-1754
+	void shouldFindCustomImplementationForNestedRepository() {
+
+		NestedRepository repository = getBean(NestedRepository.class);
+
+		assertThat(repository.getCustom()).isEqualTo("CustomImpl");
+	}
+
+	@Test // DATACMNS-1754
+	void shouldFindImplementationForNestedRepositoryFragment() {
+
+		ComposedRepository repository = getBean(ComposedRepository.class);
+		NestedFragmentInterfaceImpl fragment = getBean(NestedFragmentInterfaceImpl.class);
+
+		assertThat(repository.getKey()).isEqualTo("NestedFragmentImpl");
+		assertThat(fragment.getKey()).isEqualTo("NestedFragmentImpl");
+	}
+
 	protected <T> T getBean(Class<T> type) {
 		return container.select(type).get();
 	}
@@ -73,5 +95,24 @@ class RepositoryFragmentsIntegrationTests {
 	@AfterAll
 	static void tearDown() {
 		container.close();
+	}
+
+	public interface NestedRepository extends Repository<Object, Serializable> {
+
+		String getCustom();
+	}
+
+	public interface NestedRepositoryCustom {
+
+		// duplicate method allowing to provide custom implementation (without modifying original repository)
+		String getCustom();
+	}
+
+	public static class NestedRepositoryImpl implements NestedRepositoryCustom {
+
+		@Override
+		public String getCustom() {
+			return "CustomImpl";
+		}
 	}
 }
