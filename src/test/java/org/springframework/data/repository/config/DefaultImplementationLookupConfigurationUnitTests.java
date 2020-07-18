@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link DefaultImplementationLookupConfigurationUnitTests}.
  *
  * @author Mark Paluch
+ * @author Kyrylo Merzlikin
  */
 class DefaultImplementationLookupConfigurationUnitTests {
 
@@ -35,6 +36,18 @@ class DefaultImplementationLookupConfigurationUnitTests {
 
 		assertThat(getImplementationBeanName(idcMock, "com.acme.UDPRepository")).isEqualTo("UDPRepositoryImpl");
 		assertThat(getImplementationBeanName(idcMock, "com.acme.UdpRepository")).isEqualTo("udpRepositoryImpl");
+	}
+
+	@Test // DATACMNS-1754
+	void shouldUseSimpleClassNameWhenDefiningImplementationNames() {
+
+		ImplementationDetectionConfiguration idcMock = mock(ImplementationDetectionConfiguration.class);
+		when(idcMock.getImplementationPostfix()).thenReturn("Impl");
+
+		DefaultImplementationLookupConfiguration lookupConfiguration = new DefaultImplementationLookupConfiguration(idcMock,
+				"com.acme.Repositories$NestedRepository");
+		assertThat(lookupConfiguration.getImplementationBeanName()).isEqualTo("nestedRepositoryImpl");
+		assertThat(lookupConfiguration.getImplementationClassName()).isEqualTo("NestedRepositoryImpl");
 	}
 
 	private static String getImplementationBeanName(ImplementationDetectionConfiguration idcMock, String interfaceName) {

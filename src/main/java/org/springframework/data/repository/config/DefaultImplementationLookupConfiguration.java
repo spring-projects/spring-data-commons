@@ -33,6 +33,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Kyrylo Merzlikin
  * @since 2.1
  */
 class DefaultImplementationLookupConfiguration implements ImplementationLookupConfiguration {
@@ -55,8 +56,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 
 		this.config = config;
 		this.interfaceName = interfaceName;
-		this.beanName = Introspector
-				.decapitalize(ClassUtils.getShortName(interfaceName).concat(config.getImplementationPostfix()));
+		this.beanName = Introspector.decapitalize(getLocalName(interfaceName).concat(config.getImplementationPostfix()));
 	}
 
 	/*
@@ -110,7 +110,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 	 */
 	@Override
 	public String getImplementationClassName() {
-		return ClassUtils.getShortName(interfaceName).concat(getImplementationPostfix());
+		return getLocalName(interfaceName).concat(getImplementationPostfix());
 	}
 
 	/*
@@ -141,11 +141,16 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 		}
 
 		String beanPackage = ClassUtils.getPackageName(beanClassName);
-		String shortName = ClassUtils.getShortName(beanClassName);
-		String localName = shortName.substring(shortName.lastIndexOf('.') + 1);
+		String localName = getLocalName(beanClassName);
 
 		return localName.equals(getImplementationClassName()) //
 				&& getBasePackages().stream().anyMatch(it -> beanPackage.startsWith(it));
+	}
+
+	private String getLocalName(String className) {
+
+		String shortName = ClassUtils.getShortName(className);
+		return shortName.substring(shortName.lastIndexOf('.') + 1);
 	}
 
 	private boolean isExcluded(String beanClassName, Streamable<TypeFilter> filters) {
