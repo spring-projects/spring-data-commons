@@ -17,12 +17,12 @@ package org.springframework.data.spel.spi;
 
 import reactor.core.publisher.Mono;
 
-import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 
 /**
  * SPI to resolve a {@link EvaluationContextExtension} to make it accessible via the root of an
- * {@link EvaluationContext} provided by a {@link ExtensionAwareQueryMethodEvaluationContextProvider}.
+ * {@link EvaluationContext} provided by a
+ * {@link org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider}.
  * <p>
  * Extensions can be ordered by following Spring's {@link org.springframework.core.Ordered} conventions.
  *

@@ -29,7 +29,7 @@ public interface ExtensionIdAware {
 	 * Return the identifier of the extension. The id can be leveraged by users to fully qualify property lookups and thus
 	 * overcome ambiguities in case multiple extensions expose properties with the same name.
 	 *
-	 * @return the extension id, must not be {@literal null}.
+	 * @return the extension id, never {@literal null}.
 	 */
 	String getExtensionId();
 }

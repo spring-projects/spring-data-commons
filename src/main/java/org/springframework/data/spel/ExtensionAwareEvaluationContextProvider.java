@@ -50,6 +50,7 @@ import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * An {@link EvaluationContextProvider} that assembles an {@link EvaluationContext} from a list of
@@ -64,7 +65,7 @@ import org.springframework.util.Assert;
  */
 public class ExtensionAwareEvaluationContextProvider implements EvaluationContextProvider {
 
-	private final Map<Class<?>, EvaluationContextExtensionInformation> extensionInformationCache = new ConcurrentHashMap<>();
+	private final Map<String, EvaluationContextExtensionInformation> extensionInformationCache = new ConcurrentHashMap<>();
 	private final Lazy<? extends Collection<? extends ExtensionIdAware>> extensions;
 
 	private ListableBeanFactory beanFactory;
@@ -181,7 +182,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @return
 	 */
 	EvaluationContextExtensionInformation getOrCreateInformation(Class<? extends EvaluationContextExtension> extension) {
-		return extensionInformationCache.computeIfAbsent(extension,
+		return extensionInformationCache.computeIfAbsent(ClassUtils.getUserClass(extension).getName(),
 				type -> new EvaluationContextExtensionInformation(extension));
 	}
 

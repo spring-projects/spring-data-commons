@@ -21,12 +21,10 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ReactiveEvaluationContextExtension;
 import org.springframework.expression.Expression;
@@ -37,6 +35,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * Unit tests for {@link ReactiveExtensionAwareEvaluationContextProvider}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 
@@ -108,7 +107,7 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
 
 		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
-				Collections.singletonList(GenericReactiveExtension.INSTANCE));
+				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericReactiveExtension.INSTANCE));
 
 		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
 				.as(StepVerifier::create) //
@@ -116,6 +115,58 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 				.verifyComplete();
 
 		assertThat(GenericModelRoot.creationCounter).hasValue(1);
+		assertThat(SecurityExpressionRoot.creationCounter).hasValue(0);
+	}
+
+	@Test // DATACMNS-1108
+	void doesNotLoadExtensionForDirectCall() {
+
+		Expression expression = PARSER.parseExpression(
+				"T(org.springframework.data.spel.ReactiveExtensionAwareEvaluationContextProviderUnitTests.WithStaticRole).hasRole('ADMIN')");
+		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+
+		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericReactiveExtension.INSTANCE));
+
+		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
+				.as(StepVerifier::create) //
+				.expectNext(true) //
+				.verifyComplete();
+
+		assertThat(GenericModelRoot.creationCounter).hasValue(1);
+		assertThat(SecurityExpressionRoot.creationCounter).hasValue(0);
+	}
+
+	@Test // DATACMNS-1108
+	void loadsExtensionEvenWhenRootObjectMethodMatches() {
+
+		Expression expression = PARSER.parseExpression("principal.name");
+		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+
+		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericReactiveExtension.INSTANCE));
+
+		provider.getEvaluationContextLater(new WithRole(), dependencies).map(expression::getValue) //
+				.as(StepVerifier::create) //
+				.expectNext("Walter") //
+				.verifyComplete();
+
+		assertThat(GenericModelRoot.creationCounter).hasValue(1);
+		assertThat(SecurityExpressionRoot.creationCounter).hasValue(1);
+	}
+
+	public static class WithStaticRole {
+
+		public static boolean hasRole(String arg) {
+			return arg.equals("ADMIN");
+		}
+	}
+
+	public static class WithRole {
+
+		public Object getPrincipal() {
+			return new MyPrincipal("Jesse");
+		}
 	}
 
 	/**
@@ -216,14 +267,20 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 		}
 
 		public Object getPrincipal() {
-			return new MyPrincipal();
+			return new MyPrincipal("Walter");
 		}
 	}
 
 	static class MyPrincipal {
 
+		private final String name;
+
+		public MyPrincipal(String name) {
+			this.name = name;
+		}
+
 		public String getName() {
-			return "Walter";
+			return name;
 		}
 	}
 }
