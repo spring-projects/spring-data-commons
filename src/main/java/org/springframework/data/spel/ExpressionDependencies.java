@@ -16,6 +16,7 @@
 package org.springframework.data.spel;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -37,6 +38,7 @@ import org.springframework.util.ObjectUtils;
  * Value object capturing dependencies to a method or property/field that is referenced from a SpEL expression.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.4
  */
 public class ExpressionDependencies implements Streamable<ExpressionDependencies.ExpressionDependency> {
@@ -52,10 +54,45 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 	/**
 	 * Return an empty {@link ExpressionDependencies} object.
 	 *
-	 * @return the empty dependencies.
+	 * @return empty dependencies.
 	 */
-	public static ExpressionDependencies empty() {
+	public static ExpressionDependencies none() {
 		return EMPTY;
+	}
+
+	/**
+	 * Return an {@link ExpressionDependencies} object representing the given {@link Collection} of
+	 * {@link ExpressionDependency dependencies}.
+	 *
+	 * @return {@link ExpressionDependencies} holding the given {@link ExpressionDependency dependencies} or
+	 *         {@link ExpressionDependencies#none() none} if the collection is {@link Collection#isEmpty() empty}.
+	 */
+	public static ExpressionDependencies of(Collection<ExpressionDependency> dependencies) {
+
+		if (dependencies.isEmpty()) {
+			return EMPTY;
+		}
+
+		return new ExpressionDependencies(new ArrayList<>(new LinkedHashSet<>(dependencies)));
+	}
+
+	/**
+	 * Return an {@link ExpressionDependencies} object representing the merged collection of {@link ExpressionDependency
+	 * dependencies} withing the given {@link ExpressionDependencies} collection.
+	 *
+	 * @return {@link ExpressionDependencies} holding a set of merged {@link ExpressionDependency dependencies} or
+	 *         {@link ExpressionDependencies#none() none} if the given {@link Iterable} is {@link Collection#isEmpty()
+	 *         empty}.
+	 */
+	public static ExpressionDependencies merged(Iterable<ExpressionDependencies> dependencies) {
+
+		if (!dependencies.iterator().hasNext()) {
+			return EMPTY;
+		}
+
+		List<ExpressionDependency> dependencySet = new ArrayList<>();
+		dependencies.forEach(it -> dependencySet.addAll(it.dependencies));
+		return ExpressionDependencies.of(dependencySet);
 	}
 
 	/**
@@ -65,7 +102,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 	 * @return a set of {@link ExpressionDependencies}.
 	 */
 	public static ExpressionDependencies discover(Expression expression) {
-		return expression instanceof SpelExpression ? discover(((SpelExpression) expression).getAST(), true) : empty();
+		return expression instanceof SpelExpression ? discover(((SpelExpression) expression).getAST(), true) : none();
 	}
 
 	/**
@@ -171,6 +208,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 		private final int nestLevel;
 
 		private ExpressionDependency(DependencyType type, String symbol, int nestLevel) {
+
 			this.symbol = symbol;
 			this.nestLevel = nestLevel;
 			this.type = type;

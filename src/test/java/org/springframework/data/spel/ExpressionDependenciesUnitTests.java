@@ -18,7 +18,6 @@ package org.springframework.data.spel;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.expression.spel.SpelNode;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -27,6 +26,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * Unit tests for {@link ExpressionDependencies}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class ExpressionDependenciesUnitTests {
 
@@ -72,6 +72,20 @@ class ExpressionDependenciesUnitTests {
 
 		assertThat(dependencies).extracting(ExpressionDependencies.ExpressionDependency::getSymbol).containsOnly("hello",
 				"principal");
+	}
+
+	@Test // DATACMNS-1108
+	void shouldExtractAll() {
+
+		String expression = "hello().hasRole(principal.emailAddress, principal.somethingElse).somethingElse()";
+
+		SpelExpression spelExpression = (SpelExpression) PARSER.parseExpression(expression);
+		SpelNode ast = spelExpression.getAST();
+
+		ExpressionDependencies dependencies = ExpressionDependencies.discover(ast, false);
+
+		assertThat(dependencies).extracting(ExpressionDependencies.ExpressionDependency::getSymbol).containsOnly("hello",
+				"hasRole", "principal", "emailAddress", "somethingElse");
 	}
 
 	@Test // DATACMNS-1108

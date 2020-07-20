@@ -28,9 +28,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.spel.EvaluationContextExtensionInformation.ExtensionTypeInformation.PublicMethodAndFieldFilter;
+import org.springframework.data.spel.ExpressionDependencies.ExpressionDependency;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.data.util.Streamable;
@@ -102,14 +105,13 @@ class EvaluationContextExtensionInformation {
 	}
 
 	/**
-	 * Return {@literal true} if this extension provides {@link ExpressionDependencies.ExpressionDependency}.
+	 * Return {@literal true} if this extension provides {@link ExpressionDependency}.
 	 *
 	 * @param dependency the expression dependency.
-	 * @return {@literal true} if {@link ExpressionDependencies.ExpressionDependency} is provided by this root object or
-	 *         the extension itself.
+	 * @return {@literal true} if {@link ExpressionDependency} is provided by this root object or the extension itself.
 	 * @since 2.4
 	 */
-	public boolean provides(ExpressionDependencies.ExpressionDependency dependency) {
+	public boolean provides(ExpressionDependency dependency) {
 
 		// We don't know, extension declares Object getRootObject
 		if (!rootObjectInformation.isPresent()) {
@@ -159,13 +161,13 @@ class EvaluationContextExtensionInformation {
 		}
 
 		/**
-		 * Return {@literal true} if this extension provides {@link ExpressionDependencies.ExpressionDependency}.
+		 * Return {@literal true} if this extension provides {@link ExpressionDependency}.
 		 *
 		 * @param dependency the expression dependency.
-		 * @return {@literal true} if {@link ExpressionDependencies.ExpressionDependency} is provided by this root object.
+		 * @return {@literal true} if {@link ExpressionDependency} is provided by this root object.
 		 * @since 2.4
 		 */
-		public boolean provides(ExpressionDependencies.ExpressionDependency dependency) {
+		public boolean provides(ExpressionDependency dependency) {
 
 			if (dependency.isPropertyOrField()) {
 				return properties.containsKey(dependency.getSymbol());
@@ -199,12 +201,12 @@ class EvaluationContextExtensionInformation {
 
 		static class PublicMethodAndFieldFilter implements MethodFilter, FieldFilter {
 
-			public static final PublicMethodAndFieldFilter STATIC = new PublicMethodAndFieldFilter(true);
-			public static final PublicMethodAndFieldFilter NON_STATIC = new PublicMethodAndFieldFilter(false);
+			static final PublicMethodAndFieldFilter STATIC = new PublicMethodAndFieldFilter(true);
+			static final PublicMethodAndFieldFilter NON_STATIC = new PublicMethodAndFieldFilter(false);
 
 			private final boolean staticOnly;
 
-			public PublicMethodAndFieldFilter(boolean staticOnly) {
+			PublicMethodAndFieldFilter(boolean staticOnly) {
 				this.staticOnly = staticOnly;
 			}
 
@@ -251,7 +253,7 @@ class EvaluationContextExtensionInformation {
 		private static final RootObjectInformation NONE = new RootObjectInformation(Object.class);
 
 		private final Map<String, Method> accessors;
-		private final Collection<Method> methods;
+		private final Methods methods;
 		private final Collection<Field> fields;
 
 		/**
@@ -260,12 +262,12 @@ class EvaluationContextExtensionInformation {
 		 *
 		 * @param type must not be {@literal null}.
 		 */
-		public RootObjectInformation(Class<?> type) {
+		RootObjectInformation(Class<?> type) {
 
 			Assert.notNull(type, "Type must not be null!");
 
 			this.accessors = new HashMap<>();
-			this.methods = new HashSet<>();
+			this.methods = new Methods();
 			this.fields = new ArrayList<>();
 
 			if (Object.class.equals(type)) {
@@ -293,7 +295,7 @@ class EvaluationContextExtensionInformation {
 		 * @param target can be {@literal null}.
 		 * @return the methods
 		 */
-		public MultiValueMap<String, Function> getFunctions(Optional<Object> target) {
+		MultiValueMap<String, Function> getFunctions(Optional<Object> target) {
 			return target.map(this::getFunctions).orElseGet(LinkedMultiValueMap::new);
 		}
 
@@ -307,7 +309,7 @@ class EvaluationContextExtensionInformation {
 		 *
 		 * @return the properties
 		 */
-		public Map<String, Object> getProperties(Optional<Object> target) {
+		Map<String, Object> getProperties(Optional<Object> target) {
 
 			return target.map(it -> {
 
@@ -323,12 +325,17 @@ class EvaluationContextExtensionInformation {
 		}
 
 		/**
-		 * Returns whether this root object information provides {@link ExpressionDependencies.ExpressionDependency}.
+		 * Returns whether this root object information provides {@link ExpressionDependency}.
 		 *
 		 * @param dependency the expression dependency.
-		 * @return {@literal true} if {@link ExpressionDependencies.ExpressionDependency} is provided by this root object.
+		 * @return {@literal true} if {@link ExpressionDependency} is provided by this root object.
+		 * @since 2.4
 		 */
-		public boolean provides(ExpressionDependencies.ExpressionDependency dependency) {
+		boolean provides(ExpressionDependency dependency) {
+
+			if (!dependency.isMethod() && !dependency.isPropertyOrField()) {
+				return false;
+			}
 
 			if (dependency.isPropertyOrField()) {
 
@@ -346,14 +353,7 @@ class EvaluationContextExtensionInformation {
 			}
 
 			if (dependency.isMethod()) {
-
-				for (Method method : methods) {
-					if (method.getName().equals(dependency.getSymbol())) {
-						return true;
-					}
-				}
-
-				return false;
+				return methods.containsMethodName(dependency.getSymbol());
 			}
 
 			return false;
@@ -368,5 +368,35 @@ class EvaluationContextExtensionInformation {
 				PublicMethodAndFieldFilter.STATIC);
 
 		return map.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(map);
+	}
+
+	/**
+	 * @since 2.4
+	 * @author Christpoh Strobl
+	 */
+	static class Methods {
+
+		private final Collection<Method> methods;
+		private final Set<String> methodNames;
+
+		Methods() {
+
+			this.methods = new HashSet<>();
+			this.methodNames = new HashSet<>();
+		}
+
+		void add(Method method) {
+
+			methods.add(method);
+			methodNames.add(method.getName());
+		}
+
+		boolean containsMethodName(String name) {
+			return methodNames.contains(name);
+		}
+
+		public Stream<Method> stream() {
+			return methods.stream();
+		}
 	}
 }
