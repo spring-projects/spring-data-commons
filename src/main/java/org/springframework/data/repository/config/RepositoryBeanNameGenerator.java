@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.util.Assert;
@@ -31,25 +32,32 @@ import org.springframework.util.ClassUtils;
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 class RepositoryBeanNameGenerator {
 
 	private final ClassLoader beanClassLoader;
-	private final SpringDataAnnotationBeanNameGenerator delegate;
+	private final BeanNameGenerator generator;
+	private final BeanDefinitionRegistry registry;
 
 	/**
-	 * Creates a new {@link RepositoryBeanNameGenerator} for the given {@link ClassLoader} and {@link BeanNameGenerator}.
+	 * Creates a new {@link RepositoryBeanNameGenerator} for the given {@link ClassLoader}, {@link BeanNameGenerator}, and
+	 * {@link BeanDefinitionRegistry}.
 	 *
 	 * @param beanClassLoader must not be {@literal null}.
 	 * @param generator must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
 	 */
-	public RepositoryBeanNameGenerator(ClassLoader beanClassLoader, BeanNameGenerator generator) {
+	public RepositoryBeanNameGenerator(ClassLoader beanClassLoader, BeanNameGenerator generator,
+			BeanDefinitionRegistry registry) {
 
 		Assert.notNull(beanClassLoader, "Bean ClassLoader must not be null!");
 		Assert.notNull(generator, "BeanNameGenerator must not be null!");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
 		this.beanClassLoader = beanClassLoader;
-		this.delegate = new SpringDataAnnotationBeanNameGenerator(generator);
+		this.generator = generator;
+		this.registry = registry;
 	}
 
 	/**
@@ -65,7 +73,7 @@ class RepositoryBeanNameGenerator {
 				? (AnnotatedBeanDefinition) definition //
 				: new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
 
-		return delegate.generateBeanName(beanDefinition);
+		return generator.generateBeanName(beanDefinition, registry);
 	}
 
 	/**
