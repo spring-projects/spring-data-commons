@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefiniti
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.core.type.classreading.MetadataReader;
@@ -39,6 +40,8 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Mark Paluch
+ * @soundtrack Take Me Away (Extended Mix) - Kaimo K, Trance Classics & Susanne Teutenberg
  */
 class RepositoryBeanNameGeneratorUnitTests {
 
@@ -50,7 +53,7 @@ class RepositoryBeanNameGeneratorUnitTests {
 	@BeforeEach
 	void setUp() {
 		this.generator = new RepositoryBeanNameGenerator(Thread.currentThread().getContextClassLoader(),
-				new AnnotationBeanNameGenerator());
+				new AnnotationBeanNameGenerator(), new SimpleBeanDefinitionRegistry());
 	}
 
 	@Test
