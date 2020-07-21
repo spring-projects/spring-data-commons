@@ -61,7 +61,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
 		this.environment = environment;
-		this.beanNameGenerator = new RepositoryBeanNameGenerator(classLoader, generator);
+		this.beanNameGenerator = new RepositoryBeanNameGenerator(classLoader, generator, registry);
 		this.registry = registry;
 	}
 
