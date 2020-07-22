@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.19.RELEASE (2020-07-22)
+----------------------------------------------
+* DATACMNS-1750 - PageImpl.toString generates NPE when the first element in the content is null.
+* DATACMNS-1744 - Replace whitelist with a term that does not have racist connotations.
+* DATACMNS-1740 - Release 2.1.19 (Lovelace SR19).
+
+
 Changes in version 2.4.0-M1 (2020-06-25)
 ----------------------------------------
 * DATACMNS-1755 - Apply round of polishing.
@@ -2763,6 +2770,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
