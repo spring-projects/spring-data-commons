@@ -1,6 +1,21 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.2.RELEASE (2020-07-22)
+---------------------------------------------
+* DATACMNS-1772 - SpringDataAnnotationBeanNameGenerator calls BeanNameGenerator without using BeanDefinitionRegistry.
+* DATACMNS-1771 - Upgrade to Vavr 0.10.3.
+* DATACMNS-1768 - InstantiationAwarePropertyAccessor loses state when updating multiple properties.
+* DATACMNS-1767 - Disable ClassGeneratingEntityInstantiator and ClassGeneratingPropertyAccessorFactory when running native-image.
+* DATACMNS-1758 - ConcurrencyModificationException in DefaultEntityCallbacks.
+* DATACMNS-1753 - CompletableFuture is considered a reactive type.
+* DATACMNS-1750 - PageImpl.toString generates NPE when the first element in the content is null.
+* DATACMNS-1745 - Refactor CustomAnnotationTransactionAttributeSource to use computeTransactionAttribute template method.
+* DATACMNS-1744 - Replace whitelist with a term that does not have racist connotations.
+* DATACMNS-1743 - Translation of URI segments and request parameters into aggregates broken.
+* DATACMNS-1742 - Release 2.3.2 (Neumann SR2).
+
+
 Changes in version 2.2.9.RELEASE (2020-07-22)
 ---------------------------------------------
 * DATACMNS-1772 - SpringDataAnnotationBeanNameGenerator calls BeanNameGenerator without using BeanDefinitionRegistry.
@@ -2768,6 +2783,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
