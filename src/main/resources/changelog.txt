@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.9.RELEASE (2020-07-22)
+---------------------------------------------
+* DATACMNS-1772 - SpringDataAnnotationBeanNameGenerator calls BeanNameGenerator without using BeanDefinitionRegistry.
+* DATACMNS-1771 - Upgrade to Vavr 0.10.3.
+* DATACMNS-1750 - PageImpl.toString generates NPE when the first element in the content is null.
+* DATACMNS-1744 - Replace whitelist with a term that does not have racist connotations.
+* DATACMNS-1743 - Translation of URI segments and request parameters into aggregates broken.
+* DATACMNS-1741 - Release 2.2.9 (Moore SR9).
+
+
 Changes in version 2.1.19.RELEASE (2020-07-22)
 ----------------------------------------------
 * DATACMNS-1750 - PageImpl.toString generates NPE when the first element in the content is null.
@@ -2758,6 +2768,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
