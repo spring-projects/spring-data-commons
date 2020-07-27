@@ -448,7 +448,7 @@ For a more type-safe way of defining sort expressions, start with the type to de
 ----
 TypedSort<Person> person = Sort.sort(Person.class);
 
-TypedSort<Person> sort = person.by(Person::getFirstname).ascending()
+Sort sort = person.by(Person::getFirstname).ascending()
   .and(person.by(Person::getLastname).descending());
 ----
 ====
