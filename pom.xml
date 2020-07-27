@@ -346,24 +346,6 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<annotationProcessors>
-						<annotationProcessor>
-							lombok.launch.AnnotationProcessorHider$AnnotationProcessor
-						</annotationProcessor>
-						<annotationProcessor>
-							lombok.launch.AnnotationProcessorHider$ClaimingProcessor
-						</annotationProcessor>
-						<annotationProcessor>
-							com.querydsl.apt.QuerydslAnnotationProcessor
-						</annotationProcessor>
-					</annotationProcessors>
-
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 			</plugin>
 			<plugin>

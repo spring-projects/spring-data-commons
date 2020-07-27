@@ -1,0 +1,3 @@
+com.querydsl.apt.QuerydslAnnotationProcessor
+lombok.launch.AnnotationProcessorHider$AnnotationProcessor
+lombok.launch.AnnotationProcessorHider$ClaimingProcessor
