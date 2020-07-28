@@ -113,7 +113,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param customImplementation
 	 */
 	public void setCustomImplementation(Object customImplementation) {
-		this.customImplementation = Optional.ofNullable(customImplementation);
+		this.customImplementation = Optional.of(customImplementation);
 	}
 
 	/**
@@ -122,7 +122,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param repositoryFragments
 	 */
 	public void setRepositoryFragments(RepositoryFragments repositoryFragments) {
-		this.repositoryFragments = Optional.ofNullable(repositoryFragments);
+		this.repositoryFragments = Optional.of(repositoryFragments);
 	}
 
 	/**
@@ -141,7 +141,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param mappingContext
 	 */
 	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
-		this.mappingContext = Optional.ofNullable(mappingContext);
+		this.mappingContext = Optional.of(mappingContext);
 	}
 
 	/**
