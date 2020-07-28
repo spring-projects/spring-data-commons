@@ -453,6 +453,8 @@ Sort sort = person.by(Person::getFirstname).ascending()
 ----
 ====
 
+NOTE: `TypedSort.by(…)` makes use of runtime proxies by typically using CGlib which may interfere with native image compilation when using tools like Graal VM Native.
+
 If your store implementation supports Querydsl, you can also use the metamodel types generated to define sort expressions:
 
 .Defining sort expressions using the Querydsl API
