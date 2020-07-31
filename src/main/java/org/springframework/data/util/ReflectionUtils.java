@@ -72,6 +72,27 @@ public class ReflectionUtils {
 	}
 
 	/**
+	 * Check whether the given {@code type} represents a void type such as {@code void}, {@link Void} or Kotlin
+	 * {@code Unit}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return whether the given the type is a void type.
+	 * @since 2.3.3
+	 */
+	public static boolean isVoid(Class<?> type) {
+
+		if (type == Void.class || Void.TYPE == type) {
+			return true;
+		}
+
+		if (type.getName().equals("kotlin.Unit")) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * A {@link FieldFilter} that has a description.
 	 *
 	 * @author Oliver Gierke
@@ -376,7 +397,7 @@ public class ReflectionUtils {
 	 */
 	public static boolean isNullable(MethodParameter parameter) {
 
-		if (Void.class.equals(parameter.getParameterType()) || Void.TYPE.equals(parameter.getParameterType())) {
+		if (isVoid(parameter.getParameterType())) {
 			return true;
 		}
 
