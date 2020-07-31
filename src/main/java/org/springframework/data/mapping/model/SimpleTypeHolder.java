@@ -156,7 +156,7 @@ public class SimpleTypeHolder {
 
 		String typeName = type.getName();
 
-		if (typeName.startsWith("java.lang") || type.getName().startsWith("java.time")) {
+		if (typeName.startsWith("java.lang") || type.getName().startsWith("java.time") || typeName.equals("kotlin.Unit")) {
 			return true;
 		}
 

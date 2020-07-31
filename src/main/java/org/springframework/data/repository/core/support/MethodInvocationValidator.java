@@ -160,7 +160,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		}
 
 		private static boolean requiresNoValue(MethodParameter parameter) {
-			return parameter.getParameterType().equals(Void.class) || parameter.getParameterType().equals(Void.TYPE);
+			return ReflectionUtils.isVoid(parameter.getParameterType());
 		}
 
 		public boolean[] getNullableParameters() {
