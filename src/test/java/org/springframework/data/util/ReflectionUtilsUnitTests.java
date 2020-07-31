@@ -17,6 +17,8 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
+import kotlin.Unit;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
@@ -161,6 +163,15 @@ public class ReflectionUtilsUnitTests {
 
 		assertThat(ReflectionUtils.isKotlinClass(TypeCreatingSyntheticClassKt.class)).isTrue();
 		assertThat(ReflectionUtils.isSupportedKotlinClass(TypeCreatingSyntheticClassKt.class)).isFalse();
+	}
+
+	@Test // DATACMNS-1779
+	public void shouldReportIsVoid() {
+
+		assertThat(ReflectionUtils.isVoid(Void.class)).isTrue();
+		assertThat(ReflectionUtils.isVoid(Void.TYPE)).isTrue();
+		assertThat(ReflectionUtils.isVoid(Unit.class)).isTrue();
+		assertThat(ReflectionUtils.isVoid(String.class)).isFalse();
 	}
 
 	static class Sample {
