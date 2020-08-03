@@ -15,12 +15,17 @@
  */
 package org.springframework.data.mapping.context;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -33,11 +38,12 @@ import org.springframework.util.Assert;
  * Value object to access {@link PersistentEntity} instances managed by {@link MappingContext}s.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.8
  */
 public class PersistentEntities implements Streamable<PersistentEntity<?, ? extends PersistentProperty<?>>> {
 
-	private final Streamable<? extends MappingContext<?, ? extends PersistentProperty<?>>> contexts;
+	private final Collection<? extends MappingContext<?, ? extends PersistentProperty<?>>> contexts;
 
 	/**
 	 * Creates a new {@link PersistentEntities} for the given {@link MappingContext}s.
@@ -48,7 +54,9 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 		Assert.notNull(contexts, "MappingContexts must not be null!");
 
-		this.contexts = Streamable.of(contexts);
+		this.contexts = contexts instanceof Collection
+				? (Collection<? extends MappingContext<?, ? extends PersistentProperty<?>>>) contexts
+				: StreamSupport.stream(contexts.spliterator(), false).collect(Collectors.toList());
 	}
 
 	/**
@@ -74,26 +82,46 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 */
 	public Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> getPersistentEntity(Class<?> type) {
 
-		return contexts.stream()//
-				.filter(it -> it.hasPersistentEntityFor(type))//
-				.findFirst().map(it -> it.getRequiredPersistentEntity(type));
+		for (MappingContext<?, ? extends PersistentProperty<?>> context : contexts) {
+			if (context.hasPersistentEntityFor(type)) {
+				return Optional.of(context.getRequiredPersistentEntity(type));
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	/**
-	 * Returns the {@link PersistentEntity} for the given type. Will consider all {@link MappingContext}s registered but
-	 * throw an {@link IllegalArgumentException} in case none of the registered ones already have a
-	 * {@link PersistentEntity} registered for the given type.
+	 * Returns the {@link PersistentEntity} for the given type. Will consider all {@link MappingContext}s registered and
+	 * create a new {@link PersistentEntity} in case none of the registered ones already have it registered for the given
+	 * type, if there is only one context available.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return the {@link PersistentEntity} for the given domain type.
-	 * @throws IllegalArgumentException in case no {@link PersistentEntity} can be found for the given type.
+	 * @throws IllegalArgumentException in case no {@link PersistentEntity} can be found/created for the given type.
+	 * @throws org.springframework.data.mapping.MappingException if the {@link PersistentEntity} cannot be
+	 *           {@link MappingContext#getPersistentEntity(Class) created} by the underlying {@link MappingContext}.
 	 */
 	public PersistentEntity<?, ? extends PersistentProperty<?>> getRequiredPersistentEntity(Class<?> type) {
 
 		Assert.notNull(type, "Domain type must not be null!");
 
-		return getPersistentEntity(type).orElseThrow(
-				() -> new IllegalArgumentException(String.format("Couldn't find PersistentEntity for type %s!", type)));
+		return getPersistentEntity(type).orElseGet(() -> {
+
+			if (contexts.size() != 1) {
+
+				throw new IllegalArgumentException(String.format(
+						"Couldn't create PersistentEntity for type %s! PersistentEntities knows about %s MappingContext instances and therefore cannot tell which is the responsible one. Please set the base package in your configuration to pre initialize contexts.",
+						type, contexts.size()));
+			}
+
+			PersistentEntity<?, ? extends PersistentProperty<?>> entity = contexts.iterator().next()
+					.getPersistentEntity(type);
+			if (entity == null) {
+				throw new IllegalArgumentException(String.format("Couldn't find PersistentEntity for type %s!", type));
+			}
+			return entity;
+		});
 	}
 
 	/**
@@ -123,9 +151,11 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 */
 	public Streamable<TypeInformation<?>> getManagedTypes() {
 
-		return Streamable.of(contexts.stream()//
-				.flatMap(it -> it.getManagedTypes().stream())//
-				.collect(Collectors.toSet()));
+		Set<TypeInformation<?>> target = new HashSet<>();
+		for (MappingContext<?, ? extends PersistentProperty<?>> context : contexts) {
+			target.addAll(context.getManagedTypes());
+		}
+		return Streamable.of(target);
 	}
 
 	/*
@@ -135,9 +165,11 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	@Override
 	public Iterator<PersistentEntity<?, ? extends PersistentProperty<?>>> iterator() {
 
-		return contexts.stream()
-				.<PersistentEntity<?, ? extends PersistentProperty<?>>> flatMap(it -> it.getPersistentEntities().stream())
-				.collect(Collectors.toList()).iterator();
+		List<PersistentEntity<?, ? extends PersistentProperty<?>>> target = new ArrayList<>();
+		for (MappingContext<?, ? extends PersistentProperty<?>> context : contexts) {
+			target.addAll(context.getPersistentEntities());
+		}
+		return target.iterator();
 	}
 
 	/**

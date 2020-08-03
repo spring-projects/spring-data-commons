@@ -28,12 +28,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link PersistentEntities}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @ExtendWith(MockitoExtension.class)
 class PersistentEntitiesUnitTests {
@@ -51,6 +53,7 @@ class PersistentEntitiesUnitTests {
 
 		when(first.hasPersistentEntityFor(Sample.class)).thenReturn(false);
 		when(second.hasPersistentEntityFor(Sample.class)).thenReturn(true);
+		when(second.getRequiredPersistentEntity(Sample.class)).thenReturn(mock(BasicPersistentEntity.class));
 
 		PersistentEntities.of(first, second).getPersistentEntity(Sample.class);
 
@@ -141,6 +144,21 @@ class PersistentEntitiesUnitTests {
 
 		assertThat(entity).isNotNull();
 		assertThat(entity.getType()).isEqualTo(SecondWithGenericId.class);
+	}
+
+	@Test // DATACMNS-1780
+	void getRequiredPersistentEntityAllowsInFlightEntityCreationForUnknownTypesWhenHavingJustASingleMappingContext() {
+
+		SampleMappingContext mappingContext = spy(new SampleMappingContext());
+		mappingContext.afterPropertiesSet();
+
+		assertThat(PersistentEntities.of(mappingContext).getRequiredPersistentEntity(Sample.class)).isNotNull();
+	}
+
+	@Test // DATACMNS-1780
+	void getRequiredPersistentEntityErrorsOnInFlightEntityCreationForUnknownTypesWhenHavingMultipleMappingContexts() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> PersistentEntities.of(first, second).getRequiredPersistentEntity(Sample.class));
 	}
 
 	static class Sample {

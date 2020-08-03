@@ -16,6 +16,7 @@
 package org.springframework.data.auditing;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
@@ -101,6 +102,19 @@ class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
 	@Test // DATACMNS-957
 	void skipsEntityWithoutIdentifier() {
 		getHandler().markAudited(Optional.of(new EntityWithoutId()));
+	}
+
+	@Test // DATACMNS-1780
+	void singleContextAllowsInFlightMetadataCreationForUnknownPersistentEntities() {
+
+		SampleMappingContext mappingContext = spy(new SampleMappingContext());
+		mappingContext.afterPropertiesSet();
+
+		AuditedUser user = new AuditedUser();
+		user.id = 1L;
+
+		new IsNewAwareAuditingHandler(PersistentEntities.of(mappingContext)).markAudited(user);
+		verify(mappingContext).getPersistentEntity(AuditedUser.class);
 	}
 
 	static class Domain {
