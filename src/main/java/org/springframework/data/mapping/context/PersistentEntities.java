@@ -39,6 +39,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.8
  */
 public class PersistentEntities implements Streamable<PersistentEntity<?, ? extends PersistentProperty<?>>> {
@@ -50,6 +51,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 *
 	 * @param contexts
 	 */
+	@SuppressWarnings("unchecked")
 	public PersistentEntities(Iterable<? extends MappingContext<?, ?>> contexts) {
 
 		Assert.notNull(contexts, "MappingContexts must not be null!");
@@ -61,7 +63,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 	/**
 	 * Creates a new {@link PersistentEntities} for the given {@link MappingContext}s.
-	 * 
+	 *
 	 * @param contexts must not be {@literal null}.
 	 * @return
 	 */
@@ -106,37 +108,38 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 		Assert.notNull(type, "Domain type must not be null!");
 
-		return getPersistentEntity(type).orElseGet(() -> {
+		if (contexts.size() == 1) {
+			return contexts.iterator().next().getRequiredPersistentEntity(type);
+		}
 
-			if (contexts.size() != 1) {
-
-				throw new IllegalArgumentException(String.format(
-						"Couldn't create PersistentEntity for type %s! PersistentEntities knows about %s MappingContext instances and therefore cannot tell which is the responsible one. Please set the base package in your configuration to pre initialize contexts.",
-						type, contexts.size()));
-			}
-
-			PersistentEntity<?, ? extends PersistentProperty<?>> entity = contexts.iterator().next()
-					.getPersistentEntity(type);
-			if (entity == null) {
-				throw new IllegalArgumentException(String.format("Couldn't find PersistentEntity for type %s!", type));
-			}
-			return entity;
+		return getPersistentEntity(type).orElseThrow(() -> {
+			return new IllegalArgumentException(String.format(
+					"Cannot get or create PersistentEntity for type %s! PersistentEntities knows about %s MappingContext instances and therefore cannot identify a single responsible one. Please configure the initialEntitySet through an entity scan using the base package in your configuration to pre initialize contexts.",
+					type.getName(), contexts.size()));
 		});
 	}
 
 	/**
 	 * Executes the given {@link BiFunction} on the given {@link MappingContext} and {@link PersistentEntity} based on the
-	 * given type.
-	 * 
+	 * given type. Considers all {@link MappingContext}s for lookup. This method will create a new
+	 * {@link PersistentEntity} in case there is only a single {@link MappingContext} registered.
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param combiner must not be {@literal null}.
-	 * @return
+	 * @return result of the {@link BiFunction}.
 	 */
 	public <T> Optional<T> mapOnContext(Class<?> type,
 			BiFunction<MappingContext<?, ? extends PersistentProperty<?>>, PersistentEntity<?, ?>, T> combiner) {
 
 		Assert.notNull(type, "Type must not be null!");
 		Assert.notNull(combiner, "Combining BiFunction must not be null!");
+
+		if (contexts.size() == 1) {
+			return contexts.stream() //
+					.filter(it -> it.getPersistentEntity(type) != null) //
+					.map(it -> combiner.apply(it, it.getRequiredPersistentEntity(type))) //
+					.findFirst();
+		}
 
 		return contexts.stream() //
 				.filter(it -> it.hasPersistentEntityFor(type)) //
@@ -152,9 +155,11 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	public Streamable<TypeInformation<?>> getManagedTypes() {
 
 		Set<TypeInformation<?>> target = new HashSet<>();
+
 		for (MappingContext<?, ? extends PersistentProperty<?>> context : contexts) {
 			target.addAll(context.getManagedTypes());
 		}
+
 		return Streamable.of(target);
 	}
 
@@ -166,9 +171,11 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	public Iterator<PersistentEntity<?, ? extends PersistentProperty<?>>> iterator() {
 
 		List<PersistentEntity<?, ? extends PersistentProperty<?>>> target = new ArrayList<>();
+
 		for (MappingContext<?, ? extends PersistentProperty<?>> context : contexts) {
 			target.addAll(context.getPersistentEntities());
 		}
+
 		return target.iterator();
 	}
 
@@ -178,7 +185,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 * property type is not an entity - as it might rather refer to the identifier type - we either use the reference's
 	 * defined target type and fall back to trying to find a {@link PersistentEntity} identified by the
 	 * {@link PersistentProperty}'s actual type.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return
 	 * @since 2.1
@@ -202,7 +209,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	/**
 	 * Returns the type the given {@link PersistentProperty} ultimately refers to. In case it's of a unique identifier
 	 * type of an entity known it'll return the entity type.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
@@ -219,7 +226,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 	/**
 	 * Returns the {@link PersistentEntity} identified by the given type.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 * @throws IllegalStateException if the entity cannot be detected uniquely as multiple ones might share the same
@@ -239,7 +246,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 			String message = "Found multiple entities identified by " + type.getType() + ": ";
 			message += entities.stream().map(it -> it.getType().getName()).collect(Collectors.joining(", "));
-			message += "! Introduce dedciated unique identifier types or explicitly define the target type in @Reference!";
+			message += "! Introduce dedicated unique identifier types or explicitly define the target type in @Reference!";
 
 			throw new IllegalStateException(message);
 		}
