@@ -56,16 +56,6 @@ public interface PersistentPropertyPathAccessor<T> extends PersistentPropertyAcc
 	Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, GetOptions context);
 
 	/**
-	 * Sets the given value for the {@link PersistentProperty} pointed to by the given {@link PersistentPropertyPath}. The
-	 * lookup of intermediate values must not yield {@literal null}.
-	 *
-	 * @param path must not be {@literal null} or empty.
-	 * @param value can be {@literal null}.
-	 * @see AccessOptions#DEFAULT
-	 */
-	void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value);
-
-	/**
 	 * Sets the given value for the {@link PersistentProperty} pointed to by the given {@link PersistentPropertyPath}
 	 * considering the given {@link AccessOptions}.
 	 *

@@ -26,6 +26,7 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.NullableUtils;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
@@ -57,7 +58,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	 */
 	public static boolean supports(Class<?> repositoryInterface) {
 
-		return ReflectionUtils.isSupportedKotlinClass(repositoryInterface)
+		return KotlinReflectionUtils.isSupportedKotlinClass(repositoryInterface)
 				|| NullableUtils.isNonNull(repositoryInterface, ElementType.METHOD)
 				|| NullableUtils.isNonNull(repositoryInterface, ElementType.PARAMETER);
 	}
@@ -155,7 +156,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		private static boolean isNullableParameter(MethodParameter parameter) {
 
 			return requiresNoValue(parameter) || NullableUtils.isExplicitNullable(parameter)
-					|| (ReflectionUtils.isSupportedKotlinClass(parameter.getDeclaringClass())
+					|| (KotlinReflectionUtils.isSupportedKotlinClass(parameter.getDeclaringClass())
 							&& ReflectionUtils.isNullable(parameter));
 		}
 

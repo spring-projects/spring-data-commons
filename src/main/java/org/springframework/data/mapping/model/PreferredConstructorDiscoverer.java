@@ -34,6 +34,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -182,7 +183,7 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 		 * @return the appropriate discoverer for {@code type}.
 		 */
 		private static Discoverers findDiscoverer(Class<?> type) {
-			return ReflectionUtils.isSupportedKotlinClass(type) ? KOTLIN : DEFAULT;
+			return KotlinReflectionUtils.isSupportedKotlinClass(type) ? KOTLIN : DEFAULT;
 		}
 
 		/**

@@ -17,13 +17,13 @@ package org.springframework.data.mapping.model;
 
 import java.util.function.Function;
 
+import org.springframework.core.KotlinDetector;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -99,7 +99,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 		PersistentEntity<?, ?> owner = property.getOwner();
 		PersistentPropertyAccessor<T> delegate = delegateFunction.apply(this.bean);
 
-		if (!property.isImmutable() || property.getWither() != null || ReflectionUtils.isKotlinClass(owner.getType())) {
+		if (!property.isImmutable() || property.getWither() != null || KotlinDetector.isKotlinType(owner.getType())) {
 
 			delegate.setProperty(property, value);
 			this.bean = delegate.getBean();

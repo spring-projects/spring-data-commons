@@ -28,6 +28,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 
@@ -50,7 +51,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 
 		PreferredConstructor<?, ?> constructor = entity.getPersistenceConstructor();
 
-		if (ReflectionUtils.isSupportedKotlinClass(entity.getType()) && constructor != null) {
+		if (KotlinReflectionUtils.isSupportedKotlinClass(entity.getType()) && constructor != null) {
 
 			PreferredConstructor<?, ?> defaultConstructor = new DefaultingKotlinConstructorResolver(entity)
 					.getDefaultConstructor();

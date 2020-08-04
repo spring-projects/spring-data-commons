@@ -34,6 +34,7 @@ import javax.annotation.Nonnull;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.lang.NonNullApi;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
@@ -159,7 +160,7 @@ public abstract class NullableUtils {
 			return true;
 		}
 
-		if (!AnnotationUtils.isAnnotationMetaPresent(annotation.annotationType(), annotationClass)
+		if (!MergedAnnotations.from(annotation.annotationType()).isPresent(annotationClass)
 				|| !isNonNull(annotation)) {
 			return false;
 		}

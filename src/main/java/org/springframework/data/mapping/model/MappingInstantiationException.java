@@ -25,7 +25,7 @@ import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.util.ReflectionUtils;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
@@ -102,7 +102,7 @@ public class MappingInstantiationException extends RuntimeException {
 
 		Constructor<?> constructor = preferredConstructor.getConstructor();
 
-		if (ReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
+		if (KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
 
 			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
 

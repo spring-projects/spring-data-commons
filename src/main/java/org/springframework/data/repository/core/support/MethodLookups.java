@@ -194,8 +194,8 @@ interface MethodLookups {
 
 				Type genericType = genericTypes[i];
 				Class<?> type = types[i];
-				MethodParameter parameter = new MethodParameter(invokedMethod, i);
-				Class<?> parameterType = resolveParameterType(parameter, repositoryInterface);
+				MethodParameter parameter = new MethodParameter(invokedMethod, i).withContainingClass(repositoryInterface);
+				Class<?> parameterType = parameter.getParameterType();
 
 				if (genericType instanceof TypeVariable<?>) {
 
@@ -273,7 +273,8 @@ interface MethodLookups {
 
 			return (parameterCriteria) -> {
 
-				Class<?> parameterType = resolveParameterType(parameterCriteria.getDeclared(), repositoryInterface);
+				Class<?> parameterType = parameterCriteria.getDeclared().withContainingClass(repositoryInterface)
+						.getParameterType();
 				Type genericType = parameterCriteria.getGenericBaseType();
 
 				if (genericType instanceof TypeVariable<?>) {

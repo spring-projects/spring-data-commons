@@ -19,7 +19,6 @@ import java.lang.annotation.Annotation;
 import java.util.Iterator;
 
 import org.springframework.data.annotation.Immutable;
-import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
@@ -47,7 +46,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 *
 	 * @return {@literal null} in case no suitable constructor for automatic construction can be found. This usually
 	 *         indicates that the instantiation of the object of that persistent entity is done through either a customer
-	 *         {@link EntityInstantiator} or handled by custom conversion mechanisms entirely.
+	 *         {@link org.springframework.data.mapping.model.EntityInstantiator} or handled by custom conversion
+	 *         mechanisms entirely.
 	 */
 	@Nullable
 	PreferredConstructor<T, P> getPersistenceConstructor();
