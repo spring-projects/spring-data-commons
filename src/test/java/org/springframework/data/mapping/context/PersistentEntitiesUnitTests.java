@@ -27,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.ClassTypeInformation;
@@ -36,6 +37,7 @@ import org.springframework.data.util.ClassTypeInformation;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mar Paluch
  */
 @ExtendWith(MockitoExtension.class)
 class PersistentEntitiesUnitTests {
@@ -157,7 +159,7 @@ class PersistentEntitiesUnitTests {
 
 	@Test // DATACMNS-1780
 	void getRequiredPersistentEntityErrorsOnInFlightEntityCreationForUnknownTypesWhenHavingMultipleMappingContexts() {
-		assertThatExceptionOfType(IllegalArgumentException.class)
+		assertThatExceptionOfType(MappingException.class)
 				.isThrownBy(() -> PersistentEntities.of(first, second).getRequiredPersistentEntity(Sample.class));
 	}
 

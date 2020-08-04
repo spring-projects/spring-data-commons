@@ -27,6 +27,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.Streamable;
@@ -81,6 +82,8 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 *
 	 * @param type can be {@literal null}.
 	 * @return
+	 * @see MappingContext#hasPersistentEntityFor(Class)
+	 * @see MappingContext#getPersistentEntity(Class)
 	 */
 	public Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> getPersistentEntity(Class<?> type) {
 
@@ -100,9 +103,9 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return the {@link PersistentEntity} for the given domain type.
-	 * @throws IllegalArgumentException in case no {@link PersistentEntity} can be found/created for the given type.
-	 * @throws org.springframework.data.mapping.MappingException if the {@link PersistentEntity} cannot be
+	 * @throws org.springframework.data.mapping.MappingException if the {@link PersistentEntity} cannot be found or
 	 *           {@link MappingContext#getPersistentEntity(Class) created} by the underlying {@link MappingContext}.
+	 * @see MappingContext#getRequiredPersistentEntity(Class)
 	 */
 	public PersistentEntity<?, ? extends PersistentProperty<?>> getRequiredPersistentEntity(Class<?> type) {
 
@@ -113,7 +116,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 		}
 
 		return getPersistentEntity(type).orElseThrow(() -> {
-			return new IllegalArgumentException(String.format(
+			return new MappingException(String.format(
 					"Cannot get or create PersistentEntity for type %s! PersistentEntities knows about %s MappingContext instances and therefore cannot identify a single responsible one. Please configure the initialEntitySet through an entity scan using the base package in your configuration to pre initialize contexts.",
 					type.getName(), contexts.size()));
 		});
