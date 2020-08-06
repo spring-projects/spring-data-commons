@@ -86,6 +86,20 @@ class SimplePersistentPropertyPathAccessorUnitTests {
 		}).doesNotThrowAnyException();
 	}
 
+	@Test // DATACMNS-1296
+	void skipsIntermediateNullsWhenSettingNestedValues() {
+
+		CustomerWrapperWrapper wrapper = new CustomerWrapperWrapper(null);
+
+		PersistentPropertyPathAccessor<CustomerWrapperWrapper> accessor = getAccessor(wrapper);
+		PersistentPropertyPath<SamplePersistentProperty> path = context
+				.getPersistentPropertyPath("wrapper.customer.firstname", CustomerWrapperWrapper.class);
+
+		assertThatCode(() -> {
+			accessor.setProperty(path, "Dave", AccessOptions.defaultSetOptions().skipNulls());
+		}).doesNotThrowAnyException();
+	}
+
 	private void assertFirstnamesSetFor(Customers customers, String path) {
 
 		PersistentPropertyPath<SamplePersistentProperty> propertyPath = context.getPersistentPropertyPath(path,
@@ -123,5 +137,10 @@ class SimplePersistentPropertyPathAccessorUnitTests {
 	@AllArgsConstructor
 	static class CustomerWrapper {
 		Customer customer;
+	}
+
+	@AllArgsConstructor
+	static class CustomerWrapperWrapper {
+		CustomerWrapper wrapper;
 	}
 }
