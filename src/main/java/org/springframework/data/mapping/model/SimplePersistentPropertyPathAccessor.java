@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.springframework.core.CollectionFactory;
 import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.AccessOptions.GetOptions;
+import org.springframework.data.mapping.AccessOptions.GetOptions.GetNulls;
 import org.springframework.data.mapping.AccessOptions.SetOptions;
 import org.springframework.data.mapping.AccessOptions.SetOptions.SetNulls;
 import org.springframework.data.mapping.MappingException;
@@ -52,6 +53,8 @@ import org.springframework.util.Assert;
 @Slf4j
 @RequiredArgsConstructor
 class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathAccessor<T> {
+
+	private static final GetOptions DEFAULT_GET_OPTIONS = AccessOptions.defaultGetOptions();
 
 	private final @NonNull PersistentPropertyAccessor<T> delegate;
 
@@ -81,7 +84,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 	@Nullable
 	@Override
 	public Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path) {
-		return getProperty(path, AccessOptions.defaultGetOptions());
+		return getProperty(path, DEFAULT_GET_OPTIONS);
 	}
 
 	/*
@@ -151,7 +154,11 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 			return;
 		}
 
-		Object parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath);
+		GetOptions lookupOptions = options.getNullHandling() != REJECT
+				? DEFAULT_GET_OPTIONS.withNullValues(GetNulls.EARLY_RETURN)
+				: DEFAULT_GET_OPTIONS;
+
+		Object parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath, lookupOptions);
 
 		if (parent == null) {
 			handleNull(path, options.getNullHandling());
