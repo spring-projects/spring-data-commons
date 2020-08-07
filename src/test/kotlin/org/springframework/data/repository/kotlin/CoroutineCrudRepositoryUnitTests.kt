@@ -194,9 +194,8 @@ class CoroutineCrudRepositoryUnitTests {
 		}
 
 		assertThat(result).isNotNull().isEqualTo(sample)
-		val captor = ArgumentCaptor.forClass(RepositoryMethodInvocationListener.Invocation::class.java)
+		val captor = ArgumentCaptor.forClass(RepositoryMethodInvocationListener.RepositoryMethodInvocation::class.java)
 		Mockito.verify(invocationListener).afterInvocation(captor.capture())
-		assertThat(captor.value.result).isInstanceOf(Mono::class.java)
 	}
 
 	@Test // DATACMNS-1508

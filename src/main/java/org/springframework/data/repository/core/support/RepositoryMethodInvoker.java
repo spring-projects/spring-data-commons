@@ -18,13 +18,18 @@ package org.springframework.data.repository.core.support;
 import kotlin.coroutines.Continuation;
 import kotlin.reflect.KFunction;
 import kotlinx.coroutines.reactive.AwaitKt;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.core.KotlinDetector;
+import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
+import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult;
+import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult.State;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
@@ -37,6 +42,7 @@ import org.springframework.lang.Nullable;
  * implementation.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.4
  * @see #forFragmentMethod(Method, Object, Method)
  * @see #forRepositoryQuery(Method, RepositoryQuery)
@@ -90,7 +96,7 @@ abstract class RepositoryMethodInvoker {
 	 * Return whether the {@link Method declared method} can be adapted by calling {@link Method baseClassMethod}.
 	 *
 	 * @param declaredMethod the declared repository method from the repository interface.
-	 * @param baseMethod the base method to call on fragment {@code instance}.
+	 * @param baseClassMethod the base method to call on fragment {@code instance}.
 	 * @return
 	 */
 	public static boolean canInvoke(Method declaredMethod, Method baseClassMethod) {
@@ -101,14 +107,16 @@ abstract class RepositoryMethodInvoker {
 	/**
 	 * Invoke the repository method and return its value.
 	 *
-	 * @param listener listener to notify about the call outcome.
+	 * @param multicaster listener to notify about the call outcome.
 	 * @param args invocation arguments.
 	 * @return
 	 * @throws Exception
 	 */
 	@Nullable
-	public Object invoke(RepositoryInvocationListener listener, Object[] args) throws Exception {
-		return shouldAdaptReactiveToSuspended() ? doInvokeReactiveToSuspended(listener, args) : doInvoke(listener, args);
+	public Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, Object[] args)
+			throws Exception {
+		return shouldAdaptReactiveToSuspended() ? doInvokeReactiveToSuspended(repositoryInterface, multicaster, args)
+				: doInvoke(repositoryInterface, multicaster, args);
 	}
 
 	protected boolean shouldAdaptReactiveToSuspended() {
@@ -116,33 +124,72 @@ abstract class RepositoryMethodInvoker {
 	}
 
 	@Nullable
-	private Object doInvoke(RepositoryInvocationListener listener, Object[] args) throws Exception {
+	private Object doInvoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, Object[] args)
+			throws Exception {
+
+		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
+				.captureInvocationOn(repositoryInterface);
 
 		try {
+
 			Object result = invokable.invoke(args);
 
 			if (result != null && ReactiveWrappers.supports(result.getClass())) {
-				return ReactiveWrapperConverters.doOnError(
-						ReactiveWrapperConverters.doOnSuccess(result, () -> listener.afterInvocation(method, args, result, null)),
-						ex -> listener.afterInvocation(method, args, result, ex));
+				{
+
+					if (result instanceof Mono) {
+						return Mono.usingWhen(
+								Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)),
+								it -> {
+									it.trackStart();
+									return ReactiveWrapperConverters.toWrapper(result, Mono.class);
+								}, it -> {
+									multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
+									return Mono.empty();
+								}, (it, e) -> {
+									multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
+									return Mono.empty();
+								}, it -> {
+									multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
+									return Mono.empty();
+								});
+					}
+					return Flux.usingWhen(
+							Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)),
+							it -> {
+								it.trackStart();
+								return ReactiveWrapperConverters.toWrapper(result, Publisher.class);
+							}, it -> {
+								multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
+								return Mono.empty();
+							}, (it, e) -> {
+								multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
+								return Mono.empty();
+							}, it -> {
+								multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
+								return Mono.empty();
+							});
+				}
 			}
 
 			if (result instanceof Stream) {
-				return ((Stream<?>) result).onClose(() -> listener.afterInvocation(method, args, result, null));
+				return ((Stream<?>) result).onClose(
+						() -> multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.success())));
 			}
 
-			listener.afterInvocation(method, args, result, null);
+			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.success()));
 
 			return result;
 		} catch (Exception e) {
-			listener.afterInvocation(method, args, null, e);
+			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
 			throw e;
 		}
 	}
 
 	@Nullable
 	@SuppressWarnings({ "unchecked", "ConstantConditions" })
-	private Object doInvokeReactiveToSuspended(RepositoryInvocationListener listener, Object[] args) throws Exception {
+	private Object doInvokeReactiveToSuspended(Class<?> repositoryInterface, RepositoryInvocationMulticaster listener,
+			Object[] args) throws Exception {
 
 		/*
 		 * Kotlin suspended functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
@@ -151,26 +198,37 @@ abstract class RepositoryMethodInvoker {
 		 */
 		Continuation<Object> continuation = (Continuation) args[args.length - 1];
 		args[args.length - 1] = null;
+
+		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
+				.captureInvocationOn(repositoryInterface);
 		try {
 			Object result = invokable.invoke(args);
 
 			if (returnsReactiveType) {
-				listener.afterInvocation(method, args, result, null);
+				listener.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.success()));
 				return ReactiveWrapperConverters.toWrapper(result, returnedType);
 			}
 
 			Publisher<?> publisher = result instanceof Publisher ? (Publisher<?>) result
 					: ReactiveWrapperConverters.toWrapper(result, Publisher.class);
 
-			publisher = ReactiveWrapperConverters.doOnError(
-					ReactiveWrapperConverters.doOnSuccess(publisher, () -> listener.afterInvocation(method, args, result, null)),
-					ex -> listener.afterInvocation(method, args, result, ex));
+			publisher = ReactiveWrapperConverters
+					.doOnError(
+							ReactiveWrapperConverters.doOnSuccess(publisher,
+									() -> listener.notifyListeners(method, args,
+											computeInvocationResult(invocationResultCaptor.success()))),
+							ex -> listener.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(ex))));
 
 			return AwaitKt.awaitFirstOrNull(publisher, continuation);
 		} catch (Exception e) {
-			listener.afterInvocation(method, args, null, e);
+			listener.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
 			throw e;
 		}
+	}
+
+	private RepositoryMethodInvocation computeInvocationResult(RepositoryMethodInvocationCaptor captured) {
+		return new RepositoryMethodInvocation(captured.getRepositoryInterface(), method, captured.getCapturedResult(),
+				captured.getDuration());
 	}
 
 	interface Invokable {
@@ -300,5 +358,81 @@ abstract class RepositoryMethodInvoker {
 				return suspendedDeclaredMethod && !suspendedBaseClassMethod && reactiveBaseClassMethod;
 			}
 		}
+	}
+
+	private static class RepositoryMethodInvocationCaptor {
+
+		private final Class<?> repositoryInterface;
+		private long startTime;
+		private @Nullable Long endTime;
+		private final State state;
+		private final @Nullable Throwable error;
+
+		protected RepositoryMethodInvocationCaptor(Class<?> repositoryInterface, long startTime, Long endTime, State state,
+				@Nullable Throwable exception) {
+
+			this.repositoryInterface = repositoryInterface;
+			this.startTime = startTime;
+			this.endTime = endTime;
+			this.state = state;
+			this.error = exception instanceof InvocationTargetException ? exception.getCause() : exception;
+		}
+
+		public static RepositoryMethodInvocationCaptor captureInvocationOn(Class<?> repositoryInterface) {
+			return new RepositoryMethodInvocationCaptor(repositoryInterface, System.nanoTime(), null, State.RUNNING, null);
+		}
+
+		public RepositoryMethodInvocationCaptor error(Throwable exception) {
+			return new RepositoryMethodInvocationCaptor(repositoryInterface, startTime, System.nanoTime(), State.ERROR,
+					exception);
+		}
+
+		public RepositoryMethodInvocationCaptor success() {
+			return new RepositoryMethodInvocationCaptor(repositoryInterface, startTime, System.nanoTime(), State.SUCCESS,
+					null);
+		}
+
+		public RepositoryMethodInvocationCaptor canceled() {
+			return new RepositoryMethodInvocationCaptor(repositoryInterface, startTime, System.nanoTime(), State.CANCELED,
+					null);
+		}
+
+		Class<?> getRepositoryInterface() {
+			return repositoryInterface;
+		}
+
+		void trackStart() {
+			startTime = System.nanoTime();
+		}
+
+		public State getState() {
+			return state;
+		}
+
+		@Nullable
+		public Throwable getError() {
+			return error;
+		}
+
+		long getDuration() {
+			return (endTime != null ? endTime : System.nanoTime()) - startTime;
+		}
+
+		RepositoryMethodInvocationResult getCapturedResult() {
+			return new RepositoryMethodInvocationResult() {
+
+				@Override
+				public State getState() {
+					return RepositoryMethodInvocationCaptor.this.getState();
+				}
+
+				@Nullable
+				@Override
+				public Throwable getError() {
+					return RepositoryMethodInvocationCaptor.this.getError();
+				}
+			};
+		}
+
 	}
 }

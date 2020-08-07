@@ -22,14 +22,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -49,6 +47,8 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
+import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.DefaultRepositoryInvocationMulticaster;
+import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
@@ -56,8 +56,6 @@ import org.springframework.data.repository.query.QueryMethodEvaluationContextPro
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
-import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionalProxy;
@@ -78,39 +76,8 @@ import org.springframework.util.ObjectUtils;
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
-	private static final BiFunction<Method, Object[], Object[]> REACTIVE_ARGS_CONVERTER = (method, args) -> {
-
-		if (ReactiveWrappers.isAvailable()) {
-
-			Class<?>[] parameterTypes = method.getParameterTypes();
-
-			Object[] converted = new Object[args.length];
-			for (int i = 0; i < args.length; i++) {
-
-				Object value = args[i];
-				Object convertedArg = value;
-
-				Class<?> parameterType = parameterTypes.length > i ? parameterTypes[i] : null;
-
-				if (value != null && parameterType != null) {
-					if (!parameterType.isAssignableFrom(value.getClass())
-							&& ReactiveWrapperConverters.canConvert(value.getClass(), parameterType)) {
-
-						convertedArg = ReactiveWrapperConverters.toWrapper(value, parameterType);
-					}
-				}
-
-				converted[i] = convertedArg;
-			}
-
-			return converted;
-		}
-
-		return args;
-	};
-
 	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
- 	private static final Log logger = LogFactory.getLog(RepositoryFactorySupport.class);
+	private static final Log logger = LogFactory.getLog(RepositoryFactorySupport.class);
 
 	static {
 		QueryExecutionConverters.registerConvertersIn(CONVERSION_SERVICE);
@@ -260,15 +227,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @return
 	 */
 	private RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata) {
-
-		RepositoryComposition composition = RepositoryComposition.empty();
-
-		if (metadata.isReactiveRepository()) {
-			return composition.withMethodLookup(MethodLookups.forReactiveTypes(metadata))
-					.withArgumentConverter(REACTIVE_ARGS_CONVERTER);
-		}
-
-		return composition.withMethodLookup(MethodLookups.forRepositoryTypes(metadata));
+		return RepositoryComposition.fromMetadata(metadata);
 	}
 
 	/**
@@ -349,7 +308,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		T repository = (T) result.getProxy(classLoader);
 
 		if (logger.isDebugEnabled()) {
-			logger.debug(LogMessage.format("Finished creation of repository instance for {}.", repositoryInterface.getName()));
+			logger
+					.debug(LogMessage.format("Finished creation of repository instance for {}.", repositoryInterface.getName()));
 		}
 
 		return repository;
@@ -545,13 +505,14 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		private final RepositoryInformation information;
 		private final RepositoryComposition composition;
-		private final List<RepositoryMethodInvocationListener> methodInvocationListeners;
+		private final RepositoryInvocationMulticaster invocationMulticaster;
 
 		public ImplementationMethodExecutionInterceptor(RepositoryInformation information,
 				RepositoryComposition composition, List<RepositoryMethodInvocationListener> methodInvocationListeners) {
 			this.information = information;
 			this.composition = composition;
-			this.methodInvocationListeners = methodInvocationListeners;
+			this.invocationMulticaster = methodInvocationListeners.isEmpty() ? NoOpRepositoryInvocationMulticaster.INSTANCE
+					: new DefaultRepositoryInvocationMulticaster(methodInvocationListeners);
 		}
 
 		/*
@@ -564,22 +525,14 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			Method method = invocation.getMethod();
 			Object[] arguments = invocation.getArguments();
-			RepositoryInvocationListener invocationListener = getInvocationListener();
 
 			try {
-				return composition.invoke(invocationListener, method, arguments);
+				return composition.invoke(invocationMulticaster, method, arguments);
 			} catch (Exception e) {
 				ClassUtils.unwrapReflectionException(e);
 			}
 
 			throw new IllegalStateException("Should not occur!");
-		}
-
-		private RepositoryInvocationListener getInvocationListener() {
-			return methodInvocationListeners.isEmpty()
-					? RepositoryInvocationListener.NoOpRepositoryInvocationListener.INSTANCE
-					: new RepositoryInvocationListener.RepositoryInvocationMulticaster(information.getRepositoryInterface(),
-							methodInvocationListeners);
 		}
 	}
 
