@@ -56,7 +56,8 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 
 		this.config = config;
 		this.interfaceName = interfaceName;
-		this.beanName = Introspector.decapitalize(getLocalName(interfaceName).concat(config.getImplementationPostfix()));
+		this.beanName = Introspector
+				.decapitalize(ClassUtils.getShortName(interfaceName).concat(config.getImplementationPostfix()));
 	}
 
 	/*
@@ -144,7 +145,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 		String localName = getLocalName(beanClassName);
 
 		return localName.equals(getImplementationClassName()) //
-				&& getBasePackages().stream().anyMatch(it -> beanPackage.startsWith(it));
+				&& getBasePackages().stream().anyMatch(beanPackage::startsWith);
 	}
 
 	private String getLocalName(String className) {
@@ -159,7 +160,6 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 
 			MetadataReader reader = getMetadataReaderFactory().getMetadataReader(beanClassName);
 			return filters.stream().anyMatch(it -> matches(it, reader));
-
 		} catch (IOException o_O) {
 			return true;
 		}

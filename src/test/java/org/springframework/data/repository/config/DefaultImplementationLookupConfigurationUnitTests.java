@@ -46,7 +46,7 @@ class DefaultImplementationLookupConfigurationUnitTests {
 
 		DefaultImplementationLookupConfiguration lookupConfiguration = new DefaultImplementationLookupConfiguration(idcMock,
 				"com.acme.Repositories$NestedRepository");
-		assertThat(lookupConfiguration.getImplementationBeanName()).isEqualTo("nestedRepositoryImpl");
+		assertThat(lookupConfiguration.getImplementationBeanName()).isEqualTo("repositories.NestedRepositoryImpl");
 		assertThat(lookupConfiguration.getImplementationClassName()).isEqualTo("NestedRepositoryImpl");
 	}
 

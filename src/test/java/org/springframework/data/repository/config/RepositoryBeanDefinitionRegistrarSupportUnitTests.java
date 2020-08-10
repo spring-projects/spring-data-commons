@@ -36,6 +36,8 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.data.mapping.Person;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.basepackage.FragmentImpl;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 
@@ -74,6 +76,18 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		assertBeanDefinitionRegisteredFor("mixinImpl");
 		assertBeanDefinitionRegisteredFor("mixinImplFragment");
 		assertNoBeanDefinitionRegisteredFor("profileRepository");
+	}
+
+	@Test // DATACMNS-1754
+	void registersBeanDefinitionForNestedRepositories() {
+
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(NestedRepositoriesConfiguration.class);
+
+		registrar.registerBeanDefinitions(metadata, registry);
+
+		assertBeanDefinitionRegisteredFor("repositoryBeanDefinitionRegistrarSupportUnitTests.MyNestedRepository");
+		assertBeanDefinitionRegisteredFor("repositoryBeanDefinitionRegistrarSupportUnitTests.NestedFragmentImpl");
+		assertBeanDefinitionRegisteredFor("repositoryBeanDefinitionRegistrarSupportUnitTests.MyNestedRepositoryImpl");
 	}
 
 	@Test // DATACMNS-1147
@@ -183,4 +197,28 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 	@EnableRepositories(basePackageClasses = FragmentImpl.class)
 	static class LimitsImplementationBasePackages {}
+
+	@EnableRepositories(basePackageClasses = MyNestedRepository.class, considerNestedRepositories = true,
+			excludeFilters = {
+					@Filter(type = FilterType.ASSIGNABLE_TYPE,
+							value = RepositoryConfigurationExtensionSupportUnitTests.ReactiveRepository.class),
+					@Filter(type = FilterType.ASSIGNABLE_TYPE, value = MyOtherRepository.class) })
+	static class NestedRepositoriesConfiguration {}
+
+	interface MyNestedRepository extends Repository<Person, Long>, NestedFragment {
+
+	}
+
+	interface NestedFragment {
+
+	}
+
+	static class NestedFragmentImpl implements NestedFragment {
+
+	}
+
+	static class MyNestedRepositoryImpl {
+
+	}
+
 }

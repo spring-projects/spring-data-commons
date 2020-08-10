@@ -749,10 +749,18 @@ Each Spring Data module includes a `repositories` element that lets you define a
 ----
 ====
 
-In the preceding example, Spring is instructed to scan `com.acme.repositories` and all its sub-packages for interfaces extending `Repository` or one of its sub-interfaces. For each interface found, the infrastructure registers the persistence technology-specific `FactoryBean` to create the appropriate proxies that handle invocations of the query methods. Each bean is registered under a bean name that is derived from the interface name, so an interface of `UserRepository` would be registered under `userRepository`. The `base-package` attribute allows wildcards so that you can define a pattern of scanned packages.
+In the preceding example, Spring is instructed to scan `com.acme.repositories` and all its sub-packages for interfaces extending `Repository` or one of its sub-interfaces.
+For each interface found, the infrastructure registers the persistence technology-specific `FactoryBean` to create the appropriate proxies that handle invocations of the query methods.
+Each bean is registered under a bean name that is derived from the interface name, so an interface of `UserRepository` would be registered under `userRepository`.
+Bean names for nested repository interfaces are prefixed with their enclosing type name.
+The `base-package` attribute allows wildcards so that you can define a pattern of scanned packages.
 
 ==== Using filters
-By default, the infrastructure picks up every interface extending the persistence technology-specific `Repository` sub-interface located under the configured base package and creates a bean instance for it. However, you might want more fine-grained control over which interfaces have bean instances created for them. To do so, use `<include-filter />` and `<exclude-filter />` elements inside the `<repositories />` element. The semantics are exactly equivalent to the elements in Spring's context namespace. For details, see the link:{spring-framework-docs}/core.html#beans-scanning-filters[Spring reference documentation] for these elements.
+By default, the infrastructure picks up every interface extending the persistence technology-specific `Repository` sub-interface located under the configured base package and creates a bean instance for it.
+However, you might want more fine-grained control over which interfaces have bean instances created for them.
+To do so, use `<include-filter />` and `<exclude-filter />` elements inside the `<repositories />` element.
+The semantics are exactly equivalent to the elements in Spring's context namespace.
+For details, see the link:{spring-framework-docs}/core.html#beans-scanning-filters[Spring reference documentation] for these elements.
 
 For example, to exclude certain interfaces from instantiation as repository beans, you could use the following configuration:
 

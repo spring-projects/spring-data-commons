@@ -82,7 +82,8 @@ class RepositoryFragmentsIntegrationTests {
 	void shouldFindImplementationForNestedRepositoryFragment() {
 
 		ComposedRepository repository = getBean(ComposedRepository.class);
-		NestedFragmentInterfaceImpl fragment = getBean(NestedFragmentInterfaceImpl.class);
+		RepositoryFragments.NestedFragmentInterfaceImpl fragment = getBean(
+				RepositoryFragments.NestedFragmentInterfaceImpl.class);
 
 		assertThat(repository.getKey()).isEqualTo("NestedFragmentImpl");
 		assertThat(fragment.getKey()).isEqualTo("NestedFragmentImpl");

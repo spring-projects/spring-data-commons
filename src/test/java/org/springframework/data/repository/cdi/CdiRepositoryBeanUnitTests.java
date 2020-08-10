@@ -131,33 +131,24 @@ class CdiRepositoryBeanUnitTests {
 	@Test // DATACMNS-322
 	void createsPassivationId() {
 
-		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>( //
-				SINGLE_ANNOTATION, //
-				SampleRepository.class, //
-				beanManager //
+		CdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(SINGLE_ANNOTATION, SampleRepository.class,
+				beanManager
 		);
 
 		assertThat(bean.getId()).isEqualTo(PASSIVATION_ID);
 	}
 
-	@Test // DATACMNS-764
+	@Test // DATACMNS-764, DATACMNS-1754
 	void passesCorrectBeanNameToTheImplementationDetector() {
 
 		CustomRepositoryImplementationDetector detector = mock(CustomRepositoryImplementationDetector.class);
 
-		CdiRepositoryBean<SampleRepository> bean = new CdiRepositoryBean<SampleRepository>( //
-				SINGLE_ANNOTATION, //
-				SampleRepository.class, //
-				beanManager, //
-				Optional.of(detector) //
-		) {
+		CdiRepositoryBean<SampleRepository> bean = new CdiRepositoryBean<SampleRepository>(SINGLE_ANNOTATION,
+				SampleRepository.class, beanManager, Optional.of(detector)) {
 
 			@Override
-			protected SampleRepository create( //
-					CreationalContext<SampleRepository> creationalContext, //
-					Class<SampleRepository> repositoryType, //
-					Optional<Object> customImplementation //
-			) {
+			protected SampleRepository create(CreationalContext<SampleRepository> creationalContext,
+					Class<SampleRepository> repositoryType, Optional<Object> customImplementation) {
 				return null;
 			}
 		};
@@ -171,7 +162,7 @@ class CdiRepositoryBeanUnitTests {
 
 		ImplementationLookupConfiguration configuration = captor.getValue();
 
-		assertThat(configuration.getImplementationBeanName()).isEqualTo("sampleRepositoryImpl");
+		assertThat(configuration.getImplementationBeanName()).isEqualTo("cdiRepositoryBeanUnitTests.SampleRepositoryImpl");
 		assertThat(configuration.getImplementationClassName()).isEqualTo("SampleRepositoryImpl");
 	}
 
