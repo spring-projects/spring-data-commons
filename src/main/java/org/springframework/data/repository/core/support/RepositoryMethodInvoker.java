@@ -135,7 +135,7 @@ abstract class RepositoryMethodInvoker {
 			Object result = invokable.invoke(args);
 
 			if (result != null && ReactiveWrappers.supports(result.getClass())) {
-				return inferReactiveInvocationCallbacks(repositoryInterface, multicaster, args, result);
+				return new ReactiveInvocationListenerDecorator().decorate(repositoryInterface, multicaster, args, result);
 			}
 
 			if (result instanceof Stream) {
@@ -169,7 +169,7 @@ abstract class RepositoryMethodInvoker {
 				.captureInvocationOn(repositoryInterface);
 		try {
 
-			Publisher<?> result = inferReactiveInvocationCallbacks(repositoryInterface, multicaster, args,
+			Publisher<?> result = new ReactiveInvocationListenerDecorator().decorate(repositoryInterface, multicaster, args,
 					invokable.invoke(args));
 
 			if (returnsReactiveType) {
@@ -188,42 +188,7 @@ abstract class RepositoryMethodInvoker {
 				captured.getDuration());
 	}
 
-	private Publisher<Object> inferReactiveInvocationCallbacks(Class<?> repositoryInterface,
-			RepositoryInvocationMulticaster multicaster, Object[] args, Object result) {
 
-		if (result instanceof Mono) {
-			return Mono.usingWhen(
-					Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)), it -> {
-						it.trackStart();
-						return ReactiveWrapperConverters.toWrapper(result, Mono.class);
-					}, it -> {
-						multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
-						return Mono.empty();
-					}, (it, e) -> {
-						multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
-						return Mono.empty();
-					}, it -> {
-						multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
-						return Mono.empty();
-					});
-		}
-
-		return Flux.usingWhen(
-				Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)), it -> {
-					it.trackStart();
-					return result instanceof Publisher ? (Publisher<?>) result
-							: ReactiveWrapperConverters.toWrapper(result, Publisher.class);
-				}, it -> {
-					multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
-					return Mono.empty();
-				}, (it, e) -> {
-					multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
-					return Mono.empty();
-				}, it -> {
-					multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
-					return Mono.empty();
-				});
-	}
 
 	interface Invokable {
 
@@ -237,6 +202,49 @@ abstract class RepositoryMethodInvoker {
 	private static class RepositoryQueryMethodInvoker extends RepositoryMethodInvoker {
 		public RepositoryQueryMethodInvoker(Method method, RepositoryQuery repositoryQuery) {
 			super(method, repositoryQuery::execute);
+		}
+	}
+
+	/**
+	 * Delegate to decorate {@link Publisher} invocations with {@link RepositoryInvocationMulticaster} callbacks.
+	 */
+	class ReactiveInvocationListenerDecorator {
+
+		Publisher<Object> decorate(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, Object[] args,
+				Object result) {
+
+			if (result instanceof Mono) {
+				return Mono.usingWhen(
+						Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)), it -> {
+							it.trackStart();
+							return ReactiveWrapperConverters.toWrapper(result, Mono.class);
+						}, it -> {
+							multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
+							return Mono.empty();
+						}, (it, e) -> {
+							multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
+							return Mono.empty();
+						}, it -> {
+							multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
+							return Mono.empty();
+						});
+			}
+
+			return Flux.usingWhen(
+					Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)), it -> {
+						it.trackStart();
+						return result instanceof Publisher ? (Publisher<?>) result
+								: ReactiveWrapperConverters.toWrapper(result, Publisher.class);
+					}, it -> {
+						multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
+						return Mono.empty();
+					}, (it, e) -> {
+						multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
+						return Mono.empty();
+					}, it -> {
+						multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
+						return Mono.empty();
+					});
 		}
 	}
 

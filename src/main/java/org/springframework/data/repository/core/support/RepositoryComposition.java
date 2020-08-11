@@ -139,7 +139,7 @@ public class RepositoryComposition {
 					REACTIVE_ARGS_CONVERTER);
 		}
 
-		return new RepositoryComposition(metadata, RepositoryFragments.empty(), MethodLookups.direct(),
+		return new RepositoryComposition(metadata, RepositoryFragments.empty(), MethodLookups.forRepositoryTypes(metadata),
 				PASSTHRU_ARG_CONVERTER);
 	}
 
@@ -480,11 +480,8 @@ public class RepositoryComposition {
 		/**
 		 * Invoke {@link Method} by resolving the fragment that implements a suitable method.
 		 *
-		 * @param repositoryInformation
-		 * @param listener
 		 * @param invokedMethod invoked method as per invocation on the interface.
 		 * @param methodToCall backend method that is backing the call.
-		 * @param args
 		 * @return
 		 * @throws Throwable
 		 */
@@ -496,8 +493,7 @@ public class RepositoryComposition {
 		/**
 		 * Invoke {@link Method} by resolving the fragment that implements a suitable method.
 		 *
-		 * @param listener
-		 * @param repositoryInformation
+		 * @param repositoryInterface
 		 * @param listener
 		 * @param invokedMethod invoked method as per invocation on the interface.
 		 * @param methodToCall backend method that is backing the call.
