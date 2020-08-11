@@ -293,8 +293,6 @@ abstract class RepositoryMethodInvoker {
 		 */
 		static class CoroutineAdapterInformation {
 
-			private static CoroutineAdapterInformation DISABLED = new CoroutineAdapterInformation(false, false, false, 0, 0);
-
 			private final boolean suspendedDeclaredMethod;
 			private final boolean suspendedBaseClassMethod;
 			private final boolean reactiveBaseClassMethod;
@@ -320,7 +318,8 @@ abstract class RepositoryMethodInvoker {
 			public static CoroutineAdapterInformation create(Method declaredMethod, Method baseClassMethod) {
 
 				if (!KotlinDetector.isKotlinReflectPresent()) {
-					return DISABLED;
+					return new CoroutineAdapterInformation(false, false, false, declaredMethod.getParameterCount(),
+							baseClassMethod.getParameterCount());
 				}
 
 				KFunction<?> declaredFunction = KotlinDetector.isKotlinType(declaredMethod.getDeclaringClass())
