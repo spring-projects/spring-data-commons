@@ -135,41 +135,7 @@ abstract class RepositoryMethodInvoker {
 			Object result = invokable.invoke(args);
 
 			if (result != null && ReactiveWrappers.supports(result.getClass())) {
-				{
-
-					if (result instanceof Mono) {
-						return Mono.usingWhen(
-								Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)),
-								it -> {
-									it.trackStart();
-									return ReactiveWrapperConverters.toWrapper(result, Mono.class);
-								}, it -> {
-									multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
-									return Mono.empty();
-								}, (it, e) -> {
-									multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
-									return Mono.empty();
-								}, it -> {
-									multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
-									return Mono.empty();
-								});
-					}
-					return Flux.usingWhen(
-							Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)),
-							it -> {
-								it.trackStart();
-								return ReactiveWrapperConverters.toWrapper(result, Publisher.class);
-							}, it -> {
-								multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
-								return Mono.empty();
-							}, (it, e) -> {
-								multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
-								return Mono.empty();
-							}, it -> {
-								multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
-								return Mono.empty();
-							});
-				}
+				return inferReactiveInvocationCallbacks(repositoryInterface, multicaster, args, result);
 			}
 
 			if (result instanceof Stream) {
@@ -188,7 +154,7 @@ abstract class RepositoryMethodInvoker {
 
 	@Nullable
 	@SuppressWarnings({ "unchecked", "ConstantConditions" })
-	private Object doInvokeReactiveToSuspended(Class<?> repositoryInterface, RepositoryInvocationMulticaster listener,
+	private Object doInvokeReactiveToSuspended(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
 			Object[] args) throws Exception {
 
 		/*
@@ -202,26 +168,17 @@ abstract class RepositoryMethodInvoker {
 		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
 				.captureInvocationOn(repositoryInterface);
 		try {
-			Object result = invokable.invoke(args);
+
+			Publisher<?> result = inferReactiveInvocationCallbacks(repositoryInterface, multicaster, args,
+					invokable.invoke(args));
 
 			if (returnsReactiveType) {
-				listener.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.success()));
 				return ReactiveWrapperConverters.toWrapper(result, returnedType);
 			}
 
-			Publisher<?> publisher = result instanceof Publisher ? (Publisher<?>) result
-					: ReactiveWrapperConverters.toWrapper(result, Publisher.class);
-
-			publisher = ReactiveWrapperConverters
-					.doOnError(
-							ReactiveWrapperConverters.doOnSuccess(publisher,
-									() -> listener.notifyListeners(method, args,
-											computeInvocationResult(invocationResultCaptor.success()))),
-							ex -> listener.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(ex))));
-
-			return AwaitKt.awaitFirstOrNull(publisher, continuation);
+			return AwaitKt.awaitFirstOrNull(result, continuation);
 		} catch (Exception e) {
-			listener.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
+			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
 			throw e;
 		}
 	}
@@ -229,6 +186,43 @@ abstract class RepositoryMethodInvoker {
 	private RepositoryMethodInvocation computeInvocationResult(RepositoryMethodInvocationCaptor captured) {
 		return new RepositoryMethodInvocation(captured.getRepositoryInterface(), method, captured.getCapturedResult(),
 				captured.getDuration());
+	}
+
+	private Publisher<Object> inferReactiveInvocationCallbacks(Class<?> repositoryInterface,
+			RepositoryInvocationMulticaster multicaster, Object[] args, Object result) {
+
+		if (result instanceof Mono) {
+			return Mono.usingWhen(
+					Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)), it -> {
+						it.trackStart();
+						return ReactiveWrapperConverters.toWrapper(result, Mono.class);
+					}, it -> {
+						multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
+						return Mono.empty();
+					}, (it, e) -> {
+						multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
+						return Mono.empty();
+					}, it -> {
+						multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
+						return Mono.empty();
+					});
+		}
+
+		return Flux.usingWhen(
+				Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)), it -> {
+					it.trackStart();
+					return result instanceof Publisher ? (Publisher<?>) result
+							: ReactiveWrapperConverters.toWrapper(result, Publisher.class);
+				}, it -> {
+					multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
+					return Mono.empty();
+				}, (it, e) -> {
+					multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
+					return Mono.empty();
+				}, it -> {
+					multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
+					return Mono.empty();
+				});
 	}
 
 	interface Invokable {

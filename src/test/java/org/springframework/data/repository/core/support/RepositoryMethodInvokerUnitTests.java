@@ -18,6 +18,11 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import kotlin.coroutines.Continuation;
+import kotlin.coroutines.CoroutineContext;
+import kotlinx.coroutines.flow.Flow;
+import kotlinx.coroutines.flow.FlowKt;
+import kotlinx.coroutines.reactor.ReactorContext;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -48,6 +53,7 @@ import org.mockito.internal.stubbing.answers.Returns;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Subscription;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.support.CoroutineRepositoryMetadataUnitTests.MyCoroutineRepository;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult.State;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -237,6 +243,37 @@ class RepositoryMethodInvokerUnitTests {
 		assertThat(multicaster.first().getResult().getError()).isNull();
 	}
 
+	@Test // DATACMNS-1764
+	void capturesKotlinSuspendFunctionsCorrectly() throws Exception {
+
+		Flux<TestDummy> result = Flux.just(new TestDummy());
+		when(query.execute(any())).thenReturn(result);
+
+		Flow<TestDummy> flow = new RepositoryMethodInvokerStub(MyCoroutineRepository.class, multicaster,
+				"suspendedQueryMethod", query::execute).invoke(mock(Continuation.class));
+
+		assertThat(multicaster).isEmpty();
+
+		FlowKt.toCollection(flow, new ArrayList<>(), new Continuation<ArrayList<? extends Object>>() {
+
+			ReactorContext ctx = new ReactorContext(reactor.util.context.Context.empty());
+
+			@NotNull
+			@Override
+			public CoroutineContext getContext() {
+				return ctx;
+			}
+
+			@Override
+			public void resumeWith(@NotNull Object o) {
+
+			}
+		});
+
+		assertThat(multicaster.first().getResult().getState()).isEqualTo(State.SUCCESS);
+		assertThat(multicaster.first().getResult().getError()).isNull();
+	}
+
 	RepositoryMethodInvokerStub repositoryMethodInvoker(String methodName) {
 		return new RepositoryMethodInvokerStub(DummyRepository.class, multicaster, methodName, query::execute);
 	}
@@ -254,7 +291,7 @@ class RepositoryMethodInvokerUnitTests {
 		private final Queue<Integer> delays;
 
 		Delays(Integer... delays) {
-			
+
 			this.delays = new ArrayBlockingQueue(delays.length);
 			for (Integer delay : delays) {
 				this.delays.add(delay);
