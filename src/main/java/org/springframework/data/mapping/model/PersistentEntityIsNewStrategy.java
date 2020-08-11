@@ -25,8 +25,9 @@ import org.springframework.util.ClassUtils;
 
 /**
  * An {@link IsNewStrategy} to use a {@link PersistentEntity}'s version property followed by it
- * 
+ *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Scary Pockets - Crash Into Me (Dave Matthews Band Cover feat. Julia Nunes) -
  *             https://www.youtube.com/watch?v=syGlBNVGEqU
  */
@@ -37,7 +38,7 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 
 	/**
 	 * Creates a new {@link PersistentEntityIsNewStrategy} for the given entity.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 */
 	private PersistentEntityIsNewStrategy(PersistentEntity<?, ?> entity, boolean idOnly) {
@@ -66,7 +67,7 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 
 	/**
 	 * Creates a new {@link PersistentEntityIsNewStrategy} to only consider the identifier of the given entity.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @return
 	 */
@@ -77,7 +78,7 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 	/**
 	 * Creates a new {@link PersistentEntityIsNewStrategy} to consider version properties before falling back to the
 	 * identifier.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @return
 	 */
@@ -85,7 +86,7 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 		return new PersistentEntityIsNewStrategy(entity, false);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.support.IsNewStrategy#isNew(java.lang.Object)
 	 */
@@ -99,10 +100,10 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 		}
 
 		if (valueType != null && !valueType.isPrimitive()) {
-			return value == null;
+			return false;
 		}
 
-		if (Number.class.isInstance(value)) {
+		if (value instanceof Number) {
 			return ((Number) value).longValue() == 0;
 		}
 
