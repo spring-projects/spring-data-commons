@@ -27,13 +27,12 @@ import rx.Single;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Optional;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.core.ReactiveAdapter;
 import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.convert.ConversionService;
@@ -59,6 +58,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 2.0
  * @see ReactiveWrappers
  * @see ReactiveAdapterRegistry
@@ -183,55 +183,15 @@ public abstract class ReactiveWrapperConverters {
 		Assert.notNull(reactiveObject, "Reactive source object must not be null!");
 		Assert.notNull(converter, "Converter must not be null!");
 
-		return REACTIVE_WRAPPERS.stream()//
-				.filter(it -> ClassUtils.isAssignable(it.getWrapperClass(), reactiveObject.getClass()))//
-				.findFirst()//
+		return getFirst(reactiveObject)//
 				.map(it -> (T) it.map(reactiveObject, converter))//
 				.orElseThrow(() -> new IllegalStateException(String.format("Cannot apply converter to %s", reactiveObject)));
 	}
 
-	/**
-	 * Apply a {@link Runnable} when the reactive type emits a completion signal.
-	 *
-	 * @param reactiveObject must not be {@literal null}.
-	 * @param onSuccess must not be {@literal null}.
-	 * @return
-	 * @since 2.4
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T doOnSuccess(Object reactiveObject, Runnable onSuccess) {
-
-		Assert.notNull(reactiveObject, "Reactive source object must not be null!");
-		Assert.notNull(onSuccess, "onSuccess callback must not be null!");
-
+	private static Optional<ReactiveTypeWrapper<?>> getFirst(Object reactiveObject) {
 		return REACTIVE_WRAPPERS.stream()//
 				.filter(it -> ClassUtils.isAssignable(it.getWrapperClass(), reactiveObject.getClass()))//
-				.findFirst()//
-				.map(it -> (T) it.doOnSuccess(reactiveObject, onSuccess))//
-				.orElseThrow(
-						() -> new IllegalStateException(String.format("Cannot apply onSuccess callback to %s", reactiveObject)));
-	}
-
-	/**
-	 * Apply a {@link Consumer} when the reactive type emits an error signal.
-	 *
-	 * @param reactiveObject must not be {@literal null}.
-	 * @param onError must not be {@literal null}.
-	 * @return
-	 * @since 2.4
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T doOnError(Object reactiveObject, Consumer<? super Throwable> onError) {
-
-		Assert.notNull(reactiveObject, "Reactive source object must not be null!");
-		Assert.notNull(onError, "onError callback must not be null!");
-
-		return REACTIVE_WRAPPERS.stream()//
-				.filter(it -> ClassUtils.isAssignable(it.getWrapperClass(), reactiveObject.getClass()))//
-				.findFirst()//
-				.map(it -> (T) it.doOnError(reactiveObject, onError))//
-				.orElseThrow(
-						() -> new IllegalStateException(String.format("Cannot apply onError callback to %s", reactiveObject)));
+				.findFirst();
 	}
 
 	/**
@@ -275,25 +235,6 @@ public abstract class ReactiveWrapperConverters {
 		 */
 		Object map(Object wrapper, Function<Object, Object> function);
 
-		/**
-		 * Apply a {@link Runnable} when the reactive type emits a completion signal.
-		 *
-		 * @param wrapper the reactive type, must not be {@literal null}.
-		 * @param onSuccess the signal callback, must not be {@literal null}.
-		 * @return the reactive type with {@code onSuccess} attached.
-		 * @since 2.4
-		 */
-		Object doOnSuccess(Object wrapper, Runnable onSuccess);
-
-		/**
-		 * Apply a {@link Consumer} when the reactive type emits an error signal.
-		 *
-		 * @param wrapper the reactive type, must not be {@literal null}.
-		 * @param onError the error consumer, must not be {@literal null}.
-		 * @return the reactive type with {@code onError} attached.
-		 * @since 2.4
-		 */
-		Object doOnError(Object wrapper, Consumer<? super Throwable> onError);
 	}
 
 	/**
@@ -312,16 +253,6 @@ public abstract class ReactiveWrapperConverters {
 		public Mono<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((Mono<?>) wrapper).map(function::apply);
 		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((Mono<?>) wrapper).doOnSuccess(o -> onSuccess.run());
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((Mono<?>) wrapper).doOnError(onError);
-		}
 	}
 
 	/**
@@ -338,16 +269,6 @@ public abstract class ReactiveWrapperConverters {
 
 		public Flux<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((Flux<?>) wrapper).map(function);
-		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((Flux<?>) wrapper).doOnComplete(onSuccess);
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((Flux<?>) wrapper).doOnError(onError);
 		}
 	}
 
@@ -367,26 +288,6 @@ public abstract class ReactiveWrapperConverters {
 
 		public Flow<?> map(Object wrapper, Function<Object, Object> function) {
 			return FlowKt.map((Flow<?>) wrapper, (o, continuation) -> function.apply(o));
-		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return FlowKt.onCompletion((Flow<?>) wrapper, (collector, ex, continuation) -> {
-				if (ex == null) {
-					onSuccess.run();
-				}
-				return collector;
-			});
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return FlowKt.onCompletion((Flow<?>) wrapper, (collector, ex, continuation) -> {
-				if (ex != null) {
-					onError.accept(ex);
-				}
-				return collector;
-			});
 		}
 	}
 
@@ -415,34 +316,6 @@ public abstract class ReactiveWrapperConverters {
 
 			return FluxWrapper.INSTANCE.map(Flux.from((Publisher<?>) wrapper), function);
 		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-
-			if (wrapper instanceof Mono) {
-				return MonoWrapper.INSTANCE.doOnSuccess(wrapper, onSuccess);
-			}
-
-			if (wrapper instanceof Flux) {
-				return FluxWrapper.INSTANCE.doOnSuccess(wrapper, onSuccess);
-			}
-
-			return FluxWrapper.INSTANCE.doOnSuccess(Flux.from((Publisher<?>) wrapper), onSuccess);
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-
-			if (wrapper instanceof Mono) {
-				return MonoWrapper.INSTANCE.doOnError(wrapper, onError);
-			}
-
-			if (wrapper instanceof Flux) {
-				return FluxWrapper.INSTANCE.doOnError(wrapper, onError);
-			}
-
-			return FluxWrapper.INSTANCE.doOnError(Flux.from((Publisher<?>) wrapper), onError);
-		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -465,16 +338,6 @@ public abstract class ReactiveWrapperConverters {
 		public Single<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((Single<?>) wrapper).map(function::apply);
 		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((Single<?>) wrapper).doOnSuccess(o -> onSuccess.run());
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((Single<?>) wrapper).doOnError(onError::accept);
-		}
 	}
 
 	/**
@@ -492,16 +355,6 @@ public abstract class ReactiveWrapperConverters {
 		@Override
 		public Observable<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((Observable<?>) wrapper).map(function::apply);
-		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((Observable<?>) wrapper).doOnCompleted(onSuccess::run);
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((Observable<?>) wrapper).doOnError(onError::accept);
 		}
 	}
 
@@ -525,16 +378,6 @@ public abstract class ReactiveWrapperConverters {
 		public io.reactivex.Single<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((io.reactivex.Single<?>) wrapper).map(function::apply);
 		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((io.reactivex.Single<?>) wrapper).doOnSuccess(o -> onSuccess.run());
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((io.reactivex.Single<?>) wrapper).doOnError(onError::accept);
-		}
 	}
 
 	/**
@@ -552,16 +395,6 @@ public abstract class ReactiveWrapperConverters {
 		@Override
 		public io.reactivex.Maybe<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((io.reactivex.Maybe<?>) wrapper).map(function::apply);
-		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((io.reactivex.Maybe<?>) wrapper).doOnSuccess(o -> onSuccess.run());
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((io.reactivex.Maybe<?>) wrapper).doOnError(onError::accept);
 		}
 	}
 
@@ -581,16 +414,6 @@ public abstract class ReactiveWrapperConverters {
 		public io.reactivex.Observable<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((io.reactivex.Observable<?>) wrapper).map(function::apply);
 		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((io.reactivex.Observable<?>) wrapper).doOnComplete(onSuccess::run);
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((io.reactivex.Observable<?>) wrapper).doOnError(onError::accept);
-		}
 	}
 
 	/**
@@ -608,16 +431,6 @@ public abstract class ReactiveWrapperConverters {
 		@Override
 		public io.reactivex.Flowable<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((io.reactivex.Flowable<?>) wrapper).map(function::apply);
-		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((io.reactivex.Flowable<?>) wrapper).doOnComplete(onSuccess::run);
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((io.reactivex.Flowable<?>) wrapper).doOnError(onError::accept);
 		}
 	}
 
@@ -641,16 +454,6 @@ public abstract class ReactiveWrapperConverters {
 		public io.reactivex.rxjava3.core.Single<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((io.reactivex.rxjava3.core.Single<?>) wrapper).map(function::apply);
 		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((io.reactivex.rxjava3.core.Single<?>) wrapper).doOnSuccess(o -> onSuccess.run());
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((io.reactivex.rxjava3.core.Single<?>) wrapper).doOnError(onError::accept);
-		}
 	}
 
 	/**
@@ -668,16 +471,6 @@ public abstract class ReactiveWrapperConverters {
 		@Override
 		public io.reactivex.rxjava3.core.Maybe<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((io.reactivex.rxjava3.core.Maybe<?>) wrapper).map(function::apply);
-		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((io.reactivex.rxjava3.core.Maybe<?>) wrapper).doOnSuccess(o -> onSuccess.run());
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((io.reactivex.rxjava3.core.Maybe<?>) wrapper).doOnError(onError::accept);
 		}
 	}
 
@@ -697,16 +490,6 @@ public abstract class ReactiveWrapperConverters {
 		public io.reactivex.rxjava3.core.Observable<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((io.reactivex.rxjava3.core.Observable<?>) wrapper).map(function::apply);
 		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((io.reactivex.rxjava3.core.Observable<?>) wrapper).doOnComplete(onSuccess::run);
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((io.reactivex.rxjava3.core.Observable<?>) wrapper).doOnError(onError::accept);
-		}
 	}
 
 	/**
@@ -724,16 +507,6 @@ public abstract class ReactiveWrapperConverters {
 		@Override
 		public io.reactivex.rxjava3.core.Flowable<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((io.reactivex.rxjava3.core.Flowable<?>) wrapper).map(function::apply);
-		}
-
-		@Override
-		public Object doOnSuccess(Object wrapper, Runnable onSuccess) {
-			return ((io.reactivex.rxjava3.core.Flowable<?>) wrapper).doOnComplete(onSuccess::run);
-		}
-
-		@Override
-		public Object doOnError(Object wrapper, Consumer<? super Throwable> onError) {
-			return ((io.reactivex.rxjava3.core.Flowable<?>) wrapper).doOnError(onError::accept);
 		}
 	}
 
@@ -799,8 +572,7 @@ public abstract class ReactiveWrapperConverters {
 	/**
 	 * A {@link ConverterFactory} that adapts between reactive types using {@link ReactiveAdapterRegistry}.
 	 */
-	private enum ReactiveAdapterConverterFactory
-			implements ConverterFactory<Object, Object>, ConditionalConverter {
+	private enum ReactiveAdapterConverterFactory implements ConverterFactory<Object, Object>, ConditionalConverter {
 
 		INSTANCE;
 

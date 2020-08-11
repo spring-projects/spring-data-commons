@@ -32,6 +32,9 @@ import java.util.stream.Stream;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.MethodLookup.InvokedMethod;
 import org.springframework.data.repository.core.support.MethodLookup.MethodPredicate;
+import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -56,6 +59,7 @@ import org.springframework.util.ReflectionUtils;
  * Composition objects are immutable and thread-safe.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @soundtrack Masterboy - Anybody (Fj Gauder Mix)
  * @since 2.0
  * @see RepositoryFragment
@@ -63,16 +67,50 @@ import org.springframework.util.ReflectionUtils;
 public class RepositoryComposition {
 
 	private static final BiFunction<Method, Object[], Object[]> PASSTHRU_ARG_CONVERTER = (methodParameter, o) -> o;
-	private static final RepositoryComposition EMPTY = new RepositoryComposition(RepositoryFragments.empty(),
+	private static final BiFunction<Method, Object[], Object[]> REACTIVE_ARGS_CONVERTER = (method, args) -> {
+
+		if (ReactiveWrappers.isAvailable()) {
+
+			Class<?>[] parameterTypes = method.getParameterTypes();
+
+			Object[] converted = new Object[args.length];
+			for (int i = 0; i < args.length; i++) {
+
+				Object value = args[i];
+				Object convertedArg = value;
+
+				Class<?> parameterType = parameterTypes.length > i ? parameterTypes[i] : null;
+
+				if (value != null && parameterType != null) {
+					if (!parameterType.isAssignableFrom(value.getClass())
+							&& ReactiveWrapperConverters.canConvert(value.getClass(), parameterType)) {
+
+						convertedArg = ReactiveWrapperConverters.toWrapper(value, parameterType);
+					}
+				}
+
+				converted[i] = convertedArg;
+			}
+
+			return converted;
+		}
+
+		return args;
+	};
+
+	private static final RepositoryComposition EMPTY = new RepositoryComposition(null, RepositoryFragments.empty(),
 			MethodLookups.direct(), PASSTHRU_ARG_CONVERTER);
 
 	private final Map<Method, Method> methodCache = new ConcurrentReferenceHashMap<>();
 	private final RepositoryFragments fragments;
 	private final MethodLookup methodLookup;
 	private final BiFunction<Method, Object[], Object[]> argumentConverter;
+	private final @Nullable RepositoryMetadata metadata;
 
-	private RepositoryComposition(RepositoryFragments fragments, MethodLookup methodLookup,
-			BiFunction<Method, Object[], Object[]> argumentConverter) {
+	private RepositoryComposition(@Nullable RepositoryMetadata metadata, RepositoryFragments fragments,
+			MethodLookup methodLookup, BiFunction<Method, Object[], Object[]> argumentConverter) {
+
+		this.metadata = metadata;
 		this.fragments = fragments;
 		this.methodLookup = methodLookup;
 		this.argumentConverter = argumentConverter;
@@ -88,6 +126,24 @@ public class RepositoryComposition {
 	}
 
 	/**
+	 * Create an {@link RepositoryComposition} using the provided {@link RepositoryMetadata} to set {@link MethodLookup
+	 * method lookups} depending in the repository type (reactive/imperative).
+	 *
+	 * @return an empty {@link RepositoryComposition}.
+	 * @since 2.4
+	 */
+	public static RepositoryComposition fromMetadata(RepositoryMetadata metadata) {
+
+		if (metadata.isReactiveRepository()) {
+			return new RepositoryComposition(metadata, RepositoryFragments.empty(), MethodLookups.forReactiveTypes(metadata),
+					REACTIVE_ARGS_CONVERTER);
+		}
+
+		return new RepositoryComposition(metadata, RepositoryFragments.empty(), MethodLookups.direct(),
+				PASSTHRU_ARG_CONVERTER);
+	}
+
+	/**
 	 * Create a {@link RepositoryComposition} for just a single {@code implementation} with {@link MethodLookups#direct())
 	 * method lookup.
 	 *
@@ -95,7 +151,7 @@ public class RepositoryComposition {
 	 * @return the {@link RepositoryComposition} for a single {@code implementation}.
 	 */
 	public static RepositoryComposition just(Object implementation) {
-		return new RepositoryComposition(RepositoryFragments.just(implementation), MethodLookups.direct(),
+		return new RepositoryComposition(null, RepositoryFragments.just(implementation), MethodLookups.direct(),
 				PASSTHRU_ARG_CONVERTER);
 	}
 
@@ -118,7 +174,7 @@ public class RepositoryComposition {
 	 * @return the {@link RepositoryComposition} from {@link RepositoryFragment fragments}.
 	 */
 	public static RepositoryComposition of(List<RepositoryFragment<?>> fragments) {
-		return new RepositoryComposition(RepositoryFragments.from(fragments), MethodLookups.direct(),
+		return new RepositoryComposition(null, RepositoryFragments.from(fragments), MethodLookups.direct(),
 				PASSTHRU_ARG_CONVERTER);
 	}
 
@@ -130,7 +186,7 @@ public class RepositoryComposition {
 	 * @return the {@link RepositoryComposition} from {@link RepositoryFragments fragments}.
 	 */
 	public static RepositoryComposition of(RepositoryFragments fragments) {
-		return new RepositoryComposition(fragments, MethodLookups.direct(), PASSTHRU_ARG_CONVERTER);
+		return new RepositoryComposition(null, fragments, MethodLookups.direct(), PASSTHRU_ARG_CONVERTER);
 	}
 
 	/**
@@ -141,7 +197,7 @@ public class RepositoryComposition {
 	 * @return the new {@link RepositoryComposition}.
 	 */
 	public RepositoryComposition append(RepositoryFragment<?> fragment) {
-		return new RepositoryComposition(fragments.append(fragment), methodLookup, argumentConverter);
+		return new RepositoryComposition(metadata, fragments.append(fragment), methodLookup, argumentConverter);
 	}
 
 	/**
@@ -153,7 +209,7 @@ public class RepositoryComposition {
 	 * @return the new {@link RepositoryComposition}.
 	 */
 	public RepositoryComposition append(RepositoryFragments fragments) {
-		return new RepositoryComposition(this.fragments.append(fragments), methodLookup, argumentConverter);
+		return new RepositoryComposition(metadata, this.fragments.append(fragments), methodLookup, argumentConverter);
 	}
 
 	/**
@@ -163,7 +219,7 @@ public class RepositoryComposition {
 	 * @return the new {@link RepositoryComposition}.
 	 */
 	public RepositoryComposition withArgumentConverter(BiFunction<Method, Object[], Object[]> argumentConverter) {
-		return new RepositoryComposition(fragments, methodLookup, argumentConverter);
+		return new RepositoryComposition(metadata, fragments, methodLookup, argumentConverter);
 	}
 
 	/**
@@ -173,7 +229,18 @@ public class RepositoryComposition {
 	 * @return the new {@link RepositoryComposition}.
 	 */
 	public RepositoryComposition withMethodLookup(MethodLookup methodLookup) {
-		return new RepositoryComposition(fragments, methodLookup, argumentConverter);
+		return new RepositoryComposition(metadata, fragments, methodLookup, argumentConverter);
+	}
+
+	/**
+	 * Create a new {@link RepositoryComposition} retaining current configuration and set {@code metadata}.
+	 *
+	 * @param metadata must not be {@literal null}.
+	 * @return new instance of {@link RepositoryComposition}.
+	 * @since 2.4
+	 */
+	public RepositoryComposition withMetadata(RepositoryMetadata metadata) {
+		return new RepositoryComposition(metadata, fragments, methodLookup, argumentConverter);
 	}
 
 	/**
@@ -194,7 +261,7 @@ public class RepositoryComposition {
 	 * @throws Throwable
 	 */
 	public Object invoke(Method method, Object... args) throws Throwable {
-		return invoke(RepositoryInvocationListener.NoOpRepositoryInvocationListener.INSTANCE, method, args);
+		return invoke(NoOpRepositoryInvocationMulticaster.INSTANCE, method, args);
 	}
 
 	/**
@@ -205,7 +272,7 @@ public class RepositoryComposition {
 	 * @return
 	 * @throws Throwable
 	 */
-	Object invoke(RepositoryInvocationListener listener, Method method, Object[] args) throws Throwable {
+	Object invoke(RepositoryInvocationMulticaster listener, Method method, Object[] args) throws Throwable {
 
 		Method methodToCall = getMethod(method);
 
@@ -215,7 +282,8 @@ public class RepositoryComposition {
 
 		ReflectionUtils.makeAccessible(methodToCall);
 
-		return fragments.invoke(listener, method, methodToCall, argumentConverter.apply(methodToCall, args));
+		return fragments.invoke(metadata != null ? metadata.getRepositoryInterface() : method.getDeclaringClass(), listener,
+				method, methodToCall, argumentConverter.apply(methodToCall, args));
 	}
 
 	/**
@@ -306,6 +374,7 @@ public class RepositoryComposition {
 		private final List<RepositoryFragment<?>> fragments;
 
 		private RepositoryFragments(List<RepositoryFragment<?>> fragments) {
+
 			this.fragments = fragments;
 		}
 
@@ -421,8 +490,7 @@ public class RepositoryComposition {
 		 */
 		@Nullable
 		public Object invoke(Method invokedMethod, Method methodToCall, Object[] args) throws Throwable {
-			return invoke(RepositoryInvocationListener.NoOpRepositoryInvocationListener.INSTANCE, invokedMethod, methodToCall,
-					args);
+			return invoke(null, NoOpRepositoryInvocationMulticaster.INSTANCE, invokedMethod, methodToCall, args);
 		}
 
 		/**
@@ -438,8 +506,8 @@ public class RepositoryComposition {
 		 * @throws Throwable
 		 */
 		@Nullable
-		Object invoke(RepositoryInvocationListener listener, Method invokedMethod, Method methodToCall, Object[] args)
-				throws Throwable {
+		Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster listener, Method invokedMethod,
+				Method methodToCall, Object[] args) throws Throwable {
 
 			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
 			Optional<?> optional = fragment.getImplementation();
@@ -448,14 +516,16 @@ public class RepositoryComposition {
 				throw new IllegalArgumentException(String.format("No implementation found for method %s", methodToCall));
 			}
 
-			RepositoryMethodInvoker invocationMetadata = invocationMetadataCache.get(invokedMethod);
+			RepositoryMethodInvoker repositoryMethodInvoker = invocationMetadataCache.get(invokedMethod);
 
-			if (invocationMetadata == null) {
-				invocationMetadata = RepositoryMethodInvoker.forFragmentMethod(invokedMethod, optional.get(), methodToCall);
-				invocationMetadataCache.put(invokedMethod, invocationMetadata);
+			if (repositoryMethodInvoker == null) {
+
+				repositoryMethodInvoker = RepositoryMethodInvoker.forFragmentMethod(invokedMethod, optional.get(),
+						methodToCall);
+				invocationMetadataCache.put(invokedMethod, repositoryMethodInvoker);
 			}
 
-			return invocationMetadata.invoke(listener, args);
+			return repositoryMethodInvoker.invoke(repositoryInterface, listener, args);
 		}
 
 		private RepositoryFragment<?> findImplementationFragment(Method key) {

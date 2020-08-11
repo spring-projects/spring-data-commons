@@ -229,30 +229,6 @@ class ReactiveWrapperConvertersUnitTests {
 		assertThat(map.block()).isEqualTo(1L);
 	}
 
-	@Test // DATACMNS-1763
-	void shouldDoOnSuccess() {
-
-		Mono<String> foo = Mono.just("foo");
-		AtomicBoolean success = new AtomicBoolean();
-		Mono<String> doOn = ReactiveWrapperConverters.doOnSuccess(foo, () -> success.set(true));
-
-		doOn.as(StepVerifier::create).expectNext("foo").verifyComplete();
-
-		assertThat(success.get()).isTrue();
-	}
-
-	@Test // DATACMNS-1763
-	void shouldDoOnError() {
-
-		Mono<String> foo = Mono.error(new IllegalStateException());
-		AtomicReference<Throwable> error = new AtomicReference<>();
-		Mono<String> doOn = ReactiveWrapperConverters.doOnError(foo, error::set);
-
-		doOn.as(StepVerifier::create).verifyError();
-
-		assertThat(error.get()).isInstanceOf(IllegalStateException.class);
-	}
-
 	@Test // DATACMNS-836
 	void shouldMapFlux() {
 

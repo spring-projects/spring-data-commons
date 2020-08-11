@@ -40,7 +40,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -58,6 +57,8 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
+import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
+import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult.State;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.sample.User;
 import org.springframework.lang.Nullable;
@@ -213,12 +214,8 @@ class RepositoryFactorySupportUnitTests {
 
 		verify(factory.queryOne, times(1)).execute(any(Object[].class));
 
-		ArgumentCaptor<RepositoryMethodInvocationListener.Invocation> captor = ArgumentCaptor
-				.forClass(RepositoryMethodInvocationListener.Invocation.class);
+		ArgumentCaptor<RepositoryMethodInvocation> captor = ArgumentCaptor.forClass(RepositoryMethodInvocation.class);
 		verify(invocationListener).afterInvocation(captor.capture());
-
-		RepositoryMethodInvocationListener.Invocation value = captor.getValue();
-		assertThat(value.getResult()).isEqualTo(reference);
 	}
 
 	@Test // DATACMNS-1764, DATACMNS-1764
@@ -235,13 +232,13 @@ class RepositoryFactorySupportUnitTests {
 			fail("Missing exception");
 		} catch (IllegalStateException e) {}
 
-		ArgumentCaptor<RepositoryMethodInvocationListener.Invocation> captor = ArgumentCaptor
-				.forClass(RepositoryMethodInvocationListener.Invocation.class);
+		ArgumentCaptor<RepositoryMethodInvocation> captor = ArgumentCaptor.forClass(RepositoryMethodInvocation.class);
 		verify(invocationListener).afterInvocation(captor.capture());
 
-		RepositoryMethodInvocationListener.Invocation invocation = captor.getValue();
-		assertThat(invocation.getDuration(TimeUnit.NANOSECONDS)).isGreaterThan(0);
-		assertThat(invocation.getException()).isInstanceOf(IllegalStateException.class);
+		RepositoryMethodInvocation repositoryMethodInvocation = captor.getValue();
+		assertThat(repositoryMethodInvocation.getDuration(TimeUnit.NANOSECONDS)).isGreaterThan(0);
+		assertThat(repositoryMethodInvocation.getResult().getState()).isEqualTo(State.ERROR);
+		assertThat(repositoryMethodInvocation.getResult().getError()).isInstanceOf(IllegalStateException.class);
 	}
 
 	@Test // DATACMNS-509, DATACMNS-1764
@@ -258,12 +255,8 @@ class RepositoryFactorySupportUnitTests {
 		assertThat(result).hasSize(1);
 		assertThat(result.iterator().next()).isEqualTo("Dave");
 
-		ArgumentCaptor<RepositoryMethodInvocationListener.Invocation> captor = ArgumentCaptor
-				.forClass(RepositoryMethodInvocationListener.Invocation.class);
+		ArgumentCaptor<RepositoryMethodInvocation> captor = ArgumentCaptor.forClass(RepositoryMethodInvocation.class);
 		verify(invocationListener).afterInvocation(captor.capture());
-
-		RepositoryMethodInvocationListener.Invocation value = captor.getValue();
-		assertThat(value.getResult()).isEqualTo(names);
 	}
 
 	@Test // DATACMNS-509

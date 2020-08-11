@@ -23,11 +23,12 @@ import java.util.Optional;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.DefaultRepositoryInvocationMulticaster;
+import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -43,6 +44,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
@@ -52,7 +54,7 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	private final QueryExecutionResultHandler resultHandler;
 	private final NamedQueries namedQueries;
 	private final List<QueryCreationListener<?>> queryPostProcessors;
-	private final List<RepositoryMethodInvocationListener> methodInvocationListeners;
+	private final RepositoryInvocationMulticaster invocationMulticaster;
 
 	/**
 	 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model of {@link QueryMethod}s to be invoked on
@@ -66,7 +68,8 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 		this.repositoryInformation = repositoryInformation;
 		this.namedQueries = namedQueries;
 		this.queryPostProcessors = queryPostProcessors;
-		this.methodInvocationListeners = methodInvocationListeners;
+		this.invocationMulticaster = methodInvocationListeners.isEmpty() ? NoOpRepositoryInvocationMulticaster.INSTANCE
+				: new DefaultRepositoryInvocationMulticaster(methodInvocationListeners);
 
 		this.resultHandler = new QueryExecutionResultHandler(RepositoryFactorySupport.CONVERSION_SERVICE);
 
@@ -138,7 +141,6 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 		if (hasQueryFor(method)) {
 
-			RepositoryInvocationListener invocationListener = getInvocationListener();
 			RepositoryMethodInvoker invocationMetadata = invocationMetadataCache.get(method);
 
 			if (invocationMetadata == null) {
@@ -146,17 +148,11 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 				invocationMetadataCache.put(method, invocationMetadata);
 			}
 
-			return invocationMetadata.invoke(invocationListener, invocation.getArguments());
+			return invocationMetadata.invoke(repositoryInformation.getRepositoryInterface(), invocationMulticaster,
+					invocation.getArguments());
 		}
 
 		return invocation.proceed();
-	}
-
-	private RepositoryInvocationListener getInvocationListener() {
-		return methodInvocationListeners.isEmpty() ? RepositoryInvocationListener.NoOpRepositoryInvocationListener.INSTANCE
-				: new RepositoryInvocationListener.RepositoryInvocationMulticaster(
-						repositoryInformation.getRepositoryInterface(), methodInvocationListeners);
-
 	}
 
 	/**
