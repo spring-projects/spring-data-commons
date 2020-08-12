@@ -1,6 +1,15 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.3.RELEASE (2020-08-12)
+---------------------------------------------
+* DATACMNS-1783 - Simplify PersistentEntityIsNewStrategy.isNew.
+* DATACMNS-1779 - Introduce utility method to identify whether a type is a void one.
+* DATACMNS-1777 - Fixed typo in reference example for TypedSort.
+* DATACMNS-1775 - Release 2.3.3 (Neumann SR3).
+* DATACMNS-1296 - PersistentPropertyPathAccessor does not skip nested null intermediates when setting values.
+
+
 Changes in version 2.4.0-M2 (2020-08-12)
 ----------------------------------------
 * DATACMNS-1783 - Simplify PersistentEntityIsNewStrategy.isNew.
@@ -2816,6 +2825,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
