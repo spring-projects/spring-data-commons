@@ -1,6 +1,27 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.0-M2 (2020-08-12)
+----------------------------------------
+* DATACMNS-1783 - Simplify PersistentEntityIsNewStrategy.isNew.
+* DATACMNS-1781 - Move off deprecated Spring Framework API.
+* DATACMNS-1780 - PersistentEntities should allow in flight metadata creation if the associated mapping context can be identified.
+* DATACMNS-1779 - Introduce utility method to identify whether a type is a void one.
+* DATACMNS-1777 - Fixed typo in reference example for TypedSort.
+* DATACMNS-1772 - SpringDataAnnotationBeanNameGenerator calls BeanNameGenerator without using BeanDefinitionRegistry.
+* DATACMNS-1771 - Upgrade to Vavr 0.10.3.
+* DATACMNS-1768 - InstantiationAwarePropertyAccessor loses state when updating multiple properties.
+* DATACMNS-1767 - Disable ClassGeneratingEntityInstantiator and ClassGeneratingPropertyAccessorFactory when running native-image.
+* DATACMNS-1764 - Allow registration of QueryMethod invocation listeners.
+* DATACMNS-1758 - ConcurrencyModificationException in DefaultEntityCallbacks.
+* DATACMNS-1756 - Release 2.4 M2 (2020.0.0).
+* DATACMNS-1754 - Support nested classes/interfaces for repository fragments.
+* DATACMNS-1663 - Support domain events for deletions.
+* DATACMNS-1296 - PersistentPropertyPathAccessor does not skip nested null intermediates when setting values.
+* DATACMNS-1231 - Add infrastructure for reactive auditing.
+* DATACMNS-1108 - Reactive support for SpEL expressions using Reactor's Context abstraction.
+
+
 Changes in version 2.3.2.RELEASE (2020-07-22)
 ---------------------------------------------
 * DATACMNS-1772 - SpringDataAnnotationBeanNameGenerator calls BeanNameGenerator without using BeanDefinitionRegistry.
@@ -2795,6 +2816,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
