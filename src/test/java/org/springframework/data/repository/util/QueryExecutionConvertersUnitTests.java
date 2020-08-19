@@ -59,6 +59,7 @@ import com.google.common.base.Optional;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Maciek Opała
+ * @author Timm Hirsens
  */
 class QueryExecutionConvertersUnitTests {
 
@@ -80,6 +81,8 @@ class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(ListenableFuture.class)).isTrue();
 		assertThat(QueryExecutionConverters.supports(Option.class)).isTrue();
 		assertThat(QueryExecutionConverters.supports(io.vavr.control.Option.class)).isTrue();
+		assertThat(QueryExecutionConverters.supports(arrow.core.Some.class)).isTrue();
+		assertThat(QueryExecutionConverters.supports(arrow.core.None.class)).isTrue();
 	}
 
 	@Test // DATACMNS-836
@@ -106,6 +109,8 @@ class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Future.class)).isTrue();
 		assertThat(QueryExecutionConverters.supportsUnwrapping(ListenableFuture.class)).isTrue();
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Option.class)).isTrue();
+		assertThat(QueryExecutionConverters.supportsUnwrapping(arrow.core.Some.class)).isTrue();
+		assertThat(QueryExecutionConverters.supportsUnwrapping(arrow.core.None.class)).isTrue();
 	}
 
 	@Test // DATACMNS-836
@@ -138,6 +143,22 @@ class QueryExecutionConvertersUnitTests {
 	@SuppressWarnings("unchecked")
 	void turnsNullIntoJdk8Optional() {
 		assertThat(conversionService.convert(new NullableWrapper(null), java.util.Optional.class)).isEmpty();
+	}
+
+	@Test // DATACMNS-1788
+	void turnsNullIntoArrowOption() {
+		assertThat(conversionService.convert(new NullableWrapper(null), arrow.core.Option.class))
+				.isInstanceOf(arrow.core.None.class);
+	}
+
+	@Test // DATACMNS-1788
+	@SuppressWarnings("unchecked")
+	void turnsSomethingIntoArrowOption() {
+		arrow.core.Option<String> result = conversionService.convert(new NullableWrapper("something"),
+				arrow.core.Option.class);
+		assertThat(result).isNotNull();
+		assertThat(result).isInstanceOf(arrow.core.Some.class);
+		assertThat(result.orNull()).isEqualTo("something");
 	}
 
 	@Test // DATACMNS-714
@@ -353,6 +374,16 @@ class QueryExecutionConvertersUnitTests {
 		assertThat(conversionService.canConvert(Iterable.class, CustomStreamableWrapper.class)).isTrue();
 		assertThat(conversionService.convert(Arrays.asList("foo"), CustomStreamableWrapper.class)) //
 				.containsExactly("foo");
+	}
+
+	@Test // DATACMNS-1788
+	void unwrapsEmptyArrowOption() {
+		assertThat(QueryExecutionConverters.unwrap(arrow.core.Option.Companion.fromNullable(null))).isNull();
+	}
+
+	@Test // DATACMNS-1788
+	void unwrapsArrowOption() {
+		assertThat(QueryExecutionConverters.unwrap(arrow.core.Option.Companion.fromNullable("string"))).isEqualTo("string");
 	}
 
 	@Test // DATACMNS-1484

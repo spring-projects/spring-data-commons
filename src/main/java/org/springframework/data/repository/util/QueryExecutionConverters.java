@@ -78,6 +78,7 @@ import com.google.common.base.Optional;
  * @author Christoph Strobl
  * @author Maciek Opała
  * @author Jens Schauder
+ * @author Timm Hirsens
  * @since 1.8
  * @see ReactiveWrappers
  */
@@ -90,6 +91,8 @@ public abstract class QueryExecutionConverters {
 	private static final boolean SCALA_PRESENT = ClassUtils.isPresent("scala.Option",
 			QueryExecutionConverters.class.getClassLoader());
 	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Option",
+			QueryExecutionConverters.class.getClassLoader());
+	private static final boolean ARROW_PRESENT = ClassUtils.isPresent("arrow.core.Option",
 			QueryExecutionConverters.class.getClassLoader());
 
 	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<WrapperType>();
@@ -145,6 +148,12 @@ public abstract class QueryExecutionConverters {
 			EXECUTION_ADAPTER.put(io.vavr.control.Try.class, it -> io.vavr.control.Try.of(it::get));
 
 			ALLOWED_PAGEABLE_TYPES.add(io.vavr.collection.Seq.class);
+		}
+
+		if (ARROW_PRESENT) {
+			WRAPPER_TYPES.addAll(NullableWrapperToArrowOptionConverter.getWrapperTypes());
+			UNWRAPPER_TYPES.addAll(NullableWrapperToArrowOptionConverter.getWrapperTypes());
+			UNWRAPPERS.add(ArrowOptionUnwrapper.INSTANCE);
 		}
 	}
 
@@ -247,6 +256,10 @@ public abstract class QueryExecutionConverters {
 		if (VAVR_PRESENT) {
 			conversionService.addConverter(new NullableWrapperToVavrOptionConverter(conversionService));
 			conversionService.addConverter(VavrCollections.FromJavaConverter.INSTANCE);
+		}
+
+		if (ARROW_PRESENT) {
+			conversionService.addConverter(new NullableWrapperToArrowOptionConverter(conversionService));
 		}
 
 		conversionService.addConverter(new NullableWrapperToFutureConverter(conversionService));
@@ -541,7 +554,7 @@ public abstract class QueryExecutionConverters {
 	}
 
 	/**
-	 * Converter to convert from {@link NullableWrapper} into JavaSlang's {@link io.vavr.control.Option}.
+	 * Converter to convert from {@link NullableWrapper} into Vavr's {@link io.vavr.control.Option}.
 	 *
 	 * @author Oliver Gierke
 	 * @since 2.0
@@ -549,7 +562,7 @@ public abstract class QueryExecutionConverters {
 	private static class NullableWrapperToVavrOptionConverter extends AbstractWrapperTypeConverter {
 
 		/**
-		 * Creates a new {@link NullableWrapperToJavaslangOptionConverter} using the given {@link ConversionService}.
+		 * Creates a new {@link NullableWrapperToVavrOptionConverter} using the given {@link ConversionService}.
 		 *
 		 * @param conversionService must not be {@literal null}.
 		 */
@@ -568,6 +581,37 @@ public abstract class QueryExecutionConverters {
 		@Override
 		protected Object wrap(Object source) {
 			return io.vavr.control.Option.of(source);
+		}
+	}
+
+	/**
+	 * A Spring {@link Converter} to support Arrow's {@link arrow.core.Option}.
+	 *
+	 * @author Timm Hirsens
+	 */
+	private static class NullableWrapperToArrowOptionConverter extends AbstractWrapperTypeConverter {
+
+		/**
+		 * Creates a new {@link NullableWrapperToArrowOptionConverter} using the given {@link ConversionService}
+		 *
+		 * @param conversionService must not be {@literal null}.
+		 */
+		protected NullableWrapperToArrowOptionConverter(ConversionService conversionService) {
+			super(conversionService, arrow.core.Option.Companion.empty(),
+					Arrays.asList(arrow.core.Option.class, arrow.core.None.class, arrow.core.Some.class));
+		}
+
+		public static Collection<WrapperType> getWrapperTypes() {
+			return Arrays.asList(WrapperType.noValue(arrow.core.None.class), WrapperType.singleValue(arrow.core.Some.class));
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
+		 */
+		@Override
+		protected Object wrap(Object source) {
+			return arrow.core.Option.Companion.fromNullable(source);
 		}
 	}
 
@@ -673,6 +717,32 @@ public abstract class QueryExecutionConverters {
 
 			if (source instanceof io.vavr.collection.Traversable) {
 				return VavrCollections.ToJavaConverter.INSTANCE.convert(source);
+			}
+
+			return source;
+		}
+	}
+
+	/**
+	 * Converter to unwrap Arrow's {@link arrow.core.Option} instances.
+	 *
+	 * @author Timm Hirsens
+	 */
+	private enum ArrowOptionUnwrapper implements Converter<Object, Object> {
+
+		INSTANCE;
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
+		@Nullable
+		@Override
+		@SuppressWarnings("unchecked")
+		public Object convert(Object source) {
+
+			if (source instanceof arrow.core.Option) {
+				return ((arrow.core.Option<Object>) source).orNull();
 			}
 
 			return source;

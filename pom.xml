@@ -20,6 +20,7 @@
 		<vavr>0.10.3</vavr>
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.16</xmlbeam>
+		<arrow-core>0.10.4</arrow-core>
 
 		<java-module-name>spring.data.commons</java-module-name>
 	</properties>
@@ -207,6 +208,13 @@
 			<groupId>io.vavr</groupId>
 			<artifactId>vavr</artifactId>
 			<version>${vavr}</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>io.arrow-kt</groupId>
+			<artifactId>arrow-core</artifactId>
+			<version>${arrow-core}</version>
 			<optional>true</optional>
 		</dependency>
 
