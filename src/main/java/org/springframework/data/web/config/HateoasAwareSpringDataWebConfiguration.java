@@ -22,11 +22,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
+import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 /**
@@ -52,6 +56,11 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
 		super(context, conversionService);
 		this.context = context;
+		this.sortResolver = Lazy
+				.of(() -> context.getBean("hateoasSortResolver", HateoasSortHandlerMethodArgumentResolver.class));
+		this.pageableResolver = Lazy
+				.of(() -> context.getBean("hateoasPageableResolver", HateoasPageableHandlerMethodArgumentResolver.class));
+
 	}
 
 	/*
@@ -59,11 +68,10 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#pageableResolver()
 	 */
 	@Bean
-	@Override
-	public HateoasPageableHandlerMethodArgumentResolver pageableResolver() {
+	public HateoasPageableHandlerMethodArgumentResolver hateoasPageableResolver() {
 
 		HateoasPageableHandlerMethodArgumentResolver pageableResolver = new HateoasPageableHandlerMethodArgumentResolver(
-				getSortResolverBean());
+				(HateoasSortHandlerMethodArgumentResolver) this.sortResolver.get());
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
 	}
@@ -73,8 +81,7 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#sortResolver()
 	 */
 	@Bean
-	@Override
-	public HateoasSortHandlerMethodArgumentResolver sortResolver() {
+	public HateoasSortHandlerMethodArgumentResolver hateoasSortResolver() {
 
 		HateoasSortHandlerMethodArgumentResolver sortResolver = new HateoasSortHandlerMethodArgumentResolver();
 		customizeSortResolver(sortResolver);
@@ -82,13 +89,15 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	}
 
 	@Bean
-	public PagedResourcesAssembler<?> pagedResourcesAssembler() {
-		return new PagedResourcesAssembler<>(getPageableResolverBean(), null);
+	public PagedResourcesAssembler<?> pagedResourcesAssembler(
+			HateoasPageableHandlerMethodArgumentResolver pageableResolver) {
+		return new PagedResourcesAssembler<>(pageableResolver, null);
 	}
 
 	@Bean
-	public PagedResourcesAssemblerArgumentResolver pagedResourcesAssemblerArgumentResolver() {
-		return new PagedResourcesAssemblerArgumentResolver(getPageableResolverBean(), null);
+	public PagedResourcesAssemblerArgumentResolver pagedResourcesAssemblerArgumentResolver(
+			HateoasPageableHandlerMethodArgumentResolver pageableResolver) {
+		return new PagedResourcesAssemblerArgumentResolver(pageableResolver, null);
 	}
 
 	/*
@@ -100,21 +109,5 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 		super.addArgumentResolvers(argumentResolvers);
 		argumentResolvers
 				.add(context.getBean("pagedResourcesAssemblerArgumentResolver", PagedResourcesAssemblerArgumentResolver.class));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#getSortResolverBean()
-	 */
-	protected HateoasSortHandlerMethodArgumentResolver getSortResolverBean() {
-		return context.getBean("sortResolver", HateoasSortHandlerMethodArgumentResolver.class);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#getPageableResolverBean()
-	 */
-	protected HateoasPageableHandlerMethodArgumentResolver getPageableResolverBean() {
-		return context.getBean("pageableResolver", HateoasPageableHandlerMethodArgumentResolver.class);
 	}
 }

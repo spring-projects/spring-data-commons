@@ -204,7 +204,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(PageableResolverCustomizerConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
-		PageableHandlerMethodArgumentResolver resolver = context.getBean(PageableHandlerMethodArgumentResolver.class);
+		PageableHandlerMethodArgumentResolver resolver = context.getBean("pageableResolver", PageableHandlerMethodArgumentResolver.class);
 
 		assertThat(names).contains("testPageableResolverCustomizer");
 		assertThat((Integer) ReflectionTestUtils.getField(resolver, "maxPageSize")).isEqualTo(100);
@@ -215,7 +215,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SortResolverCustomizerConfig.class);
 		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
-		SortHandlerMethodArgumentResolver resolver = context.getBean(SortHandlerMethodArgumentResolver.class);
+		SortHandlerMethodArgumentResolver resolver = context.getBean("sortResolver", SortHandlerMethodArgumentResolver.class);
 
 		assertThat(names).contains("testSortResolverCustomizer");
 		assertThat((String) ReflectionTestUtils.getField(resolver, "sortParameter")).isEqualTo("foo");
