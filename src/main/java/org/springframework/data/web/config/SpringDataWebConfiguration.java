@@ -29,6 +29,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.repository.support.DomainClassConverter;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
@@ -62,6 +63,9 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	private final ObjectFactory<ConversionService> conversionService;
 	private @Nullable ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
+	protected Lazy<SortHandlerMethodArgumentResolver> sortResolver;
+	protected Lazy<PageableHandlerMethodArgumentResolver> pageableResolver;
+
 	private @Autowired Optional<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
 	private @Autowired Optional<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
 
@@ -73,6 +77,9 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 
 		this.context = context;
 		this.conversionService = conversionService;
+		this.sortResolver = Lazy.of(() -> context.getBean("sortResolver", SortHandlerMethodArgumentResolver.class));
+		this.pageableResolver = Lazy
+				.of(() -> context.getBean("pageableResolver", PageableHandlerMethodArgumentResolver.class));
 	}
 
 	/*
@@ -89,10 +96,10 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#pageableResolver()
 	 */
 	@Bean
-	public PageableHandlerMethodArgumentResolver pageableResolver() {
+	public PageableHandlerMethodArgumentResolver pageableResolver(SortHandlerMethodArgumentResolver sortResolver) {
 
 		PageableHandlerMethodArgumentResolver pageableResolver = //
-				new PageableHandlerMethodArgumentResolver(getSortResolverBean());
+				new PageableHandlerMethodArgumentResolver(sortResolver);
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
 	}
@@ -136,8 +143,8 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 
-		argumentResolvers.add(getSortResolverBean());
-		argumentResolvers.add(getPageableResolverBean());
+		argumentResolvers.add(this.sortResolver.get());
+		argumentResolvers.add(this.pageableResolver.get());
 
 		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
 		resolver.setBeanFactory(context);
@@ -170,14 +177,6 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 			converters.add(0, context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
 					.getIfAvailable(XmlBeamHttpMessageConverter::new));
 		}
-	}
-
-	protected SortHandlerMethodArgumentResolver getSortResolverBean() {
-		return context.getBean("sortResolver", SortHandlerMethodArgumentResolver.class);
-	}
-
-	protected PageableHandlerMethodArgumentResolver getPageableResolverBean() {
-		return context.getBean("pageableResolver", PageableHandlerMethodArgumentResolver.class);
 	}
 
 	protected void customizePageableResolver(PageableHandlerMethodArgumentResolver pageableResolver) {
