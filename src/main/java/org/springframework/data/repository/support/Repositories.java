@@ -29,6 +29,7 @@ import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.core.EntityInformation;
@@ -46,6 +47,7 @@ import org.springframework.util.ClassUtils;
  * @author Thomas Darimont
  * @author Thomas Eizinger
  * @author Christoph Strobl
+ * @author Jan Zeppenfeld
  */
 public class Repositories implements Iterable<Class<?>> {
 
@@ -276,9 +278,16 @@ public class Repositories implements Iterable<Class<?>> {
 
 		if (repositoryBeanNames.containsKey(type)) {
 
-			Boolean presentAndPrimary = beanFactory //
+			ConfigurableListableBeanFactory configurableListableBeanFactory = beanFactory
 					.filter(ConfigurableListableBeanFactory.class::isInstance) //
 					.map(ConfigurableListableBeanFactory.class::cast) //
+					.orElse(beanFactory //
+							.filter(ConfigurableApplicationContext.class::isInstance) //
+							.map(ConfigurableApplicationContext.class::cast) //
+							.map(ConfigurableApplicationContext::getBeanFactory) //
+							.orElse(null));
+
+			Boolean presentAndPrimary = Optional.ofNullable(configurableListableBeanFactory)
 					.map(it -> it.getBeanDefinition(name)) //
 					.map(BeanDefinition::isPrimary) //
 					.orElse(false);
