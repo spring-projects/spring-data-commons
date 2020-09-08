@@ -621,7 +621,7 @@ NOTE: Limiting the results in combination with dynamic sorting by using a `Sort`
 [[repositories.query-streaming]]
 === Streaming Query Results
 
-You can process the results of query methods incrementally by using a Java 8 `Stream<T>` as the return type. Instead of wrapping the query results in a `Stream` data store-specific methods are used to perform the streaming, as shown in the following example:
+You can process the results of query methods incrementally by using a Java 8 `Stream<T>` as the return type. Instead of wrapping the query results in a `Stream`, data store-specific methods are used to perform the streaming, as shown in the following example:
 
 .Stream the result of a query with Java 8 `Stream<T>`
 ====
