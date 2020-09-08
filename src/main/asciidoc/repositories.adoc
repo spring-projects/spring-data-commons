@@ -429,7 +429,7 @@ NOTE: To find out how many pages you get for an entire query, you have to trigge
 ==== Paging and Sorting
 
 Simple sorting expressions can be defined by using property names.
-Expressions can be concatenated to collect multiple criterias into one expression.
+Expressions can be concatenated to collect multiple criteria into one expression.
 
 .Defining sort expressions
 ====
@@ -525,7 +525,7 @@ Streamable<Person> result = repository.findByFirstnameContaining("av")
 
 Providing dedicated wrapper types for collections is a commonly used pattern to provide API on a query execution result that returns multiple elements.
 Usually these types are used by invoking a repository method returning a collection-like type and creating an instance of the wrapper type manually.
-That additional step can be avoided as Spring Data allows to use these wrapper types as query method return types if they meet the following criterias:
+That additional step can be avoided as Spring Data allows to use these wrapper types as query method return types if they meet the following criteria:
 
 . The type implements `Streamable`.
 . The type exposes either a constructor or a static factory method named `of(…)` or `valueOf(…)` taking `Streamable` as argument.
@@ -558,7 +558,7 @@ interface ProductRepository implements Repository<Product, Long> {
 <1> A `Product` entity that exposes API to access the product's price.
 <2> A wrapper type for a `Streamable<Product>` that can be constructed via `Products.of(…)` (factory method created via the Lombok annotation).
 <3> The wrapper type exposes additional API calculating new values on the `Streamable<Product>`.
-<4> That wrapper type can be used as query method return type directly. No need to return `Stremable<Product>` and manually wrap it in the repository client.
+<4> That wrapper type can be used as query method return type directly. No need to return `Streamable<Product>` and manually wrap it in the repository client.
 ====
 
 [[repositories.collections-and-iterables.vavr]]
