@@ -566,7 +566,7 @@ interface ProductRepository implements Repository<Product, Long> {
 <1> A `Product` entity that exposes API to access the product's price.
 <2> A wrapper type for a `Streamable<Product>` that can be constructed by using `Products.of(…)` (factory method created with the Lombok annotation).
 <3> The wrapper type exposes an additional API, calculating new values on the `Streamable<Product>`.
-<4> That wrapper type can be used as a query method return type directly. You need not return `Stremable<Product>` and manually wrap it in the repository client.
+<4> That wrapper type can be used as a query method return type directly. You need not return `Streamable<Product>` and manually wrap it in the repository client.
 ====
 
 [[repositories.collections-and-iterables.vavr]]
@@ -607,7 +607,7 @@ See "`<<repository-query-return-types>>`" for details.
 You can express nullability constraints for repository methods by using {spring-framework-docs}/core.html#null-safety[Spring Framework's nullability annotations].
 They provide a tooling-friendly approach and opt-in `null` checks during runtime, as follows:
 
-* {spring-framework-javadoc}/org/springframework/lang/NonNullApi.html[`@NonNullApi`]: Used on the package level to declare that the default behavior for parameters and return values is to not accept or produce `null` values.
+* {spring-framework-javadoc}/org/springframework/lang/NonNullApi.html[`@NonNullApi`]: Used on the package level to declare that the default behavior for parameters and return values is, respectively, neither to accept nor to produce `null` values.
 * {spring-framework-javadoc}/org/springframework/lang/NonNull.html[`@NonNull`]: Used on a parameter or return value that must not be `null` (not needed on a parameter and return value where `@NonNullApi` applies).
 * {spring-framework-javadoc}/org/springframework/lang/Nullable.html[`@Nullable`]: Used on a parameter or return value that can be `null`.
 
@@ -626,7 +626,7 @@ package com.acme;
 Once non-null defaulting is in place, repository query method invocations get validated at runtime for nullability constraints.
 If a query result violates the defined constraint, an exception is thrown. This happens when the method would return `null` but is declared as non-nullable (the default with the annotation defined on the package in which the repository resides).
 If you want to opt-in to nullable results again, selectively use `@Nullable` on individual methods.
-Using the result wrapper types mentioned at the start of this section continues to work as expected: An empty result is translated into the value that represents absence.
+Using the result wrapper types mentioned at the start of this section continues to work as expected: an empty result is translated into the value that represents absence.
 
 The following example shows a number of the techniques just described:
 
@@ -679,7 +679,7 @@ interface UserRepository : Repository<User, String> {
 [[repositories.query-streaming]]
 === Streaming Query Results
 
-You can process the results of query methods incrementally by using a Java 8 `Stream<T>` as the return type. Instead of wrapping the query results in a `Stream` data store-specific methods are used to perform the streaming, as shown in the following example:
+You can process the results of query methods incrementally by using a Java 8 `Stream<T>` as the return type. Instead of wrapping the query results in a `Stream`, data store-specific methods are used to perform the streaming, as shown in the following example:
 
 .Stream the result of a query with Java 8 `Stream<T>`
 ====
