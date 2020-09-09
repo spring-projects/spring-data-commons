@@ -18,13 +18,13 @@ package org.springframework.data.repository.query;
 import static org.assertj.core.api.Assertions.*;
 
 import rx.Single;
-import scala.collection.mutable.Publisher;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.reactivestreams.Publisher;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
