@@ -59,19 +59,19 @@ import org.springframework.util.ClassUtils;
 @UtilityClass
 public class ReactiveWrappers {
 
-	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Mono",
+	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Flux",
 			ReactiveWrappers.class.getClassLoader());
 
-	private static final boolean RXJAVA1_PRESENT = ClassUtils.isPresent("rx.Completable",
+	private static final boolean RXJAVA1_PRESENT = ClassUtils.isPresent("rx.Observable",
+			ReactiveWrappers.class.getClassLoader())
+			&& ClassUtils.isPresent("rx.RxReactiveStreams",
 			ReactiveWrappers.class.getClassLoader());
 
 	private static final boolean RXJAVA2_PRESENT = ClassUtils.isPresent("io.reactivex.Flowable",
 			ReactiveWrappers.class.getClassLoader());
 
-	private static final boolean KOTLIN_COROUTINES_PRESENT = ClassUtils.isPresent("kotlinx.coroutines.flow.Flow",
-			ReactiveWrappers.class.getClassLoader())
-			&& ClassUtils.isPresent("kotlinx.coroutines.reactive.ReactiveFlowKt", ReactiveWrappers.class.getClassLoader())
-			&& ClassUtils.isPresent("kotlinx.coroutines.reactor.ReactorFlowKt", ReactiveWrappers.class.getClassLoader());
+	private static final boolean KOTLIN_COROUTINES_PRESENT = ClassUtils.isPresent("kotlinx.coroutines.reactor.MonoKt",
+			ReactiveWrappers.class.getClassLoader());
 
 	/**
 	 * Enumeration of supported reactive libraries.
