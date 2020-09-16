@@ -1,6 +1,12 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.20.RELEASE (2020-09-16)
+----------------------------------------------
+* DATACMNS-1794 - Upgrade to XMLBeam 1.4.17.
+* DATACMNS-1773 - Release 2.1.20 (Lovelace SR20).
+
+
 Changes in version 2.3.3.RELEASE (2020-08-12)
 ---------------------------------------------
 * DATACMNS-1783 - Simplify PersistentEntityIsNewStrategy.isNew.
@@ -2813,6 +2819,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
