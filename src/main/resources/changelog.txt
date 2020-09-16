@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.0-RC1 (2020-09-16)
+-----------------------------------------
+* DATACMNS-1795 - Align checks in ReactiveWrappers with checks in ReactiveAdapterRegistry.
+* DATACMNS-1794 - Upgrade to XMLBeam 1.4.17.
+* DATACMNS-1786 - Release 2.4 RC1 (2020.0.0).
+* DATACMNS-1736 - Use BeanFactory lookup to avoid CGlib proxies of configuration classes.
+
+
 Changes in version 2.3.4.RELEASE (2020-09-16)
 ---------------------------------------------
 * DATACMNS-1795 - Align checks in ReactiveWrappers with checks in ReactiveAdapterRegistry.
@@ -2833,6 +2841,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
