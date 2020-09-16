@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.10.RELEASE (2020-09-16)
+----------------------------------------------
+* DATACMNS-1794 - Upgrade to XMLBeam 1.4.17.
+* DATACMNS-1779 - Introduce utility method to identify whether a type is a void one.
+* DATACMNS-1774 - Release 2.2.10 (Moore SR10).
+
+
 Changes in version 2.1.20.RELEASE (2020-09-16)
 ----------------------------------------------
 * DATACMNS-1794 - Upgrade to XMLBeam 1.4.17.
@@ -2819,6 +2826,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
