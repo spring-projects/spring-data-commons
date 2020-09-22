@@ -179,7 +179,7 @@ abstract class RepositoryMethodInvoker {
 			}
 
 			if (Collection.class.isAssignableFrom(returnedType)) {
-				result = Flux.from(result).collectList();
+				result = (Publisher<?>) collectToList(result);
 			}
 
 			return AwaitKt.awaitFirstOrNull(result, continuation);
@@ -187,6 +187,11 @@ abstract class RepositoryMethodInvoker {
 			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
 			throw e;
 		}
+	}
+
+	// to avoid NoClassDefFoundError: org/reactivestreams/Publisher when loading this class ¯\_(ツ)_/¯
+	private static Object collectToList(Object result) {
+		return Flux.from((Publisher<?>) result).collectList();
 	}
 
 	private RepositoryMethodInvocation computeInvocationResult(RepositoryMethodInvocationCaptor captured) {
