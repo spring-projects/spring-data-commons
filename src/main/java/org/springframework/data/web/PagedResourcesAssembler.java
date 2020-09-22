@@ -92,7 +92,6 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	 * @see org.springframework.hateoas.server.RepresentationModelAssembler#toModel(java.lang.Object)
 	 */
 	@Override
-	@SuppressWarnings("null")
 	public PagedModel<EntityModel<T>> toModel(Page<T> entity) {
 		return toModel(entity, EntityModel::of);
 	}

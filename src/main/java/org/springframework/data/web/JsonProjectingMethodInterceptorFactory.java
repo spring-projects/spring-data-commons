@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.projection.Accessor;
@@ -136,7 +135,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		 */
 		@Nullable
 		@Override
-		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
+		public Object invoke(MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
 			TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);

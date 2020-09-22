@@ -38,14 +38,29 @@ public class Lazy<T> implements Supplier<T> {
 
 	private final Supplier<? extends T> supplier;
 
-	private @Nullable T value = null;
-	private boolean resolved = false;
+	private @Nullable T value;
+	private boolean resolved;
 
+	/**
+	 * Creates a new {@link Lazy} instance for the given supplier.
+	 *
+	 * @param supplier
+	 * @deprecated prefer {@link Lazy#of(Supplier)}, to be turned private in 2.5.
+	 */
+	@Deprecated
 	public Lazy(Supplier<? extends T> supplier) {
-		this.supplier = supplier;
+		this(supplier, null, false);
 	}
 
-	private Lazy(Supplier<? extends T> supplier, T value, boolean resolved) {
+	/**
+	 * Creates a new {@link Lazy} for the given {@link Supplier}, value and whether it has been resolved or not.
+	 *
+	 * @param supplier must not be {@literal null}.
+	 * @param value can be {@literal null}.
+	 * @param resolved whether the value handed into the constructor represents a resolved value.
+	 */
+	private Lazy(Supplier<? extends T> supplier, @Nullable T value, boolean resolved) {
+
 		this.supplier = supplier;
 		this.value = value;
 		this.resolved = resolved;
@@ -226,7 +241,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;
@@ -255,9 +270,12 @@ public class Lazy<T> implements Supplier<T> {
 	 */
 	@Override
 	public int hashCode() {
+
 		int result = ObjectUtils.nullSafeHashCode(supplier);
+
 		result = 31 * result + ObjectUtils.nullSafeHashCode(value);
 		result = 31 * result + (resolved ? 1 : 0);
+
 		return result;
 	}
 }

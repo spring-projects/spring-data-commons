@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ObjectUtils;
@@ -282,14 +283,18 @@ public class ParameterTypes {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
+
 		if (this == o) {
 			return true;
 		}
+
 		if (!(o instanceof ParameterTypes)) {
 			return false;
 		}
+
 		ParameterTypes that = (ParameterTypes) o;
+
 		return ObjectUtils.nullSafeEquals(types, that.types);
 	}
 
@@ -348,7 +353,7 @@ public class ParameterTypes {
 		 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
 		 */
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (this == o) {
 				return true;
@@ -363,6 +368,7 @@ public class ParameterTypes {
 			}
 
 			ParentParameterTypes that = (ParentParameterTypes) o;
+
 			return ObjectUtils.nullSafeEquals(tail, that.tail);
 		}
 
@@ -372,8 +378,11 @@ public class ParameterTypes {
 		 */
 		@Override
 		public int hashCode() {
+
 			int result = super.hashCode();
+
 			result = 31 * result + ObjectUtils.nullSafeHashCode(tail);
+
 			return result;
 		}
 	}

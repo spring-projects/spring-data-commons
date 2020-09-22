@@ -25,10 +25,10 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.ResolvableType;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -170,9 +170,12 @@ public class MethodInvocationRecorder {
 		private static final InvocationInformation NOT_INVOKED = new InvocationInformation(new Unrecorded(), null);
 
 		private final Recorded<?> recorded;
-		@Nullable private final Method invokedMethod;
+		private final @Nullable Method invokedMethod;
 
-		public InvocationInformation(Recorded<?> recorded, Method invokedMethod) {
+		public InvocationInformation(Recorded<?> recorded, @Nullable Method invokedMethod) {
+
+			Assert.notNull(recorded, "Recorded must not be null!");
+
 			this.recorded = recorded;
 			this.invokedMethod = invokedMethod;
 		}
@@ -220,7 +223,7 @@ public class MethodInvocationRecorder {
 		 * @see java.lang.Object#equals(java.lang.Object)
 		 */
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (this == o) {
 				return true;
@@ -245,8 +248,11 @@ public class MethodInvocationRecorder {
 		 */
 		@Override
 		public int hashCode() {
+
 			int result = ObjectUtils.nullSafeHashCode(recorded);
+
 			result = 31 * result + ObjectUtils.nullSafeHashCode(invokedMethod);
+
 			return result;
 		}
 
@@ -275,7 +281,7 @@ public class MethodInvocationRecorder {
 		 * (non-Javadoc)
 		 * @see org.springframework.hateoas.core.Recorder.PropertyNameDetectionStrategy#getPropertyName(java.lang.reflect.Method)
 		 */
-
+		@NonNull
 		@Override
 		public String getPropertyName(Method method) {
 			return getPropertyName(method.getReturnType(), method.getName());
@@ -299,7 +305,8 @@ public class MethodInvocationRecorder {
 		private final @Nullable T currentInstance;
 		private final @Nullable MethodInvocationRecorder recorder;
 
-		public Recorded(T currentInstance, MethodInvocationRecorder recorder) {
+		Recorded(@Nullable T currentInstance, @Nullable MethodInvocationRecorder recorder) {
+
 			this.currentInstance = currentInstance;
 			this.recorder = recorder;
 		}
@@ -367,6 +374,7 @@ public class MethodInvocationRecorder {
 		 */
 		@Override
 		public String toString() {
+
 			return "MethodInvocationRecorder.Recorded(currentInstance=" + this.currentInstance + ", recorder=" + this.recorder
 					+ ")";
 		}
@@ -378,7 +386,6 @@ public class MethodInvocationRecorder {
 
 	static class Unrecorded extends Recorded<Object> {
 
-		@SuppressWarnings("null")
 		private Unrecorded() {
 			super(null, null);
 		}

@@ -155,7 +155,10 @@ public final class KotlinReflectionUtils {
 	}
 
 	private static boolean isLast(MethodParameter parameter) {
-		return parameter.getParameterIndex() == parameter.getMethod().getParameterCount() - 1;
+
+		Method method = parameter.getMethod();
+
+		return method != null && parameter.getParameterIndex() == method.getParameterCount() - 1;
 	}
 
 	/**
