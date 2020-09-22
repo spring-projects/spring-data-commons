@@ -23,9 +23,11 @@ import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult;
@@ -176,6 +178,10 @@ abstract class RepositoryMethodInvoker {
 				return ReactiveWrapperConverters.toWrapper(result, returnedType);
 			}
 
+			if (Collection.class.isAssignableFrom(returnedType)) {
+				result = Flux.from(result).collectList();
+			}
+
 			return AwaitKt.awaitFirstOrNull(result, continuation);
 		} catch (Exception e) {
 			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
@@ -187,8 +193,6 @@ abstract class RepositoryMethodInvoker {
 		return new RepositoryMethodInvocation(captured.getRepositoryInterface(), method, captured.getCapturedResult(),
 				captured.getDuration());
 	}
-
-
 
 	interface Invokable {
 

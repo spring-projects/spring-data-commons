@@ -266,6 +266,26 @@ class CoroutineCrudRepositoryUnitTests {
 		assertThat(emptyResult).isEmpty()
 	}
 
+	@Test // DATACMNS-1802
+	fun shouldBridgeSuspendedAsListMethod() {
+
+		val sample = User()
+
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Flux.just(sample), Flux.empty<User>())
+
+		val result = runBlocking {
+			coRepository.findSuspendedAsList("foo")
+		}
+
+		assertThat(result).hasSize(1).containsOnly(sample)
+
+		val emptyResult = runBlocking {
+			coRepository.findSuspendedAsList("foo")
+		}
+
+		assertThat(emptyResult).isEmpty()
+	}
+
 	interface MyCoRepository : CoroutineCrudRepository<User, String> {
 
 		suspend fun findOne(id: String): User
@@ -273,5 +293,7 @@ class CoroutineCrudRepositoryUnitTests {
 		fun findMultiple(id: String): Flow<User>
 
 		suspend fun findSuspendedMultiple(id: String): Flow<User>
+
+		suspend fun findSuspendedAsList(id: String): List<User>
 	}
 }

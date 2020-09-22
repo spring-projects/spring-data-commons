@@ -77,7 +77,7 @@ public class QueryMethod {
 				});
 
 		this.method = method;
-		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(method);
+		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(metadata, method);
 		this.parameters = createParameters(method);
 		this.metadata = metadata;
 
@@ -255,7 +255,7 @@ public class QueryMethod {
 			return false;
 		}
 
-		Class<?> returnType = method.getReturnType();
+		Class<?> returnType = metadata.getReturnType(method).getType();
 
 		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
 			return true;
@@ -268,13 +268,14 @@ public class QueryMethod {
 		return ClassTypeInformation.from(unwrappedReturnType).isCollectionLike();
 	}
 
-	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(Method method) {
+	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(RepositoryMetadata metadata, Method method) {
 
-		if (QueryExecutionConverters.supports(method.getReturnType())) {
+		TypeInformation<?> returnType = metadata.getReturnType(method);
+		if (QueryExecutionConverters.supports(returnType.getType())) {
 
 			// unwrap only one level to handle cases like Future<List<Entity>> correctly.
 
-			TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(method).getComponentType();
+			TypeInformation<?> componentType = returnType.getComponentType();
 
 			if (componentType == null) {
 				throw new IllegalStateException(
@@ -284,7 +285,7 @@ public class QueryMethod {
 			return componentType.getType();
 		}
 
-		return method.getReturnType();
+		return returnType.getType();
 	}
 
 	private static void assertReturnTypeAssignable(Method method, Set<Class<?>> types) {
