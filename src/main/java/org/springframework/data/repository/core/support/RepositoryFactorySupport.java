@@ -73,6 +73,7 @@ import org.springframework.util.ObjectUtils;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author John Blum
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
@@ -449,7 +450,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			if (composition.isEmpty()) {
 
 				throw new IllegalArgumentException(
-						String.format("You have custom methods in %s but not provided a custom implementation!",
+						String.format("You have custom methods in %s but have not provided a custom implementation!",
 								repositoryInformation.getRepositoryInterface()));
 			}
 
