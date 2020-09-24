@@ -27,7 +27,6 @@ import java.util.Optional;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.reactivestreams.Publisher;
-
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
@@ -51,6 +50,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author John Blum
  */
 class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
@@ -75,9 +75,9 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 		if (!queryLookupStrategy.isPresent() && repositoryInformation.hasQueryMethods()) {
 
-			throw new IllegalStateException("You have defined query method in the repository but "
-					+ "you don't have any query lookup strategy defined. The "
-					+ "infrastructure apparently does not support query methods!");
+			throw new IllegalStateException("You have defined query methods in the repository"
+					+ " but do not have any query lookup strategy defined."
+					+ " The infrastructure apparently does not support query methods!");
 		}
 
 		this.queries = queryLookupStrategy //
