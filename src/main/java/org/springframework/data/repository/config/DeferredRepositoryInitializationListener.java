@@ -23,7 +23,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.cdi.CdiRepositoryExtensionSupport;
 
 /**
  * {@link ApplicationListener} to trigger the initialization of Spring Data repositories right before the application

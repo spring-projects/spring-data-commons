@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.springframework.core.GenericTypeResolver.*;
-
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -322,8 +320,8 @@ interface MethodLookups {
 		 * Returns a candidate method from the base class for the given one or the method given in the first place if none
 		 * one the base class matches.
 		 *
-		 * @param method must not be {@literal null}.
-		 * @param baseClass must not be {@literal null}.
+		 * @param invokedMethod must not be {@literal null}.
+		 * @param candidate must not be {@literal null}.
 		 * @param predicate must not be {@literal null}.
 		 * @return
 		 */

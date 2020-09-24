@@ -257,7 +257,7 @@ public abstract class QueryExecutionConverters {
 	 * Returns the {@link ExecutionAdapter} to be used for the given return type.
 	 *
 	 * @param returnType must not be {@literal null}.
-	 * @return
+	 * @return can be {@literal null}.
 	 */
 	@Nullable
 	public static ExecutionAdapter getExecutionAdapter(Class<?> returnType) {
@@ -289,10 +289,9 @@ public abstract class QueryExecutionConverters {
 		/**
 		 * Creates a new {@link AbstractWrapperTypeConverter} using the given {@link ConversionService} and wrapper type.
 		 *
-		 * @param conversionService must not be {@literal null}.
 		 * @param nullValue must not be {@literal null}.
 		 */
-		protected AbstractWrapperTypeConverter(Object nullValue) {
+		AbstractWrapperTypeConverter(Object nullValue) {
 
 			Assert.notNull(nullValue, "Null value must not be null!");
 
@@ -300,7 +299,7 @@ public abstract class QueryExecutionConverters {
 			this.wrapperTypes = Collections.singleton(nullValue.getClass());
 		}
 
-		public AbstractWrapperTypeConverter(Object nullValue,
+		AbstractWrapperTypeConverter(Object nullValue,
 				Iterable<Class<?>> wrapperTypes) {
 			this.nullValue = nullValue;
 			this.wrapperTypes = wrapperTypes;
@@ -356,10 +355,8 @@ public abstract class QueryExecutionConverters {
 
 		/**
 		 * Creates a new {@link NullableWrapperToFutureConverter} using the given {@link ConversionService}.
-		 *
-		 * @param conversionService must not be {@literal null}.
 		 */
-		public NullableWrapperToFutureConverter() {
+		NullableWrapperToFutureConverter() {
 			super(new AsyncResult<>(null), Arrays.asList(Future.class, ListenableFuture.class));
 		}
 
@@ -382,10 +379,8 @@ public abstract class QueryExecutionConverters {
 
 		/**
 		 * Creates a new {@link NullableWrapperToCompletableFutureConverter} using the given {@link ConversionService}.
-		 *
-		 * @param conversionService must not be {@literal null}.
 		 */
-		public NullableWrapperToCompletableFutureConverter() {
+		NullableWrapperToCompletableFutureConverter() {
 			super(CompletableFuture.completedFuture(null));
 		}
 
@@ -398,7 +393,7 @@ public abstract class QueryExecutionConverters {
 			return source instanceof CompletableFuture ? source : CompletableFuture.completedFuture(source);
 		}
 
-		public static WrapperType getWrapperType() {
+		static WrapperType getWrapperType() {
 			return WrapperType.singleValue(CompletableFuture.class);
 		}
 	}
@@ -438,7 +433,7 @@ public abstract class QueryExecutionConverters {
 		private final Map<TypeDescriptor, Boolean> targetTypeCache = new ConcurrentHashMap<>();
 		private final ConversionService conversionService = DefaultConversionService.getSharedInstance();
 
-		public IterableToStreamableConverter() {}
+		IterableToStreamableConverter() {}
 
 		/*
 		 * (non-Javadoc)

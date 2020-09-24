@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -228,7 +228,6 @@ public abstract class NullableWrapperConverters {
 		/**
 		 * Creates a new {@link AbstractWrapperTypeConverter} using the given wrapper type.
 		 *
-		 * @param conversionService must not be {@literal null}.
 		 * @param nullValue must not be {@literal null}.
 		 */
 		protected AbstractWrapperTypeConverter(Object nullValue) {
@@ -501,11 +500,11 @@ public abstract class NullableWrapperConverters {
 			this.cardinality = cardinality;
 		}
 
-		public Class<?> getType() {
+		Class<?> getType() {
 			return this.type;
 		}
 
-		public Cardinality getCardinality() {
+		Cardinality getCardinality() {
 			return cardinality;
 		}
 
@@ -560,19 +559,19 @@ public abstract class NullableWrapperConverters {
 		private final Class<?> type;
 		private final Cardinality cardinality;
 
-		public static WrapperType singleValue(Class<?> type) {
+		static WrapperType singleValue(Class<?> type) {
 			return new WrapperType(type, Cardinality.SINGLE);
 		}
 
-		public static WrapperType multiValue(Class<?> type) {
+		static WrapperType multiValue(Class<?> type) {
 			return new WrapperType(type, Cardinality.MULTI);
 		}
 
-		public static WrapperType noValue(Class<?> type) {
+		static WrapperType noValue(Class<?> type) {
 			return new WrapperType(type, Cardinality.NONE);
 		}
 
-		public boolean isSingleValue() {
+		boolean isSingleValue() {
 			return cardinality.equals(Cardinality.SINGLE);
 		}
 	}

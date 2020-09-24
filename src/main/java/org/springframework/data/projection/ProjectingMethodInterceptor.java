@@ -182,7 +182,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	 * a single-element collection.
 	 *
 	 * @param source must not be {@literal null}.
-	 * @return
+	 * @return never {@literal null}.
 	 */
 	private static Collection<?> asCollection(Object source) {
 
