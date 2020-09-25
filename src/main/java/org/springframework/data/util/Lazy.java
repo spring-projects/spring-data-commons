@@ -30,6 +30,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Henning Rohlfs
  * @since 2.0
  */
 public class Lazy<T> implements Supplier<T> {
@@ -39,7 +40,7 @@ public class Lazy<T> implements Supplier<T> {
 	private final Supplier<? extends T> supplier;
 
 	private @Nullable T value;
-	private boolean resolved;
+	private volatile boolean resolved;
 
 	/**
 	 * Creates a new {@link Lazy} instance for the given supplier.
@@ -222,18 +223,14 @@ public class Lazy<T> implements Supplier<T> {
 	@Nullable
 	public T getNullable() {
 
-		T value = this.value;
-
 		if (this.resolved) {
-			return value;
+			return this.value;
 		}
 
-		value = supplier.get();
-
-		this.value = value;
+		this.value = supplier.get();
 		this.resolved = true;
 
-		return value;
+		return this.value;
 	}
 
 	/*
