@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Henning Rohlfs
  * @since 2.0
  */
 @RequiredArgsConstructor
@@ -45,7 +46,7 @@ public class Lazy<T> implements Supplier<T> {
 
 	private final Supplier<? extends T> supplier;
 	private @Nullable T value = null;
-	private boolean resolved = false;
+	private volatile boolean resolved = false;
 
 	/**
 	 * Creates a new {@link Lazy} to produce an object lazily.
@@ -203,15 +204,11 @@ public class Lazy<T> implements Supplier<T> {
 	@Nullable
 	public T getNullable() {
 
-		T value = this.value;
-
-		if (this.resolved) {
+		if (resolved) {
 			return value;
 		}
 
-		value = supplier.get();
-
-		this.value = value;
+		this.value = supplier.get();
 		this.resolved = true;
 
 		return value;
