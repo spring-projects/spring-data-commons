@@ -223,14 +223,14 @@ public class Lazy<T> implements Supplier<T> {
 	@Nullable
 	public T getNullable() {
 
-		if (this.resolved) {
-			return this.value;
+		if (resolved) {
+			return value;
 		}
 
 		this.value = supplier.get();
 		this.resolved = true;
 
-		return this.value;
+		return value;
 	}
 
 	/*
