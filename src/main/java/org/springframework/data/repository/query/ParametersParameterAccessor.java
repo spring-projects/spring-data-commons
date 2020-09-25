@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -64,7 +65,8 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	private static boolean requiresUnwrapping(Object[] values) {
 
 		for (Object value : values) {
-			if (value != null && QueryExecutionConverters.supports(value.getClass())) {
+			if (value != null && (QueryExecutionConverters.supports(value.getClass())
+					|| ReactiveWrapperConverters.supports(value.getClass()))) {
 				return true;
 			}
 		}

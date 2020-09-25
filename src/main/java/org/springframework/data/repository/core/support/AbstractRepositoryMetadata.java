@@ -109,11 +109,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 		TypeInformation<?> returnType = getReturnType(method);
 
-		if (ReactiveWrapperConverters.supports(returnType.getType())) {
-			return ReactiveWrapperConverters.unwrapWrapperTypes(returnType).getType();
-		}
-
-		return ReactiveWrapperConverters.unwrapWrapperTypes(QueryExecutionConverters.unwrapWrapperTypes(returnType))
+		return QueryExecutionConverters.unwrapWrapperTypes(ReactiveWrapperConverters.unwrapWrapperTypes(returnType))
 				.getType();
 	}
 

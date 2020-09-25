@@ -187,6 +187,8 @@ public abstract class ClassUtils {
 	private static TypeInformation<?> getEffectivelyReturnedTypeFrom(Method method) {
 
 		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
-		return QueryExecutionConverters.supports(returnType.getType()) ? returnType.getRequiredComponentType() : returnType;
+		return QueryExecutionConverters.supports(returnType.getType())
+				|| ReactiveWrapperConverters.supports(returnType.getType()) ? returnType.getRequiredComponentType()
+						: returnType;
 	}
 }

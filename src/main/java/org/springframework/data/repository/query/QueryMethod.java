@@ -29,6 +29,7 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
@@ -271,7 +272,8 @@ public class QueryMethod {
 	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(RepositoryMetadata metadata, Method method) {
 
 		TypeInformation<?> returnType = metadata.getReturnType(method);
-		if (QueryExecutionConverters.supports(returnType.getType())) {
+		if (QueryExecutionConverters.supports(returnType.getType())
+				|| ReactiveWrapperConverters.supports(returnType.getType())) {
 
 			// unwrap only one level to handle cases like Future<List<Entity>> correctly.
 

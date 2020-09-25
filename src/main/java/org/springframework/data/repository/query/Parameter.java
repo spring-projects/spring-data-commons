@@ -230,7 +230,7 @@ public class Parameter {
 		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 
 		return bound
-				.equals(ReactiveWrapperConverters.unwrapWrapperTypes(QueryExecutionConverters.unwrapWrapperTypes(returnType)));
+				.equals(QueryExecutionConverters.unwrapWrapperTypes(ReactiveWrapperConverters.unwrapWrapperTypes(returnType)));
 	}
 
 	/**

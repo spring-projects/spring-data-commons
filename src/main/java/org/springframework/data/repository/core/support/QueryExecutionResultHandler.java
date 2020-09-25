@@ -126,7 +126,8 @@ class QueryExecutionResultHandler {
 
 		result = unwrapOptional(result);
 
-		if (QueryExecutionConverters.supports(expectedReturnType)) {
+		if (QueryExecutionConverters.supports(expectedReturnType)
+				|| ReactiveWrapperConverters.supports(expectedReturnType)) {
 
 			// For a wrapper type, try nested resolution first
 			result = postProcessInvocationResult(result, nestingLevel + 1, descriptor);

@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Maciek Opała
+ * @author Mark Paluch
  */
 class QueryMethodUnitTests {
 
@@ -208,7 +210,7 @@ class QueryMethodUnitTests {
 	 * @see DATACMNS-940
 	 */
 	@Test
-	void detectsSinglValueWrapperWithinWrapper() throws Exception {
+	void detectsSingleValueWrapperWithinWrapper() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		Method method = SampleRepository.class.getMethod("returnsFutureOfOption");
@@ -232,6 +234,19 @@ class QueryMethodUnitTests {
 		Method method = ContainerRepository.class.getMethod("someMethod");
 
 		assertThat(new QueryMethod(method, metadata, factory).isCollectionQuery()).isFalse();
+	}
+
+	@Test // DATACMNS-1762
+	void detectsReactiveSliceQuery() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		Method method = SampleRepository.class.getMethod("reactiveSlice");
+
+		QueryMethod queryMethod = new QueryMethod(method, repositoryMetadata, factory);
+		ReturnedType returnedType = queryMethod.getResultProcessor().getReturnedType();
+		assertThat(queryMethod.isSliceQuery()).isTrue();
+		assertThat(returnedType.getTypeToRead()).isEqualTo(User.class);
+		assertThat(returnedType.getDomainType()).isEqualTo(User.class);
 	}
 
 	interface SampleRepository extends Repository<User, Serializable> {
@@ -278,6 +293,8 @@ class QueryMethodUnitTests {
 		Future<Seq<User>> returnsFutureOfSeq();
 
 		Future<Option<User>> returnsFutureOfOption();
+
+		Mono<Slice<User>> reactiveSlice();
 	}
 
 	class User {
