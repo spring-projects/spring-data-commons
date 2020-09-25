@@ -30,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
@@ -228,7 +229,8 @@ public class Parameter {
 		TypeInformation<?> bound = parameterTypes.getTypeArguments().get(0);
 		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 
-		return bound.equals(QueryExecutionConverters.unwrapWrapperTypes(returnType));
+		return bound
+				.equals(ReactiveWrapperConverters.unwrapWrapperTypes(QueryExecutionConverters.unwrapWrapperTypes(returnType)));
 	}
 
 	/**
@@ -239,7 +241,8 @@ public class Parameter {
 	 * @see QueryExecutionConverters
 	 */
 	private static boolean isWrapped(MethodParameter parameter) {
-		return QueryExecutionConverters.supports(parameter.getParameterType());
+		return QueryExecutionConverters.supports(parameter.getParameterType())
+				|| ReactiveWrapperConverters.supports(parameter.getParameterType());
 	}
 
 	/**

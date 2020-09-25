@@ -113,7 +113,8 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 			return ReactiveWrapperConverters.unwrapWrapperTypes(returnType).getType();
 		}
 
-		return QueryExecutionConverters.unwrapWrapperTypes(returnType).getType();
+		return ReactiveWrapperConverters.unwrapWrapperTypes(QueryExecutionConverters.unwrapWrapperTypes(returnType))
+				.getType();
 	}
 
 	/*
