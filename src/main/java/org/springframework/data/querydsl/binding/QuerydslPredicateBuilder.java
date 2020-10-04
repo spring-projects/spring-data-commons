@@ -25,12 +25,16 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.querydsl.core.types.Ops;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.Property;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.EntityPathResolver;
+import org.springframework.data.util.Pair;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -50,6 +54,8 @@ import com.querydsl.core.types.Predicate;
  * @since 1.11
  */
 public class QuerydslPredicateBuilder {
+
+	private static final Log logger = LogFactory.getLog(QuerydslPredicateBuilder.class);
 
 	private final ConversionService conversionService;
 	private final MultiValueBinding<Path<? extends Object>, Object> defaultBinding;
@@ -112,8 +118,8 @@ public class QuerydslPredicateBuilder {
 				continue;
 			}
 
-			Collection<Object> value = convertToPropertyPathSpecificType(entry.getValue(), propertyPath);
-			Optional<Predicate> predicate = invokeBinding(propertyPath, bindings, value);
+			Collection<Pair<Object, Ops>> valueAndOperations = convertToPropertyPathSpecificType(entry.getValue(), propertyPath);
+			Optional<Predicate> predicate = invokeBinding(propertyPath, bindings, valueAndOperations);
 
 			predicate.ifPresent(builder::and);
 		}
@@ -130,7 +136,7 @@ public class QuerydslPredicateBuilder {
 	 * @return
 	 */
 	private Optional<Predicate> invokeBinding(PathInformation dotPath, QuerydslBindings bindings,
-			Collection<Object> values) {
+											  Collection<Pair<Object, Ops>> values) {
 
 		Path<?> path = getPath(dotPath, bindings);
 
@@ -162,7 +168,7 @@ public class QuerydslPredicateBuilder {
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
-	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PathInformation path) {
+	private Collection<Pair<Object, Ops>> convertToPropertyPathSpecificType(List<String> source, PathInformation path) {
 
 		Class<?> targetType = path.getLeafType();
 
@@ -170,16 +176,41 @@ public class QuerydslPredicateBuilder {
 			return Collections.emptyList();
 		}
 
-		Collection<Object> target = new ArrayList<>(source.size());
+		Collection<Pair<Object, Ops>> target = new ArrayList<>(source.size());
 
-		for (String value : source) {
-
-			target.add(conversionService.canConvert(String.class, targetType)
-					? conversionService.convert(value, TypeDescriptor.forObject(value), getTargetTypeDescriptor(path))
-					: value);
+		for (String valueAndOpString : source) {
+			Pair<Object, Ops> valueOpPair = getValueOpsPair(path, targetType, valueAndOpString);
+			target.add(valueOpPair);
 		}
 
 		return target;
+	}
+
+	private Pair<Object, Ops> getValueOpsPair(PathInformation path, Class<?> targetType, String valueAndOpString) {
+		String value = valueAndOpString; // Initialize with the incoming value
+		Ops operation = Ops.EQ; // Default value of operation, if not provided
+		try {
+			Pair<String, Ops> valueOperationPair = getValueAndOperation(valueAndOpString);
+			value = valueOperationPair.getFirst(); // Assign the value portion, if exists
+			operation = valueOperationPair.getSecond();
+		} catch (IllegalArgumentException e) {
+			logger.warn(String.format("Not a valid value for Ops in valueAndOpString: %s", valueAndOpString));
+		}
+		Object convertedValue = conversionService.canConvert(String.class, targetType)
+				? conversionService.convert(value, TypeDescriptor.forObject(value), getTargetTypeDescriptor(path))
+				: value;
+		return Pair.of(convertedValue, operation);
+	}
+
+	private Pair<String, Ops> getValueAndOperation(final String valueAndOpString) {
+		String value = valueAndOpString;
+		Ops operation = Ops.EQ; // Default value of operation, if not provided
+		if (valueAndOpString.contains(",")) {
+			int lastIndex = valueAndOpString.lastIndexOf(',');
+			value = valueAndOpString.substring(0, lastIndex);
+			operation = Ops.valueOf(valueAndOpString.substring(lastIndex+1));
+		}
+		return Pair.of(value, operation);
 	}
 
 	/**

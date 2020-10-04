@@ -15,16 +15,21 @@
  */
 package org.springframework.data.querydsl.binding;
 
-import java.util.Collection;
-import java.util.Optional;
-
-import org.springframework.util.Assert;
-
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ConstantImpl;
+import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.CollectionPathBase;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.SimpleExpression;
+import org.springframework.data.util.Pair;
+import org.springframework.util.Assert;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@link MultiValueBinding} creating {@link Predicate} based on the {@link Path}s type.
@@ -48,12 +53,12 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Optional<Predicate> bind(Path<?> path, Collection<? extends Object> value) {
+	public Optional<Predicate> bind(Path<?> path, Collection<? extends Object> valueAndOperation) {
 
 		Assert.notNull(path, "Path must not be null!");
-		Assert.notNull(value, "Value must not be null!");
+		Assert.notNull(valueAndOperation, "Value must not be null!");
 
-		if (value.isEmpty()) {
+		if (valueAndOperation.isEmpty()) {
 			return Optional.empty();
 		}
 
@@ -61,8 +66,9 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 
 			BooleanBuilder builder = new BooleanBuilder();
 
-			for (Object element : value) {
-				builder.and(((CollectionPathBase) path).contains(element));
+			for (Object element : valueAndOperation) {
+				Object value = ((Pair<Object, Ops>)element).getFirst();
+				builder.and(((CollectionPathBase) path).contains(value));
 			}
 
 			return Optional.of(builder.getValue());
@@ -72,15 +78,29 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 
 			SimpleExpression expression = (SimpleExpression) path;
 
-			if (value.size() > 1) {
-				return Optional.of(expression.in(value));
+			if (valueAndOperation.size() > 1) {
+				List<Object> values = valueAndOperation.stream().map(valueOperationPair -> ((Pair<Object, Ops>) valueOperationPair).getFirst()).collect(Collectors.toList());
+				return Optional.of(expression.in(values));
 			}
 
-			Object object = value.iterator().next();
+			Pair<Object, Ops> valueOperationPair = (Pair<Object, Ops>) valueAndOperation.iterator().next();
+			if (valueOperationPair == null) {
+				return Optional.of(expression.isNull());
+			}
 
-			return Optional.of(object == null //
-					? expression.isNull() //
-					: expression.eq(object));
+			Object value = valueOperationPair.getFirst();
+			Ops operation = valueOperationPair.getSecond();
+
+			if (value == null) {
+				return Optional.of(expression.isNull());
+			} else if (operation == null) {
+				// If operation is null, it means the string provided does not have valid Ops value
+				// As we have already logged a warn message while parsing string in QueryPredicateBuilder#getValueOpsPair,
+				// ignore this and return a new BooleanBuilder
+				return Optional.of(new BooleanBuilder());
+			} else {
+				return Optional.of(Expressions.booleanOperation(operation, path, ConstantImpl.create(value)));
+			}
 		}
 
 		throw new IllegalArgumentException(

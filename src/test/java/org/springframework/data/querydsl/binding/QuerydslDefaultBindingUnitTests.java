@@ -21,11 +21,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
+import com.querydsl.core.types.Ops;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.querydsl.QUser;
 
 import com.querydsl.core.types.Predicate;
+import org.springframework.data.util.Pair;
 
 /**
  * @author Christoph Strobl
@@ -41,10 +43,14 @@ class QuerydslDefaultBindingUnitTests {
 		binding = new QuerydslDefaultBinding();
 	}
 
+	private Pair<Object, Ops> getValueOpPairDefault(Object value) {
+		return Pair.of(value, Ops.EQ);
+	}
+
 	@Test // DATACMNS-669
 	void shouldCreatePredicateCorrectlyWhenPropertyIsInRoot() {
 
-		Optional<Predicate> predicate = binding.bind(QUser.user.firstname, Collections.singleton("tam"));
+		Optional<Predicate> predicate = binding.bind(QUser.user.firstname, Collections.singleton(getValueOpPairDefault("tam")));
 
 		assertThat(predicate).hasValue(QUser.user.firstname.eq("tam"));
 	}
@@ -52,7 +58,7 @@ class QuerydslDefaultBindingUnitTests {
 	@Test // DATACMNS-669
 	void shouldCreatePredicateCorrectlyWhenPropertyIsInNestedElement() {
 
-		Optional<Predicate> predicate = binding.bind(QUser.user.address.city, Collections.singleton("two rivers"));
+		Optional<Predicate> predicate = binding.bind(QUser.user.address.city, Collections.singleton(getValueOpPairDefault("two rivers")));
 
 		assertThat(predicate).hasValueSatisfying(
 				it -> assertThat(it.toString()).isEqualTo(QUser.user.address.city.eq("two rivers").toString()));
@@ -61,7 +67,7 @@ class QuerydslDefaultBindingUnitTests {
 	@Test // DATACMNS-669
 	void shouldCreatePredicateWithContainingWhenPropertyIsCollectionLikeAndValueIsObject() {
 
-		Optional<Predicate> predicate = binding.bind(QUser.user.nickNames, Collections.singleton("dragon reborn"));
+		Optional<Predicate> predicate = binding.bind(QUser.user.nickNames, Collections.singleton(getValueOpPairDefault("dragon reborn")));
 
 		assertThat(predicate).hasValue(QUser.user.nickNames.contains("dragon reborn"));
 	}
@@ -69,7 +75,7 @@ class QuerydslDefaultBindingUnitTests {
 	@Test // DATACMNS-669
 	void shouldCreatePredicateWithInWhenPropertyIsAnObjectAndValueIsACollection() {
 
-		Optional<Predicate> predicate = binding.bind(QUser.user.firstname, Arrays.asList("dragon reborn", "shadowkiller"));
+		Optional<Predicate> predicate = binding.bind(QUser.user.firstname, Arrays.asList(getValueOpPairDefault("dragon reborn"), getValueOpPairDefault("shadowkiller")));
 
 		assertThat(predicate).hasValue(QUser.user.firstname.in(Arrays.asList("dragon reborn", "shadowkiller")));
 	}

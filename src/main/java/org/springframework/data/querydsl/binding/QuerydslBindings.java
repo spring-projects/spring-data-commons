@@ -22,11 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Iterator;
 
+import com.querydsl.core.types.Ops;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
+import org.springframework.data.util.Pair;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -362,13 +365,28 @@ public class QuerydslBindings {
 
 			Assert.notNull(binding, "Binding must not be null!");
 
-			all((path, value) -> binding.bind(path, Optionals.next(value.iterator())));
+			all((path, value) -> {
+				Iterator<? extends T> valueAndOpsPairIterator = value.stream().map(t -> {
+					if (t instanceof Pair) {
+						Pair<T, Ops> valueAndOperation = (Pair<T, Ops>) t;
+						return valueAndOperation.getFirst();
+					}
+					return t;
+				}).iterator();
+				return binding.bind(path, Optionals.next(valueAndOpsPairIterator));
+			});
 		}
 
 		public void first(SingleValueBinding<P, T> binding) {
 
 			Assert.notNull(binding, "Binding must not be null!");
-			all((path, value) -> Optionals.next(value.iterator()).map(t -> binding.bind(path, t)));
+			all((path, value) -> Optionals.next(value.iterator()).map(t -> {
+				if (t instanceof Pair) {
+					Pair<T, Ops> valueAndOperation = (Pair<T, Ops>)t;
+					return binding.bind(path, valueAndOperation.getFirst());
+				}
+				return binding.bind(path, t);
+			}));
 		}
 
 		/**
