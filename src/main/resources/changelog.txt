@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.0-RC2 (2020-10-14)
+-----------------------------------------
+* DATACMNS-1807 - Code examples for Kotlin declared as Java.
+* DATACMNS-1806 - Concurrency issue in Lazy.getNullable().
+* DATACMNS-1802 - Add support for suspend repository query methods returning List<T>.
+* DATACMNS-1798 - Release 2.4 RC2 (2020.0.0).
+* DATACMNS-1762 - Allow Optional fields in projection.
+* DATACMNS-1688 - Allow to register custom RepositoryProxyPostProcessors.
+* DATACMNS-1637 - Add default stream() method to CloseableIterator.
+
+
 Changes in version 2.4.0-RC1 (2020-09-16)
 -----------------------------------------
 * DATACMNS-1795 - Align checks in ReactiveWrappers with checks in ReactiveAdapterRegistry.
@@ -2853,6 +2864,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
