@@ -24,7 +24,16 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -87,6 +96,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		this.valueType = Lazy.of(this::doGetMapValueType);
 		this.typeVariableMap = typeVariableMap;
 		this.hashCode = 17 + 31 * type.hashCode() + 31 * typeVariableMap.hashCode();
+	}
+
+	protected TypeDiscoverer(Class<?> type, TypeInformation<?> componentType, TypeInformation<?> keyType) {
+
+		this.type = null;
+		this.typeVariableMap = Collections.emptyMap();
+		this.hashCode = 17 + 31 * type.hashCode();
+		this.resolvedType = Lazy.of((Class<S>) type);
+		this.componentType = componentType == null ? Lazy.empty() : Lazy.of(componentType);
+		this.valueType = keyType == null ? Lazy.empty() : Lazy.of(keyType);
 	}
 
 	/**

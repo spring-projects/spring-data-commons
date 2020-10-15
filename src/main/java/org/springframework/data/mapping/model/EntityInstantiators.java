@@ -90,6 +90,10 @@ public class EntityInstantiators {
 		Class<?> type = entity.getType();
 
 		if (!customInstantiators.containsKey(type)) {
+
+			if (entity.getTypeInformation() instanceof EntityInstantiatorAware) {
+				return ((EntityInstantiatorAware) entity.getTypeInformation()).getEntiyInstantiatorOrDefault(fallback);
+			}
 			return fallback;
 		}
 

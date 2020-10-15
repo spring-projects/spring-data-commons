@@ -108,14 +108,30 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.properties = new ArrayList<>();
 		this.persistentPropertiesCache = new ArrayList<>();
 		this.comparator = comparator;
-		this.constructor = PreferredConstructorDiscoverer.discover(this);
+
+		this.constructor = information instanceof PreferredConstructorProvider
+				? ((PreferredConstructorProvider<T>) information).getPreferredConstructor()
+				: PreferredConstructorDiscoverer.discover(this);
+
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
 		this.propertyCache = new HashMap<>(16, 1f);
+
 		this.annotationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
+		if(information instanceof AnnotationAware) {
+			for(Annotation annotation : ((AnnotationAware)information).getAnnotations()) {
+				annotationCache.put(annotation.annotationType(), Optional.of(annotation));
+			}
+		}
+
+
 		this.propertyAnnotationCache = CollectionUtils
 				.toMultiValueMap(new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK));
-		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
+
+		this.propertyAccessorFactory = information instanceof PersistentPropertyAccessorFactoryProvider
+				? ((PersistentPropertyAccessorFactoryProvider) information).getPersistentPropertyAccessorFactory()
+				: BeanWrapperPropertyAccessorFactory.INSTANCE;
+
 		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 		this.isNewStrategy = Lazy.of(() -> Persistable.class.isAssignableFrom(information.getType()) //
 				? PersistableIsNewStrategy.INSTANCE

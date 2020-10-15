@@ -101,6 +101,12 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	private void populateAnnotationCache(Property property) {
 
+		property.getAnnotations().forEach(it -> {
+
+			System.out.println("registering static annotation "+it.annotationType()+" for field " + property.getName());
+			annotationCache.put(it.annotationType(), Optional.of(it));
+		});
+
 		Optionals.toStream(property.getGetter(), property.getSetter()).forEach(it -> {
 
 			for (Annotation annotation : it.getAnnotations()) {

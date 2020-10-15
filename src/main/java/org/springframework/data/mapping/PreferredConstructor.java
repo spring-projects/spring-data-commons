@@ -18,6 +18,7 @@ package org.springframework.data.mapping;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,6 +48,11 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	private final Constructor<T> constructor;
 	private final List<Parameter<Object, P>> parameters;
 	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new ConcurrentHashMap<>();
+
+	protected PreferredConstructor() {
+		this.constructor = null;
+		this.parameters = Collections.emptyList();
+	}
 
 	/**
 	 * Creates a new {@link PreferredConstructor} from the given {@link Constructor} and {@link Parameter}s.

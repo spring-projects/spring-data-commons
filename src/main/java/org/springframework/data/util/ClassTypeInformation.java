@@ -27,11 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 
 /**
  * {@link TypeInformation} for a plain {@link Class}.
@@ -48,14 +47,20 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	public static final ClassTypeInformation<Map> MAP = new ClassTypeInformation(Map.class);
 	public static final ClassTypeInformation<Object> OBJECT = new ClassTypeInformation(Object.class);
 
-	private static final Map<Class<?>, ClassTypeInformation<?>> cache = new ConcurrentReferenceHashMap<>(64,
-			ReferenceType.WEAK);
+	// cannot use reference hash map cause static type information might not be referenced from outside and get discarded
+	private static final Map<Class<?>, ClassTypeInformation<?>> cache = new ConcurrentHashMap<>();
 
 	static {
 		Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT).forEach(it -> cache.put(it.getType(), it));
 	}
 
 	private final Class<S> type;
+
+	public static void warmCache(ClassTypeInformation<?>... typeInformations) {
+		for(ClassTypeInformation<?> information : typeInformations) {
+			cache.put(information.getType(), information);
+		}
+	}
 
 	/**
 	 * Simple factory method to easily create new instances of {@link ClassTypeInformation}.
@@ -91,6 +96,11 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 */
 	ClassTypeInformation(Class<S> type) {
 		super(ProxyUtils.getUserClass(type), getTypeVariableMap(type));
+		this.type = type;
+	}
+
+	protected ClassTypeInformation(Class<S> type, TypeInformation<?> componentType, TypeInformation<?> keyType) {
+		super(type, componentType, keyType);
 		this.type = type;
 	}
 

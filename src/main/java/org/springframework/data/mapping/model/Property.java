@@ -17,8 +17,11 @@ package org.springframework.data.mapping.model;
 
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -40,6 +43,9 @@ import org.springframework.util.StringUtils;
  */
 public class Property {
 
+	private @Nullable TypeInformation<?> typeInformation;
+	private List<Annotation> annotations;
+
 	private final Optional<Field> field;
 	private final Optional<PropertyDescriptor> descriptor;
 
@@ -52,11 +58,28 @@ public class Property {
 	private final Lazy<String> toString;
 	private final Lazy<Optional<Method>> wither;
 
+	private Property(String name, TypeInformation<?> typeInformation, List<Annotation> annotations) {
+
+		this.annotations = annotations;
+		this.typeInformation = typeInformation;
+		this.field = Optional.empty();
+		this.descriptor = Optional.empty();
+
+		this.rawType = typeInformation.getType();
+		this.hashCode = Lazy.of( () -> typeInformation.hashCode() + name.hashCode());
+		this.getter = Optional.empty();
+		this.setter = Optional.empty();
+		this.name = Lazy.of(name);
+		this.toString = Lazy.of(() ->  typeInformation.toString() + name);
+		this.wither = Lazy.of(() -> findWither(typeInformation, getName(), getType()));
+	}
+
 	private Property(TypeInformation<?> type, Optional<Field> field, Optional<PropertyDescriptor> descriptor) {
 
 		Assert.notNull(type, "Type must not be null!");
 		Assert.isTrue(Optionals.isAnyPresent(field, descriptor), "Either field or descriptor has to be given!");
 
+		this.annotations = Collections.emptyList();
 		this.field = field;
 		this.descriptor = descriptor;
 
@@ -108,6 +131,22 @@ public class Property {
 		Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
 
 		return new Property(type, Optional.of(field), Optional.of(descriptor));
+	}
+
+	/**
+	 * Creates a new {@link Property} backed by the given {@link Field} and {@link PropertyDescriptor}.
+	 *
+	 * @param type the owning type, must not be {@literal null}.
+	 * @param field must not be {@literal null}.
+	 * @param descriptor must not be {@literal null}.
+	 * @return
+	 */
+	public static Property of(TypeInformation<?> type, String name) {
+		return new Property(name, type, Collections.emptyList());
+	}
+
+	public static Property of(TypeInformation<?> type, String name, List<Annotation> annotations) {
+		return new Property(name, type, annotations != null ? annotations : Collections.emptyList());
 	}
 
 	/**
@@ -212,6 +251,10 @@ public class Property {
 		return rawType;
 	}
 
+	public List<Annotation> getAnnotations() {
+		return annotations;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
@@ -228,6 +271,14 @@ public class Property {
 		}
 
 		Property that = (Property) obj;
+		if(this.typeInformation != null && that.typeInformation != null) {
+			if(this.typeInformation != that.typeInformation) {
+				return false;
+			}
+			if(!this.name.get().equals(that.name.get())) {
+				return false;
+			}
+		}
 
 		return this.field.isPresent() ? this.field.equals(that.field) : this.descriptor.equals(that.descriptor);
 	}

@@ -46,6 +46,7 @@ import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.BeanWrapperPropertyAccessorFactory;
 import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory;
+import org.springframework.data.mapping.model.DomainTypeInformation;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessorFactory;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
@@ -371,6 +372,22 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
 			persistentEntities.put(typeInformation, Optional.of(entity));
+
+			if (typeInformation instanceof DomainTypeInformation<?>) {
+
+				final E pEntity = entity;
+				((DomainTypeInformation<?>) typeInformation).doWithFields((fieldName, field) -> {
+
+					System.out.println("Creating PersistentProperty for " + fieldName + " via static configuration.");
+					P target = createPersistentProperty(
+							Property.of(field.getTypeInformation(), fieldName, field.getAnnotations()), pEntity, simpleTypeHolder);
+					pEntity.addPersistentProperty(target);
+
+				});
+				pEntity.setPersistentPropertyAccessorFactory(
+						((DomainTypeInformation) typeInformation).getPersistentPropertyAccessorFactory());
+				return Optional.of(pEntity);
+			}
 
 			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
 
