@@ -25,8 +25,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersonWithIdTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link EntityInstantiators}.
@@ -77,5 +78,17 @@ class EntityInstantiatorsUnitTests {
 
 		doReturn(String.class).when(entity).getType();
 		assertThat(instantiators.getInstantiatorFor(entity)).isEqualTo(ReflectionEntityInstantiator.INSTANCE);
+	}
+
+	@Test // DATACMNS-???
+	void usesEntityInstantiatorFromDomainTypeIfAvailable() {
+
+		PersonWithIdTypeInformation info = PersonWithIdTypeInformation.instance();
+		when(entity.getTypeInformation()).thenReturn((TypeInformation) info);
+
+		EntityInstantiators instantiators = new EntityInstantiators();
+		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
+
+		assertThat(instantiator).isInstanceOf(FunctionalEntityInstantiator.class);
 	}
 }

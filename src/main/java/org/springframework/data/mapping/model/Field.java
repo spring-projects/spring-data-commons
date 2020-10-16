@@ -34,17 +34,17 @@ import org.springframework.util.MultiValueMap;
  */
 public class Field<T, O> implements AnnotationAware {
 
-	@Nullable Class<O> owner;
-	String propertyName;
+	private @Nullable Class<O> owner;
+	private final String propertyName;
 
-	TypeInformation<T> typeInformation;
-	@Nullable TypeInformation<?> componentType;
-	@Nullable TypeInformation<?> keyType;
+	private final TypeInformation<T> typeInformation;
+	private @Nullable TypeInformation<?> componentType;
+	private @Nullable TypeInformation<?> keyType;
 
-	MultiValueMap<Class<? extends Annotation>, Annotation> annotations;
+	private final MultiValueMap<Class<? extends Annotation>, Annotation> annotations;
 
-	@Nullable Function<O, T> getterFunction;
-	@Nullable BiFunction<O, T, O> setterFunction;
+	private @Nullable Function<O, T> getterFunction;
+	private @Nullable BiFunction<O, T, O> setterFunction;
 
 	public Field(String propertyName, TypeInformation<T> propertyTypeInformation) {
 
@@ -110,9 +110,27 @@ public class Field<T, O> implements AnnotationAware {
 		return this;
 	}
 
-	Field<T, O> owner(Class<O> owner) {
+	public Field<T, O> owner(Class<O> owner) {
 
 		this.owner = owner;
+		return this;
+	}
+
+	public Field<T, O> annotatedWithAtId() {
+
+		this.annotation(AnnotationAware.idAnnotation());
+		return this;
+	}
+
+	public Field<T, O> annotatedWithAtPersistent() {
+
+		this.annotation(AnnotationAware.persistentAnnotation());
+		return this;
+	}
+
+	public Field<T, O> annotatedWithAtTransient() {
+
+		this.annotation(AnnotationAware.transientAnnotation());
 		return this;
 	}
 

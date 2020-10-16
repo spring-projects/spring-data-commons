@@ -41,10 +41,15 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersonTypeInformation;
+import org.springframework.data.mapping.PersonWithId;
+import org.springframework.data.mapping.PersonWithIdTypeInformation;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.DomainTypeInformation;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit test for {@link AbstractMappingContext}.
@@ -214,6 +219,25 @@ class AbstractMappingContextUnitTests {
 
 		assertThatExceptionOfType(RuntimeException.class) //
 				.isThrownBy(() -> context.getPersistentEntity(Unsupported.class));
+	}
+
+	@Test // DATACMNS-???
+	void populatesPersistentPropertyFromDomainTypeInformation() {
+
+		ReflectionTestUtils.invokeMethod(ClassTypeInformation.class, "clearCache");
+		ClassTypeInformation.warmCache(PersonTypeInformation.instance(), PersonWithIdTypeInformation.instance());
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(PersonWithId.class);
+
+		SamplePersistentProperty ssn = entity.getRequiredPersistentProperty("ssn");
+		assertThat(ssn.getTypeInformation() instanceof DomainTypeInformation);
+		assertThat(ssn.getType()).isEqualTo(Integer.class);
+		assertThat(ssn.getField()).isNull();
+
+		SamplePersistentProperty id = entity.getRequiredPersistentProperty("id");
+		assertThat(id.isAnnotationPresent(Id.class)).isTrue();
+		assertThat(id.getType()).isEqualTo(String.class);
+		assertThat(id.getField()).isNull();
 	}
 
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {

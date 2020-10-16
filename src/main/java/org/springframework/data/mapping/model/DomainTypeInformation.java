@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -47,7 +48,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	@Nullable private final TypeInformation<?> componentType;
 	@Nullable private final TypeInformation<?> keyType;
 
-	private DomainTypeInformation<?> superTypeInformation;
+	private DomainTypeInformation<? super S> superTypeInformation;
 	private List<TypeInformation<?>> typeArguments;
 	private MultiValueMap<Class<? extends Annotation>, Annotation> annotations;
 
@@ -59,6 +60,13 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		this(type, null, null);
 	}
 
+	public DomainTypeInformation(Class<S> type, DomainTypeInformation<? super S> superTypeInformation) {
+
+		this(type, null, null);
+		this.superTypeInformation = superTypeInformation;
+		addSuperTypeFields(superTypeInformation);
+	}
+
 	public DomainTypeInformation(Class<S> type, @Nullable TypeInformation<?> componentType,
 			@Nullable TypeInformation<?> keyType) {
 
@@ -66,25 +74,25 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		this.type = type;
 		this.componentType = componentType;
 		this.keyType = keyType;
-		this.typeArguments = computeTypeArguments();
-		this.preferredConstructor = computePreferredConstructor();
 		this.annotations = new LinkedMultiValueMap<>();
+		this.typeArguments = new ArrayList<>(0);
 		this.fields = new Fields(type);
-
-		computeFields();
-		computeAnnotations();
 	}
 
-	protected void addField(Field<?, S> field) {
+	protected void addField(Field<?, ? super S> field) {
 		this.fields.add(field);
 	}
 
-	protected List<TypeInformation<?>> computeTypeArguments() {
-		return Collections.emptyList();
+	protected void addAnnotation(Annotation annotation) {
+		this.annotations.add(annotation.annotationType(), annotation);
 	}
 
-	protected DomainTypeConstructor<S> computePreferredConstructor() {
-		return null;
+	protected void addTypeArguments(TypeInformation<?>... typeArguments) {
+		this.typeArguments.addAll(Arrays.asList(typeArguments));
+	}
+
+	protected void setConstructor(DomainTypeConstructor<S> constructor) {
+		this.preferredConstructor = constructor;
 	}
 
 	@Override
@@ -92,16 +100,15 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		return preferredConstructor;
 	}
 
-	protected void computeFields() {
-		//
-	}
+	private void addSuperTypeFields(@Nullable DomainTypeInformation<? super S> superType) {
+		if (superType == null) {
+			return;
+		}
 
-	protected void computeAnnotations() {
-
-	}
-
-	protected void addAnnotation(Annotation annotation) {
-		this.annotations.add(annotation.annotationType(), annotation);
+		superType.doWithFields((name, field) -> {
+			addField(field);
+		});
+		addSuperTypeFields(superType.superTypeInformation);
 	}
 
 	public void doWithFields(BiConsumer<String, Field<?, S>> consumer) {

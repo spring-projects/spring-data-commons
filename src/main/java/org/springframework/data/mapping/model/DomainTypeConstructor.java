@@ -15,13 +15,12 @@
  */
 package org.springframework.data.mapping.model;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.lang.Nullable;
@@ -33,43 +32,20 @@ import org.springframework.lang.Nullable;
 public class DomainTypeConstructor<T> extends PreferredConstructor implements EntityInstantiatorAware {
 
 	private List<String> args;
+	private EntityInstantiator entityInstantiator;
 
-	public DomainTypeConstructor(List<String> args) {
+	public DomainTypeConstructor(List<String> args, @Nullable EntityInstantiator entityInstantiator) {
+
 		this.args = args;
+		this.entityInstantiator = entityInstantiator;
 	}
 
-	public static DomainTypeConstructor of(String... args) {
-		return new DomainTypeConstructor(Arrays.asList(args));
+	public static <T> DomainTypeConstructor<T> noArgsConstructor(Supplier<T> newInstanceSupplier) {
+		return DomainTypeConstructor.<T>builder().noArgs(newInstanceSupplier);
 	}
 
-	public static <T> DomainTypeConstructor<T> of(Function<Object[], T> newInstanceFunction, String... parameterNames) {
-
-		return new DomainTypeConstructor<T>(Arrays.asList(parameterNames)) {
-
-			@Nullable
-			@Override
-			public EntityInstantiator getEntityInstantiator() {
-
-				return new EntityInstantiator() {
-					@Override
-					public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(
-							E entity, ParameterValueProvider<P> provider) {
-
-						List<Object> args = new ArrayList<>();
-						for (String parameterName : parameterNames) {
-
-							P property = entity.getPersistentProperty(parameterName);
-
-							// TODO: do we need all this information or is the name sufficient
-							args.add(provider.getParameterValue(
-									new Parameter(parameterName, property.getTypeInformation(), new Annotation[] {}, entity)));
-						}
-
-						return (T) newInstanceFunction.apply(args.toArray());
-					}
-				};
-			}
-		};
+	public static <T> DomainTypeConstructorBuilder<T> builder() {
+		return new DomainTypeConstructorBuilder<>();
 	}
 
 	@Override
@@ -90,6 +66,29 @@ public class DomainTypeConstructor<T> extends PreferredConstructor implements En
 	@Nullable
 	@Override
 	public EntityInstantiator getEntityInstantiator() {
-		return null;
+		return entityInstantiator;
+	}
+
+	public static class DomainTypeConstructorBuilder<T> {
+
+		private final List<String> ctorArgs;
+
+		public DomainTypeConstructorBuilder() {
+			this.ctorArgs = new ArrayList<>();
+		}
+
+		public DomainTypeConstructorBuilder<T> args(String... args) {
+
+			this.ctorArgs.addAll(Arrays.asList(args));
+			return this;
+		}
+
+		public DomainTypeConstructor<T> noArgs(Supplier<T> newInstanceSupplier) {
+			return newInstanceFunction((args) -> newInstanceSupplier.get());
+		}
+
+		public DomainTypeConstructor<T> newInstanceFunction(Function<Object[], T> function) {
+			return new DomainTypeConstructor<>(ctorArgs, new FunctionalEntityInstantiator<>(ctorArgs, function));
+		}
 	}
 }

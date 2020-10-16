@@ -62,6 +62,10 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		}
 	}
 
+	protected static void clearCache() {
+		cache.clear();
+	}
+
 	/**
 	 * Simple factory method to easily create new instances of {@link ClassTypeInformation}.
 	 *

@@ -36,7 +36,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -359,6 +358,55 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 		Stream.of(PropertyPopulationNotRequired.class, PropertyPopulationNotRequiredWithTransient.class) //
 				.forEach(it -> assertThat(createPopulatedPersistentEntity(it).requiresPropertyPopulation()).isFalse());
+	}
+
+	@Test // DATACMNS-???
+	void shouldReadAliasFromDomainTypeInformation() {
+
+		BasicPersistentEntity<AliasedEntity, T> entity = new BasicPersistentEntity<>(
+				new DomainTypeInformation(AliasedEntity.class) {
+					{
+						addAnnotation(AnnotationAware.typeAliasAnnotation("c3p0"));
+					}
+				});
+
+		assertThat(entity.getTypeAlias().hasValue("c3p0")).isTrue();
+	}
+
+	@Test // DATACMNS-???
+	void shouldReadConstructorDomainTypeInformation() {
+
+		BasicPersistentEntity<Entity, T> entity = new BasicPersistentEntity<>(
+				new DomainTypeInformation(Entity.class) {
+					{
+						setConstructor(DomainTypeConstructor.noArgsConstructor(Entity::new));
+					}
+				});
+
+		assertThat(entity.getPersistenceConstructor()).isInstanceOf(DomainTypeConstructor.class);
+	}
+
+	@Test // DATACMNS-???
+	void shouldReadPropertyAccessorDomainTypeInformation() {
+
+		BasicPersistentEntity<Entity, T> entity = new BasicPersistentEntity<>(
+				new DomainTypeInformation(Entity.class));
+
+		assertThat(entity.getPropertyAccessor(new Entity()))
+				.isInstanceOf(AccessorFunctionPropertyAccessorFactory.AccessorFunctionPropertyAccessor.class);
+	}
+
+	@Test // DATACMNS-???
+	void shouldReadImmutableAnnotationFromDomainTypeInformation() {
+
+		BasicPersistentEntity<Entity, T> entity = new BasicPersistentEntity<>(
+				new DomainTypeInformation(Entity.class) {
+					{
+						addAnnotation(AnnotationAware.immutableAnnotation());
+					}
+				});
+
+		assertThat(entity.isImmutable()).isTrue();
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {

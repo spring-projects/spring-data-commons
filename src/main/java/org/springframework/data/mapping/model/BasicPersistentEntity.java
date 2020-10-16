@@ -132,7 +132,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 				? ((PersistentPropertyAccessorFactoryProvider) information).getPersistentPropertyAccessorFactory()
 				: BeanWrapperPropertyAccessorFactory.INSTANCE;
 
-		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
+		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation());
 		this.isNewStrategy = Lazy.of(() -> Persistable.class.isAssignableFrom(information.getType()) //
 				? PersistableIsNewStrategy.INSTANCE
 				: getFallbackIsNewStrategy());
@@ -584,13 +584,13 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	/**
 	 * Calculates the {@link Alias} to be used for the given type.
 	 *
-	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	private static Alias getAliasFromAnnotation(Class<?> type) {
+	private Alias getAliasFromAnnotation() {
 
-		Optional<String> typeAliasValue = Optional
-				.ofNullable(AnnotatedElementUtils.findMergedAnnotation(type, TypeAlias.class))//
+//		findAnnotation(TypeAlias.class)
+
+		Optional<String> typeAliasValue = doFindAnnotation(TypeAlias.class)//
 				.map(TypeAlias::value)//
 				.filter(StringUtils::hasText);
 
