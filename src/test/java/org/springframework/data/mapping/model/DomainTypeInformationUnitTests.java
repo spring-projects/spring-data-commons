@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mapping.Person;
 import org.springframework.data.mapping.PersonTypeInformation;
 import org.springframework.data.mapping.PersonWithId;
@@ -29,8 +30,8 @@ import org.springframework.data.mapping.PersonWithIdTypeInformation;
  */
 class DomainTypeInformationUnitTests {
 
-	@Test// DATACMNS-???
-	void domainTypeInformationStatisifesInterface() {
+	@Test // DATACMNS-???
+	void domainTypeInformationSatisifesInterface() {
 
 		DomainTypeInformation<Person> typeInformation = new DomainTypeInformation(Person.class);
 
@@ -38,7 +39,7 @@ class DomainTypeInformationUnitTests {
 		assertThat(typeInformation.getAnnotations()).isEmpty();
 	}
 
-	@Test// DATACMNS-???
+	@Test // DATACMNS-???
 	void domainTypeInformationContainsOwnFields() {
 
 		DomainTypeInformation<Person> typeInformation = PersonTypeInformation.instance();
@@ -47,13 +48,69 @@ class DomainTypeInformationUnitTests {
 		assertThat(typeInformation.getProperty("id")).isNull();
 	}
 
-	@Test// DATACMNS-???
+	@Test // DATACMNS-???
 	void domainTypeInformationContainsFieldsOfParentType() {
 
 		DomainTypeInformation<PersonWithId> typeInformation = PersonWithIdTypeInformation.instance();
 
 		assertThat(typeInformation.getProperty("firstName")).isNotNull();
 		assertThat(typeInformation.getProperty("id")).isNotNull();
+	}
+
+	@Test // DATACMNS-???
+	void domainTypeInformationHoldsSuperTypeAnnotations() {
+
+		assertThat(SubType.typeInfo().findAnnotation(TypeAlias.class)).satisfies(annotations -> {
+
+			assertThat(annotations).hasSize(1);
+			assertThat(annotations.get(0).value()).isEqualTo("super");
+		});
+	}
+
+	@Test // DATACMNS-???
+	void domainTypeInformationHoldsSuperTypeAnnotationsAndOwnInBottomUpOrder() {
+
+		assertThat(AliasedSubType.typeInfo().findAnnotation(TypeAlias.class)).satisfies(annotations -> {
+
+			assertThat(annotations).hasSize(2);
+			assertThat(annotations.get(0).value()).isEqualTo("sub");
+			assertThat(annotations.get(1).value()).isEqualTo("super");
+		});
+	}
+
+	@TypeAlias("super")
+	static class AliasedSuperType {
+
+		static DomainTypeInformation<?> typeInfo() {
+
+			return new DomainTypeInformation<AliasedSuperType>(AliasedSuperType.class) {
+
+				{
+					addAnnotation(AnnotationAware.typeAliasAnnotation("super"));
+				}
+			};
+		}
+	}
+
+	@TypeAlias("sub")
+	static class AliasedSubType extends AliasedSuperType {
+
+		static DomainTypeInformation<?> typeInfo() {
+
+			return new DomainTypeInformation(AliasedSubType.class, AliasedSuperType.typeInfo()) {
+
+				{
+					addAnnotation(AnnotationAware.typeAliasAnnotation("sub"));
+				}
+			};
+		}
+	}
+
+	static class SubType extends AliasedSuperType {
+
+		static DomainTypeInformation<?> typeInfo() {
+			return new DomainTypeInformation(SubType.class, AliasedSuperType.typeInfo());
+		}
 	}
 
 }

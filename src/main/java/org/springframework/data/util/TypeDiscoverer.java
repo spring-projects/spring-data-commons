@@ -384,7 +384,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#getComponentType()
 	 */
 	@Nullable
-	public final TypeInformation<?> getComponentType() {
+	public TypeInformation<?> getComponentType() {
 		return componentType.orElse(null);
 	}
 

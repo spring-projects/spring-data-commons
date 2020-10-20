@@ -45,7 +45,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 
 	private final Class<S> type;
 
-	@Nullable private final TypeInformation<?> componentType;
+	@Nullable private final TypeInformation<?> valueType;
 	@Nullable private final TypeInformation<?> keyType;
 
 	private DomainTypeInformation<? super S> superTypeInformation;
@@ -61,22 +61,28 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	}
 
 	public DomainTypeInformation(Class<S> type, DomainTypeInformation<? super S> superTypeInformation) {
-
-		this(type, null, null);
-		this.superTypeInformation = superTypeInformation;
-		addSuperTypeFields(superTypeInformation);
+		this(type, superTypeInformation, null, null);
 	}
 
-	public DomainTypeInformation(Class<S> type, @Nullable TypeInformation<?> componentType,
+	public DomainTypeInformation(Class<S> type, @Nullable TypeInformation<?> valueType,
 			@Nullable TypeInformation<?> keyType) {
+		this(type, null, valueType, keyType);
+	}
 
-		super(type, componentType, keyType);
+	private DomainTypeInformation(Class<S> type, @Nullable DomainTypeInformation<? super S> superTypeInformation,
+			@Nullable TypeInformation<?> valueType, @Nullable TypeInformation<?> keyType) {
+
+		super(type, valueType, keyType);
 		this.type = type;
-		this.componentType = componentType;
+		this.superTypeInformation = superTypeInformation;
+		this.valueType = valueType;
 		this.keyType = keyType;
 		this.annotations = new LinkedMultiValueMap<>();
 		this.typeArguments = new ArrayList<>(0);
 		this.fields = new Fields(type);
+
+		addSuperTypeFields(superTypeInformation);
+		addSuperAnnotations(superTypeInformation);
 	}
 
 	protected void addField(Field<?, ? super S> field) {
@@ -84,6 +90,8 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	}
 
 	protected void addAnnotation(Annotation annotation) {
+
+		// TODO: should we auto add eg. Persistent when we find a TypeAlias annotation?
 		this.annotations.add(annotation.annotationType(), annotation);
 	}
 
@@ -101,6 +109,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	}
 
 	private void addSuperTypeFields(@Nullable DomainTypeInformation<? super S> superType) {
+
 		if (superType == null) {
 			return;
 		}
@@ -109,6 +118,15 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 			addField(field);
 		});
 		addSuperTypeFields(superType.superTypeInformation);
+	}
+
+	private void addSuperAnnotations(@Nullable DomainTypeInformation<? super S> superType) {
+
+		if (superType == null) {
+			return;
+		}
+
+		superType.getAnnotations().forEach(this::addAnnotation);
 	}
 
 	public void doWithFields(BiConsumer<String, Field<?, S>> consumer) {
@@ -141,10 +159,25 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		return false;
 	}
 
+	@Override
+	@Nullable
+	public TypeInformation<?> getComponentType() {
+
+		if(isMap()) {
+			return keyType;
+		}
+
+		if(isCollectionLike()) {
+			return valueType;
+		}
+
+		return null;
+	}
+
 	@Nullable
 	@Override
 	public TypeInformation<?> getMapValueType() {
-		return componentType;
+		return valueType;
 	}
 
 	@Override
@@ -160,7 +193,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	@Nullable
 	@Override
 	public TypeInformation<?> getActualType() {
-		return componentType != null ? componentType : this;
+		return valueType != null ? valueType : this;
 	}
 
 	@Override
@@ -191,7 +224,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 
 	@Override
 	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
-		return null;
+		return this;
 	}
 
 	@Override
@@ -208,7 +241,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		if (!ObjectUtils.nullSafeEquals(type, that.type)) {
 			return false;
 		}
-		if (!ObjectUtils.nullSafeEquals(componentType, that.componentType)) {
+		if (!ObjectUtils.nullSafeEquals(valueType, that.valueType)) {
 			return false;
 		}
 		if (!ObjectUtils.nullSafeEquals(keyType, that.keyType)) {
@@ -230,7 +263,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	public int hashCode() {
 		int result = super.hashCode();
 		result = 31 * result + ObjectUtils.nullSafeHashCode(type);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(componentType);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(valueType);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(keyType);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(superTypeInformation);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(typeArguments);
@@ -260,7 +293,10 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 
 	@Override
 	public <T extends Annotation> List<T> findAnnotation(Class<T> annotation) {
-		return (List<T>) annotations.getOrDefault(annotation, Collections.emptyList());
+
+		List<T> found = (List<T>) annotations.getOrDefault(annotation, Collections.emptyList());
+		Collections.reverse(found); // reverse for bottom up structure
+		return found;
 	}
 
 	@Nullable
