@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.11.RELEASE (2020-10-28)
+----------------------------------------------
+* DATACMNS-1816 - Wording changes.
+* DATACMNS-1814 - Table of contents sometimes locates in wrong section (confusion between subsections without id-s).
+* DATACMNS-1807 - Code examples for Kotlin declared as Java.
+* DATACMNS-1806 - Concurrency issue in Lazy.getNullable().
+* DATACMNS-1804 - Correct grammar in Exception messages thrown by Repository classes.
+* DATACMNS-1796 - Release 2.2.11 (Moore SR11).
+* DATACMNS-1792 - Fix Typos in commons/repositories documentation.
+
+
 Changes in version 2.1.21.RELEASE (2020-10-28)
 ----------------------------------------------
 * DATACMNS-1816 - Wording changes.
@@ -2860,6 +2871,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
