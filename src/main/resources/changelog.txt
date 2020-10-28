@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.0 (2020-10-28)
+-------------------------------------
+* DATACMNS-1820 - Move PageableExecutionSupport to ...data.support.
+* DATACMNS-1819 - Publisher to Coroutine adapter should use awaitSingleOrNull instead of awaitFirstOrNull.
+* DATACMNS-1816 - Wording changes.
+* DATACMNS-1814 - Table of contents sometimes locates in wrong section (confusion between subsections without id-s).
+* DATACMNS-1810 - Release 2.4 GA (2020.0.0).
+* DATACMNS-1804 - Correct grammar in Exception messages thrown by Repository classes.
+* DATACMNS-1792 - Fix Typos in commons/repositories documentation.
+
+
 Changes in version 2.3.5.RELEASE (2020-10-28)
 ---------------------------------------------
 * DATACMNS-1816 - Wording changes.
@@ -2894,6 +2905,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
