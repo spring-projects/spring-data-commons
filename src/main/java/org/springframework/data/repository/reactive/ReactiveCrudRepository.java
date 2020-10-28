@@ -28,6 +28,7 @@ import org.springframework.data.repository.Repository;
  *
  * @author Mark Paluch
  * @author Christph Strobl
+ * @author Jens Schauder
  * @since 2.0
  * @see Mono
  * @see Flux
@@ -178,6 +179,17 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 *           {@literal null}.
 	 */
 	Mono<Void> deleteAll(Iterable<? extends T> entities);
+
+	/**
+	 * Deletes all instances of the type {@code T} with the given IDs.
+	 *
+	 * @param ids must not be {@literal null}.
+	 * @return {@link Mono} signaling when operation has completed.
+	 * @throws IllegalArgumentException in case the given {@literal ids} or one of its elements is {@literal null}.
+	 *           {@literal null}.
+	 * @since 2.5
+	 */
+	Mono<Void> deleteAllById(Iterable<? extends ID> ids);
 
 	/**
 	 * Deletes the given entities supplied by a {@link Publisher}.

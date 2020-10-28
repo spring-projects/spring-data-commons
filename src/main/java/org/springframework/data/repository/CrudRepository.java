@@ -22,6 +22,7 @@ import java.util.Optional;
  *
  * @author Oliver Gierke
  * @author Eberhard Wolff
+ * @author Jens Schauder
  */
 @NoRepositoryBean
 public interface CrudRepository<T, ID> extends Repository<T, ID> {
@@ -116,6 +117,15 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * @throws IllegalArgumentException in case the given {@literal entities} or one of its entities is {@literal null}.
 	 */
 	void deleteAll(Iterable<? extends T> entities);
+
+	/**
+	 * Deletes all instances of the type {@code T} with the given IDs.
+	 *
+	 * @param ids must not be {@literal null}. Must not contain {@literal null} elements.
+	 * @throws IllegalArgumentException in case the given {@literal ids} or one of its elements is {@literal null}.
+	 * @since 2.5
+	 */
+	void deleteAllById(Iterable<? extends ID> ids);
 
 	/**
 	 * Deletes all entities managed by the repository.
