@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.1.21.RELEASE (2020-10-28)
+----------------------------------------------
+* DATACMNS-1816 - Wording changes.
+* DATACMNS-1815 - Release 2.1.21 (Lovelace SR21).
+* DATACMNS-1804 - Correct grammar in Exception messages thrown by Repository classes.
+* DATACMNS-1792 - Fix Typos in commons/repositories documentation.
+
+
 Changes in version 2.4.0-RC2 (2020-10-14)
 -----------------------------------------
 * DATACMNS-1807 - Code examples for Kotlin declared as Java.
@@ -2864,6 +2872,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
