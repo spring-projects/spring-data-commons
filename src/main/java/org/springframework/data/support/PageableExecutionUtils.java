@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.support;
+package org.springframework.data.support;
 
 import java.util.List;
 import java.util.function.LongSupplier;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.Assert;
 
 /**
  * Support for query execution using {@link Pageable}. Using {@link PageableExecutionUtils} assumes that data queries
@@ -29,10 +31,8 @@ import org.springframework.data.domain.Pageable;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
- * @since 1.13
- * @deprecated since 2.4. Use {@link org.springframework.data.support.PageableExecutionUtils} instead
+ * @since 2.4
  */
-@Deprecated
 public abstract class PageableExecutionUtils {
 
 	private PageableExecutionUtils() {}
@@ -48,6 +48,24 @@ public abstract class PageableExecutionUtils {
 	 * @return the {@link Page}.
 	 */
 	public static <T> Page<T> getPage(List<T> content, Pageable pageable, LongSupplier totalSupplier) {
-		return org.springframework.data.support.PageableExecutionUtils.getPage(content, pageable, totalSupplier);
+
+		Assert.notNull(content, "Content must not be null!");
+		Assert.notNull(pageable, "Pageable must not be null!");
+		Assert.notNull(totalSupplier, "TotalSupplier must not be null!");
+
+		if (pageable.isUnpaged() || pageable.getOffset() == 0) {
+
+			if (pageable.isUnpaged() || pageable.getPageSize() > content.size()) {
+				return new PageImpl<>(content, pageable, content.size());
+			}
+
+			return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
+		}
+
+		if (content.size() != 0 && pageable.getPageSize() > content.size()) {
+			return new PageImpl<>(content, pageable, pageable.getOffset() + content.size());
+		}
+
+		return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
 	}
 }
