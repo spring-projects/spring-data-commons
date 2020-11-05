@@ -443,6 +443,32 @@ public class ClassTypeInformationUnitTests {
 		assertThat(specialized.getProperty("root").getType()).isEqualTo(Aggregate.class);
 	}
 
+	@Test // DATACMNS-1828
+	void discoversMapKeyAndValueTypeFromTypedMap() {
+
+		TypeInformation<TypeWithTypedMap> information = from(TypeWithTypedMap.class);
+
+		TypeInformation<?> typedMap = information.getProperty("typedMap");
+
+		assertThat(typedMap.getType()).isEqualTo(StringKeyMap.class);
+		assertThat(typedMap.isMap()).isTrue();
+		assertThat(typedMap.getRequiredComponentType().getType()).isEqualTo(String.class);
+		assertThat(typedMap.getMapValueType().getType()).isEqualTo(Long.class);
+
+		TypeInformation<?> longMultiValueMap = information.getProperty("longMultiValueMap");
+
+		assertThat(longMultiValueMap.getType()).isEqualTo(MultiValueMap.class);
+		assertThat(longMultiValueMap.getRequiredComponentType().getType()).isEqualTo(String.class);
+		assertThat(longMultiValueMap.getMapValueType().getType()).isEqualTo(List.class);
+		assertThat(longMultiValueMap.getMapValueType().getRequiredActualType().getType()).isEqualTo(Long.class);
+
+		TypeInformation<?> justMap = information.getProperty("justMap");
+
+		assertThat(justMap.getType()).isEqualTo(Map.class);
+		assertThat(justMap.getRequiredComponentType().getType()).isEqualTo(String.class);
+		assertThat(justMap.getMapValueType().getType()).isEqualTo(Long.class);
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -681,4 +707,15 @@ public class ClassTypeInformationUnitTests {
 
 	// A domain type partially binding generics
 	static class GenericEvent<T extends Aggregate> extends DomainEvent<T, Long> {}
+
+	// DATACMNS-1828
+	interface StringKeyMap<T> extends Map<String, T> {}
+
+	interface MultiValueMap<T> extends Map<String, List<T>> {}
+
+	static class TypeWithTypedMap {
+		StringKeyMap<Long> typedMap;
+		MultiValueMap<Long> longMultiValueMap;
+		Map<String, Long> justMap;
+	}
 }

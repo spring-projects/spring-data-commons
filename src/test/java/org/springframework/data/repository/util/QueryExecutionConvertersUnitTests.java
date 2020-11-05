@@ -264,8 +264,8 @@ class QueryExecutionConvertersUnitTests {
 		Method method = Sample.class.getMethod("pages");
 		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 
-		assertThat(QueryExecutionConverters.unwrapWrapperTypes(returnType))
-				.isEqualTo(ClassTypeInformation.from(String.class));
+		assertThat(QueryExecutionConverters.unwrapWrapperTypes(returnType).getType())
+				.isEqualTo(String.class);
 	}
 
 	@Test // DATACMNS-983
