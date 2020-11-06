@@ -163,10 +163,6 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 			return getRequiredSuperTypeInformation(Map.class).getComponentType();
 		}
 
-		if (isCollectionLike() && !getType().getPackage().getName().startsWith("java.")) {
-			return getRequiredSuperTypeInformation(Iterable.class).getComponentType();
-		}
-
 		return createInfo(type.getActualTypeArguments()[0]);
 	}
 
