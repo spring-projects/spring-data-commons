@@ -230,7 +230,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 
 		Qualifier qualifier = parameter == null ? null : parameter.getParameterAnnotation(Qualifier.class);
 
-		if (qualifier != null) {
+		if (qualifier != null && StringUtils.hasLength(qualifier.value())) {
 			builder.append(qualifier.value());
 			builder.append(qualifierDelimiter);
 		}

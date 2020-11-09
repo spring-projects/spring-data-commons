@@ -45,6 +45,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Thomas Darimont
  * @author Nick Williams
  * @author Mark Paluch
+ * @author Vedran Pavic
  */
 class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
@@ -241,6 +242,15 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1827
+	void emptyQualifierIsUsedInParameterLookup() {
+
+		MethodParameter parameter = getParameterOfMethod("emptyQualifier");
+		Sort reference = Sort.by("bar", "foo");
+
+		assertSupportedAndResolvedTo(getRequestWithSort(reference, ""), parameter, reference);
+	}
+
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
@@ -306,5 +316,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 		void containeredDefault(@SortDefaults(@SortDefault({ "foo", "bar" })) Sort sort);
 
 		void invalid(@SortDefaults(@SortDefault({ "foo", "bar" })) @SortDefault({ "bar", "foo" }) Sort sort);
+
+		void emptyQualifier(@Qualifier Sort sort);
 	}
 }

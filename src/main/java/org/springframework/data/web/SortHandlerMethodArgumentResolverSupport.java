@@ -186,8 +186,9 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 		Qualifier qualifier = parameter != null ? parameter.getParameterAnnotation(Qualifier.class) : null;
 
-		if (qualifier != null) {
-			builder.append(qualifier.value()).append(qualifierDelimiter);
+		if (qualifier != null && StringUtils.hasLength(qualifier.value())) {
+			builder.append(qualifier.value());
+			builder.append(qualifierDelimiter);
 		}
 
 		return builder.append(sortParameter).toString();
