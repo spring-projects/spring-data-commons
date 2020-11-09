@@ -35,6 +35,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  *
  * @author Oliver Gierke
  * @author Nick Williams
+ * @author Vedran Pavic
  */
 class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
@@ -244,6 +245,18 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 		assertThat(resolver.isFallbackPageable(PageRequest.of(0, 10))).isFalse();
 	}
 
+	@Test // DATACMNS-1827
+	void emptyQualifierIsUsedInParameterLookup() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("emptyQualifier", Pageable.class), 0);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("page", "2");
+		request.addParameter("size", "10");
+
+		assertSupportedAndResult(parameter, PageRequest.of(2, 10), request);
+	}
+
 	@Override
 	protected PageableHandlerMethodArgumentResolver getResolver() {
 		PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
@@ -283,5 +296,7 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 		void validQualifier(@Qualifier("foo") Pageable pageable);
 
 		void noQualifiers(Pageable first, Pageable second);
+
+		void emptyQualifier(@Qualifier Pageable pageable);
 	}
 }
