@@ -557,8 +557,7 @@ class Products implements Streamable<Product> { <2>
       .map(Priced::getPrice)
       .reduce(Money.of(0), MonetaryAmount::add);
   }
-  
-  @NotNull
+
   @Override public Iterator<Product> iterator() { // <4>
     return streamable.iterator();
   }
