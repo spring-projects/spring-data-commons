@@ -22,14 +22,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import javax.annotation.Nullable;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.web.SortDefault.SortDefaults;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -41,6 +42,7 @@ import org.springframework.util.StringUtils;
  * @see SortHandlerMethodArgumentResolver
  * @see ReactiveSortHandlerMethodArgumentResolver
  * @author Mark Paluch
+ * @author Vedran Pavic
  */
 public abstract class SortHandlerMethodArgumentResolverSupport {
 
@@ -184,10 +186,10 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 		StringBuilder builder = new StringBuilder();
 
-		Qualifier qualifier = parameter != null ? parameter.getParameterAnnotation(Qualifier.class) : null;
+		String value = getQualifier(parameter);
 
-		if (qualifier != null && StringUtils.hasLength(qualifier.value())) {
-			builder.append(qualifier.value());
+		if (StringUtils.hasLength(value)) {
+			builder.append(value);
 			builder.append(qualifierDelimiter);
 		}
 
@@ -291,6 +293,19 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 	 */
 	static boolean notOnlyDots(String source) {
 		return StringUtils.hasText(source.replace(".", ""));
+	}
+
+	@Nullable
+	private static String getQualifier(@Nullable MethodParameter parameter) {
+
+		if (parameter == null) {
+			return null;
+		}
+
+		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
+		MergedAnnotation<Qualifier> qualifier = annotations.get(Qualifier.class);
+
+		return qualifier.isPresent() ? qualifier.getString("value") : null;
 	}
 
 	/**
