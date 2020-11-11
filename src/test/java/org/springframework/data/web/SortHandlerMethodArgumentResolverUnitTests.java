@@ -251,6 +251,15 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 		assertSupportedAndResolvedTo(getRequestWithSort(reference, ""), parameter, reference);
 	}
 
+	@Test // DATACMNS-1827
+	void mergedQualifierIsUsedInParameterLookup() {
+
+		MethodParameter parameter = getParameterOfMethod("mergedQualifier");
+		Sort reference = Sort.by("bar", "foo");
+
+		assertSupportedAndResolvedTo(getRequestWithSort(reference, "merged"), parameter, reference);
+	}
+
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
 
 		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
@@ -318,5 +327,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 		void invalid(@SortDefaults(@SortDefault({ "foo", "bar" })) @SortDefault({ "bar", "foo" }) Sort sort);
 
 		void emptyQualifier(@Qualifier Sort sort);
+
+		void mergedQualifier(@TestQualifier Sort sort);
 	}
 }
