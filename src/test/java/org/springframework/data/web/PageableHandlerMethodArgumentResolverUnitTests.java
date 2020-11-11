@@ -257,6 +257,18 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 		assertSupportedAndResult(parameter, PageRequest.of(2, 10), request);
 	}
 
+	@Test // DATACMNS-1827
+	void mergedQualifierIsUsedInParameterLookup() throws Exception {
+
+		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("mergedQualifier", Pageable.class), 0);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("merged_page", "2");
+		request.addParameter("merged_size", "10");
+
+		assertSupportedAndResult(parameter, PageRequest.of(2, 10), request);
+	}
+
 	@Override
 	protected PageableHandlerMethodArgumentResolver getResolver() {
 		PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
@@ -298,5 +310,7 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 		void noQualifiers(Pageable first, Pageable second);
 
 		void emptyQualifier(@Qualifier Pageable pageable);
+
+		void mergedQualifier(@TestQualifier Pageable pageable);
 	}
 }
