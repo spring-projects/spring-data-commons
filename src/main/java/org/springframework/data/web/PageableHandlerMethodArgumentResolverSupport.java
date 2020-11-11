@@ -22,6 +22,8 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -39,6 +41,7 @@ import org.springframework.util.StringUtils;
  * @see PageableHandlerMethodArgumentResolver
  * @see ReactivePageableHandlerMethodArgumentResolver
  * @author Mark Paluch
+ * @author Vedran Pavic
  */
 public abstract class PageableHandlerMethodArgumentResolverSupport {
 
@@ -228,10 +231,10 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 
 		StringBuilder builder = new StringBuilder(prefix);
 
-		Qualifier qualifier = parameter == null ? null : parameter.getParameterAnnotation(Qualifier.class);
+		String value = getQualifier(parameter);
 
-		if (qualifier != null && StringUtils.hasLength(qualifier.value())) {
-			builder.append(qualifier.value());
+		if (StringUtils.hasLength(value)) {
+			builder.append(value);
 			builder.append(qualifierDelimiter);
 		}
 
@@ -287,5 +290,18 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 		} catch (NumberFormatException e) {
 			return Optional.of(0);
 		}
+	}
+
+	@Nullable
+	private static String getQualifier(@Nullable MethodParameter parameter) {
+
+		if (parameter == null) {
+			return null;
+		}
+
+		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
+		MergedAnnotation<Qualifier> qualifier = annotations.get(Qualifier.class);
+
+		return qualifier.isPresent() ? qualifier.getString("value") : null;
 	}
 }
