@@ -555,16 +555,22 @@ class Products implements Streamable<Product> { <2>
       .map(Priced::getPrice)
       .reduce(Money.of(0), MonetaryAmount::add);
   }
+
+  @Override public Iterator<Product> iterator() { // <4>
+    return streamable.iterator();
+  }
 }
 
 interface ProductRepository implements Repository<Product, Long> {
-  Products findAllByDescriptionContaining(String text); <4>
+  Products findAllByDescriptionContaining(String text); <5>
 }
 ----
 <1> A `Product` entity that exposes API to access the product's price.
 <2> A wrapper type for a `Streamable<Product>` that can be constructed by using `Products.of(…)` (factory method created with the Lombok annotation).
+    A standard constructor taking the `Streamable<Product>` will do as well.
 <3> The wrapper type exposes an additional API, calculating new values on the `Streamable<Product>`.
-<4> That wrapper type can be used as a query method return type directly. You need not return `Streamable<Product>` and manually wrap it in the repository client.
+<4> Implement the `Streamable` interface and delegate to the actual result.
+<5> That wrapper type can be used as a query method return type directly. You need not return `Streamable<Product>` and manually wrap it in the repository client.
 ====
 
 [[repositories.collections-and-iterables.vavr]]
