@@ -1,6 +1,13 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.1 (2020-11-11)
+-------------------------------------
+* DATACMNS-1828 - TypeDiscoverer does not detect generic type arguments correctly.
+* DATACMNS-1827 - Pageable and Sort arguments with empty qualifier value shouldn't be prefixed with delimiter.
+* DATACMNS-1823 - Release 2.4.1 (2020.0.1).
+
+
 Changes in version 2.4.0 (2020-10-28)
 -------------------------------------
 * DATACMNS-1820 - Move PageableExecutionSupport to ...data.support.
@@ -2905,6 +2912,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
