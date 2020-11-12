@@ -104,6 +104,10 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 			<T, P extends PersistentProperty<P>> PreferredConstructor<T, P> discover(TypeInformation<T> type,
 					@Nullable PersistentEntity<T, P> entity) {
 
+				if(type instanceof DomainTypeInformation) {
+					return ((DomainTypeInformation)type).getPreferredConstructor();
+				}
+
 				Class<?> rawOwningType = type.getType();
 
 				List<Constructor<?>> candidates = new ArrayList<>();
