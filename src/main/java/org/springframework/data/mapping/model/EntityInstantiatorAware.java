@@ -26,7 +26,8 @@ public interface EntityInstantiatorAware {
 	@Nullable
 	EntityInstantiator getEntityInstantiator();
 
-	default EntityInstantiator getEntiyInstantiatorOrDefault(EntityInstantiator fallback) {
+	// REVIEW: Why do we need a fallback/default? Shouldn't we gather all information during code generation?
+	default EntityInstantiator getEntityInstantiatorOrDefault(EntityInstantiator fallback) {
 
 		EntityInstantiator entityInstantiator = getEntityInstantiator();
 		return entityInstantiator != null ? entityInstantiator : fallback;

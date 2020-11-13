@@ -39,6 +39,11 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  * @since 2020/10
  */
+// REVIEW: The *Aware suffix is somewhat misleading. Maybe *Provider?
+// REVIEW: DOMAIN typeInformation seems to be the wrong name:
+// 1. It is not only for Domain types.
+// 2. It is not the only variant that is for domain types
+// -> ConfiguredTypeInformatin maybe?
 public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		implements AnnotationAware, EntityInstantiatorAware, PreferredConstructorProvider<S>,
 		PersistentPropertyAccessorFactoryProvider, AccessorFunctionAware<S> {
@@ -48,6 +53,9 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	@Nullable private final TypeInformation<?> valueType;
 	@Nullable private final TypeInformation<?> keyType;
 
+	// REVIEW: How should we handle information for Spring Data Domain types (Page, Slice, geo stuff...)
+	// REVIEW: Maybe we should have specialised subtypes of DomainTypeInformation for primitives or simple types, without
+	// EntitIntantiator, PreferredConstructor ...
 	private DomainTypeInformation<? super S> superTypeInformation;
 	private List<TypeInformation<?>> typeArguments;
 	private MultiValueMap<Class<? extends Annotation>, Annotation> annotations;
@@ -64,6 +72,14 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		this(type, superTypeInformation, null, null);
 	}
 
+	/* REVIEW:
+		If we instead of creating subtypes pass a "configuration lambda" to the constructor which contains all the
+		generated code for setting fields and stuff we get the following benefits:
+		- DomainTypeInformation will be truly immutable.
+		- Fewer classes assuming the lambdas get not compiled to classes, which should be true. Even if they get compiled
+		into classes the namespace would contain fewer named classes.
+		- We may do pre and postprocessing, e.g. a call to a verify method which might check that all required fields are set.
+	 */
 	public DomainTypeInformation(Class<S> type, @Nullable TypeInformation<?> valueType,
 			@Nullable TypeInformation<?> keyType) {
 		this(type, null, valueType, keyType);
@@ -77,6 +93,8 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		this.superTypeInformation = superTypeInformation;
 		this.valueType = valueType;
 		this.keyType = keyType;
+		// REVIEW: We can't really have multiple annotations of the same type, can we? Container annotations should be
+		// handled explicitly, in order to avoid bugs.
 		this.annotations = new LinkedMultiValueMap<>();
 		this.typeArguments = new ArrayList<>(0);
 		this.fields = new Fields(type);

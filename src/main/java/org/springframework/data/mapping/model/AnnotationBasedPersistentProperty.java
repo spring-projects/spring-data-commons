@@ -27,12 +27,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.AccessType;
-import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -100,7 +100,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @throws MappingException in case we find an ambiguous mapping on the accessor methods
 	 */
 	private void populateAnnotationCache(Property property) {
-
+		// REVIEW: Why do we gather information from the code generation AND analyse annotations? Shouldn't we do one or the
+		// other?
 		property.getAnnotations().forEach(it -> {
 
 			System.out.println("registering static annotation "+it.annotationType()+" for field " + property.getName());

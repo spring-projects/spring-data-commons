@@ -24,6 +24,8 @@ import org.springframework.lang.Nullable;
  * @author Christoph Strobl
  * @since 2020/10
  */
+// REVIEW: We should have prominent documentation explaining that this approach does not use private fields but uses
+// getter and setters.
 public class AccessorFunctionPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
 	private static final AccessorFunctionPropertyAccessorFactory INSTANCE = new AccessorFunctionPropertyAccessorFactory();

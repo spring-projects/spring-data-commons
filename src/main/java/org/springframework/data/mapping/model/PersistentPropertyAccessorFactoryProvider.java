@@ -21,6 +21,7 @@ import org.springframework.lang.Nullable;
  * @author Christoph Strobl
  * @since 2020/10
  */
+// REVIEW: Why do we need a fallback/default? Shouldn't we gather all information during code generation?
 public interface PersistentPropertyAccessorFactoryProvider {
 
 	@Nullable

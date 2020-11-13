@@ -79,6 +79,8 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 *
 	 * @return the getter method to access the property value if available, otherwise {@literal null}.
 	 */
+	// REVIEW: Similar to the proposal for PreferredConstructor this might better live in a separate subtype or similar.
+	// Same for other default methods containing reflection.
 	@Nullable
 	Method getGetter();
 

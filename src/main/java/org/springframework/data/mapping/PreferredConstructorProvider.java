@@ -21,11 +21,15 @@ import org.springframework.lang.Nullable;
  * @author Christoph Strobl
  * @since 2020/10
  */
+// REVIEW: Would it be possible to have a specialized class that already contains directly the required information
+// parameters in the constructor; are all attributes initialized by the constructor ..
+// The parameter information might go directly into the EntityInstantiator
 public interface PreferredConstructorProvider<T> {
 
 	@Nullable
 	<P extends PersistentProperty<P>> PreferredConstructor<T, P> getPreferredConstructor();
 
+	// REVIEW: Why do we need a fallback/default? Shouldn't we gather all information during code generation?
 	default <P extends PersistentProperty<P>> PreferredConstructor<T, P> getPreferredConstructorOrDefault(PreferredConstructor<T, P> fallback) {
 
 		PreferredConstructor<T, P> preferredConstructor = getPreferredConstructor();

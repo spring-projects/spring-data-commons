@@ -21,6 +21,7 @@ import org.springframework.data.util.TypeInformation;
  * @author Christoph Strobl
  * @since 2020/10
  */
+// REVIEW: how to register/use/reuse simple type information?
 public class StringTypeInformation extends DomainTypeInformation<String> {
 
 	private static final StringTypeInformation INSTANCE = new StringTypeInformation();

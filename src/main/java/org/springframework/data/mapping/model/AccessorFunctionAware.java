@@ -22,6 +22,7 @@ import java.util.function.Function;
  * @author Christoph Strobl
  * @since 2020/10
  */
+// REVIEW: Turn into private utility?
 public interface AccessorFunctionAware<S> {
 
 	default boolean hasSetFunctionFor(String fieldName) {

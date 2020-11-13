@@ -49,6 +49,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	private final List<Parameter<Object, P>> parameters;
 	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new ConcurrentHashMap<>();
 
+	// REVIEW: Maybe PreferredConstructor should be an interface, so reflection details can live in a separate class.
 	protected PreferredConstructor() {
 		this.constructor = null;
 		this.parameters = Collections.emptyList();
