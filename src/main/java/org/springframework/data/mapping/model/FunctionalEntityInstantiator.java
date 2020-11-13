@@ -23,6 +23,8 @@ import java.util.function.Function;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * @author Christoph Strobl
@@ -51,10 +53,12 @@ class FunctionalEntityInstantiator<T> implements EntityInstantiator {
 		for (String parameterName : parameterNames) {
 
 			P property = entity.getPersistentProperty(parameterName);
+			TypeInformation<?> propertyTypeInformation = property != null ? property.getTypeInformation()
+					: ClassTypeInformation.OBJECT;
 
 			// TODO: do we need all this information or is the name sufficient
 			args.add(provider
-					.getParameterValue(new Parameter(parameterName, property.getTypeInformation(), new Annotation[] {}, entity)));
+					.getParameterValue(new Parameter(parameterName, propertyTypeInformation, new Annotation[] {}, entity)));
 		}
 
 		return (T) newInstanceFunction.apply(args.toArray());

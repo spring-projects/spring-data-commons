@@ -29,8 +29,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * {@link TypeInformation} for a plain {@link Class}.
@@ -40,6 +43,8 @@ import org.springframework.util.Assert;
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
+
+	private static final boolean IN_NATIVE_IMAGE = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
 
 	public static final ClassTypeInformation<Collection> COLLECTION = new ClassTypeInformation(Collection.class);
 	public static final ClassTypeInformation<List> LIST = new ClassTypeInformation(List.class);
@@ -57,7 +62,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	private final Class<S> type;
 
 	public static void warmCache(ClassTypeInformation<?>... typeInformations) {
-		for(ClassTypeInformation<?> information : typeInformations) {
+		for (ClassTypeInformation<?> information : typeInformations) {
 			cache.put(information.getType(), information);
 		}
 	}
@@ -77,7 +82,31 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		return (ClassTypeInformation<S>) cache.computeIfAbsent(type, ClassTypeInformation::new);
+		return (ClassTypeInformation<S>) cache.computeIfAbsent(type, ClassTypeInformation::lookupDomainTypeInformation);
+	}
+
+	private static <S> ClassTypeInformation<S> lookupDomainTypeInformation(Class<S> type) {
+
+		if (IN_NATIVE_IMAGE) {
+			return new ClassTypeInformation(type);
+		}
+
+		// TODO: move this to a scan at application startup?
+		// doing it like this allows us to delay initialization
+		String domainTypeClass = type.getTypeName() + "DomainTypeInformation";
+		if (ClassUtils.isPresent(domainTypeClass, type.getClassLoader())) {
+
+			Class<?> domainTypeInfo = ClassUtils.resolveClassName(domainTypeClass, type.getClassLoader());
+
+			if (ClassUtils.isAssignable(ClassTypeInformation.class, domainTypeInfo)) {
+
+				Method instanceMethod = ClassUtils.getStaticMethod(domainTypeInfo, "instance");
+				return (ClassTypeInformation<S>) (instanceMethod != null ? ReflectionUtils.invokeMethod(instanceMethod, null)
+						: BeanUtils.instantiateClass(domainTypeInfo));
+			}
+		}
+
+		return new ClassTypeInformation(type);
 	}
 
 	/**
