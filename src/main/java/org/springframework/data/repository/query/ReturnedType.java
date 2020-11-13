@@ -27,6 +27,8 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.mapping.model.DomainTypeConstructor;
+import org.springframework.data.mapping.model.DomainTypeInformation;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
@@ -299,6 +301,8 @@ public abstract class ReturnedType {
 
 			if (constructor == null) {
 				return Collections.emptyList();
+			} else if (constructor instanceof DomainTypeConstructor) {
+				return ((DomainTypeConstructor)constructor).getParameterNames();
 			}
 
 			List<String> properties = new ArrayList<>(constructor.getConstructor().getParameterCount());

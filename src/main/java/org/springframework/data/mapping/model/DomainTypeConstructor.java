@@ -58,6 +58,10 @@ public class DomainTypeConstructor<T> extends PreferredConstructor implements En
 		return super.isConstructorParameter(property);
 	}
 
+	public List<String> getParameterNames() {
+		return args;
+	}
+
 	@Override
 	public boolean hasParameters() {
 		return !args.isEmpty();
