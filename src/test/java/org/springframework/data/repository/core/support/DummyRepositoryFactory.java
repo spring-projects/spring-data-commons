@@ -19,8 +19,13 @@ import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
+import java.util.function.Supplier;
 
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.metrics.ApplicationStartup;
+import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.core.EntityInformation;
@@ -28,9 +33,9 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
@@ -38,12 +43,15 @@ import org.springframework.data.repository.query.RepositoryQuery;
  * cases.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class DummyRepositoryFactory extends RepositoryFactorySupport {
 
 	public final MyRepositoryQuery queryOne = mock(MyRepositoryQuery.class);
 	public final RepositoryQuery queryTwo = mock(RepositoryQuery.class);
 	public final QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
+
+	private final ApplicationStartup applicationStartup;
 
 	@SuppressWarnings("unchecked") private final QuerydslPredicateExecutor<Object> querydsl = mock(
 			QuerydslPredicateExecutor.class);
@@ -55,6 +63,16 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 
 		when(strategy.resolveQuery(Mockito.any(Method.class), Mockito.any(RepositoryMetadata.class),
 				Mockito.any(ProjectionFactory.class), Mockito.any(NamedQueries.class))).thenReturn(queryOne);
+
+		this.applicationStartup = mock(ApplicationStartup.class);
+		StartupStep startupStep = mock(StartupStep.class);
+		when(applicationStartup.start(anyString())).thenReturn(startupStep);
+		when(startupStep.tag(anyString(), anyString())).thenReturn(startupStep);
+		when(startupStep.tag(anyString(), ArgumentMatchers.<Supplier<String>> any())).thenReturn(startupStep);
+
+		BeanFactory beanFactory = Mockito.mock(BeanFactory.class);
+		when(beanFactory.getBean(ApplicationStartup.class)).thenReturn(applicationStartup);
+		setBeanFactory(beanFactory);
 	}
 
 	/*
@@ -109,10 +127,15 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 				: fragments;
 	}
 
+	ApplicationStartup getApplicationStartup() {
+		return this.applicationStartup;
+	}
+
 	/**
 	 * @author Mark Paluch
 	 */
 	public interface MyRepositoryQuery extends RepositoryQuery {
 
 	}
+
 }

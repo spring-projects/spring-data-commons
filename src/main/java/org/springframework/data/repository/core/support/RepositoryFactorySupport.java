@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -35,9 +36,13 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.log.LogMessage;
+import org.springframework.core.metrics.ApplicationStartup;
+import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -269,12 +274,21 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			logger.debug(LogMessage.format("Initializing repository instance for %s…", repositoryInterface.getName()));
 		}
 
+		ApplicationStartup applicationStartup = getStartup();
+
 		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
 		Assert.notNull(fragments, "RepositoryFragments must not be null!");
 
+		StartupStep repositoryInit = applicationStartup.start("spring.data.repository.init");
+
+		StartupStep repositoryMetadataStep = applicationStartup.start("spring.data.repository.metadata");
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
+		repositoryMetadataStep.end();
+
+		StartupStep repositoryCompositionStep = applicationStartup.start("spring.data.repository.metadata");
 		RepositoryComposition composition = getRepositoryComposition(metadata, fragments);
 		RepositoryInformation information = getRepositoryInformation(metadata, composition);
+		repositoryCompositionStep.end();
 
 		validate(information, composition);
 
@@ -291,7 +305,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 
+		StartupStep repositoryPostprocessorsStep = applicationStartup.start("spring.data.repository.postprocessors");
 		postProcessors.forEach(processor -> processor.postProcess(result, information));
+		repositoryPostprocessorsStep.end();
 
 		if (DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(repositoryInterface)) {
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
@@ -313,7 +329,19 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 					.debug(LogMessage.format("Finished creation of repository instance for {}.", repositoryInterface.getName()));
 		}
 
+		repositoryInit.end();
 		return repository;
+	}
+
+	ApplicationStartup getStartup() {
+
+		try {
+			ApplicationStartup applicationStartup = beanFactory != null ? beanFactory.getBean(ApplicationStartup.class) : ApplicationStartup.DEFAULT;
+			return applicationStartup != null ? applicationStartup : ApplicationStartup.DEFAULT;
+		}
+		catch (NoSuchBeanDefinitionException e) {
+			return ApplicationStartup.DEFAULT;
+		}
 	}
 
 	/**

@@ -405,6 +405,13 @@ class RepositoryFactorySupportUnitTests {
 		assertThatThrownBy(repository::getFindRouteQuery).isInstanceOf(EmptyResultDataAccessException.class);
 	}
 
+	@Test // DATACMNS-1832
+	void callsApplicationStartupOnRepositoryIntialization() {
+
+		factory.getRepository(ObjectRepository.class, backingRepo);
+		verify(factory.getApplicationStartup()).start("spring.data.repository.init");
+	}
+
 	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {
 
 		when(factory.queryOne.execute(any(Object[].class))).then(invocation -> {
