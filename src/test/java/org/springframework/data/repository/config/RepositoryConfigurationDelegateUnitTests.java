@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -35,6 +36,8 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.metrics.ApplicationStartup;
+import org.springframework.core.metrics.StartupStep;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver;
 import org.springframework.data.repository.sample.AddressRepository;
@@ -105,6 +108,26 @@ class RepositoryConfigurationDelegateUnitTests {
 		assertThat(targetSource).isNotNull();
 
 		return context.getDefaultListableBeanFactory();
+	}
+
+	@Test // DATACMNS-1832
+	void writesRepositoryScanningMetrics() {
+
+		ApplicationStartup startup = Mockito.spy(ApplicationStartup.DEFAULT);
+
+		StandardEnvironment environment = new StandardEnvironment();
+		GenericApplicationContext context = new GenericApplicationContext();
+		context.setApplicationStartup(startup);
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				new StandardAnnotationMetadata(TestConfig.class, true), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory());
+
+		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+
+		delegate.registerRepositoriesIn(context, extension);
+
+		Mockito.verify(startup).start("spring.data.repository.scanning");
 	}
 
 	@EnableRepositories(basePackageClasses = ProductRepository.class)

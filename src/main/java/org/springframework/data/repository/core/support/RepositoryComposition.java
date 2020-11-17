@@ -364,6 +364,7 @@ public class RepositoryComposition {
 	 * Value object representing an ordered list of {@link RepositoryFragment fragments}.
 	 *
 	 * @author Mark Paluch
+	 * @author Christoph Strobl
 	 */
 	public static class RepositoryFragments implements Streamable<RepositoryFragment<?>> {
 
@@ -548,6 +549,16 @@ public class RepositoryComposition {
 			}
 
 			return null;
+		}
+
+		/**
+		 * Returns the number of {@link RepositoryFragment fragments} available.
+		 *
+		 * @return the number of {@link RepositoryFragment fragments}.
+		 * @since 2.5
+		 */
+		public int size() {
+			return fragments.size();
 		}
 
 		/*
