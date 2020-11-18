@@ -45,7 +45,7 @@ import org.springframework.data.mapping.PersonTypeInformation;
 import org.springframework.data.mapping.PersonWithId;
 import org.springframework.data.mapping.PersonWithIdTypeInformation;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.mapping.model.DomainTypeInformation;
+import org.springframework.data.mapping.model.ConfigurableTypeInformation;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -230,7 +230,7 @@ class AbstractMappingContextUnitTests {
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(PersonWithId.class);
 
 		SamplePersistentProperty ssn = entity.getRequiredPersistentProperty("ssn");
-		assertThat(ssn.getTypeInformation() instanceof DomainTypeInformation);
+		assertThat(ssn.getTypeInformation() instanceof ConfigurableTypeInformation);
 		assertThat(ssn.getType()).isEqualTo(Integer.class);
 		assertThat(ssn.getField()).isNull();
 

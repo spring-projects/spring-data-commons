@@ -364,7 +364,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	void shouldReadAliasFromDomainTypeInformation() {
 
 		BasicPersistentEntity<AliasedEntity, T> entity = new BasicPersistentEntity<>(
-				new DomainTypeInformation(AliasedEntity.class) {
+				new ConfigurableTypeInformation(AliasedEntity.class) {
 					{
 						addAnnotation(AnnotationAware.typeAliasAnnotation("c3p0"));
 					}
@@ -377,20 +377,20 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	void shouldReadConstructorDomainTypeInformation() {
 
 		BasicPersistentEntity<Entity, T> entity = new BasicPersistentEntity<>(
-				new DomainTypeInformation(Entity.class) {
+				new ConfigurableTypeInformation(Entity.class) {
 					{
-						setConstructor(DomainTypeConstructor.noArgsConstructor(Entity::new));
+						setConstructor(ConfigurableTypeConstructor.noArgsConstructor(Entity::new));
 					}
 				});
 
-		assertThat(entity.getPersistenceConstructor()).isInstanceOf(DomainTypeConstructor.class);
+		assertThat(entity.getPersistenceConstructor()).isInstanceOf(ConfigurableTypeConstructor.class);
 	}
 
 	@Test // DATACMNS-???
 	void shouldReadPropertyAccessorDomainTypeInformation() {
 
 		BasicPersistentEntity<Entity, T> entity = new BasicPersistentEntity<>(
-				new DomainTypeInformation(Entity.class));
+				new ConfigurableTypeInformation(Entity.class));
 
 		assertThat(entity.getPropertyAccessor(new Entity()))
 				.isInstanceOf(AccessorFunctionPropertyAccessorFactory.AccessorFunctionPropertyAccessor.class);
@@ -400,7 +400,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	void shouldReadImmutableAnnotationFromDomainTypeInformation() {
 
 		BasicPersistentEntity<Entity, T> entity = new BasicPersistentEntity<>(
-				new DomainTypeInformation(Entity.class) {
+				new ConfigurableTypeInformation(Entity.class) {
 					{
 						addAnnotation(AnnotationAware.immutableAnnotation());
 					}

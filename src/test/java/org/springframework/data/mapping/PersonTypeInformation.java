@@ -15,14 +15,14 @@
  */
 package org.springframework.data.mapping;
 
-import org.springframework.data.mapping.model.DomainTypeInformation;
+import org.springframework.data.mapping.model.ConfigurableTypeInformation;
 import org.springframework.data.mapping.model.Field;
 
 /**
  * @author Christoph Strobl
  * @since 2020/10
  */
-public class PersonTypeInformation extends DomainTypeInformation<Person> {
+public class PersonTypeInformation extends ConfigurableTypeInformation<Person> {
 
 	private static PersonTypeInformation INSTANCE = new PersonTypeInformation();
 
@@ -30,9 +30,9 @@ public class PersonTypeInformation extends DomainTypeInformation<Person> {
 		super(Person.class);
 
 		// FIELDS
-		addField(Field.<Person> int32("ssn").setter(Person::setSsn).getter(Person::getSsn));
-		addField(Field.<Person> string("firstName").setter(Person::setFirstName).getter(Person::getFirstName));
-		addField(Field.<Person> string("lastName").setter(Person::setLastName).getter(Person::getLastName));
+		addField(Field.<Person> intField("ssn").setter(Person::setSsn).getter(Person::getSsn));
+		addField(Field.<Person> stringField("firstName").setter(Person::setFirstName).getter(Person::getFirstName));
+		addField(Field.<Person> stringField("lastName").setter(Person::setLastName).getter(Person::getLastName));
 	}
 
 	public static PersonTypeInformation instance() {

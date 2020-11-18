@@ -29,23 +29,23 @@ import org.springframework.lang.Nullable;
  * @author Christoph Strobl
  * @since 2020/10
  */
-public class DomainTypeConstructor<T> extends PreferredConstructor implements EntityInstantiatorAware {
+public class ConfigurableTypeConstructor<T> extends PreferredConstructor implements EntityInstantiatorAware {
 
 	private List<String> args;
 	private EntityInstantiator entityInstantiator;
 
-	public DomainTypeConstructor(List<String> args, @Nullable EntityInstantiator entityInstantiator) {
+	public ConfigurableTypeConstructor(List<String> args, @Nullable EntityInstantiator entityInstantiator) {
 
 		this.args = args;
 		this.entityInstantiator = entityInstantiator;
 	}
 
-	public static <T> DomainTypeConstructor<T> noArgsConstructor(Supplier<T> newInstanceSupplier) {
-		return DomainTypeConstructor.<T>builder().noArgs(newInstanceSupplier);
+	public static <T> ConfigurableTypeConstructor<T> noArgsConstructor(Supplier<T> newInstanceSupplier) {
+		return ConfigurableTypeConstructor.<T>builder().noArgs(newInstanceSupplier);
 	}
 
-	public static <T> DomainTypeConstructorBuilder<T> builder() {
-		return new DomainTypeConstructorBuilder<>();
+	public static <T> ConfigurableTypeConstructorBuilder<T> builder() {
+		return new ConfigurableTypeConstructorBuilder<>();
 	}
 
 	@Override
@@ -73,26 +73,26 @@ public class DomainTypeConstructor<T> extends PreferredConstructor implements En
 		return entityInstantiator;
 	}
 
-	public static class DomainTypeConstructorBuilder<T> {
+	public static class ConfigurableTypeConstructorBuilder<T> {
 
 		private final List<String> ctorArgs;
 
-		public DomainTypeConstructorBuilder() {
+		public ConfigurableTypeConstructorBuilder() {
 			this.ctorArgs = new ArrayList<>();
 		}
 
-		public DomainTypeConstructorBuilder<T> args(String... args) {
+		public ConfigurableTypeConstructorBuilder<T> args(String... args) {
 
 			this.ctorArgs.addAll(Arrays.asList(args));
 			return this;
 		}
 
-		public DomainTypeConstructor<T> noArgs(Supplier<T> newInstanceSupplier) {
+		public ConfigurableTypeConstructor<T> noArgs(Supplier<T> newInstanceSupplier) {
 			return newInstanceFunction((args) -> newInstanceSupplier.get());
 		}
 
-		public DomainTypeConstructor<T> newInstanceFunction(Function<Object[], T> function) {
-			return new DomainTypeConstructor<>(ctorArgs, new FunctionalEntityInstantiator<>(ctorArgs, function));
+		public ConfigurableTypeConstructor<T> newInstanceFunction(Function<Object[], T> function) {
+			return new ConfigurableTypeConstructor<>(ctorArgs, new FunctionalEntityInstantiator<>(ctorArgs, function));
 		}
 	}
 }

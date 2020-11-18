@@ -23,10 +23,14 @@ import org.springframework.data.util.TypeInformation;
  * @author Christoph Strobl
  * @since 2020/10
  */
-public class MapTypeInformation<K, V> extends DomainTypeInformation<Map<K, V>> {
+public class MapTypeInformation<K, V> extends ConfigurableTypeInformation<Map<K, V>> {
 
 	public MapTypeInformation(TypeInformation<K> keyType, TypeInformation<V> valueType) {
 		super((Class) Map.class, valueType, keyType);
+	}
+
+	public static <K, V> MapTypeInformation<K, V> mapOf(TypeInformation<K> keyType, TypeInformation<V> valueType) {
+		return new MapTypeInformation<>(keyType, valueType);
 	}
 
 	@Override

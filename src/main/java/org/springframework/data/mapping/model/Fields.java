@@ -24,10 +24,10 @@ import java.util.function.BiConsumer;
  * @author Christoph Strobl
  * @since 2020/10
  */
-public class Fields<O> implements Iterable<Field<?, O>> {
+public class Fields<O> implements Iterable<Field<O, ?>> {
 
 	private final Class<O> owner;
-	private final Map<String, Field<?, O>> fields;
+	private final Map<String, Field<O, ?>> fields;
 
 	public Fields(Class<O> owner) {
 
@@ -35,7 +35,7 @@ public class Fields<O> implements Iterable<Field<?, O>> {
 		this.fields = new LinkedHashMap<>();
 	}
 
-	public Fields<O> add(Field<?, O> field) {
+	public Fields<O> add(Field<O, ?> field) {
 
 		this.fields.put(field.getFieldName(), field.owner(owner));
 		return this;
@@ -45,16 +45,16 @@ public class Fields<O> implements Iterable<Field<?, O>> {
 		return this.fields.containsKey(fieldName);
 	}
 
-	public <S> Field<S, O> getField(String fieldName) {
-		return (Field<S, O>) this.fields.get(fieldName);
+	public <S> Field<O, S> getField(String fieldName) {
+		return (Field<O, S>) this.fields.get(fieldName);
 	}
 
-	public void doWithFields(BiConsumer<String, Field<?, O>> consumer) {
+	public void doWithFields(BiConsumer<String, Field<O, ?>> consumer) {
 		fields.forEach(consumer);
 	}
 
 	@Override
-	public Iterator<Field<?, O>> iterator() {
+	public Iterator<Field<O, ?>> iterator() {
 		return fields.values().iterator();
 	}
 }

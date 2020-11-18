@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -32,103 +33,131 @@ import org.springframework.util.MultiValueMap;
  * @author Christoph Strobl
  * @since 2020/10
  */
-public class Field<T, O> implements AnnotationAware {
+public class Field<OWNER, TYPE> implements AnnotationAware {
 
-	private @Nullable Class<O> owner;
+	private @Nullable Class<OWNER> owner;
 	private final String propertyName;
 
-	private final TypeInformation<T> typeInformation;
+	private final TypeInformation<TYPE> typeInformation;
 	private @Nullable TypeInformation<?> componentType;
 	private @Nullable TypeInformation<?> keyType;
 
 	private final MultiValueMap<Class<? extends Annotation>, Annotation> annotations;
 
-	private @Nullable Function<O, T> getterFunction;
-	private @Nullable BiFunction<O, T, O> setterFunction;
+	private @Nullable Function<OWNER, TYPE> getterFunction;
+	private @Nullable BiFunction<OWNER, TYPE, OWNER> setterFunction;
 
-	public Field(String propertyName, TypeInformation<T> propertyTypeInformation) {
+	public Field(String propertyName, TypeInformation<TYPE> propertyTypeInformation) {
 
 		this.propertyName = propertyName;
 		this.typeInformation = propertyTypeInformation;
 		this.annotations = new LinkedMultiValueMap<>();
 	}
 
-	public static <T, O> Field<T, O> simple(Class<T> type, String propertyName) {
+	public static <OWNER, TYPE> Field<OWNER, TYPE> simpleField(String propertyName, Class<TYPE> type) {
 
-		if (type == String.class) {
-			return (Field<T, O>) string(propertyName);
+		if (SimpleConfiguredTypes.isKownSimpleConfiguredType(type)) {
+			return new Field<>(propertyName, SimpleConfiguredTypes.get(type));
 		}
 
-		throw new IllegalArgumentException("Unknown simple type: " + type);
+		return new Field<>(propertyName, new ConfigurableTypeInformation(type));
 	}
 
-	public static <S> Field<String, S> string(String propertyName) {
-		return new Field<>(propertyName, StringTypeInformation.instance());
+	public static <OWNER> Field<OWNER, String> stringField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.stringType());
 	}
 
-	public static <S> Field<Long, S> int64(String propertyName) {
-		return new Field<>(propertyName, DomainTypeInformation.from(Long.class));
+	public static <OWNER> Field<OWNER, Long> longField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.longType());
 	}
 
-	public static <S> Field<Integer, S> int32(String propertyName) {
-		return new Field<>(propertyName, DomainTypeInformation.from(Integer.class));
+	public static <OWNER> Field<OWNER, Integer> intField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.intType());
 	}
 
-	public static <S, T> Field<T, S> type(String propertyName, TypeInformation<T> type) {
+	public static <OWNER> Field<OWNER, Double> doubleField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.doubleType());
+	}
+
+	public static <OWNER> Field<OWNER, Float> floatField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.floatType());
+	}
+
+	public static <OWNER> Field<OWNER, Date> dateField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.dateType());
+	}
+
+	public static <OWNER> Field<OWNER, Character> charField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.charType());
+	}
+
+	public static <OWNER> Field<OWNER, Short> shortField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.shortType());
+	}
+
+	public static <OWNER> Field<OWNER, Byte> byteField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.byteType());
+	}
+
+	public static <OWNER> Field<OWNER, Boolean> booleanField(String propertyName) {
+		return new Field<>(propertyName, SimpleConfiguredTypes.booleanType());
+	}
+
+	public static <OWNER, TYPE> Field<OWNER, TYPE> type(String propertyName, TypeInformation<TYPE> type) {
 		return new Field<>(propertyName, type);
 	}
 
-	public Field<T, O> annotation(Annotation annotation) {
+	public Field<OWNER, TYPE> annotation(Annotation annotation) {
 
 		annotations.add(annotation.annotationType(), annotation);
 		return this;
 	}
 
-	public Field<T, O> wither(BiFunction<O, T, O> setterFunction) {
+	public Field<OWNER, TYPE> wither(BiFunction<OWNER, TYPE, OWNER> setterFunction) {
 
 		this.setterFunction = setterFunction;
 		return this;
 	}
 
-	public Field<T, O> setter(BiConsumer<O, T> setterFunction) {
+	public Field<OWNER, TYPE> setter(BiConsumer<OWNER, TYPE> setterFunction) {
 
-		return wither((o, t) -> {
+		return wither((OWNER, TYPE) -> {
 
-			setterFunction.accept(o, t);
-			return o;
+			setterFunction.accept(OWNER, TYPE);
+			return OWNER;
 		});
 	}
 
-	public Field<T, O> getter(Function<O, T> getterFunction) {
+	public Field<OWNER, TYPE> getter(Function<OWNER, TYPE> getterFunction) {
 
 		this.getterFunction = getterFunction;
 		return this;
 	}
 
-	public Field<T, O> valueType(TypeInformation<?> valueTypeInformation) {
+	public Field<OWNER, TYPE> valueType(TypeInformation<?> valueTypeInformation) {
 		this.componentType = valueTypeInformation;
 		return this;
 	}
 
-	public Field<T, O> owner(Class<O> owner) {
+	public Field<OWNER, TYPE> owner(Class<OWNER> owner) {
 
 		this.owner = owner;
 		return this;
 	}
 
-	public Field<T, O> annotatedWithAtId() {
+	public Field<OWNER, TYPE> annotatedWithAtId() {
 
 		this.annotation(AnnotationAware.idAnnotation());
 		return this;
 	}
 
-	public Field<T, O> annotatedWithAtPersistent() {
+	public Field<OWNER, TYPE> annotatedWithAtPersistent() {
 
 		this.annotation(AnnotationAware.persistentAnnotation());
 		return this;
 	}
 
-	public Field<T, O> annotatedWithAtTransient() {
+	public Field<OWNER, TYPE> annotatedWithAtTransient() {
 
 		this.annotation(AnnotationAware.transientAnnotation());
 		return this;
@@ -142,7 +171,7 @@ public class Field<T, O> implements AnnotationAware {
 		return propertyName;
 	}
 
-	public TypeInformation<T> getTypeInformation() {
+	public TypeInformation<TYPE> getTypeInformation() {
 		return typeInformation;
 	}
 
@@ -154,12 +183,12 @@ public class Field<T, O> implements AnnotationAware {
 		return getterFunction != null;
 	}
 
-	public BiFunction<O, T, O> getSetter() {
+	public BiFunction<OWNER, TYPE, OWNER> getSetter() {
 		return setterFunction;
 	}
 
 	@Nullable
-	public Function<O, T> getGetter() {
+	public Function<OWNER, TYPE> getGetter() {
 		return getterFunction;
 	}
 

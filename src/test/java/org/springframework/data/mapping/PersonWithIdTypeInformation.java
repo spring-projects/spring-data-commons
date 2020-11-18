@@ -15,15 +15,15 @@
  */
 package org.springframework.data.mapping;
 
-import org.springframework.data.mapping.model.DomainTypeConstructor;
-import org.springframework.data.mapping.model.DomainTypeInformation;
+import org.springframework.data.mapping.model.ConfigurableTypeConstructor;
+import org.springframework.data.mapping.model.ConfigurableTypeInformation;
 import org.springframework.data.mapping.model.Field;
 
 /**
  * @author Christoph Strobl
  * @since 2020/10
  */
-public class PersonWithIdTypeInformation extends DomainTypeInformation<PersonWithId> {
+public class PersonWithIdTypeInformation extends ConfigurableTypeInformation<PersonWithId> {
 
 	private static final PersonWithIdTypeInformation INSTANCE = new PersonWithIdTypeInformation();
 
@@ -31,11 +31,11 @@ public class PersonWithIdTypeInformation extends DomainTypeInformation<PersonWit
 		super(PersonWithId.class, PersonTypeInformation.instance());
 
 		// CONSTRUCTOR
-		setConstructor(DomainTypeConstructor.<PersonWithId> builder().args("ssn", "firstName", "lastName")
+		setConstructor(ConfigurableTypeConstructor.<PersonWithId> builder().args("ssn", "firstName", "lastName")
 				.newInstanceFunction((args) -> new PersonWithId((Integer) args[0], (String) args[1], (String) args[2])));
 
 		// FIELDS
-		addField(Field.<PersonWithId> string("id").annotatedWithAtId().getter(PersonWithId::getId));
+		addField(Field.<PersonWithId> stringField("id").annotatedWithAtId().getter(PersonWithId::getId));
 	}
 
 	public static PersonWithIdTypeInformation instance() {

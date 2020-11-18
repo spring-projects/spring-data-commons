@@ -93,7 +93,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 		// TODO: move this to a scan at application startup?
 		// doing it like this allows us to delay initialization
-		String domainTypeClass = type.getTypeName() + "DomainTypeInformation";
+		String domainTypeClass = type.getTypeName() + "ConfigurableTypeInformation";
 		if (ClassUtils.isPresent(domainTypeClass, type.getClassLoader())) {
 
 			Class<?> domainTypeInfo = ClassUtils.resolveClassName(domainTypeClass, type.getClassLoader());

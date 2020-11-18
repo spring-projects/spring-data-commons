@@ -28,12 +28,12 @@ import org.springframework.data.mapping.PersonWithIdTypeInformation;
  * @author Christoph Strobl
  * @since 2020/10
  */
-class DomainTypeInformationUnitTests {
+class ConfigurableTypeInformationUnitTests {
 
 	@Test // DATACMNS-???
 	void domainTypeInformationSatisifesInterface() {
 
-		DomainTypeInformation<Person> typeInformation = new DomainTypeInformation(Person.class);
+		ConfigurableTypeInformation<Person> typeInformation = new ConfigurableTypeInformation(Person.class);
 
 		assertThat(typeInformation.getActualType()).isSameAs(typeInformation);
 		assertThat(typeInformation.getAnnotations()).isEmpty();
@@ -42,7 +42,7 @@ class DomainTypeInformationUnitTests {
 	@Test // DATACMNS-???
 	void domainTypeInformationContainsOwnFields() {
 
-		DomainTypeInformation<Person> typeInformation = PersonTypeInformation.instance();
+		ConfigurableTypeInformation<Person> typeInformation = PersonTypeInformation.instance();
 
 		assertThat(typeInformation.getProperty("firstName")).isNotNull();
 		assertThat(typeInformation.getProperty("id")).isNull();
@@ -51,7 +51,7 @@ class DomainTypeInformationUnitTests {
 	@Test // DATACMNS-???
 	void domainTypeInformationContainsFieldsOfParentType() {
 
-		DomainTypeInformation<PersonWithId> typeInformation = PersonWithIdTypeInformation.instance();
+		ConfigurableTypeInformation<PersonWithId> typeInformation = PersonWithIdTypeInformation.instance();
 
 		assertThat(typeInformation.getProperty("firstName")).isNotNull();
 		assertThat(typeInformation.getProperty("id")).isNotNull();
@@ -81,9 +81,9 @@ class DomainTypeInformationUnitTests {
 	@TypeAlias("super")
 	static class AliasedSuperType {
 
-		static DomainTypeInformation<?> typeInfo() {
+		static ConfigurableTypeInformation<?> typeInfo() {
 
-			return new DomainTypeInformation<AliasedSuperType>(AliasedSuperType.class) {
+			return new ConfigurableTypeInformation<AliasedSuperType>(AliasedSuperType.class) {
 
 				{
 					addAnnotation(AnnotationAware.typeAliasAnnotation("super"));
@@ -95,9 +95,9 @@ class DomainTypeInformationUnitTests {
 	@TypeAlias("sub")
 	static class AliasedSubType extends AliasedSuperType {
 
-		static DomainTypeInformation<?> typeInfo() {
+		static ConfigurableTypeInformation<?> typeInfo() {
 
-			return new DomainTypeInformation(AliasedSubType.class, AliasedSuperType.typeInfo()) {
+			return new ConfigurableTypeInformation(AliasedSubType.class, AliasedSuperType.typeInfo()) {
 
 				{
 					addAnnotation(AnnotationAware.typeAliasAnnotation("sub"));
@@ -108,8 +108,8 @@ class DomainTypeInformationUnitTests {
 
 	static class SubType extends AliasedSuperType {
 
-		static DomainTypeInformation<?> typeInfo() {
-			return new DomainTypeInformation(SubType.class, AliasedSuperType.typeInfo());
+		static ConfigurableTypeInformation<?> typeInfo() {
+			return new ConfigurableTypeInformation(SubType.class, AliasedSuperType.typeInfo());
 		}
 	}
 

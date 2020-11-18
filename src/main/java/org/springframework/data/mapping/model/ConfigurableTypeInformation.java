@@ -44,7 +44,7 @@ import org.springframework.util.ObjectUtils;
 // 1. It is not only for Domain types.
 // 2. It is not the only variant that is for domain types
 // -> ConfiguredTypeInformatin maybe?
-public class DomainTypeInformation<S> extends ClassTypeInformation<S>
+public class ConfigurableTypeInformation<S> extends ClassTypeInformation<S>
 		implements AnnotationAware, EntityInstantiatorAware, PreferredConstructorProvider<S>,
 		PersistentPropertyAccessorFactoryProvider, AccessorFunctionAware<S> {
 
@@ -56,19 +56,19 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	// REVIEW: How should we handle information for Spring Data Domain types (Page, Slice, geo stuff...)
 	// REVIEW: Maybe we should have specialised subtypes of DomainTypeInformation for primitives or simple types, without
 	// EntitIntantiator, PreferredConstructor ...
-	private DomainTypeInformation<? super S> superTypeInformation;
+	private ConfigurableTypeInformation<? super S> superTypeInformation;
 	private List<TypeInformation<?>> typeArguments;
 	private MultiValueMap<Class<? extends Annotation>, Annotation> annotations;
 
 	private final Fields fields;
 
-	private DomainTypeConstructor<S> preferredConstructor;
+	private ConfigurableTypeConstructor<S> preferredConstructor;
 
-	public DomainTypeInformation(Class<S> type) {
+	public ConfigurableTypeInformation(Class<S> type) {
 		this(type, null, null);
 	}
 
-	public DomainTypeInformation(Class<S> type, DomainTypeInformation<? super S> superTypeInformation) {
+	public ConfigurableTypeInformation(Class<S> type, ConfigurableTypeInformation<? super S> superTypeInformation) {
 		this(type, superTypeInformation, null, null);
 	}
 
@@ -80,12 +80,12 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		into classes the namespace would contain fewer named classes.
 		- We may do pre and postprocessing, e.g. a call to a verify method which might check that all required fields are set.
 	 */
-	public DomainTypeInformation(Class<S> type, @Nullable TypeInformation<?> valueType,
+	public ConfigurableTypeInformation(Class<S> type, @Nullable TypeInformation<?> valueType,
 			@Nullable TypeInformation<?> keyType) {
 		this(type, null, valueType, keyType);
 	}
 
-	private DomainTypeInformation(Class<S> type, @Nullable DomainTypeInformation<? super S> superTypeInformation,
+	private ConfigurableTypeInformation(Class<S> type, @Nullable ConfigurableTypeInformation<? super S> superTypeInformation,
 			@Nullable TypeInformation<?> valueType, @Nullable TypeInformation<?> keyType) {
 
 		super(type, valueType, keyType);
@@ -103,7 +103,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		addSuperAnnotations(superTypeInformation);
 	}
 
-	protected void addField(Field<?, ? super S> field) {
+	protected void addField(Field<? super S, ?> field) {
 		this.fields.add(field);
 	}
 
@@ -117,7 +117,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		this.typeArguments.addAll(Arrays.asList(typeArguments));
 	}
 
-	protected void setConstructor(DomainTypeConstructor<S> constructor) {
+	protected void setConstructor(ConfigurableTypeConstructor<S> constructor) {
 		this.preferredConstructor = constructor;
 	}
 
@@ -126,7 +126,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		return preferredConstructor;
 	}
 
-	private void addSuperTypeFields(@Nullable DomainTypeInformation<? super S> superType) {
+	private void addSuperTypeFields(@Nullable ConfigurableTypeInformation<? super S> superType) {
 
 		if (superType == null) {
 			return;
@@ -138,7 +138,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		addSuperTypeFields(superType.superTypeInformation);
 	}
 
-	private void addSuperAnnotations(@Nullable DomainTypeInformation<? super S> superType) {
+	private void addSuperAnnotations(@Nullable ConfigurableTypeInformation<? super S> superType) {
 
 		if (superType == null) {
 			return;
@@ -147,7 +147,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		superType.getAnnotations().forEach(this::addAnnotation);
 	}
 
-	public void doWithFields(BiConsumer<String, Field<?, S>> consumer) {
+	public void doWithFields(BiConsumer<String, Field<S, ?>> consumer) {
 		fields.doWithFields(consumer);
 	}
 
@@ -254,7 +254,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 		if (!super.equals(o))
 			return false;
 
-		DomainTypeInformation<?> that = (DomainTypeInformation<?>) o;
+		ConfigurableTypeInformation<?> that = (ConfigurableTypeInformation<?>) o;
 
 		if (!ObjectUtils.nullSafeEquals(type, that.type)) {
 			return false;
@@ -326,7 +326,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	@Override
 	public BiFunction<S, Object, S> getSetFunctionFor(String fieldName) {
 
-		Field<Object, S> entityField = fields.getField(fieldName);
+		Field<S, Object> entityField = fields.getField(fieldName);
 		if (entityField == null) {
 			return null;
 		}
@@ -337,7 +337,7 @@ public class DomainTypeInformation<S> extends ClassTypeInformation<S>
 	@Override
 	public Function<S, Object> getGetFunctionFor(String fieldName) {
 
-		Field<Object, S> entityField = fields.getField(fieldName);
+		Field<S, Object> entityField = fields.getField(fieldName);
 		if (entityField == null) {
 			return null;
 		}
