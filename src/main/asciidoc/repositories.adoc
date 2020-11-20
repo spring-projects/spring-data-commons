@@ -342,11 +342,13 @@ The following strategies are available for the repository infrastructure to reso
 [[repositories.query-methods.query-creation]]
 === Query Creation
 
-The query builder mechanism built into the Spring Data repository infrastructure is useful for building constraining queries over entities of the repository. The mechanism strips the `find…By`, `read…By`, `query…By`, `count…By`, and `get…By` prefixes from the method and starts parsing the rest of it. The introducing clause can contain further expressions, such as a `Distinct` to set a distinct flag on the query to be created. However, the first `By` acts as a delimiter to indicate the start of the actual criteria. At a very basic level, you can define conditions on entity properties and concatenate them with `And` and `Or`. The following example shows how to create a number of queries:
+The query builder mechanism built into the Spring Data repository infrastructure is useful for building constraining queries over entities of the repository.
+
+The following example shows how to create a number of queries:
 
 .Query creation from method names
 ====
-[source, java]
+[source,java]
 ----
 interface PersonRepository extends Repository<Person, Long> {
 
@@ -368,13 +370,28 @@ interface PersonRepository extends Repository<Person, Long> {
 ----
 ====
 
-The actual result of parsing the method depends on the persistence store for which you create the query. However, there are some general things to notice:
+Parsing query method names is divided into subject and predicate.
+The first part (`find…By`, `exists…By`) defines the subject of the query, the second part forms the predicate.
+The introducing clause (subject) can contain further expressions.
+Any text between `find` (or other introducing keywords) and `By` is considered to be descriptive unless using one of the result-limiting keywords such as a `Distinct` to set a distinct flag on the query to be created or <<repositories.limit-query-result,`Top`/`First` to limit query results>>.
 
-- The expressions are usually property traversals combined with operators that can be concatenated. You can combine property expressions with `AND` and `OR`. You also get support for operators such as `Between`, `LessThan`, `GreaterThan`, and `Like` for the property expressions. The supported operators can vary by datastore, so consult the appropriate part of your reference documentation.
+The appendix contains the <<appendix.query.method.subject,full list of query method subject keywords>> and <<appendix.query.method.predicate,query method predicate keywords including sorting and letter-casing modifiers>>.
+However, the first `By` acts as a delimiter to indicate the start of the actual criteria predicate.
+At a very basic level, you can define conditions on entity properties and concatenate them with `And` and `Or`.
 
-- The method parser supports setting an `IgnoreCase` flag for individual properties (for example, `findByLastnameIgnoreCase(…)`) or for all properties of a type that supports ignoring case (usually `String` instances -- for example, `findByLastnameAndFirstnameAllIgnoreCase(…)`). Whether ignoring cases is supported may vary by store, so consult the relevant sections in the reference documentation for the store-specific query method.
+The actual result of parsing the method depends on the persistence store for which you create the query.
+However, there are some general things to notice:
 
-- You can apply static ordering by appending an `OrderBy` clause to the query method that references a property and by providing a sorting direction (`Asc` or `Desc`). To create a query method that supports dynamic sorting, see "`<<repositories.special-parameters>>`".
+- The expressions are usually property traversals combined with operators that can be concatenated.
+You can combine property expressions with `AND` and `OR`.
+You also get support for operators such as `Between`, `LessThan`, `GreaterThan`, and `Like` for the property expressions.
+The supported operators can vary by datastore, so consult the appropriate part of your reference documentation.
+
+- The method parser supports setting an `IgnoreCase` flag for individual properties (for example, `findByLastnameIgnoreCase(…)`) or for all properties of a type that supports ignoring case (usually `String` instances -- for example, `findByLastnameAndFirstnameAllIgnoreCase(…)`).
+Whether ignoring cases is supported may vary by store, so consult the relevant sections in the reference documentation for the store-specific query method.
+
+- You can apply static ordering by appending an `OrderBy` clause to the query method that references a property and by providing a sorting direction (`Asc` or `Desc`).
+To create a query method that supports dynamic sorting, see "`<<repositories.special-parameters>>`".
 
 [[repositories.query-methods.query-property-expressions]]
 === Property Expressions
@@ -496,7 +513,8 @@ List<User> findTop10ByLastname(String lastname, Pageable pageable);
 ----
 ====
 
-The limiting expressions also support the `Distinct` keyword. Also, for the queries that limit the result set to one instance, wrapping the result into with the `Optional` keyword is supported.
+The limiting expressions also support the `Distinct` keyword for datastores that support distinct queries.
+Also, for the queries that limit the result set to one instance, wrapping the result into with the `Optional` keyword is supported.
 
 If pagination or slicing is applied to a limiting query pagination (and the calculation of the number of available pages), it is applied within the limited result.
 
@@ -507,6 +525,7 @@ NOTE: Limiting the results in combination with dynamic sorting by using a `Sort`
 
 Query methods that return multiple results can use standard Java `Iterable`, `List`, and `Set`.
 Beyond that, we support returning Spring Data's `Streamable`, a custom extension of `Iterable`, as well as collection types provided by https://www.vavr.io/[Vavr].
+Refer to the appendix explaining all possible <<appendix.query.return.types,query method return types>>.
 
 [[repositories.collections-and-iterables.streamable]]
 ==== Using Streamable as Query Method Return Type
