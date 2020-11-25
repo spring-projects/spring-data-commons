@@ -111,14 +111,6 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	void delete(T entity);
 
 	/**
-	 * Deletes the given entities.
-	 *
-	 * @param entities must not be {@literal null}. Must not contain {@literal null} elements.
-	 * @throws IllegalArgumentException in case the given {@literal entities} or one of its entities is {@literal null}.
-	 */
-	void deleteAll(Iterable<? extends T> entities);
-
-	/**
 	 * Deletes all instances of the type {@code T} with the given IDs.
 	 *
 	 * @param ids must not be {@literal null}. Must not contain {@literal null} elements.
@@ -126,6 +118,14 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * @since 2.5
 	 */
 	void deleteAllById(Iterable<? extends ID> ids);
+
+	/**
+	 * Deletes the given entities.
+	 *
+	 * @param entities must not be {@literal null}. Must not contain {@literal null} elements.
+	 * @throws IllegalArgumentException in case the given {@literal entities} or one of its entities is {@literal null}.
+	 */
+	void deleteAll(Iterable<? extends T> entities);
 
 	/**
 	 * Deletes all entities managed by the repository.

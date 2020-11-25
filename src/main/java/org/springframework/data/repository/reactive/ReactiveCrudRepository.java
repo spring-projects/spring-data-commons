@@ -171,16 +171,6 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	Mono<Void> delete(T entity);
 
 	/**
-	 * Deletes the given entities.
-	 *
-	 * @param entities must not be {@literal null}.
-	 * @return {@link Mono} signaling when operation has completed.
-	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
-	 *           {@literal null}.
-	 */
-	Mono<Void> deleteAll(Iterable<? extends T> entities);
-
-	/**
 	 * Deletes all instances of the type {@code T} with the given IDs.
 	 *
 	 * @param ids must not be {@literal null}.
@@ -190,6 +180,16 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 * @since 2.5
 	 */
 	Mono<Void> deleteAllById(Iterable<? extends ID> ids);
+
+	/**
+	 * Deletes the given entities.
+	 *
+	 * @param entities must not be {@literal null}.
+	 * @return {@link Mono} signaling when operation has completed.
+	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
+	 *           {@literal null}.
+	 */
+	Mono<Void> deleteAll(Iterable<? extends T> entities);
 
 	/**
 	 * Deletes the given entities supplied by a {@link Publisher}.

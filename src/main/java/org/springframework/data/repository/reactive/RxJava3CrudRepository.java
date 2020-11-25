@@ -162,6 +162,17 @@ public interface RxJava3CrudRepository<T, ID> extends Repository<T, ID> {
 	Completable delete(T entity);
 
 	/**
+	 * Deletes all instances of the type {@code T} with the given IDs.
+	 *
+	 * @param ids must not be {@literal null}.
+	 * @return {@link Completable} signaling when operation has completed.
+	 * @throws IllegalArgumentException in case the given {@literal ids} or one of its elements is {@literal null}.
+	 *           {@literal null}.
+	 * @since 2.5
+	 */
+	Completable deleteAllById(Iterable<? extends ID> ids);
+
+	/**
 	 * Deletes the given entities.
 	 *
 	 * @param entities must not be {@literal null}.
