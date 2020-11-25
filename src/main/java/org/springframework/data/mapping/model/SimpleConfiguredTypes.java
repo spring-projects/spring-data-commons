@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -98,11 +99,15 @@ public class SimpleConfiguredTypes {
 	}
 
 	public static boolean isKownSimpleConfiguredType(Class<?> type) {
-		return cached.containsKey(type);
+		return cached.containsKey(org.springframework.util.ClassUtils.resolvePrimitiveIfNecessary(type));
 	}
 
 	public static <T> ConfigurableTypeInformation<T> get(Class<T> type) {
-		return (ConfigurableTypeInformation<T>) cached.get(type);
+		return (ConfigurableTypeInformation<T>) cached.get(org.springframework.util.ClassUtils.resolvePrimitiveIfNecessary(type));
+	}
+
+	public static ConfigurableTypeInformation<Object> object() {
+		return OBJECT_TYPE;
 	}
 
 	public static ConfigurableTypeInformation<String> stringType() {

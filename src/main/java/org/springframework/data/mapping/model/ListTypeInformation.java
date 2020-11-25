@@ -29,6 +29,10 @@ public class ListTypeInformation<S> extends ConfigurableTypeInformation<List<S>>
 		super((Class) List.class, componentType, null);
 	}
 
+	public static ListTypeInformation list() {
+		return new ListTypeInformation<>(SimpleConfiguredTypes.object());
+	}
+
 	public static <S> ListTypeInformation<S> listOf(TypeInformation<S> componentType) {
 		return new ListTypeInformation<>(componentType);
 	}

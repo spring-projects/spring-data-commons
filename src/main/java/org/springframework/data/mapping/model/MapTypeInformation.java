@@ -29,6 +29,10 @@ public class MapTypeInformation<K, V> extends ConfigurableTypeInformation<Map<K,
 		super((Class) Map.class, valueType, keyType);
 	}
 
+	public static MapTypeInformation map() {
+		return new MapTypeInformation(SimpleConfiguredTypes.object(), SimpleConfiguredTypes.object());
+	}
+
 	public static <K, V> MapTypeInformation<K, V> mapOf(TypeInformation<K> keyType, TypeInformation<V> valueType) {
 		return new MapTypeInformation<>(keyType, valueType);
 	}
