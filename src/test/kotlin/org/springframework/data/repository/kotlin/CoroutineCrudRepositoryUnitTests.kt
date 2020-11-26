@@ -140,6 +140,18 @@ class CoroutineCrudRepositoryUnitTests {
 		assertThat(result).isTrue()
 	}
 
+	@Test // DATACMNS-800
+	fun shouldInvokeDeleteAllById() {
+
+		every { backingRepository.deleteAllById(listOf("foo", "bar")) } returns Mono.empty()
+
+		runBlocking {
+			coRepository.deleteAllById(listOf("foo", "bar"))
+		}
+
+		verify { backingRepository.deleteAllById(listOf("foo", "bar")) }
+	}
+
 	@Test // DATACMNS-1508
 	fun shouldInvokeDeleteAll() {
 

@@ -133,6 +133,15 @@ interface CoroutineCrudRepository<T, ID> : Repository<T, ID> {
 	suspend fun delete(entity: T)
 
 	/**
+	 * Deletes all instances of the type `T` with the given IDs.
+	 *
+	 * @param ids must not be null nor contain any null values.
+	 * @throws IllegalArgumentException in case the given [ids][Iterable] or one of its items is null.
+	 * @since 2.5
+	 */
+	suspend fun deleteAllById(ids: Iterable<ID>)
+
+	/**
 	 * Deletes the given entities.
 	 *
 	 * @param entities must not be null.
