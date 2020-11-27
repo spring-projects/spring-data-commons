@@ -23,6 +23,7 @@ import org.springframework.data.mapping.Person;
 import org.springframework.data.mapping.PersonTypeInformation;
 import org.springframework.data.mapping.PersonWithId;
 import org.springframework.data.mapping.PersonWithIdTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * @author Christoph Strobl
@@ -78,6 +79,13 @@ class ConfigurableTypeInformationUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-???
+	void arrayTypeInformationIsCollectionLike() {
+
+		TypeInformation<?> typeInformation = WithArray.typeInfo().getProperty("objectArray");
+		assertThat(typeInformation.isCollectionLike()).isTrue();
+	}
+
 	@TypeAlias("super")
 	static class AliasedSuperType {
 
@@ -113,4 +121,15 @@ class ConfigurableTypeInformationUnitTests {
 		}
 	}
 
+	static class WithArray {
+
+		static ConfigurableTypeInformation<?> typeInfo() {
+			return new ConfigurableTypeInformation(WithArray.class) {
+
+				{
+					addField(Field.type("objectArray", ArrayTypeInformation.arrayOf(SimpleConfiguredTypes.object())));
+				}
+			};
+		}
+	}
 }
