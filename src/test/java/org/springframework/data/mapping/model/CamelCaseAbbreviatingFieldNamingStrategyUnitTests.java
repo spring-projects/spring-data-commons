@@ -15,20 +15,21 @@
  */
 package org.springframework.data.mapping.model;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.data.annotation.Embedded;
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * Unit tests for {@link CamelCaseAbbreviatingFieldNamingStrategy}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.9
  */
 @ExtendWith(MockitoExtension.class)
@@ -37,12 +38,35 @@ public class CamelCaseAbbreviatingFieldNamingStrategyUnitTests {
 	FieldNamingStrategy strategy = new CamelCaseAbbreviatingFieldNamingStrategy();
 
 	@Mock PersistentProperty<?> property;
+	@Mock Embedded embedded;
 
 	@Test // DATACMNS-523
 	void abbreviatesToCamelCase() {
 
 		assertFieldNameForPropertyName("fooBar", "fb");
 		assertFieldNameForPropertyName("fooBARFooBar", "fbfb");
+	}
+
+	@Test // DATACMNS-1699
+	void embeddedWithoutPrefix() {
+
+		when(property.getName()).thenReturn("propertyName");
+		when(property.isEmbedded()).thenReturn(true);
+		when(property.findAnnotation(eq(Embedded.class))).thenReturn(embedded);
+		when(embedded.prefix()).thenReturn("");
+
+		assertThat(strategy.getFieldName(property)).isEqualTo("pn");
+	}
+
+	@Test // DATACMNS-1699
+	void embeddedWithPrefix() {
+
+		when(property.getName()).thenReturn("propertyName");
+		when(property.isEmbedded()).thenReturn(true);
+		when(property.findAnnotation(eq(Embedded.class))).thenReturn(embedded);
+		when(embedded.prefix()).thenReturn("prefix");
+
+		assertThat(strategy.getFieldName(property)).isEqualTo("ppn");
 	}
 
 	private void assertFieldNameForPropertyName(String propertyName, String fieldName) {

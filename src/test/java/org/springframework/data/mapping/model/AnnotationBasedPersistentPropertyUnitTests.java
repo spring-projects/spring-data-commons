@@ -32,6 +32,7 @@ import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
+import org.springframework.data.annotation.Embedded;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
@@ -293,6 +294,24 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 				.withMessageContaining(NoField.class.getName());
 	}
 
+	@Test // DATACMNS-1699
+	public void detectsNullableEmbeddedAnnotation() {
+
+		SamplePersistentProperty property = getProperty(WithEmbeddedField.class, "nullableEmbeddedField");
+
+		assertThat(property.isEmbedded()).isTrue();
+		assertThat(property.isNullable()).isTrue();
+	}
+
+	@Test // DATACMNS-1699
+	public void detectsEmptyEmbeddedAnnotation() {
+
+		SamplePersistentProperty property = getProperty(WithEmbeddedField.class, "emptyEmbeddedField");
+
+		assertThat(property.isEmbedded()).isTrue();
+		assertThat(property.isNullable()).isFalse();
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -476,5 +495,11 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	interface NoField {
 
 		String getFirstname();
+	}
+
+	static class WithEmbeddedField {
+
+		@Embedded.Nullable Sample nullableEmbeddedField;
+		@Embedded.Empty Sample emptyEmbeddedField;
 	}
 }

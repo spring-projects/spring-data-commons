@@ -15,13 +15,16 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.springframework.data.annotation.Embedded;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link FieldNamingStrategy} simply using the {@link PersistentProperty}'s name.
  *
  * @since 1.9
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public enum PropertyNameFieldNamingStrategy implements FieldNamingStrategy {
 
@@ -32,6 +35,16 @@ public enum PropertyNameFieldNamingStrategy implements FieldNamingStrategy {
 	 * @see org.springframework.data.mapping.model.FieldNamingStrategy#getFieldName(org.springframework.data.mapping.PersistentProperty)
 	 */
 	public String getFieldName(PersistentProperty<?> property) {
-		return property.getName();
+
+		if (!property.isEmbedded()) {
+			return property.getName();
+		}
+
+		String prefix = property.findAnnotation(Embedded.class).prefix();
+		if (!StringUtils.hasText(prefix)) {
+			return property.getName();
+		}
+
+		return prefix + property.getName();
 	}
 }

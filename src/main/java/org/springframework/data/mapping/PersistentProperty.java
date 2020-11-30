@@ -16,6 +16,7 @@
 package org.springframework.data.mapping;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -23,6 +24,9 @@ import java.util.Map;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.annotation.Embedded;
+import org.springframework.data.annotation.Embedded.OnEmpty;
+import org.springframework.data.util.NullableUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -33,6 +37,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Jens Schauder
+ * @author Christoph Strobl
  */
 public interface PersistentProperty<P extends PersistentProperty<P>> {
 
@@ -275,6 +280,24 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @return
 	 */
 	boolean isAssociation();
+
+	/**
+	 * @return {@literal true} if the property should be embedded.
+	 * @since 2.5
+	 */
+	default boolean isEmbedded() {
+		return isEntity() && findAnnotation(Embedded.class) != null;
+	}
+
+	/**
+	 * @return {@literal true} if the property generally allows {@literal null} values;
+	 * @since 2.5
+	 */
+	default boolean isNullable() {
+
+		return (isEmbedded() && findAnnotation(Embedded.class).onEmpty().equals(OnEmpty.USE_NULL))
+				&& !NullableUtils.isNonNull(getField(), ElementType.FIELD);
+	}
 
 	/**
 	 * Returns the component type of the type if it is a {@link java.util.Collection}. Will return the type of the key if

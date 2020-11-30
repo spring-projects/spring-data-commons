@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.annotation.Embedded;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.ParsingUtils;
 import org.springframework.util.Assert;
@@ -28,6 +29,7 @@ import org.springframework.util.StringUtils;
  * configured delimiter. Individual parts of the name can be manipulated using {@link #preparePart(String)}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 1.9
  */
 public class CamelCaseSplittingFieldNamingStrategy implements FieldNamingStrategy {
@@ -52,7 +54,13 @@ public class CamelCaseSplittingFieldNamingStrategy implements FieldNamingStrateg
 	@Override
 	public String getFieldName(PersistentProperty<?> property) {
 
-		List<String> parts = ParsingUtils.splitCamelCaseToLower(property.getName());
+		List<String> parts = new ArrayList<>(ParsingUtils.splitCamelCaseToLower(property.getName()));
+		if(property.isEmbedded()) {
+			String prefix = property.findAnnotation(Embedded.class).prefix();
+			if(StringUtils.hasText(prefix)) {
+				parts.add(0, prefix);
+			}
+		}
 		List<String> result = new ArrayList<>();
 
 		for (String part : parts) {
