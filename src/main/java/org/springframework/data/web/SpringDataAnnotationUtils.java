@@ -23,15 +23,18 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
- * Helper class to ease sharing code between legacy {@link PageableArgumentResolver} and
- * {@link PageableHandlerMethodArgumentResolver}.
+ * Helper class to ease sharing code between legacy {@link PageableHandlerMethodArgumentResolverSupport} and
+ * {@link SortHandlerMethodArgumentResolverSupport}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 abstract class SpringDataAnnotationUtils {
 
@@ -106,6 +109,26 @@ abstract class SpringDataAnnotationUtils {
 	}
 
 	/**
+	 * Determine a qualifier value for a {@link MethodParameter}.
+	 *
+	 * @param parameter must not be {@literal null}.
+	 * @return the qualifier value if {@code @Qualifier} is present.
+	 * @since 2.5
+	 */
+	@Nullable
+	public static String getQualifier(@Nullable MethodParameter parameter) {
+
+		if (parameter == null) {
+			return null;
+		}
+
+		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
+		MergedAnnotation<Qualifier> qualifier = annotations.get(Qualifier.class);
+
+		return qualifier.isPresent() ? qualifier.getString("value") : null;
+	}
+
+	/**
 	 * Asserts that every {@link Pageable} parameter of the given parameters carries an {@link Qualifier} annotation to
 	 * distinguish them from each other.
 	 *
@@ -154,4 +177,5 @@ abstract class SpringDataAnnotationUtils {
 
 		return null;
 	}
+
 }

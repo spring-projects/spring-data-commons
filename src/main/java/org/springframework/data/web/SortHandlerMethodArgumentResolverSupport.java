@@ -186,7 +186,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 		StringBuilder builder = new StringBuilder();
 
-		String value = getQualifier(parameter);
+		String value = SpringDataAnnotationUtils.getQualifier(parameter);
 
 		if (StringUtils.hasLength(value)) {
 			builder.append(value);
@@ -293,19 +293,6 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 	 */
 	static boolean notOnlyDots(String source) {
 		return StringUtils.hasText(source.replace(".", ""));
-	}
-
-	@Nullable
-	private static String getQualifier(@Nullable MethodParameter parameter) {
-
-		if (parameter == null) {
-			return null;
-		}
-
-		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
-		MergedAnnotation<Qualifier> qualifier = annotations.get(Qualifier.class);
-
-		return qualifier.isPresent() ? qualifier.getString("value") : null;
 	}
 
 	/**
