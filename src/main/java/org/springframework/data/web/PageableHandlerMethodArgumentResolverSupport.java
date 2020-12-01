@@ -231,7 +231,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 
 		StringBuilder builder = new StringBuilder(prefix);
 
-		String value = getQualifier(parameter);
+		String value = SpringDataAnnotationUtils.getQualifier(parameter);
 
 		if (StringUtils.hasLength(value)) {
 			builder.append(value);
@@ -292,16 +292,5 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 		}
 	}
 
-	@Nullable
-	private static String getQualifier(@Nullable MethodParameter parameter) {
 
-		if (parameter == null) {
-			return null;
-		}
-
-		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
-		MergedAnnotation<Qualifier> qualifier = annotations.get(Qualifier.class);
-
-		return qualifier.isPresent() ? qualifier.getString("value") : null;
-	}
 }
