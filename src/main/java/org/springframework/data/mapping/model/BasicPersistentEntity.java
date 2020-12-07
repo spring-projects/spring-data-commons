@@ -35,6 +35,7 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.mapping.*;
 import org.springframework.data.spel.EvaluationContextProvider;
+import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.PersistableIsNewStrategy;
 import org.springframework.data.util.Lazy;
@@ -537,8 +538,27 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		};
 	}
 
+	/**
+	 * Obtain a {@link EvaluationContext} for a {@code rootObject}.
+	 *
+	 * @param rootObject must not be {@literal null}.
+	 * @return the evaluation context including all potential extensions.
+	 * @since 2.1
+	 */
 	protected EvaluationContext getEvaluationContext(Object rootObject) {
 		return evaluationContextProvider.getEvaluationContext(rootObject);
+	}
+
+	/**
+	 * Obtain a {@link EvaluationContext} for a {@code rootObject} given {@link ExpressionDependencies}.
+	 *
+	 * @param rootObject must not be {@literal null}.
+	 * @param dependencies must not be {@literal null}.
+	 * @return the evaluation context with extensions loaded that satisfy {@link ExpressionDependencies}.
+	 * @since 2.5
+	 */
+	protected EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+		return evaluationContextProvider.getEvaluationContext(rootObject, dependencies);
 	}
 
 	/**
