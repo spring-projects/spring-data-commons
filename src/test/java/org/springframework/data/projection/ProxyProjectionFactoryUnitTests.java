@@ -19,7 +19,11 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Proxy;
+import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +41,8 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Oliver Gierke
  * @author Wim Deblauwe
  * @author Mark Paluch
+ * @author Jens Schauder
+ * @author Christoph Strobl
  */
 class ProxyProjectionFactoryUnitTests {
 
@@ -276,17 +282,47 @@ class ProxyProjectionFactoryUnitTests {
 		});
 	}
 
+	@Test // DATACMNS-1836
+	void supportsDateToLocalDateTimeConversion() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+		customer.birthdate = new GregorianCalendar(1967, Calendar.JANUARY, 9).getTime();
+
+		customer.address = new Address();
+		customer.address.city = "New York";
+		customer.address.zipCode = "ZIP";
+
+		CustomerWithLocalDateTime excerpt = factory.createProjection(CustomerWithLocalDateTime.class, customer);
+
+		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
+		assertThat(excerpt.getBirthdate()).isEqualTo(LocalDateTime.of(1967, 1, 9, 0, 0));
+	}
+
+	@Test // DATACMNS-1836
+	void supportsNullableWrapperDateToLocalDateTimeConversion() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+		customer.birthdate = new GregorianCalendar(1967, Calendar.JANUARY, 9).getTime();
+
+		customer.address = new Address();
+		customer.address.city = "New York";
+		customer.address.zipCode = "ZIP";
+
+		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+
+		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
+		assertThat(excerpt.getBirthdate()).contains(LocalDateTime.of(1967, 1, 9, 0, 0));
+	}
+
 	interface Contact {}
 
-	static class Customer implements Contact {
+	interface CustomerWithLocalDateTime {
 
-		Long id;
-		String firstname, lastname;
-		Address address;
-		byte[] picture;
-		Address[] shippingAddresses;
-		Map<String, Object> data;
-		Optional<String> optional;
+		String getFirstname();
+
+		LocalDateTime getBirthdate();
 	}
 
 	static class Address {
@@ -328,6 +364,8 @@ class ProxyProjectionFactoryUnitTests {
 		Optional<byte[]> getPicture();
 
 		Optional<String> getOptional();
+
+		Optional<LocalDateTime> getBirthdate();
 	}
 
 	interface CustomerWithOptionalHavingProjection {
@@ -335,5 +373,17 @@ class ProxyProjectionFactoryUnitTests {
 		String getFirstname();
 
 		Optional<AddressExcerpt> getAddress();
+	}
+
+	static class Customer implements Contact {
+
+		Long id;
+		String firstname, lastname;
+		Date birthdate;
+		Address address;
+		byte[] picture;
+		Address[] shippingAddresses;
+		Map<String, Object> data;
+		Optional<String> optional;
 	}
 }
