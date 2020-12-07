@@ -28,6 +28,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -43,6 +44,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Jens Schauder
  * @see SpelAwareProxyProjectionFactory
  * @since 1.10
  */
@@ -51,6 +53,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
 
 	static {
+		Jsr310Converters.getConvertersToRegister().forEach(CONVERSION_SERVICE::addConverter);
 		NullableWrapperConverters.registerConvertersIn(CONVERSION_SERVICE);
 		CONVERSION_SERVICE.removeConvertible(Object.class, Object.class);
 	}
