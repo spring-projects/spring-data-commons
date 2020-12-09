@@ -1,6 +1,12 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.12.RELEASE (2020-12-09)
+----------------------------------------------
+* DATACMNS-1837 - Add required override to the Streamable example in reference docs.
+* DATACMNS-1821 - Release 2.2.12 (Moore SR12).
+
+
 Changes in version 2.4.1 (2020-11-11)
 -------------------------------------
 * DATACMNS-1828 - TypeDiscoverer does not detect generic type arguments correctly.
@@ -2900,6 +2906,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
