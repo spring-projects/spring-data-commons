@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.5.0-M1 (2020-12-09)
+----------------------------------------
+* DATACMNS-1838 - Accept ExpressionDependencies in BasicPersistentEntity.getEvaluationContext(…).
+* DATACMNS-1837 - Add required override to the Streamable example in reference docs.
+* DATACMNS-1833 - More explicit documentation of query prefix behavior.
+* DATACMNS-1828 - TypeDiscoverer does not detect generic type arguments correctly.
+* DATACMNS-1827 - Pageable and Sort arguments with empty qualifier value shouldn't be prefixed with delimiter.
+* DATACMNS-1824 - Release 2.5 M1 (2021.0.0).
+* DATACMNS-800 - Add deleteAllById(Iterable<ID> ids) to CrudRepository and ReactiveCrudRepository.
+
+
 Changes in version 2.3.6.RELEASE (2020-12-09)
 ---------------------------------------------
 * DATACMNS-1837 - Add required override to the Streamable example in reference docs.
@@ -2925,6 +2936,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
