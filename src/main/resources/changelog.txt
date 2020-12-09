@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.2 (2020-12-09)
+-------------------------------------
+* DATACMNS-1838 - Accept ExpressionDependencies in BasicPersistentEntity.getEvaluationContext(…).
+* DATACMNS-1837 - Add required override to the Streamable example in reference docs.
+* DATACMNS-1833 - More explicit documentation of query prefix behavior.
+* DATACMNS-1831 - Release 2.4.2 (2020.0.2).
+
+
 Changes in version 2.5.0-M1 (2020-12-09)
 ----------------------------------------
 * DATACMNS-1838 - Accept ExpressionDependencies in BasicPersistentEntity.getEvaluationContext(…).
@@ -2924,6 +2932,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
