@@ -274,10 +274,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			logger.debug(LogMessage.format("Initializing repository instance for %s…", repositoryInterface.getName()));
 		}
 
-		ApplicationStartup applicationStartup = getStartup();
-
 		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
 		Assert.notNull(fragments, "RepositoryFragments must not be null!");
+
+		ApplicationStartup applicationStartup = getStartup();
 
 		StartupStep repositoryInit = applicationStartup.start("spring.data.repository.init");
 
@@ -285,16 +285,19 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
 		repositoryMetadataStep.end();
 
-		StartupStep repositoryCompositionStep = applicationStartup.start("spring.data.repository.metadata");
+		StartupStep repositoryCompositionStep = applicationStartup.start("spring.data.repository.composition");
 		RepositoryComposition composition = getRepositoryComposition(metadata, fragments);
 		RepositoryInformation information = getRepositoryInformation(metadata, composition);
 		repositoryCompositionStep.end();
 
 		validate(information, composition);
 
+		StartupStep repositoryTargetStep = applicationStartup.start("spring.data.repository.target");
 		Object target = getTargetRepository(information);
+		repositoryTargetStep.end();
 
 		// Create proxy
+		StartupStep repositoryProxyStep = applicationStartup.start("spring.data.repository.proxy");
 		ProxyFactory result = new ProxyFactory();
 		result.setTarget(target);
 		result.setInterfaces(repositoryInterface, Repository.class, TransactionalProxy.class);
@@ -323,10 +326,11 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.addAdvice(new ImplementationMethodExecutionInterceptor(information, composition, methodInvocationListeners));
 
 		T repository = (T) result.getProxy(classLoader);
+		repositoryProxyStep.end();
 
 		if (logger.isDebugEnabled()) {
-			logger
-					.debug(LogMessage.format("Finished creation of repository instance for {}.", repositoryInterface.getName()));
+			logger.debug(LogMessage.format("Finished creation of repository instance for {}.",
+				repositoryInterface.getName()));
 		}
 
 		repositoryInit.end();
@@ -336,7 +340,11 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	ApplicationStartup getStartup() {
 
 		try {
-			ApplicationStartup applicationStartup = beanFactory != null ? beanFactory.getBean(ApplicationStartup.class) : ApplicationStartup.DEFAULT;
+
+			ApplicationStartup applicationStartup = beanFactory != null
+				? beanFactory.getBean(ApplicationStartup.class)
+				: ApplicationStartup.DEFAULT;
+
 			return applicationStartup != null ? applicationStartup : ApplicationStartup.DEFAULT;
 		}
 		catch (NoSuchBeanDefinitionException e) {
