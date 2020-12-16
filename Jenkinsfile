@@ -58,7 +58,7 @@ pipeline {
 					}
 				}
 
-				stage("test: baseline (jdk15)") {
+				stage("test: baseline (jdk14)") {
 					agent {
 						label 'data'
 					}
@@ -66,7 +66,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('adoptopenjdk/openjdk15:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image('adoptopenjdk/openjdk14:latest').inside('-v $HOME:/tmp/jenkins-home') {
 									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pjava11 clean dependency:list verify -Dsort -U -B'
 								}
 							}
