@@ -128,7 +128,7 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	void deleteAll(Iterable<? extends T> entities);
 
 	/**
-	 * Deletes all entities managed by the repository.
+	 * Deletes all entities from the table.
 	 */
 	void deleteAll();
 }
