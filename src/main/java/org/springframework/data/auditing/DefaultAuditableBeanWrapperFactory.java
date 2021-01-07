@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2020 the original author or authors.
+ * Copyright 2012-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,7 +151,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return value;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
 		 */
@@ -328,7 +328,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 			return setDateField(metadata.getLastModifiedDateField(), value);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
 		 */

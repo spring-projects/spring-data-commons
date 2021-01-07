@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 the original authors.
+ * Copyright 2011-2021 the original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> ext
 
 	/**
 	 * Sets the {@link EvaluationContextProvider} to be used by the entity.
-	 * 
+	 *
 	 * @param provider must not be {@literal null}.
 	 */
 	void setEvaluationContextProvider(EvaluationContextProvider provider);

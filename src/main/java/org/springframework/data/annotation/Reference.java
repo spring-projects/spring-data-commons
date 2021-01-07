@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 the original author or authors.
+ * Copyright 2011-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public @interface Reference {
 	/**
 	 * Explicitly define the target type of the reference. Used in case the annotated property is not the target type but
 	 * rather an identifier and/or if that identifier type is not uniquely identifying the target entity.
-	 * 
+	 *
 	 * @return
 	 */
 	@AliasFor(attribute = "to")
@@ -45,7 +45,7 @@ public @interface Reference {
 	/**
 	 * Explicitly define the target type of the reference. Used in case the annotated property is not the target type but
 	 * rather an identifier and/or if that identifier type is not uniquely identifying the target entity.
-	 * 
+	 *
 	 * @return
 	 */
 	@AliasFor(attribute = "value")

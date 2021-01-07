@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.data.repository.Repository;
 /**
  * {@link ApplicationListener} to trigger the initialization of Spring Data repositories right before the application
  * context is started.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.1
  * @soundtrack Dave Matthews Band - Here On Out (Come Tomorrow)
@@ -39,7 +39,7 @@ class DeferredRepositoryInitializationListener implements ApplicationListener<Co
 
 	private final @NonNull ListableBeanFactory beanFactory;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
 	 */
@@ -53,7 +53,7 @@ class DeferredRepositoryInitializationListener implements ApplicationListener<Co
 		LOG.info("Spring Data repositories initialized!");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.Ordered#getOrder()
 	 */

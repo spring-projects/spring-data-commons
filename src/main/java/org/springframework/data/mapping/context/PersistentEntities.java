@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2014-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 	/**
 	 * Creates a new {@link PersistentEntities} for the given {@link MappingContext}s.
-	 * 
+	 *
 	 * @param contexts must not be {@literal null}.
 	 * @return
 	 */
@@ -99,7 +99,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	/**
 	 * Executes the given {@link BiFunction} on the given {@link MappingContext} and {@link PersistentEntity} based on the
 	 * given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param combiner must not be {@literal null}.
 	 * @return
@@ -146,7 +146,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 * property type is not an entity - as it might rather refer to the identifier type - we either use the reference's
 	 * defined target type and fall back to trying to find a {@link PersistentEntity} identified by the
 	 * {@link PersistentProperty}'s actual type.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return
 	 * @since 2.1
@@ -170,7 +170,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	/**
 	 * Returns the type the given {@link PersistentProperty} ultimately refers to. In case it's of a unique identifier
 	 * type of an entity known it'll return the entity type.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
@@ -187,7 +187,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 	/**
 	 * Returns the {@link PersistentEntity} identified by the given type.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 * @throws IllegalStateException if the entity cannot be detected uniquely as multiple ones might share the same

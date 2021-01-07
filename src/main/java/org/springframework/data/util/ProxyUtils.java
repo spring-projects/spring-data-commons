@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Proxy type detection utilities, extensible via {@link ProxyDetector} registered via Spring factories.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Victor Wooten - Cruising Altitude (Trypnotix)
  */
@@ -46,7 +46,7 @@ public class ProxyUtils {
 
 	/**
 	 * Returns the user class for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -68,7 +68,7 @@ public class ProxyUtils {
 
 	/**
 	 * Returns the user class for the given source object.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
@@ -88,7 +88,7 @@ public class ProxyUtils {
 
 		/**
 		 * Returns the user class for the given type.
-		 * 
+		 *
 		 * @param type will never be {@literal null}.
 		 * @return
 		 */

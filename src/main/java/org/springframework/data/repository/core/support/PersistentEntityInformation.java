@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2014-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class PersistentEntityInformation<T, ID> implements EntityInformation<T, 
 
 	private final @NonNull PersistentEntity<T, ? extends PersistentProperty<?>> persistentEntity;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.AbstractEntityInformation#isNew(java.lang.Object)
 	 */
@@ -55,7 +55,7 @@ public class PersistentEntityInformation<T, ID> implements EntityInformation<T, 
 		return (ID) persistentEntity.getIdentifierAccessor(entity).getIdentifier();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
 	 */
