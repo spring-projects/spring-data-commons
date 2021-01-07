@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2020 the original author or authors.
+ * Copyright 2012-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public interface AuditableBeanWrapper<T> {
 	/**
 	 * Returns the underlying bean that potentially has been modified by the setter methods exposed. Client code needs to
 	 * make sure to call this method to see all the changes applied via this {@link AuditableBeanWrapper}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 * @since 2.1
 	 */

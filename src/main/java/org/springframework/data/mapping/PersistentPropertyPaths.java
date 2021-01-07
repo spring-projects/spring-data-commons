@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.data.util.Streamable;
 
 /**
  * A wrapper for a collection of {@link PersistentPropertyPath}s.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.1
  * @soundtrack Stuart McCallum - North Star (City)
@@ -32,14 +32,14 @@ public interface PersistentPropertyPaths<T, P extends PersistentProperty<P>>
 
 	/**
 	 * Returns the first {@link PersistentPropertyPath}.
-	 * 
+	 *
 	 * @return
 	 */
 	Optional<PersistentPropertyPath<P>> getFirst();
 
 	/**
 	 * Returns whether the given path is contained in the current {@link PersistentPropertyPaths}.
-	 * 
+	 *
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
@@ -47,7 +47,7 @@ public interface PersistentPropertyPaths<T, P extends PersistentProperty<P>>
 
 	/**
 	 * Returns whether the given {@link PropertyPath} is contained in the current {@link PersistentPropertyPaths}.
-	 * 
+	 *
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */

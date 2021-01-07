@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * {@link IdentifierAccessor} that invokes {@link Persistable#getId()}.
- * 
+ *
  * @author Oliver Gierke
  */
 class PersistableIdentifierAccessor extends TargetAwareIdentifierAccessor {
@@ -31,7 +31,7 @@ class PersistableIdentifierAccessor extends TargetAwareIdentifierAccessor {
 
 	/**
 	 * Creates a new {@link PersistableIdentifierAccessor} for the given target.
-	 * 
+	 *
 	 * @param target must not be {@literal null}.
 	 */
 	public PersistableIdentifierAccessor(Persistable<?> target) {
@@ -41,7 +41,7 @@ class PersistableIdentifierAccessor extends TargetAwareIdentifierAccessor {
 		this.target = target;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.IdentifierAccessor#getIdentifier()
 	 */
