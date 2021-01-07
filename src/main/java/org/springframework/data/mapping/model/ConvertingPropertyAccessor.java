@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2014-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class ConvertingPropertyAccessor<T> extends SimplePersistentPropertyPathA
 		accessor.setProperty(property, convertIfNecessary(value, property.getType()));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentPropertyPath, java.lang.Object)
 	 */
@@ -91,7 +91,7 @@ public class ConvertingPropertyAccessor<T> extends SimplePersistentPropertyPathA
 		return convertIfNecessary(getProperty(property), targetType);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.SimplePersistentPropertyPathAccessor#getTypedProperty(org.springframework.data.mapping.PersistentProperty, java.lang.Class)
 	 */

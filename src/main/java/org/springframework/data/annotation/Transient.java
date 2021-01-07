@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2011-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 /**
  * Marks a field to be transient for the mapping framework. Thus the property will not be persisted and not further
  * inspected by the mapping framework.
- * 
+ *
  * @author Oliver Gierke
  * @author Jon Brisbin
  */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2014-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public interface CdiRepositoryConfiguration {
 	/**
 	 * Returns the list of {@link RepositoryProxyPostProcessor} to be used during repository proxy creation. Can be
 	 * {@link Collections#emptyList()} .
-	 * 
+	 *
 	 * @return the list of repository proxy post processors to use, can be {@link Collections#emptyList()}, must not be
 	 *         {@literal null}.
 	 * @since 2.2
@@ -100,7 +100,7 @@ public interface CdiRepositoryConfiguration {
 	/**
 	 * Returns the list of {@link QueryCreationListener} to be used during repository proxy creation. Can be
 	 * {@link Collections#emptyList()} .
-	 * 
+	 *
 	 * @return the list query creation listeners to use, can be {@link Collections#emptyList()}, must not be
 	 *         {@literal null}.
 	 * @since 2.2

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2014-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class CustomRepositoryImplementationDetector {
 	 * {@link ResourceLoader} and {@link ImplementationDetectionConfiguration}. The latter will be registered for a
 	 * one-time component scan for implementation candidates that will the be used and filtered in all subsequent calls to
 	 * {@link #detectCustomImplementation(RepositoryConfiguration)}.
-	 * 
+	 *
 	 * @param environment must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
 	 * @param configuration must not be {@literal null}.
@@ -79,7 +79,7 @@ public class CustomRepositoryImplementationDetector {
 	 * Creates a new {@link CustomRepositoryImplementationDetector} with the given {@link Environment} and
 	 * {@link ResourceLoader}. Calls to {@link #detectCustomImplementation(ImplementationLookupConfiguration)} will issue
 	 * scans for
-	 * 
+	 *
 	 * @param environment must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.
 	 */

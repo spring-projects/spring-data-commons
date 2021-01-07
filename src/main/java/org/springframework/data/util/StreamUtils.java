@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public interface StreamUtils {
 
 	/**
 	 * Creates a new {@link Stream} for the given value returning an empty {@link Stream} if the value is {@literal null}.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return a new {@link Stream} for the given value returning an empty {@link Stream} if the value is {@literal null}.
 	 * @since 2.0.6
@@ -115,7 +115,7 @@ public interface StreamUtils {
 	 * Zips the given {@link Stream}s using the given {@link BiFunction}. The resulting {@link Stream} will have the
 	 * length of the shorter of the two, abbreviating the zipping when the shorter of the two {@link Stream}s is
 	 * exhausted.
-	 * 
+	 *
 	 * @param left must not be {@literal null}.
 	 * @param right must not be {@literal null}.
 	 * @param combiner must not be {@literal null}.
