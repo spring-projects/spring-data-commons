@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Copyright 2020-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class Auditor<T> {
 	 * Create an {@link Auditor} for the given {@literal source} value. <br />
 	 * If the given {@literal source} is {@literal null} {@link Auditor#none()} is returned. A source that already is an
 	 * {@link Auditor} gets returned as is.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param <T>
 	 * @return {@link Auditor#none()} if the given {@literal source} is {@literal null}. }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 the original author or authors.
+ * Copyright 2016-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
 	/**
 	 * Returns whether the current {@link Streamable} is empty.
-	 * 
+	 *
 	 * @return
 	 */
 	default boolean isEmpty() {
@@ -140,7 +140,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
 	/**
 	 * Creates a new {@link Streamable} from the current one and the given {@link Stream} concatenated.
-	 * 
+	 *
 	 * @param stream must not be {@literal null}.
 	 * @return
 	 * @since 2.1
@@ -154,7 +154,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
 	/**
 	 * Creates a new {@link Streamable} from the current one and the given values concatenated.
-	 * 
+	 *
 	 * @param others must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 * @since 2.2
@@ -169,7 +169,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
 	/**
 	 * Creates a new {@link Streamable} from the current one and the given {@link Iterable} concatenated.
-	 * 
+	 *
 	 * @param iterable must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 * @since 2.2
@@ -184,7 +184,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 	/**
 	 * Convenience method to allow adding a {@link Streamable} directly as otherwise the invocation is ambiguous between
 	 * {@link #and(Iterable)} and {@link #and(Supplier)}.
-	 * 
+	 *
 	 * @param streamable must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 * @since 2.2
@@ -195,7 +195,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
 	/**
 	 * Creates a new, unmodifiable {@link List}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 * @since 2.2
 	 */
@@ -205,7 +205,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
 	/**
 	 * Creates a new, unmodifiable {@link Set}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 * @since 2.2
 	 */
@@ -224,7 +224,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 	/**
 	 * A collector to easily produce a {@link Streamable} from a {@link Stream} using {@link Collectors#toList} as
 	 * intermediate collector.
-	 * 
+	 *
 	 * @return
 	 * @see #toStreamable(Collector)
 	 * @since 2.2
@@ -235,7 +235,7 @@ public interface Streamable<T> extends Iterable<T>, Supplier<Stream<T>> {
 
 	/**
 	 * A collector to easily produce a {@link Streamable} from a {@link Stream} and the given intermediate collector.
-	 * 
+	 *
 	 * @return
 	 * @since 2.2
 	 */

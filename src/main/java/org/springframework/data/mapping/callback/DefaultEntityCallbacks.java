@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 the original author or authors.
+ * Copyright 2019-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.springframework.util.ReflectionUtils;
 /**
  * {@link EntityCallbacks} implementation using an {@link EntityCallbackDiscoverer} to retrieve {@link EntityCallback
  * EntityCallbacks} from a {@link BeanFactory}.
- * 
+ *
  * @author Mark Paluch
  * @author Christoph Strobl
  * @since 2.2
@@ -52,7 +52,7 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 	/**
 	 * Create new instance of {@link DefaultEntityCallbacks} discovering {@link EntityCallback entity callbacks} within
 	 * the given {@link BeanFactory}.
-	 * 
+	 *
 	 * @param beanFactory must not be {@literal null}.
 	 */
 	DefaultEntityCallbacks(BeanFactory beanFactory) {
