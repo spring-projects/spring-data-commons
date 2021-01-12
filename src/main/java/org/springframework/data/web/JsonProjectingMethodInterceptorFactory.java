@@ -158,13 +158,14 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 						return isCollectionResult && !(nested instanceof Collection) ? result : nested;
 					}
 
-					type = isCollectionResult && JsonPath.isPathDefinite(jsonPath)
+					boolean definitePath = JsonPath.isPathDefinite(jsonPath);
+					type = isCollectionResult && definitePath
 							? ResolvableType.forClassWithGenerics(List.class, type)
 							: type;
 
 					List<?> result = (List<?>) context.read(jsonPath, new ResolvableTypeRef(type));
 
-					if (isCollectionResult && JsonPath.isPathDefinite(jsonPath)) {
+					if (isCollectionResult && definitePath) {
 						result = (List<?>) result.get(0);
 					}
 
