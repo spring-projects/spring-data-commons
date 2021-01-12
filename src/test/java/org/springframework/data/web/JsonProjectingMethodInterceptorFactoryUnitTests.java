@@ -22,6 +22,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +39,7 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider;
  * Unit tests for {@link JsonProjectingMethodInterceptorFactory}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.13
  * @soundtrack Richard Spaven - Assemble (Whole Other*)
  */
@@ -51,7 +53,8 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 
 		String json = "{\"firstname\" : \"Dave\", "//
 				+ "\"address\" : { \"zipCode\" : \"01097\", \"city\" : \"Dresden\" }," //
-				+ "\"addresses\" : [ { \"zipCode\" : \"01097\", \"city\" : \"Dresden\" }]" + " }";
+				+ "\"addresses\" : [ { \"zipCode\" : \"01097\", \"city\" : \"Dresden\" }, { \"zipCode\" : \"69469\", \"city\" : \"Weinheim\" }]"
+				+ " }";
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 
@@ -97,6 +100,13 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 		assertThat(customer.getAddressProjections().get(0).getZipCode()).isEqualTo("01097");
 	}
 
+	@Test // gh-2270
+	void nestedProjectionCollectionShouldContainMultipleElements() {
+		assertThat(customer.getAddressProjections()).hasSize(2);
+		assertThat(customer.getAddressProjections().get(0).getZipCode()).isEqualTo("01097");
+		assertThat(customer.getAddressProjections().get(1).getZipCode()).isEqualTo("69469");
+	}
+
 	@Test // DATCMNS-885
 	void accessPropertyThatUsesJsonPathProjectionInTurn() {
 		assertThat(customer.getAnotherAddressProjection().getZipCodeButNotCity()).isEqualTo("01097");
@@ -107,7 +117,7 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 
 		List<AnotherAddressProjection> projections = customer.getAnotherAddressProjections();
 
-		assertThat(projections).hasSize(1);
+		assertThat(projections).hasSize(2);
 		assertThat(projections.get(0).getZipCodeButNotCity()).isEqualTo("01097");
 	}
 
@@ -133,7 +143,7 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 	void accessNestedFields() {
 
 		assertThat(customer.getNestedCity()).isEqualTo("Dresden");
-		assertThat(customer.getNestedCities()).hasSize(2);
+		assertThat(customer.getNestedCities()).hasSize(3);
 	}
 
 	@Test // DATACMNS-1144
@@ -144,6 +154,18 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 	@Test // DATACMNS-1144
 	void triesMultipleDeclaredPathsIfNotAvailable() {
 		assertThat(customer.getName().getSomeName()).isEqualTo(customer.getName().getFirstname());
+	}
+
+	@Test // gh-2270
+	void shouldProjectOnArray() {
+
+		String json = "[ { \"creationDate\": 1610111331413, \"changeDate\": 1610111332160, \"person\": { \"caption\": \"Test2 TEST2\", \"firstName\": \"Test2\", \"lastName\": \"Test2\" } }, "
+				+ "{ \"creationDate\": 1609775450502, \"changeDate\": 1609775451333, \"person\": { \"caption\": \"Test TEST\", \"firstName\": \"Test\", \"lastName\": \"Test\" } }]";
+
+		UserPayload projection = projectionFactory.createProjection(UserPayload.class,
+				new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+
+		assertThat(projection.users()).hasSize(2);
 	}
 
 	interface Customer {
@@ -217,5 +239,19 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 	@NoArgsConstructor
 	static class Address {
 		private String zipCode, city;
+	}
+
+	@ProjectedPayload
+	interface UserPayload {
+
+		@JsonPath("$..person")
+		List<Users> users();
+
+		interface Users {
+
+			public String getFirstName();
+
+			public String getLastName();
+		}
 	}
 }
