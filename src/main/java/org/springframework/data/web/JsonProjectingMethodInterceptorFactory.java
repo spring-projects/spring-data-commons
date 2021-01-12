@@ -52,6 +52,7 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider;
  * {@link MethodInterceptorFactory} to create a {@link MethodInterceptor} that will
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Jeff Coffin - Fruitcake (The Inside Of The Outside)
  * @since 1.13
  */
@@ -152,7 +153,9 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 					if (returnType.getRequiredActualType().getType().isInterface()) {
 
 						List<?> result = context.read(jsonPath);
-						return result.isEmpty() ? null : result.get(0);
+						Object nested = result.isEmpty() ? null : result.get(0);
+
+						return isCollectionResult && !(nested instanceof Collection) ? result : nested;
 					}
 
 					type = isCollectionResult && JsonPath.isPathDefinite(jsonPath)
