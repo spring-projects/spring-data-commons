@@ -1,6 +1,17 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.5.0-M2 (2021-01-13)
+----------------------------------------
+* DATACMNS-1841 - Update CI jobs with Docker Login.
+* #2270 - In a @JsonPath projection a List<interface> property always returns a list with only one element.
+* #2269 - Upgrade to XMLBeam 1.4.18.
+* #2268 - Update copyright year to 2021.
+* #2263 - Update repository after GitHub issues migration.
+* #2250 - Provide Type-safe Kotlin query extension [DATACMNS-1835].
+* #2223 - Native projection stopped working with Java8 datetime [DATACMNS-1836].
+
+
 Changes in version 2.4.3 (2021-01-13)
 -------------------------------------
 * DATACMNS-1841 - Update CI jobs with Docker Login.
@@ -2942,6 +2953,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
