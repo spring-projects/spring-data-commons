@@ -35,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,6 +43,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -406,10 +408,19 @@ class RepositoryFactorySupportUnitTests {
 	}
 
 	@Test // DATACMNS-1832
-	void callsApplicationStartupOnRepositoryIntialization() {
+	void callsApplicationStartupOnRepositoryInitialization() {
 
 		factory.getRepository(ObjectRepository.class, backingRepo);
-		verify(factory.getApplicationStartup()).start("spring.data.repository.init");
+
+		ApplicationStartup startup = factory.getApplicationStartup();
+
+		InOrder orderedInvocation = Mockito.inOrder(startup);
+		orderedInvocation.verify(startup).start("spring.data.repository.init");
+		orderedInvocation.verify(startup).start("spring.data.repository.metadata");
+		orderedInvocation.verify(startup).start("spring.data.repository.composition");
+		orderedInvocation.verify(startup).start("spring.data.repository.target");
+		orderedInvocation.verify(startup).start("spring.data.repository.proxy");
+		orderedInvocation.verify(startup).start("spring.data.repository.postprocessors");
 	}
 
 	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {

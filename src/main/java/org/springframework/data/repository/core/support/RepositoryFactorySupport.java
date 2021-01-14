@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -37,7 +36,6 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.log.LogMessage;
@@ -280,12 +278,15 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		ApplicationStartup applicationStartup = getStartup();
 
 		StartupStep repositoryInit = applicationStartup.start("spring.data.repository.init");
+		repositoryInit.tag("repository", () -> repositoryInterface.getName());
 
 		StartupStep repositoryMetadataStep = applicationStartup.start("spring.data.repository.metadata");
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
 		repositoryMetadataStep.end();
 
 		StartupStep repositoryCompositionStep = applicationStartup.start("spring.data.repository.composition");
+		repositoryCompositionStep.tag("fragment.count", () -> String.valueOf(fragments.size()));
+
 		RepositoryComposition composition = getRepositoryComposition(metadata, fragments);
 		RepositoryInformation information = getRepositoryInformation(metadata, composition);
 		repositoryCompositionStep.end();
@@ -309,31 +310,39 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 
 		StartupStep repositoryPostprocessorsStep = applicationStartup.start("spring.data.repository.postprocessors");
-		postProcessors.forEach(processor -> processor.postProcess(result, information));
+		postProcessors.forEach(processor -> {
+
+			StartupStep singlePostProcessor = applicationStartup.start("spring.data.repository.postprocessor");
+			singlePostProcessor.tag("type", processor.getClass().getName());
+			processor.postProcess(result, information);
+			singlePostProcessor.end();
+		});
 		repositoryPostprocessorsStep.end();
 
 		if (DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(repositoryInterface)) {
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
+		StartupStep queryExecutorsStep = applicationStartup.start("spring.data.repository.queryexecutors");
 		ProjectionFactory projectionFactory = getProjectionFactory(classLoader, beanFactory);
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 				evaluationContextProvider);
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory, queryLookupStrategy,
 				namedQueries, queryPostProcessors, methodInvocationListeners));
+		queryExecutorsStep.end();
 
 		composition = composition.append(RepositoryFragment.implemented(target));
 		result.addAdvice(new ImplementationMethodExecutionInterceptor(information, composition, methodInvocationListeners));
 
 		T repository = (T) result.getProxy(classLoader);
 		repositoryProxyStep.end();
+		repositoryInit.end();
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(LogMessage.format("Finished creation of repository instance for {}.",
 				repositoryInterface.getName()));
 		}
 
-		repositoryInit.end();
 		return repository;
 	}
 
@@ -341,13 +350,11 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		try {
 
-			ApplicationStartup applicationStartup = beanFactory != null
-				? beanFactory.getBean(ApplicationStartup.class)
-				: ApplicationStartup.DEFAULT;
+			ApplicationStartup applicationStartup = beanFactory != null ? beanFactory.getBean(ApplicationStartup.class)
+					: ApplicationStartup.DEFAULT;
 
 			return applicationStartup != null ? applicationStartup : ApplicationStartup.DEFAULT;
-		}
-		catch (NoSuchBeanDefinitionException e) {
+		} catch (NoSuchBeanDefinitionException e) {
 			return ApplicationStartup.DEFAULT;
 		}
 	}
