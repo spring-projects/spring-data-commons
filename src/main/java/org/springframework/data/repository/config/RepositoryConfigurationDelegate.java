@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -34,12 +34,15 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.log.LogMessage;
+import org.springframework.core.metrics.ApplicationStartup;
+import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -143,6 +146,11 @@ public class RepositoryConfigurationDelegate {
 					configurationSource.getBasePackages().stream().collect(Collectors.joining(", "))));
 		}
 
+		ApplicationStartup startup = getStartup(registry);
+		StartupStep repoScan = startup.start("spring.data.repository.scanning");
+		repoScan.tag("data-module", extension.getModuleName());
+		repoScan.tag("packages", configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
+
 		watch.start();
 
 		Collection<RepositoryConfiguration<RepositoryConfigurationSource>> configurations = extension
@@ -184,6 +192,9 @@ public class RepositoryConfigurationDelegate {
 
 		watch.stop();
 
+		repoScan.tag("repository.count", Integer.toString(configurations.size()));
+		repoScan.end();
+
 		if (logger.isInfoEnabled()) {
 			logger.info(LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interfaces.", //
 					watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName()));
@@ -208,7 +219,6 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		DefaultListableBeanFactory beanFactory = DefaultListableBeanFactory.class.cast(registry);
-
 		AutowireCandidateResolver resolver = beanFactory.getAutowireCandidateResolver();
 
 		if (!Arrays.asList(ContextAnnotationAutowireCandidateResolver.class, LazyRepositoryInjectionPointResolver.class)
@@ -251,6 +261,23 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		return multipleModulesFound;
+	}
+
+	ApplicationStartup getStartup(BeanDefinitionRegistry registry) {
+
+		if(ConfigurableBeanFactory.class.isInstance(registry)) {
+			return ((ConfigurableBeanFactory)registry).getApplicationStartup();
+		}
+
+		if (DefaultListableBeanFactory.class.isInstance(registry)) {
+			return ((DefaultListableBeanFactory)registry).getBeanProvider(ApplicationStartup.class).getIfAvailable(() -> ApplicationStartup.DEFAULT);
+		}
+
+		if(GenericApplicationContext.class.isInstance(registry)) {
+			return ((GenericApplicationContext)registry).getDefaultListableBeanFactory().getApplicationStartup();
+		}
+
+		return ApplicationStartup.DEFAULT;
 	}
 
 	/**
