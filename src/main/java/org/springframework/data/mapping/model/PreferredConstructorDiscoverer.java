@@ -212,7 +212,7 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 
 			for (int i = 0; i < parameterTypes.size(); i++) {
 
-				String name = parameterNames == null ? null : parameterNames[i];
+				String name = parameterNames == null || parameterNames.length <= i ? null : parameterNames[i];
 				TypeInformation<?> type = parameterTypes.get(i);
 				Annotation[] annotations = parameterAnnotations[i];
 

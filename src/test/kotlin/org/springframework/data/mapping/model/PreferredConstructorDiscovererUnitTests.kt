@@ -79,11 +79,25 @@ class PreferredConstructorDiscovererUnitTests {
 	@Suppress("UNCHECKED_CAST")
 	fun `should not resolve constructor for synthetic Kotlin class`() {
 
-		val c = Class.forName("org.springframework.data.mapping.model.TypeCreatingSyntheticClassKt") as Class<Any>
+		val c =
+			Class.forName("org.springframework.data.mapping.model.TypeCreatingSyntheticClassKt") as Class<Any>
 
-		val constructor = PreferredConstructorDiscoverer.discover<Any, SamplePersistentProperty>(c)
+		val constructor =
+			PreferredConstructorDiscoverer.discover<Any, SamplePersistentProperty>(c)
 
 		assertThat(constructor).isNull()
+	}
+
+	@Test // DATACMNS-1800, gh-2215
+	@ExperimentalUnsignedTypes
+	fun `should discover constructor for class using unsigned types`() {
+
+		val constructor =
+			PreferredConstructorDiscoverer.discover<UnsignedTypesEntity, SamplePersistentProperty>(
+				UnsignedTypesEntity::class.java
+			)
+
+		assertThat(constructor).isNotNull()
 	}
 
 	data class Simple(val firstname: String)
@@ -111,9 +125,23 @@ class PreferredConstructorDiscovererUnitTests {
 
 	class DefaultConstructor(val firstname: String = "foo")
 
-	class TwoDefaultConstructorsAnnotated(val firstname: String = "foo", val lastname: String = "bar") {
+	class TwoDefaultConstructorsAnnotated(
+		val firstname: String = "foo",
+		val lastname: String = "bar"
+	) {
 
 		@PersistenceConstructor
-		constructor(firstname: String = "foo", lastname: String = "bar", age: Int) : this(firstname, lastname)
+		constructor(firstname: String = "foo", lastname: String = "bar", age: Int) : this(
+			firstname,
+			lastname
+		)
 	}
+
+	@ExperimentalUnsignedTypes
+	data class UnsignedTypesEntity(
+		val id: String,
+		val a: UInt = 5u,
+		val b: Int = 5,
+		val c: Double = 1.5
+	)
 }
