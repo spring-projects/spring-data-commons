@@ -15,9 +15,12 @@
  */
 package org.springframework.data.web.querydsl;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
@@ -28,47 +31,41 @@ import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.util.CastUtils;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.support.WebDataBinderFactory;
-import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.method.support.ModelAndViewContainer;
+import org.springframework.web.reactive.BindingContext;
+import org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver;
+import org.springframework.web.server.ServerWebExchange;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
+import reactor.core.publisher.Mono;
 
 /**
- * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.querydsl.core.types.Predicate} into Spring MVC
- * controller methods.
+ * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.querydsl.core.types.Predicate} into Spring
+ * WebFlux controller methods.
  *
- * @author Christoph Strobl
- * @author Oliver Gierke
  * @author Matías Hermosilla
  * @since 1.11
  */
-public class QuerydslPredicateArgumentResolver extends QuerydslPredicateArgumentResolverSupport
+public class ReactiveQuerydslPredicateArgumentResolver extends QuerydslPredicateArgumentResolverSupport
 		implements HandlerMethodArgumentResolver {
 
-	public QuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory,
+	public ReactiveQuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory,
 			Optional<ConversionService> conversionService) {
 		super(factory, conversionService);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
+	 * 
+	 * @seeorg.springframework.web.reactive.result.method.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.reactive.BindingContext, org.springframework.web.server.ServerWebExchange)
 	 */
-	@Nullable
 	@Override
-	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
-
+	public Mono<Object> resolveArgument(MethodParameter parameter, BindingContext bindingContext,
+			ServerWebExchange exchange) {
 		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 
-		for (Entry<String, String[]> entry : webRequest.getParameterMap().entrySet()) {
-			parameters.put(entry.getKey(), Arrays.asList(entry.getValue()));
+		for (Entry<String, List<String>> entry : exchange.getRequest().getQueryParams().entrySet()) {
+			parameters.put(entry.getKey(), entry.getValue());
 		}
 
 		Optional<QuerydslPredicate> annotation = Optional
@@ -86,12 +83,12 @@ public class QuerydslPredicateArgumentResolver extends QuerydslPredicateArgument
 		Predicate result = predicateBuilder.getPredicate(domainType, parameters, bindings);
 
 		if (!parameter.isOptional() && result == null) {
-			return new BooleanBuilder();
+			return Mono.just(new BooleanBuilder());
 		}
 
 		return OPTIONAL_OF_PREDICATE.isAssignableFrom(ResolvableType.forMethodParameter(parameter)) //
-				? Optional.ofNullable(result) //
-				: result;
+				? Mono.justOrEmpty(Optional.ofNullable(result)) //
+				: Mono.justOrEmpty(result);
 	}
 
 }
