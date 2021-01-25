@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,76 +19,66 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
-import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
-import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.data.util.CastUtils;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.BindingContext;
 import org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver;
+import org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver;
 import org.springframework.web.server.ServerWebExchange;
 
-import reactor.core.publisher.Mono;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 
 /**
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.querydsl.core.types.Predicate} into Spring
  * WebFlux controller methods.
  *
  * @author Matías Hermosilla
- * @since 1.11
+ * @author Mark Paluch
+ * @since 2.5
  */
 public class ReactiveQuerydslPredicateArgumentResolver extends QuerydslPredicateArgumentResolverSupport
-		implements HandlerMethodArgumentResolver {
+		implements SyncHandlerMethodArgumentResolver {
 
 	public ReactiveQuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory,
-			Optional<ConversionService> conversionService) {
+			ConversionService conversionService) {
 		super(factory, conversionService);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @seeorg.springframework.web.reactive.result.method.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.reactive.BindingContext, org.springframework.web.server.ServerWebExchange)
+	 * @see org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver(org.springframework.core.MethodParameter, org.springframework.web.reactive.BindingContext, org.springframework.web.server.ServerWebExchange)
 	 */
 	@Override
-	public Mono<Object> resolveArgument(MethodParameter parameter, BindingContext bindingContext,
+	public Object resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
 			ServerWebExchange exchange) {
-		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 
-		for (Entry<String, List<String>> entry : exchange.getRequest().getQueryParams().entrySet()) {
-			parameters.put(entry.getKey(), entry.getValue());
-		}
-
-		Optional<QuerydslPredicate> annotation = Optional
-				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
-		TypeInformation<?> domainType = extractTypeInfo(parameter).getRequiredActualType();
-
-		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindingsAnnotation = annotation //
-				.map(QuerydslPredicate::bindings) //
-				.map(CastUtils::cast);
-
-		QuerydslBindings bindings = bindingsAnnotation //
-				.map(it -> bindingsFactory.createBindingsFor(domainType, it)) //
-				.orElseGet(() -> bindingsFactory.createBindingsFor(domainType));
-
-		Predicate result = predicateBuilder.getPredicate(domainType, parameters, bindings);
+		MultiValueMap<String, String> queryParameters = getQueryParameters(exchange);
+		Predicate result = getPredicate(parameter, queryParameters);
 
 		if (!parameter.isOptional() && result == null) {
-			return Mono.just(new BooleanBuilder());
+			return new BooleanBuilder();
 		}
 
 		return OPTIONAL_OF_PREDICATE.isAssignableFrom(ResolvableType.forMethodParameter(parameter)) //
-				? Mono.justOrEmpty(Optional.ofNullable(result)) //
-				: Mono.justOrEmpty(result);
+				? Optional.ofNullable(result) //
+				: result;
+	}
+
+	private static MultiValueMap<String, String> getQueryParameters(ServerWebExchange exchange) {
+
+		MultiValueMap<String, String> queryParams = exchange.getRequest().getQueryParams();
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>(queryParams.size());
+
+		for (Entry<String, List<String>> entry : queryParams.entrySet()) {
+			parameters.put(entry.getKey(), entry.getValue());
+		}
+
+		return parameters;
 	}
 
 }

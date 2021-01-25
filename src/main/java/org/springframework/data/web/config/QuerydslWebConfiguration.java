@@ -16,10 +16,8 @@
 package org.springframework.data.web.config;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
@@ -48,7 +47,7 @@ import com.querydsl.core.types.Predicate;
 @Configuration(proxyBeanMethods = false)
 public class QuerydslWebConfiguration implements WebMvcConfigurer {
 
-	@Autowired @Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService;
+	@Autowired @Qualifier("mvcConversionService") ObjectProvider<ConversionService> conversionService;
 	@Autowired ObjectProvider<EntityPathResolver> resolver;
 	@Autowired BeanFactory beanFactory;
 
@@ -63,7 +62,7 @@ public class QuerydslWebConfiguration implements WebMvcConfigurer {
 	public QuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
 		return new QuerydslPredicateArgumentResolver(
 				beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
-				Optional.of(conversionService.getObject()));
+				conversionService.getIfUnique(DefaultConversionService::getSharedInstance));
 	}
 
 	@Lazy

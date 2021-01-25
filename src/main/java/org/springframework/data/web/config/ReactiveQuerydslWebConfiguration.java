@@ -15,10 +15,7 @@
  */
 package org.springframework.data.web.config;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
@@ -34,24 +32,24 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.result.method.annotation.ArgumentResolverConfigurer;
 
 /**
- * Querydsl-specific web configuration for Spring Data. Registers a {@link HandlerMethodArgumentResolver} that builds up
- * {@link Predicate}s from web requests.
+ * Querydsl-specific web configuration for Spring Data. Registers a
+ * {@link org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver} that builds up
+ * {@link com.querydsl.core.types.Predicate}s from web requests.
  *
  * @author Matías Hermosilla
+ * @author Mark Paluch
  * @since 1.11
- * @soundtrack Anika Nilles - Alter Ego
  */
 @Configuration(proxyBeanMethods = false)
 public class ReactiveQuerydslWebConfiguration implements WebFluxConfigurer {
 
-	@Autowired
-	@Qualifier("webFluxConversionService") ObjectFactory<ConversionService> conversionService;
+	@Autowired @Qualifier("webFluxConversionService") ObjectProvider<ConversionService> conversionService;
 	@Autowired ObjectProvider<EntityPathResolver> resolver;
 	@Autowired BeanFactory beanFactory;
 
 	/**
-	 * Default {@link ReactiveQuerydslPredicateArgumentResolver} to create Querydsl {@link Predicate} instances for
-	 * Spring WebFlux controller methods.
+	 * Default {@link ReactiveQuerydslPredicateArgumentResolver} to create Querydsl {@link Predicate} instances for Spring
+	 * WebFlux controller methods.
 	 *
 	 * @return
 	 */
@@ -60,7 +58,7 @@ public class ReactiveQuerydslWebConfiguration implements WebFluxConfigurer {
 	public ReactiveQuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
 		return new ReactiveQuerydslPredicateArgumentResolver(
 				beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
-				Optional.of(conversionService.getObject()));
+				conversionService.getIfUnique(DefaultConversionService::getSharedInstance));
 	}
 
 	@Lazy
@@ -69,10 +67,14 @@ public class ReactiveQuerydslWebConfiguration implements WebFluxConfigurer {
 		return new QuerydslBindingsFactory(resolver.getIfUnique(() -> SimpleEntityPathResolver.INSTANCE));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.web.reactive.config.WebFluxConfigurer#configureArgumentResolvers(org.springframework.web.reactive.result.method.annotation.ArgumentResolverConfigurer)
+	 */
 	@Override
 	public void configureArgumentResolvers(ArgumentResolverConfigurer configurer) {
-		configurer.addCustomResolver(beanFactory.getBean("querydslPredicateArgumentResolver",
-				ReactiveQuerydslPredicateArgumentResolver.class));
+		configurer.addCustomResolver(
+				beanFactory.getBean("querydslPredicateArgumentResolver", ReactiveQuerydslPredicateArgumentResolver.class));
 	}
 
 }

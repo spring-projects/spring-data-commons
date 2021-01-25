@@ -16,18 +16,15 @@
 package org.springframework.data.web.querydsl;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
-import org.springframework.data.querydsl.binding.QuerydslBindings;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
-import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.data.util.CastUtils;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -46,13 +43,32 @@ import com.querydsl.core.types.Predicate;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Matías Hermosilla
+ * @author Mark Paluch
  * @since 1.11
  */
 public class QuerydslPredicateArgumentResolver extends QuerydslPredicateArgumentResolverSupport
 		implements HandlerMethodArgumentResolver {
 
+	/**
+	 * Create a new {@link QuerydslPredicateArgumentResolver}.
+	 *
+	 * @param factory the {@link QuerydslBindingsFactory} to use, must not be {@literal null}.
+	 * @param conversionService the optional {@link ConversionService} to use, must not be {@literal null}. Defaults to
+	 *          {@link DefaultConversionService} if {@link Optional#empty() empty}.
+	 */
 	public QuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory,
 			Optional<ConversionService> conversionService) {
+		super(factory, conversionService.orElseGet(DefaultConversionService::getSharedInstance));
+	}
+
+	/**
+	 * Create a new {@link QuerydslPredicateArgumentResolver}.
+	 *
+	 * @param factory the {@link QuerydslBindingsFactory} to use, must not be {@literal null}.
+	 * @param conversionService the {@link ConversionService} to use, must not be {@literal null}.
+	 * @since 2.5
+	 */
+	public QuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory, ConversionService conversionService) {
 		super(factory, conversionService);
 	}
 
@@ -65,25 +81,8 @@ public class QuerydslPredicateArgumentResolver extends QuerydslPredicateArgument
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
-		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-
-		for (Entry<String, String[]> entry : webRequest.getParameterMap().entrySet()) {
-			parameters.put(entry.getKey(), Arrays.asList(entry.getValue()));
-		}
-
-		Optional<QuerydslPredicate> annotation = Optional
-				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
-		TypeInformation<?> domainType = extractTypeInfo(parameter).getRequiredActualType();
-
-		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindingsAnnotation = annotation //
-				.map(QuerydslPredicate::bindings) //
-				.map(CastUtils::cast);
-
-		QuerydslBindings bindings = bindingsAnnotation //
-				.map(it -> bindingsFactory.createBindingsFor(domainType, it)) //
-				.orElseGet(() -> bindingsFactory.createBindingsFor(domainType));
-
-		Predicate result = predicateBuilder.getPredicate(domainType, parameters, bindings);
+		MultiValueMap<String, String> queryParameters = getQueryParameters(webRequest);
+		Predicate result = getPredicate(parameter, queryParameters);
 
 		if (!parameter.isOptional() && result == null) {
 			return new BooleanBuilder();
@@ -92,6 +91,18 @@ public class QuerydslPredicateArgumentResolver extends QuerydslPredicateArgument
 		return OPTIONAL_OF_PREDICATE.isAssignableFrom(ResolvableType.forMethodParameter(parameter)) //
 				? Optional.ofNullable(result) //
 				: result;
+	}
+
+	private static MultiValueMap<String, String> getQueryParameters(NativeWebRequest webRequest) {
+
+		Map<String, String[]> parameterMap = webRequest.getParameterMap();
+		MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>(parameterMap.size());
+
+		for (Entry<String, String[]> entry : parameterMap.entrySet()) {
+			queryParameters.put(entry.getKey(), Arrays.asList(entry.getValue()));
+		}
+
+		return queryParameters;
 	}
 
 }

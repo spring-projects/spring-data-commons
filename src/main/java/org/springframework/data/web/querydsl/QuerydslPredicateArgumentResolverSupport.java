@@ -21,12 +21,17 @@ import java.util.Optional;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
+import org.springframework.data.util.CastUtils;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 import com.querydsl.core.types.Predicate;
@@ -38,101 +43,120 @@ import com.querydsl.core.types.Predicate;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Matías Hermosilla
- * @since 1.11
+ * @since 2.5
  */
 public abstract class QuerydslPredicateArgumentResolverSupport {
 
-    private static final ResolvableType PREDICATE = ResolvableType.forClass(Predicate.class);
-    protected static final ResolvableType OPTIONAL_OF_PREDICATE = ResolvableType.forClassWithGenerics(Optional.class,
-            PREDICATE);
+	private static final ResolvableType PREDICATE = ResolvableType.forClass(Predicate.class);
 
-    protected final QuerydslBindingsFactory bindingsFactory;
-    protected final QuerydslPredicateBuilder predicateBuilder;
+	static final ResolvableType OPTIONAL_OF_PREDICATE = ResolvableType.forClassWithGenerics(Optional.class, PREDICATE);
 
-    /**
-     * Creates a new {@link QuerydslPredicateArgumentResolver} using the given {@link ConversionService}.
-     *
-     * @param factory
-     * @param conversionService defaults to {@link DefaultConversionService} if {@literal null}.
-     */
-    public QuerydslPredicateArgumentResolverSupport(QuerydslBindingsFactory factory,
-            Optional<ConversionService> conversionService) {
+	protected final QuerydslBindingsFactory bindingsFactory;
+	protected final QuerydslPredicateBuilder predicateBuilder;
 
-        this.bindingsFactory = factory;
-        this.predicateBuilder = new QuerydslPredicateBuilder(conversionService.orElseGet(DefaultConversionService::new),
-                factory.getEntityPathResolver());
-    }
+	/**
+	 * Creates a new {@link QuerydslPredicateArgumentResolver} using the given {@link ConversionService}.
+	 *
+	 * @param factory
+	 * @param conversionService
+	 */
+	protected QuerydslPredicateArgumentResolverSupport(QuerydslBindingsFactory factory,
+			ConversionService conversionService) {
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
-     */
-    public boolean supportsParameter(MethodParameter parameter) {
+		Assert.notNull(factory, "QuerydslBindingsFactory must not be null");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
-        ResolvableType type = ResolvableType.forMethodParameter(parameter);
+		this.bindingsFactory = factory;
+		this.predicateBuilder = new QuerydslPredicateBuilder(conversionService, factory.getEntityPathResolver());
+	}
 
-        if (PREDICATE.isAssignableFrom(type) || OPTIONAL_OF_PREDICATE.isAssignableFrom(type)) {
-            return true;
-        }
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
+	 */
+	public boolean supportsParameter(MethodParameter parameter) {
 
-        if (parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
-            throw new IllegalArgumentException(
-                    String.format("Parameter at position %s must be of type Predicate but was %s.",
-                            parameter.getParameterIndex(), parameter.getParameterType()));
-        }
+		ResolvableType type = ResolvableType.forMethodParameter(parameter);
 
-        return false;
-    }
+		if (PREDICATE.isAssignableFrom(type) || OPTIONAL_OF_PREDICATE.isAssignableFrom(type)) {
+			return true;
+		}
 
-    /**
-     * Obtains the domain type information from the given method parameter. Will favor an explicitly registered on
-     * through {@link QuerydslPredicate#root()} but use the actual type of the method's return type as fallback.
-     *
-     * @param parameter must not be {@literal null}.
-     * @return
-     */
-    protected static TypeInformation<?> extractTypeInfo(MethodParameter parameter) {
+		if (parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
+			throw new IllegalArgumentException(String.format("Parameter at position %s must be of type Predicate but was %s.",
+					parameter.getParameterIndex(), parameter.getParameterType()));
+		}
 
-        Optional<QuerydslPredicate> annotation = Optional
-                .ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
+		return false;
+	}
 
-        return annotation.filter(it -> !Object.class.equals(it.root()))//
-                .<TypeInformation<?>> map(it -> ClassTypeInformation.from(it.root()))//
-                .orElseGet(() -> detectDomainType(parameter));
-    }
+	@Nullable
+	Predicate getPredicate(MethodParameter parameter, MultiValueMap<String, String> queryParameters) {
 
-    private static TypeInformation<?> detectDomainType(MethodParameter parameter) {
+		Optional<QuerydslPredicate> annotation = Optional
+				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
+		TypeInformation<?> domainType = extractTypeInfo(parameter).getRequiredActualType();
 
-        Method method = parameter.getMethod();
+		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindingsAnnotation = annotation //
+				.map(QuerydslPredicate::bindings) //
+				.map(CastUtils::cast);
 
-        if (method == null) {
-            throw new IllegalArgumentException("Method parameter is not backed by a method!");
-        }
+		QuerydslBindings bindings = bindingsAnnotation //
+				.map(it -> bindingsFactory.createBindingsFor(domainType, it)) //
+				.orElseGet(() -> bindingsFactory.createBindingsFor(domainType));
 
-        return detectDomainType(ClassTypeInformation.fromReturnTypeOf(method));
-    }
+		return predicateBuilder.getPredicate(domainType, queryParameters, bindings);
+	}
 
-    private static TypeInformation<?> detectDomainType(TypeInformation<?> source) {
+	/**
+	 * Obtains the domain type information from the given method parameter. Will favor an explicitly registered on through
+	 * {@link QuerydslPredicate#root()} but use the actual type of the method's return type as fallback.
+	 *
+	 * @param parameter must not be {@literal null}.
+	 * @return
+	 */
+	protected static TypeInformation<?> extractTypeInfo(MethodParameter parameter) {
 
-        if (source.getTypeArguments().isEmpty()) {
-            return source;
-        }
+		Optional<QuerydslPredicate> annotation = Optional
+				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
 
-        TypeInformation<?> actualType = source.getActualType();
+		return annotation.filter(it -> !Object.class.equals(it.root()))//
+				.<TypeInformation<?>> map(it -> ClassTypeInformation.from(it.root()))//
+				.orElseGet(() -> detectDomainType(parameter));
+	}
 
-        if (actualType == null) {
-            throw new IllegalArgumentException(String.format("Could not determine domain type from %s!", source));
-        }
+	private static TypeInformation<?> detectDomainType(MethodParameter parameter) {
 
-        if (source != actualType) {
-            return detectDomainType(actualType);
-        }
+		Method method = parameter.getMethod();
 
-        if (source instanceof Iterable) {
-            return source;
-        }
+		if (method == null) {
+			throw new IllegalArgumentException("Method parameter is not backed by a method!");
+		}
 
-        return detectDomainType(source.getRequiredComponentType());
-    }
+		return detectDomainType(ClassTypeInformation.fromReturnTypeOf(method));
+	}
+
+	private static TypeInformation<?> detectDomainType(TypeInformation<?> source) {
+
+		if (source.getTypeArguments().isEmpty()) {
+			return source;
+		}
+
+		TypeInformation<?> actualType = source.getActualType();
+
+		if (actualType == null) {
+			throw new IllegalArgumentException(String.format("Could not determine domain type from %s!", source));
+		}
+
+		if (source != actualType) {
+			return detectDomainType(actualType);
+		}
+
+		if (source instanceof Iterable) {
+			return source;
+		}
+
+		return detectDomainType(source.getRequiredComponentType());
+	}
 
 }
