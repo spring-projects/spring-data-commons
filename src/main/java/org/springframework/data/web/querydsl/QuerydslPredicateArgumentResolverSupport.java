@@ -20,6 +20,8 @@ import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
@@ -82,7 +84,9 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 			return true;
 		}
 
-		if (parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
+		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
+
+		if (annotations.isPresent(QuerydslPredicate.class)) {
 			throw new IllegalArgumentException(String.format("Parameter at position %s must be of type Predicate but was %s.",
 					parameter.getParameterIndex(), parameter.getParameterType()));
 		}
@@ -93,12 +97,12 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 	@Nullable
 	Predicate getPredicate(MethodParameter parameter, MultiValueMap<String, String> queryParameters) {
 
-		Optional<QuerydslPredicate> annotation = Optional
-				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
-		TypeInformation<?> domainType = extractTypeInfo(parameter).getRequiredActualType();
+		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
+		MergedAnnotation<QuerydslPredicate> predicateAnnotation = annotations.get(QuerydslPredicate.class);
 
-		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindingsAnnotation = annotation //
-				.map(QuerydslPredicate::bindings) //
+		TypeInformation<?> domainType = extractTypeInfo(parameter, predicateAnnotation).getRequiredActualType();
+
+		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindingsAnnotation = predicateAnnotation.getValue("bindings") //
 				.map(CastUtils::cast);
 
 		QuerydslBindings bindings = bindingsAnnotation //
@@ -115,10 +119,10 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */
-	protected static TypeInformation<?> extractTypeInfo(MethodParameter parameter) {
+	protected static TypeInformation<?> extractTypeInfo(MethodParameter parameter,
+			MergedAnnotation<QuerydslPredicate> predicateAnnotation) {
 
-		Optional<QuerydslPredicate> annotation = Optional
-				.ofNullable(parameter.getParameterAnnotation(QuerydslPredicate.class));
+		Optional<QuerydslPredicate> annotation = predicateAnnotation.synthesize(MergedAnnotation::isPresent);
 
 		return annotation.filter(it -> !Object.class.equals(it.root()))//
 				.<TypeInformation<?>> map(it -> ClassTypeInformation.from(it.root()))//

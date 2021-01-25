@@ -18,11 +18,17 @@ package org.springframework.data.web.querydsl;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver.*;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AliasFor;
+import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.QUser;
@@ -149,6 +155,20 @@ class QuerydslPredicateArgumentResolverUnitTests {
 				QUser.user.firstname.eq("egwene".toUpperCase()).and(QUser.user.lastname.toLowerCase().eq("al'vere")));
 	}
 
+	@Test // #2277
+	void resolveArgumentShouldHonorMetaAnnotation() throws Exception {
+
+		request.addParameter("firstname", "egwene");
+		request.addParameter("lastname", "al'vere");
+
+		Object predicate = resolver.resolveArgument(
+				getMethodParameterFor("specificFindWithMetaAnnotation", Predicate.class), null, new ServletWebRequest(request),
+				null);
+
+		assertThat(predicate).isEqualTo(
+				QUser.user.firstname.eq("egwene".toUpperCase()).and(QUser.user.lastname.toLowerCase().eq("al'vere")));
+	}
+
 	@Test // DATACMNS-669
 	void shouldCreatePredicateForNonStringPropertyCorrectly() throws Exception {
 
@@ -188,7 +208,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 	void extractTypeInformationShouldUseTypeExtractedFromMethodReturnTypeIfPredicateNotAnnotated() {
 
 		TypeInformation<?> type = ReflectionTestUtils.invokeMethod(resolver, "extractTypeInfo",
-				getMethodParameterFor("predicateWithoutAnnotation", Predicate.class));
+				getMethodParameterFor("predicateWithoutAnnotation", Predicate.class), MergedAnnotation.missing());
 
 		assertThat(type).isEqualTo(ClassTypeInformation.from(User.class));
 	}
@@ -200,9 +220,11 @@ class QuerydslPredicateArgumentResolverUnitTests {
 		TypeInformation USER_TYPE = ClassTypeInformation.from(User.class);
 		TypeInformation MODELA_AND_VIEW_TYPE = ClassTypeInformation.from(ModelAndView.class);
 
-		assertThat(extractTypeInfo(getMethodParameterFor("forEntity"))).isEqualTo(USER_TYPE);
-		assertThat(extractTypeInfo(getMethodParameterFor("forResourceOfUser"))).isEqualTo(USER_TYPE);
-		assertThat(extractTypeInfo(getMethodParameterFor("forModelAndView"))).isEqualTo(MODELA_AND_VIEW_TYPE);
+		assertThat(extractTypeInfo(getMethodParameterFor("forEntity"), MergedAnnotation.missing())).isEqualTo(USER_TYPE);
+		assertThat(extractTypeInfo(getMethodParameterFor("forResourceOfUser"), MergedAnnotation.missing()))
+				.isEqualTo(USER_TYPE);
+		assertThat(extractTypeInfo(getMethodParameterFor("forModelAndView"), MergedAnnotation.missing()))
+				.isEqualTo(MODELA_AND_VIEW_TYPE);
 	}
 
 	@Test // DATACMNS-1593
@@ -276,6 +298,8 @@ class QuerydslPredicateArgumentResolverUnitTests {
 
 		User specificFind(@QuerydslPredicate(bindings = SpecificBinding.class) Predicate predicate);
 
+		User specificFindWithMetaAnnotation(@MyQuerydslPredicate Predicate predicate);
+
 		HttpEntity<User> forEntity();
 
 		ModelAndView forModelAndView();
@@ -296,4 +320,23 @@ class QuerydslPredicateArgumentResolverUnitTests {
 			bindings.bind(QUser.user.firstname).first((path, value) -> path.contains(value));
 		}
 	}
+
+	@Target({ ElementType.PARAMETER, ElementType.TYPE })
+	@Retention(RetentionPolicy.RUNTIME)
+	@QuerydslPredicate
+	public @interface MyQuerydslPredicate {
+
+		/**
+		 * To customize the way individual properties' values should be bound to the predicate a
+		 * {@link QuerydslBinderCustomizer} can be specified here. We'll try to obtain a Spring bean of this type but fall
+		 * back to a plain instantiation if no bean is found in the current
+		 * {@link org.springframework.beans.factory.BeanFactory}.
+		 *
+		 * @return
+		 */
+		@SuppressWarnings("rawtypes")
+		@AliasFor(annotation = QuerydslPredicate.class, attribute = "bindings")
+		Class<? extends QuerydslBinderCustomizer> bindings() default SpecificBinding.class;
+	}
+
 }
