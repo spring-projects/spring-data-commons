@@ -32,7 +32,6 @@ import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.instrument.classloading.ShadowingClassLoader;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 import org.xmlbeam.XBProjector;
 
@@ -103,7 +102,7 @@ class SpringDataWebConfigurationIntegrationTests {
 			// Converters contains ProjectingJackson2HttpMessageConverter with custom ObjectMapper
 			assertThat(converters).anySatisfy(converter -> {
 				assertThat(converter).isInstanceOfSatisfying(ProjectingJackson2HttpMessageConverter.class, __ -> {
-					assertThat(ReflectionTestUtils.getField(converter, "objectMapper")).isSameAs(SomeConfiguration.MAPPER);
+					assertThat(__.getObjectMapper()).isSameAs(SomeConfiguration.MAPPER);
 				});
 			});
 
