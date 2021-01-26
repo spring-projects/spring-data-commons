@@ -18,17 +18,13 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.util.UriComponents;
 
 /**
  * Unit tests for {@link PagedResourcesAssemblerArgumentResolver}.
@@ -46,7 +42,7 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 		WebTestUtils.initWebTest();
 
 		HateoasPageableHandlerMethodArgumentResolver hateoasPageableHandlerMethodArgumentResolver = new HateoasPageableHandlerMethodArgumentResolver();
-		this.resolver = new PagedResourcesAssemblerArgumentResolver(hateoasPageableHandlerMethodArgumentResolver, null);
+		this.resolver = new PagedResourcesAssemblerArgumentResolver(hateoasPageableHandlerMethodArgumentResolver);
 	}
 
 	@Test // DATACMNS-418
@@ -112,30 +108,6 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 		assertThat(result).isNotNull();
 	}
 
-	@Test // DATACMNS-513
-	void detectsMappingOfInvokedSubType() throws Exception {
-
-		Method method = Controller.class.getMethod("methodWithMapping", PagedResourcesAssembler.class);
-
-		// Simulate HandlerMethod.HandlerMethodParameter.getDeclaringClass()
-		// as it's returning the invoked class as the declared one
-		MethodParameter methodParameter = new MethodParameter(method, 0) {
-			public java.lang.Class<?> getDeclaringClass() {
-				return SubController.class;
-			}
-		};
-
-		Object result = resolver.resolveArgument(methodParameter, null, null, null);
-
-		assertThat(result).isInstanceOf(PagedResourcesAssembler.class);
-
-		Optional<UriComponents> uriComponents = (Optional<UriComponents>) ReflectionTestUtils.getField(result, "baseUri");
-
-		assertThat(uriComponents).hasValueSatisfying(it -> {
-			assertThat(it.getPath()).isEqualTo("/foo/mapping");
-		});
-	}
-
 	private void assertSelectsParameter(Method method, int expectedIndex) {
 
 		MethodParameter parameter = new MethodParameter(method, 0);
@@ -189,10 +161,5 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 
 		@RequestMapping("/mapping")
 		Object methodWithMapping(PagedResourcesAssembler<Object> pageable);
-	}
-
-	@RequestMapping("/foo")
-	interface SubController extends Controller {
-
 	}
 }

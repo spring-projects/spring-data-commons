@@ -15,6 +15,8 @@
  */
 package org.springframework.data.web;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.WebApplicationContext;
@@ -33,8 +35,14 @@ public class WebTestUtils {
 	 * Initializes web tests. Will register a {@link MockHttpServletRequest} for the current thread.
 	 */
 	public static void initWebTest() {
+		initWebTest(new MockHttpServletRequest());
+	}
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+	/**
+	 * Initializes web tests for the given {@link HttpServletRequest} which will registered for the current thread.
+	 */
+	public static void initWebTest(HttpServletRequest request) {
+
 		ServletRequestAttributes requestAttributes = new ServletRequestAttributes(request);
 		RequestContextHolder.setRequestAttributes(requestAttributes);
 	}

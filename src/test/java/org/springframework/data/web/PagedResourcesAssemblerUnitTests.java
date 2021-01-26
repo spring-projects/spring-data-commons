@@ -38,6 +38,7 @@ import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.core.EmbeddedWrapper;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -255,6 +256,17 @@ class PagedResourcesAssemblerUnitTests {
 		PagedModel<EntityModel<Person>> resource = assembler.toModel(createPage(0));
 
 		assertThat(resource.getRequiredLink(IanaLinkRelations.SELF).getHref()).endsWith("?page=0&size=1");
+	}
+
+	@Test // #2173
+	void keepsRequestParametersOfOriginalRequestUri() {
+
+		WebTestUtils.initWebTest(new MockHttpServletRequest("GET", "/sample?foo=bar"));
+
+		PagedModel<EntityModel<Person>> model = assembler.toModel(createPage(1));
+
+		assertThat(model.getRequiredLink(IanaLinkRelations.FIRST).getHref())
+				.isEqualTo("http://localhost/sample?foo=bar&page=0&size=1");
 	}
 
 	private static Page<Person> createPage(int index) {
