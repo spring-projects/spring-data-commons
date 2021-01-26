@@ -99,7 +99,7 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 
 	@Bean
 	public PagedResourcesAssemblerArgumentResolver pagedResourcesAssemblerArgumentResolver() {
-		return new PagedResourcesAssemblerArgumentResolver(pageableResolver.get(), null);
+		return new PagedResourcesAssemblerArgumentResolver(pageableResolver.get());
 	}
 
 	/*
