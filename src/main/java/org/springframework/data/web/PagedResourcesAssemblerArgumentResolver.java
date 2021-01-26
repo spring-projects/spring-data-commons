@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.log.LogMessage;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.MethodLinkBuilderFactory;
 import org.springframework.hateoas.server.core.MethodParameters;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilderFactory;
@@ -35,8 +34,6 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link PagedResourcesAssembler} into Spring MVC
@@ -55,7 +52,6 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	private static final String PARAMETER_AMBIGUITY = "Discovered multiple parameters of type Pageable but no qualifier annotations to disambiguate!";
 
 	private final HateoasPageableHandlerMethodArgumentResolver resolver;
-	private final MethodLinkBuilderFactory<?> linkBuilderFactory;
 
 	/**
 	 * Creates a new {@link PagedResourcesAssemblerArgumentResolver} using the given
@@ -63,12 +59,23 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	 *
 	 * @param resolver can be {@literal null}.
 	 * @param linkBuilderFactory can be {@literal null}, will be defaulted to a {@link WebMvcLinkBuilderFactory}.
+	 * @deprecated since 2.5, 2.4.4, 2.3.7, to be removed in 3.0
+	 * @use {@link #PagedResourcesAssemblerArgumentResolver(HateoasPageableHandlerMethodArgumentResolver)} instead.
 	 */
+	@Deprecated
 	public PagedResourcesAssemblerArgumentResolver(HateoasPageableHandlerMethodArgumentResolver resolver,
 			@Nullable MethodLinkBuilderFactory<?> linkBuilderFactory) {
+		this(resolver);
+	}
 
+	/**
+	 * Creates a new {@link PagedResourcesAssemblerArgumentResolver} using the given
+	 * {@link PageableHandlerMethodArgumentResolver}.
+	 *
+	 * @param resolver can be {@literal null}.
+	 */
+	public PagedResourcesAssemblerArgumentResolver(HateoasPageableHandlerMethodArgumentResolver resolver) {
 		this.resolver = resolver;
-		this.linkBuilderFactory = linkBuilderFactory == null ? new WebMvcLinkBuilderFactory() : linkBuilderFactory;
 	}
 
 	/*
@@ -89,36 +96,12 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
-		UriComponents fromUriString = resolveBaseUri(parameter);
 		MethodParameter pageableParameter = findMatchingPageableParameter(parameter);
 
 		if (pageableParameter != null) {
-			return new MethodParameterAwarePagedResourcesAssembler<>(pageableParameter, resolver, fromUriString);
+			return new MethodParameterAwarePagedResourcesAssembler<>(pageableParameter, resolver, null);
 		} else {
-			return new PagedResourcesAssembler<>(resolver, fromUriString);
-		}
-	}
-
-	/**
-	 * Eagerly resolve a base URI for the given {@link MethodParameter} to be handed to the assembler.
-	 *
-	 * @param parameter must not be {@literal null}.
-	 * @return the {@link UriComponents} representing the base URI, or {@literal null} if it can't be resolved eagerly.
-	 */
-	@Nullable
-	private UriComponents resolveBaseUri(MethodParameter parameter) {
-
-		Method method = parameter.getMethod();
-
-		if (method == null) {
-			throw new IllegalArgumentException(String.format("Could not obtain method from parameter %s!", parameter));
-		}
-
-		try {
-			Link linkToMethod = linkBuilderFactory.linkTo(parameter.getDeclaringClass(), method).withSelfRel();
-			return UriComponentsBuilder.fromUriString(linkToMethod.getHref()).build();
-		} catch (IllegalArgumentException o_O) {
-			return null;
+			return new PagedResourcesAssembler<>(resolver, null);
 		}
 	}
 
