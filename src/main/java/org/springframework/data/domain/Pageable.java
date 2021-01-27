@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
  * Abstract interface for pagination information.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public interface Pageable {
 
@@ -33,6 +34,17 @@ public interface Pageable {
 	 */
 	static Pageable unpaged() {
 		return Unpaged.INSTANCE;
+	}
+
+	/**
+	 * Creates a new {@link Pageable} for the first page (page number {@code 0}) given {@code pageSize} .
+	 *
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
+	 * @return a new {@link Pageable}.
+	 * @since 2.5
+	 */
+	static Pageable ofSize(int pageSize) {
+		return PageRequest.of(0, pageSize);
 	}
 
 	/**
@@ -116,6 +128,15 @@ public interface Pageable {
 	Pageable first();
 
 	/**
+	 * Creates a new {@link Pageable} with {@code pageNumber} applied.
+	 *
+	 * @param pageNumber
+	 * @return a new {@link PageRequest}.
+	 * @since 2.5
+	 */
+	Pageable withPage(int pageNumber);
+
+	/**
 	 * Returns whether there's a previous {@link Pageable} we can access from the current one. Will return
 	 * {@literal false} in case the current {@link Pageable} already refers to the first page.
 	 *
@@ -131,4 +152,5 @@ public interface Pageable {
 	default Optional<Pageable> toOptional() {
 		return isUnpaged() ? Optional.empty() : Optional.of(this);
 	}
+
 }

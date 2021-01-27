@@ -16,6 +16,7 @@
 package org.springframework.data.querydsl;
 
 import org.springframework.data.domain.AbstractPageRequest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
@@ -27,6 +28,7 @@ import com.querydsl.core.types.OrderSpecifier;
  *
  * @author Thomas Darimont
  * @author Oliver Drotbohm
+ * @author Mark Paluch
  */
 public class QPageRequest extends AbstractPageRequest {
 
@@ -114,6 +116,17 @@ public class QPageRequest extends AbstractPageRequest {
 		return new QPageRequest(page, size, sort);
 	}
 
+	/**
+	 * Creates a new {@link QPageRequest} for the first page (page number {@code 0}) given {@code pageSize} .
+	 *
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
+	 * @return a new {@link QPageRequest}.
+	 * @since 2.5
+	 */
+	public static QPageRequest ofSize(int pageSize) {
+		return QPageRequest.of(0, pageSize);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#getSort()
@@ -148,5 +161,28 @@ public class QPageRequest extends AbstractPageRequest {
 	@Override
 	public Pageable first() {
 		return QPageRequest.of(0, getPageSize(), sort);
+	}
+
+	/**
+	 * Creates a new {@link QPageRequest} with {@code pageNumber} applied.
+	 *
+	 * @param pageNumber
+	 * @return a new {@link PageRequest}.
+	 * @since 2.5
+	 */
+	@Override
+	public QPageRequest withPage(int pageNumber) {
+		return new QPageRequest(pageNumber, getPageSize(), sort);
+	}
+
+	/**
+	 * Creates a new {@link QPageRequest} with {@link QSort} applied.
+	 *
+	 * @param sort must not be {@literal null}.
+	 * @return a new {@link PageRequest}.
+	 * @since 2.5
+	 */
+	public QPageRequest withSort(QSort sort) {
+		return new QPageRequest(getPageNumber(), getPageSize(), sort);
 	}
 }

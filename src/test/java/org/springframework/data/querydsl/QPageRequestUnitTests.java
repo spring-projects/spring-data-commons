@@ -23,7 +23,10 @@ import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.AbstractPageRequestUnitTests;
 
 /**
+ * Unit tests for {@link QPageRequest}.
+ *
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 
@@ -49,7 +52,7 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 	void constructsQPageRequestWithQSort() {
 
 		QUser user = QUser.user;
-		QPageRequest pageRequest = QPageRequest.of(0, 10, QSort.by(user.firstname.asc()));
+		QPageRequest pageRequest = QPageRequest.ofSize(10).withSort(QSort.by(user.firstname.asc()));
 
 		assertThat(pageRequest.getSort()).isEqualTo(QSort.by(user.firstname.asc()));
 	}

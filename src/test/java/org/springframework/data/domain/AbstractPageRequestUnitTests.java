@@ -49,7 +49,7 @@ public abstract class AbstractPageRequestUnitTests {
 		Pageable first = request.previousOrFirst();
 
 		assertThat(first.hasPrevious()).isFalse();
-		assertThat(first).isEqualTo((Pageable) newPageRequest(0, 10));
+		assertThat(first).isEqualTo(newPageRequest(0, 10));
 		assertThat(first).isEqualTo(request.first());
 		assertThat(first.previousOrFirst()).isEqualTo(first);
 	}

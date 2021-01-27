@@ -24,6 +24,8 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Anastasiia Smirnova
+ * @author Mark Paluch
  */
 public class PageRequest extends AbstractPageRequest {
 
@@ -83,8 +85,15 @@ public class PageRequest extends AbstractPageRequest {
 		return of(page, size, Sort.by(direction, properties));
 	}
 
-	public static PageRequestBuilder pageRequest() {
-		return new PageRequestBuilder();
+	/**
+	 * Creates a new {@link PageRequest} for the first page (page number {@code 0}) given {@code pageSize} .
+	 *
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
+	 * @return a new {@link PageRequest}.
+	 * @since 2.5
+	 */
+	public static PageRequest ofSize(int pageSize) {
+		return PageRequest.of(0, pageSize);
 	}
 
 	/*
@@ -142,6 +151,41 @@ public class PageRequest extends AbstractPageRequest {
 		return super.equals(that) && this.sort.equals(that.sort);
 	}
 
+	/**
+	 * Creates a new {@link PageRequest} with {@code pageNumber} applied.
+	 *
+	 * @param pageNumber
+	 * @return a new {@link PageRequest}.
+	 * @since 2.5
+	 */
+	@Override
+	public PageRequest withPage(int pageNumber) {
+		return new PageRequest(pageNumber, getPageSize(), getSort());
+	}
+
+	/**
+	 * Creates a new {@link PageRequest} with {@link Direction} and {@code properties} applied.
+	 *
+	 * @param direction must not be {@literal null}.
+	 * @param properties must not be {@literal null}.
+	 * @return a new {@link PageRequest}.
+	 * @since 2.5
+	 */
+	public PageRequest withSort(Direction direction, String... properties) {
+		return new PageRequest(getPageNumber(), getPageSize(), Sort.by(direction, properties));
+	}
+
+	/**
+	 * Creates a new {@link PageRequest} with {@link Sort} applied.
+	 *
+	 * @param sort must not be {@literal null}.
+	 * @return a new {@link PageRequest}.
+	 * @since 2.5
+	 */
+	public PageRequest withSort(Sort sort) {
+		return new PageRequest(getPageNumber(), getPageSize(), sort);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -160,29 +204,4 @@ public class PageRequest extends AbstractPageRequest {
 		return String.format("Page request [number: %d, size %d, sort: %s]", getPageNumber(), getPageSize(), sort);
 	}
 
-	public static final class PageRequestBuilder {
-
-		private Sort sort = Sort.unsorted();
-		private int page;
-		private int size;
-
-		public PageRequestBuilder sort(Sort sort) {
-			this.sort = sort;
-			return this;
-		}
-
-		public PageRequestBuilder page(int page) {
-			this.page = page;
-			return this;
-		}
-
-		public PageRequestBuilder size(int size) {
-			this.size = size;
-			return this;
-		}
-
-		public PageRequest build() {
-			return PageRequest.of(page, size, sort);
-		}
-	}
 }

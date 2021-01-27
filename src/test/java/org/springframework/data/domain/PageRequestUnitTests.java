@@ -16,16 +16,18 @@
 package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.domain.PageRequest.pageRequest;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.domain.Sort.Direction;
 
 /**
  * Unit test for {@link PageRequest}.
  *
  * @author Oliver Gierke
+ * @author Anastasiia Smirnova
+ * @author Mark Paluch
  */
 class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
@@ -38,30 +40,29 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 		return PageRequest.of(page, size);
 	}
 
-	AbstractPageRequest newPageRequest(int page, int size, Sort sort) {
-		return PageRequest.of(page, size, sort);
-	}
-
 	@Test
 	void equalsRegardsSortCorrectly() {
 
 		Sort sort = Sort.by(Direction.DESC, "foo");
-		AbstractPageRequest request = pageRequest().page(0).size(10).sort(sort).build();
+		AbstractPageRequest request = PageRequest.ofSize(10).withPage(1).withSort(sort);
 
 		// Equals itself
 		assertEqualsAndHashcode(request, request);
 
 		// Equals another instance with same setup
-		assertEqualsAndHashcode(request, PageRequest.of(0, 10, sort));
+		assertEqualsAndHashcode(request, PageRequest.of(1, 10, sort));
+
+		// Equals another instance with same sort by properties
+		assertEqualsAndHashcode(request, PageRequest.ofSize(10).withPage(1).withSort(Direction.DESC, "foo"));
 
 		// Equals without sort entirely
 		assertEqualsAndHashcode(PageRequest.of(0, 10), PageRequest.of(0, 10));
 
 		// Is not equal to instance without sort
-		assertNotEqualsAndHashcode(request, PageRequest.of(0, 10));
+		assertNotEqualsAndHashcode(request, PageRequest.of(1, 10));
 
 		// Is not equal to instance with another sort
-		assertNotEqualsAndHashcode(request, PageRequest.of(0, 10, Direction.ASC, "foo"));
+		assertNotEqualsAndHashcode(request, PageRequest.of(1, 10, Direction.ASC, "foo"));
 	}
 
 	@Test // DATACMNS-1581

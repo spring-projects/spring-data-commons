@@ -104,4 +104,19 @@ enum Unpaged implements Pageable {
 	public Pageable first() {
 		return this;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.Pageable#withPage(int)
+	 */
+	@Override
+	public Pageable withPage(int pageNumber) {
+
+		if (pageNumber == 0) {
+			return this;
+		}
+
+		throw new UnsupportedOperationException();
+	}
+
 }
