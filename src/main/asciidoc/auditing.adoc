@@ -4,6 +4,13 @@
 [[auditing.basics]]
 == Basics
 Spring Data provides sophisticated support to transparently keep track of who created or changed an entity and when the change happened. To benefit from that functionality, you have to equip your entity classes with auditing metadata that can be defined either using annotations or by implementing an interface.
+Additionally auditing has to be enabled either via Java or XML configuration which ensures required infrastructure components get registered.
+Please refer to the store specific section for configuration samples.
+
+[NOTE]
+====
+Applications that only track creation and modification dates do not need to specify an <<auditing.auditor-aware>>.
+====
 
 [[auditing.annotations]]
 === Annotation-based Auditing Metadata
@@ -19,7 +26,7 @@ class Customer {
   private User user;
 
   @CreatedDate
-  private DateTime createdDate;
+  private Instant createdDate;
 
   // … further properties omitted
 }
@@ -27,6 +34,32 @@ class Customer {
 ====
 
 As you can see, the annotations can be applied selectively, depending on which information you want to capture. The annotations capturing when changes were made can be used on properties of type Joda-Time, `DateTime`, legacy Java `Date` and `Calendar`, JDK8 date and time types, and `long` or `Long`.
+
+Auditing metadata does not necessarily need to live in the root level entity but can be added to an embedded one (depending on the actual store in use), as shown in the snipped below.
+
+.Audit metadata in embedded entity
+====
+[source, java]
+----
+class Customer {
+
+  @Embedded
+  private AuditMetadata auditingMetadata;
+
+  // … further properties omitted
+}
+
+class AuditMetadata {
+
+  @CreatedBy
+  private User user;
+
+  @CreatedDate
+  private Instant createdDate;
+
+}
+----
+====
 
 [[auditing.interfaces]]
 === Interface-based Auditing Metadata
