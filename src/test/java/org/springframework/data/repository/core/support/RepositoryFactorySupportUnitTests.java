@@ -420,7 +420,6 @@ class RepositoryFactorySupportUnitTests {
 		orderedInvocation.verify(startup).start("spring.data.repository.composition");
 		orderedInvocation.verify(startup).start("spring.data.repository.target");
 		orderedInvocation.verify(startup).start("spring.data.repository.proxy");
-		orderedInvocation.verify(startup).start("spring.data.repository.postprocessors");
 	}
 
 	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {

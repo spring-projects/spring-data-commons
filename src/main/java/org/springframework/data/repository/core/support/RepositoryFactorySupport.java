@@ -277,28 +277,52 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		ApplicationStartup applicationStartup = getStartup();
 
-		StartupStep repositoryInit = applicationStartup.start("spring.data.repository.init");
-		repositoryInit.tag("repository", () -> repositoryInterface.getName());
+		StartupStep repositoryInit = onEvent(applicationStartup, "spring.data.repository.init", repositoryInterface);
 
-		StartupStep repositoryMetadataStep = applicationStartup.start("spring.data.repository.metadata");
+		repositoryBaseClass.ifPresent(it -> repositoryInit.tag("baseClass", it.getName()));
+
+		StartupStep repositoryMetadataStep = onEvent(applicationStartup, "spring.data.repository.metadata",
+				repositoryInterface);
 		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
 		repositoryMetadataStep.end();
 
-		StartupStep repositoryCompositionStep = applicationStartup.start("spring.data.repository.composition");
-		repositoryCompositionStep.tag("fragment.count", () -> String.valueOf(fragments.size()));
+		StartupStep repositoryCompositionStep = onEvent(applicationStartup, "spring.data.repository.composition",
+				repositoryInterface);
+		repositoryCompositionStep.tag("fragment.count", String.valueOf(fragments.size()));
 
 		RepositoryComposition composition = getRepositoryComposition(metadata, fragments);
 		RepositoryInformation information = getRepositoryInformation(metadata, composition);
+
+		repositoryCompositionStep.tag("fragments", () -> {
+
+			StringBuilder fragmentsTag = new StringBuilder();
+
+			for (RepositoryFragment<?> fragment : composition.getFragments()) {
+
+				if (fragmentsTag.length() > 0) {
+					fragmentsTag.append(";");
+				}
+
+				fragmentsTag.append(fragment.getSignatureContributor().getName());
+				fragmentsTag.append(fragment.getImplementation().map(it -> ":" + it.getClass().getName()).orElse(""));
+			}
+
+			return fragmentsTag.toString();
+		});
+
 		repositoryCompositionStep.end();
 
 		validate(information, composition);
 
-		StartupStep repositoryTargetStep = applicationStartup.start("spring.data.repository.target");
+		StartupStep repositoryTargetStep = onEvent(applicationStartup, "spring.data.repository.target",
+				repositoryInterface);
 		Object target = getTargetRepository(information);
+
+		repositoryTargetStep.tag("target", target.getClass().getName());
 		repositoryTargetStep.end();
 
 		// Create proxy
-		StartupStep repositoryProxyStep = applicationStartup.start("spring.data.repository.proxy");
+		StartupStep repositoryProxyStep = onEvent(applicationStartup, "spring.data.repository.proxy", repositoryInterface);
 		ProxyFactory result = new ProxyFactory();
 		result.setTarget(target);
 		result.setInterfaces(repositoryInterface, Repository.class, TransactionalProxy.class);
@@ -309,30 +333,33 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 
-		StartupStep repositoryPostprocessorsStep = applicationStartup.start("spring.data.repository.postprocessors");
-		postProcessors.forEach(processor -> {
+		if (!postProcessors.isEmpty()) {
+			StartupStep repositoryPostprocessorsStep = onEvent(applicationStartup, "spring.data.repository.postprocessors",
+					repositoryInterface);
+			postProcessors.forEach(processor -> {
 
-			StartupStep singlePostProcessor = applicationStartup.start("spring.data.repository.postprocessor");
-			singlePostProcessor.tag("type", processor.getClass().getName());
-			processor.postProcess(result, information);
-			singlePostProcessor.end();
-		});
-		repositoryPostprocessorsStep.end();
+				StartupStep singlePostProcessor = onEvent(applicationStartup, "spring.data.repository.postprocessor",
+						repositoryInterface);
+				singlePostProcessor.tag("type", processor.getClass().getName());
+				processor.postProcess(result, information);
+				singlePostProcessor.end();
+			});
+			repositoryPostprocessorsStep.end();
+		}
 
 		if (DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(repositoryInterface)) {
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
-		StartupStep queryExecutorsStep = applicationStartup.start("spring.data.repository.queryexecutors");
 		ProjectionFactory projectionFactory = getProjectionFactory(classLoader, beanFactory);
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 				evaluationContextProvider);
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory, queryLookupStrategy,
 				namedQueries, queryPostProcessors, methodInvocationListeners));
-		queryExecutorsStep.end();
 
-		composition = composition.append(RepositoryFragment.implemented(target));
-		result.addAdvice(new ImplementationMethodExecutionInterceptor(information, composition, methodInvocationListeners));
+		RepositoryComposition compositionToUse = composition.append(RepositoryFragment.implemented(target));
+		result.addAdvice(
+				new ImplementationMethodExecutionInterceptor(information, compositionToUse, methodInvocationListeners));
 
 		T repository = (T) result.getProxy(classLoader);
 		repositoryProxyStep.end();
@@ -344,19 +371,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		}
 
 		return repository;
-	}
-
-	ApplicationStartup getStartup() {
-
-		try {
-
-			ApplicationStartup applicationStartup = beanFactory != null ? beanFactory.getBean(ApplicationStartup.class)
-					: ApplicationStartup.DEFAULT;
-
-			return applicationStartup != null ? applicationStartup : ApplicationStartup.DEFAULT;
-		} catch (NoSuchBeanDefinitionException e) {
-			return ApplicationStartup.DEFAULT;
-		}
 	}
 
 	/**
@@ -538,6 +552,25 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 				.orElseThrow(() -> new IllegalStateException(String.format(
 						"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
 						baseClass, Arrays.stream(constructorArguments).map(Object::getClass).collect(Collectors.toList()))));
+	}
+
+	private ApplicationStartup getStartup() {
+
+		try {
+
+			ApplicationStartup applicationStartup = beanFactory != null ? beanFactory.getBean(ApplicationStartup.class)
+					: ApplicationStartup.DEFAULT;
+
+			return applicationStartup != null ? applicationStartup : ApplicationStartup.DEFAULT;
+		} catch (NoSuchBeanDefinitionException e) {
+			return ApplicationStartup.DEFAULT;
+		}
+	}
+
+	private StartupStep onEvent(ApplicationStartup applicationStartup, String name, Class<?> repositoryInterface) {
+
+		StartupStep step = applicationStartup.start(name);
+		return step.tag("repository", repositoryInterface.getName());
 	}
 
 	/**
