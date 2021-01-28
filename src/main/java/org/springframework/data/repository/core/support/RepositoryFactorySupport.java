@@ -373,25 +373,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		return repository;
 	}
 
-	ApplicationStartup getStartup() {
-
-		try {
-
-			ApplicationStartup applicationStartup = beanFactory != null ? beanFactory.getBean(ApplicationStartup.class)
-					: ApplicationStartup.DEFAULT;
-
-			return applicationStartup != null ? applicationStartup : ApplicationStartup.DEFAULT;
-		} catch (NoSuchBeanDefinitionException e) {
-			return ApplicationStartup.DEFAULT;
-		}
-	}
-
-	private StartupStep onEvent(ApplicationStartup applicationStartup, String name, Class<?> repositoryInterface) {
-
-		StartupStep step = applicationStartup.start(name);
-		return step.tag("repository", repositoryInterface.getName());
-	}
-
 	/**
 	 * Returns the {@link ProjectionFactory} to be used with the repository instances created.
 	 *
@@ -571,6 +552,25 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 				.orElseThrow(() -> new IllegalStateException(String.format(
 						"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
 						baseClass, Arrays.stream(constructorArguments).map(Object::getClass).collect(Collectors.toList()))));
+	}
+
+	private ApplicationStartup getStartup() {
+
+		try {
+
+			ApplicationStartup applicationStartup = beanFactory != null ? beanFactory.getBean(ApplicationStartup.class)
+					: ApplicationStartup.DEFAULT;
+
+			return applicationStartup != null ? applicationStartup : ApplicationStartup.DEFAULT;
+		} catch (NoSuchBeanDefinitionException e) {
+			return ApplicationStartup.DEFAULT;
+		}
+	}
+
+	private StartupStep onEvent(ApplicationStartup applicationStartup, String name, Class<?> repositoryInterface) {
+
+		StartupStep step = applicationStartup.start(name);
+		return step.tag("repository", repositoryInterface.getName());
 	}
 
 	/**
