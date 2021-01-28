@@ -57,6 +57,7 @@ import org.springframework.util.StopWatch;
  * @author Oliver Gierke
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public class RepositoryConfigurationDelegate {
 
@@ -148,8 +149,9 @@ public class RepositoryConfigurationDelegate {
 
 		ApplicationStartup startup = getStartup(registry);
 		StartupStep repoScan = startup.start("spring.data.repository.scanning");
-		repoScan.tag("data-module", extension.getModuleName());
-		repoScan.tag("packages", configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
+		repoScan.tag("dataModule", extension.getModuleName());
+		repoScan.tag("basePackages",
+				() -> configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
 
 		watch.start();
 
@@ -263,18 +265,14 @@ public class RepositoryConfigurationDelegate {
 		return multipleModulesFound;
 	}
 
-	ApplicationStartup getStartup(BeanDefinitionRegistry registry) {
+	private static ApplicationStartup getStartup(BeanDefinitionRegistry registry) {
 
-		if(ConfigurableBeanFactory.class.isInstance(registry)) {
-			return ((ConfigurableBeanFactory)registry).getApplicationStartup();
+		if (registry instanceof ConfigurableBeanFactory) {
+			return ((ConfigurableBeanFactory) registry).getApplicationStartup();
 		}
 
-		if (DefaultListableBeanFactory.class.isInstance(registry)) {
-			return ((DefaultListableBeanFactory)registry).getBeanProvider(ApplicationStartup.class).getIfAvailable(() -> ApplicationStartup.DEFAULT);
-		}
-
-		if(GenericApplicationContext.class.isInstance(registry)) {
-			return ((GenericApplicationContext)registry).getDefaultListableBeanFactory().getApplicationStartup();
+		if (registry instanceof GenericApplicationContext) {
+			return ((GenericApplicationContext) registry).getDefaultListableBeanFactory().getApplicationStartup();
 		}
 
 		return ApplicationStartup.DEFAULT;
