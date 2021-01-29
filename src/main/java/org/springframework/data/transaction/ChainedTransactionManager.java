@@ -44,14 +44,32 @@ import org.springframework.util.Assert;
  * which means the {@link PlatformTransactionManager} most likely to break the transaction should be the <em>last</em>
  * in the list configured. A {@link PlatformTransactionManager} throwing an exception during commit will automatically
  * cause the remaining transaction managers to roll back instead of committing.
+ * <p />
+ * As consequence, a transaction can get into a state, where the first {@link PlatformTransactionManager} has committed
+ * its transaction and a subsequent {@link PlatformTransactionManager} failed to commit its transaction (e.g. caused by
+ * an I/O error or the transactional resource failed to commit for other reasons). In that case,
+ * {@link #commit(TransactionStatus)} throws a {@link HeuristicCompletionException} to indicate a partially committed
+ * transaction. Rollback isn't affected as the natural consequence of a missing commit is a rollback of a transactional
+ * resource. {@link ChainedTransactionManager} should be only used if the application can tolerate or recover from
+ * inconsistent state caused by partially committed transactions. In any other case, the use of
+ * {@link ChainedTransactionManager} is not recommended.
+ * <p/>
+ * Instead of using {@link ChainedTransactionManager} for attaching callbacks to transaction commit (pre commit/post
+ * commit), either register a {@link org.springframework.transaction.reactive.TransactionSynchronization} to explicitly
+ * follow transaction cleanup with simplified semantics in case of exceptions.
  *
  * @author Michael Hunger
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.6
+ * @see org.springframework.transaction.support.TransactionSynchronization#beforeCommit(boolean)
+ * @see org.springframework.transaction.support.TransactionSynchronization#afterCommit()
+ * @deprecated since 2.5
  */
+@Deprecated
 public class ChainedTransactionManager implements PlatformTransactionManager {
 
- 	private final static Log logger = LogFactory.getLog(ChainedTransactionManager.class);
+	private final static Log logger = LogFactory.getLog(ChainedTransactionManager.class);
 
 	private final List<PlatformTransactionManager> transactionManagers;
 	private final SynchronizationManager synchronizationManager;
@@ -156,7 +174,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 
 			} else {
 
-				// after unsucessfull commit we must try to rollback remaining transaction managers
+				// after unsuccessful commit we must try to rollback remaining transaction managers
 
 				try {
 					multiTransactionStatus.rollback(transactionManager);
