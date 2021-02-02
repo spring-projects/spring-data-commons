@@ -1377,6 +1377,7 @@ The configuration shown in the <<core.web,previous section>> registers a few bas
 
 - A <<core.web.basic.domain-class-converter>> to let Spring MVC resolve instances of repository-managed domain classes from request parameters or path variables.
 - <<core.web.basic.paging-and-sorting,`HandlerMethodArgumentResolver`>> implementations to let Spring MVC resolve `Pageable` and `Sort` instances from request parameters.
+- <<core.web.basic.jackson-mappers, Jackson Modules>> to de-/serialize types like `Point` and `Distance`, or store specific ones, depending on the Spring Data Module used.
 
 [[core.web.basic.domain-class-converter]]
 ===== Using the `DomainClassConverter` Class
@@ -1538,6 +1539,29 @@ You can now trigger a request (`GET http://localhost:8080/persons`) and see outp
 The assembler produced the correct URI and also picked up the default configuration to resolve the parameters into a `Pageable` for an upcoming request.
 This means that, if you change that configuration, the links automatically adhere to the change.
 By default, the assembler points to the controller method it was invoked in, but you can customize that by passing a custom `Link` to be used as base to build the pagination links, which overloads the `PagedResourcesAssembler.toResource(…)` method.
+
+[[core.web.basic.jackson-mappers]]
+==== Spring Data Jackson Modules
+
+The core module, and some of the store specific ones, ship with a set of Jackson Modules for types, like `org.springframework.data.geo.Distance` and `org.springframework.data.geo.Point`, used by the Spring Data domain. +
+Those Modules are imported once <<core.web, web support>> is enabled and `com.fasterxml.jackson.databind.ObjectMapper` is available.
+
+During initialization `SpringDataJacksonModules`, like the `SpringDataJacksonConfiguration`, get picked up by the infrastructure, so that the declared ``com.fasterxml.jackson.databind.Module``s are made available to the Jackson `ObjectMapper`.
+
+Data binding mixins for the following domain types are registered by the common infrastructure.
+----
+org.springframework.data.geo.Distance
+org.springframework.data.geo.Point
+org.springframework.data.geo.Box
+org.springframework.data.geo.Circle
+org.springframework.data.geo.Polygon
+----
+
+[NOTE]
+====
+The individual module may provide additional `SpringDataJacksonModules`. +
+Please refer to the store specific section for more details.
+====
 
 [[core.web.binding]]
 ==== Web Databinding Support
