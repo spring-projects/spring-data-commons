@@ -104,8 +104,14 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 			return projectMapValues((Map<?, ?>) result, type);
 		} else if (conversionRequiredAndPossible(result, type.getType())) {
 			return conversionService.convert(result, type.getType());
-		} else {
+		} else if (ClassUtils.isAssignable(type.getType(), result.getClass())) {
+			return result;
+		} else if (type.getType().isInterface()) {
 			return getProjection(result, type.getType());
+		} else {
+			throw new UnsupportedOperationException(String.format(
+					"Cannot convert value '%s' of type '%s' to '%s' and cannot create a projection as the target type is not an interface",
+					result, ClassUtils.getDescriptiveType(result), ClassUtils.getQualifiedName(type.getType())));
 		}
 	}
 
@@ -155,7 +161,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	}
 
 	@Nullable
-	private Object getProjection(Object result, Class<?> returnType) {
+	private Object getProjection(@Nullable Object result, Class<?> returnType) {
 		return result == null || ClassUtils.isAssignable(returnType, result.getClass()) ? result
 				: factory.createProjection(returnType, result);
 	}
