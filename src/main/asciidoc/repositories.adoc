@@ -1330,9 +1330,6 @@ userRepository.findAll(predicate);
 [[core.web]]
 === Web support
 
-NOTE: This section contains the documentation for the Spring Data web support as it is implemented in the current versions of Spring Data Commons.
-As the newly introduced support changes many things, we kept the documentation of the former behavior in <<web.legacy>>.
-
 Spring Data modules that support the repository programming model ship with a variety of web support.
 The web related components require Spring MVC JARs to be on the classpath.
 Some of them even provide integration with https://github.com/spring-projects/spring-hateoas[Spring HATEOAS].
