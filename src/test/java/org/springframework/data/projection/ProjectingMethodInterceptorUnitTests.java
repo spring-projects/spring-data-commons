@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -93,6 +94,21 @@ class ProjectingMethodInterceptorUnitTests {
 
 		assertThat(methodInterceptor.invoke(invocation)).isEqualTo(1L);
 		verify(factory, times(0)).createProjection((Class<?>) any(), any());
+	}
+
+	@Test // #2290
+	void failsForNonConvertibleTypes() throws Throwable {
+
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
+
+		when(invocation.getMethod()).thenReturn(Helper.class.getMethod("getBoolean"));
+		when(interceptor.invoke(invocation)).thenReturn(BigInteger.valueOf(1));
+
+		assertThatThrownBy(() -> methodInterceptor.invoke(invocation)) //
+				.isInstanceOf(UnsupportedOperationException.class) //
+				.hasMessageContaining("'1'") //
+				.hasMessageContaining("BigInteger") //
+				.hasMessageContaining("boolean");
 	}
 
 	@Test // DATAREST-394, DATAREST-408
@@ -212,6 +228,8 @@ class ProjectingMethodInterceptorUnitTests {
 		String getString();
 
 		long getPrimitive();
+
+		boolean getBoolean();
 
 		Collection<HelperProjection> getHelperCollection();
 
