@@ -15,8 +15,10 @@
  */
 package org.springframework.data.querydsl.binding;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -37,6 +39,7 @@ import com.querydsl.core.types.EntityPath;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.11
  */
 public class QuerydslBindingsFactory implements ApplicationContextAware {
@@ -48,6 +51,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 
 	private Optional<AutowireCapableBeanFactory> beanFactory;
 	private Optional<Repositories> repositories;
+	private QuerydslBinderCustomizer<EntityPath<?>> defaultCustomizer;
 
 	/**
 	 * Creates a new {@link QuerydslBindingsFactory} using the given {@link EntityPathResolver}.
@@ -62,6 +66,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		this.entityPaths = new ConcurrentReferenceHashMap<>();
 		this.beanFactory = Optional.empty();
 		this.repositories = Optional.empty();
+		this.defaultCustomizer = NoOpCustomizer.INSTANCE;
 	}
 
 	/*
@@ -73,6 +78,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 
 		this.beanFactory = Optional.of(applicationContext.getAutowireCapableBeanFactory());
 		this.repositories = Optional.of(new Repositories(applicationContext));
+		this.defaultCustomizer = findDefaultCustomizer();
 	}
 
 	/**
@@ -126,6 +132,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		EntityPath<?> path = verifyEntityPathPresent(domainType);
 
 		QuerydslBindings bindings = new QuerydslBindings();
+		defaultCustomizer.customize(bindings, path);
 		findCustomizerForDomainType(customizer, domainType.getType()).customize(bindings, path);
 
 		return bindings;
@@ -152,8 +159,31 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	}
 
 	/**
+	 * Obtains registered {@link DefaultQuerydslBinderCustomizer} instances from the
+	 * {@link org.springframework.beans.factory.BeanFactory}.
+	 *
+	 * @return
+	 */
+	private QuerydslBinderCustomizer<EntityPath<?>> findDefaultCustomizer() {
+		return beanFactory.map(this::getDefaultQuerydslBinderCustomizer).orElse(NoOpCustomizer.INSTANCE);
+	}
+
+	private QuerydslBinderCustomizer<EntityPath<?>> getDefaultQuerydslBinderCustomizer(
+			AutowireCapableBeanFactory beanFactory) {
+
+		List<DefaultQuerydslBinderCustomizer> customizers = beanFactory
+				.getBeanProvider(DefaultQuerydslBinderCustomizer.class).stream().collect(Collectors.toList());
+
+		return (bindings, root) -> {
+			for (DefaultQuerydslBinderCustomizer defaultQuerydslBinderCustomizer : customizers) {
+				defaultQuerydslBinderCustomizer.customize(bindings, root);
+			}
+		};
+	}
+
+	/**
 	 * Obtains the {@link QuerydslBinderCustomizer} for the given domain type. Will inspect the given annotation for a
-	 * dedicatedly configured one or consider the domain types's repository.
+	 * dedicated configured one or consider the domain type's repository.
 	 *
 	 * @param annotation
 	 * @param domainType
@@ -194,7 +224,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		}).orElseGet(() -> BeanUtils.instantiateClass(type));
 	}
 
-	private static enum NoOpCustomizer implements QuerydslBinderCustomizer<EntityPath<?>> {
+	private enum NoOpCustomizer implements QuerydslBinderCustomizer<EntityPath<?>> {
 
 		INSTANCE;
 

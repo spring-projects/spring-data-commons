@@ -23,7 +23,9 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
@@ -33,6 +35,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 
@@ -95,6 +98,27 @@ class QuerydslBindingsFactoryUnitTests {
 		});
 	}
 
+	@Test // #206
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	void shouldApplyDefaultCustomizers() {
+
+		GenericApplicationContext context = new GenericApplicationContext();
+		context.registerBean(DefaultCustomizer.class);
+		context.refresh();
+
+		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
+		factory.setApplicationContext(context);
+
+		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, SpecificBinding.class);
+		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
+				.getBindingForPath(PropertyPathInformation.of("inceptionYear", User.class));
+
+		assertThat(binding).hasValueSatisfying(it -> {
+			Optional<Predicate> bind = it.bind((Path) QUser.user.inceptionYear, Collections.singleton(1L));
+			assertThat(bind).hasValue(QUser.user.inceptionYear.gt(1L));
+		});
+	}
+
 	@Test // DATACMNS-669
 	void rejectsPredicateResolutionIfDomainTypeCantBeAutoDetected() {
 
@@ -123,4 +147,14 @@ class QuerydslBindingsFactoryUnitTests {
 			bindings.bind(QUser.user.firstname).firstOptional((path, value) -> value.map(path::contains));
 		}
 	}
+
+	static class DefaultCustomizer implements DefaultQuerydslBinderCustomizer {
+
+		@Override
+		public void customize(QuerydslBindings bindings, EntityPath<?> root) {
+
+			bindings.bind(QUser.user.inceptionYear).first((path, value) -> QUser.user.inceptionYear.gt(value));
+		}
+	}
+
 }
