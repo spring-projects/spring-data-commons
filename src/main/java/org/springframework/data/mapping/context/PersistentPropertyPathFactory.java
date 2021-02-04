@@ -222,8 +222,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			return null;
 		}
 
-		TypeInformation<?> type = property.getTypeInformation().getRequiredActualType();
-		return Pair.of(path.append(property), iterator.hasNext() ? context.getRequiredPersistentEntity(type) : entity);
+		return Pair.of(path.append(property), iterator.hasNext() ? context.getRequiredPersistentEntity(property) : entity);
 	}
 
 	private <T> Collection<PersistentPropertyPath<P>> from(TypeInformation<T> type, Predicate<? super P> filter,
@@ -236,6 +235,12 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		}
 
 		E entity = context.getRequiredPersistentEntity(actualType);
+		return from(entity, filter, traversalGuard, basePath);
+	}
+
+	private Collection<PersistentPropertyPath<P>> from(E entity, Predicate<? super P> filter, Predicate<P> traversalGuard,
+			DefaultPersistentPropertyPath<P> basePath) {
+
 		Set<PersistentPropertyPath<P>> properties = new HashSet<>();
 
 		PropertyHandler<P> propertyTester = persistentProperty -> {
@@ -254,7 +259,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			}
 
 			if (traversalGuard.and(IS_ENTITY).test(persistentProperty)) {
-				properties.addAll(from(typeInformation, filter, traversalGuard, currentPath));
+				properties.addAll(from(context.getPersistentEntity(persistentProperty), filter, traversalGuard, currentPath));
 			}
 		};
 
