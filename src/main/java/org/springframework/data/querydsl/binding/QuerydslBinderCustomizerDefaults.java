@@ -24,4 +24,4 @@ import com.querydsl.core.types.EntityPath;
  * @author Mark Paluch
  * @since 2.5
  */
-public interface DefaultQuerydslBinderCustomizer extends QuerydslBinderCustomizer<EntityPath<?>> {}
+public interface QuerydslBinderCustomizerDefaults extends QuerydslBinderCustomizer<EntityPath<?>> {}

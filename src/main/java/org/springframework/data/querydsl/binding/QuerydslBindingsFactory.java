@@ -159,7 +159,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	}
 
 	/**
-	 * Obtains registered {@link DefaultQuerydslBinderCustomizer} instances from the
+	 * Obtains registered {@link QuerydslBinderCustomizerDefaults} instances from the
 	 * {@link org.springframework.beans.factory.BeanFactory}.
 	 *
 	 * @return
@@ -171,12 +171,12 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	private QuerydslBinderCustomizer<EntityPath<?>> getDefaultQuerydslBinderCustomizer(
 			AutowireCapableBeanFactory beanFactory) {
 
-		List<DefaultQuerydslBinderCustomizer> customizers = beanFactory
-				.getBeanProvider(DefaultQuerydslBinderCustomizer.class).stream().collect(Collectors.toList());
+		List<QuerydslBinderCustomizerDefaults> customizers = beanFactory
+				.getBeanProvider(QuerydslBinderCustomizerDefaults.class).stream().collect(Collectors.toList());
 
 		return (bindings, root) -> {
-			for (DefaultQuerydslBinderCustomizer defaultQuerydslBinderCustomizer : customizers) {
-				defaultQuerydslBinderCustomizer.customize(bindings, root);
+			for (QuerydslBinderCustomizerDefaults querydslBinderCustomizerDefaults : customizers) {
+				querydslBinderCustomizerDefaults.customize(bindings, root);
 			}
 		};
 	}

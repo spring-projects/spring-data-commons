@@ -148,7 +148,7 @@ class QuerydslBindingsFactoryUnitTests {
 		}
 	}
 
-	static class DefaultCustomizer implements DefaultQuerydslBinderCustomizer {
+	static class DefaultCustomizer implements QuerydslBinderCustomizerDefaults {
 
 		@Override
 		public void customize(QuerydslBindings bindings, EntityPath<?> root) {

@@ -1667,7 +1667,7 @@ interface UserRepository extends CrudRepository<User, String>,
 <5> Exclude the `password` property from `Predicate` resolution.
 ====
 
-Additionally, you can register a `DefaultQuerydslBinderCustomizer` bean to apply default Querydsl bindings before applying specific bindings from the repository or `@QuerydslPredicate`.
+TIP: You can register a `QuerydslBinderCustomizerDefaults` bean holding default Querydsl bindings before applying specific bindings from the repository or `@QuerydslPredicate`.
 
 [[core.repository-populators]]
 === Repository Populators
