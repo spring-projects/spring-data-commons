@@ -27,7 +27,6 @@ import javax.annotation.Nonnull;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.util.ClassTypeInformation;
@@ -45,6 +44,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 1.10
  */
 class ProjectingMethodInterceptor implements MethodInterceptor {
@@ -98,20 +98,22 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 			return null;
 		}
 
-		if (type.isCollectionLike() && !ClassUtils.isPrimitiveArray(type.getType())) {
+		Class<?> targetType = type.getType();
+
+		if (type.isCollectionLike() && !ClassUtils.isPrimitiveArray(targetType)) {
 			return projectCollectionElements(asCollection(result), type);
 		} else if (type.isMap()) {
 			return projectMapValues((Map<?, ?>) result, type);
-		} else if (conversionRequiredAndPossible(result, type.getType())) {
-			return conversionService.convert(result, type.getType());
-		} else if (ClassUtils.isAssignable(type.getType(), result.getClass())) {
+		} else if (ClassUtils.isAssignable(targetType, result.getClass())) {
 			return result;
-		} else if (type.getType().isInterface()) {
-			return getProjection(result, type.getType());
+		} else if (conversionService.canConvert(result.getClass(), targetType)) {
+			return conversionService.convert(result, targetType);
+		} else if (targetType.isInterface()) {
+			return getProjection(result, targetType);
 		} else {
-			throw new UnsupportedOperationException(String.format(
-					"Cannot convert value '%s' of type '%s' to '%s' and cannot create a projection as the target type is not an interface",
-					result, ClassUtils.getDescriptiveType(result), ClassUtils.getQualifiedName(type.getType())));
+			throw new UnsupportedOperationException(
+					String.format("Cannot project %s to %s. Target type is not an interface and no matching Converter found!",
+							ClassUtils.getDescriptiveType(result), ClassUtils.getQualifiedName(targetType)));
 		}
 	}
 
@@ -164,23 +166,6 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	private Object getProjection(@Nullable Object result, Class<?> returnType) {
 		return result == null || ClassUtils.isAssignable(returnType, result.getClass()) ? result
 				: factory.createProjection(returnType, result);
-	}
-
-	/**
-	 * Returns whether the source object needs to be converted to the given target type and whether we can convert it at
-	 * all.
-	 *
-	 * @param source can be {@literal null}.
-	 * @param targetType must not be {@literal null}.
-	 * @return
-	 */
-	private boolean conversionRequiredAndPossible(Object source, Class<?> targetType) {
-
-		if (source == null || targetType.isInstance(source)) {
-			return false;
-		}
-
-		return conversionService.canConvert(source.getClass(), targetType);
 	}
 
 	/**
