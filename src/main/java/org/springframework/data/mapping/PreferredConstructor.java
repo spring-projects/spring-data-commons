@@ -116,6 +116,10 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referenced in a constructor argument of the
 	 * {@link PersistentEntity} backing this {@link PreferredConstructor}.
+	 * <p>
+	 * Results of this call are cached and reused on the next invocation. Calling this method for a
+	 * {@link PersistentProperty} that was not yet added to its owning {@link PersistentEntity} will capture that state
+	 * and return the same result after adding {@link PersistentProperty} to its entity.
 	 *
 	 * @param property must not be {@literal null}.
 	 * @return {@literal true} if the {@link PersistentProperty} is used in the constructor.
@@ -133,11 +137,12 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		boolean result = false;
 		for (Parameter<?, P> parameter : parameters) {
 			if (parameter.maps(property)) {
-				isPropertyParameterCache.put(property, true);
 				result = true;
 				break;
 			}
 		}
+
+		isPropertyParameterCache.put(property, result);
 
 		return result;
 	}
