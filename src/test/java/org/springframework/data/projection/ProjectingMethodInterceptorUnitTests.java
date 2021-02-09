@@ -43,6 +43,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
  * @author Oliver Gierke
  * @author Saulo Medeiros de Araujo
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @ExtendWith(MockitoExtension.class)
 class ProjectingMethodInterceptorUnitTests {
@@ -96,7 +97,7 @@ class ProjectingMethodInterceptorUnitTests {
 		verify(factory, times(0)).createProjection((Class<?>) any(), any());
 	}
 
-	@Test // #2290
+	@Test // GH-2290
 	void failsForNonConvertibleTypes() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
@@ -106,7 +107,6 @@ class ProjectingMethodInterceptorUnitTests {
 
 		assertThatThrownBy(() -> methodInterceptor.invoke(invocation)) //
 				.isInstanceOf(UnsupportedOperationException.class) //
-				.hasMessageContaining("'1'") //
 				.hasMessageContaining("BigInteger") //
 				.hasMessageContaining("boolean");
 	}
