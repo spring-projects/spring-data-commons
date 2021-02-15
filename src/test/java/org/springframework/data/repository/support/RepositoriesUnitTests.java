@@ -58,6 +58,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Jan Zeppenfeld
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -179,6 +180,28 @@ class RepositoriesUnitTests {
 		context.refresh();
 
 		Repositories repositories = new Repositories(beanFactory);
+
+		assertThat(repositories.getRepositoryFor(SomeEntity.class)).hasValueSatisfying(it -> {
+			assertThat(it).isInstanceOf(PrimaryRepository.class);
+		});
+	}
+
+	@Test // DATACMNS-1142
+	void keepsPrimaryRepositoryInCaseOfMultipleOnesIfContextIsNotAConfigurableListableBeanFactory() {
+
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		beanFactory.registerBeanDefinition("first", getRepositoryBeanDefinition(FirstRepository.class));
+
+		AbstractBeanDefinition definition = getRepositoryBeanDefinition(PrimaryRepository.class);
+		definition.setPrimary(true);
+
+		beanFactory.registerBeanDefinition("primary", definition);
+		beanFactory.registerBeanDefinition("third", getRepositoryBeanDefinition(ThirdRepository.class));
+
+		context = new GenericApplicationContext(beanFactory);
+		context.refresh();
+
+		Repositories repositories = new Repositories(context);
 
 		assertThat(repositories.getRepositoryFor(SomeEntity.class)).hasValueSatisfying(it -> {
 			assertThat(it).isInstanceOf(PrimaryRepository.class);
