@@ -143,7 +143,7 @@ public class ResultProcessor {
 
 		ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
 
-		if (source instanceof Slice && method.isPageQuery() || method.isSliceQuery()) {
+		if (source instanceof Slice && (method.isPageQuery() || method.isSliceQuery())) {
 			return (T) ((Slice<?>) source).map(converter::convert);
 		}
 
