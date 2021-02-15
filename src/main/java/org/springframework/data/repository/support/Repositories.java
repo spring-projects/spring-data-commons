@@ -29,6 +29,7 @@ import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.core.EntityInformation;
@@ -276,10 +277,20 @@ public class Repositories implements Iterable<Class<?>> {
 
 		if (repositoryBeanNames.containsKey(type)) {
 
-			Boolean presentAndPrimary = beanFactory //
-					.filter(ConfigurableListableBeanFactory.class::isInstance) //
-					.map(ConfigurableListableBeanFactory.class::cast) //
-					.map(it -> it.getBeanDefinition(name)) //
+			Optional<ConfigurableListableBeanFactory> factoryToUse = this.beanFactory.map(it -> {
+
+				if (it instanceof ConfigurableListableBeanFactory) {
+					return (ConfigurableListableBeanFactory) it;
+				}
+
+				if (it instanceof ConfigurableApplicationContext) {
+					return ((ConfigurableApplicationContext) it).getBeanFactory();
+				}
+
+				return null;
+			});
+
+			Boolean presentAndPrimary = factoryToUse.map(it -> it.getBeanDefinition(name)) //
 					.map(BeanDefinition::isPrimary) //
 					.orElse(false);
 
