@@ -31,6 +31,7 @@ import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
 import org.springframework.cglib.core.ReflectUtils;
+import org.springframework.core.NativeDetector;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -55,7 +56,6 @@ import org.springframework.util.ClassUtils;
 class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	private static final Log LOGGER = LogFactory.getLog(ClassGeneratingEntityInstantiator.class);
-	private static final boolean IN_NATIVE_IMAGE = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
 
 	private static final Object[] EMPTY_ARGS = new Object[0];
 
@@ -142,7 +142,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 */
 	boolean shouldUseReflectionEntityInstantiator(PersistentEntity<?, ?> entity) {
 
-		if (IN_NATIVE_IMAGE) {
+		if (NativeDetector.inNativeImage()) {
 
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug(String.format("graalvm.nativeimage - fall back to reflection for %s.", entity.getName()));

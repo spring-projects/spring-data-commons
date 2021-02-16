@@ -38,6 +38,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.KotlinDetector;
+import org.springframework.core.NativeDetector;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -86,8 +87,6 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, InitializingBean {
 
-	private static final boolean IN_NATIVE_IMAGE = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
-
 	private final Optional<E> NONE = Optional.empty();
 	private final Map<TypeInformation<?>, Optional<E>> persistentEntities = new HashMap<>();
 	private final PersistentPropertyAccessorFactory persistentPropertyAccessorFactory;
@@ -109,7 +108,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		this.persistentPropertyPathFactory = new PersistentPropertyPathFactory<>(this);
 
 		EntityInstantiators instantiators = new EntityInstantiators();
-		PersistentPropertyAccessorFactory accessorFactory = IN_NATIVE_IMAGE ? BeanWrapperPropertyAccessorFactory.INSTANCE
+		PersistentPropertyAccessorFactory accessorFactory = NativeDetector.inNativeImage() ? BeanWrapperPropertyAccessorFactory.INSTANCE
 				: new ClassGeneratingPropertyAccessorFactory();
 
 		this.persistentPropertyAccessorFactory = new InstantiationAwarePropertyAccessorFactory(accessorFactory,
