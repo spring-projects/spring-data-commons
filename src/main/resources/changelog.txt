@@ -1,6 +1,21 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.4 (2021-02-17)
+-------------------------------------
+* #2298 - Use NativeDetector.inNativeImage() instead of manual property check.
+* #2296 - Possible ClassCast exception in ResultProcessor.
+* #2295 - PreferredConstructor.isConstructorParameter(…) on hot code paths creates a lot of allocations.
+* #2288 - Document SpringDataJacksonModules in web support section.
+* #2284 - Align Servlet API version with Spring Framework.
+* #2283 - Update auditing documentation to cover annotations on nested entities.
+* #2217 - Convert Vavr Seq to list with `asJava` method [DATACMNS-1803].
+* #2215 - Kotlin constructors using @ExperimentalUnsignedTypes parameters cause constructor resolution to fail [DATACMNS-1800].
+* #2173 - PagedResourcesAssembler generated navigation links ignore non pageable request parameters [DATACMNS-1757].
+* #2068 - NullPointerException in RepositoryFactoryBeanSupport.getObject(…) [DATACMNS-1642].
+* #1583 - Multiple repositories per domain class lead to ambiguous conversion [DATACMNS-1142].
+
+
 Changes in version 2.3.7.RELEASE (2021-02-17)
 ---------------------------------------------
 * DATACMNS-1841 - Update CI jobs with Docker Login.
@@ -2980,6 +2995,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
