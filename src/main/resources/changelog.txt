@@ -1,6 +1,16 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.2.13.RELEASE (2021-02-17)
+----------------------------------------------
+* #2296 - Possible ClassCast exception in ResultProcessor.
+* #2288 - Document SpringDataJacksonModules in web support section.
+* #2283 - Update auditing documentation to cover annotations on nested entities.
+* #2269 - Upgrade to XMLBeam 1.4.18.
+* #2268 - Update copyright year to 2021.
+* #2263 - Update repository after GitHub issues migration.
+
+
 Changes in version 2.5.0-M2 (2021-01-13)
 ----------------------------------------
 * DATACMNS-1841 - Update CI jobs with Docker Login.
@@ -2953,6 +2963,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
