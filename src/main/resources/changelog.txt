@@ -1,6 +1,10 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.5.0-M4 (2021-02-18)
+----------------------------------------
+
+
 Changes in version 2.4.5 (2021-02-18)
 -------------------------------------
 
@@ -3035,6 +3039,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
