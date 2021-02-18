@@ -1,6 +1,10 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.5 (2021-02-18)
+-------------------------------------
+
+
 Changes in version 2.5.0-M3 (2021-02-17)
 ----------------------------------------
 * DATACMNS-1785 - Support for Querydsl predicate binding on WebFlux.
@@ -3031,6 +3035,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
