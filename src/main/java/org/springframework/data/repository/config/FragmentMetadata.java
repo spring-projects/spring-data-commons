@@ -16,21 +16,26 @@
 package org.springframework.data.repository.config;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.data.repository.JpaRepositoryCombination;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
 
 /**
  * Value object for a discovered Repository fragment interface.
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author CaoMingjie
  * @since 2.1
  */
 public class FragmentMetadata {
@@ -50,16 +55,81 @@ public class FragmentMetadata {
 	public Stream<String> getFragmentInterfaces(String interfaceName) {
 
 		Assert.hasText(interfaceName, "Interface name must not be null or empty!");
-
-		return Arrays.stream(getClassMetadata(interfaceName).getInterfaceNames()) //
+		String[] interfaceNames = getClassMetadata(interfaceName).getInterfaceNames();
+		interfaceNames = jpaRepositoryCombinationProcess(interfaceNames);
+		return Arrays.stream(interfaceNames) //
 				.filter(this::isCandidate);
+	}
+
+	/**
+	 * Handle @JpaRepositoryCombination annotated interfaces
+	 * @param interfaceNames
+	 * @return
+	 */
+	private String[] jpaRepositoryCombinationProcess(String[] interfaceNames) {
+		if(interfaceNames!=null&&interfaceNames.length>0){
+			List<String> list = (List<String>)CollectionUtils.arrayToList(interfaceNames);
+			HashSet<String> set = new HashSet<String>(list);
+			Set<Class> combinationInterface = getCombinationInterface(list);
+			for(Class ci : combinationInterface){
+				Class[] interfaces = ci.getInterfaces();
+				for(Class interf :  interfaces){
+					set.add(interf.getName());
+				}
+			}
+			//remove all @JpaRepositoryCombination interfaces
+			for(Class ci: combinationInterface){
+				set.remove(ci.getName());
+			}
+			interfaceNames = set.toArray(new String[set.size()]);
+		}
+		return interfaceNames;
+	}
+
+	/**
+	 * get all combination interfaces
+	 * @param list
+	 * @return
+	 */
+	private Set<Class> getCombinationInterface(List<String> list) {
+		Set<Class> allSuperClass = new HashSet();
+		for(String clazzName : list ){
+			try {
+				allSuperClass.addAll(getAllSuperclass(Class.forName(clazzName)));
+				allSuperClass = allSuperClass.stream().filter(c -> c.getAnnotation(JpaRepositoryCombination.class) != null).collect(Collectors.toSet());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return allSuperClass;
+	}
+
+	/**
+	 * Iterates up to find all parent classes
+	 * @param clazz
+	 * @return
+	 */
+	public Set<Class> getAllSuperclass(Class<?> clazz){
+		HashSet<Class> classes = new HashSet<>();
+		if(!clazz.isInterface()){
+			return classes;
+		}else if(clazz.getInterfaces().length>0){
+			classes.add(clazz);
+			classes.addAll((List)CollectionUtils.arrayToList(clazz.getInterfaces()));
+			for(Class c : clazz.getInterfaces()){
+				classes.addAll(getAllSuperclass(c));
+			}
+			return classes;
+		}else {
+			classes.add(clazz);
+			return classes;
+		}
 	}
 
 	/**
 	 * Returns whether the given interface is a fragment candidate.
 	 *
 	 * @param interfaceName must not be {@literal null} or empty.
-	 * @param factory must not be {@literal null}.
 	 * @return
 	 */
 	private boolean isCandidate(String interfaceName) {
