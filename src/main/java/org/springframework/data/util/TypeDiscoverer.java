@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -175,14 +176,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Assert.notNull(constructor, "Constructor must not be null!");
 
-		Type[] types = constructor.getGenericParameterTypes();
-		List<TypeInformation<?>> result = new ArrayList<>(types.length);
-
-		for (Type parameterType : types) {
-			result.add(createInfo(parameterType));
-		}
-
-		return result;
+		return Arrays.stream(constructor.getParameters())
+				.map(Parameter::getParameterizedType)
+				.map(this::createInfo)
+				.collect(Collectors.toList());
 	}
 
 	/*
