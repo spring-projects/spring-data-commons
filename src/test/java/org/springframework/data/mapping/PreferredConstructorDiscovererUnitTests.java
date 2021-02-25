@@ -33,6 +33,7 @@ import org.springframework.data.util.ClassTypeInformation;
  * @author Oliver Gierke
  * @author Roman Rodov
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
@@ -112,6 +113,30 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		});
 	}
 
+	@Test // GH-2313
+	void capturesEnclosingTypeParameterOfNonStaticInnerClass() {
+
+		assertThat(PreferredConstructorDiscoverer.discover(NonStaticWithGenericTypeArgUsedInCtor.class))
+				.satisfies(ctor -> {
+
+					assertThat(ctor.getParameters()).hasSize(2);
+					assertThat(ctor.getParameters().get(0).getName()).isEqualTo("this$0");
+					assertThat(ctor.getParameters().get(1).getName()).isEqualTo("value");
+				});
+	}
+
+	@Test // GH-2313
+	void capturesSuperClassEnclosingTypeParameterOfNonStaticInnerClass() {
+
+		assertThat(PreferredConstructorDiscoverer.discover(NonStaticInnerWithGenericArgUsedInCtor.class))
+				.satisfies(ctor -> {
+
+					assertThat(ctor.getParameters()).hasSize(2);
+					assertThat(ctor.getParameters().get(0).getName()).isEqualTo("this$0");
+					assertThat(ctor.getParameters().get(1).getName()).isEqualTo("value");
+				});
+	}
+
 	static class SyntheticConstructor {
 		@PersistenceConstructor
 		private SyntheticConstructor(String x) {}
@@ -162,6 +187,24 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 
 		class Inner {
 
+		}
+	}
+
+	static class GenericTypeArgUsedInCtor<T> {
+
+		protected GenericTypeArgUsedInCtor(T value) {}
+	}
+
+
+	class NonStaticWithGenericTypeArgUsedInCtor<T> {
+
+		protected NonStaticWithGenericTypeArgUsedInCtor(T value) {}
+	}
+
+	class NonStaticInnerWithGenericArgUsedInCtor<T> extends GenericTypeArgUsedInCtor<T> {
+
+		public NonStaticInnerWithGenericArgUsedInCtor(T value) {
+			super(value);
 		}
 	}
 }
