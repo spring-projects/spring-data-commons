@@ -43,9 +43,13 @@ import org.springframework.util.Assert;
 public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>> implements PersistentProperty<P> {
 
 	private static final Field CAUSE_FIELD;
+	private static final Class<?> ASSOCIATION_TYPE;
 
 	static {
+
 		CAUSE_FIELD = ReflectionUtils.findRequiredField(Throwable.class, "cause");
+		ASSOCIATION_TYPE = ReflectionUtils.loadIfPresent("org.jmolecules.ddd.types.Association",
+				AbstractPersistentProperty.class.getClassLoader());
 	}
 
 	private final String name;
@@ -241,7 +245,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public boolean isAssociation() {
-		return isAnnotationPresent(Reference.class);
+		return isAnnotationPresent(Reference.class) //
+				|| ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(rawType);
 	}
 
 	/*

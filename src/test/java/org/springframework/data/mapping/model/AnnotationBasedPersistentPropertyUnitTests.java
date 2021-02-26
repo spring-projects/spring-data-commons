@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jmolecules.ddd.types.Association;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AliasFor;
@@ -293,6 +294,11 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 				.withMessageContaining(NoField.class.getName());
 	}
 
+	@Test // GH-2315
+	void detectesJMoleculesAssociation() {
+		assertThat(getProperty(JMolecules.class, "association").isAssociation()).isTrue();
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -414,8 +420,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 	@Id
-	public @interface MyId {
-	}
+	public @interface MyId {}
 
 	static class FieldAccess {
 		String name;
@@ -476,5 +481,9 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	interface NoField {
 
 		String getFirstname();
+	}
+
+	static class JMolecules {
+		Association association;
 	}
 }

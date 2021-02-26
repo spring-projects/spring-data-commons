@@ -475,4 +475,21 @@ public final class ReflectionUtils {
 		throw new IllegalArgumentException(String.format("Primitive type %s not supported!", type));
 	}
 
+	/**
+	 * Loads the class with the given name using the given {@link ClassLoader}.
+	 *
+	 * @param name the name of the class to be loaded.
+	 * @param classLoader the {@link ClassLoader} to use to load the class.
+	 * @return the {@link Class} or {@literal null} in case the class can't be loaded for any reason.
+	 * @since 2.5
+	 */
+	@Nullable
+	public static Class<?> loadIfPresent(String name, ClassLoader classLoader) {
+
+		try {
+			return ClassUtils.forName(name, classLoader);
+		} catch (Exception o_O) {
+			return null;
+		}
+	}
 }

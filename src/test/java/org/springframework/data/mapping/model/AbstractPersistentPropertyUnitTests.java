@@ -224,6 +224,14 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(property.getGetter()).isNotNull();
 	}
 
+	@Test // GH-2315
+	void detectsJMoleculesAssociation() {
+
+		SamplePersistentProperty property = getProperty(JMolecules.class, "association");
+
+		assertThat(property.isAssociation()).isTrue();
+	}
+
 	private <T> BasicPersistentEntity<T, SamplePersistentProperty> getEntity(Class<T> type) {
 		return new BasicPersistentEntity<>(ClassTypeInformation.from(type));
 	}
@@ -345,11 +353,6 @@ public class AbstractPersistentPropertyUnitTests {
 		}
 
 		@Override
-		public boolean isAssociation() {
-			return false;
-		}
-
-		@Override
 		protected Association<SamplePersistentProperty> createAssociation() {
 			return null;
 		}
@@ -386,5 +389,9 @@ public class AbstractPersistentPropertyUnitTests {
 
 	class TreeMapWrapper {
 		TreeMap<String, TreeMap<String, String>> map;
+	}
+
+	class JMolecules {
+		org.jmolecules.ddd.types.Association association;
 	}
 }
