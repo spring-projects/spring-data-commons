@@ -70,7 +70,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	private final Lazy<Boolean> isWritable = Lazy
 			.of(() -> !isTransient() && !isAnnotationPresent(ReadOnlyProperty.class));
-	private final Lazy<Boolean> isReference = Lazy.of(() -> !isTransient() && isAnnotationPresent(Reference.class));
+	private final Lazy<Boolean> isReference = Lazy.of(() -> !isTransient() //
+			&& (isAnnotationPresent(Reference.class) || super.isAssociation()));
 	private final Lazy<Boolean> isId = Lazy.of(() -> isAnnotationPresent(Id.class));
 	private final Lazy<Boolean> isVersion = Lazy.of(() -> isAnnotationPresent(Version.class));
 

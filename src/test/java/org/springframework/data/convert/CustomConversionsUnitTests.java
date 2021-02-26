@@ -16,6 +16,7 @@
 package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.text.DateFormat;
@@ -28,6 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.jmolecules.ddd.types.Association;
+import org.jmolecules.ddd.types.Identifier;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
@@ -270,6 +273,24 @@ class CustomConversionsUnitTests {
 		new CustomConversions(config).registerConvertersIn(registry);
 
 		verify(registry).addConverter(any(LocalDateTimeToDateConverter.class));
+	}
+
+	@Test // GH-2315
+	void addsAssociationConvertersByDefault() {
+
+		CustomConversions conversions = new CustomConversions(StoreConversions.NONE, Collections.emptyList());
+
+		assertThat(conversions.hasCustomWriteTarget(Association.class)).isTrue();
+		assertThat(conversions.hasCustomReadTarget(Object.class, Association.class)).isTrue();
+	}
+
+	@Test // GH-2315
+	void addsIdentifierConvertersByDefault() {
+
+		CustomConversions conversions = new CustomConversions(StoreConversions.NONE, Collections.emptyList());
+
+		assertThat(conversions.hasCustomWriteTarget(Identifier.class)).isTrue();
+		assertThat(conversions.hasCustomReadTarget(String.class, Identifier.class)).isTrue();
 	}
 
 	private static Class<?> createProxyTypeFor(Class<?> type) {
