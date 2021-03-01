@@ -55,6 +55,9 @@ public class Person {
 The preceding example shows a simple domain object.
 You can use it to create an `Example`.
 By default, fields having `null` values are ignored, and strings are matched by using the store specific defaults.
+
+NOTE: Inclusion of properties into a Query by Example criteria is based on nullability. Properties using primitive types (`int`, `double`, …) are always included unless <<query-by-example.matchers,ignoring the property path>>.
+
 Examples can be built by either using the `of` factory method or by using <<query-by-example.matchers,`ExampleMatcher`>>. `Example` is immutable.
 The following listing shows a simple Example:
 
