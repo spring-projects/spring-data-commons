@@ -177,7 +177,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.notNull(constructor, "Constructor must not be null!");
 
 		List<TypeInformation<?>> parameterTypes = new ArrayList<>(constructor.getParameterCount());
-		for(Parameter parameter : constructor.getParameters()) {
+		for (Parameter parameter : constructor.getParameters()) {
 			parameterTypes.add(createInfo(parameter.getParameterizedType()));
 		}
 		return parameterTypes;

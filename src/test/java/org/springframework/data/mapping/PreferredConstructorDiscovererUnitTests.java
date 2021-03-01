@@ -35,10 +35,10 @@ import org.springframework.data.util.ClassTypeInformation;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-public class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
+class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 	@Test // DATACMNS-1126
-	public void findsNoArgConstructorForClassWithoutExplicitConstructor() {
+	void findsNoArgConstructorForClassWithoutExplicitConstructor() {
 
 		assertThat(PreferredConstructorDiscoverer.discover(EntityWithoutConstructor.class)).satisfies(constructor -> {
 
@@ -49,7 +49,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 	}
 
 	@Test // DATACMNS-1126
-	public void findsNoArgConstructorForClassWithMultipleConstructorsAndNoArgOne() {
+	void findsNoArgConstructorForClassWithMultipleConstructorsAndNoArgOne() {
 
 		assertThat(PreferredConstructorDiscoverer.discover(ClassWithEmptyConstructor.class)).satisfies(constructor -> {
 
@@ -60,35 +60,34 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 	}
 
 	@Test // DATACMNS-1126
-	public void doesNotThrowExceptionForMultipleConstructorsAndNoNoArgConstructorWithoutAnnotation() {
+	void doesNotThrowExceptionForMultipleConstructorsAndNoNoArgConstructorWithoutAnnotation() {
 
 		assertThat(PreferredConstructorDiscoverer.discover(ClassWithMultipleConstructorsWithoutEmptyOne.class)).isNull();
 	}
 
 	@Test // DATACMNS-1126
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void usesConstructorWithAnnotationOverEveryOther() {
-
+	void usesConstructorWithAnnotationOverEveryOther() {
 
 		assertThat(PreferredConstructorDiscoverer.discover(ClassWithMultipleConstructorsAndAnnotation.class))
 				.satisfies(constructor -> {
 
-			assertThat(constructor).isNotNull();
-			assertThat(constructor.isNoArgConstructor()).isFalse();
-			assertThat(constructor.isExplicitlyAnnotated()).isTrue();
+					assertThat(constructor).isNotNull();
+					assertThat(constructor.isNoArgConstructor()).isFalse();
+					assertThat(constructor.isExplicitlyAnnotated()).isTrue();
 
-			assertThat(constructor.hasParameters()).isTrue();
+					assertThat(constructor.hasParameters()).isTrue();
 
 					Iterator<Parameter<Object, P>> parameters = (Iterator) constructor.getParameters().iterator();
 
-			Parameter<?, P> parameter = parameters.next();
-			assertThat(parameter.getType().getType()).isEqualTo(Long.class);
-			assertThat(parameters.hasNext()).isFalse();
-		});
+					Parameter<?, P> parameter = parameters.next();
+					assertThat(parameter.getType().getType()).isEqualTo(Long.class);
+					assertThat(parameters.hasNext()).isFalse();
+				});
 	}
 
 	@Test // DATACMNS-134, DATACMNS-1126
-	public void discoversInnerClassConstructorCorrectly() {
+	void discoversInnerClassConstructorCorrectly() {
 
 		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(ClassTypeInformation.from(Inner.class));
 
@@ -100,7 +99,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 	}
 
 	@Test // DATACMNS-1082, DATACMNS-1126
-	public void skipsSyntheticConstructor() {
+	void skipsSyntheticConstructor() {
 
 		PersistentEntity<SyntheticConstructor, P> entity = new BasicPersistentEntity<>(
 				ClassTypeInformation.from(SyntheticConstructor.class));
@@ -116,13 +115,12 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 	@Test // GH-2313
 	void capturesEnclosingTypeParameterOfNonStaticInnerClass() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(NonStaticWithGenericTypeArgUsedInCtor.class))
-				.satisfies(ctor -> {
+		assertThat(PreferredConstructorDiscoverer.discover(NonStaticWithGenericTypeArgUsedInCtor.class)).satisfies(ctor -> {
 
-					assertThat(ctor.getParameters()).hasSize(2);
-					assertThat(ctor.getParameters().get(0).getName()).isEqualTo("this$0");
-					assertThat(ctor.getParameters().get(1).getName()).isEqualTo("value");
-				});
+			assertThat(ctor.getParameters()).hasSize(2);
+			assertThat(ctor.getParameters().get(0).getName()).isEqualTo("this$0");
+			assertThat(ctor.getParameters().get(1).getName()).isEqualTo("value");
+		});
 	}
 
 	@Test // GH-2313
@@ -150,7 +148,7 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 		}
 	}
 
-	static class EntityWithoutConstructor {
+	private static class EntityWithoutConstructor {
 
 	}
 
@@ -192,9 +190,8 @@ public class PreferredConstructorDiscovererUnitTests<P extends PersistentPropert
 
 	static class GenericTypeArgUsedInCtor<T> {
 
-		protected GenericTypeArgUsedInCtor(T value) {}
+		GenericTypeArgUsedInCtor(T value) {}
 	}
-
 
 	class NonStaticWithGenericTypeArgUsedInCtor<T> {
 
