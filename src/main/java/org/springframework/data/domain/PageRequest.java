@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Anastasiia Smirnova
  * @author Mark Paluch
+ * @author Artur Signell
  */
 public class PageRequest extends AbstractPageRequest {
 
@@ -118,7 +119,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * @see org.springframework.data.domain.AbstractPageRequest#previous()
 	 */
 	@Override
-	public PageRequest previous() {
+	public Pageable previous() {
 		return getPageNumber() == 0 ? this : new PageRequest(getPageNumber() - 1, getPageSize(), getSort());
 	}
 
