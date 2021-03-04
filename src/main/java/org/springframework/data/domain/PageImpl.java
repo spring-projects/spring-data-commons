@@ -26,6 +26,7 @@ import org.springframework.lang.Nullable;
  * @param <T> the type of which the page consists.
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Manousos Mathioudakis
  */
 public class PageImpl<T> extends Chunk<T> implements Page<T> {
 
@@ -120,7 +121,8 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 			contentType = content.get(0).getClass().getName();
 		}
 
-		return String.format("Page %s of %d containing %s instances", getNumber() + 1, getTotalPages(), contentType);
+		return String.format("Page %s of %d containing %s instances @%s",
+				getNumber() + 1, getTotalPages(), contentType, Integer.toHexString(hashCode()));
 	}
 
 	/*
