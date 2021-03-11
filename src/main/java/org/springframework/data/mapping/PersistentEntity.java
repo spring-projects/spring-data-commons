@@ -21,6 +21,7 @@ import java.util.Iterator;
 import org.springframework.data.annotation.Immutable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * Represents a persistent entity.
@@ -239,6 +240,22 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	void doWithAssociations(AssociationHandler<P> handler);
 
 	void doWithAssociations(SimpleAssociationHandler handler);
+
+	/**
+	 * Applies the given {@link PropertyHandler} to both all {@link PersistentProperty}s as well as all inverse properties
+	 * of all {@link Association}s.
+	 *
+	 * @param handler must not be {@literal null}.
+	 * @since 2.5
+	 */
+	default void doWithAll(PropertyHandler<P> handler) {
+
+		Assert.notNull(handler, "PropertyHandler must not be null!");
+
+		doWithProperties(handler);
+		doWithAssociations(
+				(AssociationHandler<P>) association -> handler.doWithPersistentProperty(association.getInverse()));
+	}
 
 	/**
 	 * Looks up the annotation of the given type on the {@link PersistentEntity}.

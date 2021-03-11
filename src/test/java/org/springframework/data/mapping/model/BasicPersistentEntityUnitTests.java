@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +37,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -45,6 +45,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Immutable;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.Persistent;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.domain.Persistable;
@@ -361,6 +362,17 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 				.forEach(it -> assertThat(createPopulatedPersistentEntity(it).requiresPropertyPopulation()).isFalse());
 	}
 
+	@Test // #2325
+	void doWithAllInvokesPropertyHandlerForBothAPropertiesAndAssociations() {
+
+		PersistentEntity<?, ?> entity = createPopulatedPersistentEntity(WithAssociation.class);
+
+		List<String> seenProperties = new ArrayList<>();
+		entity.doWithAll(property -> seenProperties.add(property.getName()));
+
+		assertThat(seenProperties).containsExactlyInAnyOrder("property", "association");
+	}
+
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type) {
 		return createEntity(type, null);
 	}
@@ -460,5 +472,13 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 		private final String firstname, lastname;
 		private @Transient String email;
+	}
+
+	// #2325
+
+	static class WithAssociation {
+
+		String property;
+		@Reference WithAssociation association;
 	}
 }
