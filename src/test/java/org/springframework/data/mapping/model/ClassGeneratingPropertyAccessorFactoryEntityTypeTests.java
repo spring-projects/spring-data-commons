@@ -38,10 +38,10 @@ import org.springframework.data.repository.core.support.PersistentEntityInformat
  */
 public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
-	SampleMappingContext mappingContext = new SampleMappingContext();
+	private SampleMappingContext mappingContext = new SampleMappingContext();
 
 	@Test // DATACMNS-853
-	public void getIdentifierOfInterfaceBasedEntity() {
+	void getIdentifierOfInterfaceBasedEntity() {
 
 		Algorithm quickSort = new QuickSort();
 
@@ -49,7 +49,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 	}
 
 	@Test // DATACMNS-853
-	public void getIdentifierOfClassBasedEntity() {
+	void getIdentifierOfClassBasedEntity() {
 
 		Person jonDoe = new Person("JonDoe");
 
@@ -57,7 +57,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 	}
 
 	@Test // #2324
-	public void shouldGeneratePropertyAccessorForKotlinClassWithMultipleCopyMethods() {
+	void shouldGeneratePropertyAccessorForKotlinClassWithMultipleCopyMethods() {
 
 		ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
 		PersistentPropertyAccessor<WithCustomCopyMethod> propertyAccessor = factory.getPropertyAccessor(
