@@ -15,6 +15,7 @@
  */
 package org.springframework.data.mapping.model
 
+import java.time.LocalDateTime
 import java.util.*
 
 /**
@@ -30,4 +31,31 @@ data class ExtendedDataClassKt(val id: Long, val name: String) {
 
 data class SingleSettableProperty constructor(val id: UUID = UUID.randomUUID()) {
 	val version: Int? = null
+}
+
+data class WithCustomCopyMethod(
+	val id: String?,
+	val userId: String,
+	val status: String,
+	val attempts: Int,
+	val createdAt: LocalDateTime,
+	val updatedAt: LocalDateTime,
+	val sessionId: String?
+) {
+
+	fun copy(
+		status: String,
+		updatedAt: LocalDateTime,
+		sessionId: String,
+		attempts: Int = this.attempts
+	) = WithCustomCopyMethod(
+		this.id,
+		this.userId,
+		status,
+		attempts,
+		this.createdAt,
+		updatedAt,
+		sessionId
+	)
+
 }
