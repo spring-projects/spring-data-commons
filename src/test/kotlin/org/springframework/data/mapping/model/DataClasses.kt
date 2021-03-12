@@ -15,6 +15,7 @@
  */
 package org.springframework.data.mapping.model
 
+import org.springframework.data.annotation.Id
 import java.time.LocalDateTime
 import java.util.*
 
@@ -59,3 +60,8 @@ data class WithCustomCopyMethod(
 	)
 
 }
+
+data class ImmutableKotlinPerson(
+	@Id val name: String,
+	val wasOnboardedBy: List<ImmutableKotlinPerson>
+)

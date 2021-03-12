@@ -72,4 +72,12 @@ class KotlinCopyMethodUnitTests {
 		assertThat(copyMethod.shouldUsePublicCopyMethod(mappingContext.getRequiredPersistentEntity(DataClassKt.class)))
 				.isTrue();
 	}
+
+	@Test // #2324
+	void shouldDetermineCopyMethodForParametrizedType() {
+
+		Optional<KotlinCopyMethod> copyMethod = KotlinCopyMethod.findCopyMethod(ImmutableKotlinPerson.class);
+
+		assertThat(copyMethod).isPresent();
+	}
 }
