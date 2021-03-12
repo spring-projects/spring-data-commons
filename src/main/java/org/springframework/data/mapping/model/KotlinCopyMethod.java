@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.core.ResolvableType;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimplePropertyHandler;
@@ -277,11 +278,7 @@ class KotlinCopyMethod {
 
 		Type parameterType = ReflectJvmMapping.getJavaType(source);
 
-		if (parameterType instanceof Class) {
-			return target.isAssignableFrom((Class<?>) parameterType);
-		}
-
-		return false;
+		return ResolvableType.forClass(target).isAssignableFrom(ResolvableType.forType(parameterType));
 	}
 
 	/**
