@@ -20,11 +20,13 @@ import kotlin.reflect.KClass;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.KParameter.Kind;
+import kotlin.reflect.KType;
 import kotlin.reflect.full.KClasses;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +39,8 @@ import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.util.Assert;
 
 /**
- * Value object to represent a Kotlin {@code copy} method.
+ * Value object to represent a Kotlin {@code copy} method. The lookup requires a {@code copy} method that matches the
+ * primary constructor of the class regardless of whether the primary constructor is the persistence constructor.
  *
  * @author Mark Paluch
  * @since 2.1
@@ -59,13 +62,14 @@ class KotlinCopyMethod {
 		this.publicCopyMethod = publicCopyMethod;
 		this.syntheticCopyMethod = syntheticCopyMethod;
 		this.copyFunction = ReflectJvmMapping.getKotlinFunction(publicCopyMethod);
-		this.parameterCount = copyFunction.getParameters().size();
+		this.parameterCount = copyFunction != null ? copyFunction.getParameters().size() : 0;
 	}
 
 	/**
 	 * Attempt to lookup the Kotlin {@code copy} method. Lookup happens in two stages: Find the synthetic copy method and
 	 * then attempt to resolve its public variant.
 	 *
+	 * @param property the property that must be included in the copy method.
 	 * @param type the class.
 	 * @return {@link Optional} {@link KotlinCopyMethod}.
 	 */
@@ -155,7 +159,6 @@ class KotlinCopyMethod {
 		return true;
 	}
 
-	@SuppressWarnings("unchecked")
 	private static Optional<Method> findPublicCopyMethod(Method defaultKotlinMethod) {
 
 		Class<?> type = defaultKotlinMethod.getDeclaringClass();
@@ -167,10 +170,7 @@ class KotlinCopyMethod {
 			return Optional.empty();
 		}
 
-		List<KParameter> constructorArguments = primaryConstructor.getParameters() //
-				.stream() //
-				.filter(it -> it.getKind() == Kind.VALUE) //
-				.collect(Collectors.toList());
+		List<KParameter> constructorArguments = getComponentArguments(primaryConstructor);
 
 		return Arrays.stream(type.getDeclaredMethods()).filter(it -> it.getName().equals("copy") //
 				&& !it.isSynthetic() //
@@ -207,7 +207,7 @@ class KotlinCopyMethod {
 
 			KParameter constructorParameter = constructorArguments.get(constructorArgIndex);
 
-			if (!constructorParameter.getName().equals(parameter.getName())
+			if (constructorParameter.getName() == null || !constructorParameter.getName().equals(parameter.getName())
 					|| !constructorParameter.getType().equals(parameter.getType())) {
 				return false;
 			}
@@ -220,12 +220,68 @@ class KotlinCopyMethod {
 
 	private static Optional<Method> findSyntheticCopyMethod(Class<?> type) {
 
+		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+		KFunction<?> primaryConstructor = KClasses.getPrimaryConstructor(kotlinClass);
+
+		if (primaryConstructor == null) {
+			return Optional.empty();
+		}
+
 		return Arrays.stream(type.getDeclaredMethods()) //
 				.filter(it -> it.getName().equals("copy$default") //
 						&& Modifier.isStatic(it.getModifiers()) //
 						&& it.getReturnType().equals(type))
 				.filter(Method::isSynthetic) //
+				.filter(it -> matchesPrimaryConstructor(it.getParameterTypes(), primaryConstructor))
 				.findFirst();
+	}
+
+	/**
+	 * Verify that the {@code parameterTypes} match arguments of the {@link KFunction primaryConstructor}.
+	 */
+	private static boolean matchesPrimaryConstructor(Class<?>[] parameterTypes, KFunction<?> primaryConstructor) {
+
+		List<KParameter> constructorArguments = getComponentArguments(primaryConstructor);
+
+		int defaultingArgs = KotlinDefaultMask.from(primaryConstructor, kParameter -> false).getDefaulting().length;
+
+		if (parameterTypes.length != 1 /* $this */ + constructorArguments.size() + defaultingArgs + 1 /* object marker */) {
+			return false;
+		}
+
+		// $this comes first
+		if (!isAssignableFrom(parameterTypes[0], primaryConstructor.getReturnType())) {
+			return false;
+		}
+
+		for (int i = 0; i < constructorArguments.size(); i++) {
+
+			KParameter kParameter = constructorArguments.get(i);
+
+			if (!isAssignableFrom(parameterTypes[i + 1], kParameter.getType())) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private static List<KParameter> getComponentArguments(KFunction<?> primaryConstructor) {
+		return primaryConstructor.getParameters() //
+				.stream() //
+				.filter(it -> it.getKind() == Kind.VALUE) //
+				.collect(Collectors.toList());
+	}
+
+	private static boolean isAssignableFrom(Class<?> target, KType source) {
+
+		Type parameterType = ReflectJvmMapping.getJavaType(source);
+
+		if (parameterType instanceof Class) {
+			return target.isAssignableFrom((Class<?>) parameterType);
+		}
+
+		return false;
 	}
 
 	/**
