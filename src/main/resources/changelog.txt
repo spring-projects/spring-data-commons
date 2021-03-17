@@ -1,6 +1,12 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.3.8.RELEASE (2021-03-17)
+---------------------------------------------
+* #2313 - TypeDiscoverer.getParameterTypes does not capture enclosing type parameter of non static inner class.
+* #2308 - Denote that Query by Example acts differently when fields are based on primitives instead of objects.
+
+
 Changes in version 2.5.0-M4 (2021-02-18)
 ----------------------------------------
 
@@ -3027,6 +3033,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
