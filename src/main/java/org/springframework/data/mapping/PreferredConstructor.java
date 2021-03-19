@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
@@ -175,6 +176,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 		private final @Nullable String name;
 		private final TypeInformation<T> type;
+		private final MergedAnnotations annotations;
 		private final String key;
 		private final @Nullable PersistentEntity<T, P> entity;
 
@@ -199,7 +201,8 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 			this.name = name;
 			this.type = type;
-			this.key = getValue(annotations);
+			this.annotations = MergedAnnotations.from(annotations);
+			this.key = getValue(this.annotations);
 			this.entity = entity;
 
 			this.enclosingClassCache = Lazy.of(() -> {
@@ -216,12 +219,12 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		}
 
 		@Nullable
-		private static String getValue(Annotation[] annotations) {
+		private static String getValue(MergedAnnotations annotations) {
 
-			return Arrays.stream(annotations)//
-					.filter(it -> it.annotationType() == Value.class)//
-					.findFirst().map(it -> ((Value) it).value())//
-					.filter(StringUtils::hasText).orElse(null);
+			return annotations.get(Value.class) //
+					.getValue("value", String.class) //
+					.filter(StringUtils::hasText) //
+					.orElse(null);
 		}
 
 		/**
@@ -241,6 +244,16 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 */
 		public TypeInformation<T> getType() {
 			return type;
+		}
+
+		/**
+		 * Merged annotations that this parameter is annotated with.
+		 *
+		 * @return
+		 * @since 2.5
+		 */
+		public MergedAnnotations getAnnotations() {
+			return annotations;
 		}
 
 		/**
