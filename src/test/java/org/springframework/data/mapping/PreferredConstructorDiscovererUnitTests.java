@@ -17,9 +17,15 @@ package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Iterator;
 
 import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.PreferredConstructorDiscovererUnitTests.Outer.Inner;
@@ -135,6 +141,16 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 				});
 	}
 
+	@Test // GH-2332
+	void detectsMetaAnnotatedValueAnnotation() {
+
+		assertThat(PreferredConstructorDiscoverer.discover(ClassWithMetaAnnotatedParameter.class)).satisfies(ctor -> {
+
+			assertThat(ctor.getParameters().get(0).getSpelExpression()).isEqualTo("${hello-world}");
+			assertThat(ctor.getParameters().get(0).getAnnotations()).isNotNull();
+		});
+	}
+
 	static class SyntheticConstructor {
 		@PersistenceConstructor
 		private SyntheticConstructor(String x) {}
@@ -203,5 +219,19 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 		public NonStaticInnerWithGenericArgUsedInCtor(T value) {
 			super(value);
 		}
+	}
+
+	static class ClassWithMetaAnnotatedParameter {
+
+		ClassWithMetaAnnotatedParameter(@MyValue String value) {
+
+		}
+	}
+
+	@Target({ ElementType.PARAMETER, })
+	@Retention(RetentionPolicy.RUNTIME)
+	@Value("${hello-world}")
+	@interface MyValue {
+
 	}
 }
