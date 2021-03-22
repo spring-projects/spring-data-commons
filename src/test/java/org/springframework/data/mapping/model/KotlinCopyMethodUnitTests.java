@@ -73,11 +73,10 @@ class KotlinCopyMethodUnitTests {
 				.isTrue();
 	}
 
-	@Test // #2324
+	@Test // #2324, #2336
 	void shouldDetermineCopyMethodForParametrizedType() {
 
-		Optional<KotlinCopyMethod> copyMethod = KotlinCopyMethod.findCopyMethod(ImmutableKotlinPerson.class);
-
-		assertThat(copyMethod).isPresent();
+		assertThat(KotlinCopyMethod.findCopyMethod(ImmutableKotlinPerson.class)).isPresent();
+		assertThat(KotlinCopyMethod.findCopyMethod(DataClassWithParametrizedCollections.class)).isPresent();
 	}
 }

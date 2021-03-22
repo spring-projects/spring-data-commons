@@ -65,3 +65,12 @@ data class ImmutableKotlinPerson(
 	@Id val name: String,
 	val wasOnboardedBy: List<ImmutableKotlinPerson>
 )
+
+data class DataClassWithParametrizedCollections<T>(
+	val id: String? = null,
+	val flags: Map<out String, Any>,
+	val stringStringFlags: Map<in String, String>,
+	val parametrized: List<T>,
+	val anyList: List<*>
+)
+
