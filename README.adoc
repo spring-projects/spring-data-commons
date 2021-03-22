@@ -27,7 +27,7 @@ Add the Maven dependency:
 <dependency>
   <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-commons</artifactId>
-  <version>${version}.RELEASE</version>
+  <version>${version}</version>
 </dependency>
 ----
 
@@ -38,7 +38,7 @@ If you'd rather like the latest snapshots of the upcoming major version, use our
 <dependency>
   <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-commons</artifactId>
-  <version>${version}.BUILD-SNAPSHOT</version>
+  <version>${version}-SNAPSHOT</version>
 </dependency>
 
 <repository>
