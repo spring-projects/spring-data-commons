@@ -278,7 +278,8 @@ class KotlinCopyMethod {
 
 		Type parameterType = ReflectJvmMapping.getJavaType(source);
 
-		return ResolvableType.forClass(target).isAssignableFrom(ResolvableType.forType(parameterType));
+		Class<?> rawClass = ResolvableType.forType(parameterType).getRawClass();
+		return rawClass == null || target.isAssignableFrom(rawClass);
 	}
 
 	/**
