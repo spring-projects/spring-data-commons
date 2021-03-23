@@ -19,10 +19,16 @@ import org.springframework.lang.Nullable;
 
 /**
  * Simple interface for entities.
+ * <p>
+ * Note that methods declared in this interface ({@link #getId()} and {@link #isNew()}) become property accessors when
+ * implementing this interface in combination with
+ * {@link org.springframework.data.annotation.AccessType @AccessType(PROPERTY)}. Either of these can be marked as
+ * transient when annotated with {@link org.springframework.data.annotation.Transient @Transient}.
  *
  * @param <ID> the type of the identifier
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public interface Persistable<ID> {
 
