@@ -316,8 +316,12 @@ public class RepositoryComposition {
 	public void validateImplementation() {
 
 		fragments.stream().forEach(it -> it.getImplementation() //
-				.orElseThrow(() -> new IllegalStateException(String.format("Fragment %s has no implementation.",
-						ClassUtils.getQualifiedName(it.getSignatureContributor())))));
+				.orElseThrow(() -> {
+					Class<?> repositoryInterface = metadata != null ? metadata.getRepositoryInterface() : Object.class;
+					return new FragmentNotImplementedException(String.format("Fragment %s used in %s has no implementation.",
+							ClassUtils.getQualifiedName(it.getSignatureContributor()),
+							ClassUtils.getQualifiedName(repositoryInterface)), repositoryInterface, it);
+				}));
 	}
 
 	/*

@@ -29,6 +29,7 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.DefaultRepositoryInvocationMulticaster;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
+import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -97,7 +98,13 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 	private Pair<Method, RepositoryQuery> lookupQuery(Method method, RepositoryInformation information,
 			QueryLookupStrategy strategy, ProjectionFactory projectionFactory) {
-		return Pair.of(method, strategy.resolveQuery(method, information, projectionFactory, namedQueries));
+		try {
+			return Pair.of(method, strategy.resolveQuery(method, information, projectionFactory, namedQueries));
+		} catch (QueryCreationException e) {
+			throw e;
+		} catch (RuntimeException e) {
+			throw QueryCreationException.create(e.getMessage(), e, information.getRepositoryInterface(), method);
+		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

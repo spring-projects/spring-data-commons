@@ -19,6 +19,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -57,12 +59,12 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
-import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionalProxy;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.ObjectUtils;
@@ -312,14 +314,15 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		repositoryCompositionStep.end();
 
-		validate(information, composition);
-
 		StartupStep repositoryTargetStep = onEvent(applicationStartup, "spring.data.repository.target",
 				repositoryInterface);
 		Object target = getTargetRepository(information);
 
 		repositoryTargetStep.tag("target", target.getClass().getName());
 		repositoryTargetStep.end();
+
+		RepositoryComposition compositionToUse = composition.append(RepositoryFragment.implemented(target));
+		validate(information, compositionToUse);
 
 		// Create proxy
 		StartupStep repositoryProxyStep = onEvent(applicationStartup, "spring.data.repository.proxy", repositoryInterface);
@@ -357,7 +360,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory, queryLookupStrategy,
 				namedQueries, queryPostProcessors, methodInvocationListeners));
 
-		RepositoryComposition compositionToUse = composition.append(RepositoryFragment.implemented(target));
 		result.addAdvice(
 				new ImplementationMethodExecutionInterceptor(information, compositionToUse, methodInvocationListeners));
 
@@ -502,17 +504,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	private void validate(RepositoryInformation repositoryInformation, RepositoryComposition composition) {
 
-		if (repositoryInformation.hasCustomMethod()) {
-
-			if (composition.isEmpty()) {
-
-				throw new IllegalArgumentException(
-						String.format("You have custom methods in %s but have not provided a custom implementation!",
-								repositoryInformation.getRepositoryInterface()));
-			}
-
-			composition.validateImplementation();
-		}
+		RepositoryValidator.validate(composition, getClass(), repositoryInformation);
 
 		validate(repositoryInformation);
 	}
@@ -606,7 +598,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			try {
 				return composition.invoke(invocationMulticaster, method, arguments);
 			} catch (Exception e) {
-				ClassUtils.unwrapReflectionException(e);
+				org.springframework.util.ReflectionUtils.handleReflectionException(e);
 			}
 
 			throw new IllegalStateException("Should not occur!");
@@ -713,6 +705,96 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		public String toString() {
 			return "RepositoryFactorySupport.RepositoryInformationCacheKey(repositoryInterfaceName="
 					+ this.getRepositoryInterfaceName() + ", compositionHash=" + this.getCompositionHash() + ")";
+		}
+	}
+
+	/**
+	 * Validator utility to catch common mismatches with a proper error message instead of letting the query mechanism
+	 * attempt implementing a query method and fail with a less specific message.
+	 */
+	static class RepositoryValidator {
+
+		static Map<Class<?>, String> WELL_KNOWN_EXECUTORS = new HashMap<>();
+
+		static {
+
+			org.springframework.data.repository.util.ClassUtils.ifPresent(
+					"org.springframework.data.querydsl.QuerydslPredicateExecutor", RepositoryValidator.class.getClassLoader(),
+					it -> {
+						WELL_KNOWN_EXECUTORS.put(it, "Querydsl");
+					});
+
+			org.springframework.data.repository.util.ClassUtils.ifPresent(
+					"org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor",
+					RepositoryValidator.class.getClassLoader(), it -> {
+						WELL_KNOWN_EXECUTORS.put(it, "Reactive Querydsl");
+					});
+
+			org.springframework.data.repository.util.ClassUtils.ifPresent(
+					"org.springframework.data.repository.query.QueryByExampleExecutor",
+					RepositoryValidator.class.getClassLoader(), it -> {
+						WELL_KNOWN_EXECUTORS.put(it, "Query by Example");
+					});
+
+			org.springframework.data.repository.util.ClassUtils.ifPresent(
+					"org.springframework.data.repository.query.ReactiveQueryByExampleExecutor",
+					RepositoryValidator.class.getClassLoader(), it -> {
+						WELL_KNOWN_EXECUTORS.put(it, "Reactive Query by Example");
+					});
+		}
+
+		/**
+		 * Validate the {@link RepositoryComposition} for custom implementations and well-known executors.
+		 *
+		 * @param composition
+		 * @param source
+		 * @param repositoryInformation
+		 */
+		public static void validate(RepositoryComposition composition, Class<?> source,
+				RepositoryInformation repositoryInformation) {
+
+			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
+			if (repositoryInformation.hasCustomMethod()) {
+
+				if (composition.isEmpty()) {
+
+					throw new IncompleteRepositoryCompositionException(
+							String.format("You have custom methods in %s but have not provided a custom implementation!",
+									org.springframework.util.ClassUtils.getQualifiedName(repositoryInterface)),
+							repositoryInterface);
+				}
+
+				composition.validateImplementation();
+			}
+
+			for (Map.Entry<Class<?>, String> entry : WELL_KNOWN_EXECUTORS.entrySet()) {
+
+				Class<?> executorInterface = entry.getKey();
+				if (!executorInterface.isAssignableFrom(repositoryInterface)) {
+					continue;
+				}
+
+				if (!containsFragmentImplementation(composition, executorInterface)) {
+					throw new UnsupportedFragmentException(
+							String.format("Repository %s implements %s but %s does not support %s!",
+									ClassUtils.getQualifiedName(repositoryInterface), ClassUtils.getQualifiedName(executorInterface),
+									ClassUtils.getShortName(source), entry.getValue()),
+							repositoryInterface, executorInterface);
+				}
+			}
+		}
+
+		private static boolean containsFragmentImplementation(RepositoryComposition composition,
+				Class<?> executorInterface) {
+
+			for (RepositoryFragment<?> fragment : composition.getFragments()) {
+
+				if (fragment.getImplementation().filter(executorInterface::isInstance).isPresent()) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }
