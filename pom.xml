@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>2.5.0-SNAPSHOT</version>
+	<version>2.5.0-GH-2341-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 
@@ -339,7 +339,7 @@
 			<version>0.1.4</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.jmolecules.integrations</groupId>
 			<artifactId>jmolecules-spring</artifactId>
