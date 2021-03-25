@@ -136,16 +136,17 @@ class RepositoryCompositionUnitTests {
 		assertThat(barFoo.invoke(barFoo.findMethod(getString).get())).isEqualTo("bar");
 	}
 
-	@Test // DATACMNS-102
+	@Test // DATACMNS-102, GH-2341
 	void shouldValidateStructuralFragments() {
 
 		RepositoryComposition mixed = RepositoryComposition.of(RepositoryFragment.structural(QueryByExampleExecutor.class),
 				RepositoryFragment.implemented(backingRepo));
 
-		assertThatIllegalStateException() //
+		assertThatExceptionOfType(FragmentNotImplementedException.class) //
 				.isThrownBy(mixed::validateImplementation) //
 				.withMessageContaining(
-						"Fragment org.springframework.data.repository.query.QueryByExampleExecutor has no implementation.");
+						"Fragment org.springframework.data.repository.query.QueryByExampleExecutor")
+				.withMessageContaining("has no implementation");
 	}
 
 	@Test // DATACMNS-102

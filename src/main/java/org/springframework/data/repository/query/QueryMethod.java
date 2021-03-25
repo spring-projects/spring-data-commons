@@ -241,6 +241,14 @@ public class QueryMethod {
 		return resultProcessor;
 	}
 
+	RepositoryMetadata getMetadata() {
+		return metadata;
+	}
+
+	Method getMethod() {
+		return method;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
