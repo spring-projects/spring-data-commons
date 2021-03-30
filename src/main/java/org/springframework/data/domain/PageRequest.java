@@ -20,7 +20,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * Basic Java Bean implementation of {@code Pageable}.
+ * Basic Java Bean implementation of {@link Pageable}.
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
@@ -109,7 +109,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * @see org.springframework.data.domain.Pageable#next()
 	 */
 	@Override
-	public Pageable next() {
+	public PageRequest next() {
 		return new PageRequest(getPageNumber() + 1, getPageSize(), getSort());
 	}
 
@@ -127,7 +127,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * @see org.springframework.data.domain.Pageable#first()
 	 */
 	@Override
-	public Pageable first() {
+	public PageRequest first() {
 		return new PageRequest(0, getPageSize(), getSort());
 	}
 
