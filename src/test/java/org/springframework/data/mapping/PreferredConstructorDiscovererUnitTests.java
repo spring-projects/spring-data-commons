@@ -223,15 +223,11 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 	static class ClassWithMetaAnnotatedParameter {
 
-		ClassWithMetaAnnotatedParameter(@MyValue String value) {
-
-		}
+		ClassWithMetaAnnotatedParameter(@MyValue String value) { }
 	}
 
-	@Target({ ElementType.PARAMETER, })
+	@Target(ElementType.PARAMETER)
 	@Retention(RetentionPolicy.RUNTIME)
 	@Value("${hello-world}")
-	@interface MyValue {
-
-	}
+	@interface MyValue { }
 }
