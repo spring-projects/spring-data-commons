@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -64,6 +63,9 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final Lazy<Boolean> usePropertyAccess;
 	private final Lazy<Optional<? extends TypeInformation<?>>> entityTypeInformation;
 
+	private final Lazy<Boolean> isAssociation;
+	private final Lazy<Class<?>> associationTargetType;
+
 	private final Method getter;
 	private final Method setter;
 	private final Field field;
@@ -85,6 +87,15 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 		this.hashCode = Lazy.of(property::hashCode);
 		this.usePropertyAccess = Lazy.of(() -> owner.getType().isInterface() || CAUSE_FIELD.equals(getField()));
+
+		this.isAssociation = Lazy.of(() -> ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(rawType));
+		this.associationTargetType = ASSOCIATION_TYPE == null
+				? Lazy.empty()
+				: Lazy.of(() -> Optional.of(getTypeInformation())
+						.map(it -> it.getSuperTypeInformation(ASSOCIATION_TYPE))
+						.map(TypeInformation::getComponentType)
+						.map(TypeInformation::getType)
+						.orElse(null));
 
 		this.entityTypeInformation = Lazy.of(() -> Optional.ofNullable(information.getActualType())//
 				.filter(it -> !simpleTypeHolder.isSimpleType(it.getType()))//
@@ -170,6 +181,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getGetter()
 	 */
+	@Nullable
 	@Override
 	public Method getGetter() {
 		return this.getter;
@@ -179,6 +191,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getSetter()
 	 */
+	@Nullable
 	@Override
 	public Method getSetter() {
 		return this.setter;
@@ -188,6 +201,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getWither()
 	 */
+	@Nullable
 	@Override
 	public Method getWither() {
 		return this.wither;
@@ -245,8 +259,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public boolean isAssociation() {
-		return isAnnotationPresent(Reference.class) //
-				|| ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(rawType);
+		return isAssociation.get();
 	}
 
 	/*
@@ -257,6 +270,16 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	@Override
 	public Association<P> getAssociation() {
 		return association.orElse(null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.PersistentProperty#getAssociationTargetType()
+	 */
+	@Nullable
+	@Override
+	public Class<?> getAssociationTargetType() {
+		return associationTargetType.getNullable();
 	}
 
 	/*

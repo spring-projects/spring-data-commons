@@ -32,6 +32,8 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.jmolecules.ddd.types.AggregateRoot;
+import org.jmolecules.ddd.types.Identifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.mapping.Association;
@@ -230,6 +232,7 @@ public class AbstractPersistentPropertyUnitTests {
 		SamplePersistentProperty property = getProperty(JMolecules.class, "association");
 
 		assertThat(property.isAssociation()).isTrue();
+		assertThat(property.getAssociationTargetType()).isEqualTo(JMoleculesAggregate.class);
 	}
 
 	private <T> BasicPersistentEntity<T, SamplePersistentProperty> getEntity(Class<T> type) {
@@ -371,11 +374,6 @@ public class AbstractPersistentPropertyUnitTests {
 		public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 			return null;
 		}
-
-		@Override
-		public Class<?> getAssociationTargetType() {
-			return null;
-		}
 	}
 
 	static class Sample {
@@ -392,6 +390,10 @@ public class AbstractPersistentPropertyUnitTests {
 	}
 
 	class JMolecules {
-		org.jmolecules.ddd.types.Association association;
+		org.jmolecules.ddd.types.Association<JMoleculesAggregate, Identifier> association;
+	}
+
+	interface JMoleculesAggregate extends AggregateRoot<JMoleculesAggregate, Identifier> {
+
 	}
 }

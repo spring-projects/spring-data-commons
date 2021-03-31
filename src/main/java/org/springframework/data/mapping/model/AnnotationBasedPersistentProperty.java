@@ -74,6 +74,18 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			&& (isAnnotationPresent(Reference.class) || super.isAssociation()));
 	private final Lazy<Boolean> isId = Lazy.of(() -> isAnnotationPresent(Id.class));
 	private final Lazy<Boolean> isVersion = Lazy.of(() -> isAnnotationPresent(Version.class));
+	private final Lazy<Class<?>> associationTargetType = Lazy.of(() -> {
+
+		if (!isAssociation()) {
+			return null;
+		}
+
+		return Optional.of(Reference.class) //
+				.map(this::findAnnotation) //
+				.map(Reference::to) //
+				.map(it -> !Class.class.equals(it) ? it : getActualType()) //
+				.orElseGet(() -> super.getAssociationTargetType());
+	});
 
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
@@ -285,18 +297,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Nullable
 	@Override
 	public Class<?> getAssociationTargetType() {
-
-		Reference reference = findAnnotation(Reference.class);
-
-		if (reference == null) {
-			return isEntity() ? getActualType() : null;
-		}
-
-		Class<?> targetType = reference.to();
-
-		return Class.class.equals(targetType) //
-				? isEntity() ? getActualType() : null //
-				: targetType;
+		return associationTargetType.getNullable();
 	}
 
 	/*
