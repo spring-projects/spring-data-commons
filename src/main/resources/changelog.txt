@@ -1,6 +1,18 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.5.0-RC1 (2021-03-31)
+-----------------------------------------
+* #2344 - Support for association target type detection for jMolecules.
+* #2341 - Improve error messages if a repository cannot be created.
+* #2338 - Unknown column 'new' in 'field list' when implementing Persistable in a class with @AccessType(Type.PROPERTY).
+* #2337 - Readme lists artifacts with .RELEASE and .BUILD-SNAPSHOT suffixes.
+* #2336 - UnsupportedOperationException: No accessor to set property for Kotlin data classes using parametrized types.
+* #2333 - Support @Value meta-annotations and expose MergedAnnotations on PreferredConstructor parameters.
+* #2332 - Support @Value meta-annotations and expose MergedAnnotations on PreferredConstructor parameters.
+* #2318 - Unify return types in PageRequest.
+
+
 Changes in version 2.5.0-M5 (2021-03-17)
 ----------------------------------------
 * #2325 - Add PersistentEntity.doWithAll(…) to handle properties and associations.
@@ -3049,6 +3061,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
