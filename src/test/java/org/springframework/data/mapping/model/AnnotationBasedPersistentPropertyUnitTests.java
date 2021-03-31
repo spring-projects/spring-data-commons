@@ -24,11 +24,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.assertj.core.api.ClassAssert;
+import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Association;
+import org.jmolecules.ddd.types.Identifier;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -242,12 +248,21 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThatThrownBy(() -> property.getRequiredAnnotation(Transient.class)).isInstanceOf(IllegalStateException.class);
 	}
 
-	@Test // DATACMNS-1318
-	public void detectsUltimateAssociationTargetClass() {
+	@TestFactory // DATACMNS-1318
+	public Stream<DynamicTest> detectsUltimateAssociationTargetClass() {
 
-		Stream.of("toSample", "toSample2", "sample", "withoutAnnotation").forEach(it -> {
-			assertThat(getProperty(WithReferences.class, it).getAssociationTargetType()).isEqualTo(Sample.class);
-		});
+		Function<String, ClassAssert> verifier = it -> assertThat(
+				getProperty(WithReferences.class, it).getAssociationTargetType());
+
+		Stream<DynamicTest> positives = DynamicTest.stream(Stream.of("toSample", "toSample2", "sample"), //
+				it -> String.format("Property %s resolves to %s.", it, Sample.class.getSimpleName()), //
+				it -> verifier.apply(it).isEqualTo(Sample.class));
+
+		Stream<DynamicTest> negatives = DynamicTest.stream(Stream.of("withoutAnnotation"), //
+				it -> String.format("Property %s resolves to null.", it), //
+				it -> verifier.apply(it).isNull());
+
+		return Stream.concat(positives, negatives);
 	}
 
 	@Test // DATACMNS-1359
@@ -295,8 +310,12 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	}
 
 	@Test // GH-2315
-	void detectesJMoleculesAssociation() {
-		assertThat(getProperty(JMolecules.class, "association").isAssociation()).isTrue();
+	void detectsJMoleculesAssociation() {
+
+		SamplePersistentProperty property = getProperty(JMolecules.class, "association");
+
+		assertThat(property.isAssociation()).isTrue();
+		assertThat(property.getAssociationTargetType()).isEqualTo(JMoleculesAggregate.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -484,6 +503,8 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	}
 
 	static class JMolecules {
-		Association association;
+		Association<JMoleculesAggregate, Identifier> association;
 	}
+
+	interface JMoleculesAggregate extends AggregateRoot<JMoleculesAggregate, Identifier> {}
 }

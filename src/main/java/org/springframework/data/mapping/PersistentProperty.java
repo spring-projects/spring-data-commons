@@ -383,11 +383,13 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Return the type the property refers to in case it's an association.
+	 * Return the type the property refers to in case it's an association, i.e. {@link #isAssociation()} returns
+	 * {@literal true}. That means, that implementations <em>must</em> return a non-{@literal null} value from this method
+	 * in that case. We also recommend to return {@literal null} for non-associations right away to establish symmetry
+	 * between this method and {@link #isAssociation()}.
 	 *
-	 * @return the type the property refers to in case it's an association or {@literal null} in case it's not an
-	 *         association, the target entity type is not explicitly defined (either explicitly or through the property
-	 *         type itself).
+	 * @return the type the property refers to in case it's an association, i.e. {@link #isAssociation()} returns
+	 *         {@literal true}.
 	 * @since 2.1
 	 */
 	@Nullable
