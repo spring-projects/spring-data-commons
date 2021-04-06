@@ -219,6 +219,10 @@ public class ResultProcessor {
 
 			return new ChainingConverter(targetType, source -> {
 
+				if (source == null || targetType.isInstance(source)) {
+					return source;
+				}
+
 				Object intermediate = ChainingConverter.this.convert(source);
 
 				return intermediate == null || targetType.isInstance(intermediate) ? intermediate
