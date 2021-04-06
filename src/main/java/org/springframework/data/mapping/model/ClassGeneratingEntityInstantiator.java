@@ -26,10 +26,12 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
+import org.springframework.beans.BeanInstantiationException;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.NativeDetector;
 import org.springframework.data.mapping.PersistentEntity;
@@ -119,6 +121,10 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		if (shouldUseReflectionEntityInstantiator(entity)) {
 			return ReflectionEntityInstantiator.INSTANCE;
+		}
+
+		if (Modifier.isAbstract(entity.getType().getModifiers())) {
+			return MappingInstantiationExceptionEntityInstantiator.create(entity.getType());
 		}
 
 		try {
@@ -240,30 +246,30 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 				throw new MappingInstantiationException(entity, Arrays.asList(params), e);
 			}
 		}
+	}
 
-		/**
-		 * Extracts the arguments required to invoke the given constructor from the given {@link ParameterValueProvider}.
-		 *
-		 * @param constructor can be {@literal null}.
-		 * @param provider can be {@literal null}.
-		 * @return
-		 */
-		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				@Nullable PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
+	/**
+	 * Extracts the arguments required to invoke the given constructor from the given {@link ParameterValueProvider}.
+	 *
+	 * @param constructor can be {@literal null}.
+	 * @param provider can be {@literal null}.
+	 * @return
+	 */
+	static <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
+			@Nullable PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
 
-			if (constructor == null || !constructor.hasParameters()) {
-				return allocateArguments(0);
-			}
-
-			Object[] params = allocateArguments(constructor.getConstructor().getParameterCount());
-
-			int index = 0;
-			for (Parameter<?, P> parameter : constructor.getParameters()) {
-				params[index++] = provider.getParameterValue(parameter);
-			}
-
-			return params;
+		if (constructor == null || !constructor.hasParameters()) {
+			return allocateArguments(0);
 		}
+
+		Object[] params = allocateArguments(constructor.getConstructor().getParameterCount());
+
+		int index = 0;
+		for (Parameter<?, P> parameter : constructor.getParameters()) {
+			params[index++] = provider.getParameterValue(parameter);
+		}
+
+		return params;
 	}
 
 	/**
@@ -274,6 +280,40 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 */
 	public interface ObjectInstantiator {
 		Object newInstance(Object... args);
+	}
+
+	/**
+	 * {@link EntityInstantiator} throwing {@link MappingInstantiationException} upon
+	 * {@link #createInstance(PersistentEntity, ParameterValueProvider)}.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.5
+	 */
+	static class MappingInstantiationExceptionEntityInstantiator implements EntityInstantiator {
+
+		private final Class<?> typeToCreate;
+
+		private MappingInstantiationExceptionEntityInstantiator(Class<?> typeToCreate) {
+			this.typeToCreate = typeToCreate;
+		}
+
+		public static EntityInstantiator create(Class<?> typeToCreate) {
+			return new MappingInstantiationExceptionEntityInstantiator(typeToCreate);
+		}
+
+		/*
+		* (non-Javadoc)
+		* @see org.springframework.data.mapping.model.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
+		*/
+		@Override
+		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
+				ParameterValueProvider<P> provider) {
+
+			Object[] params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+
+			throw new MappingInstantiationException(entity, Arrays.asList(params),
+					new BeanInstantiationException(typeToCreate, "Class is abstract"));
+		}
 	}
 
 	/**

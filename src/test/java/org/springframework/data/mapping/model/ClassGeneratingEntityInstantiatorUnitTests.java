@@ -39,6 +39,7 @@ import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator.ObjectInstantiator;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -374,6 +375,13 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isTrue();
 	}
 
+	@Test // GH-2348
+	void entityInstantiatorShouldFailForAbstractClass() {
+
+		assertThatExceptionOfType(MappingInstantiationException.class).isThrownBy(() -> this.instance
+				.createInstance(new BasicPersistentEntity<>(ClassTypeInformation.from(AbstractDto.class)), provider));
+	}
+
 	private void prepareMocks(Class<?> type) {
 
 		doReturn(type).when(entity).getType();
@@ -517,6 +525,10 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	static class ClassWithPackagePrivateConstructor {
 
 		ClassWithPackagePrivateConstructor() {}
+	}
+
+	public static abstract class AbstractDto {
+
 	}
 
 }
