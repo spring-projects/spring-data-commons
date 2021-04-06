@@ -19,8 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.reactivex.Flowable;
+import lombok.Getter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import rx.Observable;
 import rx.Single;
 
@@ -308,6 +310,37 @@ class ResultProcessorUnitTests {
 		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
 	}
 
+	@Test // GH-2347
+	void findByListSkipsConversionIfTypeAlreadyMatches() throws Exception {
+
+		List<AbstractDto> result = getProcessor("findAllAbstractDtos")
+				.processResult(Collections.singletonList(new ConcreteDto("Walter", "White")));
+
+		assertThat(result.get(0)).isInstanceOf(ConcreteDto.class);
+	}
+
+	@Test // GH-2347
+	void streamBySkipsConversionIfTypeAlreadyMatches() throws Exception {
+
+		Stream<AbstractDto> result = getProcessor("streamAllAbstractDtos")
+				.processResult(Stream.of(new ConcreteDto("Walter", "White")));
+
+		assertThat(result.findFirst().get()).isInstanceOf(ConcreteDto.class);
+	}
+
+	@Test // GH-2347
+	void findFluxSkipsConversionIfTypeAlreadyMatches() throws Exception {
+
+		Flux<AbstractDto> result = getProcessor("findFluxOfAbstractDtos")
+				.processResult(Flux.just(new ConcreteDto("Walter", "White")));
+
+		result.as(StepVerifier::create) //
+				.consumeNextWith(actual -> {
+
+					assertThat(actual).isInstanceOf(ConcreteDto.class);
+				}).verifyComplete();
+	}
+
 	private static ResultProcessor getProcessor(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor();
 	}
@@ -356,6 +389,12 @@ class ResultProcessorUnitTests {
 		Observable<SampleProjection> findObservableProjection();
 
 		Flowable<SampleProjection> findFlowableProjection();
+
+		List<AbstractDto> findAllAbstractDtos();
+
+		Stream<AbstractDto> streamAllAbstractDtos();
+
+		Flux<AbstractDto> findFluxOfAbstractDtos();
 	}
 
 	static class Sample {
@@ -364,6 +403,23 @@ class ResultProcessorUnitTests {
 		public Sample(String firstname, String lastname) {
 			this.firstname = firstname;
 			this.lastname = lastname;
+		}
+	}
+
+	@Getter
+	static abstract class AbstractDto {
+		final String firstname, lastname;
+
+		public AbstractDto(String firstname, String lastname) {
+			this.firstname = firstname;
+			this.lastname = lastname;
+		}
+	}
+
+	static class ConcreteDto extends AbstractDto {
+
+		public ConcreteDto(String firstname, String lastname) {
+			super(firstname, lastname);
 		}
 	}
 
