@@ -21,6 +21,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -56,15 +57,13 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final Class<?> rawType;
 	private final Lazy<Association<P>> association;
 	private final PersistentEntity<?, P> owner;
-
-	@SuppressWarnings("null") //
 	private final Property property;
 	private final Lazy<Integer> hashCode;
 	private final Lazy<Boolean> usePropertyAccess;
-	private final Lazy<Optional<? extends TypeInformation<?>>> entityTypeInformation;
+	private final Lazy<TypeInformation<?>> entityTypeInformation;
 
 	private final Lazy<Boolean> isAssociation;
-	private final Lazy<Class<?>> associationTargetType;
+	private final Lazy<TypeInformation<?>> associationTargetType;
 
 	private final Method getter;
 	private final Method setter;
@@ -94,13 +93,13 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 				: Lazy.of(() -> Optional.of(getTypeInformation())
 						.map(it -> it.getSuperTypeInformation(ASSOCIATION_TYPE))
 						.map(TypeInformation::getComponentType)
-						.map(TypeInformation::getType)
 						.orElse(null));
 
-		this.entityTypeInformation = Lazy.of(() -> Optional.ofNullable(information.getActualType())//
-				.filter(it -> !simpleTypeHolder.isSimpleType(it.getType()))//
-				.filter(it -> !it.isCollectionLike())//
-				.filter(it -> !it.isMap()));
+		this.entityTypeInformation = Lazy.of(() -> Optional.ofNullable(getAssociationOrActualType())
+				.filter(it -> !simpleTypeHolder.isSimpleType(it.getType())) //
+				.filter(it -> !it.isCollectionLike()) //
+				.filter(it -> !it.isMap())
+				.orElse(null));
 
 		this.getter = property.getGetter().orElse(null);
 		this.setter = property.getSetter().orElse(null);
@@ -172,9 +171,9 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 			return Collections.emptySet();
 		}
 
-		return entityTypeInformation.get()//
-				.map(Collections::singleton)//
-				.orElseGet(Collections::emptySet);
+		TypeInformation<?> result = getAssociationTypeOr(() -> entityTypeInformation.getNullable());
+
+		return result != null ? Collections.singleton(result) : Collections.emptySet();
 	}
 
 	/*
@@ -279,7 +278,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	@Nullable
 	@Override
 	public Class<?> getAssociationTargetType() {
-		return associationTargetType.getNullable();
+
+		TypeInformation<?> result = associationTargetType.getNullable();
+
+		return result != null ? result.getType() : null;
 	}
 
 	/*
@@ -315,7 +317,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public boolean isEntity() {
-		return !isTransient() && entityTypeInformation.get().isPresent();
+		return !isTransient() && entityTypeInformation.getNullable() != null;
 	}
 
 	/*
@@ -339,6 +341,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		if (isMap()) {
 
 			TypeInformation<?> mapValueType = information.getMapValueType();
+
 			if (mapValueType != null) {
 				return mapValueType.getType();
 			}
@@ -353,7 +356,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Class<?> getActualType() {
-		return information.getRequiredActualType().getType();
+		return getRequiredAssociationOrActualType().getType();
 	}
 
 	/*
@@ -364,7 +367,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return usePropertyAccess.get();
 	}
 
-	@SuppressWarnings("null")
 	protected Property getProperty() {
 		return this.property;
 	}
@@ -405,5 +407,25 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	@Override
 	public String toString() {
 		return property.toString();
+	}
+
+	@Nullable
+	private TypeInformation<?> getAssociationOrActualType() {
+		return getAssociationTypeOr(() -> information.getActualType());
+	}
+
+	private TypeInformation<?> getRequiredAssociationOrActualType() {
+		return getAssociationTypeOr(() -> information.getRequiredActualType());
+	}
+
+	private TypeInformation<?> getAssociationTypeOr(Supplier<TypeInformation<?>> fallback) {
+
+		TypeInformation<?> result = associationTargetType.getNullable();
+
+		if (result != null) {
+			return result;
+		}
+
+		return fallback.get();
 	}
 }
