@@ -6,12 +6,12 @@ The following table describes the strategies that Spring Data offers for detecti
 .Options for detection whether an entity is new in Spring Data
 [options = "autowidth",cols="1,1"]
 |===
-|Id-Property inspection (the default)
+|`@Id`-Property inspection (the default)
 |By default, Spring Data inspects the version property of the given entity.
 If the identifier property is `null` or `0` in case of primitive types, then the entity is assumed to be new.
 Otherwise, it is assumed to not be new.
 
-|Version-Property inspection
+|`@Version`-Property inspection
 |If a property annotated with `@Version` is present and `null`, or in case of a version property of primitive type `0` the entity is considered new.
 If the version property is present but has a different value, the entity is considered to not be new.
 If no version property is present Spring Data falls back to inspection of the Id-Property.
@@ -23,7 +23,7 @@ See the link:https://docs.spring.io/spring-data/data-commons/docs/current/api/in
 _Note: Properties of `Persistable` will get detected and persisted if you use `AccessType.PROPERTY`.
 To avoid that, use `@Transient`._
 
-|Implementing `EntityInformation`
+|Providing a custom `EntityInformation` implementation
 |You can customize the `EntityInformation` abstraction used in the repository base implementation by creating a subclass of the module specific repository factory and overriding the `getEntityInformation(…)` method.
 You then have to register the custom implementation of module specific repository factory as a Spring bean.
 Note that this should rarely be necessary.
