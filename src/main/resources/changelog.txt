@@ -1,6 +1,14 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.8 (2021-04-14)
+-------------------------------------
+* #2352 - Adds a new snippet for is-new-state-detection.
+* #2351 - Upgrade to XMLBeam 1.4.20.
+* #2349 - Upgrade to XMLBeam 1.4.19.
+* #2347 - ResultProcessor should back off for objects of the target type.
+
+
 Changes in version 2.3.9.RELEASE (2021-04-14)
 ---------------------------------------------
 * #2351 - Upgrade to XMLBeam 1.4.20.
@@ -3087,6 +3095,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
