@@ -62,7 +62,7 @@ import org.springframework.data.util.TypeInformation;
  */
 class AbstractMappingContextUnitTests {
 
-	SampleMappingContext context;
+	private SampleMappingContext context;
 
 	@BeforeEach
 	void setUp() {
@@ -223,35 +223,53 @@ class AbstractMappingContextUnitTests {
 				.isThrownBy(() -> context.getPersistentEntity(Unsupported.class));
 	}
 
-	@Test // DATACMNS-1509
-	public void shouldIgnoreKotlinOverrideCtorPropertyInSuperClass() {
+	@Test // GH-3113
+	void shouldIgnoreKotlinOverrideCtorPropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
 				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyTypeWithCtor.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
-			assertThat(property.getField().getDeclaringClass()).isNotEqualTo(ShadowedPropertyTypeWithCtor.class);
+			assertThat(property.getField().getDeclaringClass()).isIn(ShadowingPropertyTypeWithCtor.class,
+					ShadowedPropertyTypeWithCtor.class);
 		});
 	}
 
-	@Test // DATACMNS-1509
-	public void shouldIgnoreKotlinOverridePropertyInSuperClass() {
+	@Test // GH-3113
+	void shouldIncludeAssignableKotlinOverridePropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
 				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyType.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
-			assertThat(property.getField().getDeclaringClass()).isNotEqualTo(ShadowedPropertyType.class);
+			assertThat(property.getField().getDeclaringClass()).isIn(ShadowedPropertyType.class, ShadowingPropertyType.class);
 		});
 	}
 
-	@Test // DATACMNS-1509
-	public void shouldStillIncludeNonKotlinShadowedPropertyInSuperClass() {
+	@Test // GH-3113
+	void shouldIncludeAssignableShadowedPropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
-				.getPersistentEntity(ClassTypeInformation.from(ShadowingProperty.class));
+				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyAssignable.class));
 
 		assertThat(StreamUtils.createStreamFromIterator(entity.iterator())
-				.filter(it -> it.getField().getDeclaringClass().equals(ShadowedProperty.class)).findFirst() //
+				.filter(it -> it.getField().getDeclaringClass().equals(ShadowedPropertyAssignable.class)).findFirst() //
 		).isNotEmpty();
+
+		assertThat(entity).hasSize(2);
+
+		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
+			assertThat(property.getField().getDeclaringClass()).isIn(ShadowedPropertyAssignable.class,
+					ShadowingPropertyAssignable.class);
+		});
+	}
+
+	@Test // GH-3113
+	void shouldIgnoreNonAssignableOverridePropertyInSuperClass() {
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
+				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyNotAssignable.class));
+		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
+			assertThat(property.getField().getDeclaringClass()).isEqualTo(ShadowingPropertyNotAssignable.class);
+		});
 	}
 
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
@@ -275,7 +293,7 @@ class AbstractMappingContextUnitTests {
 		LocalDateTime date;
 	}
 
-	class Unsupported {
+	private class Unsupported {
 
 	}
 
@@ -374,6 +392,43 @@ class AbstractMappingContextUnitTests {
 		@Override
 		public String getValue() {
 			return value;
+		}
+	}
+
+	static class ShadowedPropertyNotAssignable {
+
+		private String value;
+	}
+
+	static class ShadowingPropertyNotAssignable extends ShadowedPropertyNotAssignable {
+
+		private Integer value;
+
+		ShadowingPropertyNotAssignable(Integer value) {
+			this.value = value;
+		}
+
+		public Integer getValue() {
+			return value;
+		}
+
+		public void setValue(Integer value) {
+			this.value = value;
+		}
+	}
+
+	static class ShadowedPropertyAssignable {
+
+		private Object value;
+
+	}
+
+	static class ShadowingPropertyAssignable extends ShadowedPropertyAssignable {
+
+		private Integer value;
+
+		ShadowingPropertyAssignable(Integer value) {
+			this.value = value;
 		}
 	}
 

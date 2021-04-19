@@ -76,8 +76,8 @@ For that we use the following algorithm:
 1. If the property is immutable but exposes a `with…` method (see below), we use the `with…` method to create a new entity instance with the new property value.
 2. If property access (i.e. access through getters and setters) is defined, we're invoking the setter method.
 3. If the property is mutable we set the field directly.
-3. If the property is immutable we're using the constructor to be used by persistence operations (see <<mapping.object-creation>>) to create a copy of the instance.
-4. By default, we set the field value directly.
+4. If the property is immutable we're using the constructor to be used by persistence operations (see <<mapping.object-creation>>) to create a copy of the instance.
+5. By default, we set the field value directly.
 
 [[mapping.property-population.details]]
 .Property population internals
@@ -221,6 +221,73 @@ It's an established pattern to rather use static factory methods to expose these
 * _For identifiers to be generated, still use a final field in combination with an all-arguments persistence constructor (preferred) or a `with…` method_ --
 * _Use Lombok to avoid boilerplate code_ -- As persistence operations usually require a constructor taking all arguments, their declaration becomes a tedious repetition of boilerplate parameter to field assignments that can best be avoided by using Lombok's `@AllArgsConstructor`.
 
+[[mapping.general-recommendations.override.properties]]
+=== Overriding Properties
+
+Java's allows a flexible design of domain classes where a subclass could define a property that is already declared with the same name in its superclass.
+Consider the following example:
+
+====
+[source,java]
+----
+public class SuperType {
+
+   private CharSequence field;
+
+   public SuperType(CharSequence field) {
+      this.field = field;
+   }
+
+   public CharSequence getField() {
+      return this.field;
+   }
+
+   public void setField(CharSequence field) {
+      this.field = field;
+   }
+}
+
+public class SubType extends SuperType {
+
+   private String field;
+
+   public SubType(String field) {
+      super(field);
+      this.field = field;
+   }
+
+   @Override
+   public String getField() {
+      return this.field;
+   }
+
+   public void setField(String field) {
+      this.field = field;
+
+      // optional
+      super.setField(field);
+   }
+}
+----
+====
+
+Both classes define a `field` using assignable types. `SubType` however shadows `SuperType.field`.
+Depending on the class design, using the constructor could be the only default approach to set `SuperType.field`.
+Alternatively, calling `super.setField(…)` in the setter could set the `field` in `SuperType`.
+All these mechanisms create conflicts to some degree because the properties share the same name yet might represent two distinct values.
+Spring Data skips super-type properties if types are not assignable.
+That is, the type of the overridden property must be assignable to its super-type property type to be registered as override, otherwise the super-type property is considered transient.
+We generally recommend using distinct property names.
+
+Spring Data modules generally support overridden properties holding different values.
+From a programming model perspective there are a few things to consider:
+
+1. Which property should be persisted (default to all declared properties)?
+You can exclude properties by annotating these with `@Transient`.
+2. How to represent properties in your data store?
+Using the same field/column name for different values typically leads to corrupt data so you should annotate least one of the properties using an explicit field/column name.
+3. Using `@AccessType(PROPERTY)` cannot be used as the super-property cannot be generally set without making any further assumptions of the setter implementation.
+
 [[mapping.kotlin]]
 == Kotlin support
 
@@ -277,3 +344,78 @@ data class Person(val id: String, val name: String)
 
 This class is effectively immutable.
 It allows creating new instances as Kotlin generates a `copy(…)` method that creates new object instances copying all property values from the existing object and applying property values provided as arguments to the method.
+
+[[mapping.kotlin.override.properties]]
+=== Kotlin Overriding Properties
+
+Kotlin allows declaring https://kotlinlang.org/docs/inheritance.html#overriding-properties[property overrides] to alter properties in subclasses.
+
+====
+[source,kotlin]
+----
+open class SuperType(open var field: Int)
+
+class SubType(override var field: Int = 1) :
+	SuperType(field) {
+}
+----
+====
+
+Such an arrangement renders two properties with the name `field`.
+Kotlin generates property accessors (getters and setters) for each property in each class.
+Effectively, the code looks like as follows:
+
+====
+[source,java]
+----
+public class SuperType {
+
+   private int field;
+
+   public SuperType(int field) {
+      this.field = field;
+   }
+
+   public int getField() {
+      return this.field;
+   }
+
+   public void setField(int field) {
+      this.field = field;
+   }
+}
+
+public final class SubType extends SuperType {
+
+   private int field;
+
+   public SubType(int field) {
+      super(field);
+      this.field = field;
+   }
+
+   public int getField() {
+      return this.field;
+   }
+
+   public void setField(int field) {
+      this.field = field;
+   }
+}
+----
+====
+
+Getters and setters on `SubType` set only `SubType.field` and not `SuperType.field`.
+In such an arrangement, using the constructor is the only default approach to set `SuperType.field`.
+Adding a method to `SubType` to set `SuperType.field` via `this.SuperType.field = …` is possible but falls outside of supported conventions.
+Property overrides create conflicts to some degree because the properties share the same name yet might represent two distinct values.
+We generally recommend using distinct property names.
+
+Spring Data modules generally support overridden properties holding different values.
+From a programming model perspective there are a few things to consider:
+
+1. Which property should be persisted (default to all declared properties)?
+You can exclude properties by annotating these with `@Transient`.
+2. How to represent properties in your data store?
+Using the same field/column name for different values typically leads to corrupt data so you should annotate least one of the properties using an explicit field/column name.
+3. Using `@AccessType(PROPERTY)` cannot be used as the super-property cannot be set.
