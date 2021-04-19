@@ -25,10 +25,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.core.KotlinDetector;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -77,7 +77,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 					return;
 				}
 
-				if (KotlinDetector.isKotlinType(property.getOwner().getType())) {
+				if (KotlinReflectionUtils.isDataClass(property.getOwner().getType())) {
 
 					this.bean = (T) KotlinCopyUtil.setProperty(property, bean, value);
 					return;
