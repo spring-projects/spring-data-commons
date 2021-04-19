@@ -17,6 +17,7 @@ package org.springframework.data.mapping.context;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -64,7 +66,6 @@ import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.FieldFilter;
@@ -555,10 +556,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
-			if (isKotlinOverride(property, input)) {
+			if (shouldSkipOverrideProperty(property)) {
 				return;
 			}
-
 			entity.addPersistentProperty(property);
 
 			if (property.isAssociation()) {
@@ -572,38 +572,85 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			property.getPersistentEntityTypes().forEach(AbstractMappingContext.this::addPersistentEntity);
 		}
 
-		private boolean isKotlinOverride(P property, Property input) {
+		protected boolean shouldSkipOverrideProperty(P property) {
 
-			if (!KotlinDetector.isKotlinPresent() || !input.getField().isPresent()) {
+			P existingProperty = entity.getPersistentProperty(property.getName());
+
+			if (existingProperty == null) {
 				return false;
 			}
 
-			Field field = input.getField().get();
-			if (!KotlinDetector.isKotlinType(field.getDeclaringClass())) {
-				return false;
-			}
+			Class<?> declaringClass = getDeclaringClass(property);
+			Class<?> existingDeclaringClass = getDeclaringClass(existingProperty);
 
-			for (P existingProperty : entity) {
+			Class<?> propertyType = getPropertyType(property);
+			Class<?> existingPropertyType = getPropertyType(existingProperty);
 
-				if (!property.getName().equals(existingProperty.getName())) {
-					continue;
+			if (!existingPropertyType.isAssignableFrom(propertyType)) {
+
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.warn(String.format("Offending property declaration in '%s %s.%s' shadowing '%s %s.%s' in '%s'. ",
+							propertyType.getSimpleName(), declaringClass.getName(), property.getName(),
+							existingPropertyType.getSimpleName(), existingDeclaringClass.getName(), existingProperty.getName(),
+							entity.getType().getSimpleName()));
 				}
 
-				if (field.getDeclaringClass() != entity.getType()
-						&& ClassUtils.isAssignable(field.getDeclaringClass(), entity.getType())) {
-
-					if (LOGGER.isTraceEnabled()) {
-						LOGGER.trace(String.format("Skipping '%s.%s' property declaration shadowed by '%s %s' in '%s'. ",
-								field.getDeclaringClass().getName(), property.getName(), property.getType().getSimpleName(),
-								property.getName(), entity.getType().getSimpleName()));
-					}
-					return true;
-				}
+				return true;
 			}
 
 			return false;
 		}
+
+		private Class<?> getDeclaringClass(PersistentProperty<?> persistentProperty) {
+
+			Field field = persistentProperty.getField();
+			if (field != null) {
+				return field.getDeclaringClass();
+			}
+
+			Method accessor = persistentProperty.getGetter();
+
+			if (accessor == null) {
+				accessor = persistentProperty.getSetter();
+			}
+
+			if (accessor == null) {
+				accessor = persistentProperty.getWither();
+			}
+
+			if (accessor != null) {
+				return accessor.getDeclaringClass();
+			}
+
+			return persistentProperty.getOwner().getType();
+		}
+
+		private Class<?> getPropertyType(PersistentProperty<?> persistentProperty) {
+
+			Field field = persistentProperty.getField();
+			if (field != null) {
+				return field.getType();
+			}
+
+			Method getter = persistentProperty.getGetter();
+			if (getter != null) {
+				return getter.getReturnType();
+			}
+
+			Method setter = persistentProperty.getSetter();
+			if (setter != null) {
+				return setter.getParameterTypes()[0];
+			}
+
+			Method wither = persistentProperty.getWither();
+			if (wither != null) {
+				return wither.getParameterTypes()[0];
+			}
+
+			return persistentProperty.getType();
+		}
 	}
+
 
 	/**
 	 * Filter rejecting static fields as well as artificially introduced ones. See

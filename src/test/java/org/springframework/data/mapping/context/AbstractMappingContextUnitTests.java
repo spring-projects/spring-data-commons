@@ -62,7 +62,7 @@ import org.springframework.data.util.TypeInformation;
  */
 class AbstractMappingContextUnitTests {
 
-	SampleMappingContext context;
+	private SampleMappingContext context;
 
 	@BeforeEach
 	void setUp() {
@@ -224,27 +224,28 @@ class AbstractMappingContextUnitTests {
 	}
 
 	@Test // DATACMNS-1509
-	public void shouldIgnoreKotlinOverrideCtorPropertyInSuperClass() {
+	void shouldIgnoreKotlinOverrideCtorPropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
 				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyTypeWithCtor.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
-			assertThat(property.getField().getDeclaringClass()).isNotEqualTo(ShadowedPropertyTypeWithCtor.class);
+			assertThat(property.getField().getDeclaringClass()).isIn(ShadowingPropertyTypeWithCtor.class,
+					ShadowedPropertyTypeWithCtor.class);
 		});
 	}
 
 	@Test // DATACMNS-1509
-	public void shouldIgnoreKotlinOverridePropertyInSuperClass() {
+	void shouldIncludeAssignableKotlinOverridePropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
 				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyType.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
-			assertThat(property.getField().getDeclaringClass()).isNotEqualTo(ShadowedPropertyType.class);
+			assertThat(property.getField().getDeclaringClass()).isIn(ShadowedPropertyType.class, ShadowingPropertyType.class);
 		});
 	}
 
 	@Test // DATACMNS-1509
-	public void shouldStillIncludeNonKotlinShadowedPropertyInSuperClass() {
+	void shouldIncludeAssignableShadowedPropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
 				.getPersistentEntity(ClassTypeInformation.from(ShadowingProperty.class));
@@ -252,6 +253,16 @@ class AbstractMappingContextUnitTests {
 		assertThat(StreamUtils.createStreamFromIterator(entity.iterator())
 				.filter(it -> it.getField().getDeclaringClass().equals(ShadowedProperty.class)).findFirst() //
 		).isNotEmpty();
+	}
+
+	@Test // DATACMNS-1509
+	void shouldIgnoreOverridePropertyInSuperClass() {
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
+				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyNotAssignable.class));
+		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
+			assertThat(property.getField().getDeclaringClass()).isEqualTo(ShadowingPropertyNotAssignable.class);
+		});
 	}
 
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
@@ -275,7 +286,7 @@ class AbstractMappingContextUnitTests {
 		LocalDateTime date;
 	}
 
-	class Unsupported {
+	private class Unsupported {
 
 	}
 
@@ -373,6 +384,29 @@ class AbstractMappingContextUnitTests {
 
 		@Override
 		public String getValue() {
+			return value;
+		}
+	}
+
+	static class ShadowedPropertyNotAssignable {
+
+		private String value;
+
+	}
+
+	static class ShadowingPropertyNotAssignable extends ShadowedPropertyNotAssignable {
+
+		private int value;
+
+		ShadowingPropertyNotAssignable(int value) {
+			this.value = value;
+		}
+
+		public void setValue(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
 			return value;
 		}
 	}
