@@ -67,6 +67,22 @@ public final class KotlinReflectionUtils {
 	}
 
 	/**
+	 * Return {@literal true} if the specified class is a Kotlin data class.
+	 *
+	 * @return {@literal true} if {@code type} is a Kotlin data class.
+	 * @since 2.4.9
+	 */
+	public static boolean isDataClass(Class<?> type) {
+
+		if (!KotlinDetector.isKotlinType(type)) {
+			return false;
+		}
+
+		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+		return kotlinClass.isData();
+	}
+
+	/**
 	 * Returns a {@link KFunction} instance corresponding to the given Java {@link Method} instance, or {@code null} if
 	 * this method cannot be represented by a Kotlin function.
 	 *
