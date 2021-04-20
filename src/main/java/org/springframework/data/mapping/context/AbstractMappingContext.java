@@ -586,7 +586,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			Class<?> propertyType = getPropertyType(property);
 			Class<?> existingPropertyType = getPropertyType(existingProperty);
 
-			if (!existingPropertyType.isAssignableFrom(propertyType)) {
+			if (!propertyType.isAssignableFrom(existingPropertyType)) {
 
 				if (LOGGER.isDebugEnabled()) {
 					LOGGER.warn(String.format("Offending property declaration in '%s %s.%s' shadowing '%s %s.%s' in '%s'. ",

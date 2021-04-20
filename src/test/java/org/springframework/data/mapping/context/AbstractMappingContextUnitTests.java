@@ -223,7 +223,7 @@ class AbstractMappingContextUnitTests {
 				.isThrownBy(() -> context.getPersistentEntity(Unsupported.class));
 	}
 
-	@Test // DATACMNS-1509
+	@Test // GH-3113
 	void shouldIgnoreKotlinOverrideCtorPropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
@@ -234,7 +234,7 @@ class AbstractMappingContextUnitTests {
 		});
 	}
 
-	@Test // DATACMNS-1509
+	@Test // GH-3113
 	void shouldIncludeAssignableKotlinOverridePropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
@@ -244,19 +244,26 @@ class AbstractMappingContextUnitTests {
 		});
 	}
 
-	@Test // DATACMNS-1509
+	@Test // GH-3113
 	void shouldIncludeAssignableShadowedPropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
-				.getPersistentEntity(ClassTypeInformation.from(ShadowingProperty.class));
+				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyAssignable.class));
 
 		assertThat(StreamUtils.createStreamFromIterator(entity.iterator())
-				.filter(it -> it.getField().getDeclaringClass().equals(ShadowedProperty.class)).findFirst() //
+				.filter(it -> it.getField().getDeclaringClass().equals(ShadowedPropertyAssignable.class)).findFirst() //
 		).isNotEmpty();
+
+		assertThat(entity).hasSize(2);
+
+		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
+			assertThat(property.getField().getDeclaringClass()).isIn(ShadowedPropertyAssignable.class,
+					ShadowingPropertyAssignable.class);
+		});
 	}
 
-	@Test // DATACMNS-1509
-	void shouldIgnoreOverridePropertyInSuperClass() {
+	@Test // GH-3113
+	void shouldIgnoreNonAssignableOverridePropertyInSuperClass() {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
 				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyNotAssignable.class));
@@ -391,23 +398,37 @@ class AbstractMappingContextUnitTests {
 	static class ShadowedPropertyNotAssignable {
 
 		private String value;
-
 	}
 
 	static class ShadowingPropertyNotAssignable extends ShadowedPropertyNotAssignable {
 
-		private int value;
+		private Integer value;
 
-		ShadowingPropertyNotAssignable(int value) {
+		ShadowingPropertyNotAssignable(Integer value) {
 			this.value = value;
 		}
 
-		public void setValue(int value) {
-			this.value = value;
-		}
-
-		public int getValue() {
+		public Integer getValue() {
 			return value;
+		}
+
+		public void setValue(Integer value) {
+			this.value = value;
+		}
+	}
+
+	static class ShadowedPropertyAssignable {
+
+		private Object value;
+
+	}
+
+	static class ShadowingPropertyAssignable extends ShadowedPropertyAssignable {
+
+		private Integer value;
+
+		ShadowingPropertyAssignable(Integer value) {
+			this.value = value;
 		}
 	}
 
