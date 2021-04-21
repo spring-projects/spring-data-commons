@@ -521,7 +521,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @param constructorArguments
 	 * @return
 	 */
-	protected final <R> R getTargetRepositoryViaReflection(RepositoryInformation information,
+	protected <R> R getTargetRepositoryViaReflection(RepositoryInformation information,
 			Object... constructorArguments) {
 
 		Class<?> baseClass = information.getRepositoryBaseClass();
@@ -537,7 +537,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	protected final <R> R getTargetRepositoryViaReflection(Class<?> baseClass, Object... constructorArguments) {
+	protected <R> R getTargetRepositoryViaReflection(Class<?> baseClass, Object... constructorArguments) {
 		Optional<Constructor<?>> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
 
 		return constructor.map(it -> (R) BeanUtils.instantiateClass(it, constructorArguments))
