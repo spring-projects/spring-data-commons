@@ -79,6 +79,7 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author John Blum
+ * @author Dennis Melzer
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
