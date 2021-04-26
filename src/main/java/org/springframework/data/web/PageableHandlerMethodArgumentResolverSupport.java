@@ -194,13 +194,17 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 	}
 
 	protected Pageable getPageable(MethodParameter methodParameter, @Nullable String pageString,
-			@Nullable String pageSizeString) {
+			@Nullable String pageSizeString, @Nullable Sort sort) {
 		assertPageableUniqueness(methodParameter);
 
 		Optional<Pageable> defaultOrFallback = getDefaultFromAnnotationOrFallback(methodParameter).toOptional();
 
 		Optional<Integer> page = parseAndApplyBoundaries(pageString, Integer.MAX_VALUE, true);
 		Optional<Integer> pageSize = parseAndApplyBoundaries(pageSizeString, maxPageSize, false);
+
+		if (!(page.isPresent() && pageSize.isPresent()) && sort.isSorted()) {
+			return Pageable.unpaged(sort);
+		}
 
 		if (!(page.isPresent() && pageSize.isPresent()) && !defaultOrFallback.isPresent()) {
 			return Pageable.unpaged();

@@ -20,9 +20,17 @@ package org.springframework.data.domain;
  *
  * @author Oliver Gierke
  */
-enum Unpaged implements Pageable {
+class Unpaged implements Pageable {
 
-	INSTANCE;
+	private final Sort sort;
+
+	Unpaged() {
+		this.sort = Sort.unsorted();
+	}
+
+	Unpaged(Sort sort) {
+		this.sort = sort;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -66,7 +74,7 @@ enum Unpaged implements Pageable {
 	 */
 	@Override
 	public Sort getSort() {
-		return Sort.unsorted();
+		return sort;
 	}
 
 	/*

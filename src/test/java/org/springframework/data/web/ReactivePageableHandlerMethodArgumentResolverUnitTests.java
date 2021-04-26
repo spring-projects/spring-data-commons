@@ -29,7 +29,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver;
 
 /**
@@ -244,6 +246,19 @@ class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 
 		Object value = resolver.resolveArgumentValue(parameter, null, MockServerWebExchange.from(request));
 		assertThat(value).isEqualTo(pageable);
+	}
+
+	@Test // DATACMNS-1380
+	void unPagedSortSupport() {
+		ReactivePageableHandlerMethodArgumentResolver resolver = getReactiveResolver();
+
+		MockServerHttpRequest request = MockServerHttpRequest.get("foo?sort=id,desc").build();
+
+		Pageable result = resolver.resolveArgumentValue(supportedMethodParameter, null, MockServerWebExchange.from(request));
+
+		assertThat(result.isUnpaged()).isTrue();
+		assertThat(result.isSorted()).isTrue();
+		assertThat(result.getSort().isSorted()).isTrue();
 	}
 
 	private Pageable resolve(ReactivePageableHandlerMethodArgumentResolver resolver, MockServerHttpRequest request) {

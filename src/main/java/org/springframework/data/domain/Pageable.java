@@ -33,7 +33,11 @@ public interface Pageable {
 	 * @return
 	 */
 	static Pageable unpaged() {
-		return Unpaged.INSTANCE;
+		return new Unpaged();
+	}
+
+	static Pageable unpaged(Sort sort) {
+		return new Unpaged(sort);
 	}
 
 	/**
@@ -63,6 +67,16 @@ public interface Pageable {
 	 */
 	default boolean isUnpaged() {
 		return !isPaged();
+	}
+
+
+	/**
+	 * Returns whether the current {@link Pageable} does not contain pagination information.
+	 *
+	 * @return
+	 */
+	default boolean isSorted() {
+		return getSort().isSorted();
 	}
 
 	/**

@@ -245,6 +245,20 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 		assertThat(resolver.isFallbackPageable(PageRequest.of(0, 10))).isFalse();
 	}
 
+	@Test // DATACMNS-1380
+	void unPagedSortSupport() {
+		PageableHandlerMethodArgumentResolver resolver = getResolver();
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addParameter("sort", "id,desc");
+
+		Pageable result = resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null);
+
+		assertThat(result.isUnpaged()).isTrue();
+		assertThat(result.isSorted()).isTrue();
+		assertThat(result.getSort().isSorted()).isTrue();
+	}
+
 	@Test // DATACMNS-1827
 	void emptyQualifierIsUsedInParameterLookup() throws Exception {
 
@@ -313,4 +327,5 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 
 		void mergedQualifier(@TestQualifier Pageable pageable);
 	}
+
 }

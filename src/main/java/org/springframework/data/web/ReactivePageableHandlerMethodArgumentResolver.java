@@ -84,9 +84,6 @@ public class ReactivePageableHandlerMethodArgumentResolver extends PageableHandl
 		String pageSize = queryParams.getFirst(getParameterNameToUse(getSizeParameterName(), parameter));
 
 		Sort sort = sortResolver.resolveArgumentValue(parameter, bindingContext, exchange);
-
-		Pageable pageable = getPageable(parameter, page, pageSize);
-
-		return sort.isSorted() ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort) : pageable;
+		return getPageable(parameter, page, pageSize, sort);
 	}
 }

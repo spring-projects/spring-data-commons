@@ -88,12 +88,6 @@ public class PageableHandlerMethodArgumentResolver extends PageableHandlerMethod
 		String pageSize = webRequest.getParameter(getParameterNameToUse(getSizeParameterName(), methodParameter));
 
 		Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
-		Pageable pageable = getPageable(methodParameter, page, pageSize);
-
-		if (sort.isSorted()) {
-			return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-		}
-
-		return pageable;
+		return getPageable(methodParameter, page, pageSize, sort);
 	}
 }
