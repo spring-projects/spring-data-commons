@@ -21,6 +21,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Modifier;
 import java.util.Iterator;
 
 import org.junit.jupiter.api.Test;
@@ -91,6 +92,35 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 					assertThat(parameters.hasNext()).isFalse();
 				});
 	}
+
+    @Test // GH-2363
+    void usesConstructorPublicOverNonPublic() {
+        assertThat(PreferredConstructorDiscoverer.discover(ClassWithMultipleConstructorAndPublicOneWithoudEmpty.class))
+                .satisfies(constructor -> {
+                    assertThat(constructor).isNotNull();
+                    assertThat(constructor.isNoArgConstructor()).isFalse();
+                    assertThat(constructor.isExplicitlyAnnotated()).isFalse();
+                    assertThat(Modifier.isPublic(constructor.getConstructor().getModifiers())).isTrue();
+                });
+    }
+
+    @Test // GH-2363
+    void usesConstructorEmptyOverEveryOther() {
+        assertThat(PreferredConstructorDiscoverer.discover(ClassWithMultipleConstructorAndPublicOneAndEmptyOne.class))
+                .satisfies(constructor -> {
+                    assertThat(constructor).isNotNull();
+                    assertThat(constructor.isNoArgConstructor()).isTrue();
+                    assertThat(constructor.isExplicitlyAnnotated()).isFalse();
+                });
+    }
+
+    @Test // GH-2363
+    void usesConstructorMultipleNonPublicReturnNull() {
+        assertThat(PreferredConstructorDiscoverer.discover(ClassWithMultipleNonPublicConstructor.class))
+                .satisfies(constructor -> {
+                    assertThat(constructor).isNull();
+                });
+    }
 
 	@Test // DATACMNS-134, DATACMNS-1126
 	void discoversInnerClassConstructorCorrectly() {
@@ -196,6 +226,39 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 		@PersistenceConstructor
 		public ClassWithMultipleConstructorsAndAnnotation(Long value) {}
 	}
+
+    static class ClassWithMultipleConstructorAndPublicOneWithoudEmpty {
+
+        public ClassWithMultipleConstructorAndPublicOneWithoudEmpty(String value) {
+        }
+
+        private ClassWithMultipleConstructorAndPublicOneWithoudEmpty(Long value) {
+        }
+
+    }
+
+    static class ClassWithMultipleConstructorAndPublicOneAndEmptyOne {
+
+        public ClassWithMultipleConstructorAndPublicOneAndEmptyOne(String value) {
+        }
+
+        private ClassWithMultipleConstructorAndPublicOneAndEmptyOne(Long value) {
+        }
+
+        ClassWithMultipleConstructorAndPublicOneAndEmptyOne() {
+        }
+
+    }
+
+    static class ClassWithMultipleNonPublicConstructor {
+
+        private ClassWithMultipleNonPublicConstructor(String value) {
+        }
+
+        private ClassWithMultipleNonPublicConstructor(Long value) {
+        }
+
+    }
 
 	static class Outer {
 
