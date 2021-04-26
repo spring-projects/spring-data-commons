@@ -22,6 +22,7 @@ import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -106,7 +107,8 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 
 				Class<?> rawOwningType = type.getType();
 
-				List<Constructor<?>> candidates = new ArrayList<>();
+				List<Constructor<?>> nonpublicCandidates = new ArrayList<>();
+				List<Constructor<?>> publicCandidates = new ArrayList<>();
 				Constructor<?> noArg = null;
 				for (Constructor<?> candidate : rawOwningType.getDeclaredConstructors()) {
 
@@ -121,8 +123,10 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 
 					if (candidate.getParameterCount() == 0) {
 						noArg = candidate;
+					} else if (Modifier.isPublic(candidate.getModifiers())) {
+						publicCandidates.add(candidate);
 					} else {
-						candidates.add(candidate);
+						nonpublicCandidates.add(candidate);
 					}
 				}
 
@@ -130,8 +134,17 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 					return buildPreferredConstructor(noArg, type, entity);
 				}
 
-				return candidates.size() > 1 || candidates.isEmpty() ? null
-						: buildPreferredConstructor(candidates.iterator().next(), type, entity);
+				if (publicCandidates.size() > 1) {
+				    return null;
+                }
+				if (publicCandidates.size() == 1) {
+				    return buildPreferredConstructor(publicCandidates.iterator().next(), type, entity);
+                }
+
+				if (nonpublicCandidates.size() != 1) {
+				    return null;
+                }
+				return buildPreferredConstructor(nonpublicCandidates.iterator().next(), type, entity);
 			}
 		},
 
