@@ -525,7 +525,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			Object... constructorArguments) {
 
 		Class<?> baseClass = information.getRepositoryBaseClass();
-		return getTargetRepositoryViaReflection(baseClass, constructorArguments);
+		return instantiateClass(baseClass, constructorArguments);
 	}
 
 	/**
@@ -535,15 +535,36 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @param baseClass
 	 * @param constructorArguments
 	 * @return
+	 * @deprecated since 2.6 because it has a misleading name. Use {@link #instantiateClass(Class, Object...)} instead.
 	 */
 	@SuppressWarnings("unchecked")
+	@Deprecated
 	protected final <R> R getTargetRepositoryViaReflection(Class<?> baseClass, Object... constructorArguments) {
+		return instantiateClass(baseClass, constructorArguments);
+	}
+
+	/**
+	 * Convenience method to instantiate a class using the given {@code constructorArguments} by looking up a matching
+	 * constructor.
+	 * <p>
+	 * Note that this method tries to set the constructor accessible if given a non-accessible (that is, non-public)
+	 * constructor, and supports Kotlin classes with optional parameters and default values.
+	 *
+	 * @param baseClass
+	 * @param constructorArguments
+	 * @return
+	 * @since 2.6
+	 */
+	@SuppressWarnings("unchecked")
+	protected final <R> R instantiateClass(Class<?> baseClass, Object... constructorArguments) {
+
 		Optional<Constructor<?>> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
 
 		return constructor.map(it -> (R) BeanUtils.instantiateClass(it, constructorArguments))
 				.orElseThrow(() -> new IllegalStateException(String.format(
 						"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
-						baseClass, Arrays.stream(constructorArguments).map(Object::getClass).collect(Collectors.toList()))));
+						baseClass, Arrays.stream(constructorArguments).map(Object::getClass).map(ClassUtils::getQualifiedName)
+								.collect(Collectors.joining(", ")))));
 	}
 
 	private ApplicationStartup getStartup() {
