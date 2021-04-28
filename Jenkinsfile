@@ -3,7 +3,7 @@ pipeline {
 
 	triggers {
 		pollSCM 'H/10 * * * *'
-		upstream(upstreamProjects: "spring-data-build/master", threshold: hudson.model.Result.SUCCESS)
+		upstream(upstreamProjects: "spring-data-build/2.5.x", threshold: hudson.model.Result.SUCCESS)
 	}
 
 	options {
@@ -15,7 +15,7 @@ pipeline {
 		stage("test: baseline (jdk8)") {
 			when {
 				anyOf {
-					branch 'master'
+					branch '2.5.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -40,7 +40,7 @@ pipeline {
 		stage("Test other configurations") {
 			when {
 				allOf {
-					branch 'master'
+					branch '2.5.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -88,7 +88,7 @@ pipeline {
 		stage('Release to artifactory') {
 			when {
 				anyOf {
-					branch 'master'
+					branch '2.5.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -120,7 +120,7 @@ pipeline {
 		}
 		stage('Publish documentation') {
 			when {
-				branch 'master'
+				branch '2.5.x'
 			}
 			agent {
 				label 'data'
