@@ -108,7 +108,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		this.persistentPropertyPathFactory = new PersistentPropertyPathFactory<>(this);
 
 		EntityInstantiators instantiators = new EntityInstantiators();
-		PersistentPropertyAccessorFactory accessorFactory = NativeDetector.inNativeImage() ? BeanWrapperPropertyAccessorFactory.INSTANCE
+		PersistentPropertyAccessorFactory accessorFactory = NativeDetector.inNativeImage()
+				? BeanWrapperPropertyAccessorFactory.INSTANCE
 				: new ClassGeneratingPropertyAccessorFactory();
 
 		this.persistentPropertyAccessorFactory = new InstantiationAwarePropertyAccessorFactory(accessorFactory,
@@ -378,25 +379,21 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				descriptors.put(descriptor.getName(), descriptor);
 			}
 
-			try {
+			PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
+			ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
+			persistentPropertyCreator.addPropertiesForRemainingDescriptors();
 
-				PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
-				ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
-				persistentPropertyCreator.addPropertiesForRemainingDescriptors();
+			entity.verify();
 
-				entity.verify();
-
-				if (persistentPropertyAccessorFactory.isSupported(entity)) {
-					entity.setPersistentPropertyAccessorFactory(persistentPropertyAccessorFactory);
-				}
-
-			} catch (RuntimeException e) {
-				persistentEntities.remove(typeInformation);
-				throw e;
+			if (persistentPropertyAccessorFactory.isSupported(entity)) {
+				entity.setPersistentPropertyAccessorFactory(persistentPropertyAccessorFactory);
 			}
 
 		} catch (BeansException e) {
 			throw new MappingException(e.getMessage(), e);
+		} catch (RuntimeException e) {
+			persistentEntities.remove(typeInformation);
+			throw e;
 		} finally {
 			write.unlock();
 		}
