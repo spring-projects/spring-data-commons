@@ -331,6 +331,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		}
 
 		@MyAnnotation
+		@RevisedAnnnotationWithAliasFor(value = "my-value")
 		public void setSetter(String setter) {
 			this.setter = setter;
 		}
