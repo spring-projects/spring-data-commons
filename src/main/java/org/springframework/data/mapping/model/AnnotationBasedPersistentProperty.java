@@ -120,13 +120,15 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 				Class<? extends Annotation> annotationType = annotation.annotationType();
 
-				validateAnnotation(annotation,
+				Annotation mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
+
+				validateAnnotation(mergedAnnotation,
 						"Ambiguous mapping! Annotation %s configured "
 								+ "multiple times on accessor methods of property %s in class %s!",
 						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
 
 				annotationCache.put(annotationType,
-						Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(it, annotationType)));
+						Optional.of(mergedAnnotation));
 			}
 		});
 
@@ -135,13 +137,14 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			for (Annotation annotation : it.getAnnotations()) {
 
 				Class<? extends Annotation> annotationType = annotation.annotationType();
+				Annotation mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
 
-				validateAnnotation(annotation,
+				validateAnnotation(mergedAnnotation,
 						"Ambiguous mapping! Annotation %s configured " + "on field %s and one of its accessor methods in class %s!",
 						annotationType.getSimpleName(), it.getName(), getOwner().getType().getSimpleName());
 
 				annotationCache.put(annotationType,
-						Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(it, annotationType)));
+						Optional.of(mergedAnnotation));
 			}
 		});
 	}
