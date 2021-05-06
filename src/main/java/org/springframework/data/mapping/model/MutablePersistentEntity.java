@@ -15,18 +15,21 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.springframework.core.env.PropertyResolver;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.spel.EvaluationContextProvider;
+import org.springframework.lang.Nullable;
 
 /**
  * Interface capturing mutator methods for {@link PersistentEntity}s.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Tim Sazon
  */
 public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> extends PersistentEntity<T, P> {
 
@@ -66,4 +69,11 @@ public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> ext
 	 * @param provider must not be {@literal null}.
 	 */
 	void setEvaluationContextProvider(EvaluationContextProvider provider);
+
+	/**
+	 * Configures the {@link PropertyResolver} to be used by the entity.
+	 *
+	 * @param propertyResolver can be {@literal null}.
+	 */
+	void setPropertyResolver(@Nullable PropertyResolver propertyResolver);
 }

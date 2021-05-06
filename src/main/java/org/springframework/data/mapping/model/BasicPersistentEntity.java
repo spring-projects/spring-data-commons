@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.env.PropertyResolver;
 import org.springframework.data.annotation.Immutable;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.domain.Persistable;
@@ -58,6 +59,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Tim Sazon
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
@@ -78,6 +80,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private @Nullable P versionProperty;
 	private PersistentPropertyAccessorFactory propertyAccessorFactory;
 	private EvaluationContextProvider evaluationContextProvider = EvaluationContextProvider.DEFAULT;
+	private @Nullable PropertyResolver propertyResolver;
 
 	private final Lazy<Alias> typeAlias;
 	private final Lazy<IsNewStrategy> isNewStrategy;
@@ -252,6 +255,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	@Override
 	public void setEvaluationContextProvider(EvaluationContextProvider provider) {
 		this.evaluationContextProvider = provider;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.MutablePersistentEntity#setPropertyResolver(org.springframework.core.env.PropertyResolver)
+	 */
+	@Override
+	public void setPropertyResolver(@Nullable PropertyResolver propertyResolver) {
+		this.propertyResolver = propertyResolver;
 	}
 
 	/**
@@ -559,6 +571,14 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	protected EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
 		return evaluationContextProvider.getEvaluationContext(rootObject, dependencies);
+	}
+
+	/**
+	 * Returns the {@link PropertyResolver}.
+	 */
+	@Nullable
+	protected PropertyResolver getPropertyResolver() {
+		return propertyResolver;
 	}
 
 	/**
