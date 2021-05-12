@@ -88,7 +88,8 @@ class PreferredConstructorDiscovererUnitTests {
 		assertThat(constructor).isNull()
 	}
 
-	@Test // DATACMNS-1800, gh-2215
+	// See https://github.com/spring-projects/spring-data-commons/issues/2374
+	/*@Test // DATACMNS-1800, gh-2215
 	@ExperimentalUnsignedTypes
 	fun `should discover constructor for class using unsigned types`() {
 
@@ -98,7 +99,7 @@ class PreferredConstructorDiscovererUnitTests {
 			)
 
 		assertThat(constructor).isNotNull()
-	}
+	} */
 
 	data class Simple(val firstname: String)
 
@@ -137,11 +138,13 @@ class PreferredConstructorDiscovererUnitTests {
 		)
 	}
 
+	/*
+	See https://github.com/spring-projects/spring-data-commons/issues/2374
 	@ExperimentalUnsignedTypes
 	data class UnsignedTypesEntity(
 		val id: String,
 		val a: UInt = 5u,
 		val b: Int = 5,
 		val c: Double = 1.5
-	)
+	) */
 }
