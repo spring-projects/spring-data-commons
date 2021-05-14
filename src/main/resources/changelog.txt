@@ -1,6 +1,12 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.4.9 (2021-05-14)
+-------------------------------------
+* #2368 - `AnnotationBasedPersistentProperty.validateAnnotation(…)` compares declared annotations with merged annotations.
+* #2358 - Limit `BeanWrapper`'s `KotlinCopyUtil` usage to Kotlin Data classes.
+
+
 Changes in version 2.5.0 (2021-04-14)
 -------------------------------------
 * #2352 - Adds a new snippet for is-new-state-detection.
@@ -3104,6 +3110,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
