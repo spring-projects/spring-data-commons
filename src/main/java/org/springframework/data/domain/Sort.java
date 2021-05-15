@@ -49,6 +49,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 	public static final Direction DEFAULT_DIRECTION = Direction.ASC;
 
+
 	private final List<Order> orders;
 
 	protected Sort(List<Order> orders) {
@@ -187,8 +188,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	public Sort and(Sort sort) {
 
 		Assert.notNull(sort, "Sort must not be null!");
-
-		ArrayList<Order> these = new ArrayList<>(this.orders);
+		ArrayList<Order> these = new ArrayList<>(this.getOrders());
 
 		for (Order order : sort) {
 			these.add(order);
@@ -262,6 +262,10 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	@Override
 	public String toString() {
 		return orders.isEmpty() ? "UNSORTED" : StringUtils.collectionToCommaDelimitedString(orders);
+	}
+
+	public List<Order> getOrders() {
+		return orders;
 	}
 
 	/**
@@ -721,17 +725,27 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		}
 
+		@Override
+		public List<Order> getOrders() {
+			return recorded.getPropertyPath() //
+					.map(Sort::by) //
+					.orElseGet(Sort::unsorted).getOrders();
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.domain.Sort#toString()
 		 */
 		@Override
 		public String toString() {
-
-			return recorded.getPropertyPath() //
+			System.out.println("REcord: "+ recorded.getPropertyPath() //
+					.map(Sort::by));
+			String s = recorded.getPropertyPath() //
 					.map(Sort::by) //
 					.orElseGet(Sort::unsorted) //
 					.toString();
+			System.out.println("S: " + s);
+			return s;
 		}
 	}
 }

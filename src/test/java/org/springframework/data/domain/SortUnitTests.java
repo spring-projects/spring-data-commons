@@ -20,11 +20,14 @@ import static org.springframework.data.domain.Sort.NullHandling.*;
 
 import lombok.Getter;
 
+import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.geo.Circle;
 
 /**
  * Unit test for {@link Sort}.
@@ -92,6 +95,27 @@ class SortUnitTests {
 
 		Sort sort = Sort.by("foo").and(Sort.by("bar"));
 		assertThat(sort).containsExactly(Order.by("foo"), Order.by("bar"));
+	}
+
+
+	public class test_class {
+		public String prop_1;
+		public String prop_2;
+
+		public String getProp_1() {
+			return prop_1;
+		}
+
+		public String getProp_2() {
+			return prop_2;
+		}
+	}
+
+	@Test //DATACMNS-1704
+	void allowsCombiningTypedSorts() {
+		Sort sort = Sort.sort(Circle.class).by(Circle::getCenter)
+				.and(Sort.sort(Circle.class).by(Circle::getRadius));
+		assertThat(sort).containsExactly(Order.by("center"), Order.by("radius"));
 	}
 
 	@Test
