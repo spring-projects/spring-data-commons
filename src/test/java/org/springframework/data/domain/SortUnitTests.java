@@ -36,6 +36,7 @@ import org.springframework.data.geo.Circle;
  * @author Kevin Raymond
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Hiufung Kwok
  */
 class SortUnitTests {
 

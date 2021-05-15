@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Hiufung Kwok
  */
 public class Sort implements Streamable<org.springframework.data.domain.Sort.Order>, Serializable {
 
@@ -48,7 +49,6 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	private static final Sort UNSORTED = Sort.by(new Order[0]);
 
 	public static final Direction DEFAULT_DIRECTION = Direction.ASC;
-
 
 	private final List<Order> orders;
 
@@ -188,6 +188,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	public Sort and(Sort sort) {
 
 		Assert.notNull(sort, "Sort must not be null!");
+
 		ArrayList<Order> these = new ArrayList<>(this.getOrders());
 
 		for (Order order : sort) {
