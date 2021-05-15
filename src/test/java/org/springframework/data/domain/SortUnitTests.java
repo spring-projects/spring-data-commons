@@ -97,20 +97,6 @@ class SortUnitTests {
 		assertThat(sort).containsExactly(Order.by("foo"), Order.by("bar"));
 	}
 
-
-	public class test_class {
-		public String prop_1;
-		public String prop_2;
-
-		public String getProp_1() {
-			return prop_1;
-		}
-
-		public String getProp_2() {
-			return prop_2;
-		}
-	}
-
 	@Test //DATACMNS-1704
 	void allowsCombiningTypedSorts() {
 		Sort sort = Sort.sort(Circle.class).by(Circle::getCenter)
