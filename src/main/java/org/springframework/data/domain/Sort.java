@@ -738,14 +738,10 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 */
 		@Override
 		public String toString() {
-			System.out.println("REcord: "+ recorded.getPropertyPath() //
-					.map(Sort::by));
-			String s = recorded.getPropertyPath() //
+			return recorded.getPropertyPath() //
 					.map(Sort::by) //
 					.orElseGet(Sort::unsorted) //
 					.toString();
-			System.out.println("S: " + s);
-			return s;
 		}
 	}
 }
