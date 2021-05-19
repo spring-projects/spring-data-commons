@@ -20,9 +20,7 @@ import static org.springframework.data.domain.Sort.NullHandling.*;
 
 import lombok.Getter;
 
-import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort.Direction;
