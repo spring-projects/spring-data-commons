@@ -170,7 +170,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	}
 
 	public boolean isSorted() {
-		return !orders.isEmpty();
+		return !isEmpty();
 	}
 
 	public boolean isUnsorted() {
@@ -188,7 +188,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		Assert.notNull(sort, "Sort must not be null!");
 
-		ArrayList<Order> these = new ArrayList<>(this.orders);
+		ArrayList<Order> these = new ArrayList<>(this.toList());
 
 		for (Order order : sort) {
 			these.add(order);
@@ -240,7 +240,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		Sort that = (Sort) obj;
 
-		return this.orders.equals(that.orders);
+		return toList().equals(that.toList());
 	}
 
 	/*
@@ -261,7 +261,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	@Override
 	public String toString() {
-		return orders.isEmpty() ? "UNSORTED" : StringUtils.collectionToCommaDelimitedString(orders);
+		return isEmpty() ? "UNSORTED" : StringUtils.collectionToCommaDelimitedString(orders);
 	}
 
 	/**
@@ -272,7 +272,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	private Sort withDirection(Direction direction) {
 
-		return Sort.by(orders.stream().map(it -> new Order(direction, it.getProperty())).collect(Collectors.toList()));
+		return Sort.by(stream().map(it -> new Order(direction, it.getProperty())).collect(Collectors.toList()));
 	}
 
 	/**
