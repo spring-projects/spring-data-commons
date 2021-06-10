@@ -25,6 +25,7 @@ import java.util.Collection;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.geo.Circle;
 
 /**
  * Unit test for {@link Sort}.
@@ -33,6 +34,7 @@ import org.springframework.data.domain.Sort.Order;
  * @author Kevin Raymond
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Hiufung Kwok
  */
 class SortUnitTests {
 
@@ -184,6 +186,17 @@ class SortUnitTests {
 
 		assertThat(Sort.sort(Sample.class).by(Sample::getNesteds).by(Nested::getFirstname)) //
 				.containsExactly(Order.by("nesteds.firstname"));
+	}
+
+	@Test // #2103
+	void allowsCombiningTypedSorts() {
+
+		assertThat(Sort.sort(Circle.class).by(Circle::getCenter) //
+				.and(Sort.sort(Circle.class).by(Circle::getRadius))) //
+						.containsExactly(Order.by("center"), Order.by("radius"));
+
+		assertThat(Sort.by("center").and(Sort.sort(Circle.class).by(Circle::getRadius))) //
+				.containsExactly(Order.by("center"), Order.by("radius"));
 	}
 
 	@Getter
