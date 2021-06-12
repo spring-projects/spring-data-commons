@@ -1,4 +1,4 @@
-:spring-framework-docs: https://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference
+:spring-framework-docs: https://docs.spring.io/spring-framework/docs/{springVersion}/reference/html
 :spring-framework-javadoc: https://docs.spring.io/spring/docs/{springVersion}/javadoc-api
 
 [[repositories]]
