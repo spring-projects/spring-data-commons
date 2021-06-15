@@ -34,7 +34,7 @@ interface PersonRepository extends Repository<Person, UUID> {
 ====
 
 Now imagine that we want to retrieve the person's name attributes only.
-What means does Spring Data offer to achieve this? The rest of this chapter answers that question.
+What means does Spring Data offer to achieve this?The rest of this chapter answers that question.
 
 [[projections.interfaces]]
 == Interface-based Projections
@@ -264,16 +264,21 @@ class NamesOnly {
 You can dramatically simplify the code for a DTO by using https://projectlombok.org[Project Lombok], which provides an `@Value` annotation (not to be confused with Spring's `@Value` annotation shown in the earlier interface examples).
 If you use Project Lombok's `@Value` annotation, the sample DTO shown earlier would become the following:
 
-[source, java]
+[source,java]
 ----
 @Value
 class NamesOnly {
 	String firstname, lastname;
 }
 ----
+
 Fields are `private final` by default, and the class exposes a constructor that takes all fields and automatically gets `equals(…)` and `hashCode()` methods implemented.
 
 ====
+
+ifdef::repository-projections-dto-limitations-file[]
+include::{repository-projections-dto-limitations-file}[]
+endif::[]
 
 [[projection.dynamic]]
 == Dynamic Projections
@@ -284,7 +289,7 @@ To apply dynamic projections, use a query method such as the one shown in the fo
 
 .A repository using a dynamic projection parameter
 ====
-[source, java, subs="+attributes"]
+[source,java,subs="+attributes"]
 ----
 interface PersonRepository extends Repository<Person, UUID> {
 
