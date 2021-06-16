@@ -306,7 +306,7 @@ public class Repositories implements Iterable<Class<?>> {
 				return null;
 			});
 
-			Boolean presentAndPrimary = factoryToUse.map(it -> it.getBeanDefinition(name)) //
+			Boolean presentAndPrimary = factoryToUse.map(it -> it.getMergedBeanDefinition(name)) //
 					.map(BeanDefinition::isPrimary) //
 					.orElse(false);
 
