@@ -18,14 +18,13 @@ package org.springframework.data.repository.core.support;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -84,7 +83,7 @@ public class RepositoryFragmentsFactoryBean<T>
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public RepositoryFragments getObject() throws Exception {
 		return this.repositoryFragments;
@@ -94,7 +93,7 @@ public class RepositoryFragmentsFactoryBean<T>
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public Class<?> getObjectType() {
 		return RepositoryComposition.class;

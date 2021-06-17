@@ -23,12 +23,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
+
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -82,7 +82,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public java.time.LocalDateTime convert(LocalDateTime source) {
 			return java.time.LocalDateTime.ofInstant(source.toDate().toInstant(), ZoneId.systemDefault());
@@ -94,7 +94,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Date convert(LocalDate source) {
 			return source.toDate();
@@ -106,7 +106,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Date convert(LocalDateTime source) {
 			return source.toDate();
@@ -118,7 +118,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Date convert(DateTime source) {
 			return source.toDate();
@@ -130,7 +130,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public LocalDate convert(Date source) {
 			return new LocalDate(source.getTime());
@@ -142,7 +142,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public LocalDateTime convert(Date source) {
 			return new LocalDateTime(source.getTime());
@@ -154,7 +154,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public DateTime convert(Date source) {
 			return new DateTime(source.getTime());
@@ -167,7 +167,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public LocalDateTime convert(java.time.LocalDateTime source) {
 			return LocalDateTime.fromDateFields(Jsr310Converters.LocalDateTimeToDateConverter.INSTANCE.convert(source));
@@ -179,7 +179,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public LocalDateTime convert(java.time.Instant source) {
 			return LocalDateTime.fromDateFields(new Date(source.toEpochMilli()));
@@ -191,7 +191,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Instant convert(LocalDateTime source) {
 			return Instant.ofEpochMilli(source.toDateTime().getMillis());
@@ -203,7 +203,7 @@ public abstract class JodaTimeConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public DateTime convert(java.time.LocalDateTime source) {
 			return new DateTime(Jsr310Converters.LocalDateTimeToDateConverter.INSTANCE.convert(source));

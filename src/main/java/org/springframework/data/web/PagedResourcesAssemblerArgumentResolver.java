@@ -18,10 +18,9 @@ package org.springframework.data.web;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.log.LogMessage;
@@ -29,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.server.MethodLinkBuilderFactory;
 import org.springframework.hateoas.server.core.MethodParameters;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilderFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -91,7 +91,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {

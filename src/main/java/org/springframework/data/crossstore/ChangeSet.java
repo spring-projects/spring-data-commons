@@ -17,9 +17,8 @@ package org.springframework.data.crossstore;
 
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.springframework.core.convert.ConversionService;
+import org.springframework.lang.Nullable;
 
 /**
  * Interface representing the set of changes in an entity.

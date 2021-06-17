@@ -24,12 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -258,7 +257,7 @@ public abstract class ReturnedType {
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.ResultFactory.ReturnedType#getTypeToRead()
 		 */
-		@Nonnull
+		@NonNull
 		public Class<?> getTypeToRead() {
 			return type;
 		}

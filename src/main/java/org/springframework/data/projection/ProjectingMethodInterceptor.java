@@ -23,16 +23,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Nonnull;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -67,7 +67,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	 */
 	@Nullable
 	@Override
-	public Object invoke(@SuppressWarnings("null") @Nonnull MethodInvocation invocation) throws Throwable {
+	public Object invoke(@SuppressWarnings("null") @NonNull MethodInvocation invocation) throws Throwable {
 
 		TypeInformation<?> type = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod());
 		TypeInformation<?> resultType = type;

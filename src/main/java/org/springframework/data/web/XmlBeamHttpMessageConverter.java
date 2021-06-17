@@ -18,7 +18,6 @@ package org.springframework.data.web;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.springframework.core.ResolvableType;
@@ -30,8 +29,10 @@ import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
+
 import org.xml.sax.SAXParseException;
 import org.xmlbeam.XBProjector;
 import org.xmlbeam.config.DefaultXMLFactoriesConfig;

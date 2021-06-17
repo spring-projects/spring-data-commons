@@ -15,12 +15,11 @@
  */
 package org.springframework.data.web;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.BindingContext;
@@ -74,7 +73,7 @@ public class ReactivePageableHandlerMethodArgumentResolver extends PageableHandl
 	 * (non-Javadoc)
 	 * @see org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver#resolveArgumentValue(org.springframework.core.MethodParameter, org.springframework.web.reactive.BindingContext, org.springframework.web.server.ServerWebExchange)
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public Pageable resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
 			ServerWebExchange exchange) {

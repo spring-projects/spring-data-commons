@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -44,6 +42,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.util.Lazy;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -266,7 +265,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
-	@Nonnull
+	@NonNull
 	public T getObject() {
 		return this.repository.get();
 	}
@@ -275,7 +274,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
-	@Nonnull
+	@NonNull
 	public Class<? extends T> getObjectType() {
 		return repositoryInterface;
 	}

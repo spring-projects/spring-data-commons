@@ -30,9 +30,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.annotation.Nonnull;
-
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.ReactiveAdapter;
 import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.convert.ConversionService;
@@ -44,6 +43,7 @@ import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.repository.util.ReactiveWrappers.ReactiveLibrary;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -541,7 +541,7 @@ public abstract class ReactiveWrapperConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Flux<?> convert(Publisher<?> source) {
 			return Flux.from(source);
@@ -558,7 +558,7 @@ public abstract class ReactiveWrapperConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Mono<?> convert(Publisher<?> source) {
 			return Mono.from(source);
@@ -579,7 +579,7 @@ public abstract class ReactiveWrapperConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Flow<?> convert(Publisher<?> source) {
 			return ReactiveFlowKt.asFlow(source);

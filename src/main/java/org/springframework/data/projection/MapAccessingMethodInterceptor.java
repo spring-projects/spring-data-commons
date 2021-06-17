@@ -18,11 +18,10 @@ package org.springframework.data.projection;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 

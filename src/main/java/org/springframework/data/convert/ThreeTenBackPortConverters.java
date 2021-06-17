@@ -27,10 +27,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ClassUtils;
+
 import org.threeten.bp.Instant;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
@@ -107,7 +107,7 @@ public abstract class ThreeTenBackPortConverters {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
-		@Nonnull
+		@NonNull
 		@Override
 		public java.time.LocalDateTime convert(LocalDateTime source) {
 
@@ -122,7 +122,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public LocalDateTime convert(Date source) {
 			return ofInstant(toInstant(source), systemDefault());
@@ -134,7 +134,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Date convert(LocalDateTime source) {
 			return toDate(source.atZone(systemDefault()).toInstant());
@@ -146,7 +146,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public LocalDate convert(Date source) {
 			return ofInstant(ofEpochMilli(source.getTime()), systemDefault()).toLocalDate();
@@ -158,7 +158,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Date convert(LocalDate source) {
 			return toDate(source.atStartOfDay(systemDefault()).toInstant());
@@ -170,7 +170,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public LocalTime convert(Date source) {
 			return ofInstant(ofEpochMilli(source.getTime()), systemDefault()).toLocalTime();
@@ -182,7 +182,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Date convert(LocalTime source) {
 			return toDate(source.atDate(LocalDate.now()).atZone(systemDefault()).toInstant());
@@ -194,7 +194,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Instant convert(Date source) {
 			return toInstant(source);
@@ -206,7 +206,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Date convert(Instant source) {
 			return toDate(source.atZone(systemDefault()).toInstant());
@@ -218,7 +218,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public java.time.Instant convert(LocalDateTime source) {
 			return java.time.Instant.ofEpochMilli(source.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli());
@@ -230,7 +230,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public LocalDateTime convert(java.time.Instant source) {
 			return LocalDateTime.ofInstant(Instant.ofEpochMilli(source.toEpochMilli()), ZoneOffset.systemDefault());
@@ -243,7 +243,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public String convert(ZoneId source) {
 			return source.toString();
@@ -256,7 +256,7 @@ public abstract class ThreeTenBackPortConverters {
 
 		INSTANCE;
 
-		@Nonnull
+		@NonNull
 		@Override
 		public ZoneId convert(String source) {
 			return ZoneId.of(source);

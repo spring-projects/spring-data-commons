@@ -17,8 +17,6 @@ package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -29,6 +27,7 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -39,8 +38,8 @@ import org.springframework.util.Assert;
 public abstract class RepositoryBeanDefinitionRegistrarSupport
 		implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
-	private @SuppressWarnings("null") @Nonnull ResourceLoader resourceLoader;
-	private @SuppressWarnings("null") @Nonnull Environment environment;
+	private @SuppressWarnings("null") @NonNull ResourceLoader resourceLoader;
+	private @SuppressWarnings("null") @NonNull Environment environment;
 
 	/*
 	 * (non-Javadoc)

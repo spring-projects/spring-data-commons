@@ -15,10 +15,10 @@
  */
 package org.springframework.data.repository.core.support;
 
-import javax.annotation.Nullable;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**

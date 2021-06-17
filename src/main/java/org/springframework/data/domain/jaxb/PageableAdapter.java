@@ -17,13 +17,13 @@ package org.springframework.data.domain.jaxb;
 
 import java.util.Collections;
 
-import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.PageRequestDto;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.SortDto;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -60,7 +60,7 @@ class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 	 * (non-Javadoc)
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public Pageable unmarshal(@Nullable PageRequestDto v) {
 

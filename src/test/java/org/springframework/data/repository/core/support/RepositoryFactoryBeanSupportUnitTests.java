@@ -18,9 +18,6 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.jupiter.api.Test;
@@ -28,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -83,7 +82,7 @@ class RepositoryFactoryBeanSupportUnitTests {
 				.addRepositoryProxyPostProcessor((factory, repositoryInformation) -> factory.addAdvice(new MethodInterceptor() {
 					@Nullable
 					@Override
-					public Object invoke(@Nonnull MethodInvocation invocation) {
+					public Object invoke(@NonNull MethodInvocation invocation) {
 						throw new UnsupportedOperationException();
 					}
 				})));

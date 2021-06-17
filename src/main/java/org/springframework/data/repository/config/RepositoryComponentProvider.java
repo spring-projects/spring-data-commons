@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -36,6 +34,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.util.ClassUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -136,7 +135,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	 * (non-Javadoc)
 	 * @see org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider#getRegistry()
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	protected BeanDefinitionRegistry getRegistry() {
 		return registry;

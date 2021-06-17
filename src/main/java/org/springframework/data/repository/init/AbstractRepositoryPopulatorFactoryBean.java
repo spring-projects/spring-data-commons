@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.init;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.ApplicationContext;
@@ -25,6 +23,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.Resource;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -66,7 +65,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#getObjectType()
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public Class<?> getObjectType() {
 		return ResourceReaderRepositoryPopulator.class;

@@ -17,11 +17,10 @@ package org.springframework.data.util;
 
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

@@ -17,10 +17,9 @@ package org.springframework.data.web;
 
 import java.util.Arrays;
 
-import javax.annotation.Nullable;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;

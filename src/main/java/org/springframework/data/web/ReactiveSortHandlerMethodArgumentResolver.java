@@ -17,10 +17,9 @@ package org.springframework.data.web;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.BindingContext;
 import org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver;
@@ -50,7 +49,7 @@ public class ReactiveSortHandlerMethodArgumentResolver extends SortHandlerMethod
 	 *(non-Javadoc)
 	 * @see org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver#resolveArgumentValue(org.springframework.core.MethodParameter, org.springframework.web.reactive.BindingContext, org.springframework.web.server.ServerWebExchange)
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public Sort resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
 			ServerWebExchange exchange) {

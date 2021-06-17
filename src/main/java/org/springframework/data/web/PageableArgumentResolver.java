@@ -15,10 +15,9 @@
  */
 package org.springframework.data.web;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -48,7 +47,7 @@ public interface PageableArgumentResolver extends HandlerMethodArgumentResolver 
 	 * @param binderFactory a factory for creating {@link WebDataBinder} instances
 	 * @return the resolved argument value.
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	Pageable resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory);

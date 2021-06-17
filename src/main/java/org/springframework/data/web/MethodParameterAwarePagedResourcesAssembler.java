@@ -15,10 +15,9 @@
  */
 package org.springframework.data.web;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.springframework.core.MethodParameter;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponents;
 
@@ -53,7 +52,7 @@ class MethodParameterAwarePagedResourcesAssembler<T> extends PagedResourcesAssem
 	 * (non-Javadoc)
 	 * @see org.springframework.data.web.PagedResourcesAssembler#getMethodParameter()
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	protected MethodParameter getMethodParameter() {
 		return parameter;

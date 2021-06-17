@@ -26,12 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.util.QueryExecutionConverters.WrapperType;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -55,7 +54,7 @@ class VavrCollections {
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
-		@Nonnull
+		@NonNull
 		@Override
 		public Object convert(Object source) {
 
@@ -83,7 +82,7 @@ class VavrCollections {
 			 * (non-Javadoc)
 			 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 			 */
-			@Nonnull
+			@NonNull
 			@Override
 			public java.util.Set<ConvertiblePair> getConvertibleTypes() {
 				return CONVERTIBLE_PAIRS;

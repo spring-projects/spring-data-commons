@@ -15,11 +15,10 @@
  */
 package org.springframework.data.web;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -48,7 +47,7 @@ public interface SortArgumentResolver extends HandlerMethodArgumentResolver {
 	 * @param binderFactory a factory for creating {@link WebDataBinder} instances
 	 * @return the resolved argument value, or {@code null}
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	Sort resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory);

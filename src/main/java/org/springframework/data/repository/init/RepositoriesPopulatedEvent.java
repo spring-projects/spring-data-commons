@@ -15,11 +15,10 @@
  */
 package org.springframework.data.repository.init;
 
-import javax.annotation.Nullable;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
@@ -31,6 +29,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -69,7 +68,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public Set<ConvertiblePair> getConvertibleTypes() {
 		return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
@@ -148,7 +147,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
-		@Nonnull
+		@NonNull
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
@@ -230,7 +229,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
 		 */
-		@Nonnull
+		@NonNull
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
