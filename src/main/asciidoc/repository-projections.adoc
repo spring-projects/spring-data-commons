@@ -34,7 +34,7 @@ interface PersonRepository extends Repository<Person, UUID> {
 ====
 
 Now imagine that we want to retrieve the person's name attributes only.
-What means does Spring Data offer to achieve this?The rest of this chapter answers that question.
+What means does Spring Data offer to achieve this? The rest of this chapter answers that question.
 
 [[projections.interfaces]]
 == Interface-based Projections
@@ -276,8 +276,8 @@ Fields are `private final` by default, and the class exposes a constructor that 
 
 ====
 
-ifdef::repository-projections-dto-limitations-file[]
-include::{repository-projections-dto-limitations-file}[]
+ifdef::repository-projections-trailing-dto-fragment[]
+include::{repository-projections-trailing-dto-fragment}[]
 endif::[]
 
 [[projection.dynamic]]
