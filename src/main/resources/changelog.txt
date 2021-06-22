@@ -1,6 +1,12 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.5.2 (2021-06-22)
+-------------------------------------
+* #2382 - Allow for a module specific inclusion for DTO projections.
+* #2103 - Sort.and() does not handle TypedSort without explicit order  [DATACMNS-1704].
+
+
 Changes in version 2.4.10 (2021-06-22)
 --------------------------------------
 * #2382 - Allow for a module specific inclusion for DTO projections.
@@ -3123,6 +3129,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
