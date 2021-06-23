@@ -30,6 +30,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,7 @@ import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.KotlinReflectionUtils;
+import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
@@ -483,6 +485,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		if (simpleTypeHolder.isSimpleType(type.getType())) {
 			return false;
 		}
+		if(NullableWrapperConverters.supports(type.getType())) {
+			return false;
+		}
 
 		return !KotlinDetector.isKotlinType(type.getType()) || KotlinReflectionUtils.isSupportedKotlinClass(type.getType());
 	}
@@ -569,7 +574,19 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
-			property.getPersistentEntityTypes().forEach(AbstractMappingContext.this::addPersistentEntity);
+			StreamSupport.stream(property.getPersistentEntityTypes().spliterator(), false)
+					.map(it -> {
+						if(it.isNullableWrapper()) {
+							return it.getActualType();
+						}
+						return it;
+					})
+					.filter(it -> {
+
+						boolean shouldCreate = AbstractMappingContext.this.shouldCreatePersistentEntityFor(it);
+						return shouldCreate;
+					})
+					.forEach(AbstractMappingContext.this::addPersistentEntity);
 		}
 
 		protected boolean shouldSkipOverrideProperty(P property) {
