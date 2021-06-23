@@ -309,6 +309,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getComponentType();
 		}
 
+		if (isNullableWrapper()) {
+			return getComponentType();
+		}
+
 		return this;
 	}
 
@@ -382,6 +386,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		if (Iterable.class.isAssignableFrom(rawType)) {
 			return getTypeArgument(Iterable.class, 0);
+		}
+
+		if(isNullableWrapper()) {
+			return getTypeArgument(rawType, 0);
 		}
 
 		List<TypeInformation<?>> arguments = getTypeArguments();

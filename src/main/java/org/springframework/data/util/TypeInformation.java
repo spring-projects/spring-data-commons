@@ -273,4 +273,9 @@ public interface TypeInformation<S> {
 	default boolean isSubTypeOf(Class<?> type) {
 		return !type.equals(getType()) && type.isAssignableFrom(getType());
 	}
+
+	default boolean isNullableWrapper() {
+		return NullableWrapperConverters.supports(getType());
+	}
+
 }
