@@ -45,5 +45,7 @@ public interface Persistable<ID> {
 	 *
 	 * @return if {@literal true} the object is new.
 	 */
-	boolean isNew();
+	default boolean isNew() {
+		return getId() == null;
+	}
 }
