@@ -125,6 +125,8 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 				if (extensionFilter.test(information)) {
 					return Mono.just(extension);
 				}
+
+				return Mono.empty();
 			}
 
 			if (it instanceof ReactiveEvaluationContextExtension) {
