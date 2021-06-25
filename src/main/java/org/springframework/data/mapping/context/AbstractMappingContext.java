@@ -34,7 +34,6 @@ import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -116,7 +115,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		this.persistentPropertyPathFactory = new PersistentPropertyPathFactory<>(this);
 
 		EntityInstantiators instantiators = new EntityInstantiators();
-		PersistentPropertyAccessorFactory accessorFactory = NativeDetector.inNativeImage() ? BeanWrapperPropertyAccessorFactory.INSTANCE
+		PersistentPropertyAccessorFactory accessorFactory = NativeDetector.inNativeImage()
+				? BeanWrapperPropertyAccessorFactory.INSTANCE
 				: new ClassGeneratingPropertyAccessorFactory();
 
 		this.persistentPropertyAccessorFactory = new InstantiationAwarePropertyAccessorFactory(accessorFactory,
@@ -485,7 +485,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		if (simpleTypeHolder.isSimpleType(type.getType())) {
 			return false;
 		}
-		if(NullableWrapperConverters.supports(type.getType())) {
+
+		if (NullableWrapperConverters.supports(type.getType())) {
 			return false;
 		}
 
@@ -564,6 +565,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			if (shouldSkipOverrideProperty(property)) {
 				return;
 			}
+
 			entity.addPersistentProperty(property);
 
 			if (property.isAssociation()) {
@@ -574,18 +576,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
-			StreamSupport.stream(property.getPersistentEntityTypes().spliterator(), false)
-					.map(it -> {
-						if(it.isNullableWrapper()) {
-							return it.getActualType();
-						}
-						return it;
-					})
-					.filter(it -> {
-
-						boolean shouldCreate = AbstractMappingContext.this.shouldCreatePersistentEntityFor(it);
-						return shouldCreate;
-					})
+			StreamSupport.stream(property.getPersistentEntityTypes().spliterator(), false) //
+					.filter(AbstractMappingContext.this::shouldCreatePersistentEntityFor) //
 					.forEach(AbstractMappingContext.this::addPersistentEntity);
 		}
 
@@ -667,7 +659,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			return persistentProperty.getType();
 		}
 	}
-
 
 	/**
 	 * Filter rejecting static fields as well as artificially introduced ones. See
