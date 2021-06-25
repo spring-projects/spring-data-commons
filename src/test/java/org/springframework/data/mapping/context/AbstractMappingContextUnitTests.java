@@ -26,11 +26,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
@@ -272,6 +275,36 @@ class AbstractMappingContextUnitTests {
 		});
 	}
 
+	@Test // GH-2390
+	void shouldNotCreatePersistentEntityForOptionalButItsGenericTypeArgument() {
+
+		context.getPersistentEntity(WithOptionals.class);
+
+		assertThat(context.getPersistentEntities()).map(it -> (Class) it.getType())
+				.contains(WithOptionals.class, Person.class, Base.class)
+				.doesNotContain(Optional.class, List.class, ArrayList.class);
+	}
+
+	@Test // GH-2390
+	void shouldNotCreatePersistentEntityForListButItsGenericTypeArgument() {
+
+		context.getPersistentEntity(WithNestedLists.class);
+
+		assertThat(context.getPersistentEntities()).map(it -> (Class) it.getType())
+				.contains(Base.class)
+				.doesNotContain(List.class, ArrayList.class);
+	}
+
+	@Test // GH-2390
+	void shouldNotCreatePersistentEntityForMapButItsGenericTypeArguments() {
+
+		context.getPersistentEntity(WithMap.class);
+
+		assertThat(context.getPersistentEntities()).map(it -> (Class) it.getType())
+				.contains(Base.class, Person.class, MapKey.class)
+				.doesNotContain(List.class, Map.class, String.class, Integer.class);
+	}
+
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
 
 		boolean found = false;
@@ -430,6 +463,28 @@ class AbstractMappingContextUnitTests {
 		ShadowingPropertyAssignable(Integer value) {
 			this.value = value;
 		}
+	}
+
+	class WithOptionals {
+
+		Optional<String> optionalOfString;
+		Optional<Person> optionalOfPerson;
+		List<Optional<Base>> listOfOptionalOfBase;
+	}
+
+	class WithNestedLists {
+		ArrayList<List<Base>> arrayListOfOptionalOfBase;
+	}
+
+	class MapKey {
+
+	}
+
+	class WithMap {
+
+		Map<String, List<Base>> mapOfStringToList;
+		Map<String, Person> mapOfStringToPerson;
+		Map<MapKey, Integer> mapOfKeyToPerson;
 	}
 
 }

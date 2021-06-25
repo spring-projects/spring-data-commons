@@ -18,11 +18,16 @@ package org.springframework.data.mapping.model;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
+import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -64,6 +69,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	private final Lazy<Boolean> isAssociation;
 	private final Lazy<TypeInformation<?>> associationTargetType;
+	private final Lazy<Collection<TypeInformation<?>>> entityTypes;
 
 	private final Method getter;
 	private final Method setter;
@@ -111,6 +117,43 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		} else {
 			this.immutable = false;
 		}
+
+		this.entityTypes = Lazy.of(() -> collectEntityTypes(simpleTypeHolder, information, new LinkedHashSet<>()));
+	}
+
+	protected Set<TypeInformation<?>> collectEntityTypes(SimpleTypeHolder simpleTypeHolder, @Nullable TypeInformation<?> typeInformation, Set<TypeInformation<?>> entityTypes) {
+
+		if(typeInformation == null || entityTypes.contains(typeInformation) || simpleTypeHolder.isSimpleType(typeInformation.getType())) {
+			return entityTypes;
+		}
+
+		if(typeInformation.isMap()) {
+
+			collectEntityTypes(simpleTypeHolder, typeInformation.getComponentType(), entityTypes);
+			collectEntityTypes(simpleTypeHolder, typeInformation.getMapValueType(), entityTypes);
+			return entityTypes;
+		}
+
+		if(typeInformation.isCollectionLike()) {
+
+			collectEntityTypes(simpleTypeHolder, typeInformation.getComponentType(), entityTypes);
+			return entityTypes;
+		}
+
+		if(typeInformation.isNullableWrapper()) {
+
+			collectEntityTypes(simpleTypeHolder, typeInformation.getActualType(), entityTypes);
+			return entityTypes;
+		}
+
+		if(ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(typeInformation.getType())) {
+
+			entityTypes.add(getAssociationOrActualType());
+			return entityTypes;
+		}
+
+		entityTypes.add(typeInformation);
+		return entityTypes;
 	}
 
 	protected abstract Association<P> createAssociation();
@@ -167,13 +210,15 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	@Override
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
 
+		if(isMap() || isCollectionLike()) {
+			return entityTypes.get();
+		}
+
 		if (!isEntity()) {
 			return Collections.emptySet();
 		}
 
-		TypeInformation<?> result = getAssociationTypeOr(() -> entityTypeInformation.getNullable());
-
-		return result != null ? Collections.singleton(result) : Collections.emptySet();
+		return entityTypes.get();
 	}
 
 	/*
