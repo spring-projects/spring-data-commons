@@ -650,7 +650,7 @@ class Product {                                         <1>
 @RequiredArgConstructor(staticName = "of")
 class Products implements Streamable<Product> {         <2>
 
-  private Streamable<Product> streamable;
+  private final Streamable<Product> streamable;
 
   public MonetaryAmount getTotal() {                    <3>
     return streamable.stream()
