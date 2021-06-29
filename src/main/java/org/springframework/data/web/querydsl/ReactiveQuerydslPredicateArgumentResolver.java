@@ -17,12 +17,11 @@ package org.springframework.data.web.querydsl;
 
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.BindingContext;
@@ -30,7 +29,6 @@ import org.springframework.web.reactive.result.method.HandlerMethodArgumentResol
 import org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 
 /**
@@ -54,20 +52,16 @@ public class ReactiveQuerydslPredicateArgumentResolver extends QuerydslPredicate
 	 * @see org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver(org.springframework.core.MethodParameter, org.springframework.web.reactive.BindingContext, org.springframework.web.server.ServerWebExchange)
 	 */
 	@Override
+	@Nullable
 	public Object resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
 			ServerWebExchange exchange) {
 
 		MultiValueMap<String, String> queryParameters = getQueryParameters(exchange);
 		Predicate result = getPredicate(parameter, queryParameters);
 
-		if (!parameter.isOptional() && result == null) {
-			return new BooleanBuilder();
-		}
-
-		return OPTIONAL_OF_PREDICATE.isAssignableFrom(ResolvableType.forMethodParameter(parameter)) //
-				? Optional.ofNullable(result) //
-				: result;
+		return potentiallyConvertMethodParameterValue(parameter, result);
 	}
+
 
 	private static MultiValueMap<String, String> getQueryParameters(ServerWebExchange exchange) {
 

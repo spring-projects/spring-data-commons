@@ -21,7 +21,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
@@ -33,7 +32,6 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 
 /**
@@ -84,13 +82,7 @@ public class QuerydslPredicateArgumentResolver extends QuerydslPredicateArgument
 		MultiValueMap<String, String> queryParameters = getQueryParameters(webRequest);
 		Predicate result = getPredicate(parameter, queryParameters);
 
-		if (!parameter.isOptional() && result == null) {
-			return new BooleanBuilder();
-		}
-
-		return OPTIONAL_OF_PREDICATE.isAssignableFrom(ResolvableType.forMethodParameter(parameter)) //
-				? Optional.ofNullable(result) //
-				: result;
+		return potentiallyConvertMethodParameterValue(parameter, result);
 	}
 
 	private static MultiValueMap<String, String> getQueryParameters(NativeWebRequest webRequest) {

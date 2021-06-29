@@ -32,7 +32,6 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
@@ -80,9 +79,8 @@ public class QuerydslPredicateBuilder {
 	 * @param type the type to create a predicate for.
 	 * @param values the values to bind.
 	 * @param bindings the {@link QuerydslBindings} for the predicate.
-	 * @return
+	 * @return the {@link Predicate}.
 	 */
-	@Nullable
 	public Predicate getPredicate(TypeInformation<?> type, MultiValueMap<String, String> values,
 			QuerydslBindings bindings) {
 
@@ -91,7 +89,7 @@ public class QuerydslPredicateBuilder {
 		BooleanBuilder builder = new BooleanBuilder();
 
 		if (values.isEmpty()) {
-			return builder.getValue();
+			return getPredicate(builder);
 		}
 
 		for (Entry<String, List<String>> entry : values.entrySet()) {
@@ -118,7 +116,19 @@ public class QuerydslPredicateBuilder {
 			predicate.ifPresent(builder::and);
 		}
 
-		return builder.getValue();
+		return getPredicate(builder);
+	}
+
+	/**
+	 * Returns whether the given {@link Predicate} represents an empty predicate instance.
+	 *
+	 * @param predicate
+	 * @return
+	 * @since 2.5.3
+	 * @see BooleanBuilder
+	 */
+	public static boolean isEmpty(Predicate predicate) {
+		return new BooleanBuilder().equals(predicate);
 	}
 
 	/**
@@ -218,5 +228,17 @@ public class QuerydslPredicateBuilder {
 	 */
 	private static boolean isSingleElementCollectionWithoutText(List<String> source) {
 		return source.size() == 1 && !StringUtils.hasLength(source.get(0));
+	}
+
+	/**
+	 * Returns the {@link Predicate} from {@link BooleanBuilder}.
+	 *
+	 * @param builder
+	 * @return
+	 */
+	private static Predicate getPredicate(BooleanBuilder builder) {
+
+		Predicate predicate = builder.getValue();
+		return predicate == null ? new BooleanBuilder() : predicate;
 	}
 }
