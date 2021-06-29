@@ -77,8 +77,10 @@ class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-669, DATACMNS-1168
-	void getPredicateShouldReturnNullWhenPropertiesAreEmpty() {
-		assertThat(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS)).isNull();
+	void getPredicateShouldReturnEmptyWhenPropertiesAreEmpty() {
+		assertThat(
+				QuerydslPredicateBuilder.isEmpty(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS)))
+						.isTrue();
 	}
 
 	@Test // DATACMNS-669
@@ -228,6 +230,6 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("firstname", "");
 
-		assertThat(builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS)).isNull();
+		assertThat(QuerydslPredicateBuilder.isEmpty(builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS))).isTrue();
 	}
 }

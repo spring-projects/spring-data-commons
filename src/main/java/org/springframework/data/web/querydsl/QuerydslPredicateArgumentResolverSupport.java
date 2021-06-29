@@ -94,7 +94,6 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		return false;
 	}
 
-	@Nullable
 	Predicate getPredicate(MethodParameter parameter, MultiValueMap<String, String> queryParameters) {
 
 		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
@@ -110,6 +109,20 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 				.orElseGet(() -> bindingsFactory.createBindingsFor(domainType));
 
 		return predicateBuilder.getPredicate(domainType, queryParameters, bindings);
+	}
+
+	@Nullable
+	static Object potentiallyConvertMethodParameterValue(MethodParameter parameter, Predicate predicate) {
+
+		if (!parameter.isOptional()) {
+			return predicate;
+		}
+
+		if (OPTIONAL_OF_PREDICATE.isAssignableFrom(ResolvableType.forMethodParameter(parameter))) {
+			return QuerydslPredicateBuilder.isEmpty(predicate) ? Optional.empty() : Optional.of(predicate);
+		}
+
+		return QuerydslPredicateBuilder.isEmpty(predicate) ? null : predicate;
 	}
 
 	/**
