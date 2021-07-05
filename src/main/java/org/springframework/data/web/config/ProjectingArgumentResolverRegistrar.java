@@ -54,7 +54,7 @@ public class ProjectingArgumentResolverRegistrar {
 	 * @return
 	 */
 	@Bean
-	public static ProjectingArgumentResolverBeanPostProcessor projectingArgumentResolverBeanPostProcessor(
+	static ProjectingArgumentResolverBeanPostProcessor projectingArgumentResolverBeanPostProcessor(
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
 		return new ProjectingArgumentResolverBeanPostProcessor(conversionService);
 	}
@@ -66,7 +66,7 @@ public class ProjectingArgumentResolverRegistrar {
 	 * @author Oliver Gierke
 	 * @soundtrack Apparat With Soap & Skin - Goodbye (Dark Theme Song - https://www.youtube.com/watch?v=66VnOdk6oto)
 	 */
-	private static class ProjectingArgumentResolverBeanPostProcessor
+	static class ProjectingArgumentResolverBeanPostProcessor
 			implements BeanPostProcessor, BeanFactoryAware, BeanClassLoaderAware {
 
 		private ProxyingHandlerMethodArgumentResolver resolver;
@@ -78,8 +78,7 @@ public class ProjectingArgumentResolverRegistrar {
 		 * @param conversionService the Spring MVC {@link ConversionService} in a lazy fashion, so that its initialization
 		 *          is not triggered yet.
 		 */
-		public ProjectingArgumentResolverBeanPostProcessor(
-				@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
+		ProjectingArgumentResolverBeanPostProcessor(ObjectFactory<ConversionService> conversionService) {
 			this.resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, false);
 		}
 
