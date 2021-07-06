@@ -17,6 +17,8 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
+import com.jayway.jsonpath.spi.json.JsonProvider;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -59,7 +61,8 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 
 		MappingProvider mappingProvider = new JacksonMappingProvider(new ObjectMapper());
-		projectionFactory.registerMethodInvokerFactory(new JsonProjectingMethodInterceptorFactory(mappingProvider));
+        JsonProvider jsonProvider = new JacksonJsonProvider(new ObjectMapper());
+		projectionFactory.registerMethodInvokerFactory(new JsonProjectingMethodInterceptorFactory(mappingProvider, jsonProvider));
 
 		this.projectionFactory = projectionFactory;
 		this.customer = projectionFactory.createProjection(Customer.class, new ByteArrayInputStream(json.getBytes()));
