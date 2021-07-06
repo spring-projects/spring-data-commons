@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -85,7 +86,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 		projectionFactory
-				.registerMethodInvokerFactory(new JsonProjectingMethodInterceptorFactory(new JacksonMappingProvider(mapper)));
+				.registerMethodInvokerFactory(new JsonProjectingMethodInterceptorFactory(new JacksonMappingProvider(mapper), new JacksonJsonProvider(mapper)));
 
 		return projectionFactory;
 	}
