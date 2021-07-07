@@ -39,6 +39,7 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.ProxyUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentLruCache;
 
 /**
  * Wrapper class to access repository instances obtained from a {@link ListableBeanFactory}.
@@ -58,6 +59,8 @@ public class Repositories implements Iterable<Class<?>> {
 	private final Optional<BeanFactory> beanFactory;
 	private final Map<Class<?>, String> repositoryBeanNames;
 	private final Map<Class<?>, RepositoryFactoryInformation<Object, Object>> repositoryFactoryInfos;
+	private final ConcurrentLruCache<Class<?>, Class<?>> domainTypeMapping = new ConcurrentLruCache<>(64,
+			this::getRepositoryDomainTypeFor);
 
 	/**
 	 * Constructor to create the {@link #NONE} instance.
@@ -124,7 +127,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		Class<?> userClass = ProxyUtils.getUserClass(domainClass);
+		Class<?> userClass = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
 
 		return repositoryFactoryInfos.containsKey(userClass);
 	}
@@ -139,7 +142,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		Class<?> userClass = ProxyUtils.getUserClass(domainClass);
+		Class<?> userClass = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
 		Optional<String> repositoryBeanName = Optional.ofNullable(repositoryBeanNames.get(userClass));
 
 		return beanFactory.flatMap(it -> repositoryBeanName.map(it::getBean));
@@ -157,7 +160,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		Class<?> userType = ProxyUtils.getUserClass(domainClass);
+		Class<?> userType = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
 		RepositoryFactoryInformation<Object, Object> repositoryInfo = repositoryFactoryInfos.get(userType);
 
 		if (repositoryInfo != null) {
@@ -301,6 +304,33 @@ public class Repositories implements Iterable<Class<?>> {
 
 		this.repositoryFactoryInfos.put(type, information);
 		this.repositoryBeanNames.put(type, name);
+	}
+
+	/**
+	 * Returns the repository domain type for which to look up the repository. The input can either be a repository
+	 * managed type directly. Or it can be a sub-type of a repository managed one, in which case we check the domain types
+	 * we have repositories registered for for assignability.
+	 *
+	 * @param domainType must not be {@literal null}.
+	 * @return
+	 */
+	private Class<?> getRepositoryDomainTypeFor(Class<?> domainType) {
+
+		Assert.notNull(domainType, "Domain type must not be null!");
+
+		Set<Class<?>> declaredTypes = repositoryBeanNames.keySet();
+
+		if (declaredTypes.contains(domainType)) {
+			return domainType;
+		}
+
+		for (Class<?> declaredType : declaredTypes) {
+			if (declaredType.isAssignableFrom(domainType)) {
+				return declaredType;
+			}
+		}
+
+		return domainType;
 	}
 
 	/**
