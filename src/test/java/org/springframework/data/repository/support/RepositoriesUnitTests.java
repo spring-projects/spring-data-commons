@@ -29,7 +29,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -206,6 +205,47 @@ class RepositoriesUnitTests {
 		});
 	}
 
+	@Test // GH-2406
+	void exposesParentRepositoryForChildIfOnlyParentRepositoryIsRegistered() {
+
+		Repositories repositories = bootstrapRepositories(ParentRepository.class);
+
+		assertRepositoryAvailableFor(repositories, Child.class, ParentRepository.class);
+	}
+
+	@Test // GH-2406
+	void usesChildRepositoryIfRegistered() {
+
+		Repositories repositories = bootstrapRepositories(ParentRepository.class, ChildRepository.class);
+
+		assertRepositoryAvailableFor(repositories, Child.class, ChildRepository.class);
+	}
+
+	private void assertRepositoryAvailableFor(Repositories repositories, Class<?> domainTypem,
+			Class<?> repositoryInterface) {
+
+		assertThat(repositories.hasRepositoryFor(domainTypem)).isTrue();
+		assertThat(repositories.getRepositoryFor(domainTypem))
+				.hasValueSatisfying(it -> assertThat(it).isInstanceOf(repositoryInterface));
+		assertThat(repositories.getRepositoryInformationFor(domainTypem))
+				.hasValueSatisfying(it -> assertThat(it.getRepositoryInterface()).isEqualTo(repositoryInterface));
+	}
+
+	private Repositories bootstrapRepositories(Class<?>... repositoryInterfaces) {
+
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+
+		for (Class<?> repositoryInterface : repositoryInterfaces) {
+			beanFactory.registerBeanDefinition(repositoryInterface.getName(),
+					getRepositoryBeanDefinition(repositoryInterface));
+		}
+
+		context = new GenericApplicationContext(beanFactory);
+		context.refresh();
+
+		return new Repositories(context);
+	}
+
 	class Person {}
 
 	class Address {}
@@ -301,4 +341,14 @@ class RepositoriesUnitTests {
 	interface PrimaryRepository extends Repository<SomeEntity, Long> {}
 
 	interface ThirdRepository extends Repository<SomeEntity, Long> {}
+
+	// GH-2406
+
+	static class Parent {}
+
+	static class Child extends Parent {}
+
+	interface ParentRepository extends Repository<Parent, Long> {}
+
+	interface ChildRepository extends Repository<Child, Long> {}
 }
