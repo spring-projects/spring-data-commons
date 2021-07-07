@@ -118,7 +118,8 @@ public class Repositories implements Iterable<Class<?>> {
 	}
 
 	/**
-	 * Returns whether we have a repository instance registered to manage instances of the given domain class.
+	 * Returns whether we have a repository instance registered to manage instances of the given domain class. The given
+	 * {@code domainClass} is unwrapped to the actual user class if necessary.
 	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return
@@ -133,7 +134,8 @@ public class Repositories implements Iterable<Class<?>> {
 	}
 
 	/**
-	 * Returns the repository managing the given domain class.
+	 * Returns the repository managing the given domain class. The given {@code domainClass} is unwrapped to the actual
+	 * user class if necessary.
 	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return
@@ -149,12 +151,13 @@ public class Repositories implements Iterable<Class<?>> {
 	}
 
 	/**
-	 * Returns the {@link RepositoryFactoryInformation} for the given domain class. The given <code>code</code> is
-	 * converted to the actual user class if necessary, @see ProxyUtils#getUserClass.
+	 * Returns the {@link RepositoryFactoryInformation} for the given domain class. The given {@code domainClass} is
+	 * unwrapped to the actual user class if necessary.
 	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return the {@link RepositoryFactoryInformation} for the given domain class or {@literal null} if no repository
 	 *         registered for this domain class.
+	 * @see ProxyUtils#getUserClass
 	 */
 	private RepositoryFactoryInformation<Object, Object> getRepositoryFactoryInfoFor(Class<?> domainClass) {
 
@@ -175,10 +178,12 @@ public class Repositories implements Iterable<Class<?>> {
 	}
 
 	/**
-	 * Returns the {@link EntityInformation} for the given domain class.
+	 * Returns the {@link EntityInformation} for the given domain class. The given {@code domainClass} is unwrapped to the
+	 * actual user class if necessary.
 	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return
+	 * @see ProxyUtils#getUserClass
 	 */
 	@SuppressWarnings("unchecked")
 	public <T, S> EntityInformation<T, S> getEntityInformationFor(Class<?> domainClass) {
@@ -189,11 +194,13 @@ public class Repositories implements Iterable<Class<?>> {
 	}
 
 	/**
-	 * Returns the {@link RepositoryInformation} for the given domain class.
+	 * Returns the {@link RepositoryInformation} for the given domain class. The given {@code domainClass} is unwrapped to
+	 * the actual user class if necessary.
 	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return the {@link RepositoryInformation} for the given domain class or {@literal Optional#empty()} if no
 	 *         repository registered for this domain class.
+	 * @see ProxyUtils#getUserClass
 	 */
 	public Optional<RepositoryInformation> getRepositoryInformationFor(Class<?> domainClass) {
 
@@ -205,11 +212,13 @@ public class Repositories implements Iterable<Class<?>> {
 	}
 
 	/**
-	 * Returns the {@link RepositoryInformation} for the given domain type.
+	 * Returns the {@link RepositoryInformation} for the given domain type. The given {@code domainType} is unwrapped to
+	 * the actual user class if necessary.
 	 *
 	 * @param domainType must not be {@literal null}.
 	 * @return the {@link RepositoryInformation} for the given domain type.
 	 * @throws IllegalArgumentException in case no {@link RepositoryInformation} could be found for the given domain type.
+	 * @see ProxyUtils#getUserClass
 	 */
 	public RepositoryInformation getRequiredRepositoryInformation(Class<?> domainType) {
 
@@ -235,11 +244,13 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns the {@link PersistentEntity} for the given domain class. Might return {@literal null} in case the module
-	 * storing the given domain class does not support the mapping subsystem.
+	 * storing the given domain class does not support the mapping subsystem. The given {@code domainClass} is unwrapped
+	 * to the actual user class if necessary.
 	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return the {@link PersistentEntity} for the given domain class or {@literal null} if no repository is registered
 	 *         for the domain class or the repository is not backed by a {@link MappingContext} implementation.
+	 * @see ProxyUtils#getUserClass
 	 */
 	public PersistentEntity<?, ?> getPersistentEntity(Class<?> domainClass) {
 
@@ -248,10 +259,12 @@ public class Repositories implements Iterable<Class<?>> {
 	}
 
 	/**
-	 * Returns the {@link QueryMethod}s contained in the repository managing the given domain class.
+	 * Returns the {@link QueryMethod}s contained in the repository managing the given domain class. The given
+	 * {@code domainClass} is unwrapped to the actual user class if necessary.
 	 *
 	 * @param domainClass must not be {@literal null}.
 	 * @return
+	 * @see ProxyUtils#getUserClass
 	 */
 	public List<QueryMethod> getQueryMethodsFor(Class<?> domainClass) {
 
