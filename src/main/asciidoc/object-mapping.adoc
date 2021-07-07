@@ -17,9 +17,9 @@ This means we need two fundamental steps:
 Spring Data automatically tries to detect a persistent entity's constructor to be used to materialize objects of that type.
 The resolution algorithm works as follows:
 
-1. If there is a single constructor, it will be used.
-2. If there are multiple constructors and exactly one is annotated with `@PersistenceConstructor`, it will be used.
-3. If there's a no-argument constructor, it will be used.
+1. If there is a single constructor, it is used.
+2. If there are multiple constructors and exactly one is annotated with `@PersistenceConstructor`, it is used.
+3. If there's a no-argument constructor, it is used.
 Other constructors will be ignored.
 
 The value resolution assumes constructor argument names to match the property names of the entity, i.e. the resolution will be performed as if the property was to be populated, including all customizations in mapping (different datastore column or field name etc.).
