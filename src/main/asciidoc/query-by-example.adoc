@@ -110,7 +110,7 @@ person.setFirstname("Dave");                           <2>
 ExampleMatcher matcher = ExampleMatcher.matching()     <3>
   .withIgnorePaths("lastname")                         <4>
   .withIncludeNullValues()                             <5>
-  .withStringMatcherEnding();                          <6>
+  .withStringMatcher(StringMatcher.ENDING);            <6>
 
 Example<Person> example = Example.of(person, matcher); <7>
 
