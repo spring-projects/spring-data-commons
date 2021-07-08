@@ -18,19 +18,17 @@ package org.springframework.data.mapping.model;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -64,11 +62,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final Property property;
 	private final Lazy<Integer> hashCode;
 	private final Lazy<Boolean> usePropertyAccess;
-	private final Lazy<TypeInformation<?>> entityTypeInformation;
+	private final Lazy<Set<TypeInformation<?>>> entityTypeInformation;
 
 	private final Lazy<Boolean> isAssociation;
 	private final Lazy<TypeInformation<?>> associationTargetType;
-	private final Lazy<Collection<TypeInformation<?>>> entityTypes;
 
 	private final Method getter;
 	private final Method setter;
@@ -100,10 +97,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 						.map(TypeInformation::getComponentType) //
 						.orElse(null));
 
-		this.entityTypeInformation = Lazy.of(() -> Optional.ofNullable(getAssociationOrActualType())
-				.filter(it -> !simpleTypeHolder.isSimpleType(it.getType())) //
-				.filter(it -> !it.isCollectionLike()) //
-				.filter(it -> !it.isMap()).orElse(null));
+		this.entityTypeInformation = Lazy.of(() -> detectEntityTypes(simpleTypeHolder));
 
 		this.getter = property.getGetter().orElse(null);
 		this.setter = property.getSetter().orElse(null);
@@ -115,45 +109,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		} else {
 			this.immutable = false;
 		}
-
-		this.entityTypes = Lazy.of(() -> collectEntityTypes(simpleTypeHolder, information, new LinkedHashSet<>()));
-	}
-
-	protected Set<TypeInformation<?>> collectEntityTypes(SimpleTypeHolder simpleTypeHolder,
-			@Nullable TypeInformation<?> typeInformation, Set<TypeInformation<?>> entityTypes) {
-
-		if (typeInformation == null || entityTypes.contains(typeInformation)
-				|| simpleTypeHolder.isSimpleType(typeInformation.getType())) {
-			return entityTypes;
-		}
-
-		if (typeInformation.isMap()) {
-
-			collectEntityTypes(simpleTypeHolder, typeInformation.getComponentType(), entityTypes);
-			collectEntityTypes(simpleTypeHolder, typeInformation.getMapValueType(), entityTypes);
-			return entityTypes;
-		}
-
-		if (typeInformation.isCollectionLike()) {
-
-			collectEntityTypes(simpleTypeHolder, typeInformation.getComponentType(), entityTypes);
-			return entityTypes;
-		}
-
-		if (NullableWrapperConverters.supports(typeInformation.getType())) {
-
-			collectEntityTypes(simpleTypeHolder, typeInformation.getActualType(), entityTypes);
-			return entityTypes;
-		}
-
-		if (ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(typeInformation.getType())) {
-
-			entityTypes.add(getAssociationOrActualType());
-			return entityTypes;
-		}
-
-		entityTypes.add(typeInformation);
-		return entityTypes;
 	}
 
 	protected abstract Association<P> createAssociation();
@@ -211,14 +166,14 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
 
 		if (isMap() || isCollectionLike()) {
-			return entityTypes.get();
+			return entityTypeInformation.get();
 		}
 
 		if (!isEntity()) {
 			return Collections.emptySet();
 		}
 
-		return entityTypes.get();
+		return entityTypeInformation.get();
 	}
 
 	/*
@@ -362,7 +317,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public boolean isEntity() {
-		return !isTransient() && entityTypeInformation.getNullable() != null;
+		return !isTransient() && !entityTypeInformation.get().isEmpty();
 	}
 
 	/*
@@ -401,7 +356,11 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	 */
 	@Override
 	public Class<?> getActualType() {
-		return getRequiredAssociationOrActualType().getType();
+
+		TypeInformation<?> targetType = associationTargetType.getNullable();
+		TypeInformation<?> result = targetType == null ? information.getRequiredActualType() : targetType;
+
+		return result.getType();
 	}
 
 	/*
@@ -454,23 +413,40 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return property.toString();
 	}
 
-	@Nullable
-	private TypeInformation<?> getAssociationOrActualType() {
-		return getAssociationTypeOr(() -> information.getActualType());
+	private Set<TypeInformation<?>> detectEntityTypes(SimpleTypeHolder simpleTypes) {
+
+		TypeInformation<?> typeToStartWith = ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(rawType)
+				? information.getComponentType()
+				: information;
+
+		Set<TypeInformation<?>> result = detectEntityTypes(typeToStartWith);
+
+		return result.stream()
+				.filter(it -> !simpleTypes.isSimpleType(it.getType()))
+				.filter(it -> !it.getType().equals(ASSOCIATION_TYPE))
+				.collect(Collectors.toSet());
 	}
 
-	private TypeInformation<?> getRequiredAssociationOrActualType() {
-		return getAssociationTypeOr(() -> information.getRequiredActualType());
-	}
+	private Set<TypeInformation<?>> detectEntityTypes(@Nullable TypeInformation<?> source) {
 
-	private TypeInformation<?> getAssociationTypeOr(Supplier<TypeInformation<?>> fallback) {
-
-		TypeInformation<?> result = associationTargetType.getNullable();
-
-		if (result != null) {
-			return result;
+		if (source == null) {
+			return Collections.emptySet();
 		}
 
-		return fallback.get();
+		Set<TypeInformation<?>> result = new HashSet<>();
+
+		if (source.isMap()) {
+			result.addAll(detectEntityTypes(source.getComponentType()));
+		}
+
+		TypeInformation<?> actualType = source.getActualType();
+
+		if (source.equals(actualType)) {
+			result.add(source);
+		} else {
+			result.addAll(detectEntityTypes(actualType));
+		}
+
+		return result;
 	}
 }

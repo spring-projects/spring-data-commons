@@ -296,6 +296,24 @@ class AbstractMappingContextUnitTests {
 	}
 
 	@Test // GH-2390
+	void detectsEntityTypeEveneIfSimpleTypeHolderConsidersCollectionsSimple() {
+
+		context.setSimpleTypeHolder(new SimpleTypeHolder(Collections.emptySet(), true) {
+
+			@Override
+			public boolean isSimpleType(Class<?> type) {
+				return type.getName().startsWith("java.util.");
+			}
+		});
+
+		context.getPersistentEntity(WithNestedLists.class);
+
+		assertThat(context.getPersistentEntities()) //
+				.map(it -> (Class) it.getType()) //
+				.contains(Base.class);
+	}
+
+	@Test // GH-2390
 	void shouldNotCreatePersistentEntityForMapButItsGenericTypeArguments() {
 
 		context.getPersistentEntity(WithMap.class);
