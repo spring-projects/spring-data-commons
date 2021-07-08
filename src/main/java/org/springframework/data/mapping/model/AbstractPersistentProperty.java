@@ -21,17 +21,16 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -94,18 +93,17 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.usePropertyAccess = Lazy.of(() -> owner.getType().isInterface() || CAUSE_FIELD.equals(getField()));
 
 		this.isAssociation = Lazy.of(() -> ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(rawType));
-		this.associationTargetType = ASSOCIATION_TYPE == null
-				? Lazy.empty()
-				: Lazy.of(() -> Optional.of(getTypeInformation())
-						.map(it -> it.getSuperTypeInformation(ASSOCIATION_TYPE))
-						.map(TypeInformation::getComponentType)
+		this.associationTargetType = ASSOCIATION_TYPE == null //
+				? Lazy.empty() //
+				: Lazy.of(() -> Optional.of(getTypeInformation()) //
+						.map(it -> it.getSuperTypeInformation(ASSOCIATION_TYPE)) //
+						.map(TypeInformation::getComponentType) //
 						.orElse(null));
 
 		this.entityTypeInformation = Lazy.of(() -> Optional.ofNullable(getAssociationOrActualType())
 				.filter(it -> !simpleTypeHolder.isSimpleType(it.getType())) //
 				.filter(it -> !it.isCollectionLike()) //
-				.filter(it -> !it.isMap())
-				.orElse(null));
+				.filter(it -> !it.isMap()).orElse(null));
 
 		this.getter = property.getGetter().orElse(null);
 		this.setter = property.getSetter().orElse(null);
@@ -121,32 +119,34 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.entityTypes = Lazy.of(() -> collectEntityTypes(simpleTypeHolder, information, new LinkedHashSet<>()));
 	}
 
-	protected Set<TypeInformation<?>> collectEntityTypes(SimpleTypeHolder simpleTypeHolder, @Nullable TypeInformation<?> typeInformation, Set<TypeInformation<?>> entityTypes) {
+	protected Set<TypeInformation<?>> collectEntityTypes(SimpleTypeHolder simpleTypeHolder,
+			@Nullable TypeInformation<?> typeInformation, Set<TypeInformation<?>> entityTypes) {
 
-		if(typeInformation == null || entityTypes.contains(typeInformation) || simpleTypeHolder.isSimpleType(typeInformation.getType())) {
+		if (typeInformation == null || entityTypes.contains(typeInformation)
+				|| simpleTypeHolder.isSimpleType(typeInformation.getType())) {
 			return entityTypes;
 		}
 
-		if(typeInformation.isMap()) {
+		if (typeInformation.isMap()) {
 
 			collectEntityTypes(simpleTypeHolder, typeInformation.getComponentType(), entityTypes);
 			collectEntityTypes(simpleTypeHolder, typeInformation.getMapValueType(), entityTypes);
 			return entityTypes;
 		}
 
-		if(typeInformation.isCollectionLike()) {
+		if (typeInformation.isCollectionLike()) {
 
 			collectEntityTypes(simpleTypeHolder, typeInformation.getComponentType(), entityTypes);
 			return entityTypes;
 		}
 
-		if(typeInformation.isNullableWrapper()) {
+		if (NullableWrapperConverters.supports(typeInformation.getType())) {
 
 			collectEntityTypes(simpleTypeHolder, typeInformation.getActualType(), entityTypes);
 			return entityTypes;
 		}
 
-		if(ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(typeInformation.getType())) {
+		if (ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(typeInformation.getType())) {
 
 			entityTypes.add(getAssociationOrActualType());
 			return entityTypes;
@@ -210,7 +210,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	@Override
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
 
-		if(isMap() || isCollectionLike()) {
+		if (isMap() || isCollectionLike()) {
 			return entityTypes.get();
 		}
 

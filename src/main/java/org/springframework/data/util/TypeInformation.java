@@ -274,13 +274,4 @@ public interface TypeInformation<S> {
 		return !type.equals(getType()) && type.isAssignableFrom(getType());
 	}
 
-	/**
-	 * Returns whether the current type is considered a {@literal null} value wrapper or not.
-	 *
-	 * @return {@literal true} if the type is considered to be a {@literal null} value wrapper such as {@link java.util.Optional}.
-	 */
-	default boolean isNullableWrapper() {
-		return NullableWrapperConverters.supports(getType());
-	}
-
 }

@@ -30,10 +30,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -576,9 +576,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
-			StreamSupport.stream(property.getPersistentEntityTypes().spliterator(), false) //
-					.filter(AbstractMappingContext.this::shouldCreatePersistentEntityFor) //
-					.forEach(AbstractMappingContext.this::addPersistentEntity);
+			property.getPersistentEntityTypes().forEach(it -> {
+
+				if (shouldCreatePersistentEntityFor(it)) {
+					addPersistentEntity(it);
+				}
+			});
 		}
 
 		protected boolean shouldSkipOverrideProperty(P property) {
