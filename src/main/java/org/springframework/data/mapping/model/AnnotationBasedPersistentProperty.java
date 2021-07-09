@@ -37,9 +37,11 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.StreamUtils;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -74,7 +76,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			&& (isAnnotationPresent(Reference.class) || super.isAssociation()));
 	private final Lazy<Boolean> isId = Lazy.of(() -> isAnnotationPresent(Id.class));
 	private final Lazy<Boolean> isVersion = Lazy.of(() -> isAnnotationPresent(Version.class));
-	private final Lazy<Class<?>> associationTargetType = Lazy.of(() -> {
+	private final Lazy<TypeInformation<?>> associationTargetType = Lazy.of(() -> {
 
 		if (!isAssociation()) {
 			return null;
@@ -83,8 +85,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return Optional.of(Reference.class) //
 				.map(this::findAnnotation) //
 				.map(Reference::to) //
-				.map(it -> !Class.class.equals(it) ? it : getActualType()) //
-				.orElseGet(() -> super.getAssociationTargetType());
+				.map(it -> !Class.class.equals(it) ? ClassTypeInformation.from(it) : getActualTypeInformation()) //
+				.orElseGet(() -> super.getAssociationTargetTypeInformation());
 	});
 
 	/**
@@ -295,11 +297,11 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#getAssociationTargetType()
+	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getAssociationTargetTypeInformation()
 	 */
 	@Nullable
 	@Override
-	public Class<?> getAssociationTargetType() {
+	public TypeInformation<?> getAssociationTargetTypeInformation() {
 		return associationTargetType.getNullable();
 	}
 
