@@ -47,6 +47,7 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -316,6 +317,16 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		assertThat(property.isAssociation()).isTrue();
 		assertThat(property.getAssociationTargetType()).isEqualTo(JMoleculesAggregate.class);
+	}
+
+	@Test // GH-2409
+	void exposesAssociationTargetClassAsPersistentEntityType() {
+
+		SamplePersistentProperty property = getProperty(WithReferences.class, "toSample");
+
+		assertThat(property.getPersistentEntityTypeInformation()) //
+				.isNotEmpty() //
+				.allMatch(it -> it.equals(ClassTypeInformation.from(Sample.class)));
 	}
 
 	@SuppressWarnings("unchecked")
