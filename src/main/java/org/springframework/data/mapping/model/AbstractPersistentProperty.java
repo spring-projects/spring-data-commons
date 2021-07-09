@@ -436,9 +436,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	private Set<TypeInformation<?>> detectEntityTypes(SimpleTypeHolder simpleTypes) {
 
-		TypeInformation<?> typeToStartWith = ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(rawType)
-				? information.getComponentType()
-				: information;
+		TypeInformation<?> typeToStartWith = getAssociationTargetTypeInformation();
+		typeToStartWith = typeToStartWith == null ? information : typeToStartWith;
 
 		Set<TypeInformation<?>> result = detectEntityTypes(typeToStartWith);
 
