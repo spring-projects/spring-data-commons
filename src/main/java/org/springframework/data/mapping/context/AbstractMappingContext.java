@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -576,7 +575,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
-			property.getPersistentEntityTypes().forEach(it -> {
+			property.getPersistentEntityTypeInformation().forEach(it -> {
 
 				if (shouldCreatePersistentEntityFor(it)) {
 					addPersistentEntity(it);

@@ -70,8 +70,20 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * {@link Map}'s value type transparently.
 	 *
 	 * @return
+	 * @deprecated since 2.6 for removal in 3.0. Use {@link #getPersistentEntityTypeInformation()} instead.
 	 */
+	@Deprecated
 	Iterable<? extends TypeInformation<?>> getPersistentEntityTypes();
+
+	/**
+	 * Returns the {@link TypeInformation} if the property references a {@link PersistentEntity}. Will return
+	 * {@literal null} in case it refers to a simple type. Will return {@link Collection}'s component type or the
+	 * {@link Map}'s value type transparently.
+	 *
+	 * @return
+	 * @since 2.6
+	 */
+	Iterable<? extends TypeInformation<?>> getPersistentEntityTypeInformation();
 
 	/**
 	 * Returns the getter method to access the property value if available. Might return {@literal null} in case there is
@@ -394,6 +406,19 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 */
 	@Nullable
 	Class<?> getAssociationTargetType();
+
+	/**
+	 * Return the type the property refers to in case it's an association, i.e. {@link #isAssociation()} returns
+	 * {@literal true}. That means, that implementations <em>must</em> return a non-{@literal null} value from this method
+	 * in that case. We also recommend to return {@literal null} for non-associations right away to establish symmetry
+	 * between this method and {@link #isAssociation()}.
+	 *
+	 * @return the type the property refers to in case it's an association, i.e. {@link #isAssociation()} returns
+	 *         {@literal true}.
+	 * @since 2.6
+	 */
+	@Nullable
+	TypeInformation<?> getAssociationTargetTypeInformation();
 
 	/**
 	 * Returns a {@link PersistentPropertyAccessor} for the current property's owning value.

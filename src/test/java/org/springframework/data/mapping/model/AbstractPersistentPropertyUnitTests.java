@@ -73,7 +73,7 @@ public class AbstractPersistentPropertyUnitTests {
 
 	@Test // DATACMNS-101
 	void returnsNestedEntityTypeCorrectly() {
-		assertThat(getProperty(TestClassComplex.class, "testClassSet").getPersistentEntityTypes()).isEmpty();
+		assertThat(getProperty(TestClassComplex.class, "testClassSet").getPersistentEntityTypeInformation()).isEmpty();
 	}
 
 	@Test // DATACMNS-132
@@ -198,7 +198,7 @@ public class AbstractPersistentPropertyUnitTests {
 	void doesNotConsiderPropertyWithTreeMapMapValueAnEntity() {
 
 		SamplePersistentProperty property = getProperty(TreeMapWrapper.class, "map");
-		assertThat(property.getPersistentEntityTypes()).isEmpty();
+		assertThat(property.getPersistentEntityTypeInformation()).isEmpty();
 		assertThat(property.isEntity()).isFalse();
 	}
 
@@ -233,7 +233,7 @@ public class AbstractPersistentPropertyUnitTests {
 
 		assertThat(property.isAssociation()).isTrue();
 		assertThat(property.getAssociationTargetType()).isEqualTo(JMoleculesAggregate.class);
-		assertThat(property.getPersistentEntityTypes())
+		assertThat(property.getPersistentEntityTypeInformation())
 				.extracting(it -> it.getType())
 				.containsExactly((Class) JMoleculesAggregate.class);
 	}
