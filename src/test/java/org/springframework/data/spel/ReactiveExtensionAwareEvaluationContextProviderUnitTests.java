@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +64,32 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 
 		assertThat(GenericModelRoot.creationCounter).hasValue(1);
 		assertThat(SecurityExpressionRoot.creationCounter).hasValue(1);
+	}
+
+	@Test // GH-2392
+	void shouldFilterImperativeExtensionCorrectly() {
+
+		Expression expression = PARSER.parseExpression("unknownMethod('FOO')");
+		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+
+		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(ExpressiveExtension.INSTANCE));
+
+		provider.getEvaluationContextLater(new Object[0], dependencies).as(StepVerifier::create) //
+				.expectNextCount(1).verifyComplete();
+	}
+
+	@Test // GH-2392
+	void shouldFilterReactiveExtensionCorrectly() {
+
+		Expression expression = PARSER.parseExpression("unknownMethod('FOO')");
+		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+
+		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+				Collections.singletonList(SampleReactiveExtension.INSTANCE));
+
+		provider.getEvaluationContextLater(new Object[0], dependencies).as(StepVerifier::create) //
+				.expectNextCount(1).verifyComplete();
 	}
 
 	@Test // DATACMNS-1108
