@@ -20,15 +20,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.*;
 import io.reactivex.Maybe;
 import kotlinx.coroutines.flow.Flow;
 import kotlinx.coroutines.flow.FlowKt;
+import kotlinx.coroutines.reactive.ReactiveFlowKt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
@@ -323,6 +321,6 @@ class ReactiveWrapperConvertersUnitTests {
 
 		Flow<String> flow = FlowKt.asFlow(new String[] { "foo" });
 		Flow<Long> map = ReactiveWrapperConverters.map(flow, source -> 1L);
-		StepVerifier.create(kotlinx.coroutines.reactive.FlowKt.asPublisher(map)).expectNext(1L).verifyComplete();
+		StepVerifier.create(ReactiveFlowKt.asPublisher(map)).expectNext(1L).verifyComplete();
 	}
 }
