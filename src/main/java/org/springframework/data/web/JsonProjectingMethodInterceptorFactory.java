@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.projection.Accessor;
@@ -45,8 +46,8 @@ import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ParseContext;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.TypeRef;
-import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
+import com.jayway.jsonpath.spi.mapper.MappingProvider;
 
 /**
  * {@link MethodInterceptorFactory} to create a {@link MethodInterceptor} that will
@@ -61,34 +62,38 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 
 	private final ParseContext context;
 
-    /**
-     * Creates a new {@link JsonProjectingMethodInterceptorFactory} using the given {@link MappingProvider} and {@link JsonProvider}.
-     *
-     * @param mappingProvider must not be {@literal null}.
-     * @param jsonProvider must not be {@literal null}.
-     */
-    public JsonProjectingMethodInterceptorFactory(MappingProvider mappingProvider, JsonProvider jsonProvider) {
-
-        Assert.notNull(mappingProvider, "MappingProvider must not be null!");
-        Assert.notNull(jsonProvider, "JsonProvider must not be null!");
-
-        Configuration configuration = Configuration.builder()//
-                .options(Option.ALWAYS_RETURN_LIST)//
-                .mappingProvider(mappingProvider)//
-                .jsonProvider(jsonProvider)//
-                .build();
-
-        this.context = JsonPath.using(configuration);
-    }
-
 	/**
-	 * Creates a new {@link JsonProjectingMethodInterceptorFactory} using the given {@link MappingProvider}.
+	 * Creates a new {@link JsonProjectingMethodInterceptorFactory} using the default {@link JsonProvider} and the given
+	 * {@link MappingProvider}.
 	 *
 	 * @param mappingProvider must not be {@literal null}.
+	 * @see Configuration#defaultConfiguration()
+	 * @see Configuration#jsonProvider()
 	 */
-	@Deprecated
 	public JsonProjectingMethodInterceptorFactory(MappingProvider mappingProvider) {
-	    this(mappingProvider, Configuration.defaultConfiguration().jsonProvider());
+		this(Configuration.defaultConfiguration().jsonProvider(), mappingProvider);
+	}
+
+	/**
+	 * Creates a new {@link JsonProjectingMethodInterceptorFactory} using the given {@link JsonProvider} and
+	 * {@link MappingProvider}.
+	 *
+	 * @param jsonProvider must not be {@literal null}.
+	 * @param mappingProvider must not be {@literal null}.
+	 * @since 2.5.3
+	 */
+	public JsonProjectingMethodInterceptorFactory(JsonProvider jsonProvider, MappingProvider mappingProvider) {
+
+		Assert.notNull(jsonProvider, "JsonProvider must not be null!");
+		Assert.notNull(mappingProvider, "MappingProvider must not be null!");
+
+		Configuration configuration = Configuration.builder()//
+				.options(Option.ALWAYS_RETURN_LIST) //
+				.jsonProvider(jsonProvider) //
+				.mappingProvider(mappingProvider) //
+				.build();
+
+		this.context = JsonPath.using(configuration);
 	}
 
 	/*
