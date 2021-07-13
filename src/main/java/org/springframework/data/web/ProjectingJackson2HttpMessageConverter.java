@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -37,6 +36,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 
 /**
@@ -85,8 +85,8 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
-		projectionFactory
-				.registerMethodInvokerFactory(new JsonProjectingMethodInterceptorFactory(new JacksonMappingProvider(mapper), new JacksonJsonProvider(mapper)));
+		projectionFactory.registerMethodInvokerFactory(new JsonProjectingMethodInterceptorFactory(
+				new JacksonJsonProvider(mapper), new JacksonMappingProvider(mapper)));
 
 		return projectionFactory;
 	}
