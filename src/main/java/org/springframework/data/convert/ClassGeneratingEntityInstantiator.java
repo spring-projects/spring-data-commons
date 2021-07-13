@@ -33,7 +33,8 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @since 1.11
- * @deprecated since 2.3, use {@link org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator} instead
+ * @deprecated since 2.3, use {@code org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator} through
+ *             {@link org.springframework.data.mapping.model.EntityInstantiators}.
  */
 @Deprecated
 public class ClassGeneratingEntityInstantiator implements EntityInstantiator {
