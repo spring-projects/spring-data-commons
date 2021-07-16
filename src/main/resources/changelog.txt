@@ -1,6 +1,35 @@
 Spring Data Commons Changelog
 =============================
 
+Changes in version 2.6.0-M1 (2021-07-16)
+----------------------------------------
+* #2411 - Adopt to changes in Kotlin Coroutines 1.5.1.
+* #2410 - Fixes for #2408 and #2409.
+* #2409 - PersistentEntity type detection for PersistentProperties should consider association target type.
+* #2408 - Consolidate access to `TypeInformation<?>` VS. `Class<?>` on `PersistentProperty`.
+* #2406 - `Repositories` now allows lookup of parent repositories for sub-types.
+* #2404 - Fix outdated `ExampleMatcher` docs.
+* #2403 - Accept `JsonProvider` upon `JsonProjectingMethodInterceptorFactory` creation.
+* #2401 - Correct documentation how a constructor is chosen.
+* #2400 - `ClassGeneratingEntityInstantiator` deprecation link points to a package-private class.
+* #2399 - Polish.
+* #2396 - `QuerydslPredicateBuilder` should not return `null` `Predicate`.
+* #2392 - ReactiveExtensionAwareEvaluationContextProvider throws java.lang.IllegalStateException: Unsupported extension type: org.springframework.data.jpa.repository.support.JpaEvaluationContextExtension.
+* #2391 - Fix wrong example code.
+* #2390 - MappingContext should not consider java.util.Optional an entity type.
+* #2385 - Directly import JSR305 jar.
+* #2382 - Allow for a module specific inclusion for DTO projections.
+* #2381 - Fix broken link to Spring framework docs.
+* #2374 - Disable unit tests for unsigned integers for the time being.
+* #2372 - Contribution guidelines: Broken link.
+* #2368 - `AnnotationBasedPersistentProperty.validateAnnotation(…)` compares declared annotations with merged annotations.
+* #2361 - Introduce `instantiateClass` as replacement for `RepositoryFactorySupport.getTargetRepositoryViaReflection`.
+* #2358 - Limit `BeanWrapper`'s `KotlinCopyUtil` usage to Kotlin Data classes.
+* #2334 - Update CI to Java 16.
+* #2103 - Sort.and() does not handle TypedSort without explicit order  [DATACMNS-1704].
+* #1911 - Ignore non-assignable override properties when creating PersistentEntity [DATACMNS-1509].
+
+
 Changes in version 2.4.11 (2021-07-16)
 --------------------------------------
 * #2406 - `Repositories` now allows lookup of parent repositories for sub-types.
@@ -3141,6 +3170,7 @@ Aspects
 Repository
 * Base classes for the repository support
 * Pagination support
+
 
 
 
