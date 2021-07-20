@@ -357,15 +357,34 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			read.unlock();
 		}
 
-		Class<?> type = typeInformation.getType();
-		E entity = null;
+		E entity;
 
 		try {
 
 			write.lock();
+			entity = doAddPersistentEntity(typeInformation);
 
-			entity = createPersistentEntity(typeInformation);
+		} catch (BeansException e) {
+			throw new MappingException(e.getMessage(), e);
+		} finally {
+			write.unlock();
+		}
 
+		// Inform listeners
+		if (applicationEventPublisher != null) {
+			applicationEventPublisher.publishEvent(new MappingContextEvent<>(this, entity));
+		}
+
+		return Optional.of(entity);
+	}
+
+	private E doAddPersistentEntity(TypeInformation<?> typeInformation) {
+
+		try {
+
+			Class<?> type = typeInformation.getType();
+
+			E entity = createPersistentEntity(typeInformation);
 			entity.setEvaluationContextProvider(evaluationContextProvider);
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
@@ -373,7 +392,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
 
-			final Map<String, PropertyDescriptor> descriptors = new HashMap<>();
+			Map<String, PropertyDescriptor> descriptors = new HashMap<>();
 			for (PropertyDescriptor descriptor : pds) {
 				descriptors.put(descriptor.getName(), descriptor);
 			}
@@ -388,21 +407,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				entity.setPersistentPropertyAccessorFactory(persistentPropertyAccessorFactory);
 			}
 
-		} catch (BeansException e) {
-			throw new MappingException(e.getMessage(), e);
+			return entity;
 		} catch (RuntimeException e) {
 			persistentEntities.remove(typeInformation);
 			throw e;
-		} finally {
-			write.unlock();
 		}
-
-		// Inform listeners
-		if (applicationEventPublisher != null && entity != null) {
-			applicationEventPublisher.publishEvent(new MappingContextEvent<>(this, entity));
-		}
-
-		return Optional.of(entity);
 	}
 
 	/*
