@@ -110,7 +110,7 @@ public class PropertyFilterSupport {
 	}
 
 	private static void processEntity(PropertyPath propertyPath, Collection<PropertyPath> filteredProperties,
-									  Predicate<Class<?>> ding,
+									  Predicate<Class<?>> simpleTypePredicate,
 									  MappingContext<?, ?> mappingContext) {
 
 		PropertyPath leafProperty = propertyPath.getLeafProperty();
@@ -122,11 +122,11 @@ public class PropertyFilterSupport {
 		Class<?> propertyEntityType = persistentProperty.getActualType();
 
 		// Use domain type as root type for the property path
-		addPropertiesFromEntity(filteredProperties, propertyPath, ding, propertyEntityType, mappingContext, new HashSet<>());
+		addPropertiesFromEntity(filteredProperties, propertyPath, simpleTypePredicate, propertyEntityType, mappingContext, new HashSet<>());
 	}
 
 	private static void addPropertiesFromEntity(Collection<PropertyPath> filteredProperties, PropertyPath propertyPath,
-												Predicate<Class<?>> ding,
+												Predicate<Class<?>> simpleTypePredicate,
 												Class<?> propertyType, MappingContext<?, ?> mappingContext,
 												Collection<PersistentEntity<?, ?>> processedEntities) {
 
@@ -143,7 +143,7 @@ public class PropertyFilterSupport {
 			processedEntities.add(mappingContext.getPersistentEntity(pathRootType));
 		}
 
-		takeAllPropertiesFromEntity(filteredProperties, ding, propertyPath, mappingContext, persistentEntityFromProperty, processedEntities);
+		takeAllPropertiesFromEntity(filteredProperties, simpleTypePredicate, propertyPath, mappingContext, persistentEntityFromProperty, processedEntities);
 	}
 
 	private static boolean hasProcessedEntity(PersistentEntity<?, ?> persistentEntityFromProperty,
@@ -153,7 +153,7 @@ public class PropertyFilterSupport {
 	}
 
 	private static void takeAllPropertiesFromEntity(Collection<PropertyPath> filteredProperties,
-													Predicate<Class<?>> ding, PropertyPath propertyPath,
+													Predicate<Class<?>> simpleTypePredicate, PropertyPath propertyPath,
 													MappingContext<?, ?> mappingContext,
 													PersistentEntity<?, ?> persistentEntityFromProperty,
 													Collection<PersistentEntity<?, ?>> processedEntities) {
@@ -161,12 +161,12 @@ public class PropertyFilterSupport {
 		filteredProperties.add(propertyPath);
 
 		persistentEntityFromProperty.doWithAll(persistentProperty -> {
-			addPropertiesFromEntity(filteredProperties, propertyPath.nested(persistentProperty.getName()), ding, mappingContext, processedEntities);
+			addPropertiesFromEntity(filteredProperties, propertyPath.nested(persistentProperty.getName()), simpleTypePredicate, mappingContext, processedEntities);
 		});
 	}
 
 	private static void addPropertiesFromEntity(Collection<PropertyPath> filteredProperties, PropertyPath propertyPath,
-												Predicate<Class<?>> ding, MappingContext<?, ?> mappingContext,
+												Predicate<Class<?>> simpleTypePredicate, MappingContext<?, ?> mappingContext,
 										  		Collection<PersistentEntity<?, ?>> processedEntities) {
 
 		// break the recursion / cycles
@@ -175,11 +175,11 @@ public class PropertyFilterSupport {
 		}
 		Class<?> propertyType = propertyPath.getLeafType();
 		// simple types can get added directly to the list.
-		if (ding.test(propertyType)) {
+		if (simpleTypePredicate.test(propertyType)) {
 			filteredProperties.add(propertyPath);
 		// Other types are handled also as entities because there cannot be any nested projection within a real entity.
 		} else if (mappingContext.hasPersistentEntityFor(propertyType)) {
-			addPropertiesFromEntity(filteredProperties, propertyPath, ding, propertyType, mappingContext, processedEntities);
+			addPropertiesFromEntity(filteredProperties, propertyPath, simpleTypePredicate, propertyType, mappingContext, processedEntities);
 		}
 	}
 }
