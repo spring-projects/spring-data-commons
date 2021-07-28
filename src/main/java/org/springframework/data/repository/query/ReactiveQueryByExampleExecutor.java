@@ -18,6 +18,10 @@ package org.springframework.data.repository.query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.function.Function;
+
+import org.reactivestreams.Publisher;
+
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
 
@@ -75,4 +79,16 @@ public interface ReactiveQueryByExampleExecutor<T> {
 	 * @return {@literal true} if the data store contains elements that match the given {@link Example}.
 	 */
 	<S extends T> Mono<Boolean> exists(Example<S> example);
+
+	/**
+	 * Returns entities matching the given {@link Example} applying the {@link Function queryFunction} that defines the
+	 * query and its result type.
+	 *
+	 * @param example must not be {@literal null}.
+	 * @param queryFunction the query function defining projection, sorting, and the result type
+	 * @return all entities matching the given {@link Example}.
+	 * @since 2.6
+	 */
+	<S extends T, R, P extends Publisher<R>> P findBy(Example<S> example,
+			Function<FluentQuery.ReactiveFluentQuery<S>, P> queryFunction);
 }
