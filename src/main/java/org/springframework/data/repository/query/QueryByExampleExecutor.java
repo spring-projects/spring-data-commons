@@ -16,6 +16,7 @@
 package org.springframework.data.repository.query;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -86,4 +87,15 @@ public interface QueryByExampleExecutor<T> {
 	 * @return {@literal true} if the data store contains elements that match the given {@link Example}.
 	 */
 	<S extends T> boolean exists(Example<S> example);
+
+	/**
+	 * Returns entities matching the given {@link Example} applying the {@link Function queryFunction} that defines the
+	 * query and its result type.
+	 *
+	 * @param example must not be {@literal null}.
+	 * @param queryFunction the query function defining projection, sorting, and the result type
+	 * @return all entities matching the given {@link Example}.
+	 * @since 2.6
+	 */
+	<S extends T, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
 }
