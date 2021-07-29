@@ -35,6 +35,7 @@ import com.querydsl.core.types.dsl.CollectionPathBase;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.13
  */
 class PropertyPathInformation implements PathInformation {
@@ -69,6 +70,15 @@ class PropertyPathInformation implements PathInformation {
 
 	private static PropertyPathInformation of(PropertyPath path) {
 		return new PropertyPathInformation(path);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.binding.PathInformation#getRootParentType()
+	 */
+	@Override
+	public Class<?> getRootParentType() {
+		return path.getOwningType().getType();
 	}
 
 	/*
@@ -162,12 +172,13 @@ class PropertyPathInformation implements PathInformation {
 			return true;
 		}
 
-		if (!(o instanceof PropertyPathInformation)) {
+		if (!(o instanceof PathInformation)) {
 			return false;
 		}
 
-		PropertyPathInformation that = (PropertyPathInformation) o;
-		return ObjectUtils.nullSafeEquals(path, that.path);
+		PathInformation that = (PathInformation) o;
+		return ObjectUtils.nullSafeEquals(getRootParentType(), that.getRootParentType())
+				&& ObjectUtils.nullSafeEquals(toDotPath(), that.toDotPath());
 	}
 
 	/*
@@ -176,7 +187,9 @@ class PropertyPathInformation implements PathInformation {
 	 */
 	@Override
 	public int hashCode() {
-		return ObjectUtils.nullSafeHashCode(path);
+		int result = ObjectUtils.nullSafeHashCode(getRootParentType());
+		result = 31 * result + ObjectUtils.nullSafeHashCode(toDotPath());
+		return result;
 	}
 
 	/*

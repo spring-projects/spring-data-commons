@@ -29,6 +29,7 @@ import com.querydsl.core.types.Path;
  * {@link PathInformation} based on a Querydsl {@link Path}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.13
  */
 class QuerydslPathInformation implements PathInformation {
@@ -45,7 +46,16 @@ class QuerydslPathInformation implements PathInformation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.MappedPath#getLeafType()
+	 * @see org.springframework.data.querydsl.binding.PathInformation#getRootParentType()
+	 */
+	@Override
+	public Class<?> getRootParentType() {
+		return path.getRoot().getType();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafType()
 	 */
 	@Override
 	public Class<?> getLeafType() {
@@ -54,7 +64,7 @@ class QuerydslPathInformation implements PathInformation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.MappedPath#getLeafParentType()
+	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafParentType()
 	 */
 	@Override
 	public Class<?> getLeafParentType() {
@@ -70,7 +80,7 @@ class QuerydslPathInformation implements PathInformation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.MappedPath#getLeafProperty()
+	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafProperty()
 	 */
 	@Override
 	public String getLeafProperty() {
@@ -79,7 +89,7 @@ class QuerydslPathInformation implements PathInformation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.MappedPath#getLeafPropertyDescriptor()
+	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafPropertyDescriptor()
 	 */
 	@Nullable
 	@Override
@@ -89,7 +99,7 @@ class QuerydslPathInformation implements PathInformation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.MappedPath#toDotPath()
+	 * @see org.springframework.data.querydsl.binding.PathInformation#toDotPath()
 	 */
 	@Override
 	public String toDotPath() {
@@ -115,12 +125,13 @@ class QuerydslPathInformation implements PathInformation {
 			return true;
 		}
 
-		if (!(o instanceof QuerydslPathInformation)) {
+		if (!(o instanceof PathInformation)) {
 			return false;
 		}
 
-		QuerydslPathInformation that = (QuerydslPathInformation) o;
-		return ObjectUtils.nullSafeEquals(path, that.path);
+		PathInformation that = (PathInformation) o;
+		return ObjectUtils.nullSafeEquals(getRootParentType(), that.getRootParentType())
+				&& ObjectUtils.nullSafeEquals(toDotPath(), that.toDotPath());
 	}
 
 	/*
@@ -129,7 +140,9 @@ class QuerydslPathInformation implements PathInformation {
 	 */
 	@Override
 	public int hashCode() {
-		return ObjectUtils.nullSafeHashCode(path);
+		int result = ObjectUtils.nullSafeHashCode(getRootParentType());
+		result = 31 * result + ObjectUtils.nullSafeHashCode(toDotPath());
+		return result;
 	}
 
 	/*
