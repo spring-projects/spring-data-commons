@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,7 @@ package org.springframework.data.querydsl;
 
 import com.querydsl.core.annotations.QueryEntity;
 
-/**
- * @author Christoph Strobl
- */
 @QueryEntity
-public class Address {
-
-	public String street, city;
-	public Double[] lonLat;
-	public String description;
-
-	public Address(String street, String city) {
-		this.street = street;
-		this.city = city;
-	}
+public final class UserWrapper {
+	public User user;
 }

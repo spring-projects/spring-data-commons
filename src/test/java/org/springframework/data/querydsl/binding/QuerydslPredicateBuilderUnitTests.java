@@ -27,11 +27,14 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.springframework.data.querydsl.Address;
 import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.QUserWrapper;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.querydsl.UserWrapper;
 import org.springframework.data.querydsl.Users;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Version;
@@ -42,6 +45,7 @@ import org.springframework.util.MultiValueMap;
 import com.querydsl.collections.CollQueryFactory;
 import com.querydsl.core.types.Constant;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QuerydslPredicateBuilder}.
@@ -54,6 +58,7 @@ class QuerydslPredicateBuilderUnitTests {
 
 	static final ClassTypeInformation<User> USER_TYPE = ClassTypeInformation.from(User.class);
 	static final QuerydslBindings DEFAULT_BINDINGS = new QuerydslBindings();
+	static final SingleValueBinding<StringPath, String> CONTAINS_BINDING = (path, value) -> path.contains(value);
 
 	QuerydslPredicateBuilder builder;
 	MultiValueMap<String, String> values;
@@ -81,6 +86,21 @@ class QuerydslPredicateBuilderUnitTests {
 		assertThat(
 				QuerydslPredicateBuilder.isEmpty(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS)))
 						.isTrue();
+	}
+
+	@Test // GH-2418
+	void shouldLookupCorrectPath() {
+
+		DEFAULT_BINDINGS.bind(QUser.user.description).first(CONTAINS_BINDING);
+
+		values.add("description", "Linz");
+		Predicate predicate = this.builder.getPredicate(ClassTypeInformation.from(User.class), values, DEFAULT_BINDINGS);
+
+		assertThat(predicate).hasToString("contains(user.description,Linz)");
+
+		predicate = this.builder.getPredicate(ClassTypeInformation.from(Address.class), values, DEFAULT_BINDINGS);
+
+		assertThat(predicate).hasToString("address.description = Linz");
 	}
 
 	@Test // DATACMNS-669
@@ -206,14 +226,14 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("user.specialProperty", "VALUE");
 
-		QUserWrapper $ = QUserWrapper.userWrapper;
+		QUserWrapper wrapper = QUserWrapper.userWrapper;
 
 		QuerydslBindings bindings = new QuerydslBindings();
-		bindings.bind($.user.as(QSpecialUser.class).specialProperty)//
+		bindings.bind(wrapper.user.as(QSpecialUser.class).specialProperty)//
 				.first(QuerydslBindingsUnitTests.ContainsBinding.INSTANCE);
 
-		assertThat(builder.getPredicate(USER_TYPE, values, bindings))//
-				.isEqualTo($.user.as(QSpecialUser.class).specialProperty.contains("VALUE"));
+		assertThat(builder.getPredicate(ClassTypeInformation.from(UserWrapper.class), values, bindings))//
+				.isEqualTo(wrapper.user.as(QSpecialUser.class).specialProperty.contains("VALUE"));
 	}
 
 	@Test // DATACMNS-1443

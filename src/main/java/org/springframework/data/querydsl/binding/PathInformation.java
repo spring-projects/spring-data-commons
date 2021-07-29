@@ -32,6 +32,14 @@ import com.querydsl.core.types.Path;
 interface PathInformation {
 
 	/**
+	 * The root property owner type.
+	 *
+	 * @return
+	 * @since 2.5.5
+	 */
+	Class<?> getRootParentType();
+
+	/**
 	 * The type of the leaf property.
 	 *
 	 * @return
