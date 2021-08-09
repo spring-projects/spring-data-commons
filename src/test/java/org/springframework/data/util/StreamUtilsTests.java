@@ -42,4 +42,13 @@ public class StreamUtilsTests {
 
 		assertThat(input).isEqualTo(output);
 	}
+
+	@Test // #2426
+	void combinesInfiniteStreamCorrectly() {
+
+		Stream<Long> indices = Stream.iterate(1L, n -> n + 1);
+		Stream<String> lines = Stream.of("first line", "second line");
+
+		assertThat(StreamUtils.zip(indices, lines, (index, line) -> index + ":" + line).count()).isEqualTo(2);
+	}
 }
