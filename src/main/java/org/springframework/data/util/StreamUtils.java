@@ -140,9 +140,26 @@ public interface StreamUtils {
 			@Override
 			@SuppressWarnings("null")
 			public boolean tryAdvance(Consumer<? super T> action) {
-				return lefts.tryAdvance(left -> rights.tryAdvance(right -> action.accept(combiner.apply(left, right))));
-			}
 
+				Sink<L> leftSink = new Sink<L>();
+				Sink<R> rightSink = new Sink<R>();
+
+				boolean leftAdvance = lefts.tryAdvance(leftSink);
+
+				if (!leftAdvance) {
+					return false;
+				}
+
+				boolean rightAdvance = rights.tryAdvance(rightSink);
+
+				if (!rightAdvance) {
+					return false;
+				}
+
+				action.accept(combiner.apply(leftSink.getValue(), rightSink.getValue()));
+
+				return true;
+			}
 		}, parallel);
 	}
 }
