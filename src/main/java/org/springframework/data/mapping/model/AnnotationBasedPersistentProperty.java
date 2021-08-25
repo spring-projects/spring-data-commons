@@ -40,6 +40,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -56,6 +57,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		extends AbstractPersistentProperty<P> {
 
 	private static final String SPRING_DATA_PACKAGE = "org.springframework.data";
+	private static final Class<? extends Annotation> IDENTITY_TYPE = loadIdentityType();
 
 	private final @Nullable String value;
 	private final Map<Class<? extends Annotation>, Optional<? extends Annotation>> annotationCache = new ConcurrentHashMap<>();
@@ -74,7 +76,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			.of(() -> !isTransient() && !isAnnotationPresent(ReadOnlyProperty.class));
 	private final Lazy<Boolean> isReference = Lazy.of(() -> !isTransient() //
 			&& (isAnnotationPresent(Reference.class) || super.isAssociation()));
-	private final Lazy<Boolean> isId = Lazy.of(() -> isAnnotationPresent(Id.class));
+	private final Lazy<Boolean> isId = Lazy
+			.of(() -> isAnnotationPresent(Id.class) || IDENTITY_TYPE != null && isAnnotationPresent(IDENTITY_TYPE));
 	private final Lazy<Boolean> isVersion = Lazy.of(() -> isAnnotationPresent(Version.class));
 	private final Lazy<TypeInformation<?>> associationTargetType = Lazy.of(() -> {
 
@@ -328,5 +331,20 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 		return Optionals.toStream(Optional.ofNullable(getGetter()), Optional.ofNullable(getSetter()),
 				Optional.ofNullable(getField()));
+	}
+
+	/**
+	 * Load jMolecules' {@code @Identity} type if present on the classpath. Dedicated method instead of a simple static
+	 * initializer to be able to suppress the compiler warning.
+	 *
+	 * @return can be {@literal null}.
+	 */
+	@Nullable
+	@SuppressWarnings("unchecked")
+	private static Class<? extends Annotation> loadIdentityType() {
+
+		return (Class<? extends Annotation>) ReflectionUtils.loadIfPresent(
+				"org.jmolecules.ddd.annotation.Identity",
+				AbstractPersistentProperty.class.getClassLoader());
 	}
 }
