@@ -28,6 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.ClassAssert;
+import org.jmolecules.ddd.annotation.Identity;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Identifier;
@@ -329,6 +330,14 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 				.allMatch(it -> it.equals(ClassTypeInformation.from(Sample.class)));
 	}
 
+	@Test // #2438
+	void detectsJMoleculesIdentity() {
+
+		SamplePersistentProperty property = getProperty(JMolecules.class, "identifier");
+
+		assertThat(property.isIdProperty()).isTrue();
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -515,6 +524,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	}
 
 	static class JMolecules {
+		@Identity Long identifier;
 		Association<JMoleculesAggregate, Identifier> association;
 	}
 
