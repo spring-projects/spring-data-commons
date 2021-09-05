@@ -18,6 +18,7 @@ package org.springframework.data.support;
 import java.util.Collection;
 
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.GroupSpecifier;
 import org.springframework.data.domain.ExampleMatcher.PropertySpecifier;
 import org.springframework.data.domain.ExampleMatcher.StringMatcher;
 
@@ -28,14 +29,17 @@ import org.springframework.data.domain.ExampleMatcher.StringMatcher;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Jhonatan Serafim
  * @since 1.12
  */
 public class ExampleMatcherAccessor {
 
 	private final ExampleMatcher matcher;
+	private final GroupSpecifier defaultGroupSpecifier;
 
 	public ExampleMatcherAccessor(ExampleMatcher matcher) {
 		this.matcher = matcher;
+		this.defaultGroupSpecifier = new GroupSpecifier("", matcher.getMatchMode());
 	}
 
 	/**
@@ -158,5 +162,27 @@ public class ExampleMatcherAccessor {
 		}
 
 		return getPropertySpecifier(path).getPropertyValueTransformer();
+	}
+
+	/**
+	 * Get the group specifier for a given path or return {@code defaultGroupSpecifier} if none
+	 * defined.
+	 *
+	 * @param path
+	 * @return never {@literal null}.
+	 */
+	public GroupSpecifier getGroupSpecifierForPath(String path) {
+
+		if (!hasPropertySpecifier(path)) {
+			return defaultGroupSpecifier;
+		}
+
+		GroupSpecifier groupSpecifier = getPropertySpecifier(path).getGroupSpecifier();
+
+		if (groupSpecifier == null || groupSpecifier.getGroupName().isEmpty()) {
+			return defaultGroupSpecifier;
+		}
+
+		return groupSpecifier;
 	}
 }

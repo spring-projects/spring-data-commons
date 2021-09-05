@@ -39,6 +39,7 @@ import org.springframework.util.ObjectUtils;
  * @author Mark Paluch
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Jhonatan Serafim
  * @since 1.12
  */
 public interface ExampleMatcher {
@@ -149,6 +150,17 @@ public interface ExampleMatcher {
 	 * @return new instance of {@link ExampleMatcher}.
 	 */
 	ExampleMatcher withTransformer(String propertyPath, PropertyValueTransformer propertyValueTransformer);
+
+	/**
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code GroupSpecifier} for the
+	 * {@code propertyPath}.
+	 *
+	 * @param propertyPath must not be {@literal null}.
+	 * @param groupName must not be {@literal null}.
+	 * @param matchMode must not be {@literal null}.
+	 * @return new instance of {@link ExampleMatcher}.
+	 */
+	ExampleMatcher withGroupSpecifier(String propertyPath, String groupName, MatchMode matchMode);
 
 	/**
 	 * Returns a copy of this {@link ExampleMatcher} with ignore case sensitivity for the {@code propertyPaths}. This
@@ -277,12 +289,14 @@ public interface ExampleMatcher {
 	 * A generic property matcher that specifies {@link StringMatcher string matching} and case sensitivity.
 	 *
 	 * @author Mark Paluch
+	 * @author Jhonatan Serafim
 	 */
 	class GenericPropertyMatcher {
 
 		@Nullable StringMatcher stringMatcher = null;
 		@Nullable Boolean ignoreCase = null;
 		PropertyValueTransformer valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
+		@Nullable GroupSpecifier groupSpecifier;
 
 		/**
 		 * Creates an unconfigured {@link GenericPropertyMatcher}.
@@ -436,6 +450,20 @@ public interface ExampleMatcher {
 			return this;
 		}
 
+		/**
+		 * Sets the {@link GroupSpecifier} to {@code groupSpecifier}.
+		 *
+		 * @param groupName must not be {@literal null}.
+		 * @param matchMode must not be {@literal null}.
+		 * @return
+		 */
+		public GenericPropertyMatcher groupSpecifier(String groupName, MatchMode matchMode) {
+			Assert.notNull(groupName, "GroupName must not be null!");
+			Assert.notNull(matchMode, "MatchMode must not be null!");
+			this.groupSpecifier = new GroupSpecifier(groupName, matchMode);
+			return this;
+		}
+
 		protected boolean canEqual(final Object other) {
 			return other instanceof GenericPropertyMatcher;
 		}
@@ -464,7 +492,11 @@ public interface ExampleMatcher {
 				return false;
 			}
 
-			return ObjectUtils.nullSafeEquals(valueTransformer, that.valueTransformer);
+			if (!ObjectUtils.nullSafeEquals(valueTransformer, that.valueTransformer)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(groupSpecifier, that.groupSpecifier);
 		}
 
 		/*
@@ -476,6 +508,7 @@ public interface ExampleMatcher {
 			int result = ObjectUtils.nullSafeHashCode(stringMatcher);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(ignoreCase);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(valueTransformer);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(groupSpecifier);
 			return result;
 		}
 	}
@@ -625,6 +658,7 @@ public interface ExampleMatcher {
 	 *
 	 * @author Christoph Strobl
 	 * @author Mark Paluch
+	 * @author Jhonatan Serafim
 	 * @since 1.12
 	 */
 	class PropertySpecifier {
@@ -633,6 +667,7 @@ public interface ExampleMatcher {
 		private final @Nullable StringMatcher stringMatcher;
 		private final @Nullable Boolean ignoreCase;
 		private final PropertyValueTransformer valueTransformer;
+		private final @Nullable GroupSpecifier groupSpecifier;
 
 		/**
 		 * Creates new {@link PropertySpecifier} for given path.
@@ -647,14 +682,16 @@ public interface ExampleMatcher {
 			this.stringMatcher = null;
 			this.ignoreCase = null;
 			this.valueTransformer = NoOpPropertyValueTransformer.INSTANCE;
+			this.groupSpecifier = null;
 		}
 
 		private PropertySpecifier(String path, @Nullable StringMatcher stringMatcher, @Nullable Boolean ignoreCase,
-				PropertyValueTransformer valueTransformer) {
+				PropertyValueTransformer valueTransformer, @Nullable GroupSpecifier groupSpecifier) {
 			this.path = path;
 			this.stringMatcher = stringMatcher;
 			this.ignoreCase = ignoreCase;
 			this.valueTransformer = valueTransformer;
+			this.groupSpecifier = groupSpecifier;
 		}
 
 		/**
@@ -667,7 +704,8 @@ public interface ExampleMatcher {
 		public PropertySpecifier withStringMatcher(StringMatcher stringMatcher) {
 
 			Assert.notNull(stringMatcher, "StringMatcher must not be null!");
-			return new PropertySpecifier(this.path, stringMatcher, this.ignoreCase, this.valueTransformer);
+			return new PropertySpecifier(this.path, stringMatcher, this.ignoreCase, this.valueTransformer,
+					groupSpecifier);
 		}
 
 		/**
@@ -678,7 +716,8 @@ public interface ExampleMatcher {
 		 * @return
 		 */
 		public PropertySpecifier withIgnoreCase(boolean ignoreCase) {
-			return new PropertySpecifier(this.path, this.stringMatcher, ignoreCase, this.valueTransformer);
+			return new PropertySpecifier(this.path, this.stringMatcher, ignoreCase, this.valueTransformer,
+					groupSpecifier);
 		}
 
 		/**
@@ -691,7 +730,37 @@ public interface ExampleMatcher {
 		public PropertySpecifier withValueTransformer(PropertyValueTransformer valueTransformer) {
 
 			Assert.notNull(valueTransformer, "PropertyValueTransformer must not be null!");
-			return new PropertySpecifier(this.path, this.stringMatcher, this.ignoreCase, valueTransformer);
+			return new PropertySpecifier(this.path, this.stringMatcher, this.ignoreCase, valueTransformer,
+					groupSpecifier);
+		}
+
+		/**
+		 * Creates a new {@link PropertySpecifier} containing all values from the current instance and sets
+		 * {@link GroupSpecifier} in the returned instance.
+		 *
+		 * @param groupName must not be {@literal null}.
+		 * @param matchMode must not be {@literal null}.
+		 * @return
+		 */
+		public PropertySpecifier withGroupSpecifier(String groupName, MatchMode matchMode) {
+			Assert.hasText(groupName, "GroupName must not be null!");
+			Assert.notNull(matchMode, "MatchMode must not be null!");
+
+			return withGroupSpecifier(new GroupSpecifier(groupName, matchMode));
+		}
+
+		/**
+		 * Creates a new {@link PropertySpecifier} containing all values from the current instance and sets
+		 * {@link GroupSpecifier} in the returned instance.
+		 *
+		 * @param groupSpecifier must not be {@literal null}.
+		 * @return
+		 */
+		public PropertySpecifier withGroupSpecifier(GroupSpecifier groupSpecifier) {
+			Assert.notNull(groupSpecifier, "GroupSpecifier must not be null!");
+
+			return new PropertySpecifier(this.path, stringMatcher, this.ignoreCase, this.valueTransformer,
+					groupSpecifier);
 		}
 
 		/**
@@ -740,6 +809,11 @@ public interface ExampleMatcher {
 			return getPropertyValueTransformer().apply(source);
 		}
 
+		@Nullable
+		public GroupSpecifier getGroupSpecifier() {
+			return groupSpecifier;
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Object#equals(java.lang.Object)
@@ -768,7 +842,11 @@ public interface ExampleMatcher {
 				return false;
 			}
 
-			return ObjectUtils.nullSafeEquals(valueTransformer, that.valueTransformer);
+			if (!ObjectUtils.nullSafeEquals(valueTransformer, that.valueTransformer)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(groupSpecifier, that.groupSpecifier);
 		}
 
 		/*
@@ -781,6 +859,7 @@ public interface ExampleMatcher {
 			result = 31 * result + ObjectUtils.nullSafeHashCode(stringMatcher);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(ignoreCase);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(valueTransformer);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(groupSpecifier);
 			return result;
 		}
 
@@ -855,6 +934,80 @@ public interface ExampleMatcher {
 		@Override
 		public int hashCode() {
 			return ObjectUtils.nullSafeHashCode(propertySpecifiers);
+		}
+	}
+
+	/**
+	 * Define specific group handling for a Dot-Path.
+	 *
+	 * @author Jhonatan Serafim
+	 * @since 2.6
+	 */
+	class GroupSpecifier {
+
+		private final String groupName;
+		private final MatchMode matchMode;
+
+		public GroupSpecifier(String groupName, MatchMode matchMode) {
+			this.groupName = groupName;
+			this.matchMode = matchMode;
+		}
+
+		/**
+		 * Get the name.
+		 *
+		 * @return never {@literal null}.
+		 */
+		public String getGroupName() {
+			return groupName;
+		}
+
+		/**
+		 * Get the {@link MatchMode}.
+		 *
+		 * @return never {@literal null}.
+		 */
+		public MatchMode getMatchMode() {
+			return matchMode;
+		}
+
+		public boolean isAllMatching() {
+			return getMatchMode().equals(MatchMode.ALL);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof GroupSpecifier)) {
+				return false;
+			}
+
+			GroupSpecifier that = (GroupSpecifier) o;
+
+			if (!ObjectUtils.nullSafeEquals(groupName, that.groupName)) {
+				return false;
+			}
+
+			return matchMode == that.matchMode;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(groupName);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(matchMode);
+			return result;
 		}
 	}
 

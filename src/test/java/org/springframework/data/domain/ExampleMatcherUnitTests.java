@@ -21,11 +21,14 @@ import static org.springframework.data.domain.ExampleMatcher.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 /**
  * Unit test for {@link ExampleMatcher}.
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Jhonatan Serafim
  * @soundtrack K2 - Der Berg Ruft (Club Mix)
  */
 class ExampleMatcherUnitTests {
@@ -164,22 +167,52 @@ class ExampleMatcherUnitTests {
 				.withNullHandler(NullHandler.IGNORE) //
 				.withIgnoreCase("ignored-case") //
 				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
-				.withMatcher("world", GenericPropertyMatcher::endsWith);
+				.withMatcher("world", GenericPropertyMatcher::endsWith)
+				.withMatcher("world", matcher -> matcher.groupSpecifier("group", MatchMode.ALL));
 
 		ExampleMatcher sameAsMatcher = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //
 				.withNullHandler(NullHandler.IGNORE) //
 				.withIgnoreCase("ignored-case") //
 				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
-				.withMatcher("world", GenericPropertyMatcher::endsWith);
+				.withMatcher("world", GenericPropertyMatcher::endsWith)
+				.withMatcher("world", matcher -> matcher.groupSpecifier("group", MatchMode.ALL));
 
 		ExampleMatcher different = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //
 				.withNullHandler(NullHandler.IGNORE) //
-				.withMatcher("hello", GenericPropertyMatchers.contains().ignoreCase());
+				.withMatcher("hello", GenericPropertyMatchers.contains().ignoreCase())
+				.withMatcher("world", matcher -> matcher.groupSpecifier("group", MatchMode.ANY));
 
 		assertThat(matcher.hashCode()).isEqualTo(sameAsMatcher.hashCode()).isNotEqualTo(different.hashCode());
 		assertThat(matcher).isEqualTo(sameAsMatcher).isNotEqualTo(different);
+	}
+
+	@Test // DATAJPA-2291
+	void groupSpecifierShouldReturnConfiguredValues() {
+
+		matcher = matching().withGroupSpecifier("foo", "group", MatchMode.ALL)
+				.withGroupSpecifier("bar", "group", MatchMode.ALL)
+				.withGroupSpecifier("baz", "other-group", MatchMode.ANY)
+				.withGroupSpecifier("hello", "other-group", MatchMode.ANY);
+
+		assertThat(matcher.getPropertySpecifiers().getSpecifiers()).hasSize(4);
+
+		for (String path : Arrays.asList("foo", "bar")) {
+			assertThat(matcher.getPropertySpecifiers().getForPath(path)).satisfies(propertySpecifier -> {
+				assertThat(propertySpecifier.getGroupSpecifier()).isNotNull();
+				assertThat(propertySpecifier.getGroupSpecifier().getGroupName()).isEqualTo("group");
+				assertThat(propertySpecifier.getGroupSpecifier().getMatchMode()).isEqualTo(MatchMode.ALL);
+			});
+		}
+
+		for (String path : Arrays.asList("baz", "hello")) {
+			assertThat(matcher.getPropertySpecifiers().getForPath(path)).satisfies(propertySpecifier -> {
+				assertThat(propertySpecifier.getGroupSpecifier()).isNotNull();
+				assertThat(propertySpecifier.getGroupSpecifier().getGroupName()).isEqualTo("other-group");
+				assertThat(propertySpecifier.getGroupSpecifier().getMatchMode()).isEqualTo(MatchMode.ANY);
+			});
+		}
 	}
 
 	static class Person {

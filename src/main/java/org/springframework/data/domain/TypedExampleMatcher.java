@@ -28,6 +28,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Jhonatan Serafim
  * @since 2.0
  */
 class TypedExampleMatcher implements ExampleMatcher {
@@ -116,6 +117,10 @@ class TypedExampleMatcher implements ExampleMatcher {
 			propertySpecifier = propertySpecifier.withStringMatcher(genericPropertyMatcher.stringMatcher);
 		}
 
+		if (genericPropertyMatcher.groupSpecifier != null) {
+			propertySpecifier = propertySpecifier.withGroupSpecifier(genericPropertyMatcher.groupSpecifier);
+		}
+
 		propertySpecifier = propertySpecifier.withValueTransformer(genericPropertyMatcher.valueTransformer);
 
 		propertySpecifiers.add(propertySpecifier);
@@ -138,6 +143,26 @@ class TypedExampleMatcher implements ExampleMatcher {
 		PropertySpecifier propertySpecifier = getOrCreatePropertySpecifier(propertyPath, propertySpecifiers);
 
 		propertySpecifiers.add(propertySpecifier.withValueTransformer(propertyValueTransformer));
+
+		return new TypedExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
+				defaultIgnoreCase, mode);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.domain.ExampleMatcher#withGroupSpecifier(java.lang.String, org.springframework.data.domain.MatchMode)
+	 */
+	@Override
+	public ExampleMatcher withGroupSpecifier(String propertyPath, String groupName, MatchMode matchMode) {
+
+		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
+		Assert.hasText(groupName, "GroupName must not be empty!");
+		Assert.notNull(matchMode, "MatchMode must not be empty!");
+
+		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
+		PropertySpecifier propertySpecifier = getOrCreatePropertySpecifier(propertyPath, propertySpecifiers);
+
+		propertySpecifiers.add(propertySpecifier.withGroupSpecifier(groupName, matchMode));
 
 		return new TypedExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
 				defaultIgnoreCase, mode);
