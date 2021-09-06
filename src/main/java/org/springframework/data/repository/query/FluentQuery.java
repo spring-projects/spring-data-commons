@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
@@ -29,7 +30,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 
 /**
- * Fluent interface to define a query along with projection and sorting.
+ * Fluent interface to define and run a query along with projection and sorting and. Instances of {@link FluentQuery}
+ * are immutable.
  *
  * @author Mark Paluch
  * @since 2.6
@@ -101,19 +103,38 @@ public interface FluentQuery<T> {
 		/**
 		 * Get exactly zero or one result.
 		 *
-		 * @return {@code null} if no match found.
+		 * @return {@link Optional#empty()} if no match found.
+		 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if more than one match found.
+		 */
+		default Optional<T> one() {
+			return Optional.ofNullable(oneValue());
+		}
+
+		/**
+		 * Get exactly zero or one result.
+		 *
+		 * @return {@literal null} if no match found.
 		 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if more than one match found.
 		 */
 		@Nullable
-		T one();
+		T oneValue();
 
 		/**
 		 * Get the first or no result.
 		 *
-		 * @return {@code null} if no match found.
+		 * @return {@link Optional#empty()} if no match found.
+		 */
+		default Optional<T> first() {
+			return Optional.ofNullable(firstValue());
+		}
+
+		/**
+		 * Get the first or no result.
+		 *
+		 * @return {@literal null} if no match found.
 		 */
 		@Nullable
-		T first();
+		T firstValue();
 
 		/**
 		 * Get all matching elements.
