@@ -59,14 +59,6 @@ class ParametersUnitTests {
 	}
 
 	@Test
-	void rejectsInvalidMethodWithParamMissing() throws Exception {
-
-		Method method = SampleDao.class.getMethod("invalidParamMissing", String.class, String.class);
-
-		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultParameters(method));
-	}
-
-	@Test
 	void rejectsNullMethod() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultParameters(null));
 	}
