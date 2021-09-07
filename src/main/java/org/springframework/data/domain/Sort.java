@@ -173,6 +173,11 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		return !isEmpty();
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return orders.isEmpty();
+	}
+
 	public boolean isUnsorted() {
 		return !isSorted();
 	}
@@ -718,7 +723,11 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 					.map(Order::by) //
 					.map(Collections::singleton) //
 					.orElseGet(Collections::emptySet).iterator();
+		}
 
+		@Override
+		public boolean isEmpty() {
+			return !recorded.getPropertyPath().isPresent();
 		}
 
 		/*
