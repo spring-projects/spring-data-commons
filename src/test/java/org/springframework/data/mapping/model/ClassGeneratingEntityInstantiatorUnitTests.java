@@ -23,6 +23,7 @@ import static org.springframework.data.util.ClassTypeInformation.from;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,8 @@ import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator.ObjectInstantiator;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
+import org.springframework.data.util.TypeInformation;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -210,6 +213,9 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 			assertThat(instance).isInstanceOf(ObjCtorNoArgs.class);
 			assertThat(((ObjCtorNoArgs) instance).ctorInvoked).isTrue();
 		});
+
+		ClassGeneratingEntityInstantiator classGeneratingEntityInstantiator = new ClassGeneratingEntityInstantiator();
+		classGeneratingEntityInstantiator.createInstance(entity, provider);
 	}
 
 	@Test // DATACMNS-578, DATACMNS-1126
@@ -358,6 +364,26 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 		prepareMocks(ClassWithPrivateConstructor.class);
 
 		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isTrue();
+	}
+
+	@Test // GH-2446
+	void shouldReuseGeneratedClasses() {
+
+		prepareMocks(ProtectedInnerClass.class);
+
+		this.instance.createInstance(entity, provider);
+
+		ClassGeneratingEntityInstantiator instantiator = new ClassGeneratingEntityInstantiator();
+		instantiator.createInstance(entity, provider);
+
+		Map<TypeInformation<?>, EntityInstantiator> first = (Map<TypeInformation<?>, EntityInstantiator>) ReflectionTestUtils
+				.getField(this.instance, "entityInstantiators");
+
+		Map<TypeInformation<?>, EntityInstantiator> second = (Map<TypeInformation<?>, EntityInstantiator>) ReflectionTestUtils
+				.getField(instantiator, "entityInstantiators");
+
+		assertThat(first.get(null)).isNotNull().isNotInstanceOf(Enum.class);
+		assertThat(second.get(null)).isNotNull().isNotInstanceOf(Enum.class);
 	}
 
 	@Test // DATACMNS-1422

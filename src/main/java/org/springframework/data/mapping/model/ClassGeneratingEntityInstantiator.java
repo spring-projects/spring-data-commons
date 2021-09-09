@@ -124,6 +124,13 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		try {
 			return doCreateEntityInstantiator(entity);
 		} catch (Throwable ex) {
+
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug(
+						String.format("Cannot create entity instantiator for %s. Falling back to ReflectionEntityInstantiator.",
+								entity.getName()),
+						ex);
+			}
 			return ReflectionEntityInstantiator.INSTANCE;
 		}
 	}
@@ -336,12 +343,22 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 				@Nullable PreferredConstructor<?, ?> constructor) {
 
 			String className = generateClassName(entity);
+			Class<?> type = entity.getType();
+			ClassLoader classLoader = type.getClassLoader();
+
+			if (ClassUtils.isPresent(className, classLoader)) {
+
+				try {
+					return ClassUtils.forName(className, classLoader);
+				} catch (Exception o_O) {
+					throw new IllegalStateException(o_O);
+				}
+			}
+
 			byte[] bytecode = generateBytecode(className, entity, constructor);
 
-			Class<?> type = entity.getType();
-
 			try {
-				return ReflectUtils.defineClass(className, bytecode, type.getClassLoader(), type.getProtectionDomain(), type);
+				return ReflectUtils.defineClass(className, bytecode, classLoader, type.getProtectionDomain(), type);
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
