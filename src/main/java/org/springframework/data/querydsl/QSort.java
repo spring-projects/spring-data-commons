@@ -104,6 +104,11 @@ public class QSort extends Sort implements Serializable {
 		return Order.by(targetElement.toString()).with(orderSpecifier.isAscending() ? Direction.ASC : Direction.DESC);
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return orderSpecifiers.isEmpty();
+	}
+
 	/**
 	 * @return the orderSpecifier
 	 */

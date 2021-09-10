@@ -364,43 +364,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			read.unlock();
 		}
 
-		Class<?> type = typeInformation.getType();
-		E entity = null;
+		E entity;
 
 		try {
 
 			write.lock();
-
-			entity = createPersistentEntity(typeInformation);
-
-			entity.setEvaluationContextProvider(evaluationContextProvider);
-
-			// Eagerly cache the entity as we might have to find it during recursive lookups.
-			persistentEntities.put(typeInformation, Optional.of(entity));
-
-			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
-
-			final Map<String, PropertyDescriptor> descriptors = new HashMap<>();
-			for (PropertyDescriptor descriptor : pds) {
-				descriptors.put(descriptor.getName(), descriptor);
-			}
-
-			try {
-
-				PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
-				ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
-				persistentPropertyCreator.addPropertiesForRemainingDescriptors();
-
-				entity.verify();
-
-				if (persistentPropertyAccessorFactory.isSupported(entity)) {
-					entity.setPersistentPropertyAccessorFactory(persistentPropertyAccessorFactory);
-				}
-
-			} catch (RuntimeException e) {
-				persistentEntities.remove(typeInformation);
-				throw e;
-			}
+			entity = doAddPersistentEntity(typeInformation);
 
 		} catch (BeansException e) {
 			throw new MappingException(e.getMessage(), e);
@@ -409,11 +378,47 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 
 		// Inform listeners
-		if (applicationEventPublisher != null && entity != null) {
+		if (applicationEventPublisher != null) {
 			applicationEventPublisher.publishEvent(new MappingContextEvent<>(this, entity));
 		}
 
 		return Optional.of(entity);
+	}
+
+	private E doAddPersistentEntity(TypeInformation<?> typeInformation) {
+
+		try {
+
+			Class<?> type = typeInformation.getType();
+
+			E entity = createPersistentEntity(typeInformation);
+			entity.setEvaluationContextProvider(evaluationContextProvider);
+
+			// Eagerly cache the entity as we might have to find it during recursive lookups.
+			persistentEntities.put(typeInformation, Optional.of(entity));
+
+			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
+
+			Map<String, PropertyDescriptor> descriptors = new HashMap<>();
+			for (PropertyDescriptor descriptor : pds) {
+				descriptors.put(descriptor.getName(), descriptor);
+			}
+
+			PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
+			ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
+			persistentPropertyCreator.addPropertiesForRemainingDescriptors();
+
+			entity.verify();
+
+			if (persistentPropertyAccessorFactory.isSupported(entity)) {
+				entity.setPersistentPropertyAccessorFactory(persistentPropertyAccessorFactory);
+			}
+
+			return entity;
+		} catch (RuntimeException e) {
+			persistentEntities.remove(typeInformation);
+			throw e;
+		}
 	}
 
 	/*

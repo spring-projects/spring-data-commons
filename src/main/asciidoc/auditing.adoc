@@ -64,8 +64,6 @@ class AuditMetadata {
 === Interface-based Auditing Metadata
 In case you do not want to use annotations to define auditing metadata, you can let your domain class implement the `Auditable` interface. It exposes setter methods for all of the auditing properties.
 
-There is also a convenience base class, `AbstractAuditable`, which you can extend to avoid the need to manually implement the interface methods. Doing so increases the coupling of your domain classes to Spring Data, which might be something you want to avoid. Usually, the annotation-based way of defining auditing metadata is preferred as it is less invasive and more flexible.
-
 [[auditing.auditor-aware]]
 === `AuditorAware`
 

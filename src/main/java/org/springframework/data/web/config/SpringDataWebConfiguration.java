@@ -16,11 +16,9 @@
 package org.springframework.data.web.config;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -66,9 +64,8 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 
 	private final Lazy<SortHandlerMethodArgumentResolver> sortResolver;
 	private final Lazy<PageableHandlerMethodArgumentResolver> pageableResolver;
-
-	private @Autowired Optional<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
-	private @Autowired Optional<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
+	private final Lazy<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
+	private final Lazy<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
 
 	public SpringDataWebConfiguration(ApplicationContext context,
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
@@ -77,10 +74,15 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
 		this.context = context;
+
 		this.conversionService = conversionService;
 		this.sortResolver = Lazy.of(() -> context.getBean("sortResolver", SortHandlerMethodArgumentResolver.class));
-		this.pageableResolver = Lazy
-				.of(() -> context.getBean("pageableResolver", PageableHandlerMethodArgumentResolver.class));
+		this.pageableResolver = Lazy.of( //
+				() -> context.getBean("pageableResolver", PageableHandlerMethodArgumentResolver.class));
+		this.pageableResolverCustomizer = Lazy.of( //
+				() -> context.getBeanProvider(PageableHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
+		this.sortResolverCustomizer = Lazy.of( //
+				() -> context.getBeanProvider(SortHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
 	}
 
 	/*
@@ -181,11 +183,11 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	}
 
 	protected void customizePageableResolver(PageableHandlerMethodArgumentResolver pageableResolver) {
-		pageableResolverCustomizer.ifPresent(c -> c.customize(pageableResolver));
+		pageableResolverCustomizer.getOptional().ifPresent(c -> c.customize(pageableResolver));
 	}
 
 	protected void customizeSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
-		sortResolverCustomizer.ifPresent(c -> c.customize(sortResolver));
+		sortResolverCustomizer.getOptional().ifPresent(c -> c.customize(sortResolver));
 	}
 
 	private void forwardBeanClassLoader(BeanClassLoaderAware target) {
