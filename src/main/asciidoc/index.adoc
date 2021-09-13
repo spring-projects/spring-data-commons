@@ -14,6 +14,7 @@ include::preface.adoc[]
 = Reference Documentation
 
 :leveloffset: +1
+
 include::dependencies.adoc[]
 
 include::object-mapping.adoc[]
@@ -25,6 +26,7 @@ include::repository-projections.adoc[]
 include::query-by-example.adoc[]
 
 include::auditing.adoc[]
+
 :leveloffset: -1
 
 [[appendix]]
