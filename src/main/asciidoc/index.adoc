@@ -28,7 +28,7 @@ include::auditing.adoc[]
 :leveloffset: -1
 
 [[appendix]]
-= Appendix
+= Appendices
 
 :numbered!:
 :leveloffset: +1
