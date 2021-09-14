@@ -127,7 +127,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-1663
-	public void interceptsDeleteMethod() throws Throwable {
+	void interceptsDeleteMethod() throws Throwable {
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("delete", Object.class), sample);
@@ -152,7 +152,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-1663
-	public void doesNotInterceptDeleteByIdMethod() throws Throwable {
+	void doesNotInterceptDeleteByIdMethod() throws Throwable {
 
 		doReturn(SampleRepository.class.getMethod("deleteById", Object.class)).when(invocation).getMethod();
 
@@ -204,11 +204,39 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-1663
-	public void publishesEventsForCallToDeleteWithIterable() throws Throwable {
+	void publishesEventsForCallToDeleteWithIterable() throws Throwable {
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAll", Iterable.class), sample);
+
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
+				.invoke(invocation);
+
+		verify(publisher).publishEvent(any(SomeEvent.class));
+	}
+
+	@Test // GH-2448
+	void publishesEventsForCallToDeleteInBatchWithIterable() throws Throwable {
+
+		SomeEvent event = new SomeEvent();
+		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteInBatch", Iterable.class), sample);
+
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
+				.invoke(invocation);
+
+		verify(publisher).publishEvent(any(SomeEvent.class));
+	}
+
+	@Test // GH-2448
+	void publishesEventsForCallToDeleteAllInBatchWithIterable() throws Throwable {
+
+		SomeEvent event = new SomeEvent();
+		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAllInBatch", Iterable.class), sample);
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -294,6 +322,17 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		verify(publisher, times(1)).publishEvent(event);
 	}
 
+	@Test // GH-2448
+	void doesNotEmitEventsFromPrimitiveValue() throws Throwable {
+
+		Method method = SampleRepository.class.getMethod("delete", Object.class);
+		mockInvocation(invocation, method, "foo", MultipleEvents.of(Collections.emptySet()));
+
+		EventPublishingMethodInterceptor.of(EventPublishingMethod.of(MultipleEvents.class), publisher).invoke(invocation);
+
+		verify(publisher, never()).publishEvent(any());
+	}
+
 	private static void mockInvocation(MethodInvocation invocation, Method method, Object parameterAndReturnValue)
 			throws Throwable {
 
@@ -322,17 +361,23 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Value(staticConstructor = "of")
-	static class OneEvent {
+	private static class OneEvent {
 		@Getter(onMethod = @__(@DomainEvents)) Object event;
 	}
 
 	@Value
-	static class SomeEvent {
+	private static class SomeEvent {
 		UUID id = UUID.randomUUID();
 	}
 
 	interface SampleRepository extends CrudRepository<MultipleEvents, Long> {
 
 		MultipleEvents saveAndFlush(MultipleEvents events);
+
+		MultipleEvents delete(String name);
+
+		MultipleEvents deleteAllInBatch(Iterable<MultipleEvents> events);
+
+		MultipleEvents deleteInBatch(Iterable<MultipleEvents> events);
 	}
 }

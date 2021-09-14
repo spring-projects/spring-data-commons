@@ -129,7 +129,8 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	}
 
 	private static boolean isDeleteMethod(String methodName) {
-		return methodName.equals("delete") || methodName.equals("deleteAll");
+		return methodName.equals("delete") || methodName.equals("deleteAll") || methodName.equals("deleteInBatch")
+				|| methodName.equals("deleteAllInBatch");
 	}
 
 	/**
@@ -141,13 +142,16 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	static class EventPublishingMethod {
 
 		private static Map<Class<?>, EventPublishingMethod> cache = new ConcurrentReferenceHashMap<>();
-		private static @SuppressWarnings("null") EventPublishingMethod NONE = new EventPublishingMethod(null, null);
+		private static @SuppressWarnings("null") EventPublishingMethod NONE = new EventPublishingMethod(Object.class, null,
+				null);
 
+		private final Class<?> type;
 		private final Method publishingMethod;
 		private final @Nullable Method clearingMethod;
 
-		EventPublishingMethod(Method publishingMethod, Method clearingMethod) {
+		EventPublishingMethod(Class<?> type, Method publishingMethod, @Nullable Method clearingMethod) {
 
+			this.type = type;
 			this.publishingMethod = publishingMethod;
 			this.clearingMethod = clearingMethod;
 		}
@@ -170,7 +174,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return eventPublishingMethod.orNull();
 			}
 
-			EventPublishingMethod result = from(getDetector(type, DomainEvents.class),
+			EventPublishingMethod result = from(type, getDetector(type, DomainEvents.class),
 					() -> getDetector(type, AfterDomainEventPublication.class));
 
 			cache.put(type, result);
@@ -191,6 +195,10 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			}
 
 			for (Object aggregateRoot : asCollection(object)) {
+
+				if (!type.isInstance(aggregateRoot)) {
+					continue;
+				}
 
 				for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
 					publisher.publishEvent(event);
@@ -229,7 +237,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @param clearing must not be {@literal null}.
 		 * @return
 		 */
-		private static EventPublishingMethod from(AnnotationDetectionMethodCallback<?> publishing,
+		private static EventPublishingMethod from(Class<?> type, AnnotationDetectionMethodCallback<?> publishing,
 				Supplier<AnnotationDetectionMethodCallback<?>> clearing) {
 
 			if (!publishing.hasFoundAnnotation()) {
@@ -239,7 +247,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			Method eventMethod = publishing.getRequiredMethod();
 			ReflectionUtils.makeAccessible(eventMethod);
 
-			return new EventPublishingMethod(eventMethod, getClearingMethod(clearing.get()));
+			return new EventPublishingMethod(type, eventMethod, getClearingMethod(clearing.get()));
 		}
 
 		/**
