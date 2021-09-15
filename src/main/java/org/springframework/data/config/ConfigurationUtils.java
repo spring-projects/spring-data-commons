@@ -15,6 +15,7 @@
  */
 package org.springframework.data.config;
 
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.core.io.ResourceLoader;
@@ -100,5 +101,13 @@ public interface ConfigurationUtils {
 		}
 
 		return result;
+	}
+
+	static Class<?> getFactoryBeanObjectType(BeanDefinition beanDefinition) {
+
+		if(!beanDefinition.hasAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE)) {
+			return null;
+		}
+		return Class.class.cast(beanDefinition.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE));
 	}
 }

@@ -95,6 +95,21 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return ConfigurationUtils.getRequiredBeanClassName(definition);
 	}
 
+	public Class<?> getRepositoryInterfaceType() {
+
+		Class<?> target = ConfigurationUtils.getFactoryBeanObjectType(definition);
+		if(target != null) {
+			return target;
+		}
+
+		try {
+			return ClassUtils.forName(getRepositoryInterface(), ConfigurationUtils.getRequiredClassLoader(this.getConfigurationSource().getResourceLoader()));
+		} catch (ClassNotFoundException e) {
+
+		}
+		return null;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getConfigSource()

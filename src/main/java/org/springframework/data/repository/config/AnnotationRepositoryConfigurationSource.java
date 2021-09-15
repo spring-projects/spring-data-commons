@@ -333,6 +333,11 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return String.format("@%s declared on %s", annoationClassName, simpleClassName);
 	}
 
+	@Override
+	public ResourceLoader getResourceLoader() {
+		return resourceLoader;
+	}
+
 	private Streamable<TypeFilter> parseFilters(String attributeName) {
 
 		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);

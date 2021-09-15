@@ -24,9 +24,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
@@ -37,7 +37,6 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.metrics.ApplicationStartup;
-import org.springframework.core.metrics.StartupStep;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver;
 import org.springframework.data.repository.sample.AddressRepository;
@@ -56,8 +55,8 @@ class RepositoryConfigurationDelegateUnitTests {
 
 	@Mock RepositoryConfigurationExtension extension;
 
-	@Test // DATACMNS-892
-	void registersRepositoryBeanNameAsAttribute() {
+	@Test // DATACMNS-892, GH-2455
+	void registersRepositoryBeanTargetTypeAsAttribute() {
 
 		StandardEnvironment environment = new StandardEnvironment();
 		GenericApplicationContext context = new GenericApplicationContext();
@@ -72,8 +71,10 @@ class RepositoryConfigurationDelegateUnitTests {
 
 			BeanDefinition beanDefinition = definition.getBeanDefinition();
 
-			assertThat(beanDefinition.getAttribute(RepositoryConfigurationDelegate.FACTORY_BEAN_OBJECT_TYPE).toString())
-					.endsWith("Repository");
+			assertThat(beanDefinition.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE)).satisfies(it -> {
+					assertThat(it).isInstanceOf(Class.class);
+					assertThat(it.toString()).endsWith("Repository");
+			});
 		}
 	}
 

@@ -53,6 +53,8 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 */
 	String getRepositoryInterface();
 
+	Class<?> getRepositoryInterfaceType();
+
 	/**
 	 * Returns the key to resolve a {@link QueryLookupStrategy} from eventually.
 	 *

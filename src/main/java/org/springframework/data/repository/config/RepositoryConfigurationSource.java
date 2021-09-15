@@ -180,4 +180,6 @@ public interface RepositoryConfigurationSource {
 	 */
 	@Nullable
 	String getResourceDescription();
+
+	ResourceLoader getResourceLoader();
 }

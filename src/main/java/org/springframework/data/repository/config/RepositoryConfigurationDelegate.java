@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
@@ -46,6 +47,7 @@ import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StopWatch;
 
 /**
@@ -64,8 +66,6 @@ public class RepositoryConfigurationDelegate {
 	private static final String REPOSITORY_REGISTRATION = "Spring Data %s - Registering repository: %s - Interface: %s - Factory: %s";
 	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode!";
 	private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = "Non-default AutowireCandidateResolver (%s) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working!";
-
-	static final String FACTORY_BEAN_OBJECT_TYPE = "factoryBeanObjectType";
 
 	private static final Log logger = LogFactory.getLog(RepositoryConfigurationDelegate.class);
 
@@ -182,9 +182,16 @@ public class RepositoryConfigurationDelegate {
 			if (logger.isTraceEnabled()) {
 				logger.trace(LogMessage.format(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName, configuration.getRepositoryInterface(),
 						configuration.getRepositoryFactoryBeanClassName()));
-			}
 
-			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, configuration.getRepositoryInterface());
+			}
+			{
+				Class<?> repositoryInterfaceType = configuration.getRepositoryInterfaceType();
+				if(repositoryInterfaceType != null) {
+					beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, repositoryInterfaceType);
+				} else {
+					beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, configuration.getRepositoryInterface());
+				}
+			}
 
 			registry.registerBeanDefinition(beanName, beanDefinition);
 			definitions.add(new BeanComponentDefinition(beanDefinition, beanName));

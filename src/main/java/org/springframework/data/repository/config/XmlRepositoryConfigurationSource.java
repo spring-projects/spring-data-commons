@@ -24,6 +24,7 @@ import org.springframework.beans.factory.support.DefaultBeanNameGenerator;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.data.config.TypeFilterParser;
@@ -272,5 +273,10 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return generator == null || DefaultBeanNameGenerator.class.equals(generator.getClass()) //
 				? new AnnotationBeanNameGenerator() //
 				: generator;
+	}
+
+	@Override
+	public ResourceLoader getResourceLoader() {
+		return context.getReaderContext().getResourceLoader();
 	}
 }
