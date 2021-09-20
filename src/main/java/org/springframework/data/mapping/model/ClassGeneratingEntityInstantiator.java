@@ -74,7 +74,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
+	 * @see org.springframework.data.mapping.model.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
 	 */
 	@Override
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
@@ -238,7 +238,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
+		 * @see org.springframework.data.mapping.model.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
 		 */
 		@Override
 		@SuppressWarnings("unchecked")

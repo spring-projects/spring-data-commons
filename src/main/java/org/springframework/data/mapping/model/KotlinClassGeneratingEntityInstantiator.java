@@ -44,7 +44,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.ClassGeneratingEntityInstantiator#doCreateEntityInstantiator(org.springframework.data.mapping.PersistentEntity)
+	 * @see org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator#doCreateEntityInstantiator(org.springframework.data.mapping.PersistentEntity)
 	 */
 	@Override
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
@@ -192,7 +192,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.convert.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
+		 * @see org.springframework.data.mapping.model.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
 		 */
 		@Override
 		@SuppressWarnings("unchecked")

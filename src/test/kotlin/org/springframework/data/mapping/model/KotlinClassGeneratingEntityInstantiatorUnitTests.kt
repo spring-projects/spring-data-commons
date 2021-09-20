@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.convert
+package org.springframework.data.mapping.model
 
 import io.mockk.every
 import io.mockk.mockk
@@ -23,9 +23,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.data.annotation.PersistenceConstructor
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
-import org.springframework.data.mapping.model.MappingInstantiationException
-import org.springframework.data.mapping.model.ParameterValueProvider
-import org.springframework.data.mapping.model.PreferredConstructorDiscoverer
 
 /**
  * Unit tests for [KotlinClassGeneratingEntityInstantiator] creating instances using Kotlin data classes.
@@ -42,14 +39,18 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	fun `should create instance`() {
 
 		val entity = mockk<PersistentEntity<Contact, SamplePersistentProperty>>()
-		val constructor = PreferredConstructorDiscoverer.discover<Contact, SamplePersistentProperty>(Contact::class.java)
+		val constructor =
+			PreferredConstructorDiscoverer.discover<Contact, SamplePersistentProperty>(
+				Contact::class.java
+			)
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "White")
 		every { entity.persistenceConstructor } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
-		val instance: Contact = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
+		val instance: Contact =
+			KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
 		assertThat(instance.firstname).isEqualTo("Walter")
 		assertThat(instance.lastname).isEqualTo("White")
@@ -58,14 +59,19 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	@Test // DATACMNS-1126
 	fun `should create instance and fill in defaults`() {
 
-		val entity = mockk<PersistentEntity<ContactWithDefaulting, SamplePersistentProperty>>()
-		val constructor = PreferredConstructorDiscoverer.discover<ContactWithDefaulting, SamplePersistentProperty>(ContactWithDefaulting::class.java)
+		val entity =
+			mockk<PersistentEntity<ContactWithDefaulting, SamplePersistentProperty>>()
+		val constructor =
+			PreferredConstructorDiscoverer.discover<ContactWithDefaulting, SamplePersistentProperty>(
+				ContactWithDefaulting::class.java
+			)
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany(
-				"Walter", null, "Skyler", null, null, null, null, null, null, null, /* 0-9 */
-				null, null, null, null, null, null, null, null, null, null, /* 10-19 */
-				null, null, null, null, null, null, null, null, null, null, /* 20-29 */
-				null, "Walter", null, "Junior", null)
+			"Walter", null, "Skyler", null, null, null, null, null, null, null, /* 0-9 */
+			null, null, null, null, null, null, null, null, null, null, /* 10-19 */
+			null, null, null, null, null, null, null, null, null, null, /* 20-29 */
+			null, "Walter", null, "Junior", null
+		)
 
 		every { entity.persistenceConstructor } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
@@ -85,24 +91,36 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	fun `absent primitive value should cause MappingInstantiationException`() {
 
 		val entity = mockk<PersistentEntity<WithBoolean, SamplePersistentProperty>>()
-		val constructor = PreferredConstructorDiscoverer.discover<WithBoolean, SamplePersistentProperty>(WithBoolean::class.java)
+		val constructor =
+			PreferredConstructorDiscoverer.discover<WithBoolean, SamplePersistentProperty>(
+				WithBoolean::class.java
+			)
 
 		every { provider.getParameterValue<Boolean>(any()) } returns null
 		every { entity.persistenceConstructor } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
-		assertThatThrownBy { KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider) } //
-				.isInstanceOf(MappingInstantiationException::class.java) //
-				.hasMessageContaining("fun <init>(kotlin.Boolean)") //
-				.hasCauseInstanceOf(IllegalArgumentException::class.java)
+		assertThatThrownBy {
+			KotlinClassGeneratingEntityInstantiator().createInstance(
+				entity,
+				provider
+			)
+		} //
+			.isInstanceOf(MappingInstantiationException::class.java) //
+			.hasMessageContaining("fun <init>(kotlin.Boolean)") //
+			.hasCauseInstanceOf(IllegalArgumentException::class.java)
 	}
 
 	@Test // DATACMNS-1200
 	fun `should apply primitive defaulting for absent parameters`() {
 
-		val entity = mockk<PersistentEntity<WithPrimitiveDefaulting, SamplePersistentProperty>>()
-		val constructor = PreferredConstructorDiscoverer.discover<WithPrimitiveDefaulting, SamplePersistentProperty>(WithPrimitiveDefaulting::class.java)
+		val entity =
+			mockk<PersistentEntity<WithPrimitiveDefaulting, SamplePersistentProperty>>()
+		val constructor =
+			PreferredConstructorDiscoverer.discover<WithPrimitiveDefaulting, SamplePersistentProperty>(
+				WithPrimitiveDefaulting::class.java
+			)
 
 		every { provider.getParameterValue<Byte>(any()) } returns null
 		every { provider.getParameterValue<Short>(any()) } returns null
@@ -132,14 +150,18 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	fun `should create instance using @PersistenceConstructor`() {
 
 		val entity = mockk<PersistentEntity<CustomUser, SamplePersistentProperty>>()
-		val constructor = PreferredConstructorDiscoverer.discover<CustomUser, SamplePersistentProperty>(CustomUser::class.java)
+		val constructor =
+			PreferredConstructorDiscoverer.discover<CustomUser, SamplePersistentProperty>(
+				CustomUser::class.java
+			)
 
 		every { provider.getParameterValue<String>(any()) } returns "Walter"
 		every { entity.persistenceConstructor } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
-		val instance: CustomUser = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
+		val instance: CustomUser =
+			KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
 
 		assertThat(instance.id).isEqualTo("Walter")
 	}
