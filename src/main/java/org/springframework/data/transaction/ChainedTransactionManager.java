@@ -39,12 +39,12 @@ import org.springframework.util.Assert;
  * {@link PlatformTransactionManager} implementation that orchestrates transaction creation, commits and rollbacks to a
  * list of delegates. Using this implementation assumes that errors causing a transaction rollback will usually happen
  * before the transaction completion or during the commit of the most inner {@link PlatformTransactionManager}.
- * <p />
+ * <p>
  * The configured instances will start transactions in the order given and commit/rollback in <em>reverse</em> order,
  * which means the {@link PlatformTransactionManager} most likely to break the transaction should be the <em>last</em>
  * in the list configured. A {@link PlatformTransactionManager} throwing an exception during commit will automatically
  * cause the remaining transaction managers to roll back instead of committing.
- * <p />
+ * <p>
  * As consequence, a transaction can get into a state, where the first {@link PlatformTransactionManager} has committed
  * its transaction and a subsequent {@link PlatformTransactionManager} failed to commit its transaction (e.g. caused by
  * an I/O error or the transactional resource failed to commit for other reasons). In that case,
@@ -53,7 +53,7 @@ import org.springframework.util.Assert;
  * resource. {@link ChainedTransactionManager} should be only used if the application can tolerate or recover from
  * inconsistent state caused by partially committed transactions. In any other case, the use of
  * {@link ChainedTransactionManager} is not recommended.
- * <p/>
+ * <p>
  * Instead of using {@link ChainedTransactionManager} for attaching callbacks to transaction commit (pre commit/post
  * commit), either register a {@link org.springframework.transaction.reactive.TransactionSynchronization} to explicitly
  * follow transaction cleanup with simplified semantics in case of exceptions.

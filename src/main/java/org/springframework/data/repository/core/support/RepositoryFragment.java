@@ -27,17 +27,17 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Value object representing a repository fragment.
- * <p />
+ * <p>
  * Repository fragments are individual parts that contribute method signatures. They are used to form a
  * {@link RepositoryComposition}. Fragments can be purely structural or backed with an implementation.
- * <p/>
+ * <p>
  * {@link #structural(Class) Structural} fragments are not backed by an implementation and are primarily used to
  * discover the structure of a repository composition and to perform validations.
- * <p/>
+ * <p>
  * {@link #implemented(Object) Implemented} repository fragments consist of a signature contributor and the implementing
  * object. A signature contributor may be {@link #implemented(Class, Object) an interface} or
  * {@link #implemented(Object) just the implementing object} providing the available signatures for a repository.
- * <p/>
+ * <p>
  * Fragments are immutable.
  *
  * @author Mark Paluch

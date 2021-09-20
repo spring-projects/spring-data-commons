@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
  * @author Gerrit Meier
  * @author Oliver Gierke
  * @since 2.1
- * @see SpelQueryContext#parse(String, Parameters)
+ * @see SpelQueryContext#parse(String)
  */
 public class SpelEvaluator {
 
@@ -53,7 +53,7 @@ public class SpelEvaluator {
 	}
 
 	/**
-	 * Evaluate all the SpEL expressions in {@link #parameterNameToSpelMap} based on values provided as an argument.
+	 * Evaluate all the SpEL expressions in {@link SpelExtractor} based on values provided as an argument.
 	 *
 	 * @param values Parameter values. Must not be {@literal null}.
 	 * @return a map from parameter name to evaluated value. Guaranteed to be not {@literal null}.

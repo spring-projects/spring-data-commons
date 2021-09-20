@@ -160,7 +160,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * queries.
 	 *
 	 * @param evaluationContextProvider can be {@literal null}, defaults to
-	 *          {@link QueryMethodEvaluationContextProvider#INSTANCE}.
+	 *          {@link QueryMethodEvaluationContextProvider#DEFAULT}.
 	 */
 	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		this.evaluationContextProvider = evaluationContextProvider == null ? QueryMethodEvaluationContextProvider.DEFAULT

@@ -18,7 +18,7 @@ package org.springframework.data.mapping;
 import org.springframework.data.annotation.Persistent;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 @Persistent
 public class Child extends PersonWithId {

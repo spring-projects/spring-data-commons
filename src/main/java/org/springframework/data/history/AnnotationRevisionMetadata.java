@@ -29,7 +29,7 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * A {@link RevisionMetadata} implementation that inspects the given object for fields with the configured annotations
- * and returns the field's values on calls to {@link #getRevisionDate()}, {@link #getRevisionInstant()} and
+ * and returns the field's values on calls to {@link #getRevisionInstant()}, {@link #getRevisionInstant()} and
  * {@link #getRevisionNumber()}.
  *
  * @author Oliver Gierke

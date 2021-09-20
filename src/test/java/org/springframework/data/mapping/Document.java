@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 import org.springframework.data.annotation.Persistent;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.FIELD })

@@ -21,7 +21,7 @@ import org.springframework.lang.Nullable;
  * Value object to capture {@link Association}s.
  *
  * @param <P> {@link PersistentProperty}s the association connects.
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  * @author Mark Paluch
  */
 public class Association<P extends PersistentProperty<P>> {

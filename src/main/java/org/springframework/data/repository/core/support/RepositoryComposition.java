@@ -45,17 +45,17 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Composite implementation to back repository method implementations.
- * <p />
+ * <p>
  * A {@link RepositoryComposition} represents an ordered collection of {@link RepositoryFragment fragments}. Each
  * fragment contributes executable method signatures that are used by this composition to route method calls into the
  * according {@link RepositoryFragment}.
- * <p />
+ * <p>
  * Fragments are allowed to contribute multiple implementations for a single method signature exposed through the
  * repository interface. {@link #withMethodLookup(MethodLookup) MethodLookup} selects the first matching method for
  * invocation. A composition also supports argument conversion between the repository method signature and fragment
  * implementation method through {@link #withArgumentConverter(BiFunction)}. Use argument conversion with a single
  * implementation method that can be exposed accepting convertible types.
- * <p />
+ * <p>
  * Composition objects are immutable and thread-safe.
  *
  * @author Mark Paluch
@@ -144,7 +144,7 @@ public class RepositoryComposition {
 	}
 
 	/**
-	 * Create a {@link RepositoryComposition} for just a single {@code implementation} with {@link MethodLookups#direct())
+	 * Create a {@link RepositoryComposition} for just a single {@code implementation} with {@code MethodLookups#direct()}
 	 * method lookup.
 	 *
 	 * @param implementation must not be {@literal null}.
@@ -157,7 +157,7 @@ public class RepositoryComposition {
 
 	/**
 	 * Create a {@link RepositoryComposition} from {@link RepositoryFragment fragments} with
-	 * {@link MethodLookups#direct()) method lookup.
+	 * {@code MethodLookups#direct()} method lookup.
 	 *
 	 * @param fragments must not be {@literal null}.
 	 * @return the {@link RepositoryComposition} from {@link RepositoryFragment fragments}.
@@ -168,7 +168,7 @@ public class RepositoryComposition {
 
 	/**
 	 * Create a {@link RepositoryComposition} from {@link RepositoryFragment fragments} with
-	 * {@link MethodLookups#direct()) method lookup.
+	 * {@code MethodLookups#direct()} method lookup.
 	 *
 	 * @param fragments must not be {@literal null}.
 	 * @return the {@link RepositoryComposition} from {@link RepositoryFragment fragments}.
@@ -180,7 +180,7 @@ public class RepositoryComposition {
 
 	/**
 	 * Create a {@link RepositoryComposition} from {@link RepositoryFragments} and {@link RepositoryMetadata} with
-	 * {@link MethodLookups#direct()) method lookup.
+	 * {@code MethodLookups#direct()} method lookup.
 	 *
 	 * @param fragments must not be {@literal null}.
 	 * @return the {@link RepositoryComposition} from {@link RepositoryFragments fragments}.

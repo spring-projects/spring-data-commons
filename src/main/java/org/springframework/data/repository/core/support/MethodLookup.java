@@ -27,7 +27,7 @@ import org.springframework.util.ObjectUtils;
 /**
  * Strategy interface providing {@link MethodPredicate predicates} to resolve a method called on a composite to its
  * implementation method.
- * <p />
+ * <p>
  * {@link MethodPredicate Predicates} are ordered by filtering priority and applied individually. If a predicate does
  * not yield any positive match, the next predicate is applied.
  *

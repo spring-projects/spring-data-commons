@@ -64,7 +64,7 @@ public abstract class ReactiveRepositoryFactorySupport extends RepositoryFactory
 	 * queries.
 	 *
 	 * @param evaluationContextProvider can be {@literal null}, defaults to
-	 *          {@link ReactiveQueryMethodEvaluationContextProvider#INSTANCE}.
+	 *          {@link ReactiveQueryMethodEvaluationContextProvider#DEFAULT}.
 	 */
 	@Override
 	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {

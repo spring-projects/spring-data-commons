@@ -159,7 +159,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 	 * <li>{@code DefaultConstructorMarker} (usually null)</li>
 	 * </ul>
 	 * <strong>Defaulting bitmask</strong>
-	 * <p/>
+	 * <p>
 	 * The defaulting bitmask is a 32 bit integer representing which positional argument should be defaulted. Defaulted
 	 * arguments are passed as {@literal null} and require the appropriate positional bit set ( {@code 1 << 2} for the 2.
 	 * argument)). Since the bitmask represents only 32 bit states, it requires additional masks (slots) if more than 32

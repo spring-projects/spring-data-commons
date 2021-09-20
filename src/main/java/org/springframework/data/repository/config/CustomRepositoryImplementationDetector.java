@@ -34,8 +34,7 @@ import org.springframework.util.Assert;
  * configured with a {@link ImplementationDetectionConfiguration} at construction time, the necessary component scan is
  * executed on first access, cached and its result is the filtered on every further implementation lookup according to
  * the given {@link ImplementationDetectionConfiguration}. If none is given initially, every invocation to
- * {@link #detectCustomImplementation(String, String, ImplementationDetectionConfiguration)} will issue a new component
- * scan.
+ * {@link #detectCustomImplementation(ImplementationLookupConfiguration)} will issue a new component scan.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
@@ -57,7 +56,7 @@ public class CustomRepositoryImplementationDetector {
 	 * Creates a new {@link CustomRepositoryImplementationDetector} with the given {@link Environment},
 	 * {@link ResourceLoader} and {@link ImplementationDetectionConfiguration}. The latter will be registered for a
 	 * one-time component scan for implementation candidates that will the be used and filtered in all subsequent calls to
-	 * {@link #detectCustomImplementation(RepositoryConfiguration)}.
+	 * {@link #detectCustomImplementation(ImplementationLookupConfiguration)}.
 	 *
 	 * @param environment must not be {@literal null}.
 	 * @param resourceLoader must not be {@literal null}.

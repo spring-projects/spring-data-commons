@@ -41,7 +41,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Mark Paluch
  * @since 2.0
- * @see javax.annotation.Nonnull
+ * @see org.springframework.lang.NonNull
  * @see ReflectionUtils#isNullable(MethodParameter)
  * @see NullableUtils
  */

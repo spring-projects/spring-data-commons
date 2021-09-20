@@ -71,7 +71,7 @@ public interface RepositoryConfigurationExtension {
 	 * repositories bean definitions have been registered.
 	 *
 	 * @param registry
-	 * @param source
+	 * @param configurationSource
 	 */
 	void registerBeansForRoot(BeanDefinitionRegistry registry, RepositoryConfigurationSource configurationSource);
 

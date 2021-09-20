@@ -75,7 +75,7 @@ public interface ReactiveEntityCallbacks {
 
 	/**
 	 * Obtain a new {@link ReactiveEntityCallbacks} instance.
-	 * <p />
+	 * <p>
 	 * {@link EntityCallback callbacks} are pre loaded from the given {@link BeanFactory}. <br />
 	 * Use {@link #addEntityCallback(EntityCallback)} to register additional callbacks manually.
 	 *

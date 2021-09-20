@@ -479,7 +479,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * default this will reject all types considered simple and non-supported Kotlin classes, but it might be necessary to
 	 * tweak that in case you have registered custom converters for top level types (which renders them to be considered
 	 * simple) but still need meta-information about them.
-	 * <p/>
 	 *
 	 * @param type will never be {@literal null}.
 	 * @return

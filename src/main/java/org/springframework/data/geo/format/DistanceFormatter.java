@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
 /**
  * Converter to create {@link Distance} instances from {@link String} representations. The supported format is a decimal
  * followed by whitespace and a metric abbreviation. We currently support the following abbreviations:
- * {@value #SUPPORTED_METRICS}.
+ * {@link #SUPPORTED_METRICS}.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl

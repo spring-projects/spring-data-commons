@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -42,9 +40,9 @@ import org.springframework.util.MultiValueMap;
 
 /**
  * Utility methods to introspect nullability rules declared in packages, classes and methods.
- * <p/>
- * Nullability rules are declared using {@link NonNullApi} and {@link Nullable} and JSR-305
- * {@link javax.annotation.Nonnull} annotations. By default (no annotation use), a package and its types are considered
+ * <p>
+ * Nullability rules are declared using {@link NonNullApi}, {@link Nullable}, and JSR-305
+ * {@code javax.annotation.Nonnull} annotations. By default (no annotation use), a package and its types are considered
  * allowing {@literal null} values in return values and method parameters. Nullability rules are expressed by annotating
  * a package with a JSR-305 meta annotation such as Spring's {@link NonNullApi}. All types of the package inherit the
  * package rule. Subpackages do not inherit nullability rules and must be annotated themself.
@@ -70,15 +68,14 @@ import org.springframework.util.MultiValueMap;
  * 	}
  * }
  * </pre>
- * <p/>
- * {@link javax.annotation.Nonnull} is suitable for composition of meta-annotations and expresses via
- * {@link Nonnull#when()} in which cases non-nullability is applicable.
+ * <p>
+ * {@code javax.annotation.Nonnull} is suitable for composition of meta-annotations and expresses via
+ * {@code javax.annotation.Nonnull#when()} in which cases non-nullability is applicable.
  *
  * @author Mark Paluch
  * @since 2.0
  * @see NonNullApi
  * @see Nullable
- * @see Nonnull
  */
 public abstract class NullableUtils {
 
@@ -99,9 +96,9 @@ public abstract class NullableUtils {
 	/**
 	 * Determine whether {@link ElementType} in the scope of {@link Method} requires non-{@literal null} values.
 	 * Non-nullability rules are discovered from class and package annotations. Non-null is applied when
-	 * {@link javax.annotation.Nonnull} is set to {@link javax.annotation.meta.When#ALWAYS}.
+	 * {@code javax.annotation.Nonnull} is set to {@code javax.annotation.meta.When#ALWAYS}.
 	 *
-	 * @param type the class to inspect.
+	 * @param method the method to inspect.
 	 * @param elementType the element type.
 	 * @return {@literal true} if {@link ElementType} allows {@literal null} values by default.
 	 * @see #isNonNull(Annotation, ElementType)
@@ -113,7 +110,7 @@ public abstract class NullableUtils {
 	/**
 	 * Determine whether {@link ElementType} in the scope of {@code type} requires non-{@literal null} values.
 	 * Non-nullability rules are discovered from class and package annotations. Non-null is applied when
-	 * {@link javax.annotation.Nonnull} is set to {@link javax.annotation.meta.When#ALWAYS}.
+	 * {@code javax.annotation.Nonnull} is set to {@code javax.annotation.meta.When#ALWAYS}.
 	 *
 	 * @param type the class to inspect.
 	 * @param elementType the element type.
@@ -126,7 +123,7 @@ public abstract class NullableUtils {
 
 	/**
 	 * Determine whether {@link ElementType} in the scope of {@link AnnotatedElement} requires non-{@literal null} values.
-	 * This method determines default {@link javax.annotation.Nonnull nullability} rules from the annotated element
+	 * This method determines default {@code javax.annotation.Nonnull nullability} rules from the annotated element
 	 *
 	 * @param element the scope of declaration, may be a {@link Package}, {@link Class}, or
 	 *          {@link java.lang.reflect.Method}.
@@ -172,8 +169,8 @@ public abstract class NullableUtils {
 	/**
 	 * Determine whether a {@link MethodParameter} is explicitly annotated to be considered nullable. Nullability rules
 	 * are discovered from method and parameter annotations. A {@link MethodParameter} is considered nullable when
-	 * {@link javax.annotation.Nonnull} is set to one of {@link javax.annotation.meta.When#UNKNOWN},
-	 * {@link javax.annotation.meta.When#NEVER}, or {@link javax.annotation.meta.When#MAYBE}.
+	 * {@code javax.annotation.Nonnull} is set to one of {@code javax.annotation.meta.When#UNKNOWN},
+	 * {@code javax.annotation.meta.When#NEVER}, or {@code javax.annotation.meta.When#MAYBE}.
 	 *
 	 * @param methodParameter the method parameter to inspect.
 	 * @return {@literal true} if the parameter is nullable, {@literal false} otherwise.
@@ -203,7 +200,7 @@ public abstract class NullableUtils {
 	}
 
 	/**
-	 * Introspect {@link Annotation} for being either a meta-annotation composed from {@link Nonnull} or {@link Nonnull}
+	 * Introspect {@link Annotation} for being either a meta-annotation composed from {@code Nonnull} or {code Nonnull}
 	 * itself expressing non-nullability.
 	 *
 	 * @param annotation
@@ -214,7 +211,7 @@ public abstract class NullableUtils {
 	}
 
 	/**
-	 * Introspect {@link Annotation} for being either a meta-annotation composed from {@link Nonnull} or {@link Nonnull}
+	 * Introspect {@link Annotation} for being either a meta-annotation composed from {@code Nonnull} or {@code Nonnull}
 	 * itself expressing nullability.
 	 *
 	 * @param annotation

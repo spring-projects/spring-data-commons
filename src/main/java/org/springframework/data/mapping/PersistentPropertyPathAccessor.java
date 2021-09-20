@@ -61,7 +61,7 @@ public interface PersistentPropertyPathAccessor<T> extends PersistentPropertyAcc
 	 *
 	 * @param path must not be {@literal null} or empty.
 	 * @param value can be {@literal null}.
-	 * @see AccessOptions#DEFAULT
+	 * @see AccessOptions#defaultSetOptions()
 	 */
 	void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value);
 

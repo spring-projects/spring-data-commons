@@ -15,8 +15,6 @@
  */
 package org.springframework.data.auditing;
 
-import java.util.Optional;
-
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
@@ -26,8 +24,8 @@ import org.springframework.util.Assert;
 
 /**
  * {@link AuditingHandler} extension that uses {@link PersistentEntity#isNew(Object)} to expose a generic
- * {@link #markAudited(Optional)} method that will route calls to {@link #markCreated(Optional)} or
- * {@link #markModified(Optional)} based on the {@link IsNewStrategy} determined from the factory.
+ * {@link #markAudited(Object)} method that will route calls to {@link #markCreated(Object)} or
+ * {@link #markModified(Object)} based on the {@link IsNewStrategy} determined from the factory.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -65,7 +63,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 
 	/**
 	 * Marks the given object created or modified based on {@link PersistentEntity#isNew(Object)}. Will route the calls to
-	 * {@link #markCreated(Optional)} and {@link #markModified(Optional)} accordingly.
+	 * {@link #markCreated(Object)} and {@link #markModified(Object)} accordingly.
 	 *
 	 * @param object must not be {@literal null}.
 	 */

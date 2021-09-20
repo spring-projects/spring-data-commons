@@ -136,7 +136,7 @@ public class QuerydslBindings {
 	/**
 	 * Include properties for binding. Include the property considered a binding candidate.
 	 *
-	 * @param properties must not be {@literal null} or empty.
+	 * @param paths must not be {@literal null} or empty.
 	 */
 	public final void including(Path<?>... paths) {
 
@@ -388,7 +388,6 @@ public class QuerydslBindings {
 		 * Defines the given {@link SingleValueBinding} to be used for the paths.
 		 *
 		 * @param binding must not be {@literal null}.
-		 * @return
 		 */
 		public void firstOptional(OptionalValueBinding<P, T> binding) {
 
@@ -407,7 +406,6 @@ public class QuerydslBindings {
 		 * Defines the given {@link MultiValueBinding} to be used for the paths.
 		 *
 		 * @param binding must not be {@literal null}.
-		 * @return
 		 */
 		public void all(MultiValueBinding<P, T> binding) {
 
