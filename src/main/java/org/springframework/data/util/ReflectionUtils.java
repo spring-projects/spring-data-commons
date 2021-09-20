@@ -387,31 +387,6 @@ public final class ReflectionUtils {
 	}
 
 	/**
-	 * Return {@literal true} if the specified class is a Kotlin one.
-	 *
-	 * @return {@literal true} if {@code type} is a Kotlin class.
-	 * @since 2.0
-	 * @deprecated since 2.3, use {@link KotlinDetector#isKotlinType(Class)} instead.
-	 */
-	@Deprecated
-	public static boolean isKotlinClass(Class<?> type) {
-		return KotlinDetector.isKotlinType(type);
-	}
-
-	/**
-	 * Return {@literal true} if the specified class is a supported Kotlin class. Currently supported are only regular
-	 * Kotlin classes. Other class types (synthetic, SAM, lambdas) are not supported via reflection.
-	 *
-	 * @return {@literal true} if {@code type} is a supported Kotlin class.
-	 * @since 2.0
-	 * @deprecated since 2.3, use {@link KotlinReflectionUtils#isSupportedKotlinClass(Class)} instead.
-	 */
-	@Deprecated
-	public static boolean isSupportedKotlinClass(Class<?> type) {
-		return KotlinReflectionUtils.isSupportedKotlinClass(type);
-	}
-
-	/**
 	 * Returns {@literal} whether the given {@link MethodParameter} is nullable. Nullable parameters are reference types
 	 * and ones that are defined in Kotlin as such.
 	 *
@@ -424,7 +399,8 @@ public final class ReflectionUtils {
 			return true;
 		}
 
-		if (isSupportedKotlinClass(parameter.getDeclaringClass())) {
+		if (KotlinDetector.isKotlinPresent()
+				&& KotlinReflectionUtils.isSupportedKotlinClass(parameter.getDeclaringClass())) {
 			return KotlinReflectionUtils.isNullable(parameter);
 		}
 

@@ -19,11 +19,9 @@ import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.util.Assert;
 
@@ -39,20 +37,6 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 	private static final Log logger = LogFactory.getLog(AuditingHandler.class);
 
 	private Optional<AuditorAware<?>> auditorAware;
-
-	/**
-	 * Creates a new {@link AuditableBeanWrapper} using the given {@link MappingContext} when looking up auditing metadata
-	 * via reflection.
-	 *
-	 * @param mappingContext must not be {@literal null}.
-	 * @since 1.8
-	 * @deprecated use {@link AuditingHandler(PersistentEntities)} instead.
-	 */
-	@Deprecated
-	public AuditingHandler(
-			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
-		this(PersistentEntities.of(mappingContext));
-	}
 
 	/**
 	 * Creates a new {@link AuditableBeanWrapper} using the given {@link PersistentEntities} when looking up auditing

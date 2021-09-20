@@ -322,16 +322,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * @param repositoryType will never be {@literal null}.
 	 * @return
 	 */
-	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
-
-		CdiRepositoryConfiguration cdiRepositoryConfiguration = lookupConfiguration(beanManager, qualifiers);
-
-		Optional<Bean<?>> customImplementationBean = getCustomImplementationBean(repositoryType,
-				cdiRepositoryConfiguration);
-		Optional<Object> customImplementation = customImplementationBean.map(this::getDependencyInstance);
-
-		return create(creationalContext, repositoryType, customImplementation);
-	}
+	protected abstract T create(CreationalContext<T> creationalContext, Class<T> repositoryType);
 
 	/**
 	 * Creates the actual component instance given a {@link RepositoryFactorySupport repository factory supplier} and the
@@ -415,24 +406,6 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 				.findFirst() //
 				.orElseThrow(() -> new IllegalArgumentException(String.format("Did not find type %s in %s!", interfaceName,
 						Arrays.asList(repositoryType.getInterfaces()))));
-	}
-
-	/**
-	 * Creates the actual component instance.
-	 *
-	 * @param creationalContext will never be {@literal null}.
-	 * @param repositoryType will never be {@literal null}.
-	 * @param customImplementation can be {@literal null}.
-	 * @return
-	 * @deprecated since 2.1, override {@link #create(CreationalContext, Class)} in which you create a repository factory
-	 *             and call {@link #create(RepositoryFactorySupport, Class, RepositoryFragments)}.
-	 */
-	@Deprecated
-	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
-			Optional<Object> customImplementation) {
-		throw new UnsupportedOperationException(
-				"You have to implement create(CreationalContext<T>, Class<T>, Optional<Object>) "
-						+ "in order to use custom repository implementations");
 	}
 
 	/**

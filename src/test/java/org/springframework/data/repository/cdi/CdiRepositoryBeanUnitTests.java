@@ -37,12 +37,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.data.repository.config.ImplementationLookupConfiguration;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.support.DummyRepositoryFactory;
 import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
 import org.springframework.data.repository.core.support.QueryCreationListener;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
@@ -60,6 +64,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
  * @author Kyrylo Merzlikin
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class CdiRepositoryBeanUnitTests {
 
 	static final String PASSIVATION_ID = "javax.enterprise.inject.Default:org.springframework.data.repository.cdi.CdiRepositoryBeanUnitTests$SampleRepository";
@@ -148,8 +153,8 @@ class CdiRepositoryBeanUnitTests {
 
 			@Override
 			protected SampleRepository create(CreationalContext<SampleRepository> creationalContext,
-					Class<SampleRepository> repositoryType, Optional<Object> customImplementation) {
-				return null;
+					Class<SampleRepository> repositoryType) {
+				return create(() -> new DummyRepositoryFactory(new Object()), repositoryType);
 			}
 		};
 
@@ -158,9 +163,9 @@ class CdiRepositoryBeanUnitTests {
 		ArgumentCaptor<ImplementationLookupConfiguration> captor = ArgumentCaptor
 				.forClass(ImplementationLookupConfiguration.class);
 
-		verify(detector).detectCustomImplementation(captor.capture());
+		verify(detector, times(2)).detectCustomImplementation(captor.capture());
 
-		ImplementationLookupConfiguration configuration = captor.getValue();
+		ImplementationLookupConfiguration configuration = captor.getAllValues().get(0);
 
 		assertThat(configuration.getImplementationBeanName()).isEqualTo("cdiRepositoryBeanUnitTests.SampleRepositoryImpl");
 		assertThat(configuration.getImplementationClassName()).isEqualTo("SampleRepositoryImpl");
@@ -194,8 +199,7 @@ class CdiRepositoryBeanUnitTests {
 		}
 
 		@Override
-		protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
-				Optional<Object> customImplementation) {
+		protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
 			return null;
 		}
 	}

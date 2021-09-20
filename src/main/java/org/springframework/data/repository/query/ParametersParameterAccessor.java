@@ -16,7 +16,6 @@
 package org.springframework.data.repository.query;
 
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -126,18 +125,6 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		}
 
 		return Sort.unsorted();
-	}
-
-	/**
-	 * Returns the dynamic projection type if available, {@literal null} otherwise.
-	 *
-	 * @return
-	 */
-	public Optional<Class<?>> getDynamicProjection() {
-
-		return Optional.ofNullable(parameters.hasDynamicProjection() //
-				? (Class<?>) values[parameters.getDynamicProjectionIndex()] //
-				: null);
 	}
 
 	/**

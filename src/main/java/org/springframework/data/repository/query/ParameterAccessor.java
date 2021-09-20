@@ -16,7 +16,6 @@
 package org.springframework.data.repository.query;
 
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -45,16 +44,6 @@ public interface ParameterAccessor extends Iterable<Object> {
 	 * @return
 	 */
 	Sort getSort();
-
-	/**
-	 * Returns the dynamic projection type to be used when executing the query or {@literal null} if none is defined.
-	 *
-	 * @return
-	 * @since 1.12
-	 * @deprecated use {@link #findDynamicProjection()} instead.
-	 */
-	@Deprecated
-	Optional<Class<?>> getDynamicProjection();
 
 	/**
 	 * Returns the dynamic projection type to be used when executing the query or {@literal null} if none is defined.

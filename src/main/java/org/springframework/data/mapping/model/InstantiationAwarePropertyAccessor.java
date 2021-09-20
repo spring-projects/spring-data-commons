@@ -47,26 +47,6 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 	private T bean;
 
 	/**
-	 * Creates an {@link InstantiationAwarePropertyAccessor} using the given delegate {@link PersistentPropertyAccessor}
-	 * and {@link EntityInstantiators}.
-	 *
-	 * @param delegate must not be {@literal null}.
-	 * @param instantiators must not be {@literal null}.
-	 * @deprecated since 2.4. Using this constructor allows only setting a single property as
-	 *             {@link PersistentPropertyAccessor} holds a reference to the initial bean state.
-	 */
-	@Deprecated
-	public InstantiationAwarePropertyAccessor(PersistentPropertyAccessor<T> delegate, EntityInstantiators instantiators) {
-
-		Assert.notNull(delegate, "Delegate PersistentPropertyAccessor must not be null!");
-		Assert.notNull(instantiators, "EntityInstantiators must not be null!");
-
-		this.instantiators = instantiators;
-		this.delegateFunction = t -> delegate;
-		this.bean = delegate.getBean();
-	}
-
-	/**
 	 * Creates an {@link InstantiationAwarePropertyAccessor} using the given delegate {@code accessorFunction} and
 	 * {@link EntityInstantiators}. {@code accessorFunction} is used to obtain a new {@link PersistentPropertyAccessor}
 	 * for each property to set.

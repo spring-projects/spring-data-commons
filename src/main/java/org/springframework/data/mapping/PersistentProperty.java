@@ -65,17 +65,6 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	TypeInformation<?> getTypeInformation();
 
 	/**
-	 * Returns the {@link TypeInformation} if the property references a {@link PersistentEntity}. Will return
-	 * {@literal null} in case it refers to a simple type. Will return {@link Collection}'s component type or the
-	 * {@link Map}'s value type transparently.
-	 *
-	 * @return
-	 * @deprecated since 2.6 for removal in 3.0. Use {@link #getPersistentEntityTypeInformation()} instead.
-	 */
-	@Deprecated
-	Iterable<? extends TypeInformation<?>> getPersistentEntityTypes();
-
-	/**
 	 * Returns the detected {@link TypeInformation TypeInformations} if the property references a {@link PersistentEntity}.
 	 * Will return an {@literal empty} {@link Iterable} in case it refers to a simple type. Will return the {@link Collection}'s
 	 * component types or the {@link Map}'s value type transparently.

@@ -38,19 +38,6 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	/**
 	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
 	 *
-	 * @param mappingContext must not be {@literal null}.
-	 * @since 1.8
-	 * @deprecated use {@link IsNewAwareAuditingHandler(PersistentEntities)} instead.
-	 */
-	@Deprecated
-	public IsNewAwareAuditingHandler(
-			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
-		this(PersistentEntities.of(mappingContext));
-	}
-
-	/**
-	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
-	 *
 	 * @param entities must not be {@literal null}.
 	 * @since 1.10
 	 */

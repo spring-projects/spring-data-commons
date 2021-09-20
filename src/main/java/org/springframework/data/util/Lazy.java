@@ -46,10 +46,8 @@ public class Lazy<T> implements Supplier<T> {
 	 * Creates a new {@link Lazy} instance for the given supplier.
 	 *
 	 * @param supplier
-	 * @deprecated prefer {@link Lazy#of(Supplier)}, to be turned private in 2.5.
 	 */
-	@Deprecated
-	public Lazy(Supplier<? extends T> supplier) {
+	private Lazy(Supplier<? extends T> supplier) {
 		this(supplier, null, false);
 	}
 

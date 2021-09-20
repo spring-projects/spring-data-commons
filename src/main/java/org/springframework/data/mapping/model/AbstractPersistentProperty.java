@@ -160,15 +160,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#getPersistentEntityTypes()
-	 */
-	@Override
-	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
-		return getPersistentEntityTypeInformation();
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.PersistentProperty#getPersistentEntityTypeInformation()
 	 */
 	@Override

@@ -47,6 +47,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.concurrent.ListenableFuture;

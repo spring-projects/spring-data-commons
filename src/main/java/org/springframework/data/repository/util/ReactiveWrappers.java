@@ -19,8 +19,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 
 import org.springframework.core.ReactiveAdapter;
@@ -218,39 +216,6 @@ public abstract class ReactiveWrappers {
 		// See Mono implements Publisher
 		return isSingleValueType(type) ? false
 				: findDescriptor(type).map(ReactiveTypeDescriptor::isMultiValue).orElse(false);
-	}
-
-	/**
-	 * Returns a collection of no-value wrapper types.
-	 *
-	 * @return a collection of no-value wrapper types.
-	 * @deprecated not supported anymore.
-	 */
-	@Deprecated
-	public static Collection<Class<?>> getNoValueTypes() {
-		return Collections.emptyList();
-	}
-
-	/**
-	 * Returns a collection of single-value wrapper types.
-	 *
-	 * @return a collection of single-value wrapper types.
-	 * @deprecated not supported anymore.
-	 */
-	@Deprecated
-	public static Collection<Class<?>> getSingleValueTypes() {
-		return Collections.emptyList();
-	}
-
-	/**
-	 * Returns a collection of multi-value wrapper types.
-	 *
-	 * @return a collection of multi-value wrapper types.
-	 * @deprecated not supported anymore.
-	 */
-	@Deprecated
-	public static Collection<Class<?>> getMultiValueTypes() {
-		return Collections.emptyList();
 	}
 
 	/**

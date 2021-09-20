@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.core.KotlinDetector;
+import org.springframework.data.mapping.model.TypeCreatingSyntheticClassKt;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -56,6 +57,21 @@ public class KotlinReflectionUtilsUnitTests {
 
 		assertThat(KotlinDetector.isKotlinPresent()).isFalse();
 		assertThat(KotlinReflectionUtils.isSupportedKotlinClass(TypeCreatingSyntheticClass.class)).isFalse();
+	}
+
+	@Test // DATACMNS-1171
+	public void discoversKotlinClass() {
+
+		assertThat(KotlinDetector.isKotlinType(TypeCreatingSyntheticClass.class)).isTrue();
+		assertThat(KotlinReflectionUtils.isSupportedKotlinClass(TypeCreatingSyntheticClass.class)).isTrue();
+	}
+
+	@Test // DATACMNS-1171
+	public void discoversUnsupportedKotlinClass() {
+
+		assertThat(KotlinDetector.isKotlinType(org.springframework.data.mapping.model.TypeCreatingSyntheticClassKt.class))
+				.isTrue();
+		assertThat(KotlinReflectionUtils.isSupportedKotlinClass(TypeCreatingSyntheticClassKt.class)).isFalse();
 	}
 
 	void runTest(String testName)

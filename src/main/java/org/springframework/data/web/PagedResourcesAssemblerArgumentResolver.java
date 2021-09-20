@@ -25,9 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.log.LogMessage;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.server.MethodLinkBuilderFactory;
 import org.springframework.hateoas.server.core.MethodParameters;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilderFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -52,21 +50,6 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	private static final String PARAMETER_AMBIGUITY = "Discovered multiple parameters of type Pageable but no qualifier annotations to disambiguate!";
 
 	private final HateoasPageableHandlerMethodArgumentResolver resolver;
-
-	/**
-	 * Creates a new {@link PagedResourcesAssemblerArgumentResolver} using the given
-	 * {@link PageableHandlerMethodArgumentResolver} and {@link MethodLinkBuilderFactory}.
-	 *
-	 * @param resolver can be {@literal null}.
-	 * @param linkBuilderFactory can be {@literal null}, will be defaulted to a {@link WebMvcLinkBuilderFactory}.
-	 * @deprecated since 2.5, 2.4.4, 2.3.7, to be removed in 3.0
-	 * @use {@link #PagedResourcesAssemblerArgumentResolver(HateoasPageableHandlerMethodArgumentResolver)} instead.
-	 */
-	@Deprecated
-	public PagedResourcesAssemblerArgumentResolver(HateoasPageableHandlerMethodArgumentResolver resolver,
-			@Nullable MethodLinkBuilderFactory<?> linkBuilderFactory) {
-		this(resolver);
-	}
 
 	/**
 	 * Creates a new {@link PagedResourcesAssemblerArgumentResolver} using the given

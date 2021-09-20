@@ -41,9 +41,10 @@ class InstantiationAwarePersistentPropertyAccessorUnitTests {
 
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Sample.class);
 
-		PersistentPropertyAccessor<Sample> accessor = entity.getPropertyAccessor(new Sample("Dave", "Matthews", 42));
+		Sample sample = new Sample("Dave", "Matthews", 42);
 
-		PersistentPropertyAccessor<Sample> wrapper = new InstantiationAwarePropertyAccessor<>(accessor,
+		PersistentPropertyAccessor<Sample> wrapper = new InstantiationAwarePropertyAccessor<>(sample,
+				entity::getPropertyAccessor,
 				instantiators);
 
 		wrapper.setProperty(entity.getRequiredPersistentProperty("firstname"), "Oliver August");
