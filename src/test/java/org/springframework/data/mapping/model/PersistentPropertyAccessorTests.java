@@ -24,7 +24,6 @@ import lombok.With;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
@@ -130,7 +129,7 @@ public class PersistentPropertyAccessorTests {
 	void kotlinCopyMethodShouldNotSetUnsettableProperty(
 			Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		SingleSettableProperty bean = new SingleSettableProperty(UUID.randomUUID());
+		SingleSettableProperty bean = new SingleSettableProperty(1.1);
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
 		SamplePersistentProperty property = getProperty(bean, "version");
 
@@ -222,6 +221,11 @@ public class PersistentPropertyAccessorTests {
 	private static class ValueClass {
 		@With String id;
 		String immutable;
+	}
+
+	static class UnsettableVersion {
+
+		private final int version = (int) Math.random();
 	}
 
 }

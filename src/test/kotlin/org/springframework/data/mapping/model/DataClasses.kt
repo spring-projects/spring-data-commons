@@ -17,7 +17,6 @@ package org.springframework.data.mapping.model
 
 import org.springframework.data.annotation.Id
 import java.time.LocalDateTime
-import java.util.*
 
 /**
  * @author Mark Paluch
@@ -30,7 +29,7 @@ data class ExtendedDataClassKt(val id: Long, val name: String) {
 	}
 }
 
-data class SingleSettableProperty constructor(val id: UUID = UUID.randomUUID()) {
+data class SingleSettableProperty constructor(val id: Double = Math.random()) {
 	val version: Int? = null
 }
 

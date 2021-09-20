@@ -19,9 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.text.DateFormat;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -33,6 +30,7 @@ import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Identifier;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
@@ -48,6 +46,7 @@ import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConv
 import org.springframework.data.convert.ThreeTenBackPortConverters.LocalDateTimeToJavaTimeInstantConverter;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+
 import org.threeten.bp.LocalDateTime;
 
 /**
@@ -163,8 +162,8 @@ class CustomConversionsUnitTests {
 	void shouldSelectPropertCustomReadTargetForCglibProxiedType() {
 
 		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
-				Arrays.asList(CustomObjectToStringConverter.INSTANCE));
-		assertThat(conversions.hasCustomReadTarget(createProxyTypeFor(Object.class), String.class)).isTrue();
+				Arrays.asList(CustomTypeToStringConverter.INSTANCE));
+		assertThat(conversions.hasCustomReadTarget(createProxyTypeFor(CustomType.class), String.class)).isTrue();
 	}
 
 	@Test // DATAMONGO-1131, DATACMNS-1035
@@ -316,7 +315,7 @@ class CustomConversionsUnitTests {
 		INSTANCE;
 
 		public Format convert(String source) {
-			return DateFormat.getInstance();
+			return new DateFormat();
 		}
 	}
 
@@ -367,12 +366,13 @@ class CustomConversionsUnitTests {
 		}
 	}
 
-	enum CustomObjectToStringConverter implements Converter<Object, String> {
+	@ReadingConverter
+	enum CustomTypeToStringConverter implements Converter<CustomType, String> {
 
 		INSTANCE;
 
 		@Override
-		public String convert(Object source) {
+		public String convert(CustomType source) {
 			return source != null ? source.toString() : null;
 		}
 
@@ -414,7 +414,7 @@ class CustomConversionsUnitTests {
 				}
 
 				try {
-					return targetType.newInstance();
+					return targetType.getDeclaredConstructor().newInstance();
 				} catch (Exception e) {
 					throw new IllegalArgumentException(e.getMessage(), e);
 				}
@@ -423,4 +423,11 @@ class CustomConversionsUnitTests {
 	}
 
 	static class CustomType {}
+
+	static class Format {}
+
+	static class DateFormat extends Format {}
+
+	static class SimpleDateFormat extends DateFormat {}
+
 }

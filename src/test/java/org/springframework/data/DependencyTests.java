@@ -18,11 +18,13 @@ package org.springframework.data;
 import static de.schauderhaft.degraph.check.JCheck.*;
 import static org.junit.Assert.*;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Jens Schauder
  */
+@Disabled("Requires newer version of ASM 5.1")
 public class DependencyTests {
 
 	@Test
