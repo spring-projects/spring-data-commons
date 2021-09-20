@@ -3,7 +3,7 @@ pipeline {
 
 	triggers {
 		pollSCM 'H/10 * * * *'
-		upstream(upstreamProjects: "spring-data-build/", threshold: hudson.model.Result.SUCCESS)
+		upstream(upstreamProjects: "spring-data-build/main", threshold: hudson.model.Result.SUCCESS)
 	}
 
 	options {
@@ -64,7 +64,7 @@ pipeline {
 					}
 				}
 
-				stage("test: baseline (jdk16)") {
+				stage("test: baseline (jdk17)") {
 					agent {
 						label 'data'
 					}
@@ -75,7 +75,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('adoptopenjdk/openjdk16:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image('openjdk:17-bullseye').inside('-v $HOME:/tmp/jenkins-home') {
 									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pjava11 clean dependency:list verify -Dsort -U -B'
 								}
 							}
