@@ -50,7 +50,7 @@ class MapDataBinderUnitTests {
 		Date reference = new Date();
 
 		MutablePropertyValues values = new MutablePropertyValues();
-		values.add("foo.date", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(reference));
+		values.add("foo.date", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(reference));
 
 		Map<String, Object> nested = new HashMap<>();
 		nested.put("date", reference);

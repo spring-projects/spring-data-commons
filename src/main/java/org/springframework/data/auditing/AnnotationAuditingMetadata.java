@@ -29,7 +29,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.convert.Jsr310Converters;
-import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.ReflectionUtils.AnnotationFieldFilter;
@@ -54,16 +53,11 @@ final class AnnotationAuditingMetadata {
 
 	private static final Map<Class<?>, AnnotationAuditingMetadata> metadataCache = new ConcurrentHashMap<>();
 
-	public static final boolean IS_JDK_8 = org.springframework.util.ClassUtils.isPresent("java.time.Clock",
-			AnnotationAuditingMetadata.class.getClassLoader());
-
 	static final List<String> SUPPORTED_DATE_TYPES;
 
 	static {
 
 		List<String> types = new ArrayList<>(5);
-		types.add("org.joda.time.DateTime");
-		types.add("org.joda.time.LocalDateTime");
 		types.add(Date.class.getName());
 		types.add(Long.class.getName());
 		types.add(long.class.getName());
@@ -109,7 +103,7 @@ final class AnnotationAuditingMetadata {
 
 			Class<?> type = it.getType();
 
-			if (Jsr310Converters.supports(type) || ThreeTenBackPortConverters.supports(type)) {
+			if (Jsr310Converters.supports(type)) {
 				return;
 			}
 

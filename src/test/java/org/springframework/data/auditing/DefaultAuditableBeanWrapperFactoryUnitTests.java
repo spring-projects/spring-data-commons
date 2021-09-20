@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
@@ -69,12 +68,12 @@ class DefaultAuditableBeanWrapperFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-643
-	void setsJsr310AndThreeTenBpTypes() {
+	void setsJsr310Types() {
 
-		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
+		Jsr310AuditedUser user = new Jsr310AuditedUser();
 		Instant instant = Instant.now();
 
-		Optional<AuditableBeanWrapper<Jsr310ThreeTenBpAuditedUser>> wrapper = factory.getBeanWrapperFor(user);
+		Optional<AuditableBeanWrapper<Jsr310AuditedUser>> wrapper = factory.getBeanWrapperFor(user);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
@@ -84,20 +83,6 @@ class DefaultAuditableBeanWrapperFactoryUnitTests {
 			assertThat(user.createdDate).isNotNull();
 			assertThat(user.lastModifiedDate).isNotNull();
 		});
-	}
-
-	@Test // DATACMNS-867
-	void errorsWhenUnableToConvertDateViaIntermediateJavaUtilDateConversion() {
-
-		Jsr310ThreeTenBpAuditedUser user = new Jsr310ThreeTenBpAuditedUser();
-		ZonedDateTime zonedDateTime = ZonedDateTime.now();
-
-		Optional<AuditableBeanWrapper<Jsr310ThreeTenBpAuditedUser>> wrapper = factory.getBeanWrapperFor(user);
-
-		assertThat(wrapper).isNotEmpty();
-
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> wrapper.ifPresent(it -> it.setLastModifiedDate(zonedDateTime)));
 	}
 
 	@Test // DATACMNS-1259

@@ -28,7 +28,6 @@ import java.util.function.Predicate;
 
 import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Identifier;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.aop.framework.ProxyFactory;
@@ -43,11 +42,8 @@ import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.convert.CustomConversions.ConverterConfiguration;
 import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter;
-import org.springframework.data.convert.ThreeTenBackPortConverters.LocalDateTimeToJavaTimeInstantConverter;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-
-import org.threeten.bp.LocalDateTime;
 
 /**
  * Unit tests for {@link CustomConversions}.
@@ -131,25 +127,6 @@ class CustomConversionsUnitTests {
 		assertThat(conversions.hasCustomWriteTarget(String.class, Integer.class)).isTrue();
 	}
 
-	@Test // DATAMONGO-795, DATACMNS-1035
-	void favorsCustomConverterForIndeterminedTargetType() {
-
-		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
-				Arrays.asList(DateTimeToStringConverter.INSTANCE));
-		assertThat(conversions.getCustomWriteTarget(DateTime.class)).hasValue(String.class);
-	}
-
-	@Test // DATAMONGO-881, DATACMNS-1035
-	void customConverterOverridesDefault() {
-
-		CustomConversions conversions = new CustomConversions(StoreConversions.NONE,
-				Arrays.asList(CustomDateTimeConverter.INSTANCE));
-		GenericConversionService conversionService = new DefaultConversionService();
-		conversions.registerConvertersIn(conversionService);
-
-		assertThat(conversionService.convert(new DateTime(), Date.class)).isEqualTo(new Date(0));
-	}
-
 	@Test // DATAMONGO-1001, DATACMNS-1035
 	void shouldSelectPropertCustomWriteTargetForCglibProxiedType() {
 
@@ -172,14 +149,6 @@ class CustomConversionsUnitTests {
 		CustomConversions customConversions = new CustomConversions(StoreConversions.NONE, Collections.emptyList());
 
 		assertThat(customConversions.hasCustomWriteTarget(java.time.LocalDateTime.class)).isTrue();
-	}
-
-	@Test // DATAMONGO-1131, DATACMNS-1035
-	void registersConvertersForThreeTenBackPort() {
-
-		CustomConversions customConversions = new CustomConversions(StoreConversions.NONE, Collections.emptyList());
-
-		assertThat(customConversions.hasCustomWriteTarget(LocalDateTime.class)).isTrue();
 	}
 
 	@Test // DATAMONGO-1302, DATACMNS-1035
@@ -220,7 +189,7 @@ class CustomConversionsUnitTests {
 		new CustomConversions(StoreConversions.of(DATE_EXCLUDING_SIMPLE_TYPE_HOLDER), Collections.emptyList())
 				.registerConvertersIn(registry);
 
-		verify(registry, never()).addConverter(any(LocalDateTimeToJavaTimeInstantConverter.class));
+		verify(registry, never()).addConverter(any(Jsr310Converters.LocalDateTimeToInstantConverter.class));
 	}
 
 	@Test // DATACMNS-1665
@@ -244,9 +213,10 @@ class CustomConversionsUnitTests {
 		ConverterRegistry registry = mock(ConverterRegistry.class);
 
 		new CustomConversions(StoreConversions.of(DATE_EXCLUDING_SIMPLE_TYPE_HOLDER),
-				Collections.singletonList(LocalDateTimeToJavaTimeInstantConverter.INSTANCE)).registerConvertersIn(registry);
+				Collections.singletonList(Jsr310Converters.LocalDateTimeToInstantConverter.INSTANCE))
+						.registerConvertersIn(registry);
 
-		verify(registry).addConverter(any(LocalDateTimeToJavaTimeInstantConverter.class));
+		verify(registry).addConverter(any(Jsr310Converters.LocalDateTimeToInstantConverter.class));
 	}
 
 	@Test // DATACMNS-1615
@@ -343,26 +313,6 @@ class CustomConversionsUnitTests {
 
 		public Integer convert(String source) {
 			return 0;
-		}
-	}
-
-	enum DateTimeToStringConverter implements Converter<DateTime, String> {
-
-		INSTANCE;
-
-		@Override
-		public String convert(DateTime source) {
-			return "";
-		}
-	}
-
-	enum CustomDateTimeConverter implements Converter<DateTime, Date> {
-
-		INSTANCE;
-
-		@Override
-		public Date convert(DateTime source) {
-			return new Date(0);
 		}
 	}
 

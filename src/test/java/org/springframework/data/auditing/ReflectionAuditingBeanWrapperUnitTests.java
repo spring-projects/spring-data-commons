@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.ConversionService;
@@ -55,7 +54,7 @@ class ReflectionAuditingBeanWrapperUnitTests {
 	void setsDateTimeFieldCorrectly() {
 
 		wrapper.setCreatedDate(time);
-		assertThat(user.createdDate).isEqualTo(new DateTime(LocalDateTimeToDateConverter.INSTANCE.convert(time)));
+		assertThat(user.createdDate).isEqualTo(time);
 	}
 
 	@Test

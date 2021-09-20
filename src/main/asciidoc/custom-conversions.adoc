@@ -21,8 +21,6 @@ Converters are subject to explicit registration as instances are not picked up f
 `CustomConversions` ships with a pre-defined set of converter registrations:
 
 * JSR-310 Converters for conversion between `java.time`, `java.util.Date` and `String` types.
-* Deprecated: Joda Time Converters for conversion between `org.joda.time`, JSR-310, and `java.util.Date`.
-* Deprecated: ThreeTenBackport Converters for conversion between `org.joda.time`, JSR-310, and `java.util.Date`.
 
 NOTE: Default converters for local temporal types (e.g. `LocalDateTime` to `java.util.Date`) rely on system-default timezone settings to convert between those types. You can override the default converter, by registering your own converter.
 

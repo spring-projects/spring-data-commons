@@ -3,7 +3,7 @@
 
 [[auditing.basics]]
 == Basics
-Spring Data provides sophisticated support to transparently keep track of who created or changed an entity and when the change happened. To benefit from that functionality, you have to equip your entity classes with auditing metadata that can be defined either using annotations or by implementing an interface.
+Spring Data provides sophisticated support to transparently keep track of who created or changed an entity and when the change happened.To benefit from that functionality, you have to equip your entity classes with auditing metadata that can be defined either using annotations or by implementing an interface.
 Additionally, auditing has to be enabled either through Annotation configuration or XML configuration to register the required infrastructure components.
 Please refer to the store-specific section for configuration samples.
 
@@ -18,7 +18,7 @@ We provide `@CreatedBy` and `@LastModifiedBy` to capture the user who created or
 
 .An audited entity
 ====
-[source, java]
+[source,java]
 ----
 class Customer {
 
@@ -33,13 +33,14 @@ class Customer {
 ----
 ====
 
-As you can see, the annotations can be applied selectively, depending on which information you want to capture. The annotations capturing when changes were made can be used on properties of type Joda-Time, `DateTime`, legacy Java `Date` and `Calendar`, JDK8 date and time types, and `long` or `Long`.
+As you can see, the annotations can be applied selectively, depending on which information you want to capture.
+The annotations, indicating to capture when changes are made, can be used on properties of type JDK8 date and time types, `long`, `Long`, and legacy Java `Date` and `Calendar`.
 
-Auditing metadata does not necessarily need to live in the root level entity but can be added to an embedded one (depending on the actual store in use), as shown in the snipped below.
+Auditing metadata does not necessarily need to live in the root level entity but can be added to an embedded one (depending on the actual store in use), as shown in the snippet below.
 
 .Audit metadata in embedded entity
 ====
-[source, java]
+[source,java]
 ----
 class Customer {
 

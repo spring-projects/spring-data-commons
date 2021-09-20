@@ -79,9 +79,7 @@ public class CustomConversions {
 
 		List<Object> defaults = new ArrayList<>();
 
-		defaults.addAll(JodaTimeConverters.getConvertersToRegister());
 		defaults.addAll(Jsr310Converters.getConvertersToRegister());
-		defaults.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
 		defaults.addAll(JMoleculesConverters.getConvertersToRegister());
 
 		DEFAULT_CONVERTERS = Collections.unmodifiableList(defaults);

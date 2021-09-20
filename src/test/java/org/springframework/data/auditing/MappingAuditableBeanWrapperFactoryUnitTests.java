@@ -40,9 +40,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.AuditableInterfaceBeanWrapper;
-import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
-import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -133,15 +131,6 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-638
-	void returnsLastModificationDateTimeAsCalendar() {
-
-		org.joda.time.LocalDateTime reference = new org.joda.time.LocalDateTime();
-
-		assertLastModificationDate(reference,
-				JodaTimeConverters.LocalDateTimeToJsr310Converter.INSTANCE.convert(reference));
-	}
-
-	@Test // DATACMNS-638
 	void returnsLastModificationDateAsCalendar() {
 
 		Date reference = new Date();
@@ -156,15 +145,6 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 		LocalDateTime reference = LocalDateTime.now();
 
 		assertLastModificationDate(reference, reference);
-	}
-
-	@Test // DATACMNS-638, DATACMNS-43
-	void returnsLastModificationThreeTenBpDateTimeAsCalendar() {
-
-		org.threeten.bp.LocalDateTime reference = org.threeten.bp.LocalDateTime.now();
-
-		assertLastModificationDate(reference,
-				ThreeTenBackPortConverters.LocalDateTimeToJsr310LocalDateTimeConverter.INSTANCE.convert(reference));
 	}
 
 	@Test // DATACMNS-1109

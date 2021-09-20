@@ -19,12 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assumptions.*;
 import static org.springframework.test.util.ReflectionTestUtils.*;
 
-import java.text.ParseException;
 import java.util.List;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -183,19 +179,6 @@ class QuerydslPredicateBuilderUnitTests {
 		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
 
 		assertThat(constant.getConstant()).isEqualTo("rivers,two");
-	}
-
-	@Test // DATACMNS-734
-	void bindsDateCorrectly() throws ParseException {
-
-		DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd");
-		String date = format.print(new DateTime());
-
-		values.add("dateOfBirth", format.print(new DateTime()));
-
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
-
-		assertThat(predicate).isEqualTo(QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate()));
 	}
 
 	@Test // DATACMNS-883

@@ -24,9 +24,7 @@ import java.util.stream.Stream;
 
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
-import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -50,9 +48,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
 
-		JodaTimeConverters.getConvertersToRegister().forEach(conversionService::addConverter);
 		Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
-		ThreeTenBackPortConverters.getConvertersToRegister().forEach(conversionService::addConverter);
 
 		this.conversionService = conversionService;
 	}

@@ -99,20 +99,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>${jodatime}</version>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>org.threeten</groupId>
-			<artifactId>threetenbp</artifactId>
-			<version>${threetenbp}</version>
-			<optional>true</optional>
-		</dependency>
-
 		<!--  Project Reactor -->
 
 		<dependency>
