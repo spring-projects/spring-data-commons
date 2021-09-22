@@ -28,10 +28,10 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.config.ParsingUtils;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.repository.config.PersistentEntitiesFactoryBean;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
 import org.w3c.dom.Element;
 
 /**
@@ -95,7 +95,8 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	@Override
 	protected void doParse(Element element, BeanDefinitionBuilder builder) {
 
-		builder.addConstructorArgReference(mappingContextBeanName);
+		final BeanDefinitionBuilder persistentEntities = rootBeanDefinition(PersistentEntitiesFactoryBean.class);
+		builder.addConstructorArgValue(persistentEntities.getBeanDefinition());
 
 		String auditorAwareRef = element.getAttribute(AUDITOR_AWARE_REF);
 
