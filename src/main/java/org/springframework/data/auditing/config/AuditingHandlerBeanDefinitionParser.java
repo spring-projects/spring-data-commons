@@ -96,6 +96,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	protected void doParse(Element element, BeanDefinitionBuilder builder) {
 
 		final BeanDefinitionBuilder persistentEntities = rootBeanDefinition(PersistentEntitiesFactoryBean.class);
+		persistentEntities.addConstructorArgReference(mappingContextBeanName);
 		builder.addConstructorArgValue(persistentEntities.getBeanDefinition());
 
 		String auditorAwareRef = element.getAttribute(AUDITOR_AWARE_REF);
