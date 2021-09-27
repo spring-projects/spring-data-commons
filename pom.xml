@@ -113,20 +113,6 @@
 		<!--  RxJava -->
 
 		<dependency>
-			<groupId>io.reactivex</groupId>
-			<artifactId>rxjava</artifactId>
-			<version>${rxjava}</version>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>io.reactivex</groupId>
-			<artifactId>rxjava-reactive-streams</artifactId>
-			<version>${rxjava-reactive-streams}</version>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
 			<groupId>io.reactivex.rxjava2</groupId>
 			<artifactId>rxjava</artifactId>
 			<version>${rxjava2}</version>

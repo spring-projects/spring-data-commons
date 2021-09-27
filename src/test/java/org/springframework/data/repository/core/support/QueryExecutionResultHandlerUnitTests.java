@@ -18,14 +18,14 @@ package org.springframework.data.repository.core.support;
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.util.Streamable;
@@ -120,7 +121,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Publisher.class);
 
 		Mono<Entity> mono = Mono.from((Publisher<Entity>) result);
-		assertThat(mono.block()).isEqualTo(entity.toBlocking().value());
+		assertThat(mono.block()).isEqualTo(entity.blockingGet());
 	}
 
 	@Test // DATACMNS-836
@@ -133,7 +134,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono<Entity> mono = (Mono<Entity>) result;
-		assertThat(mono.block()).isEqualTo(entity.toBlocking().value());
+		assertThat(mono.block()).isEqualTo(entity.blockingGet());
 	}
 
 	@Test // DATACMNS-836
@@ -146,7 +147,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Flux.class);
 
 		Flux<Entity> flux = (Flux<Entity>) result;
-		assertThat(flux.next().block()).isEqualTo(entity.toBlocking().value());
+		assertThat(flux.next().block()).isEqualTo(entity.blockingGet());
 	}
 
 	@Test // DATACMNS-836
@@ -159,7 +160,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Publisher.class);
 
 		Mono<Entity> mono = Mono.from((Publisher<Entity>) result);
-		assertThat(mono.block()).isEqualTo(entity.toBlocking().first());
+		assertThat(mono.block()).isEqualTo(entity.blockingFirst());
 	}
 
 	@Test // DATACMNS-836
@@ -172,7 +173,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Mono.class);
 
 		Mono<Entity> mono = (Mono<Entity>) result;
-		assertThat(mono.block()).isEqualTo(entity.toBlocking().first());
+		assertThat(mono.block()).isEqualTo(entity.blockingFirst());
 	}
 
 	@Test // DATACMNS-836
@@ -185,7 +186,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Flux.class);
 
 		Flux<Entity> flux = (Flux<Entity>) result;
-		assertThat(flux.next().block()).isEqualTo(entity.toBlocking().first());
+		assertThat(flux.next().block()).isEqualTo(entity.blockingFirst());
 	}
 
 	@Test // DATACMNS-836
@@ -198,7 +199,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Single.class);
 
 		Single<Entity> single = (Single<Entity>) result;
-		assertThat(single.toBlocking().value()).isEqualTo(entity.toBlocking().first());
+		assertThat(single.blockingGet()).isEqualTo(entity.blockingFirst());
 	}
 
 	@Test // DATACMNS-836
@@ -211,7 +212,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Observable.class);
 
 		Observable<Entity> observable = (Observable<Entity>) result;
-		assertThat(observable.toBlocking().first()).isEqualTo(entity.toBlocking().value());
+		assertThat(observable.blockingFirst()).isEqualTo(entity.blockingGet());
 	}
 
 	@Test // DATACMNS-836
@@ -224,7 +225,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Single.class);
 
 		Single<Entity> single = (Single<Entity>) result;
-		assertThat(single.toBlocking().value()).isEqualTo(entity.block());
+		assertThat(single.blockingGet()).isEqualTo(entity.block());
 	}
 
 	@Test // DATACMNS-836
@@ -237,7 +238,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Completable.class);
 
 		Completable completable = (Completable) result;
-		assertThat(completable.get()).isNull();
+		completable.blockingAwait();
 	}
 
 	@Test // DATACMNS-836
@@ -250,7 +251,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Completable.class);
 
 		Completable completable = (Completable) result;
-		assertThat(completable.get()).isInstanceOf(InvalidDataAccessApiUsageException.class);
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class).isThrownBy(completable::blockingAwait);
 	}
 
 	@Test // DATACMNS-836
@@ -290,7 +291,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Observable.class);
 
 		Observable<Entity> observable = (Observable<Entity>) result;
-		assertThat(observable.toBlocking().first()).isEqualTo(entity.block());
+		assertThat(observable.blockingFirst()).isEqualTo(entity.block());
 	}
 
 	@Test // DATACMNS-836
@@ -303,7 +304,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Single.class);
 
 		Single<Entity> single = (Single<Entity>) result;
-		assertThat(single.toBlocking().value()).isEqualTo(entity.next().block());
+		assertThat(single.blockingGet()).isEqualTo(entity.next().block());
 	}
 
 	@Test // DATACMNS-836
@@ -316,7 +317,7 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(result).isInstanceOf(Observable.class);
 
 		Observable<Entity> observable = (Observable<Entity>) result;
-		assertThat(observable.toBlocking().first()).isEqualTo(entity.next().block());
+		assertThat(observable.blockingFirst()).isEqualTo(entity.next().block());
 	}
 
 	@Test // DATACMNS-836

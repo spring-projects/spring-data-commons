@@ -35,8 +35,6 @@ import org.springframework.util.ClassUtils;
  * <p>
  * Supported types are discovered by their availability on the class path. This class is typically used to determine
  * multiplicity and whether a reactive wrapper type is acceptable for a specific operation.
- * <p>
- * <strong>Note:</strong> As of Spring Data 2.4, support for RxJava 1.x is deprecated in favor of RxJava 2 and 3.
  *
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -45,9 +43,6 @@ import org.springframework.util.ClassUtils;
  * @author Hantsy Bai
  * @since 2.0
  * @see org.reactivestreams.Publisher
- * @see rx.Single
- * @see rx.Observable
- * @see rx.Completable
  * @see io.reactivex.Single
  * @see io.reactivex.Maybe
  * @see io.reactivex.Observable
@@ -66,12 +61,6 @@ import org.springframework.util.ClassUtils;
 public abstract class ReactiveWrappers {
 
 	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Flux",
-			ReactiveWrappers.class.getClassLoader());
-
-	@Deprecated
-	private static final boolean RXJAVA1_PRESENT = ClassUtils.isPresent("rx.Observable",
-			ReactiveWrappers.class.getClassLoader())
-			&& ClassUtils.isPresent("rx.RxReactiveStreams",
 			ReactiveWrappers.class.getClassLoader());
 
 	@Deprecated
@@ -99,16 +88,10 @@ public abstract class ReactiveWrappers {
 		PROJECT_REACTOR,
 
 		/**
-		 * @deprecated since 2.4, use RxJava 3 instead. To be removed with Spring Data 3.0.
-		 */
-		@Deprecated
-		RXJAVA1,
-
-		/**
 		 * @deprecated since 2.6, use RxJava 3 instead. To be removed with Spring Data 3.0.
 		 */
 		@Deprecated
-		RXJAVA2, RXJAVA3, KOTLIN_COROUTINES, MUTINY;
+		RXJAVA2, RXJAVA3, KOTLIN_COROUTINES;
 	}
 
 	/**
@@ -134,8 +117,6 @@ public abstract class ReactiveWrappers {
 		switch (reactiveLibrary) {
 			case PROJECT_REACTOR:
 				return PROJECT_REACTOR_PRESENT;
-			case RXJAVA1:
-				return RXJAVA1_PRESENT;
 			case RXJAVA2:
 				return RXJAVA2_PRESENT;
 			case RXJAVA3:

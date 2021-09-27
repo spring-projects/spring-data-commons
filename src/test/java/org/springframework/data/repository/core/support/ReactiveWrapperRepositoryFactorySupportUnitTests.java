@@ -15,13 +15,12 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.rxjava3.core.Single;
 import reactor.core.publisher.Mono;
-import rx.Single;
 
 import java.io.Serializable;
 
@@ -32,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.reactivestreams.Publisher;
 
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
@@ -67,32 +65,6 @@ class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		verify(backingRepo, times(0)).findById(1);
 	}
 
-	@Test // DATACMNS-836, DATACMNS-1154
-	void callsRxJava1MethodOnBaseImplementationWithExactArguments() {
-
-		Serializable id = 1L;
-		when(backingRepo.existsById(id)).thenReturn(Mono.just(true));
-
-		RxJava1ConvertingRepository repository = factory.getRepository(RxJava1ConvertingRepository.class);
-		repository.existsById(id);
-		repository.existsById((Long) id);
-
-		verify(backingRepo, times(2)).existsById(id);
-	}
-
-	@Test // DATACMNS-836, DATACMNS-1063, DATACMNS-1154
-	@SuppressWarnings("unchecked")
-	void callsRxJava1MethodOnBaseImplementationWithTypeConversion() {
-
-		when(backingRepo.existsById(any(Publisher.class))).thenReturn(Mono.just(true));
-
-		Single<Long> ids = Single.just(1L);
-
-		RxJava1ConvertingRepository repository = factory.getRepository(RxJava1ConvertingRepository.class);
-		repository.existsById(ids);
-
-		verify(backingRepo, times(1)).existsById(any(Publisher.class));
-	}
 
 	@Test // DATACMNS-988, DATACMNS-1154
 	void callsRxJava2MethodOnBaseImplementationWithExactArguments() {
@@ -118,14 +90,6 @@ class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		verify(backingRepo, times(1)).deleteById(id);
 	}
 
-	interface RxJava1ConvertingRepository extends Repository<Object, Long> {
-
-		Single<Boolean> existsById(Single<Long> id);
-
-		Single<Boolean> existsById(Serializable id);
-
-		Single<Boolean> existsById(Long id);
-	}
 
 	interface RxJava2ConvertingRepository extends Repository<Object, Long> {
 

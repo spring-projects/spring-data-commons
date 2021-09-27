@@ -17,7 +17,7 @@ package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 
-import rx.Single;
+import io.reactivex.rxjava3.core.Single;
 
 import java.lang.reflect.Method;
 import java.util.Optional;

@@ -17,10 +17,8 @@ package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import reactor.core.publisher.Flux;
-import rx.Observable;
 
 import java.lang.reflect.Method;
 
@@ -29,7 +27,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Publisher;
 
-import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
@@ -46,26 +43,6 @@ import org.springframework.data.repository.reactive.RxJava2CrudRepository;
 class ReactiveRepositoryInformationUnitTests {
 
 	static final Class<ReactiveJavaInterfaceWithGenerics> BASE_CLASS = ReactiveJavaInterfaceWithGenerics.class;
-
-	@Test // DATACMNS-836
-	void discoversRxJava1MethodWithoutComparingReturnType() throws Exception {
-
-		Method reference = extractTargetMethodFromRepository(RxJava1InterfaceWithGenerics.class, "deleteAll");
-
-		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
-		assertThat(reference.getName()).isEqualTo("deleteAll");
-	}
-
-	@Test // DATACMNS-836
-	void discoversRxJava1MethodWithConvertibleArguments() throws Exception {
-
-		Method reference = extractTargetMethodFromRepository(RxJava1InterfaceWithGenerics.class, "saveAll",
-				Observable.class);
-
-		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
-		assertThat(reference.getName()).isEqualTo("saveAll");
-		assertThat(reference.getParameterTypes()[0]).isEqualTo(Publisher.class);
-	}
 
 	@Test // DATACMNS-988
 	void discoversRxJava2MethodWithoutComparingReturnType() throws Exception {
@@ -134,13 +111,6 @@ class ReactiveRepositoryInformationUnitTests {
 				.withMethodLookup(MethodLookups.forReactiveTypes(metadata));
 
 		return composition.findMethod(repositoryType.getMethod(methodName, args)).get();
-	}
-
-	interface RxJava1InterfaceWithGenerics extends Repository<User, String> {
-
-		Observable<User> saveAll(Observable<User> entities);
-
-		Completable deleteAll();
 	}
 
 	interface RxJava2InterfaceWithGenerics extends RxJava2CrudRepository<User, String> {}

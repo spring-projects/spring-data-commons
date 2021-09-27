@@ -22,8 +22,6 @@ import kotlinx.coroutines.flow.FlowKt;
 import kotlinx.coroutines.reactive.ReactiveFlowKt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import rx.Observable;
-import rx.Single;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +52,6 @@ import org.springframework.util.ClassUtils;
  * <p>
  * This class discovers reactive wrapper availability and their conversion support based on the class path. Reactive
  * wrapper types might be supported/on the class path but conversion may require additional dependencies.
- * <p>
- * <strong>Note:</strong> As of Spring Data 2.4, support for RxJava 1.x is deprecated in favor of RxJava 2 and 3.
  *
  * @author Mark Paluch
  * @author Oliver Gierke
@@ -71,12 +67,6 @@ public abstract class ReactiveWrapperConverters {
 	private static final GenericConversionService GENERIC_CONVERSION_SERVICE = new GenericConversionService();
 
 	static {
-
-		if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA1)) {
-
-			REACTIVE_WRAPPERS.add(RxJava1SingleWrapper.INSTANCE);
-			REACTIVE_WRAPPERS.add(RxJava1ObservableWrapper.INSTANCE);
-		}
 
 		if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA2)) {
 
@@ -338,46 +328,6 @@ public abstract class ReactiveWrapperConverters {
 			}
 
 			return FluxWrapper.INSTANCE.map(Flux.from((Publisher<?>) wrapper), function);
-		}
-	}
-
-	// -------------------------------------------------------------------------
-	// RxJava 1 converters
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Wrapper for RxJava 1's {@link Single}.
-	 */
-	private enum RxJava1SingleWrapper implements ReactiveTypeWrapper<Single<?>> {
-
-		INSTANCE;
-
-		@Override
-		public Class<? super Single<?>> getWrapperClass() {
-			return Single.class;
-		}
-
-		@Override
-		public Single<?> map(Object wrapper, Function<Object, Object> function) {
-			return ((Single<?>) wrapper).map(function::apply);
-		}
-	}
-
-	/**
-	 * Wrapper for RxJava 1's {@link Observable}.
-	 */
-	private enum RxJava1ObservableWrapper implements ReactiveTypeWrapper<Observable<?>> {
-
-		INSTANCE;
-
-		@Override
-		public Class<? super Observable<?>> getWrapperClass() {
-			return Observable.class;
-		}
-
-		@Override
-		public Observable<?> map(Object wrapper, Function<Object, Object> function) {
-			return ((Observable<?>) wrapper).map(function::apply);
 		}
 	}
 

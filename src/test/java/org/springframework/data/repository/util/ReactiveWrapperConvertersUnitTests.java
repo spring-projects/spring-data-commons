@@ -26,9 +26,6 @@ import kotlinx.coroutines.reactive.ReactiveFlowKt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
@@ -48,14 +45,6 @@ class ReactiveWrapperConvertersUnitTests {
 		assertThat(ReactiveWrapperConverters.supports(Flux.class)).isTrue();
 		assertThat(ReactiveWrapperConverters.supports(Publisher.class)).isTrue();
 		assertThat(ReactiveWrapperConverters.supports(Object.class)).isFalse();
-	}
-
-	@Test // DATACMNS-836
-	void shouldSupportRxJava1Types() {
-
-		assertThat(ReactiveWrapperConverters.supports(Single.class)).isTrue();
-		assertThat(ReactiveWrapperConverters.supports(Observable.class)).isTrue();
-		assertThat(ReactiveWrapperConverters.supports(Completable.class)).isTrue();
 	}
 
 	@Test // DATACMNS-836
@@ -97,13 +86,6 @@ class ReactiveWrapperConvertersUnitTests {
 
 		Mono<String> foo = Mono.just("foo");
 		assertThat(ReactiveWrapperConverters.toWrapper(foo, Mono.class)).isSameAs(foo);
-	}
-
-	@Test // DATACMNS-836
-	void toWrapperShouldConvertMonoToRxJava1Single() {
-
-		Mono<String> foo = Mono.just("foo");
-		assertThat(ReactiveWrapperConverters.toWrapper(foo, Single.class)).isInstanceOf(Single.class);
 	}
 
 	@Test // DATACMNS-836
@@ -243,22 +225,6 @@ class ReactiveWrapperConvertersUnitTests {
 		Flux<String> foo = Flux.just("foo");
 		Flux<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
 		assertThat(map.next().block()).isEqualTo(1L);
-	}
-
-	@Test // DATACMNS-836
-	void shouldMapRxJava1Single() {
-
-		Single<String> foo = Single.just("foo");
-		Single<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
-		assertThat(map.toBlocking().value()).isEqualTo(1L);
-	}
-
-	@Test // DATACMNS-836
-	void shouldMapRxJava1Observable() {
-
-		Observable<String> foo = Observable.just("foo");
-		Observable<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
-		assertThat(map.toBlocking().first()).isEqualTo(1L);
 	}
 
 	@Test // DATACMNS-836

@@ -18,15 +18,15 @@ package org.springframework.data.repository.util;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.repository.util.QueryExecutionConverters.*;
 
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 import io.vavr.collection.Seq;
 import io.vavr.control.Try;
 import io.vavr.control.Try.Failure;
 import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 import scala.Option;
 
 import java.io.IOException;

@@ -18,6 +18,8 @@ package org.springframework.data.repository.kotlin
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -34,8 +36,6 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.data.repository.sample.User
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import rx.Observable
-import rx.Single
 
 /**
  * Unit tests for Coroutine repositories.

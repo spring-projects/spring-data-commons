@@ -19,12 +19,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.reactivex.Flowable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import rx.Observable;
-import rx.Single;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -241,7 +241,7 @@ class ResultProcessorUnitTests {
 
 		assertThat(result).isInstanceOf(Single.class);
 
-		Object content = ((Single<Object>) result).toBlocking().value();
+		Object content = ((Single<Object>) result).blockingGet();
 
 		assertThat(content).isInstanceOf(Sample.class);
 	}
@@ -288,7 +288,7 @@ class ResultProcessorUnitTests {
 
 		assertThat(result).isInstanceOf(Observable.class);
 
-		List<Object> content = ((Observable<Object>) result).toList().toBlocking().single();
+		List<Object> content = ((Observable<Object>) result).toList().blockingGet();
 
 		assertThat(content).isNotEmpty();
 		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
