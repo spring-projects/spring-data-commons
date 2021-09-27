@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.util;
 
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
 import kotlinx.coroutines.flow.Flow;
 import kotlinx.coroutines.flow.FlowKt;
 import kotlinx.coroutines.reactive.ReactiveFlowKt;
@@ -67,14 +65,6 @@ public abstract class ReactiveWrapperConverters {
 	private static final GenericConversionService GENERIC_CONVERSION_SERVICE = new GenericConversionService();
 
 	static {
-
-		if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA2)) {
-
-			REACTIVE_WRAPPERS.add(RxJava2SingleWrapper.INSTANCE);
-			REACTIVE_WRAPPERS.add(RxJava2MaybeWrapper.INSTANCE);
-			REACTIVE_WRAPPERS.add(RxJava2ObservableWrapper.INSTANCE);
-			REACTIVE_WRAPPERS.add(RxJava2FlowableWrapper.INSTANCE);
-		}
 
 		if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA3)) {
 
@@ -328,82 +318,6 @@ public abstract class ReactiveWrapperConverters {
 			}
 
 			return FluxWrapper.INSTANCE.map(Flux.from((Publisher<?>) wrapper), function);
-		}
-	}
-
-	// -------------------------------------------------------------------------
-	// RxJava 2 converters
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Wrapper for RxJava 2's {@link io.reactivex.Single}.
-	 */
-	private enum RxJava2SingleWrapper implements ReactiveTypeWrapper<io.reactivex.Single<?>> {
-
-		INSTANCE;
-
-		@Override
-		public Class<? super io.reactivex.Single<?>> getWrapperClass() {
-			return io.reactivex.Single.class;
-		}
-
-		@Override
-		public io.reactivex.Single<?> map(Object wrapper, Function<Object, Object> function) {
-			return ((io.reactivex.Single<?>) wrapper).map(function::apply);
-		}
-	}
-
-	/**
-	 * Wrapper for RxJava 2's {@link io.reactivex.Maybe}.
-	 */
-	private enum RxJava2MaybeWrapper implements ReactiveTypeWrapper<Maybe<?>> {
-
-		INSTANCE;
-
-		@Override
-		public Class<? super io.reactivex.Maybe<?>> getWrapperClass() {
-			return io.reactivex.Maybe.class;
-		}
-
-		@Override
-		public io.reactivex.Maybe<?> map(Object wrapper, Function<Object, Object> function) {
-			return ((io.reactivex.Maybe<?>) wrapper).map(function::apply);
-		}
-	}
-
-	/**
-	 * Wrapper for RxJava 2's {@link io.reactivex.Observable}.
-	 */
-	private enum RxJava2ObservableWrapper implements ReactiveTypeWrapper<io.reactivex.Observable<?>> {
-
-		INSTANCE;
-
-		@Override
-		public Class<? super io.reactivex.Observable<?>> getWrapperClass() {
-			return io.reactivex.Observable.class;
-		}
-
-		@Override
-		public io.reactivex.Observable<?> map(Object wrapper, Function<Object, Object> function) {
-			return ((io.reactivex.Observable<?>) wrapper).map(function::apply);
-		}
-	}
-
-	/**
-	 * Wrapper for RxJava 2's {@link io.reactivex.Flowable}.
-	 */
-	private enum RxJava2FlowableWrapper implements ReactiveTypeWrapper<Flowable<?>> {
-
-		INSTANCE;
-
-		@Override
-		public Class<? super Flowable<?>> getWrapperClass() {
-			return io.reactivex.Flowable.class;
-		}
-
-		@Override
-		public io.reactivex.Flowable<?> map(Object wrapper, Function<Object, Object> function) {
-			return ((io.reactivex.Flowable<?>) wrapper).map(function::apply);
 		}
 	}
 

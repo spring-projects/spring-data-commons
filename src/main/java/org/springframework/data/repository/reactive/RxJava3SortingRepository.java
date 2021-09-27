@@ -28,7 +28,6 @@ import org.springframework.data.repository.NoRepositoryBean;
  * @since 2.4
  * @see Sort
  * @see Flowable
- * @see RxJava2CrudRepository
  */
 @NoRepositoryBean
 public interface RxJava3SortingRepository<T, ID> extends RxJava3CrudRepository<T, ID> {

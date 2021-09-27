@@ -17,8 +17,6 @@ package org.springframework.data.repository.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,13 +39,8 @@ class ReactiveWrappersUnitTests {
 
 		assertThat(ReactiveWrappers.isNoValueType(Mono.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Flux.class)).isFalse();
-		assertThat(ReactiveWrappers.isNoValueType(Completable.class)).isTrue();
 		assertThat(ReactiveWrappers.isNoValueType(CompletableFuture.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(Publisher.class)).isFalse();
-		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Single.class)).isFalse();
-		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Maybe.class)).isFalse();
-		assertThat(ReactiveWrappers.isNoValueType(Flowable.class)).isFalse();
-		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.Observable.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Single.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Maybe.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Flowable.class)).isFalse();
@@ -61,14 +54,8 @@ class ReactiveWrappersUnitTests {
 
 		assertThat(ReactiveWrappers.isSingleValueType(Mono.class)).isTrue();
 		assertThat(ReactiveWrappers.isSingleValueType(Flux.class)).isFalse();
-		assertThat(ReactiveWrappers.isSingleValueType(Completable.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(CompletableFuture.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(Publisher.class)).isFalse();
-		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Single.class)).isTrue();
-		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Completable.class)).isFalse();
-		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Maybe.class)).isTrue();
-		assertThat(ReactiveWrappers.isSingleValueType(Flowable.class)).isFalse();
-		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Observable.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Single.class)).isTrue();
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Completable.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Maybe.class)).isTrue();
@@ -83,13 +70,8 @@ class ReactiveWrappersUnitTests {
 
 		assertThat(ReactiveWrappers.isMultiValueType(Mono.class)).isFalse();
 		assertThat(ReactiveWrappers.isMultiValueType(Flux.class)).isTrue();
-		assertThat(ReactiveWrappers.isSingleValueType(Completable.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(CompletableFuture.class)).isFalse();
 		assertThat(ReactiveWrappers.isMultiValueType(Publisher.class)).isTrue();
-		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.Single.class)).isFalse();
-		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.Completable.class)).isFalse();
-		assertThat(ReactiveWrappers.isMultiValueType(Flowable.class)).isTrue();
-		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.Observable.class)).isTrue();
 		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.rxjava3.core.Single.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Completable.class)).isFalse();
 		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.rxjava3.core.Flowable.class)).isTrue();

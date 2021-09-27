@@ -17,8 +17,8 @@ package org.springframework.data.repository.core.support;
 
 import static org.mockito.Mockito.*;
 
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import reactor.core.publisher.Mono;
 
@@ -72,7 +72,7 @@ class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		Long id = 1L;
 		when(backingRepo.findById(id)).thenReturn(Mono.just(true));
 
-		RxJava2ConvertingRepository repository = factory.getRepository(RxJava2ConvertingRepository.class);
+		RxJava3ConvertingRepository repository = factory.getRepository(RxJava3ConvertingRepository.class);
 		repository.findById(id);
 
 		verify(backingRepo, times(1)).findById(id);
@@ -84,14 +84,14 @@ class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		Serializable id = 1L;
 		when(backingRepo.deleteById(id)).thenReturn(Mono.empty());
 
-		RxJava2ConvertingRepository repository = factory.getRepository(RxJava2ConvertingRepository.class);
+		RxJava3ConvertingRepository repository = factory.getRepository(RxJava3ConvertingRepository.class);
 		repository.deleteById(id);
 
 		verify(backingRepo, times(1)).deleteById(id);
 	}
 
 
-	interface RxJava2ConvertingRepository extends Repository<Object, Long> {
+	interface RxJava3ConvertingRepository extends Repository<Object, Long> {
 
 		Maybe<Boolean> findById(Serializable id);
 

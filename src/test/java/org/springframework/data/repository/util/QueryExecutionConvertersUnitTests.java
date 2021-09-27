@@ -102,11 +102,6 @@ class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Single.class)).isFalse();
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Completable.class)).isFalse();
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Observable.class)).isFalse();
-		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Single.class)).isFalse();
-		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Maybe.class)).isFalse();
-		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Completable.class)).isFalse();
-		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Flowable.class)).isFalse();
-		assertThat(QueryExecutionConverters.supportsUnwrapping(io.reactivex.Observable.class)).isFalse();
 	}
 
 	@Test // DATACMNS-714

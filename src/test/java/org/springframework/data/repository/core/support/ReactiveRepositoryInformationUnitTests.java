@@ -17,7 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import io.reactivex.Flowable;
+import io.reactivex.rxjava3.core.Flowable;
 import reactor.core.publisher.Flux;
 
 import java.lang.reflect.Method;
@@ -30,7 +30,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
-import org.springframework.data.repository.reactive.RxJava2CrudRepository;
+import org.springframework.data.repository.reactive.RxJava3CrudRepository;
 
 /**
  * Unit tests for {@link ReactiveRepositoryInformation}.
@@ -45,18 +45,18 @@ class ReactiveRepositoryInformationUnitTests {
 	static final Class<ReactiveJavaInterfaceWithGenerics> BASE_CLASS = ReactiveJavaInterfaceWithGenerics.class;
 
 	@Test // DATACMNS-988
-	void discoversRxJava2MethodWithoutComparingReturnType() throws Exception {
+	void discoversRxJava3MethodWithoutComparingReturnType() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(RxJava2InterfaceWithGenerics.class, "deleteAll");
+		Method reference = extractTargetMethodFromRepository(RxJava3InterfaceWithGenerics.class, "deleteAll");
 
 		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
 		assertThat(reference.getName()).isEqualTo("deleteAll");
 	}
 
 	@Test // DATACMNS-988
-	void discoversRxJava2MethodWithConvertibleArguments() throws Exception {
+	void discoversRxJava3MethodWithConvertibleArguments() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(RxJava2InterfaceWithGenerics.class, "saveAll", Flowable.class);
+		Method reference = extractTargetMethodFromRepository(RxJava3InterfaceWithGenerics.class, "saveAll", Flowable.class);
 
 		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
 		assertThat(reference.getName()).isEqualTo("saveAll");
@@ -113,7 +113,7 @@ class ReactiveRepositoryInformationUnitTests {
 		return composition.findMethod(repositoryType.getMethod(methodName, args)).get();
 	}
 
-	interface RxJava2InterfaceWithGenerics extends RxJava2CrudRepository<User, String> {}
+	interface RxJava3InterfaceWithGenerics extends RxJava3CrudRepository<User, String> {}
 
 	interface ReactiveJavaInterfaceWithGenerics extends ReactiveCrudRepository<User, String> {}
 
