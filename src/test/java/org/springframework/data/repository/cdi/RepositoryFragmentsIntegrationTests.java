@@ -17,14 +17,15 @@ package org.springframework.data.repository.cdi;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.io.Serializable;
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
 
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
+import java.io.Serializable;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.repository.Repository;
 
 /**

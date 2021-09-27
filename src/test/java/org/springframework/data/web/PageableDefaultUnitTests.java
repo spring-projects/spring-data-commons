@@ -18,7 +18,7 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.web.SortDefaultUnitTests.*;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.Test;
 

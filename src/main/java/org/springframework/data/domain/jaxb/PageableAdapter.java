@@ -15,9 +15,9 @@
  */
 package org.springframework.data.domain.jaxb;
 
-import java.util.Collections;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import java.util.Collections;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +36,7 @@ class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
+	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */
 	@Nullable
 	@Override
@@ -58,7 +58,7 @@ class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
+	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */
 	@NonNull
 	@Override

@@ -17,11 +17,12 @@ package org.springframework.data.mapping.context;
 
 import static org.assertj.core.api.Assertions.*;
 
+import jakarta.inject.Inject;
+
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyPath;

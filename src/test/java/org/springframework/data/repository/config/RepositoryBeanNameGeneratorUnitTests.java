@@ -17,12 +17,13 @@ package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.io.IOException;
+import jakarta.inject.Named;
 
-import javax.inject.Named;
+import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;

@@ -15,10 +15,10 @@
  */
 package org.springframework.data.repository.cdi;
 
+import jakarta.enterprise.inject.UnsatisfiedResolutionException;
+
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import javax.enterprise.inject.UnsatisfiedResolutionException;
 
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.core.env.StandardEnvironment;

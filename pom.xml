@@ -72,23 +72,20 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>${servlet-api}</version>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
 			<version>${jaxb}</version>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>javax.annotation</groupId>
-			<artifactId>javax.annotation-api</artifactId>
-			<version>${javax-annotation-api}</version>
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
+			<version>${jakarta-annotation-api}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -173,38 +170,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- EJB Transactions -->
-		<dependency>
-			<groupId>javax.ejb</groupId>
-			<artifactId>ejb-api</artifactId>
-			<version>3.0</version>
-			<optional>true</optional>
-		</dependency>
-
-		<!-- CDI -->
-		<!-- Dependency order required to build against CDI 1.0 and test with CDI 2.0 -->
-		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jcdi_2.0_spec</artifactId>
-			<version>1.0.1</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>javax.interceptor</groupId>
-			<artifactId>javax.interceptor-api</artifactId>
-			<version>1.2.2</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>javax.enterprise</groupId>
-			<artifactId>cdi-api</artifactId>
-			<version>${cdi}</version>
-			<scope>provided</scope>
-			<optional>true</optional>
-		</dependency>
-
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
@@ -219,24 +184,33 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- CDI -->
+
 		<dependency>
-			<groupId>javax.el</groupId>
-			<artifactId>el-api</artifactId>
-			<version>1.0</version>
-			<scope>test</scope>
+			<groupId>jakarta.enterprise</groupId>
+			<artifactId>jakarta.enterprise.cdi-api</artifactId>
+			<scope>provided</scope>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.openwebbeans</groupId>
 			<artifactId>openwebbeans-se</artifactId>
-			<version>${webbeans}</version>
+			<classifier>jakarta</classifier>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.xbean</groupId>
-			<artifactId>xbean-asm9-shaded</artifactId>
-			<version>${webbeans.xbean}</version>
+			<groupId>org.apache.openwebbeans</groupId>
+			<artifactId>openwebbeans-spi</artifactId>
+			<classifier>jakarta</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.openwebbeans</groupId>
+			<artifactId>openwebbeans-impl</artifactId>
+			<classifier>jakarta</classifier>
 			<scope>test</scope>
 		</dependency>
 
@@ -256,7 +230,7 @@
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
-			<version>2.3.5</version>
+			<version>3.0.2</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -329,9 +303,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.transaction</groupId>
-			<artifactId>javax.transaction-api</artifactId>
-			<version>1.3</version>
+			<groupId>jakarta.transaction</groupId>
+			<artifactId>jakarta.transaction-api</artifactId>
+			<version>2.0.0</version>
 			<scope>test</scope>
 		</dependency>
 

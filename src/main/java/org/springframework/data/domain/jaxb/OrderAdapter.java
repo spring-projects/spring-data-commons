@@ -15,7 +15,7 @@
  */
 package org.springframework.data.domain.jaxb;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -33,7 +33,7 @@ public class OrderAdapter extends XmlAdapter<OrderDto, Order> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
+	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */
 	@Nullable
 	@Override
@@ -51,7 +51,7 @@ public class OrderAdapter extends XmlAdapter<OrderDto, Order> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
+	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */
 	@Nullable
 	@Override

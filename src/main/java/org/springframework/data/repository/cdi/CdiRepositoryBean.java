@@ -15,6 +15,15 @@
  */
 package org.springframework.data.repository.cdi;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.Stereotype;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.spi.PassivationCapable;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -27,15 +36,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Stereotype;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.PassivationCapable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -157,7 +157,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.Bean#getTypes()
+	 * @see jakarta.enterprise.inject.spi.Bean#getTypes()
 	 */
 	@SuppressWarnings("rawtypes")
 	public Set<Type> getTypes() {
@@ -206,7 +206,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.context.spi.Contextual#create(javax.enterprise.context.spi.CreationalContext)
+	 * @see jakarta.enterprise.context.spi.Contextual#create(jakarta.enterprise.context.spi.CreationalContext)
 	 */
 	public final T create(@SuppressWarnings("null") CreationalContext<T> creationalContext) {
 
@@ -226,7 +226,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.context.spi.Contextual#destroy(java.lang.Object, javax.enterprise.context.spi.CreationalContext)
+	 * @see jakarta.enterprise.context.spi.Contextual#destroy(java.lang.Object, jakarta.enterprise.context.spi.CreationalContext)
 	 */
 	public void destroy(@SuppressWarnings("null") T instance,
 			@SuppressWarnings("null") CreationalContext<T> creationalContext) {
@@ -241,7 +241,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.Bean#getQualifiers()
+	 * @see jakarta.enterprise.inject.spi.Bean#getQualifiers()
 	 */
 	public Set<Annotation> getQualifiers() {
 		return qualifiers;
@@ -249,7 +249,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.Bean#getName()
+	 * @see jakarta.enterprise.inject.spi.Bean#getName()
 	 */
 	public String getName() {
 		return repositoryType.getName();
@@ -257,7 +257,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.Bean#getStereotypes()
+	 * @see jakarta.enterprise.inject.spi.Bean#getStereotypes()
 	 */
 	public Set<Class<? extends Annotation>> getStereotypes() {
 
@@ -269,7 +269,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.Bean#getBeanClass()
+	 * @see jakarta.enterprise.inject.spi.Bean#getBeanClass()
 	 */
 	public Class<?> getBeanClass() {
 		return repositoryType;
@@ -277,7 +277,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.Bean#isAlternative()
+	 * @see jakarta.enterprise.inject.spi.Bean#isAlternative()
 	 */
 	public boolean isAlternative() {
 		return isAnnotatedWith(repositoryType, Alternative.class);
@@ -285,7 +285,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.Bean#isNullable()
+	 * @see jakarta.enterprise.inject.spi.Bean#isNullable()
 	 */
 	public boolean isNullable() {
 		return false;
@@ -293,7 +293,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.Bean#getInjectionPoints()
+	 * @see jakarta.enterprise.inject.spi.Bean#getInjectionPoints()
 	 */
 	public Set<InjectionPoint> getInjectionPoints() {
 		return Collections.emptySet();
@@ -301,7 +301,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.Bean#getScope()
+	 * @see jakarta.enterprise.inject.spi.Bean#getScope()
 	 */
 	public Class<? extends Annotation> getScope() {
 		return ApplicationScoped.class;
@@ -309,7 +309,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.enterprise.inject.spi.PassivationCapable#getId()
+	 * @see jakarta.enterprise.inject.spi.PassivationCapable#getId()
 	 */
 	public String getId() {
 		return passivationId;

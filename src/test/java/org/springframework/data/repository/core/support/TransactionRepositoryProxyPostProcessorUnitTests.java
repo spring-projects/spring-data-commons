@@ -84,7 +84,7 @@ class TransactionRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-732
 	void considersJtaTransactional() throws Exception {
 
-		Method method = SampleRepository.class.getMethod("methodWithJtaOneDotTwoAtTransactional");
+		Method method = SampleRepository.class.getMethod("methodWithJakartaAtTransactional");
 
 		TransactionAttributeSource attributeSource = new RepositoryAnnotationTransactionAttributeSource(
 				repositoryInformation, true);
@@ -115,8 +115,8 @@ class TransactionRepositoryProxyPostProcessorUnitTests {
 
 		Sample save(Sample object);
 
-		@javax.transaction.Transactional
-		void methodWithJtaOneDotTwoAtTransactional();
+		@jakarta.transaction.Transactional
+		void methodWithJakartaAtTransactional();
 	}
 
 	static class SampleImplementation<T> {

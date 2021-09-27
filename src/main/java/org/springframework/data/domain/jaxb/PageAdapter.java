@@ -15,10 +15,10 @@
  */
 package org.springframework.data.domain.jaxb;
 
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+
 import java.util.Collections;
 import java.util.List;
-
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.PageDto;
@@ -34,7 +34,7 @@ public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
+	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */
 	@Nullable
 	@Override
@@ -53,7 +53,7 @@ public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
+	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
 	 */
 	@Nullable
 	@Override
