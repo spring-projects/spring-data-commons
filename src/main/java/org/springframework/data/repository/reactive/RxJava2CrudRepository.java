@@ -33,8 +33,10 @@ import org.springframework.data.repository.Repository;
  * @see Single
  * @see Flowable
  * @see Completable
+ * @deprecated since 2.6, use {@link RxJava3CrudRepository RxJava 3} instead. To be removed with Spring Data 3.0.
  */
 @NoRepositoryBean
+@Deprecated
 public interface RxJava2CrudRepository<T, ID> extends Repository<T, ID> {
 
 	/**

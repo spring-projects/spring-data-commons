@@ -73,6 +73,7 @@ public abstract class ReactiveWrappers {
 			&& ClassUtils.isPresent("rx.RxReactiveStreams",
 			ReactiveWrappers.class.getClassLoader());
 
+	@Deprecated
 	private static final boolean RXJAVA2_PRESENT = ClassUtils.isPresent("io.reactivex.Flowable",
 			ReactiveWrappers.class.getClassLoader());
 
@@ -94,10 +95,16 @@ public abstract class ReactiveWrappers {
 		PROJECT_REACTOR,
 
 		/**
-		 * @deprecated since 2.4, use RxJava 2 or 3 instead.
+		 * @deprecated since 2.4, use RxJava 3 instead. To be removed with Spring Data 3.0.
 		 */
 		@Deprecated
-		RXJAVA1, RXJAVA2, RXJAVA3, KOTLIN_COROUTINES;
+		RXJAVA1,
+
+		/**
+		 * @deprecated since 2.6, use RxJava 3 instead. To be removed with Spring Data 3.0.
+		 */
+		@Deprecated
+		RXJAVA2, RXJAVA3, KOTLIN_COROUTINES;
 	}
 
 	/**

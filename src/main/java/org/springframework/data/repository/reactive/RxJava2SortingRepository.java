@@ -29,8 +29,10 @@ import org.springframework.data.repository.NoRepositoryBean;
  * @see Sort
  * @see Flowable
  * @see RxJava2CrudRepository
+ * @deprecated since 2.6, use {@link RxJava3SortingRepository RxJava 3} instead. To be removed with Spring Data 3.0.
  */
 @NoRepositoryBean
+@Deprecated
 public interface RxJava2SortingRepository<T, ID> extends RxJava2CrudRepository<T, ID> {
 
 	/**
