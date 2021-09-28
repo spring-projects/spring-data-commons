@@ -55,6 +55,8 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Maybe.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Flowable.class)).isFalse();
 		assertThat(ReactiveWrappers.isNoValueType(io.reactivex.rxjava3.core.Observable.class)).isFalse();
+		assertThat(ReactiveWrappers.isNoValueType(io.smallrye.mutiny.Uni.class)).isFalse();
+		assertThat(ReactiveWrappers.isNoValueType(io.smallrye.mutiny.Multi.class)).isFalse();
 	}
 
 	@Test // DATACMNS-836, DATACMNS-1653, DATACMNS-1753
@@ -77,6 +79,8 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Maybe.class)).isTrue();
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Flowable.class)).isFalse();
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Observable.class)).isFalse();
+		assertThat(ReactiveWrappers.isSingleValueType(io.smallrye.mutiny.Uni.class)).isTrue();
+		assertThat(ReactiveWrappers.isSingleValueType(io.smallrye.mutiny.Multi.class)).isFalse();
 	}
 
 	@Test // DATACMNS-836, DATACMNS-1653, DATACMNS-1753
@@ -97,5 +101,7 @@ class ReactiveWrappersUnitTests {
 		assertThat(ReactiveWrappers.isSingleValueType(io.reactivex.rxjava3.core.Completable.class)).isFalse();
 		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.rxjava3.core.Flowable.class)).isTrue();
 		assertThat(ReactiveWrappers.isMultiValueType(io.reactivex.rxjava3.core.Observable.class)).isTrue();
+		assertThat(ReactiveWrappers.isMultiValueType(io.smallrye.mutiny.Uni.class)).isFalse();
+		assertThat(ReactiveWrappers.isMultiValueType(io.smallrye.mutiny.Multi.class)).isTrue();
 	}
 }

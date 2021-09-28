@@ -18,6 +18,8 @@ package org.springframework.data.repository.util;
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 
 import io.reactivex.Maybe;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import kotlinx.coroutines.flow.Flow;
 import kotlinx.coroutines.flow.FlowKt;
 import kotlinx.coroutines.reactive.ReactiveFlowKt;
@@ -80,6 +82,13 @@ class ReactiveWrapperConvertersUnitTests {
 
 		assertThat(ReactiveWrapperConverters.supports(Flow.class)).isTrue();
 		assertThat(ReactiveWrapperConverters.supports(io.reactivex.rxjava3.core.Completable.class)).isTrue();
+	}
+
+	@Test
+	void shouldSupportMutinyTypes() {
+
+		assertThat(ReactiveWrapperConverters.supports(Uni.class)).isTrue();
+		assertThat(ReactiveWrapperConverters.supports(Multi.class)).isTrue();
 	}
 
 	@Test // DATACMNS-836
