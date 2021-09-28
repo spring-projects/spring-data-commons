@@ -148,6 +148,14 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- SmallRye Mutiny, see:https://smallrye.io/smallrye-mutiny/ -->
+		<dependency>
+			<groupId>io.smallrye.reactive</groupId>
+			<artifactId>mutiny</artifactId>
+			<version>${smallrye-mutiny}</version>
+			<optional>true</optional>
+		</dependency>
+
 		<!--  Querydsl -->
 
 		<dependency>

@@ -83,6 +83,9 @@ public abstract class ReactiveWrappers {
 	private static final boolean KOTLIN_COROUTINES_PRESENT = ClassUtils.isPresent("kotlinx.coroutines.reactor.MonoKt",
 			ReactiveWrappers.class.getClassLoader());
 
+	private static final boolean MUTINY_PRESENT = ClassUtils.isPresent("io.smallrye.mutiny.Multi",
+			ReactiveWrappers.class.getClassLoader());
+
 	private ReactiveWrappers() {}
 
 	/**
@@ -104,7 +107,7 @@ public abstract class ReactiveWrappers {
 		 * @deprecated since 2.6, use RxJava 3 instead. To be removed with Spring Data 3.0.
 		 */
 		@Deprecated
-		RXJAVA2, RXJAVA3, KOTLIN_COROUTINES;
+		RXJAVA2, RXJAVA3, KOTLIN_COROUTINES, MUTINY;
 	}
 
 	/**
@@ -138,6 +141,8 @@ public abstract class ReactiveWrappers {
 				return RXJAVA3_PRESENT;
 			case KOTLIN_COROUTINES:
 				return PROJECT_REACTOR_PRESENT && KOTLIN_COROUTINES_PRESENT;
+			case MUTINY:
+				return MUTINY_PRESENT;
 			default:
 				throw new IllegalArgumentException(String.format("Reactive library %s not supported", reactiveLibrary));
 		}
