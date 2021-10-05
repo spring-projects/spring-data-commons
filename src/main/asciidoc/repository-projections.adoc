@@ -69,6 +69,8 @@ interface PersonRepository extends Repository<Person, UUID> {
 
 The query execution engine creates proxy instances of that interface at runtime for each element returned and forwards calls to the exposed methods to the target object.
 
+NOTE: Declaring a method in your `Repository` that overrides a base method (e.g. declared in  `CrudRepository`, a store-specific repository interface, or the `Simple…Repository`) results in a call to the base method regardless of the declared return type. Make sure to use a compatible return type as base methods cannot be used for projections. Some store modules support `@Query` annotations to turn an overridden base method into a query method that then can be used to return projections.
+
 [[projections.interfaces.nested]]
 Projections can be used recursively. If you want to include some of the `Address` information as well, create a projection interface for that and return that interface from the declaration of `getAddress()`, as shown in the following example:
 
