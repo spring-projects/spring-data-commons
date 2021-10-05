@@ -18,7 +18,6 @@ package org.springframework.data.mapping;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.mapping.PropertyPath.from;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -41,7 +40,7 @@ class PropertyPathUnitTests {
 	@Test
 	void parsesSimplePropertyCorrectly() {
 
-		PropertyPath reference = PropertyPath.from("userName", Foo.class);
+		var reference = PropertyPath.from("userName", Foo.class);
 
 		assertThat(reference.hasNext()).isFalse();
 		assertThat(reference.toDotPath()).isEqualTo("userName");
@@ -51,7 +50,7 @@ class PropertyPathUnitTests {
 	@Test
 	void parsesPathPropertyCorrectly() {
 
-		PropertyPath reference = PropertyPath.from("userName", Bar.class);
+		var reference = PropertyPath.from("userName", Bar.class);
 		assertThat(reference.hasNext()).isTrue();
 		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
 		assertThat(reference.toDotPath()).isEqualTo("user.name");
@@ -60,7 +59,7 @@ class PropertyPathUnitTests {
 	@Test
 	void prefersLongerMatches() {
 
-		PropertyPath reference = PropertyPath.from("userName", Sample.class);
+		var reference = PropertyPath.from("userName", Sample.class);
 		assertThat(reference.hasNext()).isFalse();
 		assertThat(reference.toDotPath()).isEqualTo("userName");
 	}
@@ -68,7 +67,7 @@ class PropertyPathUnitTests {
 	@Test
 	void testname() {
 
-		PropertyPath reference = PropertyPath.from("userName", Sample2.class);
+		var reference = PropertyPath.from("userName", Sample2.class);
 		assertThat(reference.getSegment()).isEqualTo("user");
 		assertThat(reference.hasNext()).isTrue();
 		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
@@ -77,7 +76,7 @@ class PropertyPathUnitTests {
 	@Test
 	void prefersExplicitPaths() {
 
-		PropertyPath reference = PropertyPath.from("user_name", Sample.class);
+		var reference = PropertyPath.from("user_name", Sample.class);
 		assertThat(reference.getSegment()).isEqualTo("user");
 		assertThat(reference.hasNext()).isTrue();
 		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
@@ -86,7 +85,7 @@ class PropertyPathUnitTests {
 	@Test
 	void handlesGenericsCorrectly() {
 
-		PropertyPath reference = PropertyPath.from("usersName", Bar.class);
+		var reference = PropertyPath.from("usersName", Bar.class);
 		assertThat(reference.getSegment()).isEqualTo("users");
 		assertThat(reference.isCollection()).isTrue();
 		assertThat(reference.hasNext()).isTrue();
@@ -96,7 +95,7 @@ class PropertyPathUnitTests {
 	@Test
 	void handlesMapCorrectly() {
 
-		PropertyPath reference = PropertyPath.from("userMapName", Bar.class);
+		var reference = PropertyPath.from("userMapName", Bar.class);
 		assertThat(reference.getSegment()).isEqualTo("userMap");
 		assertThat(reference.isCollection()).isFalse();
 		assertThat(reference.hasNext()).isTrue();
@@ -106,7 +105,7 @@ class PropertyPathUnitTests {
 	@Test
 	void handlesArrayCorrectly() {
 
-		PropertyPath reference = PropertyPath.from("userArrayName", Bar.class);
+		var reference = PropertyPath.from("userArrayName", Bar.class);
 		assertThat(reference.getSegment()).isEqualTo("userArray");
 		assertThat(reference.isCollection()).isTrue();
 		assertThat(reference.hasNext()).isTrue();
@@ -137,7 +136,7 @@ class PropertyPathUnitTests {
 	@Test
 	void findsNested() {
 
-		PropertyPath from = PropertyPath.from("barUserName", Sample.class);
+		var from = PropertyPath.from("barUserName", Sample.class);
 
 		assertThat(from).isNotNull();
 		assertThat(from.getLeafProperty()).isEqualTo(PropertyPath.from("name", FooBar.class));
@@ -146,7 +145,7 @@ class PropertyPathUnitTests {
 	@Test // DATACMNS-45
 	void handlesEmptyUnderscoresCorrectly() {
 
-		PropertyPath propertyPath = PropertyPath.from("_foo", Sample2.class);
+		var propertyPath = PropertyPath.from("_foo", Sample2.class);
 		assertThat(propertyPath.getSegment()).isEqualTo("_foo");
 		assertThat(propertyPath.getType()).isEqualTo(Foo.class);
 
@@ -157,7 +156,7 @@ class PropertyPathUnitTests {
 	@Test
 	void supportsDotNotationAsWell() {
 
-		PropertyPath propertyPath = PropertyPath.from("bar.userMap.name", Sample.class);
+		var propertyPath = PropertyPath.from("bar.userMap.name", Sample.class);
 
 		assertThat(propertyPath).isNotNull();
 		assertThat(propertyPath.getSegment()).isEqualTo("bar");
@@ -167,9 +166,9 @@ class PropertyPathUnitTests {
 	@Test
 	void returnsCorrectIteratorForSingleElement() {
 
-		PropertyPath propertyPath = PropertyPath.from("userName", Foo.class);
+		var propertyPath = PropertyPath.from("userName", Foo.class);
 
-		Iterator<PropertyPath> iterator = propertyPath.iterator();
+		var iterator = propertyPath.iterator();
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo(propertyPath);
 		assertThat(iterator.hasNext()).isFalse();
@@ -178,9 +177,9 @@ class PropertyPathUnitTests {
 	@Test
 	void returnsCorrectIteratorForMultipleElement() {
 
-		PropertyPath propertyPath = PropertyPath.from("user.name", Bar.class);
+		var propertyPath = PropertyPath.from("user.name", Bar.class);
 
-		Iterator<PropertyPath> iterator = propertyPath.iterator();
+		var iterator = propertyPath.iterator();
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo(propertyPath);
 		assertThat(iterator.hasNext()).isTrue();
@@ -243,10 +242,10 @@ class PropertyPathUnitTests {
 	@Test
 	void samePathsEqual() {
 
-		PropertyPath left = PropertyPath.from("user.name", Bar.class);
-		PropertyPath right = PropertyPath.from("user.name", Bar.class);
+		var left = PropertyPath.from("user.name", Bar.class);
+		var right = PropertyPath.from("user.name", Bar.class);
 
-		PropertyPath shortPath = PropertyPath.from("user", Bar.class);
+		var shortPath = PropertyPath.from("user", Bar.class);
 
 		assertThat(left).isEqualTo(right);
 		assertThat(right).isEqualTo(left);
@@ -259,10 +258,10 @@ class PropertyPathUnitTests {
 	@Test
 	void hashCodeTests() {
 
-		PropertyPath left = PropertyPath.from("user.name", Bar.class);
-		PropertyPath right = PropertyPath.from("user.name", Bar.class);
+		var left = PropertyPath.from("user.name", Bar.class);
+		var right = PropertyPath.from("user.name", Bar.class);
 
-		PropertyPath shortPath = PropertyPath.from("user", Bar.class);
+		var shortPath = PropertyPath.from("user", Bar.class);
 
 		assertThat(left.hashCode()).isEqualTo(right.hashCode());
 		assertThat(left.hashCode()).isNotEqualTo(shortPath.hashCode());
@@ -271,7 +270,7 @@ class PropertyPathUnitTests {
 	@Test // DATACMNS-257
 	void findsAllUppercaseProperty() {
 
-		PropertyPath path = PropertyPath.from("UUID", Foo.class);
+		var path = PropertyPath.from("UUID", Foo.class);
 
 		assertThat(path).isNotNull();
 		assertThat(path.getSegment()).isEqualTo("UUID");
@@ -280,7 +279,7 @@ class PropertyPathUnitTests {
 	@Test // DATACMNS-257
 	void findsNestedAllUppercaseProperty() {
 
-		PropertyPath path = PropertyPath.from("_fooUUID", Sample2.class);
+		var path = PropertyPath.from("_fooUUID", Sample2.class);
 
 		assertThat(path).isNotNull();
 		assertThat(path.getSegment()).isEqualTo("_foo");
@@ -344,7 +343,7 @@ class PropertyPathUnitTests {
 	@Test // DATACMNS-867
 	void preservesUnderscoresForQuotedNames() {
 
-		PropertyPath path = from(Pattern.quote("var_name_with_underscore"), Foo.class);
+		var path = from(Pattern.quote("var_name_with_underscore"), Foo.class);
 
 		assertThat(path).isNotNull();
 		assertThat(path.getSegment()).isEqualTo("var_name_with_underscore");
@@ -378,15 +377,15 @@ class PropertyPathUnitTests {
 	@Test // DATACMNS-1285
 	void rejectsTooLongPath() {
 
-		String source = "foo.bar";
+		var source = "foo.bar";
 
-		for (int i = 0; i < 9; i++) {
+		for (var i = 0; i < 9; i++) {
 			source = source + "." + source;
 		}
 
 		assertThat(source.split("\\.").length).isGreaterThan(1000);
 
-		final String path = source;
+		final var path = source;
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> PropertyPath.from(path, Left.class));

@@ -237,7 +237,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public RepositoryInformation getRepositoryInformation() {
 
-		RepositoryFragments fragments = customImplementation.map(RepositoryFragments::just)//
+		var fragments = customImplementation.map(RepositoryFragments::just)//
 				.orElse(RepositoryFragments.empty());
 
 		return factory.getRepositoryInformation(repositoryMetadata, fragments);
@@ -309,11 +309,11 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		this.repositoryFactoryCustomizers.forEach(customizer -> customizer.customize(this.factory));
 
-		RepositoryFragments customImplementationFragment = customImplementation //
+		var customImplementationFragment = customImplementation //
 				.map(RepositoryFragments::just) //
 				.orElseGet(RepositoryFragments::empty);
 
-		RepositoryFragments repositoryFragmentsToUse = this.repositoryFragments //
+		var repositoryFragmentsToUse = this.repositoryFragments //
 				.orElseGet(RepositoryFragments::empty) //
 				.append(customImplementationFragment);
 

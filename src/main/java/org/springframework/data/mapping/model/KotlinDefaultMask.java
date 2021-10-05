@@ -45,7 +45,7 @@ public class KotlinDefaultMask {
 	 */
 	public void forEach(IntConsumer maskCallback) {
 
-		for (int i : defaulting) {
+		for (var i : defaulting) {
 			maskCallback.accept(i);
 		}
 	}
@@ -71,12 +71,12 @@ public class KotlinDefaultMask {
 	public static KotlinDefaultMask from(KFunction<?> function, Predicate<KParameter> isPresent) {
 
 		List<Integer> masks = new ArrayList<>();
-		int index = 0;
-		int mask = 0;
+		var index = 0;
+		var mask = 0;
 
-		List<KParameter> parameters = function.getParameters();
+		var parameters = function.getParameters();
 
-		for (KParameter parameter : parameters) {
+		for (var parameter : parameters) {
 
 			if (index != 0 && index % Integer.SIZE == 0) {
 				masks.add(mask);

@@ -83,8 +83,8 @@ public class SliceImpl<T> extends Chunk<T> {
 	@Override
 	public String toString() {
 
-		String contentType = "UNKNOWN";
-		List<T> content = getContent();
+		var contentType = "UNKNOWN";
+		var content = getContent();
 
 		if (content.size() > 0) {
 			contentType = content.get(0).getClass().getName();
@@ -104,11 +104,9 @@ public class SliceImpl<T> extends Chunk<T> {
 			return true;
 		}
 
-		if (!(obj instanceof SliceImpl<?>)) {
+		if (!(obj instanceof SliceImpl<?> that)) {
 			return false;
 		}
-
-		SliceImpl<?> that = (SliceImpl<?>) obj;
 
 		return this.hasNext == that.hasNext && super.equals(obj);
 	}
@@ -120,7 +118,7 @@ public class SliceImpl<T> extends Chunk<T> {
 	@Override
 	public int hashCode() {
 
-		int result = 17;
+		var result = 17;
 
 		result += 31 * (hasNext ? 1 : 0);
 		result += 31 * super.hashCode();

@@ -32,9 +32,9 @@ class PropertyPathInformationUnitTests {
 	@Test // GH-2418
 	void shouldEqualsCorrectly() {
 
-		PropertyPathInformation information = PropertyPathInformation.of("address.description", User.class);
+		var information = PropertyPathInformation.of("address.description", User.class);
 
-		QuerydslPathInformation querydslPathInformation = QuerydslPathInformation.of(QUser.user.address.description);
+		var querydslPathInformation = QuerydslPathInformation.of(QUser.user.address.description);
 
 		assertThat(information).isEqualTo(querydslPathInformation);
 		assertThat(querydslPathInformation).isEqualTo(information);
@@ -43,9 +43,9 @@ class PropertyPathInformationUnitTests {
 	@Test // GH-2418
 	void shouldHashCodeCorrectly() {
 
-		PropertyPathInformation information = PropertyPathInformation.of("address.description", User.class);
+		var information = PropertyPathInformation.of("address.description", User.class);
 
-		QuerydslPathInformation querydslPathInformation = QuerydslPathInformation.of(QUser.user.address.description);
+		var querydslPathInformation = QuerydslPathInformation.of(QUser.user.address.description);
 
 		assertThat(information).hasSameHashCodeAs(querydslPathInformation);
 		assertThat(querydslPathInformation).hasSameHashCodeAs(information);

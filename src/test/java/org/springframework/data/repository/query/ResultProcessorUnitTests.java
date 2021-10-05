@@ -26,7 +26,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,9 +57,9 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-89
 	void leavesNonProjectingResultUntouched() throws Exception {
 
-		ResultProcessor information = new ResultProcessor(getQueryMethod("findAll"), new SpelAwareProxyProjectionFactory());
+		var information = new ResultProcessor(getQueryMethod("findAll"), new SpelAwareProxyProjectionFactory());
 
-		Sample sample = new Sample("Dave", "Matthews");
+		var sample = new Sample("Dave", "Matthews");
 		List<Sample> result = new ArrayList<>(Collections.singletonList(sample));
 		List<Sample> converted = information.processResult(result);
 
@@ -70,7 +69,7 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-89
 	void createsProjectionFromProperties() throws Exception {
 
-		ResultProcessor information = getProcessor("findOneProjection");
+		var information = getProcessor("findOneProjection");
 
 		SampleProjection result = information.processResult(Collections.singletonList("Matthews"));
 
@@ -80,9 +79,9 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-89
 	void createsListOfProjectionsFormNestedLists() throws Exception {
 
-		ResultProcessor information = getProcessor("findAllProjection");
+		var information = getProcessor("findAllProjection");
 
-		List<String> columns = Collections.singletonList("Matthews");
+		var columns = Collections.singletonList("Matthews");
 		List<List<String>> source = new ArrayList<>(Collections.singletonList(columns));
 
 		List<SampleProjection> result = information.processResult(source);
@@ -94,7 +93,7 @@ class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	void createsListOfProjectionsFromMaps() throws Exception {
 
-		ResultProcessor information = getProcessor("findAllProjection");
+		var information = getProcessor("findAllProjection");
 
 		List<Map<String, Object>> source = new ArrayList<>(
 				Collections.singletonList(Collections.singletonMap("lastname", "Matthews")));
@@ -108,7 +107,7 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-89
 	void createsListOfProjectionsFromEntity() throws Exception {
 
-		ResultProcessor information = getProcessor("findAllProjection");
+		var information = getProcessor("findAllProjection");
 
 		List<Sample> source = new ArrayList<>(Collections.singletonList(new Sample("Dave", "Matthews")));
 		List<SampleProjection> result = information.processResult(source);
@@ -120,7 +119,7 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-89
 	void createsPageOfProjectionsFromEntity() throws Exception {
 
-		ResultProcessor information = getProcessor("findPageProjection", Pageable.class);
+		var information = getProcessor("findPageProjection", Pageable.class);
 
 		Page<Sample> source = new PageImpl<>(Collections.singletonList(new Sample("Dave", "Matthews")));
 		Page<SampleProjection> result = information.processResult(source);
@@ -132,7 +131,7 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-89
 	void createsDynamicProjectionFromEntity() throws Exception {
 
-		ResultProcessor information = getProcessor("findOneOpenProjection");
+		var information = getProcessor("findOneOpenProjection");
 
 		OpenProjection result = information.processResult(new Sample("Dave", "Matthews"));
 
@@ -143,21 +142,21 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-89
 	void findsDynamicProjection() throws Exception {
 
-		ParameterAccessor accessor = mock(ParameterAccessor.class);
+		var accessor = mock(ParameterAccessor.class);
 
-		ResultProcessor factory = getProcessor("findOneDynamic", Class.class);
+		var factory = getProcessor("findOneDynamic", Class.class);
 		assertThat(factory.withDynamicProjection(accessor)).isEqualTo(factory);
 
 		doReturn(SampleProjection.class).when(accessor).findDynamicProjection();
 
-		ResultProcessor processor = factory.withDynamicProjection(accessor);
+		var processor = factory.withDynamicProjection(accessor);
 		assertThat(processor.getReturnedType().getReturnedType()).isEqualTo(SampleProjection.class);
 	}
 
 	@Test // DATACMNS-89
 	void refrainsFromProjectingIfThePreparingConverterReturnsACompatibleInstance() throws Exception {
 
-		Object result = getProcessor("findAllDtos").processResult(new Sample("Dave", "Matthews"),
+		var result = getProcessor("findAllDtos").processResult(new Sample("Dave", "Matthews"),
 				source -> new SampleDto());
 
 		assertThat(result).isInstanceOf(SampleDto.class);
@@ -165,7 +164,7 @@ class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-828
 	void returnsNullResultAsIs() throws Exception {
-		Object result = getProcessor("findOneDto").processResult(null);
+		var result = getProcessor("findOneDto").processResult(null);
 		assertThat(result).isNull();
 	}
 
@@ -174,11 +173,11 @@ class ResultProcessorUnitTests {
 
 		Slice<Sample> slice = new SliceImpl<>(Collections.singletonList(new Sample("Dave", "Matthews")));
 
-		Object result = getProcessor("findSliceProjection", Pageable.class).processResult(slice);
+		var result = getProcessor("findSliceProjection", Pageable.class).processResult(slice);
 
 		assertThat(result).isInstanceOf(Slice.class);
 
-		List<?> content = ((Slice<?>) result).getContent();
+		var content = ((Slice<?>) result).getContent();
 
 		assertThat(content).hasSize(1).hasOnlyElementsOfType(SampleProjection.class);
 	}
@@ -187,12 +186,12 @@ class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	void supportsStreamAsReturnWrapper() throws Exception {
 
-		Stream<Sample> samples = Collections.singletonList(new Sample("Dave", "Matthews")).stream();
+		var samples = Collections.singletonList(new Sample("Dave", "Matthews")).stream();
 
-		Object result = getProcessor("findStreamProjection").processResult(samples);
+		var result = getProcessor("findStreamProjection").processResult(samples);
 
 		assertThat(result).isInstanceOf(Stream.class);
-		List<Object> content = ((Stream<Object>) result).collect(Collectors.toList());
+		var content = ((Stream<Object>) result).collect(Collectors.toList());
 
 		assertThat(content).hasSize(1).hasOnlyElementsOfType(SampleProjection.class);
 	}
@@ -200,7 +199,7 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-860
 	void supportsWrappingDto() throws Exception {
 
-		Object result = getProcessor("findOneWrappingDto").processResult(new Sample("Dave", "Matthews"));
+		var result = getProcessor("findOneWrappingDto").processResult(new Sample("Dave", "Matthews"));
 
 		assertThat(result).isInstanceOf(WrappingDto.class);
 	}
@@ -208,9 +207,9 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-921
 	void fallsBackToApproximateCollectionIfNecessary() throws Exception {
 
-		ResultProcessor processor = getProcessor("findAllProjection");
+		var processor = getProcessor("findAllProjection");
 
-		SpecialList<Sample> specialList = new SpecialList<>(new Object());
+		var specialList = new SpecialList<Sample>(new Object());
 		specialList.add(new Sample("Dave", "Matthews"));
 
 		processor.processResult(specialList);
@@ -220,13 +219,13 @@ class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	void supportsMonoWrapper() throws Exception {
 
-		Mono<Sample> samples = Mono.just(new Sample("Dave", "Matthews"));
+		var samples = Mono.just(new Sample("Dave", "Matthews"));
 
-		Object result = getProcessor("findMonoSample").processResult(samples);
+		var result = getProcessor("findMonoSample").processResult(samples);
 
 		assertThat(result).isInstanceOf(Mono.class);
 
-		Object content = ((Mono<Object>) result).block();
+		var content = ((Mono<Object>) result).block();
 
 		assertThat(content).isInstanceOf(Sample.class);
 	}
@@ -235,13 +234,13 @@ class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	void supportsSingleWrapper() throws Exception {
 
-		Single<Sample> samples = Single.just(new Sample("Dave", "Matthews"));
+		var samples = Single.just(new Sample("Dave", "Matthews"));
 
-		Object result = getProcessor("findSingleSample").processResult(samples);
+		var result = getProcessor("findSingleSample").processResult(samples);
 
 		assertThat(result).isInstanceOf(Single.class);
 
-		Object content = ((Single<Object>) result).blockingGet();
+		var content = ((Single<Object>) result).blockingGet();
 
 		assertThat(content).isInstanceOf(Sample.class);
 	}
@@ -251,13 +250,13 @@ class ResultProcessorUnitTests {
 	void refrainsFromProjectingUsingReactiveWrappersIfThePreparingConverterReturnsACompatibleInstance()
 			throws Exception {
 
-		ResultProcessor processor = getProcessor("findMonoSampleDto");
+		var processor = getProcessor("findMonoSampleDto");
 
-		Object result = processor.processResult(Mono.just(new Sample("Dave", "Matthews")), source -> new SampleDto());
+		var result = processor.processResult(Mono.just(new Sample("Dave", "Matthews")), source -> new SampleDto());
 
 		assertThat(result).isInstanceOf(Mono.class);
 
-		Object content = ((Mono<Object>) result).block();
+		var content = ((Mono<Object>) result).block();
 
 		assertThat(content).isInstanceOf(SampleDto.class);
 	}
@@ -266,13 +265,13 @@ class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	void supportsFluxProjections() throws Exception {
 
-		Flux<Sample> samples = Flux.just(new Sample("Dave", "Matthews"));
+		var samples = Flux.just(new Sample("Dave", "Matthews"));
 
-		Object result = getProcessor("findFluxProjection").processResult(samples);
+		var result = getProcessor("findFluxProjection").processResult(samples);
 
 		assertThat(result).isInstanceOf(Flux.class);
 
-		List<Object> content = ((Flux<Object>) result).collectList().block();
+		var content = ((Flux<Object>) result).collectList().block();
 
 		assertThat(content).isNotEmpty();
 		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
@@ -282,13 +281,13 @@ class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	void supportsObservableProjections() throws Exception {
 
-		Observable<Sample> samples = Observable.just(new Sample("Dave", "Matthews"));
+		var samples = Observable.just(new Sample("Dave", "Matthews"));
 
-		Object result = getProcessor("findObservableProjection").processResult(samples);
+		var result = getProcessor("findObservableProjection").processResult(samples);
 
 		assertThat(result).isInstanceOf(Observable.class);
 
-		List<Object> content = ((Observable<Object>) result).toList().blockingGet();
+		var content = ((Observable<Object>) result).toList().blockingGet();
 
 		assertThat(content).isNotEmpty();
 		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
@@ -298,13 +297,13 @@ class ResultProcessorUnitTests {
 	@SuppressWarnings("unchecked")
 	void supportsFlowableProjections() throws Exception {
 
-		Flowable<Sample> samples = Flowable.just(new Sample("Dave", "Matthews"));
+		var samples = Flowable.just(new Sample("Dave", "Matthews"));
 
-		Object result = getProcessor("findFlowableProjection").processResult(samples);
+		var result = getProcessor("findFlowableProjection").processResult(samples);
 
 		assertThat(result).isInstanceOf(Flowable.class);
 
-		List<Object> content = ((Flowable<Object>) result).toList().blockingGet();
+		var content = ((Flowable<Object>) result).toList().blockingGet();
 
 		assertThat(content).isNotEmpty();
 		assertThat(content.get(0)).isInstanceOf(SampleProjection.class);
@@ -347,7 +346,7 @@ class ResultProcessorUnitTests {
 
 	private static QueryMethod getQueryMethod(String name, Class<?>... parameters) throws Exception {
 
-		Method method = SampleRepository.class.getMethod(name, parameters);
+		var method = SampleRepository.class.getMethod(name, parameters);
 		return new QueryMethod(method, new DefaultRepositoryMetadata(SampleRepository.class),
 				new SpelAwareProxyProjectionFactory());
 	}

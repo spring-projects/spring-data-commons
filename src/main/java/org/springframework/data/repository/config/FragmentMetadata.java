@@ -66,7 +66,7 @@ public class FragmentMetadata {
 
 		Assert.hasText(interfaceName, "Interface name must not be null or empty!");
 
-		AnnotationMetadata metadata = getAnnotationMetadata(interfaceName);
+		var metadata = getAnnotationMetadata(interfaceName);
 		return !metadata.hasAnnotation(NoRepositoryBean.class.getName());
 
 	}

@@ -117,7 +117,7 @@ class VavrCollections {
 			@Override
 			public Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {
 
-				Class<?> targetType = targetDescriptor.getType();
+				var targetType = targetDescriptor.getType();
 
 				if (io.vavr.collection.Seq.class.isAssignableFrom(targetType)) {
 					return io.vavr.collection.List.ofAll((Iterable<?>) source);

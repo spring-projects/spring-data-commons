@@ -47,7 +47,7 @@ class EntityInstantiatorsUnitTests {
 	@Test
 	void usesReflectionEntityInstantiatorAsDefaultFallback() {
 
-		EntityInstantiators instantiators = new EntityInstantiators();
+		var instantiators = new EntityInstantiators();
 		assertThat(instantiators.getInstantiatorFor(entity)).isInstanceOf(ClassGeneratingEntityInstantiator.class);
 	}
 
@@ -58,7 +58,7 @@ class EntityInstantiatorsUnitTests {
 
 		Map<Class<?>, EntityInstantiator> customInstantiators = Collections.singletonMap(String.class, customInstantiator);
 
-		EntityInstantiators instantiators = new EntityInstantiators(customInstantiators);
+		var instantiators = new EntityInstantiators(customInstantiators);
 		assertThat(instantiators.getInstantiatorFor(entity)).isEqualTo(customInstantiator);
 	}
 
@@ -70,7 +70,7 @@ class EntityInstantiatorsUnitTests {
 		Map<Class<?>, EntityInstantiator> customInstantiators = Collections.singletonMap(String.class,
 				ReflectionEntityInstantiator.INSTANCE);
 
-		EntityInstantiators instantiators = new EntityInstantiators(customInstantiator, customInstantiators);
+		var instantiators = new EntityInstantiators(customInstantiator, customInstantiators);
 		instantiators.getInstantiatorFor(entity);
 
 		assertThat(instantiators.getInstantiatorFor(entity)).isEqualTo(customInstantiator);

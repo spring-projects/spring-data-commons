@@ -99,12 +99,12 @@ public class PropertyReferenceException extends RuntimeException {
 	@Override
 	public String getMessage() {
 
-		StringBuilder builder = new StringBuilder(
+		var builder = new StringBuilder(
 				String.format(ERROR_TEMPLATE, propertyName, type.getType().getSimpleName()));
 
-		Collection<String> potentialMatches = getPropertyMatches();
+		var potentialMatches = getPropertyMatches();
 		if (!potentialMatches.isEmpty()) {
-			String matches = StringUtils.collectionToDelimitedString(potentialMatches, ",", "'", "'");
+			var matches = StringUtils.collectionToDelimitedString(potentialMatches, ",", "'", "'");
 			builder.append(String.format(HINTS_TEMPLATE, matches));
 		}
 

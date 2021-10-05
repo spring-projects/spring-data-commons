@@ -63,7 +63,7 @@ class TypeFilterParserUnitTests {
 
 		Resource sampleXmlFile = new ClassPathResource("type-filter-test.xml", TypeFilterParserUnitTests.class);
 
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		var factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 
 		documentElement = factory.newDocumentBuilder().parse(sampleXmlFile.getInputStream()).getDocumentElement();
@@ -72,7 +72,7 @@ class TypeFilterParserUnitTests {
 	@Test
 	void parsesIncludesCorrectly() throws Exception {
 
-		Element element = DomUtils.getChildElementByTagName(documentElement, "firstSample");
+		var element = DomUtils.getChildElementByTagName(documentElement, "firstSample");
 
 		Iterable<TypeFilter> filters = parser.parseTypeFilters(element, Type.INCLUDE);
 		assertThat(filters).hasAtLeastOneElementOfType(AssignableTypeFilter.class);
@@ -81,7 +81,7 @@ class TypeFilterParserUnitTests {
 	@Test
 	void parsesExcludesCorrectly() throws Exception {
 
-		Element element = DomUtils.getChildElementByTagName(documentElement, "secondSample");
+		var element = DomUtils.getChildElementByTagName(documentElement, "secondSample");
 
 		Iterable<TypeFilter> filters = parser.parseTypeFilters(element, Type.EXCLUDE);
 		assertThat(filters).hasAtLeastOneElementOfType(AssignableTypeFilter.class);

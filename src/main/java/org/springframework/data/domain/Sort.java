@@ -193,9 +193,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		Assert.notNull(sort, "Sort must not be null!");
 
-		ArrayList<Order> these = new ArrayList<>(this.toList());
+		var these = new ArrayList<Order>(this.toList());
 
-		for (Order order : sort) {
+		for (var order : sort) {
 			these.add(order);
 		}
 
@@ -211,7 +211,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	@Nullable
 	public Order getOrderFor(String property) {
 
-		for (Order order : this) {
+		for (var order : this) {
 			if (order.getProperty().equals(property)) {
 				return order;
 			}
@@ -239,11 +239,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 			return true;
 		}
 
-		if (!(obj instanceof Sort)) {
+		if (!(obj instanceof Sort that)) {
 			return false;
 		}
-
-		Sort that = (Sort) obj;
 
 		return toList().equals(that.toList());
 	}
@@ -255,7 +253,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	@Override
 	public int hashCode() {
 
-		int result = 17;
+		var result = 17;
 		result = 31 * result + orders.hashCode();
 		return result;
 	}
@@ -607,7 +605,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		@Override
 		public int hashCode() {
 
-			int result = 17;
+			var result = 17;
 
 			result = 31 * result + direction.hashCode();
 			result = 31 * result + property.hashCode();
@@ -628,11 +626,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 				return true;
 			}
 
-			if (!(obj instanceof Order)) {
+			if (!(obj instanceof Order that)) {
 				return false;
 			}
-
-			Order that = (Order) obj;
 
 			return this.direction.equals(that.direction) && this.property.equals(that.property)
 					&& this.ignoreCase == that.ignoreCase && this.nullHandling.equals(that.nullHandling);
@@ -645,7 +641,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		@Override
 		public String toString() {
 
-			String result = String.format("%s: %s", property, direction);
+			var result = String.format("%s: %s", property, direction);
 
 			if (!NullHandling.NATIVE.equals(nullHandling)) {
 				result += ", " + nullHandling;

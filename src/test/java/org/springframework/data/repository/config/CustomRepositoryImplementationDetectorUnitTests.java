@@ -19,12 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
+
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
@@ -60,12 +58,12 @@ class CustomRepositoryImplementationDetectorUnitTests {
 	@Test // DATACMNS-764, DATACMNS-1371
 	void returnsNullWhenNoImplementationFound() {
 
-		RepositoryConfiguration mock = mock(RepositoryConfiguration.class);
+		var mock = mock(RepositoryConfiguration.class);
 
-		ImplementationLookupConfiguration lookup = configuration
+		var lookup = configuration
 				.forRepositoryConfiguration(configFor(NoImplementationRepository.class));
 
-		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(lookup);
+		var beanDefinition = detector.detectCustomImplementation(lookup);
 
 		assertThat(beanDefinition).isEmpty();
 	}
@@ -73,10 +71,10 @@ class CustomRepositoryImplementationDetectorUnitTests {
 	@Test // DATACMNS-764, DATACMNS-1371
 	void returnsBeanDefinitionWhenOneImplementationIsFound() {
 
-		ImplementationLookupConfiguration lookup = configuration
+		var lookup = configuration
 				.forRepositoryConfiguration(configFor(SingleSampleRepository.class));
 
-		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(lookup);
+		var beanDefinition = detector.detectCustomImplementation(lookup);
 
 		assertThat(beanDefinition).hasValueSatisfying(
 				it -> assertThat(it.getBeanClassName()).isEqualTo(SingleSampleRepositoryTestImpl.class.getName()));
@@ -88,12 +86,12 @@ class CustomRepositoryImplementationDetectorUnitTests {
 		when(configuration.generateBeanName(any())).then(it -> {
 
 			BeanDefinition definition = it.getArgument(0);
-			String className = definition.getBeanClassName();
+			var className = definition.getBeanClassName();
 
 			return className.contains("$First$") ? "canonicalSampleRepositoryTestImpl" : "otherBeanName";
 		});
 
-		ImplementationLookupConfiguration lookup = configuration
+		var lookup = configuration
 				.forRepositoryConfiguration(configFor(CanonicalSampleRepository.class));
 
 		assertThat(detector.detectCustomImplementation(lookup)) //
@@ -106,7 +104,7 @@ class CustomRepositoryImplementationDetectorUnitTests {
 
 		assertThatIllegalStateException().isThrownBy(() -> {
 
-			ImplementationLookupConfiguration lookup = mock(ImplementationLookupConfiguration.class);
+			var lookup = mock(ImplementationLookupConfiguration.class);
 
 			when(lookup.hasMatchingBeanName(any())).thenReturn(true);
 			when(lookup.matches(any())).thenReturn(true);

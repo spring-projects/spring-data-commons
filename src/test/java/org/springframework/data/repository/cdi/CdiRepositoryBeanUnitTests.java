@@ -27,7 +27,6 @@ import jakarta.inject.Named;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -97,7 +96,7 @@ class CdiRepositoryBeanUnitTests {
 	@Test
 	void returnsBasicMetadata() {
 
-		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class,
+		var bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS, SampleRepository.class,
 				beanManager);
 
 		assertThat(bean.getBeanClass()).isEqualTo(SampleRepository.class);
@@ -108,10 +107,10 @@ class CdiRepositoryBeanUnitTests {
 	@Test
 	void returnsAllImplementedTypes() {
 
-		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS, SampleRepository.class,
+		var bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS, SampleRepository.class,
 				beanManager);
 
-		Set<Type> types = bean.getTypes();
+		var types = bean.getTypes();
 		assertThat(types).containsExactlyInAnyOrder(SampleRepository.class, Repository.class);
 	}
 
@@ -119,7 +118,7 @@ class CdiRepositoryBeanUnitTests {
 	@SuppressWarnings("unchecked")
 	void detectsStereotypes() {
 
-		DummyCdiRepositoryBean<StereotypedSampleRepository> bean = new DummyCdiRepositoryBean<>(NO_ANNOTATIONS,
+		var bean = new DummyCdiRepositoryBean<StereotypedSampleRepository>(NO_ANNOTATIONS,
 				StereotypedSampleRepository.class, beanManager);
 
 		assertThat(bean.getStereotypes()).containsExactly(StereotypeAnnotation.class);
@@ -146,9 +145,9 @@ class CdiRepositoryBeanUnitTests {
 	@Test // DATACMNS-764, DATACMNS-1754
 	void passesCorrectBeanNameToTheImplementationDetector() {
 
-		CustomRepositoryImplementationDetector detector = mock(CustomRepositoryImplementationDetector.class);
+		var detector = mock(CustomRepositoryImplementationDetector.class);
 
-		CdiRepositoryBean<SampleRepository> bean = new CdiRepositoryBean<SampleRepository>(SINGLE_ANNOTATION,
+		var bean = new CdiRepositoryBean<SampleRepository>(SINGLE_ANNOTATION,
 				SampleRepository.class, beanManager, Optional.of(detector)) {
 
 			@Override
@@ -160,12 +159,12 @@ class CdiRepositoryBeanUnitTests {
 
 		bean.create(mock(CreationalContext.class), SampleRepository.class);
 
-		ArgumentCaptor<ImplementationLookupConfiguration> captor = ArgumentCaptor
+		var captor = ArgumentCaptor
 				.forClass(ImplementationLookupConfiguration.class);
 
 		verify(detector, times(2)).detectCustomImplementation(captor.capture());
 
-		ImplementationLookupConfiguration configuration = captor.getAllValues().get(0);
+		var configuration = captor.getAllValues().get(0);
 
 		assertThat(configuration.getImplementationBeanName()).isEqualTo("cdiRepositoryBeanUnitTests.SampleRepositoryImpl");
 		assertThat(configuration.getImplementationClassName()).isEqualTo("SampleRepositoryImpl");
@@ -174,7 +173,7 @@ class CdiRepositoryBeanUnitTests {
 	@Test // DATACMNS-1233
 	void appliesRepositoryConfiguration() {
 
-		DummyCdiRepositoryBean<SampleRepository> bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
+		var bean = new DummyCdiRepositoryBean<SampleRepository>(NO_ANNOTATIONS,
 				SampleRepository.class, beanManager) {
 			@Override
 			protected CdiRepositoryConfiguration lookupConfiguration(BeanManager beanManager, Set qualifiers) {

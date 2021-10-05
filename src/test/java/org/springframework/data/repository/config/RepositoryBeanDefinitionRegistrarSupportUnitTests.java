@@ -81,7 +81,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@Test // DATACMNS-1754
 	void registersBeanDefinitionForNestedRepositories() {
 
-		AnnotationMetadata metadata = AnnotationMetadata.introspect(NestedRepositoriesConfiguration.class);
+		var metadata = AnnotationMetadata.introspect(NestedRepositoriesConfiguration.class);
 
 		registrar.registerBeanDefinitions(metadata, registry);
 
@@ -118,7 +118,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 		environment.setActiveProfiles("profile");
 
-		DummyRegistrar registrar = new DummyRegistrar();
+		var registrar = new DummyRegistrar();
 		registrar.setEnvironment(environment);
 		registrar.registerBeanDefinitions(metadata, registry);
 
@@ -131,7 +131,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 		BeanNameGenerator delegate = new AnnotationBeanNameGenerator();
 
-		DummyRegistrar registrar = new DummyRegistrar();
+		var registrar = new DummyRegistrar();
 		registrar.setEnvironment(environment);
 		registrar.registerBeanDefinitions(metadata, registry,
 				(definition, registry) -> delegate.generateBeanName(definition, registry).concat("Hello"));
@@ -141,14 +141,14 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 	private void assertBeanDefinitionRegisteredFor(String... names) {
 
-		for (String name : names) {
+		for (var name : names) {
 			verify(registry, times(1)).registerBeanDefinition(eq(name), any(BeanDefinition.class));
 		}
 	}
 
 	private void assertNoBeanDefinitionRegisteredFor(String... names) {
 
-		for (String name : names) {
+		for (var name : names) {
 			verify(registry, times(0)).registerBeanDefinition(eq(name), any(BeanDefinition.class));
 		}
 	}

@@ -49,9 +49,9 @@ class EntityCallbackDiscovererUnitTests {
 	@Test // DATACMNS-1467
 	void shouldDiscoverCallbackType() {
 
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
+		var ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
-		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer(ctx);
+		var discoverer = new EntityCallbackDiscoverer(ctx);
 
 		Collection<EntityCallback<Person>> entityCallbacks = discoverer.getEntityCallbacks(PersonDocument.class,
 				ResolvableType.forType(BeforeSaveCallback.class));
@@ -62,17 +62,17 @@ class EntityCallbackDiscovererUnitTests {
 	@Test // DATACMNS-1735
 	void shouldDiscoverCallbackTypeConcurrencyCache() throws InterruptedException {
 
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
+		var ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
-		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer(ctx);
-		int poolSize = Runtime.getRuntime().availableProcessors();
-		ThreadPoolExecutor executor = new ThreadPoolExecutor(poolSize, poolSize, 20, TimeUnit.SECONDS,
+		var discoverer = new EntityCallbackDiscoverer(ctx);
+		var poolSize = Runtime.getRuntime().availableProcessors();
+		var executor = new ThreadPoolExecutor(poolSize, poolSize, 20, TimeUnit.SECONDS,
 				new LinkedBlockingDeque<>());
-		CountDownLatch startLatch = new CountDownLatch(poolSize);
-		CountDownLatch doneLatch = new CountDownLatch(poolSize);
+		var startLatch = new CountDownLatch(poolSize);
+		var doneLatch = new CountDownLatch(poolSize);
 
 		List<Exception> exceptions = new CopyOnWriteArrayList<>();
-		for (int i = 0; i < poolSize; i++) {
+		for (var i = 0; i < poolSize; i++) {
 			executor.submit(() -> {
 				try {
 					startLatch.countDown();
@@ -97,9 +97,9 @@ class EntityCallbackDiscovererUnitTests {
 	@Test // DATACMNS-1467
 	void shouldDiscoverCallbackTypeByName() {
 
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
+		var ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
-		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer(ctx);
+		var discoverer = new EntityCallbackDiscoverer(ctx);
 		discoverer.clear();
 		discoverer.addEntityCallbackBean("namedCallback");
 
@@ -112,7 +112,7 @@ class EntityCallbackDiscovererUnitTests {
 	@Test // DATACMNS-1467
 	void shouldSupportCallbackTypes() {
 
-		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer();
+		var discoverer = new EntityCallbackDiscoverer();
 
 		assertThat(discoverer.supportsEvent(MyBeforeSaveCallback.class, ResolvableType.forClass(Person.class))).isTrue();
 		assertThat(discoverer.supportsEvent(MyBeforeSaveCallback.class, ResolvableType.forClass(Child.class))).isTrue();
@@ -126,9 +126,9 @@ class EntityCallbackDiscovererUnitTests {
 	@Test // DATACMNS-1467
 	void shouldSupportInstanceCallbackTypes() {
 
-		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer();
+		var discoverer = new EntityCallbackDiscoverer();
 
-		MyBeforeSaveCallback callback = new MyBeforeSaveCallback();
+		var callback = new MyBeforeSaveCallback();
 
 		assertThat(discoverer.supportsEvent(callback, ResolvableType.forClass(Person.class),
 				ResolvableType.forClass(BeforeSaveCallback.class))).isTrue();
@@ -146,9 +146,9 @@ class EntityCallbackDiscovererUnitTests {
 	@Test // DATACMNS-1467
 	void shouldDispatchInOrder() {
 
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(OrderedConfig.class);
+		var ctx = new AnnotationConfigApplicationContext(OrderedConfig.class);
 
-		EntityCallbackDiscoverer discoverer = new EntityCallbackDiscoverer(ctx);
+		var discoverer = new EntityCallbackDiscoverer(ctx);
 
 		Collection<EntityCallback<Person>> entityCallbacks = discoverer.getEntityCallbacks(PersonDocument.class,
 				ResolvableType.forType(EntityCallback.class));

@@ -52,7 +52,7 @@ class XmlBeamHttpMessageConverterUnitTests {
 
 		preparePayload("<user><firstname>Dave</firstname><lastname>Matthews</lastname></user>");
 
-		Customer customer = (Customer) converter.read(Customer.class, message);
+		var customer = (Customer) converter.read(Customer.class, message);
 
 		assertThat(customer.getFirstname()).isEqualTo("Dave");
 		assertThat(customer.getLastname()).isEqualTo("Matthews");
@@ -63,7 +63,7 @@ class XmlBeamHttpMessageConverterUnitTests {
 
 		preparePayload("<user><username><firstname>Dave</firstname><lastname>Matthews</lastname></username></user>");
 
-		Customer customer = (Customer) converter.read(Customer.class, message);
+		var customer = (Customer) converter.read(Customer.class, message);
 
 		assertThat(customer.getFirstname()).isEqualTo("Dave");
 		assertThat(customer.getLastname()).isEqualTo("Matthews");
@@ -94,10 +94,14 @@ class XmlBeamHttpMessageConverterUnitTests {
 	@Test // DATACMNS-1292
 	void doesNotSupportEntityExpansion() throws Exception {
 
-		preparePayload("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" //
-				+ "<!DOCTYPE foo [\n" //
-				+ "<!ELEMENT foo ANY >\n" //
-				+ "<!ENTITY xxe \"Bar\" >]><user><firstname>&xxe;</firstname><lastname>Matthews</lastname></user>");
+		//
+		//
+		//
+		preparePayload("""
+				<?xml version="1.0" encoding="ISO-8859-1"?>
+				<!DOCTYPE foo [
+				<!ELEMENT foo ANY >
+				<!ENTITY xxe "Bar" >]><user><firstname>&xxe;</firstname><lastname>Matthews</lastname></user>""");
 
 		assertThatExceptionOfType(HttpMessageNotReadableException.class) //
 				.isThrownBy(() -> converter.read(Customer.class, message)) //

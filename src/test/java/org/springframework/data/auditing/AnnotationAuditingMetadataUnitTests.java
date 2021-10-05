@@ -41,7 +41,7 @@ class AnnotationAuditingMetadataUnitTests {
 	@Test
 	void checkAnnotationDiscovery() {
 
-		AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
+		var metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
 
 		assertThat(metadata).isNotNull();
 		assertThat(metadata.getCreatedByField()).hasValue(createdByField);
@@ -53,17 +53,17 @@ class AnnotationAuditingMetadataUnitTests {
 	@Test
 	void checkCaching() {
 
-		AnnotationAuditingMetadata firstCall = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
+		var firstCall = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
 		assertThat(firstCall).isNotNull();
 
-		AnnotationAuditingMetadata secondCall = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
+		var secondCall = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
 		assertThat(firstCall).isEqualTo(secondCall);
 	}
 
 	@Test
 	void checkIsAuditable() {
 
-		AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
+		var metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
 		assertThat(metadata).isNotNull();
 		assertThat(metadata.isAuditable()).isTrue();
 

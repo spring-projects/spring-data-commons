@@ -46,7 +46,7 @@ public class SampleConfiguration {
 	RepositoryFactoryBeanSupport<Repository<Product, Long>, Product, Long> productRepositoryFactory(
 			ProductRepository productRepository) {
 
-		DummyRepositoryFactoryBean<Repository<Product, Long>, Product, Long> factory = new DummyRepositoryFactoryBean<>(
+		var factory = new DummyRepositoryFactoryBean<Repository<Product, Long>, Product, Long>(
 				ProductRepository.class);
 		factory.setCustomImplementation(productRepository);
 

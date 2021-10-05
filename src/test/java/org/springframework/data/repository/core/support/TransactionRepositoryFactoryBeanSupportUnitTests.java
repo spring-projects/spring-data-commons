@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.*;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.aop.Advisor;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.data.repository.CrudRepository;
@@ -38,23 +38,22 @@ class TransactionRepositoryFactoryBeanSupportUnitTests {
 	@Test // DATACMNS-656
 	void disablesDefaultTransactionsIfConfigured() {
 
-		SampleTransactionalRepositoryFactoryBean factoryBean = new SampleTransactionalRepositoryFactoryBean();
+		var factoryBean = new SampleTransactionalRepositoryFactoryBean();
 		factoryBean.setEnableDefaultTransactions(false);
 		factoryBean.setBeanFactory(new DefaultListableBeanFactory());
 		factoryBean.afterPropertiesSet();
 
-		CrudRepository<Object, Long> repository = factoryBean.getObject();
+		var repository = factoryBean.getObject();
 
-		Advisor[] advisors = ((Advised) repository).getAdvisors();
-		boolean found = false;
+		var advisors = ((Advised) repository).getAdvisors();
+		var found = false;
 
-		for (Advisor advisor : advisors) {
+		for (var advisor : advisors) {
 
-			if (advisor.getAdvice() instanceof TransactionInterceptor) {
+			if (advisor.getAdvice() instanceof TransactionInterceptor interceptor) {
 
 				found = true;
 
-				TransactionInterceptor interceptor = (TransactionInterceptor) advisor.getAdvice();
 				assertThat(getField(interceptor.getTransactionAttributeSource(), "enableDefaultTransactions")).isEqualTo(false);
 				break;
 			}
@@ -66,7 +65,7 @@ class TransactionRepositoryFactoryBeanSupportUnitTests {
 	@Test // DATACMNS-880
 	void propagatesBeanFactoryToSuperClass() {
 
-		SampleTransactionalRepositoryFactoryBean factoryBean = new SampleTransactionalRepositoryFactoryBean();
+		var factoryBean = new SampleTransactionalRepositoryFactoryBean();
 		factoryBean.setBeanFactory(new DefaultListableBeanFactory());
 
 		assertThat(ReflectionTestUtils.getField(factoryBean, RepositoryFactoryBeanSupport.class, "beanFactory"))

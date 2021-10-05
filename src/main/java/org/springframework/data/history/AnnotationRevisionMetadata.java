@@ -118,7 +118,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 
 		return Lazy.of(() -> {
 
-			AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(annotationType);
+			var callback = new AnnotationDetectionFieldCallback(annotationType);
 			ReflectionUtils.doWithFields(entity.getClass(), callback);
 			return Optional.ofNullable(callback.getValue(entity));
 		});
@@ -138,8 +138,8 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 			return Instant.ofEpochMilli((Long) timestamp);
 		}
 
-		if (Date.class.isInstance(timestamp)) {
-			return Date.class.cast(timestamp).toInstant();
+		if (timestamp instanceof Date) {
+			return ((Date) timestamp).toInstant();
 		}
 
 		throw new IllegalArgumentException(String.format("Can't convert %s to Instant!", timestamp));

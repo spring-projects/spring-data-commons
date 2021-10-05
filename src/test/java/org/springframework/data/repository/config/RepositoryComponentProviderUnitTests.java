@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -45,8 +44,8 @@ class RepositoryComponentProviderUnitTests {
 	@Test
 	void findsAnnotatedRepositoryInterface() {
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
-		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.sample");
+		var provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
+		var components = provider.findCandidateComponents("org.springframework.data.repository.sample");
 
 		assertThat(components).hasSize(4);
 		assertThat(components).extracting(BeanDefinition::getBeanClassName)
@@ -58,8 +57,8 @@ class RepositoryComponentProviderUnitTests {
 
 		List<? extends TypeFilter> filters = Collections.singletonList(new AssignableTypeFilter(MyOtherRepository.class));
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(filters, registry);
-		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository");
+		var provider = new RepositoryComponentProvider(filters, registry);
+		var components = provider.findCandidateComponents("org.springframework.data.repository");
 
 		assertThat(components).hasSize(1);
 		assertThat(components).extracting(BeanDefinition::getBeanClassName).contains(MyOtherRepository.class.getName());
@@ -68,11 +67,11 @@ class RepositoryComponentProviderUnitTests {
 	@Test // DATACMNS-90
 	void shouldConsiderNestedRepositoryInterfacesIfEnabled() {
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
+		var provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
 		provider.setConsiderNestedRepositoryInterfaces(true);
 
-		Set<BeanDefinition> components = provider.findCandidateComponents("org.springframework.data.repository.config");
-		String nestedRepositoryClassName = "org.springframework.data.repository.config.RepositoryComponentProviderUnitTests$MyNestedRepository";
+		var components = provider.findCandidateComponents("org.springframework.data.repository.config");
+		var nestedRepositoryClassName = "org.springframework.data.repository.config.RepositoryComponentProviderUnitTests$MyNestedRepository";
 
 		assertThat(components.size()).isGreaterThanOrEqualTo(1);
 		assertThat(components).extracting(BeanDefinition::getBeanClassName).contains(nestedRepositoryClassName);
@@ -87,7 +86,7 @@ class RepositoryComponentProviderUnitTests {
 	@Test // DATACMNS-1098
 	void exposesBeanDefinitionRegistry() {
 
-		RepositoryComponentProvider provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
+		var provider = new RepositoryComponentProvider(Collections.emptyList(), registry);
 
 		assertThat(provider.getRegistry()).isEqualTo(registry);
 	}

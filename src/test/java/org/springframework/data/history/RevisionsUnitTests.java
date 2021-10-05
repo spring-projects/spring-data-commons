@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -58,8 +57,8 @@ class RevisionsUnitTests {
 	@Test
 	void iteratesInCorrectOrder() {
 
-		Revisions<Integer, Object> revisions = Revisions.of(Arrays.asList(firstRevision, secondRevision));
-		Iterator<Revision<Integer, Object>> iterator = revisions.iterator();
+		var revisions = Revisions.of(Arrays.asList(firstRevision, secondRevision));
+		var iterator = revisions.iterator();
 
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo(firstRevision);
@@ -77,8 +76,8 @@ class RevisionsUnitTests {
 	@Test
 	void iteratesReversedRevisionsInCorrectOrder() {
 
-		Revisions<Integer, Object> revisions = Revisions.of(Arrays.asList(firstRevision, secondRevision));
-		Iterator<Revision<Integer, Object>> iterator = revisions.reverse().iterator();
+		var revisions = Revisions.of(Arrays.asList(firstRevision, secondRevision));
+		var iterator = revisions.reverse().iterator();
 
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo(secondRevision);
@@ -90,8 +89,8 @@ class RevisionsUnitTests {
 	@Test
 	void forcesInvalidlyOrderedRevisionsToBeOrdered() {
 
-		Revisions<Integer, Object> revisions = Revisions.of(Arrays.asList(secondRevision, firstRevision));
-		Iterator<Revision<Integer, Object>> iterator = revisions.iterator();
+		var revisions = Revisions.of(Arrays.asList(secondRevision, firstRevision));
+		var iterator = revisions.iterator();
 
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo(firstRevision);

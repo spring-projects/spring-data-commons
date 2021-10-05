@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.PropertySpecifier;
-import org.springframework.data.domain.ExampleMatcher.StringMatcher;
 
 /**
  * Accessor for the {@link ExampleMatcher} to use in modules that support query by example (QBE) querying.
@@ -87,8 +86,8 @@ public class ExampleMatcherAccessor {
 			return matcher.getDefaultStringMatcher();
 		}
 
-		ExampleMatcher.PropertySpecifier specifier = getPropertySpecifier(path);
-		StringMatcher stringMatcher = specifier.getStringMatcher();
+		var specifier = getPropertySpecifier(path);
+		var stringMatcher = specifier.getStringMatcher();
 
 		return stringMatcher != null ? stringMatcher : matcher.getDefaultStringMatcher();
 	}
@@ -138,8 +137,8 @@ public class ExampleMatcherAccessor {
 			return matcher.isIgnoreCaseEnabled();
 		}
 
-		ExampleMatcher.PropertySpecifier specifier = getPropertySpecifier(path);
-		Boolean ignoreCase = specifier.getIgnoreCase();
+		var specifier = getPropertySpecifier(path);
+		var ignoreCase = specifier.getIgnoreCase();
 
 		return ignoreCase != null ? ignoreCase : matcher.isIgnoreCaseEnabled();
 	}

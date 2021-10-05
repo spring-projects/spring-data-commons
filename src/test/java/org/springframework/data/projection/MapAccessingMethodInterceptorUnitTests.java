@@ -51,8 +51,8 @@ class MapAccessingMethodInterceptorUnitTests {
 		when(invocation.proceed()).thenReturn(map.toString());
 		when(invocation.getMethod()).thenReturn(Object.class.getMethod("toString"));
 
-		MapAccessingMethodInterceptor interceptor = new MapAccessingMethodInterceptor(map);
-		Object result = interceptor.invoke(invocation);
+		var interceptor = new MapAccessingMethodInterceptor(map);
+		var result = interceptor.invoke(invocation);
 
 		assertThat(result).isEqualTo(map.toString());
 	}
@@ -65,7 +65,7 @@ class MapAccessingMethodInterceptorUnitTests {
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("setName", String.class));
 		when(invocation.getArguments()).thenReturn(new Object[] { "Foo" });
 
-		Object result = new MapAccessingMethodInterceptor(map).invoke(invocation);
+		var result = new MapAccessingMethodInterceptor(map).invoke(invocation);
 
 		assertThat(result).isNull();
 		assertThat(map.get("name")).isEqualTo("Foo");
@@ -79,7 +79,7 @@ class MapAccessingMethodInterceptorUnitTests {
 
 		when(invocation.getMethod()).thenReturn(Sample.class.getMethod("getName"));
 
-		Object result = new MapAccessingMethodInterceptor(map).invoke(invocation);
+		var result = new MapAccessingMethodInterceptor(map).invoke(invocation);
 
 		assertThat(result).isEqualTo("Foo");
 	}

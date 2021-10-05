@@ -17,7 +17,6 @@ package org.springframework.data.projection;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -34,7 +33,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.data.type.MethodsMetadata;
-import org.springframework.data.type.classreading.MethodsMetadataReader;
 import org.springframework.data.type.classreading.MethodsMetadataReaderFactory;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
@@ -117,7 +115,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 */
 	private static boolean hasDefaultGetter(PropertyDescriptor descriptor) {
 
-		Method method = descriptor.getReadMethod();
+		var method = descriptor.getReadMethod();
 
 		return method != null && method.isDefault();
 	}
@@ -167,13 +165,13 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		 */
 		private Stream<PropertyDescriptor> collectDescriptors() {
 
-			Stream<PropertyDescriptor> allButDefaultGetters = Arrays.stream(BeanUtils.getPropertyDescriptors(type)) //
+			var allButDefaultGetters = Arrays.stream(BeanUtils.getPropertyDescriptors(type)) //
 					.filter(it -> !hasDefaultGetter(it));
 
-			Stream<PropertyDescriptor> ownDescriptors = metadata.map(it -> filterAndOrder(allButDefaultGetters, it))
+			var ownDescriptors = metadata.map(it -> filterAndOrder(allButDefaultGetters, it))
 					.orElse(allButDefaultGetters);
 
-			Stream<PropertyDescriptor> superTypeDescriptors = metadata.map(this::fromMetadata) //
+			var superTypeDescriptors = metadata.map(this::fromMetadata) //
 					.orElseGet(this::fromType) //
 					.flatMap(it -> new PropertyDescriptorSource(it).collectDescriptors());
 
@@ -191,7 +189,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		private static Stream<PropertyDescriptor> filterAndOrder(Stream<PropertyDescriptor> source,
 				MethodsMetadata metadata) {
 
-			Map<String, Integer> orderedMethods = getMethodOrder(metadata);
+			var orderedMethods = getMethodOrder(metadata);
 
 			if (orderedMethods.isEmpty()) {
 				return source;
@@ -232,8 +230,8 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 			try {
 
-				MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory(type.getClassLoader());
-				MethodsMetadataReader metadataReader = factory.getMetadataReader(ClassUtils.getQualifiedName(type));
+				var factory = new MethodsMetadataReaderFactory(type.getClassLoader());
+				var metadataReader = factory.getMetadataReader(ClassUtils.getQualifiedName(type));
 
 				return Optional.of(metadataReader.getMethodsMetadata());
 
@@ -268,7 +266,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		 */
 		private static Map<String, Integer> getMethodOrder(MethodsMetadata metadata) {
 
-			List<String> methods = metadata.getMethods() //
+			var methods = metadata.getMethods() //
 					.stream() //
 					.map(MethodMetadata::getMethodName) //
 					.distinct() //

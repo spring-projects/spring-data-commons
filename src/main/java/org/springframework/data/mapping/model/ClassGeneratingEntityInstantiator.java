@@ -17,7 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.springframework.asm.Opcodes.*;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,7 +79,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		EntityInstantiator instantiator = this.entityInstantiators.get(entity.getTypeInformation());
+		var instantiator = this.entityInstantiators.get(entity.getTypeInformation());
 
 		if (instantiator == null) {
 			instantiator = potentiallyCreateAndRegisterEntityInstantiator(entity);
@@ -96,8 +95,8 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	private synchronized EntityInstantiator potentiallyCreateAndRegisterEntityInstantiator(
 			PersistentEntity<?, ?> entity) {
 
-		Map<TypeInformation<?>, EntityInstantiator> map = this.entityInstantiators;
-		EntityInstantiator instantiator = map.get(entity.getTypeInformation());
+		var map = this.entityInstantiators;
+		var instantiator = map.get(entity.getTypeInformation());
 
 		if (instantiator != null) {
 			return instantiator;
@@ -164,7 +163,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return true;
 		}
 
-		Class<?> type = entity.getType();
+		var type = entity.getType();
 
 		if (type.isInterface() //
 				|| type.isArray() //
@@ -174,7 +173,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return true;
 		}
 
-		PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
+		var persistenceConstructor = entity.getPersistenceConstructor();
 		if (persistenceConstructor == null || Modifier.isPrivate(persistenceConstructor.getConstructor().getModifiers())) {
 			return true;
 		}
@@ -245,7 +244,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			Object[] params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+			var params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
 
 			try {
 				return (T) instantiator.newInstance(params);
@@ -269,9 +268,9 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return allocateArguments(0);
 		}
 
-		Object[] params = allocateArguments(constructor.getConstructor().getParameterCount());
+		var params = allocateArguments(constructor.getConstructor().getParameterCount());
 
-		int index = 0;
+		var index = 0;
 		for (Parameter<?, P> parameter : constructor.getParameters()) {
 			params[index++] = provider.getParameterValue(parameter);
 		}
@@ -316,7 +315,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			Object[] params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+			var params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
 
 			throw new MappingInstantiationException(entity, Arrays.asList(params),
 					new BeanInstantiationException(typeToCreate, "Class is abstract"));
@@ -382,9 +381,9 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public Class<?> generateCustomInstantiatorClass(PersistentEntity<?, ?> entity,
 				@Nullable PreferredConstructor<?, ?> constructor) {
 
-			String className = generateClassName(entity);
-			Class<?> type = entity.getType();
-			ClassLoader classLoader = type.getClassLoader();
+			var className = generateClassName(entity);
+			var type = entity.getType();
+			var classLoader = type.getClassLoader();
 
 			if (ClassUtils.isPresent(className, classLoader)) {
 
@@ -395,7 +394,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 				}
 			}
 
-			byte[] bytecode = generateBytecode(className, entity, constructor);
+			var bytecode = generateBytecode(className, entity, constructor);
 
 			try {
 				return ReflectUtils.defineClass(className, bytecode, classLoader, type.getProtectionDomain(), type);
@@ -423,7 +422,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity,
 				@Nullable PreferredConstructor<?, ?> constructor) {
 
-			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+			var cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
 			cw.visit(Opcodes.V1_6, ACC_PUBLIC + ACC_SUPER, internalClassName.replace('.', '/'), null, JAVA_LANG_OBJECT,
 					IMPLEMENTED_INTERFACES);
@@ -439,7 +438,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		private void visitDefaultConstructor(ClassWriter cw) {
 
-			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, INIT, "()V", null, null);
+			var mv = cw.visitMethod(ACC_PUBLIC, INIT, "()V", null, null);
 			mv.visitCode();
 			mv.visitVarInsn(ALOAD, 0);
 			mv.visitMethodInsn(INVOKESPECIAL, JAVA_LANG_OBJECT, INIT, "()V", false);
@@ -458,9 +457,9 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		private void visitCreateMethod(ClassWriter cw, PersistentEntity<?, ?> entity,
 				@Nullable PreferredConstructor<?, ?> constructor) {
 
-			String entityTypeResourcePath = Type.getInternalName(entity.getType());
+			var entityTypeResourcePath = Type.getInternalName(entity.getType());
 
-			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, CREATE_METHOD_NAME,
+			var mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, CREATE_METHOD_NAME,
 					"([Ljava/lang/Object;)Ljava/lang/Object;", null, null);
 			mv.visitCode();
 			mv.visitTypeInsn(NEW, entityTypeResourcePath);
@@ -468,11 +467,11 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 			if (constructor != null) {
 
-				Constructor<?> ctor = constructor.getConstructor();
-				Class<?>[] parameterTypes = ctor.getParameterTypes();
+				var ctor = constructor.getConstructor();
+				var parameterTypes = ctor.getParameterTypes();
 				List<? extends Parameter<Object, ?>> parameters = constructor.getParameters();
 
-				for (int i = 0; i < parameterTypes.length; i++) {
+				for (var i = 0; i < parameterTypes.length; i++) {
 
 					mv.visitVarInsn(ALOAD, 1);
 
@@ -483,7 +482,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 					if (parameterTypes[i].isPrimitive()) {
 
 						mv.visitInsn(DUP);
-						String parameterName = parameters.size() > i ? parameters.get(i).getName() : null;
+						var parameterName = parameters.size() > i ? parameters.get(i).getName() : null;
 
 						insertAssertNotNull(mv, parameterName == null ? String.format("at index %d", i) : parameterName);
 						insertUnboxInsns(mv, Type.getType(parameterTypes[i]).toString().charAt(0), "");

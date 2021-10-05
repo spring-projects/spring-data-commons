@@ -32,7 +32,7 @@ class PersistableIsNewStrategyUnitTests {
 	@Test
 	void invokesPersistableIsNewForTest() {
 
-		PersistableEntity entity = new PersistableEntity();
+		var entity = new PersistableEntity();
 		assertThat(strategy.isNew(entity)).isTrue();
 
 		entity.isNew = false;

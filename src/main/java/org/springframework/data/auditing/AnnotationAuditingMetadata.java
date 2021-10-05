@@ -101,7 +101,7 @@ final class AnnotationAuditingMetadata {
 				return;
 			}
 
-			Class<?> type = it.getType();
+			var type = it.getType();
 
 			if (Jsr310Converters.supports(type)) {
 				return;

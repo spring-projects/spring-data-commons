@@ -165,7 +165,7 @@ public class QSort extends Sort implements Serializable {
 	 */
 	private static String preparePropertyPath(Path<?> path) {
 
-		Path<?> root = path.getRoot();
+		var root = path.getRoot();
 
 		return root == null || path.equals(root) ? path.toString()
 				: path.toString().substring(root.toString().length() + 1);

@@ -52,10 +52,10 @@ class AbstractEntityInformationUnitTests {
 	@Test // DATACMNS-357
 	void detectsNewStateForPrimitiveIds() {
 
-		CustomEntityInformation<PrimitiveIdEntity, Serializable> fooEn = new CustomEntityInformation<>(
+		var fooEn = new CustomEntityInformation<PrimitiveIdEntity, Serializable>(
 				PrimitiveIdEntity.class);
 
-		PrimitiveIdEntity entity = new PrimitiveIdEntity();
+		var entity = new PrimitiveIdEntity();
 		assertThat(fooEn.isNew(entity)).isTrue();
 
 		entity.id = 5L;
@@ -65,10 +65,10 @@ class AbstractEntityInformationUnitTests {
 	@Test // DATACMNS-357
 	void detectsNewStateForPrimitiveWrapperIds() {
 
-		CustomEntityInformation<PrimitiveWrapperIdEntity, Serializable> fooEn = new CustomEntityInformation<>(
+		var fooEn = new CustomEntityInformation<PrimitiveWrapperIdEntity, Serializable>(
 				PrimitiveWrapperIdEntity.class);
 
-		PrimitiveWrapperIdEntity entity = new PrimitiveWrapperIdEntity();
+		var entity = new PrimitiveWrapperIdEntity();
 		assertThat(fooEn.isNew(entity)).isTrue();
 
 		entity.id = 5L;

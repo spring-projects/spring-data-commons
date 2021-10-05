@@ -43,7 +43,7 @@ class ChainedTransactionManagerTests {
 	@Test
 	void shouldCompleteSuccessfully() {
 
-		TestPlatformTransactionManager transactionManager = createNonFailingTransactionManager("single");
+		var transactionManager = createNonFailingTransactionManager("single");
 		setupTransactionManagers(transactionManager);
 
 		createAndCommitTransaction();
@@ -64,8 +64,8 @@ class ChainedTransactionManagerTests {
 	@Test
 	void shouldCommitAllRegisteredTransactionManagers() {
 
-		TestPlatformTransactionManager first = createNonFailingTransactionManager("first");
-		TestPlatformTransactionManager second = createNonFailingTransactionManager("second");
+		var first = createNonFailingTransactionManager("first");
+		var second = createNonFailingTransactionManager("second");
 
 		setupTransactionManagers(first, second);
 		createAndCommitTransaction();
@@ -77,8 +77,8 @@ class ChainedTransactionManagerTests {
 	@Test
 	void shouldCommitInReverseOrder() {
 
-		TestPlatformTransactionManager first = createNonFailingTransactionManager("first");
-		TestPlatformTransactionManager second = createNonFailingTransactionManager("second");
+		var first = createNonFailingTransactionManager("first");
+		var second = createNonFailingTransactionManager("second");
 
 		setupTransactionManagers(first, second);
 		createAndCommitTransaction();
@@ -100,8 +100,8 @@ class ChainedTransactionManagerTests {
 	@Test
 	void shouldRollbackAllTransactionManagers() {
 
-		TestPlatformTransactionManager first = createNonFailingTransactionManager("first");
-		TestPlatformTransactionManager second = createNonFailingTransactionManager("second");
+		var first = createNonFailingTransactionManager("first");
+		var second = createNonFailingTransactionManager("second");
 
 		setupTransactionManagers(first, second);
 		createAndRollbackTransaction();
@@ -125,12 +125,12 @@ class ChainedTransactionManagerTests {
 	}
 
 	private void createAndRollbackTransaction() {
-		MultiTransactionStatus transaction = tm.getTransaction(new DefaultTransactionDefinition());
+		var transaction = tm.getTransaction(new DefaultTransactionDefinition());
 		tm.rollback(transaction);
 	}
 
 	private void createAndCommitTransaction() {
-		MultiTransactionStatus transaction = tm.getTransaction(new DefaultTransactionDefinition());
+		var transaction = tm.getTransaction(new DefaultTransactionDefinition());
 		tm.commit(transaction);
 	}
 

@@ -15,9 +15,6 @@
  */
 package org.springframework.data.web;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -79,7 +76,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
-		MethodParameter pageableParameter = findMatchingPageableParameter(parameter);
+		var pageableParameter = findMatchingPageableParameter(parameter);
 
 		if (pageableParameter != null) {
 			return new MethodParameterAwarePagedResourcesAssembler<>(pageableParameter, resolver, null);
@@ -98,15 +95,15 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 	@Nullable
 	private static MethodParameter findMatchingPageableParameter(MethodParameter parameter) {
 
-		Method method = parameter.getMethod();
+		var method = parameter.getMethod();
 
 		if (method == null) {
 			throw new IllegalArgumentException(String.format("Could not obtain method from parameter %s!", parameter));
 		}
 
-		MethodParameters parameters = MethodParameters.of(method);
-		List<MethodParameter> pageableParameters = parameters.getParametersOfType(Pageable.class);
-		Qualifier assemblerQualifier = parameter.getParameterAnnotation(Qualifier.class);
+		var parameters = MethodParameters.of(method);
+		var pageableParameters = parameters.getParametersOfType(Pageable.class);
+		var assemblerQualifier = parameter.getParameterAnnotation(Qualifier.class);
 
 		if (pageableParameters.isEmpty()) {
 			return null;
@@ -114,8 +111,8 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 
 		if (pageableParameters.size() == 1) {
 
-			MethodParameter pageableParameter = pageableParameters.get(0);
-			MethodParameter matchingParameter = returnIfQualifiersMatch(pageableParameter, assemblerQualifier);
+			var pageableParameter = pageableParameters.get(0);
+			var matchingParameter = returnIfQualifiersMatch(pageableParameter, assemblerQualifier);
 
 			if (matchingParameter == null) {
 				logger.info(LogMessage.format(SUPERFLOUS_QUALIFIER, PagedResourcesAssembler.class.getSimpleName(),
@@ -129,9 +126,9 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 			throw new IllegalStateException(PARAMETER_AMBIGUITY);
 		}
 
-		for (MethodParameter pageableParameter : pageableParameters) {
+		for (var pageableParameter : pageableParameters) {
 
-			MethodParameter matchingParameter = returnIfQualifiersMatch(pageableParameter, assemblerQualifier);
+			var matchingParameter = returnIfQualifiersMatch(pageableParameter, assemblerQualifier);
 
 			if (matchingParameter != null) {
 				return matchingParameter;
@@ -149,7 +146,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 			return pageableParameter;
 		}
 
-		Qualifier pageableParameterQualifier = pageableParameter.getParameterAnnotation(Qualifier.class);
+		var pageableParameterQualifier = pageableParameter.getParameterAnnotation(Qualifier.class);
 
 		if (pageableParameterQualifier == null) {
 			return null;

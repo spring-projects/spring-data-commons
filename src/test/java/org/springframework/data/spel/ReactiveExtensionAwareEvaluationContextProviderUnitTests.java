@@ -26,9 +26,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ReactiveEvaluationContextExtension;
-import org.springframework.expression.Expression;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
@@ -51,10 +51,10 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1108
 	void shouldResolveExtension() {
 
-		Expression expression = PARSER.parseExpression("hasRole('ROLE_ADMIN') ? '%' : principal.name");
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+		var expression = PARSER.parseExpression("hasRole('ROLE_ADMIN') ? '%' : principal.name");
+		var dependencies = ExpressionDependencies.discover(expression);
 
-		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+		var provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericExtension.INSTANCE));
 
 		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
@@ -69,10 +69,10 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // GH-2392
 	void shouldFilterImperativeExtensionCorrectly() {
 
-		Expression expression = PARSER.parseExpression("unknownMethod('FOO')");
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+		var expression = PARSER.parseExpression("unknownMethod('FOO')");
+		var dependencies = ExpressionDependencies.discover(expression);
 
-		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+		var provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Collections.singletonList(ExpressiveExtension.INSTANCE));
 
 		provider.getEvaluationContextLater(new Object[0], dependencies).as(StepVerifier::create) //
@@ -82,10 +82,10 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // GH-2392
 	void shouldFilterReactiveExtensionCorrectly() {
 
-		Expression expression = PARSER.parseExpression("unknownMethod('FOO')");
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+		var expression = PARSER.parseExpression("unknownMethod('FOO')");
+		var dependencies = ExpressionDependencies.discover(expression);
 
-		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+		var provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Collections.singletonList(SampleReactiveExtension.INSTANCE));
 
 		provider.getEvaluationContextLater(new Object[0], dependencies).as(StepVerifier::create) //
@@ -95,10 +95,10 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1108
 	void shouldLoadGenericExtensionOnly() {
 
-		Expression expression = PARSER.parseExpression("isKnown('FOO')");
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+		var expression = PARSER.parseExpression("isKnown('FOO')");
+		var dependencies = ExpressionDependencies.discover(expression);
 
-		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+		var provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericExtension.INSTANCE));
 
 		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
@@ -113,10 +113,10 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1108
 	void unknownMethodShouldLoadGenericExtensionOnly() {
 
-		Expression expression = PARSER.parseExpression("unknown('FOO')");
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+		var expression = PARSER.parseExpression("unknown('FOO')");
+		var dependencies = ExpressionDependencies.discover(expression);
 
-		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+		var provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericExtension.INSTANCE));
 
 		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
@@ -130,10 +130,10 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1108
 	void genericReactiveExtensionIsAlwaysObtained() {
 
-		Expression expression = PARSER.parseExpression("1+1");
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+		var expression = PARSER.parseExpression("1+1");
+		var dependencies = ExpressionDependencies.discover(expression);
 
-		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+		var provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericReactiveExtension.INSTANCE));
 
 		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
@@ -148,11 +148,11 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1108
 	void doesNotLoadExtensionForDirectCall() {
 
-		Expression expression = PARSER.parseExpression(
+		var expression = PARSER.parseExpression(
 				"T(org.springframework.data.spel.ReactiveExtensionAwareEvaluationContextProviderUnitTests.WithStaticRole).hasRole('ADMIN')");
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+		var dependencies = ExpressionDependencies.discover(expression);
 
-		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+		var provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericReactiveExtension.INSTANCE));
 
 		provider.getEvaluationContextLater(new Object[0], dependencies).map(expression::getValue) //
@@ -167,10 +167,10 @@ class ReactiveExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1108
 	void loadsExtensionEvenWhenRootObjectMethodMatches() {
 
-		Expression expression = PARSER.parseExpression("principal.name");
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(expression);
+		var expression = PARSER.parseExpression("principal.name");
+		var dependencies = ExpressionDependencies.discover(expression);
 
-		ReactiveExtensionAwareEvaluationContextProvider provider = new ReactiveExtensionAwareEvaluationContextProvider(
+		var provider = new ReactiveExtensionAwareEvaluationContextProvider(
 				Arrays.asList(SampleReactiveExtension.INSTANCE, GenericReactiveExtension.INSTANCE));
 
 		provider.getEvaluationContextLater(new WithRole(), dependencies).map(expression::getValue) //

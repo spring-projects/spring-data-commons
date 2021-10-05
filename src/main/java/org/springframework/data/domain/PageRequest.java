@@ -142,11 +142,9 @@ public class PageRequest extends AbstractPageRequest {
 			return true;
 		}
 
-		if (!(obj instanceof PageRequest)) {
+		if (!(obj instanceof PageRequest that)) {
 			return false;
 		}
-
-		PageRequest that = (PageRequest) obj;
 
 		return super.equals(that) && this.sort.equals(that.sort);
 	}

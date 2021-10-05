@@ -70,7 +70,7 @@ class MultiTransactionStatus implements TransactionStatus {
 	}
 
 	public void commit(PlatformTransactionManager transactionManager) {
-		TransactionStatus transactionStatus = getTransactionStatus(transactionManager);
+		var transactionStatus = getTransactionStatus(transactionManager);
 		transactionManager.commit(transactionStatus);
 	}
 
@@ -120,7 +120,7 @@ class MultiTransactionStatus implements TransactionStatus {
 	 * @see org.springframework.transaction.TransactionStatus#setRollbackOnly()
 	 */
 	public void setRollbackOnly() {
-		for (TransactionStatus ts : transactionStatuses.values()) {
+		for (var ts : transactionStatuses.values()) {
 			ts.setRollbackOnly();
 		}
 	}
@@ -131,9 +131,9 @@ class MultiTransactionStatus implements TransactionStatus {
 	 */
 	public Object createSavepoint() throws TransactionException {
 
-		SavePoints savePoints = new SavePoints();
+		var savePoints = new SavePoints();
 
-		for (TransactionStatus transactionStatus : transactionStatuses.values()) {
+		for (var transactionStatus : transactionStatuses.values()) {
 			savePoints.save(transactionStatus);
 		}
 		return savePoints;
@@ -144,7 +144,7 @@ class MultiTransactionStatus implements TransactionStatus {
 	 * @see org.springframework.transaction.SavepointManager#rollbackToSavepoint(java.lang.Object)
 	 */
 	public void rollbackToSavepoint(Object savepoint) throws TransactionException {
-		SavePoints savePoints = (SavePoints) savepoint;
+		var savePoints = (SavePoints) savepoint;
 		savePoints.rollback();
 	}
 
@@ -161,7 +161,7 @@ class MultiTransactionStatus implements TransactionStatus {
 	 * @see org.springframework.transaction.TransactionStatus#flush()
 	 */
 	public void flush() {
-		for (TransactionStatus transactionStatus : transactionStatuses.values()) {
+		for (var transactionStatus : transactionStatuses.values()) {
 			transactionStatus.flush();
 		}
 	}
@@ -185,12 +185,12 @@ class MultiTransactionStatus implements TransactionStatus {
 		}
 
 		private void save(TransactionStatus transactionStatus) {
-			Object savepoint = transactionStatus.createSavepoint();
+			var savepoint = transactionStatus.createSavepoint();
 			addSavePoint(transactionStatus, savepoint);
 		}
 
 		public void rollback() {
-			for (TransactionStatus transactionStatus : savepoints.keySet()) {
+			for (var transactionStatus : savepoints.keySet()) {
 				transactionStatus.rollbackToSavepoint(savepointFor(transactionStatus));
 			}
 		}
@@ -200,7 +200,7 @@ class MultiTransactionStatus implements TransactionStatus {
 		}
 
 		public void release() {
-			for (TransactionStatus transactionStatus : savepoints.keySet()) {
+			for (var transactionStatus : savepoints.keySet()) {
 				transactionStatus.releaseSavepoint(savepointFor(transactionStatus));
 			}
 		}

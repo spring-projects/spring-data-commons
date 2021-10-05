@@ -62,10 +62,10 @@ class SpelEvaluatingMethodInterceptorUnitTests {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("invokeBean"));
 
-		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+		var factory = new DefaultListableBeanFactory();
 		factory.registerSingleton("someBean", new SomeBean());
 
-		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(), factory,
+		var interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(), factory,
 				parser, Projection.class);
 
 		assertThat(interceptor.invoke(invocation)).isEqualTo("value");
@@ -76,7 +76,7 @@ class SpelEvaluatingMethodInterceptorUnitTests {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("getName"));
 
-		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(),
+		var interceptor = new SpelEvaluatingMethodInterceptor(delegate, new Target(),
 				new DefaultListableBeanFactory(), parser, Projection.class);
 
 		interceptor.invoke(invocation);
@@ -98,7 +98,7 @@ class SpelEvaluatingMethodInterceptorUnitTests {
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("propertyFromTarget"));
 
-		SpelEvaluatingMethodInterceptor interceptor = new SpelEvaluatingMethodInterceptor(delegate, map,
+		var interceptor = new SpelEvaluatingMethodInterceptor(delegate, map,
 				new DefaultListableBeanFactory(), parser, Projection.class);
 
 		assertThat(interceptor.invoke(invocation)).isEqualTo("Dave");
@@ -107,7 +107,7 @@ class SpelEvaluatingMethodInterceptorUnitTests {
 	@Test // DATACMNS-1150
 	void forwardsParameterIntoSpElExpressionEvaluation() throws Throwable {
 
-		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+		var factory = new DefaultListableBeanFactory();
 		factory.registerSingleton("someBean", new SomeBean());
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("invokeBeanWithParameter", Integer.class));

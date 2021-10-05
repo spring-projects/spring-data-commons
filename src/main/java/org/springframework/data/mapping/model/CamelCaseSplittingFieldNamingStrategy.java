@@ -52,12 +52,12 @@ public class CamelCaseSplittingFieldNamingStrategy implements FieldNamingStrateg
 	@Override
 	public String getFieldName(PersistentProperty<?> property) {
 
-		List<String> parts = ParsingUtils.splitCamelCaseToLower(property.getName());
+		var parts = ParsingUtils.splitCamelCaseToLower(property.getName());
 		List<String> result = new ArrayList<>();
 
-		for (String part : parts) {
+		for (var part : parts) {
 
-			String candidate = preparePart(part);
+			var candidate = preparePart(part);
 
 			if (StringUtils.hasText(candidate)) {
 				result.add(candidate);

@@ -16,7 +16,6 @@
 package org.springframework.data.convert;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.mapping.Alias;
@@ -66,7 +65,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 
 		return typeMap.computeIfAbsent(type.getRawTypeInformation(), key -> {
 
-			PersistentEntity<?, ?> entity = mappingContext.getPersistentEntity(key);
+			var entity = mappingContext.getPersistentEntity(key);
 
 			if (entity == null || entity.getTypeAlias() == null) {
 				return Alias.NONE;
@@ -86,7 +85,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 
 		// Reject second alias for same type
 
-		Alias existingAlias = typeMap.getOrDefault(key, Alias.NONE);
+		var existingAlias = typeMap.getOrDefault(key, Alias.NONE);
 
 		if (existingAlias.isPresentButDifferent(alias)) {
 
@@ -120,7 +119,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	@Override
 	public TypeInformation<?> resolveTypeFrom(Alias alias) {
 
-		for (Entry<ClassTypeInformation<?>, Alias> entry : typeMap.entrySet()) {
+		for (var entry : typeMap.entrySet()) {
 			if (entry.getValue().hasSamePresentValueAs(alias)) {
 				return entry.getKey();
 			}

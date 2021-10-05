@@ -62,7 +62,7 @@ class ResourceReaderRepositoryInitializerUnitTests {
 	@Test
 	void storesSingleObjectCorrectly() throws Exception {
 
-		Product reference = new Product();
+		var reference = new Product();
 		setUpReferenceAndInititalize(reference);
 
 		verify(productRepository).save(reference);
@@ -71,7 +71,7 @@ class ResourceReaderRepositoryInitializerUnitTests {
 	@Test
 	void storesCollectionOfObjectsCorrectly() throws Exception {
 
-		Product product = new Product();
+		var product = new Product();
 		Collection<Product> reference = Collections.singletonList(product);
 
 		setUpReferenceAndInititalize(reference);
@@ -82,7 +82,7 @@ class ResourceReaderRepositoryInitializerUnitTests {
 	@Test // DATACMNS-224
 	void emitsRepositoriesPopulatedEventIfPublisherConfigured() throws Exception {
 
-		RepositoryPopulator populator = setUpReferenceAndInititalize(new User(), publisher);
+		var populator = setUpReferenceAndInititalize(new User(), publisher);
 
 		ApplicationEvent event = new RepositoriesPopulatedEvent(populator, repositories);
 		verify(publisher, times(1)).publishEvent(event);
@@ -94,7 +94,7 @@ class ResourceReaderRepositoryInitializerUnitTests {
 		when(reader.readFrom(any(), any())).thenReturn(reference);
 		when(productRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
 
-		ResourceReaderRepositoryPopulator populator = new ResourceReaderRepositoryPopulator(reader);
+		var populator = new ResourceReaderRepositoryPopulator(reader);
 		populator.setResources(resource);
 		populator.setApplicationEventPublisher(publisher);
 		populator.populate(repositories);

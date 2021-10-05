@@ -87,9 +87,9 @@ public class Point implements Serializable {
 	@Override
 	public int hashCode() {
 
-		int result = 1;
+		var result = 1;
 
-		long temp = Double.doubleToLongBits(x);
+		var temp = Double.doubleToLongBits(x);
 		result = 31 * result + (int) (temp ^ temp >>> 32);
 
 		temp = Double.doubleToLongBits(y);
@@ -109,11 +109,9 @@ public class Point implements Serializable {
 			return true;
 		}
 
-		if (!(obj instanceof Point)) {
+		if (!(obj instanceof Point other)) {
 			return false;
 		}
-
-		Point other = (Point) obj;
 
 		if (Double.doubleToLongBits(x) != Double.doubleToLongBits(other.x)) {
 			return false;

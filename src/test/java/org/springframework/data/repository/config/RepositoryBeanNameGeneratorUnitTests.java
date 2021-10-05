@@ -31,7 +31,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
-import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -71,7 +70,7 @@ class RepositoryBeanNameGeneratorUnitTests {
 	void usesClassNameOfScannedBeanDefinition() throws IOException {
 
 		MetadataReaderFactory factory = new SimpleMetadataReaderFactory();
-		MetadataReader reader = factory.getMetadataReader(SomeImplementation.class.getName());
+		var reader = factory.getMetadataReader(SomeImplementation.class.getName());
 
 		BeanDefinition definition = new ScannedGenericBeanDefinition(reader);
 
@@ -88,7 +87,7 @@ class RepositoryBeanNameGeneratorUnitTests {
 
 	private BeanDefinition getBeanDefinitionFor(Class<?> repositoryInterface) {
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(RepositoryFactoryBeanSupport.class);
+		var builder = BeanDefinitionBuilder.genericBeanDefinition(RepositoryFactoryBeanSupport.class);
 		builder.addConstructorArgValue(repositoryInterface.getName());
 		return builder.getBeanDefinition();
 	}

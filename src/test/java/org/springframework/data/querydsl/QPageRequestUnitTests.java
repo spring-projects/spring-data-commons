@@ -42,8 +42,8 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 	@Test
 	void constructsQPageRequestWithOrderSpecifiers() {
 
-		QUser user = QUser.user;
-		QPageRequest pageRequest = QPageRequest.of(0, 10, user.firstname.asc());
+		var user = QUser.user;
+		var pageRequest = QPageRequest.of(0, 10, user.firstname.asc());
 
 		assertThat(pageRequest.getSort()).isEqualTo(QSort.by(user.firstname.asc()));
 	}
@@ -51,8 +51,8 @@ public class QPageRequestUnitTests extends AbstractPageRequestUnitTests {
 	@Test
 	void constructsQPageRequestWithQSort() {
 
-		QUser user = QUser.user;
-		QPageRequest pageRequest = QPageRequest.ofSize(10).withSort(QSort.by(user.firstname.asc()));
+		var user = QUser.user;
+		var pageRequest = QPageRequest.ofSize(10).withSort(QSort.by(user.firstname.asc()));
 
 		assertThat(pageRequest.getSort()).isEqualTo(QSort.by(user.firstname.asc()));
 	}

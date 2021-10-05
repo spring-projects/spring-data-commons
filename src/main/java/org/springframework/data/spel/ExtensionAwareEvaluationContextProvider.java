@@ -31,8 +31,6 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.spel.EvaluationContextExtensionInformation.ExtensionTypeInformation;
-import org.springframework.data.spel.EvaluationContextExtensionInformation.RootObjectInformation;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ExtensionIdAware;
 import org.springframework.data.spel.spi.Function;
@@ -122,13 +120,13 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	StandardEvaluationContext doGetEvaluationContext(Object rootObject,
 			Collection<? extends EvaluationContextExtension> extensions) {
-		StandardEvaluationContext context = new StandardEvaluationContext();
+		var context = new StandardEvaluationContext();
 
 		if (beanFactory != null) {
 			context.setBeanResolver(new BeanFactoryResolver(beanFactory));
 		}
 
-		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(extensions);
+		var accessor = new ExtensionAwarePropertyAccessor(extensions);
 
 		context.addPropertyAccessor(accessor);
 		context.addPropertyAccessor(new ReflectivePropertyAccessor());
@@ -152,9 +150,8 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 		for (ExtensionIdAware candidate : getExtensions()) {
 
-			if (candidate instanceof EvaluationContextExtension) {
+			if (candidate instanceof EvaluationContextExtension extension) {
 
-				EvaluationContextExtension extension = (EvaluationContextExtension) candidate;
 				if (extensionFilter.test(getOrCreateInformation(extension))) {
 					extensionsToUse.add(extension);
 				}
@@ -337,13 +334,11 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 */
 		private TypedValue lookupPropertyFrom(EvaluationContextExtensionAdapter extension, String name) {
 
-			Object value = extension.getProperties().get(name);
+			var value = extension.getProperties().get(name);
 
-			if (!(value instanceof Function)) {
+			if (!(value instanceof Function function)) {
 				return new TypedValue(value);
 			}
-
-			Function function = (Function) value;
 
 			try {
 				return new TypedValue(function.invoke(new Object[0]));
@@ -412,9 +407,9 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			Assert.notNull(extension, "Extension must not be null!");
 			Assert.notNull(information, "Extension information must not be null!");
 
-			Optional<Object> target = Optional.ofNullable(extension.getRootObject());
-			ExtensionTypeInformation extensionTypeInformation = information.getExtensionTypeInformation();
-			RootObjectInformation rootObjectInformation = information.getRootObjectInformation(target);
+			var target = Optional.ofNullable(extension.getRootObject());
+			var extensionTypeInformation = information.getExtensionTypeInformation();
+			var rootObjectInformation = information.getRootObjectInformation(target);
 
 			functions.addAll(extension.getFunctions());
 			functions.addAll(rootObjectInformation.getFunctions(target));

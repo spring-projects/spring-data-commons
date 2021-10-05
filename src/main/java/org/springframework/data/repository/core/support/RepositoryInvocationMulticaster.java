@@ -72,7 +72,7 @@ interface RepositoryInvocationMulticaster {
 		@Override
 		public void notifyListeners(Method method, Object[] args, RepositoryMethodInvocation result) {
 
-			for (RepositoryMethodInvocationListener methodInvocationListener : methodInvocationListeners) {
+			for (var methodInvocationListener : methodInvocationListeners) {
 				methodInvocationListener.afterInvocation(result);
 			}
 		}

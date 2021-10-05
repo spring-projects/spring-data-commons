@@ -87,7 +87,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
+	public enum DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
 
 		INSTANCE;
 
@@ -99,7 +99,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@WritingConverter
-	public static enum LocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
+	public enum LocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
 
 		INSTANCE;
 
@@ -111,7 +111,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
+	public enum DateToLocalDateConverter implements Converter<Date, LocalDate> {
 
 		INSTANCE;
 
@@ -123,7 +123,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@WritingConverter
-	public static enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
+	public enum LocalDateToDateConverter implements Converter<LocalDate, Date> {
 
 		INSTANCE;
 
@@ -135,7 +135,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum DateToLocalTimeConverter implements Converter<Date, LocalTime> {
+	public enum DateToLocalTimeConverter implements Converter<Date, LocalTime> {
 
 		INSTANCE;
 
@@ -147,7 +147,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@WritingConverter
-	public static enum LocalTimeToDateConverter implements Converter<LocalTime, Date> {
+	public enum LocalTimeToDateConverter implements Converter<LocalTime, Date> {
 
 		INSTANCE;
 
@@ -159,7 +159,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum DateToInstantConverter implements Converter<Date, Instant> {
+	public enum DateToInstantConverter implements Converter<Date, Instant> {
 
 		INSTANCE;
 
@@ -171,7 +171,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@WritingConverter
-	public static enum InstantToDateConverter implements Converter<Instant, Date> {
+	public enum InstantToDateConverter implements Converter<Instant, Date> {
 
 		INSTANCE;
 
@@ -183,7 +183,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, Instant> {
+	public enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, Instant> {
 
 		INSTANCE;
 
@@ -195,7 +195,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum InstantToLocalDateTimeConverter implements Converter<Instant, LocalDateTime> {
+	public enum InstantToLocalDateTimeConverter implements Converter<Instant, LocalDateTime> {
 
 		INSTANCE;
 
@@ -207,7 +207,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@WritingConverter
-	public static enum ZoneIdToStringConverter implements Converter<ZoneId, String> {
+	public enum ZoneIdToStringConverter implements Converter<ZoneId, String> {
 
 		INSTANCE;
 
@@ -219,7 +219,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum StringToZoneIdConverter implements Converter<String, ZoneId> {
+	public enum StringToZoneIdConverter implements Converter<String, ZoneId> {
 
 		INSTANCE;
 
@@ -231,7 +231,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@WritingConverter
-	public static enum DurationToStringConverter implements Converter<Duration, String> {
+	public enum DurationToStringConverter implements Converter<Duration, String> {
 
 		INSTANCE;
 
@@ -243,7 +243,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum StringToDurationConverter implements Converter<String, Duration> {
+	public enum StringToDurationConverter implements Converter<String, Duration> {
 
 		INSTANCE;
 
@@ -255,7 +255,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@WritingConverter
-	public static enum PeriodToStringConverter implements Converter<Period, String> {
+	public enum PeriodToStringConverter implements Converter<Period, String> {
 
 		INSTANCE;
 
@@ -267,7 +267,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum StringToPeriodConverter implements Converter<String, Period> {
+	public enum StringToPeriodConverter implements Converter<String, Period> {
 
 		INSTANCE;
 
@@ -279,7 +279,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum StringToLocalDateConverter implements Converter<String, LocalDate> {
+	public enum StringToLocalDateConverter implements Converter<String, LocalDate> {
 
 		INSTANCE;
 
@@ -295,7 +295,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum StringToLocalDateTimeConverter implements Converter<String, LocalDateTime> {
+	public enum StringToLocalDateTimeConverter implements Converter<String, LocalDateTime> {
 
 		INSTANCE;
 
@@ -311,7 +311,7 @@ public abstract class Jsr310Converters {
 	}
 
 	@ReadingConverter
-	public static enum StringToInstantConverter implements Converter<String, Instant> {
+	public enum StringToInstantConverter implements Converter<String, Instant> {
 
 		INSTANCE;
 

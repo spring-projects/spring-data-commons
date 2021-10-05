@@ -112,7 +112,7 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 		for (QueryCreationListener listener : queryPostProcessors) {
 
-			ResolvableType typeArgument = ResolvableType.forClass(QueryCreationListener.class, listener.getClass())
+			var typeArgument = ResolvableType.forClass(QueryCreationListener.class, listener.getClass())
 					.getGeneric(0);
 
 			if (typeArgument != null && typeArgument.isAssignableFrom(ResolvableType.forClass(query.getClass()))) {
@@ -129,9 +129,9 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	@Nullable
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
-		Method method = invocation.getMethod();
+		var method = invocation.getMethod();
 
-		QueryExecutionConverters.ExecutionAdapter executionAdapter = QueryExecutionConverters //
+		var executionAdapter = QueryExecutionConverters //
 				.getExecutionAdapter(method.getReturnType());
 
 		if (executionAdapter == null) {
@@ -145,11 +145,11 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	@Nullable
 	private Object doInvoke(MethodInvocation invocation) throws Throwable {
 
-		Method method = invocation.getMethod();
+		var method = invocation.getMethod();
 
 		if (hasQueryFor(method)) {
 
-			RepositoryMethodInvoker invocationMetadata = invocationMetadataCache.get(method);
+			var invocationMetadata = invocationMetadataCache.get(method);
 
 			if (invocationMetadata == null) {
 				invocationMetadata = RepositoryMethodInvoker.forRepositoryQuery(method, queries.get(method));

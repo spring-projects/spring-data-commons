@@ -56,7 +56,7 @@ public interface EntityInformation<T, ID> extends EntityMetadata<T> {
 
 		Assert.notNull(entity, "Entity must not be null!");
 
-		ID id = getId(entity);
+		var id = getId(entity);
 
 		if (id != null) {
 			return id;

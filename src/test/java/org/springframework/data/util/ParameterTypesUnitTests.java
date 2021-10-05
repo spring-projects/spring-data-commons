@@ -17,10 +17,8 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
+
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -33,9 +31,9 @@ public class ParameterTypesUnitTests {
 	@Test // DATACMNS-1518
 	public void detectsDirectMatch() {
 
-		Method method = ReflectionUtils.findMethod(Sample.class, "twoStrings", String.class, String.class);
+		var method = ReflectionUtils.findMethod(Sample.class, "twoStrings", String.class, String.class);
 
-		ParameterTypes types = ParameterTypes.of(String.class, String.class);
+		var types = ParameterTypes.of(String.class, String.class);
 
 		assertThat(types.areValidFor(method)).isTrue();
 		assertThat(types.exactlyMatchParametersOf(method)).isTrue();
@@ -44,9 +42,9 @@ public class ParameterTypesUnitTests {
 	@Test // DATACMNS-1518
 	public void supportsSimpleVarArg() {
 
-		Method method = ReflectionUtils.findMethod(Sample.class, "stringPlusStringVarArg", String.class, String[].class);
+		var method = ReflectionUtils.findMethod(Sample.class, "stringPlusStringVarArg", String.class, String[].class);
 
-		ParameterTypes types = ParameterTypes.of(String.class, String.class);
+		var types = ParameterTypes.of(String.class, String.class);
 
 		assertThat(types.areValidFor(method)).isTrue();
 		assertThat(types.exactlyMatchParametersOf(method)).isFalse();
@@ -55,9 +53,9 @@ public class ParameterTypesUnitTests {
 	@Test // DATACMNS-1518
 	public void supportsTrailingObjectVarArg() {
 
-		Method method = ReflectionUtils.findMethod(Sample.class, "stringPlusObjectVarArg", String.class, Object[].class);
+		var method = ReflectionUtils.findMethod(Sample.class, "stringPlusObjectVarArg", String.class, Object[].class);
 
-		ParameterTypes types = ParameterTypes.of(String.class, String.class);
+		var types = ParameterTypes.of(String.class, String.class);
 
 		assertThat(types.areValidFor(method)).isTrue();
 		assertThat(types.exactlyMatchParametersOf(method)).isFalse();
@@ -66,9 +64,9 @@ public class ParameterTypesUnitTests {
 	@Test // DATACMNS-1518
 	public void supportsObjectVarArg() {
 
-		Method method = ReflectionUtils.findMethod(Sample.class, "objectVarArg", Object[].class);
+		var method = ReflectionUtils.findMethod(Sample.class, "objectVarArg", Object[].class);
 
-		ParameterTypes types = ParameterTypes.of(String.class, String.class);
+		var types = ParameterTypes.of(String.class, String.class);
 
 		assertThat(types.areValidFor(method)).isTrue();
 		assertThat(types.exactlyMatchParametersOf(method)).isFalse();
@@ -78,9 +76,9 @@ public class ParameterTypesUnitTests {
 	@Test // DATACMNS-1518
 	public void doesNotAddNonObjectVarArgsForParents() {
 
-		ParameterTypes types = ParameterTypes.of(String.class, String.class, Integer.class, Integer.class);
+		var types = ParameterTypes.of(String.class, String.class, Integer.class, Integer.class);
 
-		List<ParameterTypes> alternatives = types.getAllAlternatives();
+		var alternatives = types.getAllAlternatives();
 
 		assertThat(alternatives).hasSize(6);
 

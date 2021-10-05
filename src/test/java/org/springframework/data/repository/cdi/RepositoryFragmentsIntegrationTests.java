@@ -50,9 +50,9 @@ class RepositoryFragmentsIntegrationTests {
 	@Test // DATACMNS-1233
 	void shouldInvokeCustomImplementationLast() {
 
-		ComposedRepository repository = getBean(ComposedRepository.class);
-		ComposedRepositoryImpl customImplementation = getBean(ComposedRepositoryImpl.class);
-		AnotherFragmentInterfaceImpl shadowed = getBean(AnotherFragmentInterfaceImpl.class);
+		var repository = getBean(ComposedRepository.class);
+		var customImplementation = getBean(ComposedRepositoryImpl.class);
+		var shadowed = getBean(AnotherFragmentInterfaceImpl.class);
 
 		assertThat(repository.getShadowed()).isEqualTo(2);
 		assertThat(customImplementation.getShadowed()).isEqualTo(1);
@@ -62,9 +62,9 @@ class RepositoryFragmentsIntegrationTests {
 	@Test // DATACMNS-1233
 	void shouldRespectInterfaceOrder() {
 
-		ComposedRepository repository = getBean(ComposedRepository.class);
-		FragmentInterfaceImpl fragment = getBean(FragmentInterfaceImpl.class);
-		AnotherFragmentInterfaceImpl shadowed = getBean(AnotherFragmentInterfaceImpl.class);
+		var repository = getBean(ComposedRepository.class);
+		var fragment = getBean(FragmentInterfaceImpl.class);
+		var shadowed = getBean(AnotherFragmentInterfaceImpl.class);
 
 		assertThat(repository.getPriority()).isEqualTo(1);
 		assertThat(fragment.getPriority()).isEqualTo(1);
@@ -74,7 +74,7 @@ class RepositoryFragmentsIntegrationTests {
 	@Test // DATACMNS-1754
 	void shouldFindCustomImplementationForNestedRepository() {
 
-		NestedRepository repository = getBean(NestedRepository.class);
+		var repository = getBean(NestedRepository.class);
 
 		assertThat(repository.getCustom()).isEqualTo("CustomImpl");
 	}
@@ -82,8 +82,8 @@ class RepositoryFragmentsIntegrationTests {
 	@Test // DATACMNS-1754
 	void shouldFindImplementationForNestedRepositoryFragment() {
 
-		ComposedRepository repository = getBean(ComposedRepository.class);
-		RepositoryFragments.NestedFragmentInterfaceImpl fragment = getBean(
+		var repository = getBean(ComposedRepository.class);
+		var fragment = getBean(
 				RepositoryFragments.NestedFragmentInterfaceImpl.class);
 
 		assertThat(repository.getKey()).isEqualTo("NestedFragmentImpl");

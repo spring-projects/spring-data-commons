@@ -17,15 +17,12 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.server.mvc.UriComponentsContributor;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -39,7 +36,7 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	@Test
 	void buildsUpRequestParameters() {
 
-		String basicString = String.format("page=%d&size=%d", PAGE_NUMBER, PAGE_SIZE);
+		var basicString = String.format("page=%d&size=%d", PAGE_NUMBER, PAGE_SIZE);
 
 		assertUriStringFor(REFERENCE_WITHOUT_SORT, basicString);
 		assertUriStringFor(REFERENCE_WITH_SORT, basicString + "&sort=firstname,lastname,desc");
@@ -49,18 +46,18 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	@Test // DATACMNS-343
 	void replacesExistingPaginationInformation() throws Exception {
 
-		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
+		var parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
 		UriComponentsContributor resolver = new HateoasPageableHandlerMethodArgumentResolver();
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://localhost:8080?page=0&size=10");
+		var builder = UriComponentsBuilder.fromHttpUrl("http://localhost:8080?page=0&size=10");
 		resolver.enhance(builder, parameter, PageRequest.of(1, 20));
 
-		MultiValueMap<String, String> params = builder.build().getQueryParams();
+		var params = builder.build().getQueryParams();
 
-		List<String> page = params.get("page");
+		var page = params.get("page");
 		assertThat(page).hasSize(1);
 		assertThat(page.get(0)).isEqualTo("1");
 
-		List<String> size = params.get("size");
+		var size = params.get("size");
 		assertThat(size).hasSize(1);
 		assertThat(size.get(0)).isEqualTo("20");
 	}
@@ -84,11 +81,11 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	@Test // DATACMNS-418
 	void returnsCustomizedTemplateVariables() {
 
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/foo").build();
+		var uriComponents = UriComponentsBuilder.fromPath("/foo").build();
 
-		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
+		var resolver = getResolver();
 		resolver.setPageParameterName("foo");
-		String variables = resolver.getPaginationTemplateVariables(null, uriComponents).toString();
+		var variables = resolver.getPaginationTemplateVariables(null, uriComponents).toString();
 
 		assertThat(variables).isEqualTo("{?foo,size,sort}");
 	}
@@ -96,14 +93,14 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	@Test // DATACMNS-563
 	void enablingOneIndexedParameterReturnsOneForFirstPage() {
 
-		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
+		var resolver = getResolver();
 		resolver.setOneIndexedParameters(true);
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
+		var builder = UriComponentsBuilder.fromPath("/");
 
 		resolver.enhance(builder, null, PageRequest.of(0, 10));
 
-		MultiValueMap<String, String> params = builder.build().getQueryParams();
+		var params = builder.build().getQueryParams();
 
 		assertThat(params.containsKey(resolver.getPageParameterName())).isTrue();
 		assertThat(params.getFirst(resolver.getPageParameterName())).isEqualTo("1");
@@ -112,7 +109,7 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	@Test // DATACMNS-1455
 	void enhancesUnpaged() {
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
+		var builder = UriComponentsBuilder.fromPath("/");
 
 		getResolver().enhance(builder, null, Pageable.unpaged());
 
@@ -122,15 +119,15 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 	@Override
 	protected HateoasPageableHandlerMethodArgumentResolver getResolver() {
 
-		HateoasPageableHandlerMethodArgumentResolver resolver = new HateoasPageableHandlerMethodArgumentResolver();
+		var resolver = new HateoasPageableHandlerMethodArgumentResolver();
 		resolver.setMaxPageSize(100);
 		return resolver;
 	}
 
 	protected void assertUriStringFor(Pageable pageable, String expected) {
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/");
-		MethodParameter parameter = getParameterOfMethod("supportedMethod");
+		var builder = UriComponentsBuilder.fromPath("/");
+		var parameter = getParameterOfMethod("supportedMethod");
 
 		getResolver().enhance(builder, parameter, pageable);
 
@@ -139,9 +136,9 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 
 	private void assertTemplateEnrichment(String baseUri, String expected) {
 
-		UriComponents uriComponents = UriComponentsBuilder.fromUriString(baseUri).build();
+		var uriComponents = UriComponentsBuilder.fromUriString(baseUri).build();
 
-		HateoasPageableHandlerMethodArgumentResolver resolver = getResolver();
+		var resolver = getResolver();
 		assertThat(resolver.getPaginationTemplateVariables(null, uriComponents).toString()).isEqualTo(expected);
 	}
 }

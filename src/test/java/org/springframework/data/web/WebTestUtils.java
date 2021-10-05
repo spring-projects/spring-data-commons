@@ -43,7 +43,7 @@ public class WebTestUtils {
 	 */
 	public static void initWebTest(HttpServletRequest request) {
 
-		ServletRequestAttributes requestAttributes = new ServletRequestAttributes(request);
+		var requestAttributes = new ServletRequestAttributes(request);
 		RequestContextHolder.setRequestAttributes(requestAttributes);
 	}
 
@@ -66,14 +66,14 @@ public class WebTestUtils {
 	 */
 	public static WebApplicationContext createApplicationContext(ClassLoader classLoader, Class<?>... configClasses) {
 
-		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+		var context = new AnnotationConfigWebApplicationContext();
 		if (classLoader != null) {
 			context.setClassLoader(classLoader);
 		}
 
 		context.setServletContext(new MockServletContext());
 
-		for (Class<?> configClass : configClasses) {
+		for (var configClass : configClasses) {
 			context.register(configClass);
 		}
 

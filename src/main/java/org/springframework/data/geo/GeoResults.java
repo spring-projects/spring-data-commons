@@ -115,11 +115,9 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 			return true;
 		}
 
-		if (!(o instanceof GeoResults)) {
+		if (!(o instanceof GeoResults<?> that)) {
 			return false;
 		}
-
-		GeoResults<?> that = (GeoResults<?>) o;
 
 		if (!ObjectUtils.nullSafeEquals(results, that.results)) {
 			return false;
@@ -134,7 +132,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	 */
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(results);
+		var result = ObjectUtils.nullSafeHashCode(results);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(averageDistance);
 		return result;
 	}
@@ -158,7 +156,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 			return new Distance(0, metric);
 		}
 
-		double averageDistance = results.stream()//
+		var averageDistance = results.stream()//
 				.mapToDouble(it -> it.getDistance().getValue())//
 				.average().orElse(0);
 

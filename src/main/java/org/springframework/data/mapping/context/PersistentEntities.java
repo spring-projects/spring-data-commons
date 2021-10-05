@@ -196,13 +196,13 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	@Nullable
 	public PersistentEntity<?, ?> getEntityUltimatelyReferredToBy(PersistentProperty<?> property) {
 
-		TypeInformation<?> propertyType = property.getTypeInformation().getActualType();
+		var propertyType = property.getTypeInformation().getActualType();
 
 		if (propertyType == null || !property.isAssociation()) {
 			return null;
 		}
 
-		Class<?> associationTargetType = property.getAssociationTargetType();
+		var associationTargetType = property.getAssociationTargetType();
 
 		return associationTargetType == null //
 				? getEntityIdentifiedBy(propertyType) //
@@ -220,7 +220,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
-		PersistentEntity<?, ?> entity = getEntityUltimatelyReferredToBy(property);
+		var entity = getEntityUltimatelyReferredToBy(property);
 
 		return entity == null //
 				? property.getTypeInformation().getRequiredActualType() //
@@ -238,16 +238,24 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	@Nullable
 	private PersistentEntity<?, ?> getEntityIdentifiedBy(TypeInformation<?> type) {
 
-		Collection<PersistentEntity<?, ?>> entities = contexts.stream() //
-				.flatMap(it -> it.getPersistentEntities().stream()) //
-				.map(PersistentEntity::getIdProperty) //
-				.filter(it -> it != null && type.equals(it.getTypeInformation().getActualType())) //
-				.map(PersistentProperty::getOwner) //
-				.collect(Collectors.toList());
+		Collection<PersistentEntity<?, ?>> entities = new ArrayList<>();
+		for (MappingContext<?, ? extends PersistentProperty<?>> context : contexts) {
+
+			for (PersistentEntity<?, ? extends PersistentProperty<?>> persistentProperties : context
+					.getPersistentEntities()) {
+
+				var idProperty = persistentProperties.getIdProperty();
+
+				if (idProperty != null && type.equals(idProperty.getTypeInformation().getActualType())) {
+					var owner = idProperty.getOwner();
+					entities.add(owner);
+				}
+			}
+		}
 
 		if (entities.size() > 1) {
 
-			String message = "Found multiple entities identified by " + type.getType() + ": ";
+			var message = "Found multiple entities identified by " + type.getType() + ": ";
 			message += entities.stream().map(it -> it.getType().getName()).collect(Collectors.joining(", "));
 			message += "! Introduce dedicated unique identifier types or explicitly define the target type in @Reference!";
 

@@ -17,7 +17,6 @@ package org.springframework.data.repository.query;
 
 import static java.lang.String.*;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,7 +32,6 @@ import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
@@ -80,7 +78,7 @@ public class Parameter {
 		this.parameterType = potentiallyUnwrapParameterType(parameter);
 		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter);
 		this.name = TYPES.contains(parameter.getParameterType()) ? Lazy.of(Optional.empty()) : Lazy.of(() -> {
-			Param annotation = parameter.getParameterAnnotation(Param.class);
+			var annotation = parameter.getParameterAnnotation(Param.class);
 			return Optional.ofNullable(annotation == null ? parameter.getParameterName() : annotation.value());
 		});
 	}
@@ -213,21 +211,21 @@ public class Parameter {
 	 */
 	private static boolean isDynamicProjectionParameter(MethodParameter parameter) {
 
-		Method method = parameter.getMethod();
+		var method = parameter.getMethod();
 
 		if (method == null) {
 			throw new IllegalStateException(String.format("Method parameter %s is not backed by a method!", parameter));
 		}
 
-		ClassTypeInformation<?> ownerType = ClassTypeInformation.from(parameter.getDeclaringClass());
-		TypeInformation<?> parameterTypes = ownerType.getParameterTypes(method).get(parameter.getParameterIndex());
+		var ownerType = ClassTypeInformation.from(parameter.getDeclaringClass());
+		var parameterTypes = ownerType.getParameterTypes(method).get(parameter.getParameterIndex());
 
 		if (!parameterTypes.getType().equals(Class.class)) {
 			return false;
 		}
 
-		TypeInformation<?> bound = parameterTypes.getTypeArguments().get(0);
-		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+		var bound = parameterTypes.getTypeArguments().get(0);
+		var returnType = ClassTypeInformation.fromReturnTypeOf(method);
 
 		return bound
 				.equals(QueryExecutionConverters.unwrapWrapperTypes(ReactiveWrapperConverters.unwrapWrapperTypes(returnType)));
@@ -265,7 +263,7 @@ public class Parameter {
 	 */
 	private static Class<?> potentiallyUnwrapParameterType(MethodParameter parameter) {
 
-		Class<?> originalType = parameter.getParameterType();
+		var originalType = parameter.getParameterType();
 
 		if (isWrapped(parameter) && shouldUnwrap(parameter)) {
 			return ResolvableType.forMethodParameter(parameter).getGeneric(0).resolve(Object.class);

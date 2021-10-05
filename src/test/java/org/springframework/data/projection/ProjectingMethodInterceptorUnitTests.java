@@ -117,12 +117,12 @@ class ProjectingMethodInterceptorUnitTests {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
-		Object result = methodInterceptor
+		var result = methodInterceptor
 				.invoke(mockInvocationOf("getHelperCollection", Collections.singleton(mock(Helper.class))));
 
 		assertThat(result).isInstanceOf(Set.class);
 
-		Set<Object> projections = (Set<Object>) result;
+		var projections = (Set<Object>) result;
 		assertThat(projections).hasSize(1).hasOnlyElementsOfType(HelperProjection.class);
 	}
 
@@ -132,12 +132,12 @@ class ProjectingMethodInterceptorUnitTests {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
-		Object result = methodInterceptor
+		var result = methodInterceptor
 				.invoke(mockInvocationOf("getHelperList", Collections.singletonList(mock(Helper.class))));
 
 		assertThat(result).isInstanceOf(List.class);
 
-		List<Object> projections = (List<Object>) result;
+		var projections = (List<Object>) result;
 
 		assertThat(projections).hasSize(1).hasOnlyElementsOfType(HelperProjection.class);
 	}
@@ -148,11 +148,11 @@ class ProjectingMethodInterceptorUnitTests {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
-		Object result = methodInterceptor.invoke(mockInvocationOf("getHelperArray", new Helper[] { mock(Helper.class) }));
+		var result = methodInterceptor.invoke(mockInvocationOf("getHelperArray", new Helper[] { mock(Helper.class) }));
 
 		assertThat(result).isInstanceOf(Collection.class);
 
-		Collection<Object> projections = (Collection<Object>) result;
+		var projections = (Collection<Object>) result;
 
 		assertThat(projections).hasSize(1).hasOnlyElementsOfType(HelperProjection.class);
 	}
@@ -164,12 +164,12 @@ class ProjectingMethodInterceptorUnitTests {
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
 
-		Object result = methodInterceptor
+		var result = methodInterceptor
 				.invoke(mockInvocationOf("getHelperMap", Collections.singletonMap("foo", mock(Helper.class))));
 
 		assertThat(result).isInstanceOf(Map.class);
 
-		Map<String, Object> projections = (Map<String, Object>) result;
+		var projections = (Map<String, Object>) result;
 
 		assertThat(projections).hasSize(1).matches(map -> map.get("foo") instanceof HelperProjection);
 	}
@@ -180,12 +180,12 @@ class ProjectingMethodInterceptorUnitTests {
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
 
-		Helper reference = mock(Helper.class);
-		Object result = methodInterceptor.invoke(mockInvocationOf("getHelperCollection", reference));
+		var reference = mock(Helper.class);
+		var result = methodInterceptor.invoke(mockInvocationOf("getHelperCollection", reference));
 
 		assertThat(result).isInstanceOf(Collection.class);
 
-		Collection<?> collection = (Collection<?>) result;
+		var collection = (Collection<?>) result;
 
 		assertThat(collection).hasSize(1).hasOnlyElementsOfType(HelperProjection.class);
 	}
@@ -196,12 +196,12 @@ class ProjectingMethodInterceptorUnitTests {
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
 				conversionService);
 
-		Object result = methodInterceptor
+		var result = methodInterceptor
 				.invoke(mockInvocationOf("getHelperEnumSet", Collections.singletonList(HelperEnum.Helpful)));
 
 		assertThat(result).isInstanceOf(EnumSet.class);
 
-		Collection<HelperEnum> collection = (Collection<HelperEnum>) result;
+		var collection = (Collection<HelperEnum>) result;
 		assertThat(collection).containsOnly(HelperEnum.Helpful);
 	}
 

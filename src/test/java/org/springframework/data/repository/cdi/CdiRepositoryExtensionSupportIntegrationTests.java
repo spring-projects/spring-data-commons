@@ -31,7 +31,7 @@ abstract class CdiRepositoryExtensionSupportIntegrationTests {
 
 		assertThat(getBean(SampleRepository.class)).isNotNull();
 
-		RepositoryClient client = getBean(RepositoryClient.class);
+		var client = getBean(RepositoryClient.class);
 		assertThat(client.repository).isNotNull();
 	}
 
@@ -40,7 +40,7 @@ abstract class CdiRepositoryExtensionSupportIntegrationTests {
 
 		assertThat(getBean(AnotherRepository.class)).isNotNull();
 
-		RepositoryClient client = getBean(RepositoryClient.class);
+		var client = getBean(RepositoryClient.class);
 		assertThat(client.anotherRepository).isNotNull();
 
 		// this will always return 0 since it's a mock

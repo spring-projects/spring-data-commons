@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.AccessOptions.GetOptions;
@@ -31,7 +32,6 @@ import org.springframework.data.mapping.AccessOptions.GetOptions.GetNulls;
 import org.springframework.data.mapping.AccessOptions.SetOptions;
 import org.springframework.data.mapping.AccessOptions.SetOptions.SetNulls;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PersistentPropertyPath;
@@ -97,7 +97,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 	public Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, GetOptions options) {
 
 		Object bean = getBean();
-		Object current = bean;
+		var current = bean;
 
 		if (path.isEmpty()) {
 			return bean;
@@ -109,8 +109,8 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 				return handleNull(path, options.getNullValues().toNullHandling());
 			}
 
-			PersistentEntity<?, ? extends PersistentProperty<?>> entity = property.getOwner();
-			PersistentPropertyAccessor<Object> accessor = entity.getPropertyAccessor(current);
+			var entity = property.getOwner();
+			var accessor = entity.getPropertyAccessor(current);
 
 			current = accessor.getProperty(property);
 		}
@@ -148,18 +148,18 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 		Assert.notNull(path, "PersistentPropertyPath must not be null!");
 		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty!");
 
-		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
-		PersistentProperty<?> leafProperty = path.getRequiredLeafProperty();
+		var parentPath = path.getParentPath();
+		var leafProperty = path.getRequiredLeafProperty();
 
 		if (!options.propagate(parentPath.getLeafProperty())) {
 			return;
 		}
 
-		GetOptions lookupOptions = options.getNullHandling() != REJECT
+		var lookupOptions = options.getNullHandling() != REJECT
 				? DEFAULT_GET_OPTIONS.withNullValues(GetNulls.EARLY_RETURN)
 				: DEFAULT_GET_OPTIONS;
 
-		Object parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath, lookupOptions);
+		var parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath, lookupOptions);
 
 		if (parent == null) {
 			handleNull(path, options.getNullHandling());
@@ -172,7 +172,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 			return;
 		}
 
-		PersistentProperty<?> parentProperty = parentPath.getRequiredLeafProperty();
+		var parentProperty = parentPath.getRequiredLeafProperty();
 
 		Object newValue;
 
@@ -196,7 +196,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 				return;
 			}
 
-			Map<Object, Object> result = CollectionFactory.createApproximateMap(source, source.size());
+			var result = CollectionFactory.createApproximateMap(source, source.size());
 
 			for (Entry<?, Object> entry : source.entrySet()) {
 				result.put(entry.getKey(), setValue(entry.getValue(), leafProperty, value));
@@ -225,14 +225,14 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 			return null;
 		}
 
-		String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
+		var nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
 
 		if (SetNulls.SKIP_AND_LOG.equals(handling)) {
 			logger.info(nullIntermediateMessage);
 			return null;
 		}
 
-		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
+		var parentPath = path.getParentPath();
 
 		throw new MappingException(String.format(nullIntermediateMessage, parentPath.getLeafProperty(), path.toDotPath(),
 				getBean().getClass().getName()));
@@ -249,7 +249,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 	 */
 	private static Object setValue(Object parent, PersistentProperty<?> property, @Nullable Object newValue) {
 
-		PersistentPropertyAccessor<Object> accessor = property.getAccessorForOwner(parent);
+		var accessor = property.getAccessorForOwner(parent);
 		accessor.setProperty(property, newValue);
 		return accessor.getBean();
 	}
@@ -269,7 +269,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 		Assert.notNull(property, "Property must not be null!");
 		Assert.notNull(type, "Type must not be null!");
 
-		Object value = getProperty(property);
+		var value = getProperty(property);
 
 		if (value == null) {
 			return null;

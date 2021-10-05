@@ -34,7 +34,7 @@ public class StreamableUnitTests {
 	@Test // DATACMNS-1432
 	public void collectsToCollections() {
 
-		Streamable<Integer> streamable = Streamable.of(() -> Stream.of(1, 2, 1));
+		var streamable = Streamable.of(() -> Stream.of(1, 2, 1));
 
 		assertThat(streamable.toList()).containsExactly(1, 2, 1);
 		assertThat(streamable.toSet()).containsExactlyInAnyOrder(1, 2);

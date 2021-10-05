@@ -42,7 +42,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 	@Override
 	protected String getBeanClassName(Element element) {
 
-		String name = element.getLocalName();
+		var name = element.getLocalName();
 
 		if ("unmarshaller-populator".equals(name)) {
 			return UnmarshallerRepositoryPopulatorFactoryBean.class.getName();
@@ -60,7 +60,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 	@Override
 	protected void doParse(Element element, BeanDefinitionBuilder builder) {
 
-		String localName = element.getLocalName();
+		var localName = element.getLocalName();
 
 		builder.addPropertyValue("resources", element.getAttribute("locations"));
 
@@ -79,7 +79,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 	 */
 	private static void parseJsonPopulator(Element element, BeanDefinitionBuilder builder) {
 
-		String objectMapperRef = element.getAttribute("object-mapper-ref");
+		var objectMapperRef = element.getAttribute("object-mapper-ref");
 
 		if (StringUtils.hasText(objectMapperRef)) {
 			builder.addPropertyReference("mapper", objectMapperRef);
@@ -94,7 +94,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 	 */
 	private static void parseXmlPopulator(Element element, BeanDefinitionBuilder builder) {
 
-		String unmarshallerRefName = element.getAttribute("unmarshaller-ref");
+		var unmarshallerRefName = element.getAttribute("unmarshaller-ref");
 
 		if (StringUtils.hasText(unmarshallerRefName)) {
 			builder.addPropertyReference("unmarshaller", unmarshallerRefName);

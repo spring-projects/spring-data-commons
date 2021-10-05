@@ -66,20 +66,20 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		Assert.notNull(method, "Method must not be null!");
 
-		int parameterCount = method.getParameterCount();
+		var parameterCount = method.getParameterCount();
 
 		this.parameters = new ArrayList<>(parameterCount);
 		this.dynamicProjectionIndex = -1;
 
-		int pageableIndex = -1;
-		int sortIndex = -1;
+		var pageableIndex = -1;
+		var sortIndex = -1;
 
-		for (int i = 0; i < parameterCount; i++) {
+		for (var i = 0; i < parameterCount; i++) {
 
-			MethodParameter methodParameter = new MethodParameter(method, i);
+			var methodParameter = new MethodParameter(method, i);
 			methodParameter.initParameterNameDiscovery(PARAMETER_NAME_DISCOVERER);
 
-			T parameter = createParameter(methodParameter);
+			var parameter = createParameter(methodParameter);
 
 			if (parameter.isSpecialParameter() && parameter.isNamedParameter()) {
 				throw new IllegalArgumentException(PARAM_ON_SPECIAL);
@@ -116,13 +116,13 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		this.parameters = new ArrayList<>(originals.size());
 
-		int pageableIndexTemp = -1;
-		int sortIndexTemp = -1;
-		int dynamicProjectionTemp = -1;
+		var pageableIndexTemp = -1;
+		var sortIndexTemp = -1;
+		var dynamicProjectionTemp = -1;
 
-		for (int i = 0; i < originals.size(); i++) {
+		for (var i = 0; i < originals.size(); i++) {
 
-			T original = originals.get(i);
+			var original = originals.get(i);
 			this.parameters.add(original);
 
 			pageableIndexTemp = original.isPageable() ? i : -1;
@@ -140,7 +140,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		List<T> bindables = new ArrayList<>();
 
-		for (T candidate : this) {
+		for (var candidate : this) {
 
 			if (candidate.isBindable()) {
 				bindables.add(candidate);
@@ -306,10 +306,10 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 */
 	private void assertEitherAllParamAnnotatedOrNone() {
 
-		boolean nameFound = false;
-		int index = 0;
+		var nameFound = false;
+		var index = 0;
 
-		for (T parameter : this.getBindableParameters()) {
+		for (var parameter : this.getBindableParameters()) {
 
 			if (parameter.isNamedParameter()) {
 				Assert.isTrue(nameFound || index == 0, ALL_OR_NOTHING);

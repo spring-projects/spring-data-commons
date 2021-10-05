@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -56,7 +55,7 @@ interface MethodLookups {
 	 */
 	static MethodLookup direct() {
 
-		MethodPredicate direct = (invoked, candidate) -> candidate.getName().equals(invoked.getName())
+		var direct = (MethodPredicate) (invoked, candidate) -> candidate.getName().equals(invoked.getName())
 				&& candidate.getParameterCount() == invoked.getParameterCount()
 				&& Arrays.equals(candidate.getParameterTypes(), invoked.getParameterTypes());
 
@@ -132,7 +131,7 @@ interface MethodLookups {
 		@Override
 		public List<MethodPredicate> getLookups() {
 
-			MethodPredicate detailedComparison = (invoked, candidate) -> Optional.of(candidate)
+			var detailedComparison = (MethodPredicate) (invoked, candidate) -> Optional.of(candidate)
 					.filter(baseClassMethod -> baseClassMethod.getName().equals(invoked.getName()))// Right name
 					.filter(baseClassMethod -> baseClassMethod.getParameterCount() == invoked.getParameterCount())
 					.filter(baseClassMethod -> parametersMatch(invoked.getMethod(), baseClassMethod))// All parameters match
@@ -152,7 +151,7 @@ interface MethodLookups {
 		 */
 		protected boolean matchesGenericType(TypeVariable<?> variable, ResolvableType parameterType) {
 
-			GenericDeclaration declaration = variable.getGenericDeclaration();
+			var declaration = variable.getGenericDeclaration();
 
 			if (declaration instanceof Class) {
 
@@ -160,13 +159,13 @@ interface MethodLookups {
 					return true;
 				}
 
-				Type boundType = variable.getBounds()[0];
-				String referenceName = boundType instanceof TypeVariable ? boundType.toString() : variable.toString();
+				var boundType = variable.getBounds()[0];
+				var referenceName = boundType instanceof TypeVariable ? boundType.toString() : variable.toString();
 
 				return DOMAIN_TYPE_NAME.equals(referenceName) && parameterType.isAssignableFrom(entityType);
 			}
 
-			for (Type type : variable.getBounds()) {
+			for (var type : variable.getBounds()) {
 				if (ResolvableType.forType(type).isAssignableFrom(parameterType)) {
 					return true;
 				}
@@ -185,16 +184,16 @@ interface MethodLookups {
 		 */
 		private boolean parametersMatch(Method invokedMethod, Method candidate) {
 
-			Class<?>[] methodParameterTypes = invokedMethod.getParameterTypes();
-			Type[] genericTypes = candidate.getGenericParameterTypes();
-			Class<?>[] types = candidate.getParameterTypes();
+			var methodParameterTypes = invokedMethod.getParameterTypes();
+			var genericTypes = candidate.getGenericParameterTypes();
+			var types = candidate.getParameterTypes();
 
-			for (int i = 0; i < genericTypes.length; i++) {
+			for (var i = 0; i < genericTypes.length; i++) {
 
-				Type genericType = genericTypes[i];
-				Class<?> type = types[i];
-				MethodParameter parameter = new MethodParameter(invokedMethod, i).withContainingClass(repositoryInterface);
-				Class<?> parameterType = parameter.getParameterType();
+				var genericType = genericTypes[i];
+				var type = types[i];
+				var parameter = new MethodParameter(invokedMethod, i).withContainingClass(repositoryInterface);
+				var parameterType = parameter.getParameterType();
 
 				if (genericType instanceof TypeVariable<?>) {
 
@@ -241,7 +240,7 @@ interface MethodLookups {
 		@Override
 		public List<MethodPredicate> getLookups() {
 
-			MethodPredicate convertibleComparison = (invokedMethod, candidate) -> {
+			var convertibleComparison = (MethodPredicate) (invokedMethod, candidate) -> {
 
 				List<Supplier<Optional<Method>>> suppliers = new ArrayList<>();
 
@@ -253,7 +252,8 @@ interface MethodLookups {
 				return suppliers.stream().anyMatch(supplier -> supplier.get().isPresent());
 			};
 
-			MethodPredicate detailedComparison = (invokedMethod, candidate) -> getMethodCandidate(invokedMethod, candidate,
+			var detailedComparison = (MethodPredicate) (invokedMethod, candidate) -> getMethodCandidate(invokedMethod,
+					candidate,
 					matchParameterOrComponentType(repositoryMetadata.getRepositoryInterface())).isPresent();
 
 			return Arrays.asList(convertibleComparison, detailedComparison);
@@ -272,9 +272,9 @@ interface MethodLookups {
 
 			return (parameterCriteria) -> {
 
-				Class<?> parameterType = parameterCriteria.getDeclared().withContainingClass(repositoryInterface)
+				var parameterType = parameterCriteria.getDeclared().withContainingClass(repositoryInterface)
 						.getParameterType();
-				Type genericType = parameterCriteria.getGenericBaseType();
+				var genericType = parameterCriteria.getGenericBaseType();
 
 				if (genericType instanceof TypeVariable<?>) {
 
@@ -449,11 +449,9 @@ interface MethodLookups {
 					return true;
 				}
 
-				if (!(o instanceof ParameterOverrideCriteria)) {
+				if (!(o instanceof ParameterOverrideCriteria that)) {
 					return false;
 				}
-
-				ParameterOverrideCriteria that = (ParameterOverrideCriteria) o;
 
 				if (!ObjectUtils.nullSafeEquals(declared, that.declared)) {
 					return false;
@@ -468,7 +466,7 @@ interface MethodLookups {
 			 */
 			@Override
 			public int hashCode() {
-				int result = ObjectUtils.nullSafeHashCode(declared);
+				var result = ObjectUtils.nullSafeHashCode(declared);
 				result = 31 * result + ObjectUtils.nullSafeHashCode(base);
 				return result;
 			}

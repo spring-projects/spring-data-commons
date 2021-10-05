@@ -42,7 +42,7 @@ class TestUtils {
 
 	static MethodParameter getParameterOfMethod(Class<?> controller, String name, Class<?>... argumentTypes) {
 
-		Method method = getMethod(controller, name, argumentTypes);
+		var method = getMethod(controller, name, argumentTypes);
 		return new MethodParameter(method, 0);
 	}
 

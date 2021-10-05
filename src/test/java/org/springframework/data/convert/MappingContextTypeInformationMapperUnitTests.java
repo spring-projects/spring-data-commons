@@ -64,7 +64,7 @@ class MappingContextTypeInformationMapperUnitTests {
 	@Test
 	void extractsAliasForUnknownType() {
 
-		SampleMappingContext mappingContext = new SampleMappingContext();
+		var mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
@@ -75,7 +75,7 @@ class MappingContextTypeInformationMapperUnitTests {
 	@Test
 	void doesNotReturnTypeAliasForSimpleType() {
 
-		SampleMappingContext mappingContext = new SampleMappingContext();
+		var mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
@@ -85,7 +85,7 @@ class MappingContextTypeInformationMapperUnitTests {
 	@Test
 	void detectsTypeForUnknownEntity() {
 
-		SampleMappingContext mappingContext = new SampleMappingContext();
+		var mappingContext = new SampleMappingContext();
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
@@ -101,9 +101,9 @@ class MappingContextTypeInformationMapperUnitTests {
 	@SuppressWarnings("unchecked")
 	void createsTypeMapperForGenericTypesWithDifferentBindings() {
 
-		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(TypeAlias.class);
+		var scanner = new AnnotatedTypeScanner(TypeAlias.class);
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		context.setInitialEntitySet(scanner.findTypes(getClass().getPackage().getName()));
 		context.initialize();
 

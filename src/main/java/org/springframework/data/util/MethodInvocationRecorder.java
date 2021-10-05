@@ -83,9 +83,9 @@ public class MethodInvocationRecorder {
 	@SuppressWarnings("unchecked")
 	private <T> Recorded<T> create(Class<T> type) {
 
-		RecordingMethodInterceptor interceptor = new RecordingMethodInterceptor();
+		var interceptor = new RecordingMethodInterceptor();
 
-		ProxyFactory proxyFactory = new ProxyFactory();
+		var proxyFactory = new ProxyFactory();
 		proxyFactory.addAdvice(interceptor);
 
 		if (!type.isInterface()) {
@@ -95,7 +95,7 @@ public class MethodInvocationRecorder {
 			proxyFactory.addInterface(type);
 		}
 
-		T proxy = (T) proxyFactory.getProxy(type.getClassLoader());
+		var proxy = (T) proxyFactory.getProxy(type.getClassLoader());
 
 		return new Recorded<T>(proxy, new MethodInvocationRecorder(Optional.ofNullable(interceptor)));
 	}
@@ -116,23 +116,23 @@ public class MethodInvocationRecorder {
 		@SuppressWarnings("null")
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
-			Method method = invocation.getMethod();
-			Object[] arguments = invocation.getArguments();
+			var method = invocation.getMethod();
+			var arguments = invocation.getArguments();
 
 			if (ReflectionUtils.isObjectMethod(method)) {
 				return method.invoke(this, arguments);
 			}
 
-			ResolvableType type = ResolvableType.forMethodReturnType(method);
-			Class<?> rawType = type.resolve(Object.class);
+			var type = ResolvableType.forMethodReturnType(method);
+			var rawType = type.resolve(Object.class);
 
 			if (Collection.class.isAssignableFrom(rawType)) {
 
-				Class<?> clazz = type.getGeneric(0).resolve(Object.class);
+				var clazz = type.getGeneric(0).resolve(Object.class);
 
-				InvocationInformation information = registerInvocation(method, clazz);
+				var information = registerInvocation(method, clazz);
 
-				Collection<Object> collection = CollectionFactory.createCollection(rawType, 1);
+				var collection = CollectionFactory.createCollection(rawType, 1);
 				collection.add(information.getCurrentInstance());
 
 				return collection;
@@ -140,10 +140,10 @@ public class MethodInvocationRecorder {
 
 			if (Map.class.isAssignableFrom(rawType)) {
 
-				Class<?> clazz = type.getGeneric(1).resolve(Object.class);
-				InvocationInformation information = registerInvocation(method, clazz);
+				var clazz = type.getGeneric(1).resolve(Object.class);
+				var information = registerInvocation(method, clazz);
 
-				Map<Object, Object> map = CollectionFactory.createMap(rawType, 1);
+				var map = CollectionFactory.createMap(rawType, 1);
 				map.put("_key_", information.getCurrentInstance());
 
 				return map;
@@ -158,8 +158,8 @@ public class MethodInvocationRecorder {
 
 		private InvocationInformation registerInvocation(Method method, Class<?> proxyType) {
 
-			Recorded<?> create = Modifier.isFinal(proxyType.getModifiers()) ? new Unrecorded() : create(proxyType);
-			InvocationInformation information = new InvocationInformation(create, method);
+			var create = Modifier.isFinal(proxyType.getModifiers()) ? new Unrecorded() : create(proxyType);
+			var information = new InvocationInformation(create, method);
 
 			return this.information = information;
 		}
@@ -187,14 +187,14 @@ public class MethodInvocationRecorder {
 
 		Optional<String> getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
 
-			Method invokedMethod = this.invokedMethod;
+			var invokedMethod = this.invokedMethod;
 
 			if (invokedMethod == null) {
 				return Optional.empty();
 			}
 
-			String propertyName = getPropertyName(invokedMethod, strategies);
-			Optional<String> next = recorded.getPropertyPath(strategies);
+			var propertyName = getPropertyName(invokedMethod, strategies);
+			var next = recorded.getPropertyPath(strategies);
 
 			return Optionals.firstNonEmpty(() -> next.map(it -> propertyName.concat(".").concat(it)), //
 					() -> Optional.of(propertyName));
@@ -229,11 +229,9 @@ public class MethodInvocationRecorder {
 				return true;
 			}
 
-			if (!(o instanceof InvocationInformation)) {
+			if (!(o instanceof InvocationInformation that)) {
 				return false;
 			}
-
-			InvocationInformation that = (InvocationInformation) o;
 
 			if (!ObjectUtils.nullSafeEquals(recorded, that.recorded)) {
 				return false;
@@ -249,7 +247,7 @@ public class MethodInvocationRecorder {
 		@Override
 		public int hashCode() {
 
-			int result = ObjectUtils.nullSafeHashCode(recorded);
+			var result = ObjectUtils.nullSafeHashCode(recorded);
 
 			result = 31 * result + ObjectUtils.nullSafeHashCode(invokedMethod);
 
@@ -289,8 +287,8 @@ public class MethodInvocationRecorder {
 
 		private static String getPropertyName(Class<?> type, String methodName) {
 
-			String pattern = getPatternFor(type);
-			String replaced = methodName.replaceFirst(pattern, "");
+			var pattern = getPatternFor(type);
+			var replaced = methodName.replaceFirst(pattern, "");
 
 			return StringUtils.uncapitalize(replaced);
 		}
@@ -317,14 +315,14 @@ public class MethodInvocationRecorder {
 
 		public Optional<String> getPropertyPath(PropertyNameDetectionStrategy strategy) {
 
-			MethodInvocationRecorder recorder = this.recorder;
+			var recorder = this.recorder;
 
 			return recorder == null ? Optional.empty() : recorder.getPropertyPath(Arrays.asList(strategy));
 		}
 
 		public Optional<String> getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
 
-			MethodInvocationRecorder recorder = this.recorder;
+			var recorder = this.recorder;
 
 			return recorder == null ? Optional.empty() : recorder.getPropertyPath(strategies);
 		}

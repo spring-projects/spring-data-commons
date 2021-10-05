@@ -18,9 +18,9 @@ package org.springframework.data.type.classreading;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.data.type.MethodsMetadata;
 
@@ -34,11 +34,11 @@ class DefaultMethodsMetadataReaderUnitTests {
 	@Test // DATACMNS-1206
 	void shouldReadClassMethods() throws IOException {
 
-		MethodsMetadata metadata = getMethodsMetadata(Foo.class);
+		var metadata = getMethodsMetadata(Foo.class);
 
 		assertThat(metadata.getMethods()).hasSize(3);
 
-		Iterator<MethodMetadata> iterator = metadata.getMethods().iterator();
+		var iterator = metadata.getMethods().iterator();
 
 		assertThat(iterator.next().getMethodName()).isEqualTo("one");
 		assertThat(iterator.next().getMethodName()).isEqualTo("two");
@@ -48,11 +48,11 @@ class DefaultMethodsMetadataReaderUnitTests {
 	@Test // DATACMNS-1206
 	void shouldReadInterfaceMethods() throws IOException {
 
-		MethodsMetadata metadata = getMethodsMetadata(Baz.class);
+		var metadata = getMethodsMetadata(Baz.class);
 
 		assertThat(metadata.getMethods()).hasSize(3);
 
-		Iterator<MethodMetadata> iterator = metadata.getMethods().iterator();
+		var iterator = metadata.getMethods().iterator();
 
 		assertThat(iterator.next().getMethodName()).isEqualTo("one");
 		assertThat(iterator.next().getMethodName()).isEqualTo("two");
@@ -62,8 +62,8 @@ class DefaultMethodsMetadataReaderUnitTests {
 	@Test // DATACMNS-1206
 	void shouldMetadata() throws IOException {
 
-		MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory();
-		MethodsMetadataReader metadataReader = factory.getMetadataReader(getClass().getName());
+		var factory = new MethodsMetadataReaderFactory();
+		var metadataReader = factory.getMetadataReader(getClass().getName());
 
 		assertThat(metadataReader.getClassMetadata()).isNotNull();
 		assertThat(metadataReader.getAnnotationMetadata()).isNotNull();
@@ -72,7 +72,7 @@ class DefaultMethodsMetadataReaderUnitTests {
 	@Test // DATACMNS-1206
 	void shouldReturnMethodMetadataByName() throws IOException {
 
-		MethodsMetadata metadata = getMethodsMetadata(Foo.class);
+		var metadata = getMethodsMetadata(Foo.class);
 
 		assertThat(metadata.getMethods()).hasSize(3);
 
@@ -82,8 +82,8 @@ class DefaultMethodsMetadataReaderUnitTests {
 
 	private static MethodsMetadata getMethodsMetadata(Class<?> classToIntrospect) throws IOException {
 
-		MethodsMetadataReaderFactory factory = new MethodsMetadataReaderFactory();
-		MethodsMetadataReader metadataReader = factory.getMetadataReader(classToIntrospect.getName());
+		var factory = new MethodsMetadataReaderFactory();
+		var metadataReader = factory.getMetadataReader(classToIntrospect.getName());
 		return metadataReader.getMethodsMetadata();
 	}
 

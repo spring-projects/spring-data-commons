@@ -17,7 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Iterator;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProviderUnitTests.Outer.Inner;
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -59,7 +57,7 @@ class PersistentEntityParameterValueProviderUnitTests<P extends PersistentProper
 
 		assertThat(entity.getPersistenceConstructor()).satisfies(constructor -> {
 
-			Iterator<Parameter<Object, P>> iterator = constructor.getParameters().iterator();
+			var iterator = constructor.getParameters().iterator();
 			ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider,
 					outer);
 

@@ -60,7 +60,7 @@ class SelectionSet<T> {
 	 */
 	Optional<T> uniqueResult() {
 
-		Optional<T> uniqueResult = findUniqueResult();
+		var uniqueResult = findUniqueResult();
 
 		return uniqueResult.isPresent() ? uniqueResult : fallback.apply(collection);
 	}

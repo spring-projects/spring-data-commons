@@ -49,16 +49,16 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 	@Override
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
 
-		PreferredConstructor<?, ?> constructor = entity.getPersistenceConstructor();
+		var constructor = entity.getPersistenceConstructor();
 
 		if (KotlinReflectionUtils.isSupportedKotlinClass(entity.getType()) && constructor != null) {
 
-			PreferredConstructor<?, ?> defaultConstructor = new DefaultingKotlinConstructorResolver(entity)
+			var defaultConstructor = new DefaultingKotlinConstructorResolver(entity)
 					.getDefaultConstructor();
 
 			if (defaultConstructor != null) {
 
-				ObjectInstantiator instantiator = createObjectInstantiator(entity, defaultConstructor);
+				var instantiator = createObjectInstantiator(entity, defaultConstructor);
 
 				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, constructor);
 			}
@@ -81,8 +81,8 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		@SuppressWarnings("unchecked")
 		DefaultingKotlinConstructorResolver(PersistentEntity<?, ?> entity) {
 
-			Constructor<?> hit = resolveDefaultConstructor(entity);
-			PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
+			var hit = resolveDefaultConstructor(entity);
+			var persistenceConstructor = entity.getPersistenceConstructor();
 
 			if (hit != null && persistenceConstructor != null) {
 				this.defaultConstructor = new PreferredConstructor<>(hit,
@@ -95,16 +95,16 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		@Nullable
 		private static Constructor<?> resolveDefaultConstructor(PersistentEntity<?, ?> entity) {
 
-			PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
+			var persistenceConstructor = entity.getPersistenceConstructor();
 
 			if (persistenceConstructor == null) {
 				return null;
 			}
 
 			Constructor<?> hit = null;
-			Constructor<?> constructor = persistenceConstructor.getConstructor();
+			var constructor = persistenceConstructor.getConstructor();
 
-			for (Constructor<?> candidate : entity.getType().getDeclaredConstructors()) {
+			for (var candidate : entity.getType().getDeclaredConstructors()) {
 
 				// use only synthetic constructors
 				if (!candidate.isSynthetic()) {
@@ -113,15 +113,15 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 
 				// candidates must contain at least two additional parameters (int, DefaultConstructorMarker).
 				// Number of defaulting masks derives from the original constructor arg count
-				int syntheticParameters = KotlinDefaultMask.getMaskCount(constructor.getParameterCount())
+				var syntheticParameters = KotlinDefaultMask.getMaskCount(constructor.getParameterCount())
 						+ /* DefaultConstructorMarker */ 1;
 
 				if (constructor.getParameterCount() + syntheticParameters != candidate.getParameterCount()) {
 					continue;
 				}
 
-				java.lang.reflect.Parameter[] constructorParameters = constructor.getParameters();
-				java.lang.reflect.Parameter[] candidateParameters = candidate.getParameters();
+				var constructorParameters = constructor.getParameters();
+				var candidateParameters = candidate.getParameters();
 
 				if (!candidateParameters[candidateParameters.length - 1].getType().getName()
 						.equals("kotlin.jvm.internal.DefaultConstructorMarker")) {
@@ -177,7 +177,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 
 		DefaultingKotlinClassInstantiatorAdapter(ObjectInstantiator instantiator, PreferredConstructor<?, ?> constructor) {
 
-			KFunction<?> kotlinConstructor = ReflectJvmMapping.getKotlinFunction(constructor.getConstructor());
+			var kotlinConstructor = ReflectJvmMapping.getKotlinFunction(constructor.getConstructor());
 
 			if (kotlinConstructor == null) {
 				throw new IllegalArgumentException(
@@ -199,7 +199,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			Object[] params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+			var params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
 
 			try {
 				return (T) instantiator.newInstance(params);
@@ -215,25 +215,25 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 				throw new IllegalArgumentException("PreferredConstructor must not be null!");
 			}
 
-			Object[] params = allocateArguments(synthetic.getParameterCount()
+			var params = allocateArguments(synthetic.getParameterCount()
 					+ KotlinDefaultMask.getMaskCount(synthetic.getParameterCount()) + /* DefaultConstructorMarker */1);
-			int userParameterCount = kParameters.size();
+			var userParameterCount = kParameters.size();
 
-			List<Parameter<Object, P>> parameters = preferredConstructor.getParameters();
+			var parameters = preferredConstructor.getParameters();
 
 			// Prepare user-space arguments
-			for (int i = 0; i < userParameterCount; i++) {
+			for (var i = 0; i < userParameterCount; i++) {
 
-				Parameter<Object, P> parameter = parameters.get(i);
+				var parameter = parameters.get(i);
 				params[i] = provider.getParameterValue(parameter);
 			}
 
-			KotlinDefaultMask defaultMask = KotlinDefaultMask.from(constructor, it -> {
+			var defaultMask = KotlinDefaultMask.from(constructor, it -> {
 
-				int index = kParameters.indexOf(it);
+				var index = kParameters.indexOf(it);
 
-				Parameter<Object, P> parameter = parameters.get(index);
-				Class<Object> type = parameter.getType().getType();
+				var parameter = parameters.get(index);
+				var type = parameter.getType().getType();
 
 				if (it.isOptional() && params[index] == null) {
 					if (type.isPrimitive()) {
@@ -247,9 +247,9 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 				return true;
 			});
 
-			int[] defaulting = defaultMask.getDefaulting();
+			var defaulting = defaultMask.getDefaulting();
 			// append nullability masks to creation arguments
-			for (int i = 0; i < defaulting.length; i++) {
+			for (var i = 0; i < defaulting.length; i++) {
 				params[userParameterCount + i] = defaulting[i];
 			}
 

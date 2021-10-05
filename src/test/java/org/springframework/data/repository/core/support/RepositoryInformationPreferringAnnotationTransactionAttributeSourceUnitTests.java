@@ -19,10 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.RepositoryAnnotationTransactionAttributeSource;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAttribute;
 
 /**
  * Unit tests for {@link RepositoryAnnotationTransactionAttributeSource}.
@@ -35,12 +35,12 @@ class RepositoryInformationPreferringAnnotationTransactionAttributeSourceUnitTes
 	@Test
 	void usesCustomTransactionConfigurationOnInterface() throws Exception {
 
-		RepositoryInformation information = mock(RepositoryInformation.class);
+		var information = mock(RepositoryInformation.class);
 
-		RepositoryAnnotationTransactionAttributeSource source = new RepositoryAnnotationTransactionAttributeSource(
+		var source = new RepositoryAnnotationTransactionAttributeSource(
 				information, true);
 
-		TransactionAttribute attribute = source.getTransactionAttribute(Bar.class.getMethod("bar", Object.class),
+		var attribute = source.getTransactionAttribute(Bar.class.getMethod("bar", Object.class),
 				FooImpl.class);
 		assertThat(attribute.isReadOnly()).isFalse();
 

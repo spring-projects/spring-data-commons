@@ -50,7 +50,7 @@ class RepositoriesIntegrationTests {
 	@Test // DATACMNS-376
 	void returnsPersistentEntityForProxiedClass() {
 
-		User user = mock(User.class);
+		var user = mock(User.class);
 		assertThat(repositories.getPersistentEntity(user.getClass())).isNotNull();
 	}
 }

@@ -18,13 +18,13 @@ package org.springframework.data.repository.query;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.repository.query.SpelQueryContext.SpelExtractor;
 
 /**
@@ -43,7 +43,7 @@ class SpelExtractorUnitTests {
 	@Test // DATACMNS-1258
 	void nullQueryThrowsException() {
 
-		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
 		assertThatIllegalArgumentException().isThrownBy(() -> context.parse(null));
 	}
@@ -51,8 +51,8 @@ class SpelExtractorUnitTests {
 	@Test // DATACMNS-1258
 	void emptyStringGetsParsedCorrectly() {
 
-		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
-		SpelExtractor extractor = context.parse("");
+		var context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var extractor = context.parse("");
 
 		softly.assertThat(extractor.getQueryString()).isEqualTo("");
 		softly.assertThat(extractor.getParameterMap()).isEmpty();
@@ -63,8 +63,8 @@ class SpelExtractorUnitTests {
 	@Test // DATACMNS-1258
 	void findsAndReplacesExpressions() {
 
-		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
-		SpelExtractor extractor = context.parse(":#{one} ?#{two}");
+		var context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var extractor = context.parse(":#{one} ?#{two}");
 
 		softly.assertThat(extractor.getQueryString()).isEqualTo(":EPP0 ?EPP1");
 		softly.assertThat(extractor.getParameterMap().entrySet()) //
@@ -80,8 +80,8 @@ class SpelExtractorUnitTests {
 	@Test // DATACMNS-1258
 	void keepsStringWhenNoMatchIsFound() {
 
-		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
-		SpelExtractor extractor = context.parse("abcdef");
+		var context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var extractor = context.parse("abcdef");
 
 		softly.assertThat(extractor.getQueryString()).isEqualTo("abcdef");
 		softly.assertThat(extractor.getParameterMap()).isEmpty();
@@ -92,7 +92,7 @@ class SpelExtractorUnitTests {
 	@Test // DATACMNS-1258
 	void spelsInQuotesGetIgnored() {
 
-		List<String> queries = Arrays.asList(//
+		var queries = Arrays.asList(//
 				"a'b:#{one}cd'ef", //
 				"a'b:#{o'ne}cdef", //
 				"ab':#{one}'cdef", //
@@ -107,8 +107,8 @@ class SpelExtractorUnitTests {
 
 	private void checkNoSpelIsFound(String query) {
 
-		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
-		SpelExtractor extractor = context.parse(query);
+		var context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var extractor = context.parse(query);
 
 		softly.assertThat(extractor.getQueryString()).describedAs(query).isEqualTo(query);
 		softly.assertThat(extractor.getParameterMap()).describedAs(query).isEmpty();

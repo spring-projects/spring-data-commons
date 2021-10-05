@@ -16,8 +16,6 @@
 package org.springframework.data.querydsl.binding;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mapping.PropertyPath;
@@ -38,13 +36,7 @@ import com.querydsl.core.types.dsl.CollectionPathBase;
  * @author Mark Paluch
  * @since 1.13
  */
-class PropertyPathInformation implements PathInformation {
-
-	private final PropertyPath path;
-
-	private PropertyPathInformation(PropertyPath path) {
-		this.path = path;
-	}
+record PropertyPathInformation(PropertyPath path) implements PathInformation {
 
 	/**
 	 * Creates a new {@link PropertyPathInformation} for the given path and type.
@@ -133,32 +125,26 @@ class PropertyPathInformation implements PathInformation {
 	 */
 	@Override
 	public Path<?> reifyPath(EntityPathResolver resolver) {
-		return reifyPath(resolver, path, Optional.empty());
+		return reifyPath(resolver, path, null);
 	}
 
-	private static Path<?> reifyPath(EntityPathResolver resolver, PropertyPath path, Optional<Path<?>> base) {
+	@SuppressWarnings("ConstantConditions")
+	private static Path<?> reifyPath(EntityPathResolver resolver, PropertyPath path, @Nullable Path<?> base) {
 
-		Optional<Path<?>> map = base.filter(it -> it instanceof CollectionPathBase).map(CollectionPathBase.class::cast)//
-				.map(CollectionPathBase::any)//
-				.map(Path.class::cast)//
-				.map(it -> reifyPath(resolver, path, Optional.of(it)));
+		if (base instanceof CollectionPathBase) {
+			return reifyPath(resolver, path, (Path<?>) ((CollectionPathBase<?, ?, ?>) base).any());
+		}
 
-		return map.orElseGet(() -> {
+		var entityPath = base != null ? base : resolver.createPath(path.getOwningType().getType());
 
-			Path<?> entityPath = base.orElseGet(() -> resolver.createPath(path.getOwningType().getType()));
+		var field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
+		var value = ReflectionUtils.getField(field, entityPath);
 
-			Field field = org.springframework.data.util.ReflectionUtils.findRequiredField(entityPath.getClass(),
-					path.getSegment());
-			Object value = ReflectionUtils.getField(field, entityPath);
+		if (path.hasNext()) {
+			return reifyPath(resolver, path.next(), (Path<?>) value);
+		}
 
-			PropertyPath next = path.next();
-
-			if (next != null) {
-				return reifyPath(resolver, next, Optional.of((Path<?>) value));
-			}
-
-			return (Path<?>) value;
-		});
+		return (Path<?>) value;
 	}
 
 	/*
@@ -172,11 +158,10 @@ class PropertyPathInformation implements PathInformation {
 			return true;
 		}
 
-		if (!(o instanceof PathInformation)) {
+		if (!(o instanceof PathInformation that)) {
 			return false;
 		}
 
-		PathInformation that = (PathInformation) o;
 		return ObjectUtils.nullSafeEquals(getRootParentType(), that.getRootParentType())
 				&& ObjectUtils.nullSafeEquals(toDotPath(), that.toDotPath());
 	}
@@ -187,7 +172,7 @@ class PropertyPathInformation implements PathInformation {
 	 */
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(getRootParentType());
+		var result = ObjectUtils.nullSafeHashCode(getRootParentType());
 		result = 31 * result + ObjectUtils.nullSafeHashCode(toDotPath());
 		return result;
 	}

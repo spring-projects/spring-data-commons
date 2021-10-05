@@ -56,7 +56,7 @@ class BoxUnitTests {
 	@Test // DATACMNS-482
 	void testSerialization() {
 
-		Box serialized = (Box) SerializationUtils.deserialize(SerializationUtils.serialize(first));
+		var serialized = (Box) SerializationUtils.deserialize(SerializationUtils.serialize(first));
 		assertThat(serialized).isEqualTo(first);
 	}
 }

@@ -101,7 +101,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Bean
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
 
-		PageableHandlerMethodArgumentResolver pageableResolver = //
+		var pageableResolver = //
 				new PageableHandlerMethodArgumentResolver(sortResolver.get());
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
@@ -114,7 +114,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Bean
 	public SortHandlerMethodArgumentResolver sortResolver() {
 
-		SortHandlerMethodArgumentResolver sortResolver = new SortHandlerMethodArgumentResolver();
+		var sortResolver = new SortHandlerMethodArgumentResolver();
 		customizeSortResolver(sortResolver);
 		return sortResolver;
 	}
@@ -129,13 +129,11 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		registry.addFormatter(DistanceFormatter.INSTANCE);
 		registry.addFormatter(PointFormatter.INSTANCE);
 
-		if (!(registry instanceof FormattingConversionService)) {
+		if (!(registry instanceof FormattingConversionService conversionService)) {
 			return;
 		}
 
-		FormattingConversionService conversionService = (FormattingConversionService) registry;
-
-		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<>(conversionService);
+		var converter = new DomainClassConverter<FormattingConversionService>(conversionService);
 		converter.setApplicationContext(context);
 	}
 
@@ -149,7 +147,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		argumentResolvers.add(sortResolver.get());
 		argumentResolvers.add(pageableResolver.get());
 
-		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
+		var resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
 		resolver.setBeanFactory(context);
 		forwardBeanClassLoader(resolver);
 
@@ -166,9 +164,9 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())
 				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
-			ObjectMapper mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
+			var mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
 
-			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
+			var converter = new ProjectingJackson2HttpMessageConverter(mapper);
 			converter.setBeanFactory(context);
 			forwardBeanClassLoader(converter);
 

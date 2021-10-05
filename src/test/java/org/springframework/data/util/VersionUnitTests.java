@@ -30,8 +30,8 @@ class VersionUnitTests {
 	@Test // DATCMNS-384
 	void sameVersionsEqualOneDigits() {
 
-		Version first = new Version(6);
-		Version second = new Version(6);
+		var first = new Version(6);
+		var second = new Version(6);
 
 		assertThat(first).isEqualTo(second);
 		assertThat(second).isEqualTo(first);
@@ -40,8 +40,8 @@ class VersionUnitTests {
 	@Test // DATCMNS-384
 	void sameVersionsEqualTwoDigits() {
 
-		Version first = new Version(5, 2);
-		Version second = new Version(5, 2);
+		var first = new Version(5, 2);
+		var second = new Version(5, 2);
 
 		assertThat(first).isEqualTo(second);
 		assertThat(second).isEqualTo(first);
@@ -50,8 +50,8 @@ class VersionUnitTests {
 	@Test // DATCMNS-384
 	void sameVersionsEqualThreeDigits() {
 
-		Version first = new Version(1, 2, 3);
-		Version second = new Version(1, 2, 3);
+		var first = new Version(1, 2, 3);
+		var second = new Version(1, 2, 3);
 
 		assertThat(first).isEqualTo(second);
 		assertThat(second).isEqualTo(first);
@@ -60,8 +60,8 @@ class VersionUnitTests {
 	@Test // DATCMNS-384
 	void sameVersionsEqualFourDigits() {
 
-		Version first = new Version(1, 2, 3, 1000);
-		Version second = new Version(1, 2, 3, 1000);
+		var first = new Version(1, 2, 3, 1000);
+		var second = new Version(1, 2, 3, 1000);
 
 		assertThat(first).isEqualTo(second);
 		assertThat(second).isEqualTo(first);
@@ -70,39 +70,39 @@ class VersionUnitTests {
 	@Test // DATCMNS-384
 	void parsesVersionCorrectlyOneDigits() {
 
-		Version version = Version.parse("5");
+		var version = Version.parse("5");
 		assertThat(version).isEqualTo(new Version(5));
 	}
 
 	@Test // DATCMNS-384
 	void parsesVersionCorrectlyTwoDigits() {
 
-		Version version = Version.parse("5.2");
+		var version = Version.parse("5.2");
 		assertThat(version).isEqualTo(new Version(5, 2));
 	}
 
 	@Test // DATCMNS-384
 	void parsesVersionCorrectlyThreeDigits() {
 
-		Version version = Version.parse("12.1.3");
+		var version = Version.parse("12.1.3");
 		assertThat(version).isEqualTo(new Version(12, 1, 3));
 	}
 
 	@Test // DATCMNS-384
 	void parsesVersionCorrectlyFourDigits() {
 
-		Version version = Version.parse("12.1.3.1000");
+		var version = Version.parse("12.1.3.1000");
 		assertThat(version).isEqualTo(new Version(12, 1, 3, 1000));
 	}
 
 	@Test // DATCMNS-384
 	void comparesToCorrectly() {
 
-		Version version = new Version(1, 2, 3, 1000);
-		Version nextBuild = new Version(1, 2, 3, 1001);
-		Version nextBugfix = new Version(1, 2, 4);
-		Version nextMinor = new Version(1, 3);
-		Version nextMajor = new Version(2);
+		var version = new Version(1, 2, 3, 1000);
+		var nextBuild = new Version(1, 2, 3, 1001);
+		var nextBugfix = new Version(1, 2, 4);
+		var nextMinor = new Version(1, 3);
+		var nextMajor = new Version(2);
 
 		assertThat(nextMajor.isGreaterThan(nextMinor)).isTrue();
 		assertThat(nextMajor.isGreaterThan(nextMajor)).isFalse();

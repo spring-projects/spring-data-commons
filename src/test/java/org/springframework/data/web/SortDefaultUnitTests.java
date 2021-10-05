@@ -58,8 +58,8 @@ abstract class SortDefaultUnitTests {
 
 	private static void assertSortStringParsedInto(Sort expected, String... source) {
 
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		Sort sort = resolver.parseParameterIntoSort(Arrays.asList(source), ",");
+		var resolver = new SortHandlerMethodArgumentResolver();
+		var sort = resolver.parseParameterIntoSort(Arrays.asList(source), ",");
 
 		assertThat(sort).isEqualTo(expected);
 	}
@@ -87,14 +87,14 @@ abstract class SortDefaultUnitTests {
 	@Test
 	void rejectsNonSortParameter() {
 
-		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
+		var parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
 		assertThat(getResolver().supportsParameter(parameter)).isFalse();
 	}
 
 	@Test
 	void rejectsDoubleAnnotatedMethod() {
 
-		MethodParameter parameter = getParameterOfMethod("invalid");
+		var parameter = getParameterOfMethod("invalid");
 
 		HandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
@@ -109,8 +109,8 @@ abstract class SortDefaultUnitTests {
 	@Test
 	void discoversContaineredDefault() throws Exception {
 
-		MethodParameter parameter = getParameterOfMethod("containeredDefault");
-		Sort reference = Sort.by("foo", "bar");
+		var parameter = getParameterOfMethod("containeredDefault");
+		var reference = Sort.by("foo", "bar");
 
 		assertSupportedAndResolvedTo(parameter, reference);
 	}
@@ -123,7 +123,7 @@ abstract class SortDefaultUnitTests {
 
 	private void assertSupportedAndResolvedTo(MethodParameter parameter, Sort sort) throws Exception {
 
-		HandlerMethodArgumentResolver resolver = getResolver();
+		var resolver = getResolver();
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 		assertThat(resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null)).isEqualTo(sort);
 	}

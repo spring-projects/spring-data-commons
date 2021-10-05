@@ -85,7 +85,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	default Method getRequiredGetter() {
 
-		Method getter = getGetter();
+		var getter = getGetter();
 
 		if (getter == null) {
 			throw new IllegalArgumentException(String.format("No getter available for persistent property %s!", this));
@@ -105,7 +105,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	default Method getRequiredSetter() {
 
-		Method setter = getSetter();
+		var setter = getSetter();
 
 		if (setter == null) {
 			throw new IllegalArgumentException(String.format("No setter available for persistent property %s!", this));
@@ -143,7 +143,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	default Method getRequiredWither() {
 
-		Method wither = getWither();
+		var wither = getWither();
 
 		if (wither == null) {
 			throw new IllegalArgumentException(String.format("No wither available for persistent property %s!", this));
@@ -157,7 +157,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 
 	default Field getRequiredField() {
 
-		Field field = getField();
+		var field = getField();
 
 		if (field == null) {
 			throw new IllegalArgumentException(String.format("No field backing persistent property %s!", this));
@@ -186,7 +186,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 */
 	default Association<P> getRequiredAssociation() {
 
-		Association<P> association = getAssociation();
+		var association = getAssociation();
 
 		if (association != null) {
 			return association;
@@ -332,7 +332,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 */
 	default <A extends Annotation> A getRequiredAnnotation(Class<A> annotationType) throws IllegalStateException {
 
-		A annotation = findAnnotation(annotationType);
+		var annotation = findAnnotation(annotationType);
 
 		if (annotation != null) {
 			return annotation;

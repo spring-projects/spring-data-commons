@@ -60,10 +60,10 @@ class GeoResultUnitTests {
 	@Test // DATACMNS-482
 	void testSerialization() {
 
-		GeoResult<String> result = new GeoResult<>("test", new Distance(2));
+		var result = new GeoResult<String>("test", new Distance(2));
 
 		@SuppressWarnings("unchecked")
-		GeoResult<String> serialized = (GeoResult<String>) SerializationUtils.deserialize(SerializationUtils.serialize(result));
+		var serialized = (GeoResult<String>) SerializationUtils.deserialize(SerializationUtils.serialize(result));
 		assertThat(serialized).isEqualTo(result);
 	}
 }

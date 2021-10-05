@@ -104,15 +104,15 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	@Test // DATACMNS-134, DATACMNS-578
 	void createsInnerClassInstanceCorrectly() {
 
-		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(from(Inner.class));
+		var entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
 		assertThat(entity.getPersistenceConstructor()).satisfies(constructor -> {
 
-			Parameter<Object, P> parameter = constructor.getParameters().iterator().next();
+			var parameter = constructor.getParameters().iterator().next();
 
 			Object outer = new Outer();
 
 			doReturn(outer).when(provider).getParameterValue(parameter);
-			Inner instance = this.instance.createInstance(entity, provider);
+			var instance = this.instance.createInstance(entity, provider);
 
 			assertThat(instance).isNotNull();
 
@@ -164,7 +164,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(2L, "FOO").when(provider).getParameterValue(any(Parameter.class));
 
-		ParameterValueProvider<P> recursive = new ParameterValueProvider<P>() {
+		var recursive = new ParameterValueProvider<P>() {
 
 			@Override
 			public <T> T getParameterValue(Parameter<T, P> parameter) {
@@ -181,7 +181,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 			}
 		};
 
-		SampleWithReference reference = this.instance.createInstance(outer, recursive);
+		var reference = this.instance.createInstance(outer, recursive);
 
 		assertThat(reference.id).isEqualTo(1L);
 		assertThat(reference.sample).isNotNull();
@@ -209,13 +209,13 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		IntStream.range(0, 2).forEach(i -> {
 
-			Object instance = this.instance.createInstance(entity, provider);
+			var instance = this.instance.createInstance(entity, provider);
 
 			assertThat(instance).isInstanceOf(ObjCtorNoArgs.class);
 			assertThat(((ObjCtorNoArgs) instance).ctorInvoked).isTrue();
 		});
 
-		ClassGeneratingEntityInstantiator classGeneratingEntityInstantiator = new ClassGeneratingEntityInstantiator();
+		var classGeneratingEntityInstantiator = new ClassGeneratingEntityInstantiator();
 		classGeneratingEntityInstantiator.createInstance(entity, provider);
 	}
 
@@ -229,7 +229,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		IntStream.range(0, 2).forEach(i -> {
 
-			Object instance = this.instance.createInstance(entity, provider);
+			var instance = this.instance.createInstance(entity, provider);
 
 			assertThat(instance).isInstanceOf(ObjCtor1ParamString.class);
 			assertThat(((ObjCtor1ParamString) instance).ctorInvoked).isTrue();
@@ -248,7 +248,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 			when(provider.getParameterValue(any())).thenReturn("FOO", "BAR");
 
-			Object instance = this.instance.createInstance(entity, provider);
+			var instance = this.instance.createInstance(entity, provider);
 
 			assertThat(instance).isInstanceOf(ObjCtor2ParamStringString.class);
 			assertThat(((ObjCtor2ParamStringString) instance).ctorInvoked).isTrue();
@@ -268,7 +268,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 			doReturn(42).when(provider).getParameterValue(any());
 
-			Object instance = this.instance.createInstance(entity, provider);
+			var instance = this.instance.createInstance(entity, provider);
 
 			assertThat(instance).isInstanceOf(ObjectCtor1ParamInt.class);
 			assertThat(((ObjectCtor1ParamInt) instance).param1).isEqualTo(42);
@@ -298,11 +298,11 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 			when(provider.getParameterValue(any(Parameter.class))).thenReturn("A", 1, 2, 3, 4, 5, "B");
 
-			Object instance = this.instance.createInstance(entity, provider);
+			var instance = this.instance.createInstance(entity, provider);
 
 			assertThat(instance).isInstanceOf(ObjectCtor7ParamsString5IntsString.class);
 
-			ObjectCtor7ParamsString5IntsString toTest = (ObjectCtor7ParamsString5IntsString) instance;
+			var toTest = (ObjectCtor7ParamsString5IntsString) instance;
 
 			assertThat(toTest.param1).isEqualTo("A");
 			assertThat(toTest.param2).isEqualTo(1);
@@ -352,7 +352,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	@Test // DATACMNS-1373
 	void shouldInstantiateClassInDefaultPackage() throws ClassNotFoundException {
 
-		Class<?> typeInDefaultPackage = Class.forName("TypeInDefaultPackage");
+		var typeInDefaultPackage = Class.forName("TypeInDefaultPackage");
 		prepareMocks(typeInDefaultPackage);
 
 		assertThat(this.instance.shouldUseReflectionEntityInstantiator(entity)).isFalse();
@@ -374,13 +374,13 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		this.instance.createInstance(entity, provider);
 
-		ClassGeneratingEntityInstantiator instantiator = new ClassGeneratingEntityInstantiator();
+		var instantiator = new ClassGeneratingEntityInstantiator();
 		instantiator.createInstance(entity, provider);
 
-		Map<TypeInformation<?>, EntityInstantiator> first = (Map<TypeInformation<?>, EntityInstantiator>) ReflectionTestUtils
+		var first = (Map<TypeInformation<?>, EntityInstantiator>) ReflectionTestUtils
 				.getField(this.instance, "entityInstantiators");
 
-		Map<TypeInformation<?>, EntityInstantiator> second = (Map<TypeInformation<?>, EntityInstantiator>) ReflectionTestUtils
+		var second = (Map<TypeInformation<?>, EntityInstantiator>) ReflectionTestUtils
 				.getField(instantiator, "entityInstantiators");
 
 		assertThat(first.get(null)).isNotNull().isNotInstanceOf(Enum.class);
@@ -390,11 +390,11 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	@Test // DATACMNS-1422
 	void shouldUseReflectionIfFrameworkTypesNotVisible() throws Exception {
 
-		HidingClassLoader classLoader = HidingClassLoader.hide(ObjectInstantiator.class);
+		var classLoader = HidingClassLoader.hide(ObjectInstantiator.class);
 		classLoader.excludePackage("org.springframework.data.mapping");
 
 		// require type from different package to meet visibility quirks
-		Class<?> entityType = classLoader.loadClass("org.springframework.data.mapping.Person");
+		var entityType = classLoader.loadClass("org.springframework.data.mapping.Person");
 
 		prepareMocks(entityType);
 

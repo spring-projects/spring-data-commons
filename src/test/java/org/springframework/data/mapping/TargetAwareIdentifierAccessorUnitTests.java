@@ -31,7 +31,7 @@ public class TargetAwareIdentifierAccessorUnitTests {
 	@Test // DATACMNS-1015
 	public void throwsExceptionContainingInformationAboutTargetIfIdentifierAbsent() {
 
-		Object sample = new Object();
+		var sample = new Object();
 
 		IdentifierAccessor accessor = new TargetAwareIdentifierAccessor(sample) {
 

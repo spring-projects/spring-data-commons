@@ -120,7 +120,7 @@ class AuditingHandlerUnitTests {
 	@Test
 	void onlySetsModificationDataOnNotNewEntities() {
 
-		AuditedUser audited = new AuditedUser();
+		var audited = new AuditedUser();
 		audited.id = 1L;
 
 		handler.setAuditorAware(auditorAware);
@@ -152,7 +152,7 @@ class AuditingHandlerUnitTests {
 	@Test // DATAJPA-9
 	void usesDateTimeProviderIfConfigured() {
 
-		DateTimeProvider provider = mock(DateTimeProvider.class);
+		var provider = mock(DateTimeProvider.class);
 		doReturn(Optional.empty()).when(provider).getNow();
 
 		handler.setDateTimeProvider(provider);
@@ -164,10 +164,10 @@ class AuditingHandlerUnitTests {
 	@Test
 	void setsAuditingInfoOnEntityUsingInheritance() {
 
-		AuditingHandler handler = new AuditingHandler(PersistentEntities.of(new SampleMappingContext()));
+		var handler = new AuditingHandler(PersistentEntities.of(new SampleMappingContext()));
 		handler.setModifyOnCreation(false);
 
-		MyDocument result = handler.markCreated(new MyDocument());
+		var result = handler.markCreated(new MyDocument());
 
 		assertThat(result.created).isNotNull();
 		assertThat(result.modified).isNull();

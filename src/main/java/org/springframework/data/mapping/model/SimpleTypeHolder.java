@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -123,7 +122,7 @@ public class SimpleTypeHolder {
 
 	private void registerCachePositives(Map<Class<?>, Boolean> source) {
 
-		for (Entry<Class<?>, Boolean> entry : source.entrySet()) {
+		for (var entry : source.entrySet()) {
 
 			if (!entry.getValue()) {
 				continue;
@@ -143,8 +142,8 @@ public class SimpleTypeHolder {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		Map<Class<?>, Boolean> localSimpleTypes = this.simpleTypes;
-		Boolean isSimpleType = localSimpleTypes.get(type);
+		var localSimpleTypes = this.simpleTypes;
+		var isSimpleType = localSimpleTypes.get(type);
 
 		if (Object.class.equals(type) || Enum.class.isAssignableFrom(type)) {
 			return true;
@@ -154,13 +153,13 @@ public class SimpleTypeHolder {
 			return isSimpleType;
 		}
 
-		String typeName = type.getName();
+		var typeName = type.getName();
 
 		if (typeName.startsWith("java.lang") || type.getName().startsWith("java.time") || typeName.equals("kotlin.Unit")) {
 			return true;
 		}
 
-		for (Class<?> simpleType : localSimpleTypes.keySet()) {
+		for (var simpleType : localSimpleTypes.keySet()) {
 
 			if (simpleType.isAssignableFrom(type)) {
 

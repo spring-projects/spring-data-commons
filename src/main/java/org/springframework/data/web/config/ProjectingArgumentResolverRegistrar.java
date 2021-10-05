@@ -122,8 +122,8 @@ public class ProjectingArgumentResolverRegistrar {
 				return bean;
 			}
 
-			RequestMappingHandlerAdapter adapter = (RequestMappingHandlerAdapter) bean;
-			List<HandlerMethodArgumentResolver> currentResolvers = adapter.getArgumentResolvers();
+			var adapter = (RequestMappingHandlerAdapter) bean;
+			var currentResolvers = adapter.getArgumentResolvers();
 
 			if (currentResolvers == null) {
 				throw new IllegalStateException(

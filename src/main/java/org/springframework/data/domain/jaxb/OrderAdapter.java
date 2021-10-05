@@ -17,7 +17,6 @@ package org.springframework.data.domain.jaxb;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.OrderDto;
 import org.springframework.lang.Nullable;
@@ -43,7 +42,7 @@ public class OrderAdapter extends XmlAdapter<OrderDto, Order> {
 			return null;
 		}
 
-		OrderDto dto = new OrderDto();
+		var dto = new OrderDto();
 		dto.direction = order.getDirection();
 		dto.property = order.getProperty();
 		return dto;
@@ -61,8 +60,8 @@ public class OrderAdapter extends XmlAdapter<OrderDto, Order> {
 			return null;
 		}
 
-		Direction direction = source.direction;
-		String property = source.property;
+		var direction = source.direction;
+		var property = source.property;
 
 		if (direction == null || property == null) {
 			return null;

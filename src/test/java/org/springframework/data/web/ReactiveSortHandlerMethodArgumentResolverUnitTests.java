@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.lang.Nullable;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -50,7 +49,7 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void supportsSortParameter() {
 
-		ReactiveSortHandlerMethodArgumentResolver resolver = new ReactiveSortHandlerMethodArgumentResolver();
+		var resolver = new ReactiveSortHandlerMethodArgumentResolver();
 
 		assertThat(resolver.supportsParameter(getParameterOfMethod("supportedMethod"))).isTrue();
 	}
@@ -73,9 +72,9 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void fallbackToGivenDefaultSort() {
 
-		MethodParameter parameter = TestUtils.getParameterOfMethod(Controller.class, "unsupportedMethod", String.class);
-		ReactiveSortHandlerMethodArgumentResolver resolver = new ReactiveSortHandlerMethodArgumentResolver();
-		Sort fallbackSort = Sort.by(Direction.ASC, "ID");
+		var parameter = TestUtils.getParameterOfMethod(Controller.class, "unsupportedMethod", String.class);
+		var resolver = new ReactiveSortHandlerMethodArgumentResolver();
+		var fallbackSort = Sort.by(Direction.ASC, "ID");
 		resolver.setFallbackSort(fallbackSort);
 
 		assertThat(resolve(resolver, TestUtils.getWebfluxRequest(), parameter)).isEqualTo(fallbackSort);
@@ -84,8 +83,8 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void fallbackToDefaultDefaultSort() {
 
-		MethodParameter parameter = TestUtils.getParameterOfMethod(Controller.class, "unsupportedMethod", String.class);
-		ReactiveSortHandlerMethodArgumentResolver resolver = new ReactiveSortHandlerMethodArgumentResolver();
+		var parameter = TestUtils.getParameterOfMethod(Controller.class, "unsupportedMethod", String.class);
+		var resolver = new ReactiveSortHandlerMethodArgumentResolver();
 
 		assertThat(resolve(resolver, TestUtils.getWebfluxRequest(), parameter).isSorted()).isFalse();
 	}
@@ -93,9 +92,9 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void discoversSimpleSortFromRequest() {
 
-		MethodParameter parameter = getParameterOfMethod("simpleDefault");
-		Sort reference = Sort.by("bar", "foo");
-		MockServerHttpRequest request = getRequestWithSort(reference);
+		var parameter = getParameterOfMethod("simpleDefault");
+		var reference = Sort.by("bar", "foo");
+		var request = getRequestWithSort(reference);
 
 		assertSupportedAndResolvedTo(request, parameter, reference);
 	}
@@ -103,8 +102,8 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void discoversComplexSortFromRequest() {
 
-		MethodParameter parameter = getParameterOfMethod("simpleDefault");
-		Sort reference = Sort.by("bar", "foo").and(Sort.by("fizz", "buzz"));
+		var parameter = getParameterOfMethod("simpleDefault");
+		var reference = Sort.by("bar", "foo").and(Sort.by("fizz", "buzz"));
 
 		assertSupportedAndResolvedTo(getRequestWithSort(reference), parameter, reference);
 	}
@@ -112,8 +111,8 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void discoversQualifiedSortFromRequest() {
 
-		MethodParameter parameter = getParameterOfMethod("qualifiedSort");
-		Sort reference = Sort.by("bar", "foo");
+		var parameter = getParameterOfMethod("qualifiedSort");
+		var reference = Sort.by("bar", "foo");
 
 		assertSupportedAndResolvedTo(getRequestWithSort(reference, "qual"), parameter, reference);
 	}
@@ -121,11 +120,11 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void requestForMultipleSortPropertiesIsUnmarshalledCorrectly() {
 
-		MockServerHttpRequest request = MockServerHttpRequest.get(String.format("foo?sort=%s", SortDefaultUnitTests.SORT_3))
+		var request = MockServerHttpRequest.get(String.format("foo?sort=%s", SortDefaultUnitTests.SORT_3))
 				.build();
 
-		ReactiveSortHandlerMethodArgumentResolver resolver = new ReactiveSortHandlerMethodArgumentResolver();
-		Sort result = resolve(resolver, request, PARAMETER);
+		var resolver = new ReactiveSortHandlerMethodArgumentResolver();
+		var result = resolve(resolver, request, PARAMETER);
 
 		assertThat(result).isEqualTo(Sort.by(Direction.ASC, "firstname", "lastname"));
 	}
@@ -133,7 +132,7 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void parsesEmptySortToNull() {
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("foo?sort=").build();
+		var request = MockServerHttpRequest.get("foo?sort=").build();
 
 		assertThat(resolve(request, PARAMETER).isSorted()).isFalse();
 	}
@@ -141,7 +140,7 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void sortParamIsInvalidProperty() {
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("foo?sort=,DESC").build();
+		var request = MockServerHttpRequest.get("foo?sort=,DESC").build();
 
 		assertThat(resolve(request, PARAMETER).isSorted()).isFalse();
 	}
@@ -149,7 +148,7 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void sortParamIsInvalidPropertyWhenMultiProperty() {
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("foo?sort=property1,,DESC").build();
+		var request = MockServerHttpRequest.get("foo?sort=property1,,DESC").build();
 
 		assertThat(resolve(request, PARAMETER)).isEqualTo(Sort.by(DESC, "property1"));
 	}
@@ -157,9 +156,9 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void rejectsDoubleAnnotatedMethod() {
 
-		MethodParameter parameter = getParameterOfMethod("invalid");
+		var parameter = getParameterOfMethod("invalid");
 
-		ReactiveSortHandlerMethodArgumentResolver resolver = new ReactiveSortHandlerMethodArgumentResolver();
+		var resolver = new ReactiveSortHandlerMethodArgumentResolver();
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
 		assertThatIllegalArgumentException()
@@ -173,7 +172,7 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void sortParamIsEmptyWhenMultiParams() {
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("foo?sort=property,DESC&sort=").build();
+		var request = MockServerHttpRequest.get("foo?sort=property,DESC&sort=").build();
 
 		assertThat(resolve(request, PARAMETER)).isEqualTo(Sort.by(DESC, "property"));
 	}
@@ -181,7 +180,7 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void parsesCommaParameterForSort() {
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("foo?sort=,").build();
+		var request = MockServerHttpRequest.get("foo?sort=,").build();
 
 		assertThat(resolve(request, PARAMETER).isSorted()).isFalse();
 	}
@@ -189,7 +188,7 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-1211
 	void doesNotReturnNullWhenAnnotatedWithSortDefault() {
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("foo?sort=").build();
+		var request = MockServerHttpRequest.get("foo?sort=").build();
 
 		assertThat(resolve(request, getParameterOfMethod("simpleDefault"))).isEqualTo(Sort.by("firstname", "lastname"));
 		assertThat(resolve(request, getParameterOfMethod("containeredDefault"))).isEqualTo(Sort.by("foo", "bar"));
@@ -211,10 +210,10 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	private static void assertSupportedAndResolvedTo(MockServerHttpRequest request, MethodParameter parameter,
 			Sort sort) {
 
-		ReactiveSortHandlerMethodArgumentResolver resolver = new ReactiveSortHandlerMethodArgumentResolver();
+		var resolver = new ReactiveSortHandlerMethodArgumentResolver();
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
-		Sort resolved = resolve(resolver, request, parameter);
+		var resolved = resolve(resolver, request, parameter);
 
 		assertThat(resolved).isEqualTo(sort);
 	}
@@ -229,10 +228,10 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 			return TestUtils.getWebfluxRequest();
 		}
 
-		StringBuilder queryString = new StringBuilder();
-		for (Order order : sort) {
+		var queryString = new StringBuilder();
+		for (var order : sort) {
 
-			String prefix = StringUtils.hasText(qualifier) ? qualifier + "_" : "";
+			var prefix = StringUtils.hasText(qualifier) ? qualifier + "_" : "";
 
 			if (queryString.length() != 0) {
 				queryString.append('&');

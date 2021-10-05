@@ -50,9 +50,9 @@ public interface StreamUtils {
 	 * @param iterator must not be {@literal null}.
 	 * @return
 	 */
-	public static <T> Stream<T> createStreamFromIterator(Iterator<T> iterator) {
+	static <T> Stream<T> createStreamFromIterator(Iterator<T> iterator) {
 
-		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL);
+		var spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL);
 		return StreamSupport.stream(spliterator, false);
 	}
 
@@ -64,7 +64,7 @@ public interface StreamUtils {
 	 * @return
 	 * @since 2.0
 	 */
-	public static <T> Stream<T> createStreamFromIterator(CloseableIterator<T> iterator) {
+	static <T> Stream<T> createStreamFromIterator(CloseableIterator<T> iterator) {
 
 		Assert.notNull(iterator, "Iterator must not be null!");
 
@@ -76,7 +76,7 @@ public interface StreamUtils {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	public static <T> Collector<T, ?, List<T>> toUnmodifiableList() {
+	static <T> Collector<T, ?, List<T>> toUnmodifiableList() {
 		return collectingAndThen(toList(), Collections::unmodifiableList);
 	}
 
@@ -85,7 +85,7 @@ public interface StreamUtils {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	public static <T> Collector<T, ?, Set<T>> toUnmodifiableSet() {
+	static <T> Collector<T, ?, Set<T>> toUnmodifiableSet() {
 		return collectingAndThen(toSet(), Collections::unmodifiableSet);
 	}
 
@@ -95,7 +95,7 @@ public interface StreamUtils {
 	 * @param keyFunction {@link Function} to create a key from an element of the {@link java.util.stream.Stream}
 	 * @param valueFunction {@link Function} to create a value from an element of the {@link java.util.stream.Stream}
 	 */
-	public static <T, K, V> Collector<T, MultiValueMap<K, V>, MultiValueMap<K, V>> toMultiMap(Function<T, K> keyFunction,
+	static <T, K, V> Collector<T, MultiValueMap<K, V>, MultiValueMap<K, V>> toMultiMap(Function<T, K> keyFunction,
 			Function<T, V> valueFunction) {
 		return MultiValueMapCollector.of(keyFunction, valueFunction);
 	}
@@ -107,7 +107,7 @@ public interface StreamUtils {
 	 * @return a new {@link Stream} for the given value returning an empty {@link Stream} if the value is {@literal null}.
 	 * @since 2.0.6
 	 */
-	public static <T> Stream<T> fromNullable(@Nullable T source) {
+	static <T> Stream<T> fromNullable(@Nullable T source) {
 		return source == null ? Stream.empty() : Stream.of(source);
 	}
 
@@ -122,18 +122,18 @@ public interface StreamUtils {
 	 * @return
 	 * @since 2.1
 	 */
-	public static <L, R, T> Stream<T> zip(Stream<L> left, Stream<R> right, BiFunction<L, R, T> combiner) {
+	static <L, R, T> Stream<T> zip(Stream<L> left, Stream<R> right, BiFunction<L, R, T> combiner) {
 
 		Assert.notNull(left, "Left stream must not be null!");
 		Assert.notNull(right, "Right must not be null!");
 		Assert.notNull(combiner, "Combiner must not be null!");
 
-		Spliterator<L> lefts = left.spliterator();
-		Spliterator<R> rights = right.spliterator();
+		var lefts = left.spliterator();
+		var rights = right.spliterator();
 
-		long size = Long.min(lefts.estimateSize(), rights.estimateSize());
-		int characteristics = lefts.characteristics() & rights.characteristics();
-		boolean parallel = left.isParallel() || right.isParallel();
+		var size = Long.min(lefts.estimateSize(), rights.estimateSize());
+		var characteristics = lefts.characteristics() & rights.characteristics();
+		var parallel = left.isParallel() || right.isParallel();
 
 		return StreamSupport.stream(new AbstractSpliterator<T>(size, characteristics) {
 
@@ -141,16 +141,16 @@ public interface StreamUtils {
 			@SuppressWarnings("null")
 			public boolean tryAdvance(Consumer<? super T> action) {
 
-				Sink<L> leftSink = new Sink<L>();
-				Sink<R> rightSink = new Sink<R>();
+				var leftSink = new Sink<L>();
+				var rightSink = new Sink<R>();
 
-				boolean leftAdvance = lefts.tryAdvance(leftSink);
+				var leftAdvance = lefts.tryAdvance(leftSink);
 
 				if (!leftAdvance) {
 					return false;
 				}
 
-				boolean rightAdvance = rights.tryAdvance(rightSink);
+				var rightAdvance = rights.tryAdvance(rightSink);
 
 				if (!rightAdvance) {
 					return false;

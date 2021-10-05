@@ -19,8 +19,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
@@ -68,22 +68,22 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 
 		Assert.notNull(entity, "Entity must not be null!");
 
-		Class<T> entityType = (Class<T>) (entity != null ? ClassUtils.getUserClass(entity.getClass())
+		var entityType = (Class<T>) (entity != null ? ClassUtils.getUserClass(entity.getClass())
 				: callbackDiscoverer.resolveDeclaredEntityType(callbackType).getRawClass());
 
-		Method callbackMethod = callbackMethodCache.computeIfAbsent(callbackType, it -> {
+		var callbackMethod = callbackMethodCache.computeIfAbsent(callbackType, it -> {
 
-			Method method = EntityCallbackDiscoverer.lookupCallbackMethod(it, entityType, args);
+			var method = EntityCallbackDiscoverer.lookupCallbackMethod(it, entityType, args);
 			ReflectionUtils.makeAccessible(method);
 			return method;
 		});
 
-		T value = entity;
+		var value = entity;
 
-		for (EntityCallback<T> callback : callbackDiscoverer.getEntityCallbacks(entityType,
+		for (var callback : callbackDiscoverer.getEntityCallbacks(entityType,
 				ResolvableType.forClass(callbackType))) {
 
-			BiFunction<EntityCallback<T>, T, Object> callbackFunction = EntityCallbackDiscoverer
+			var callbackFunction = EntityCallbackDiscoverer
 					.computeCallbackInvokerFunction(callback, callbackMethod, args);
 			value = callbackInvoker.invokeCallback(callback, value, callbackFunction);
 		}
@@ -100,7 +100,7 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 		this.callbackDiscoverer.addEntityCallback(callback);
 	}
 
-	class SimpleEntityCallbackInvoker implements org.springframework.data.mapping.callback.EntityCallbackInvoker {
+	static class SimpleEntityCallbackInvoker implements org.springframework.data.mapping.callback.EntityCallbackInvoker {
 
 		@Override
 		public <T> T invokeCallback(EntityCallback<T> callback, T entity,
@@ -108,7 +108,7 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 
 			try {
 
-				Object value = callbackInvokerFunction.apply(callback, entity);
+				var value = callbackInvokerFunction.apply(callback, entity);
 
 				if (value != null) {
 					return (T) value;
@@ -119,12 +119,12 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 
 			} catch (ClassCastException ex) {
 
-				String msg = ex.getMessage();
+				var msg = ex.getMessage();
 				if (msg == null || EntityCallbackInvoker.matchesClassCastMessage(msg, entity.getClass())) {
 
 					// Possibly a lambda-defined listener which we could not resolve the generic event type for
 					// -> let's suppress the exception and just log a debug message.
-					Log logger = LogFactory.getLog(getClass());
+					var logger = LogFactory.getLog(getClass());
 					if (logger.isDebugEnabled()) {
 						logger.debug("Non-matching callback type for entity callback: " + callback, ex);
 					}

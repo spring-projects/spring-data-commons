@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -41,14 +40,14 @@ class RepositoryFactoryBeanSupportUnitTests {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void setsConfiguredClassLoaderOnRepositoryFactory() {
 
-		ClassLoader classLoader = mock(ClassLoader.class);
+		var classLoader = mock(ClassLoader.class);
 
 		RepositoryFactoryBeanSupport factoryBean = new DummyRepositoryFactoryBean(SampleRepository.class);
 		factoryBean.setBeanClassLoader(classLoader);
 		factoryBean.setLazyInit(true);
 		factoryBean.afterPropertiesSet();
 
-		Object factory = ReflectionTestUtils.getField(factoryBean, "factory");
+		var factory = ReflectionTestUtils.getField(factoryBean, "factory");
 		assertThat(ReflectionTestUtils.getField(factory, "classLoader")).isEqualTo(classLoader);
 	}
 
@@ -68,7 +67,7 @@ class RepositoryFactoryBeanSupportUnitTests {
 				new DummyRepositoryFactoryBean<>(SampleWithQuerydslRepository.class);
 		factoryBean.afterPropertiesSet();
 
-		RepositoryInformation information = factoryBean.getRepositoryInformation();
+		var information = factoryBean.getRepositoryInformation();
 
 		assertThat(information.getQueryMethods()).isEmpty();
 	}
@@ -99,7 +98,7 @@ class RepositoryFactoryBeanSupportUnitTests {
 	@Test // DATACMNS-1345
 	void reportsMappingContextUnavailableForPersistentEntityLookup() {
 
-		RepositoryFactoryBeanSupport<SampleRepository, Object, Long> bean = new RepositoryFactoryBeanSupport<SampleRepository, Object, Long>(
+		var bean = new RepositoryFactoryBeanSupport<SampleRepository, Object, Long>(
 				SampleRepository.class) {
 
 			@Override

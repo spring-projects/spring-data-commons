@@ -35,9 +35,9 @@ class GeoResultsUnitTests {
 	@SuppressWarnings("unchecked")
 	void calculatesAverageForGivenGeoResults() {
 
-		GeoResult<Object> first = new GeoResult<>(new Object(), new Distance(2));
-		GeoResult<Object> second = new GeoResult<>(new Object(), new Distance(5));
-		GeoResults<Object> geoResults = new GeoResults<>(Arrays.asList(first, second));
+		var first = new GeoResult<Object>(new Object(), new Distance(2));
+		var second = new GeoResult<Object>(new Object(), new Distance(5));
+		var geoResults = new GeoResults<Object>(Arrays.asList(first, second));
 
 		assertThat(geoResults.getAverageDistance()).isEqualTo(new Distance(3.5));
 	}
@@ -45,11 +45,11 @@ class GeoResultsUnitTests {
 	@Test // DATACMNS-482
 	void testSerialization() {
 
-		GeoResult<String> result = new GeoResult<>("test", new Distance(2));
-		GeoResults<String> geoResults = new GeoResults<>(Collections.singletonList(result));
+		var result = new GeoResult<String>("test", new Distance(2));
+		var geoResults = new GeoResults<String>(Collections.singletonList(result));
 
 		@SuppressWarnings("unchecked")
-		GeoResults<String> serialized = (GeoResults<String>) SerializationUtils
+		var serialized = (GeoResults<String>) SerializationUtils
 				.deserialize(SerializationUtils.serialize(geoResults));
 		assertThat(serialized).isEqualTo(geoResults);
 	}

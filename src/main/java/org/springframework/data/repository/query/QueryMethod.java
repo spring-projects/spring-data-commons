@@ -104,8 +104,8 @@ public class QueryMethod {
 
 		this.domainClass = Lazy.of(() -> {
 
-			Class<?> repositoryDomainClass = metadata.getDomainType();
-			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
+			var repositoryDomainClass = metadata.getDomainType();
+			var methodDomainClass = metadata.getReturnedDomainClass(method);
 
 			return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)
 					? methodDomainClass
@@ -264,7 +264,7 @@ public class QueryMethod {
 			return false;
 		}
 
-		Class<?> returnType = metadata.getReturnType(method).getType();
+		var returnType = metadata.getReturnType(method).getType();
 
 		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
 			return true;
@@ -279,13 +279,13 @@ public class QueryMethod {
 
 	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(RepositoryMetadata metadata, Method method) {
 
-		TypeInformation<?> returnType = metadata.getReturnType(method);
+		var returnType = metadata.getReturnType(method);
 		if (QueryExecutionConverters.supports(returnType.getType())
 				|| ReactiveWrapperConverters.supports(returnType.getType())) {
 
 			// unwrap only one level to handle cases like Future<List<Entity>> correctly.
 
-			TypeInformation<?> componentType = returnType.getComponentType();
+			var componentType = returnType.getComponentType();
 
 			if (componentType == null) {
 				throw new IllegalStateException(
@@ -309,7 +309,7 @@ public class QueryMethod {
 				? returnType.getRequiredComponentType() //
 				: returnType;
 
-		for (Class<?> type : types) {
+		for (var type : types) {
 			if (type.isAssignableFrom(returnType.getType())) {
 				return;
 			}

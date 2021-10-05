@@ -47,7 +47,7 @@ class CdiConfigurationIntegrationTests {
 	@Test // DATACMNS-1233
 	void shouldApplyImplementationPostfix() {
 
-		IsolatedComposedRepository repository = container.select(IsolatedComposedRepository.class).get();
+		var repository = container.select(IsolatedComposedRepository.class).get();
 
 		assertThat(repository.getPriority()).isEqualTo(42);
 	}

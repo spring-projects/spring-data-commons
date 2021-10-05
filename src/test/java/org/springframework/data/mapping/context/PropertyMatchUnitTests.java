@@ -36,7 +36,7 @@ class PropertyMatchUnitTests {
 	@Test
 	void matchesFieldByConcreteNameAndType() throws Exception {
 
-		PropertyMatch match = new PropertyMatch("name", "java.lang.String");
+		var match = new PropertyMatch("name", "java.lang.String");
 		assertThat(match.matches("this$0", Object.class)).isFalse();
 		assertThat(match.matches("this$1", Object.class)).isFalse();
 		assertThat(match.matches("name", String.class)).isTrue();
@@ -45,7 +45,7 @@ class PropertyMatchUnitTests {
 	@Test
 	void matchesFieldByNamePattern() throws Exception {
 
-		PropertyMatch match = new PropertyMatch("this\\$.*", "java.lang.Object");
+		var match = new PropertyMatch("this\\$.*", "java.lang.Object");
 		assertThat(match.matches("this$0", Object.class)).isTrue();
 		assertThat(match.matches("this$1", Object.class)).isTrue();
 		assertThat(match.matches("name", String.class)).isFalse();
@@ -54,7 +54,7 @@ class PropertyMatchUnitTests {
 	@Test
 	void matchesFieldByNameOnly() throws Exception {
 
-		PropertyMatch match = new PropertyMatch("this\\$.*", null);
+		var match = new PropertyMatch("this\\$.*", null);
 		assertThat(match.matches("this$0", Object.class)).isTrue();
 		assertThat(match.matches("this$1", Object.class)).isTrue();
 		assertThat(match.matches("name", String.class)).isFalse();
@@ -63,7 +63,7 @@ class PropertyMatchUnitTests {
 	@Test
 	void matchesFieldByTypeNameOnly() throws Exception {
 
-		PropertyMatch match = new PropertyMatch(null, "java.lang.Object");
+		var match = new PropertyMatch(null, "java.lang.Object");
 		assertThat(match.matches("this$0", Object.class)).isTrue();
 		assertThat(match.matches("this$1", Object.class)).isTrue();
 		assertThat(match.matches("name", String.class)).isFalse();

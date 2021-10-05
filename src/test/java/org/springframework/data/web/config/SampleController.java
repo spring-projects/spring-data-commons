@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.springframework.data.web.ProjectedPayload;
-import org.springframework.data.web.config.SampleController.SampleDto.Address;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.stereotype.Controller;
@@ -40,7 +39,7 @@ class SampleController {
 		assertThat(sampleDto.getName()).isEqualTo("Foo");
 		assertThat(sampleDto.getDate()).isNotNull();
 
-		Collection<Address> shippingAddresses = sampleDto.getShippingAddresses();
+		var shippingAddresses = sampleDto.getShippingAddresses();
 
 		assertThat(shippingAddresses).hasSize(1);
 		assertThat(shippingAddresses.iterator().next().getZipCode()).isEqualTo("ZIP");

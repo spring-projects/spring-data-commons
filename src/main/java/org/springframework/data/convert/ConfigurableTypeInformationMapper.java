@@ -53,8 +53,8 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 
 		for (Entry<? extends Class<?>, String> entry : sourceTypeMap.entrySet()) {
 
-			ClassTypeInformation<?> type = ClassTypeInformation.from(entry.getKey());
-			Alias alias = Alias.of(entry.getValue());
+			var type = ClassTypeInformation.from(entry.getKey());
+			var alias = Alias.of(entry.getValue());
 
 			if (typeToAlias.containsValue(alias)) {
 				throw new IllegalArgumentException(

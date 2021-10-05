@@ -43,7 +43,7 @@ class QuotationMapUnitTests {
 	@Test // DATAJPA-1235
 	void simpleStringDoesNotContainQuotes() {
 
-		String query = "something";
+		var query = "something";
 
 		isNotQuoted(query, "simple String", -1, 0, query.length() - 1, query.length(), query.length() + 1);
 	}
@@ -51,7 +51,7 @@ class QuotationMapUnitTests {
 	@Test // DATAJPA-1235
 	void fullySingleQuotedStringDoesContainQuotes() {
 
-		String query = "'something'";
+		var query = "'something'";
 
 		isNotQuoted(query, "quoted String", -1, query.length());
 		isQuoted(query, "quoted String", 0, 1, 5, query.length() - 1);
@@ -60,7 +60,7 @@ class QuotationMapUnitTests {
 	@Test // DATAJPA-1235
 	void fullyDoubleQuotedStringDoesContainQuotes() {
 
-		String query = "\"something\"";
+		var query = "\"something\"";
 
 		isNotQuoted(query, "double quoted String", -1, query.length());
 		isQuoted(query, "double quoted String", 0, 1, 5, query.length() - 1);
@@ -69,7 +69,7 @@ class QuotationMapUnitTests {
 	@Test // DATAJPA-1235
 	void stringWithEmptyQuotes() {
 
-		String query = "abc''def";
+		var query = "abc''def";
 
 		isNotQuoted(query, "zero length quote", -1, 0, 1, 2, 5, 6, 7);
 		isQuoted(query, "zero length quote", 3, 4);
@@ -78,7 +78,7 @@ class QuotationMapUnitTests {
 	@Test // DATAJPA-1235
 	void doubleInSingleQuotes() {
 
-		String query = "abc'\"'def";
+		var query = "abc'\"'def";
 
 		isNotQuoted(query, "double inside single quote", -1, 0, 1, 2, 6, 7, 8);
 		isQuoted(query, "double inside single quote", 3, 4, 5);
@@ -87,7 +87,7 @@ class QuotationMapUnitTests {
 	@Test // DATAJPA-1235
 	void singleQuotesInDoubleQuotes() {
 
-		String query = "abc\"'\"def";
+		var query = "abc\"'\"def";
 
 		isNotQuoted(query, "single inside double quote", -1, 0, 1, 2, 6, 7, 8);
 		isQuoted(query, "single inside double quote", 3, 4, 5);
@@ -96,7 +96,7 @@ class QuotationMapUnitTests {
 	@Test // DATAJPA-1235
 	void escapedQuotes() {
 
-		String query = "a'b''cd''e'f";
+		var query = "a'b''cd''e'f";
 		isNotQuoted(query, "escaped quote", -1, 0, 11, 12);
 		isQuoted(query, "escaped quote", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 	}
@@ -108,9 +108,9 @@ class QuotationMapUnitTests {
 
 	private static void isNotQuoted(String query, Object label, int... indexes) {
 
-		QuotationMap quotationMap = new QuotationMap(query);
+		var quotationMap = new QuotationMap(query);
 
-		for (int index : indexes) {
+		for (var index : indexes) {
 
 			assertThat(quotationMap.isQuoted(index))
 					.describedAs(String.format("(%s) %s does not contain a quote at %s", label, query, index)) //
@@ -120,9 +120,9 @@ class QuotationMapUnitTests {
 
 	private static void isQuoted(String query, Object label, int... indexes) {
 
-		QuotationMap quotationMap = new QuotationMap(query);
+		var quotationMap = new QuotationMap(query);
 
-		for (int index : indexes) {
+		for (var index : indexes) {
 
 			assertThat(quotationMap.isQuoted(index))
 					.describedAs(String.format("(%s) %s does contain a quote at %s", label, query, index)) //

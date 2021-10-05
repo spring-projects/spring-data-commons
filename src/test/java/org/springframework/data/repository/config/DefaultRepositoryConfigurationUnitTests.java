@@ -86,7 +86,7 @@ class DefaultRepositoryConfigurationUnitTests {
 
 	private DefaultRepositoryConfiguration<RepositoryConfigurationSource> getConfiguration(
 			RepositoryConfigurationSource source, String repositoryInterfaceName) {
-		RootBeanDefinition beanDefinition = createBeanDefinition(repositoryInterfaceName);
+		var beanDefinition = createBeanDefinition(repositoryInterfaceName);
 		return new DefaultRepositoryConfiguration<>(source, beanDefinition, extension);
 	}
 
@@ -98,9 +98,9 @@ class DefaultRepositoryConfigurationUnitTests {
 
 	private static RootBeanDefinition createBeanDefinition(String repositoryInterfaceName) {
 
-		RootBeanDefinition beanDefinition = new RootBeanDefinition(repositoryInterfaceName);
+		var beanDefinition = new RootBeanDefinition(repositoryInterfaceName);
 
-		ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
+		var constructorArgumentValues = new ConstructorArgumentValues();
 		constructorArgumentValues.addGenericArgumentValue(MyRepository.class);
 		beanDefinition.setConstructorArgumentValues(constructorArgumentValues);
 

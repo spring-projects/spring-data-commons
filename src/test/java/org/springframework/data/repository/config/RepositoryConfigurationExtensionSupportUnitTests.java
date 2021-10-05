@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
@@ -36,7 +37,6 @@ import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
@@ -54,21 +54,21 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 	@Test // DATACMNS-526
 	void doesNotConsiderRepositoryForPlainTypeStrictMatch() {
 
-		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(PlainTypeRepository.class);
+		var metadata = AbstractRepositoryMetadata.getMetadata(PlainTypeRepository.class);
 		assertThat(extension.isStrictRepositoryCandidate(metadata)).isFalse();
 	}
 
 	@Test // DATACMNS-526
 	void considersRepositoryWithAnnotatedTypeStrictMatch() {
 
-		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(AnnotatedTypeRepository.class);
+		var metadata = AbstractRepositoryMetadata.getMetadata(AnnotatedTypeRepository.class);
 		assertThat(extension.isStrictRepositoryCandidate(metadata)).isTrue();
 	}
 
 	@Test // DATACMNS-526
 	void considersRepositoryInterfaceExtendingStoreInterfaceStrictMatch() {
 
-		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ExtendingInterface.class);
+		var metadata = AbstractRepositoryMetadata.getMetadata(ExtendingInterface.class);
 		assertThat(extension.isStrictRepositoryCandidate(metadata)).isTrue();
 	}
 
@@ -78,7 +78,7 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(ReactiveConfiguration.class, true);
 		Environment environment = new StandardEnvironment();
 		ResourceLoader resourceLoader = new DefaultResourceLoader();
-		BeanDefinitionRegistry registry = mock(BeanDefinitionRegistry.class);
+		var registry = mock(BeanDefinitionRegistry.class);
 
 		RepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(annotationMetadata,
 				EnableRepositories.class, resourceLoader, environment, registry);
@@ -91,8 +91,8 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 	@Test // DATACMNS-1596
 	void doesNotClaimEntityIfNoIdentifyingAnnotationsAreExposed() {
 
-		NonIdentifyingConfigurationExtension extension = new NonIdentifyingConfigurationExtension();
-		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(AnnotatedTypeRepository.class);
+		var extension = new NonIdentifyingConfigurationExtension();
+		var metadata = AbstractRepositoryMetadata.getMetadata(AnnotatedTypeRepository.class);
 
 		assertThat(extension.isStrictRepositoryCandidate(metadata)).isFalse();
 	}

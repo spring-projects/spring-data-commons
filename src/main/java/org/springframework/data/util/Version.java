@@ -68,12 +68,12 @@ public class Version implements Comparable<Version> {
 
 		Assert.hasText(version, "Version must not be null o empty!");
 
-		String[] parts = version.trim().split("\\.");
-		int[] intParts = new int[parts.length];
+		var parts = version.trim().split("\\.");
+		var intParts = new int[parts.length];
 
-		for (int i = 0; i < parts.length; i++) {
+		for (var i = 0; i < parts.length; i++) {
 
-			String input = i == parts.length - 1 ? parts[i].replaceAll("\\D.*", "") : parts[i];
+			var input = i == parts.length - 1 ? parts[i].replaceAll("\\D.*", "") : parts[i];
 
 			if (StringUtils.hasText(input)) {
 				try {
@@ -182,11 +182,9 @@ public class Version implements Comparable<Version> {
 			return true;
 		}
 
-		if (!(obj instanceof Version)) {
+		if (!(obj instanceof Version that)) {
 			return false;
 		}
-
-		Version that = (Version) obj;
 
 		return this.major == that.major && this.minor == that.minor && this.bugfix == that.bugfix
 				&& this.build == that.build;
@@ -199,7 +197,7 @@ public class Version implements Comparable<Version> {
 	@Override
 	public int hashCode() {
 
-		int result = 17;
+		var result = 17;
 		result += 31 * major;
 		result += 31 * minor;
 		result += 31 * bugfix;

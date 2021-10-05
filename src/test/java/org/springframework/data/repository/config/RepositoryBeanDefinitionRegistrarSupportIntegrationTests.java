@@ -21,7 +21,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -80,7 +79,7 @@ class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 	@Test // DATACMNS-47
 	void beanDefinitionSourceIsSetForJavaConfigScannedBeans() {
 
-		BeanDefinition definition = context.getBeanDefinition("myRepository");
+		var definition = context.getBeanDefinition("myRepository");
 		assertThat(definition.getSource()).isNotNull();
 	}
 
@@ -97,7 +96,7 @@ class RepositoryBeanDefinitionRegistrarSupportIntegrationTests {
 	@Test // DATACMNS-1620
 	void registeredBeanDefinitionsContainHumanReadableResourceDescription() {
 
-		BeanDefinition definition = context.getBeanDefinition("myRepository");
+		var definition = context.getBeanDefinition("myRepository");
 
 		assertThat(definition.getResourceDescription()) //
 				.contains(MyRepository.class.getName()) //

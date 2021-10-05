@@ -44,7 +44,7 @@ class MethodInvocationRecorderUnitTests {
 	@Test // DATACMNS-1449
 	void createsPropertyPathForSimpleMethodReference() {
 
-		Recorded<Bar> wrapper = recorder.record(Foo::getBar);
+		var wrapper = recorder.record(Foo::getBar);
 
 		assertThat(wrapper.getPropertyPath()).hasValue("bar");
 	}
@@ -52,7 +52,7 @@ class MethodInvocationRecorderUnitTests {
 	@Test // DATACMNS-1449
 	void createsPropertyPathForNestedMethodReference() {
 
-		Recorded<FooBar> wrapper = recorder.record(Foo::getBar).record(Bar::getFooBar);
+		var wrapper = recorder.record(Foo::getBar).record(Bar::getFooBar);
 
 		assertThat(wrapper.getPropertyPath()).hasValue("bar.fooBar");
 	}
@@ -60,7 +60,7 @@ class MethodInvocationRecorderUnitTests {
 	@Test // DATACMNS-1449
 	void createsPropertyPathForNestedCall() {
 
-		Recorded<FooBar> wrapper = recorder.record((Foo source) -> source.getBar().getFooBar());
+		var wrapper = recorder.record((Foo source) -> source.getBar().getFooBar());
 
 		assertThat(wrapper.getPropertyPath()).hasValue("bar.fooBar");
 	}
@@ -68,7 +68,7 @@ class MethodInvocationRecorderUnitTests {
 	@Test // DATACMNS-1449
 	void usesCustomPropertyNamingStrategy() {
 
-		Recorded<Bar> recorded = MethodInvocationRecorder.forProxyOf(Foo.class).record(Foo::getBar);
+		var recorded = MethodInvocationRecorder.forProxyOf(Foo.class).record(Foo::getBar);
 
 		assertThat(recorded.getPropertyPath(method -> method.getName())).hasValue("getBar");
 	}
@@ -81,7 +81,7 @@ class MethodInvocationRecorderUnitTests {
 	@Test // DATACMNS-1449
 	void recordsInvocationOnInterface() {
 
-		Recorded<Sample> recorder = MethodInvocationRecorder.forProxyOf(Sample.class);
+		var recorder = MethodInvocationRecorder.forProxyOf(Sample.class);
 
 		assertThat(recorder.record(Sample::getName).getPropertyPath()).hasValue("name");
 	}

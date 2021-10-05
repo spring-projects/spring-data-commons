@@ -16,11 +16,9 @@
 package org.springframework.data.mapping.model;
 
 import kotlin.jvm.JvmClassMappingKt;
-import kotlin.reflect.KFunction;
 import kotlin.reflect.full.KClasses;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,7 +111,7 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 
 				List<Constructor<?>> candidates = new ArrayList<>();
 				Constructor<?> noArg = null;
-				for (Constructor<?> candidate : rawOwningType.getDeclaredConstructors()) {
+				for (var candidate : rawOwningType.getDeclaredConstructors()) {
 
 					// Synthetic constructors should not be considered
 					if (candidate.isSynthetic()) {
@@ -164,14 +162,14 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 						.findFirst() //
 						.orElseGet(() -> {
 
-							KFunction<T> primaryConstructor = KClasses
+							var primaryConstructor = KClasses
 									.getPrimaryConstructor(JvmClassMappingKt.getKotlinClass(type.getType()));
 
 							if (primaryConstructor == null) {
 								return DEFAULT.discover(type, entity);
 							}
 
-							Constructor<T> javaConstructor = ReflectJvmMapping.getJavaConstructor(primaryConstructor);
+							var javaConstructor = ReflectJvmMapping.getJavaConstructor(primaryConstructor);
 
 							return javaConstructor != null ? buildPreferredConstructor(javaConstructor, type, entity) : null;
 						});
@@ -209,17 +207,17 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 				return new PreferredConstructor<>((Constructor<T>) constructor);
 			}
 
-			List<TypeInformation<?>> parameterTypes = typeInformation.getParameterTypes(constructor);
-			String[] parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(constructor);
+			var parameterTypes = typeInformation.getParameterTypes(constructor);
+			var parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(constructor);
 
 			Parameter<Object, P>[] parameters = new Parameter[parameterTypes.size()];
-			Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
+			var parameterAnnotations = constructor.getParameterAnnotations();
 
-			for (int i = 0; i < parameterTypes.size(); i++) {
+			for (var i = 0; i < parameterTypes.size(); i++) {
 
-				String name = parameterNames == null || parameterNames.length <= i ? null : parameterNames[i];
-				TypeInformation<?> type = parameterTypes.get(i);
-				Annotation[] annotations = parameterAnnotations[i];
+				var name = parameterNames == null || parameterNames.length <= i ? null : parameterNames[i];
+				var type = parameterTypes.get(i);
+				var annotations = parameterAnnotations[i];
 
 				parameters[i] = new Parameter(name, type, annotations, entity);
 			}

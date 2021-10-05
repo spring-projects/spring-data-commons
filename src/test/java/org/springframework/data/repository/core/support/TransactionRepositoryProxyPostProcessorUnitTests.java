@@ -20,19 +20,18 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.TransactionalRepositoryProxyPostProcessor.RepositoryAnnotationTransactionAttributeSource;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
@@ -84,26 +83,26 @@ class TransactionRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-732
 	void considersJtaTransactional() throws Exception {
 
-		Method method = SampleRepository.class.getMethod("methodWithJakartaAtTransactional");
+		var method = SampleRepository.class.getMethod("methodWithJakartaAtTransactional");
 
 		TransactionAttributeSource attributeSource = new RepositoryAnnotationTransactionAttributeSource(
 				repositoryInformation, true);
-		TransactionAttribute attribute = attributeSource.getTransactionAttribute(method, SampleRepository.class);
+		var attribute = attributeSource.getTransactionAttribute(method, SampleRepository.class);
 
 		assertThat(attribute).isNotNull();
 	}
 
 	private void assertTransactionAttributeFor(Class<?> implementationClass) throws Exception {
 
-		Method repositorySaveMethod = SampleRepository.class.getMethod("save", Sample.class);
-		Method implementationClassMethod = implementationClass.getMethod("save", Object.class);
+		var repositorySaveMethod = SampleRepository.class.getMethod("save", Sample.class);
+		var implementationClassMethod = implementationClass.getMethod("save", Object.class);
 
 		when(repositoryInformation.getTargetClassMethod(repositorySaveMethod)).thenReturn(implementationClassMethod);
 
-		RepositoryAnnotationTransactionAttributeSource attributeSource = new RepositoryAnnotationTransactionAttributeSource(
+		var attributeSource = new RepositoryAnnotationTransactionAttributeSource(
 				repositoryInformation, true);
 
-		TransactionAttribute attribute = attributeSource.getTransactionAttribute(repositorySaveMethod,
+		var attribute = attributeSource.getTransactionAttribute(repositorySaveMethod,
 				SampleImplementation.class);
 
 		assertThat(attribute).isNotNull();

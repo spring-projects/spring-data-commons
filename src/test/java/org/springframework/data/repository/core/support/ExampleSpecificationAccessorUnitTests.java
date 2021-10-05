@@ -219,7 +219,7 @@ class ExampleSpecificationAccessorUnitTests {
 	@Test // DATACMNS-810
 	void getValueTransformerForPathReturnsConfigurtedTransformerForPath() {
 
-		PropertyValueTransformer transformer = source -> source.map(Object::toString);
+		var transformer = (PropertyValueTransformer) source -> source.map(Object::toString);
 
 		specification = ExampleMatcher.matching().//
 				withTransformer("firstname", transformer);
@@ -248,7 +248,7 @@ class ExampleSpecificationAccessorUnitTests {
 	@Test // DATACMNS-953
 	void exactMatcherUsesExactMatching() {
 
-		ExampleMatcher matcher = ExampleMatcher.matching()//
+		var matcher = ExampleMatcher.matching()//
 				.withMatcher("firstname", exact());
 
 		assertThat(new ExampleMatcherAccessor(matcher).getPropertySpecifier("firstname").getStringMatcher())

@@ -17,7 +17,6 @@ package org.springframework.data.repository.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,12 +24,11 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.AutowireCandidateResolver;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
@@ -42,7 +40,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
-import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -87,7 +84,7 @@ public class RepositoryConfigurationDelegate {
 			ResourceLoader resourceLoader, Environment environment) {
 
 		this.isXml = configurationSource instanceof XmlRepositoryConfigurationSource;
-		boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
+		var isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
 
 		Assert.isTrue(isXml || isAnnotation,
 				"Configuration source must either be an Xml- or an AnnotationBasedConfigurationSource!");
@@ -135,11 +132,11 @@ public class RepositoryConfigurationDelegate {
 
 		extension.registerBeansForRoot(registry, configurationSource);
 
-		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension,
+		var builder = new RepositoryBeanDefinitionBuilder(registry, extension,
 				configurationSource, resourceLoader, environment);
 		List<BeanComponentDefinition> definitions = new ArrayList<>();
 
-		StopWatch watch = new StopWatch();
+		var watch = new StopWatch();
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(LogMessage.format("Scanning for %s repositories in packages %s.", //
@@ -147,15 +144,15 @@ public class RepositoryConfigurationDelegate {
 					configurationSource.getBasePackages().stream().collect(Collectors.joining(", "))));
 		}
 
-		ApplicationStartup startup = getStartup(registry);
-		StartupStep repoScan = startup.start("spring.data.repository.scanning");
+		var startup = getStartup(registry);
+		var repoScan = startup.start("spring.data.repository.scanning");
 		repoScan.tag("dataModule", extension.getModuleName());
 		repoScan.tag("basePackages",
 				() -> configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
 
 		watch.start();
 
-		Collection<RepositoryConfiguration<RepositoryConfigurationSource>> configurations = extension
+		var configurations = extension
 				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode);
 
 		Map<String, RepositoryConfiguration<?>> configurationsByRepositoryName = new HashMap<>(configurations.size());
@@ -164,7 +161,7 @@ public class RepositoryConfigurationDelegate {
 
 			configurationsByRepositoryName.put(configuration.getRepositoryInterface(), configuration);
 
-			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
+			var definitionBuilder = builder.build(configuration);
 
 			extension.postProcess(definitionBuilder, configurationSource);
 
@@ -174,10 +171,10 @@ public class RepositoryConfigurationDelegate {
 				extension.postProcess(definitionBuilder, (AnnotationRepositoryConfigurationSource) configurationSource);
 			}
 
-			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
+			var beanDefinition = definitionBuilder.getBeanDefinition();
 			beanDefinition.setResourceDescription(configuration.getResourceDescription());
 
-			String beanName = configurationSource.generateBeanName(beanDefinition);
+			var beanName = configurationSource.generateBeanName(beanDefinition);
 
 			if (logger.isTraceEnabled()) {
 				logger.trace(LogMessage.format(REPOSITORY_REGISTRATION, extension.getModuleName(), beanName, configuration.getRepositoryInterface(),
@@ -220,8 +217,8 @@ public class RepositoryConfigurationDelegate {
 			return;
 		}
 
-		DefaultListableBeanFactory beanFactory = DefaultListableBeanFactory.class.cast(registry);
-		AutowireCandidateResolver resolver = beanFactory.getAutowireCandidateResolver();
+		var beanFactory = DefaultListableBeanFactory.class.cast(registry);
+		var resolver = beanFactory.getAutowireCandidateResolver();
 
 		if (!Arrays.asList(ContextAnnotationAutowireCandidateResolver.class, LazyRepositoryInjectionPointResolver.class)
 				.contains(resolver.getClass())) {
@@ -255,7 +252,7 @@ public class RepositoryConfigurationDelegate {
 	 */
 	private boolean multipleStoresDetected() {
 
-		boolean multipleModulesFound = SpringFactoriesLoader
+		var multipleModulesFound = SpringFactoriesLoader
 				.loadFactoryNames(RepositoryFactorySupport.class, resourceLoader.getClassLoader()).size() > 1;
 
 		if (multipleModulesFound) {
@@ -318,15 +315,15 @@ public class RepositoryConfigurationDelegate {
 		@Override
 		protected boolean isLazy(DependencyDescriptor descriptor) {
 
-			Class<?> type = descriptor.getDependencyType();
+			var type = descriptor.getDependencyType();
 
-			RepositoryConfiguration<?> configuration = configurations.get(type.getName());
+			var configuration = configurations.get(type.getName());
 
 			if (configuration == null) {
 				return super.isLazy(descriptor);
 			}
 
-			boolean lazyInit = configuration.isLazyInit();
+			var lazyInit = configuration.isLazyInit();
 
 			if (lazyInit) {
 				logger.debug(LogMessage.format("Creating lazy injection proxy for %s…", configuration.getRepositoryInterface()));

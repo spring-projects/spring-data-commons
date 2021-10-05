@@ -59,21 +59,21 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@BeforeEach
 	void setUp() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		context.getPersistentEntity(Sample.class);
 		context.getPersistentEntity(SampleWithInstant.class);
 		context.getPersistentEntity(WithEmbedded.class);
 
-		PersistentEntities entities = PersistentEntities.of(context);
+		var entities = PersistentEntities.of(context);
 		factory = new MappingAuditableBeanWrapperFactory(entities);
 	}
 
 	@Test // DATACMNS-365
 	void discoversAuditingPropertyOnField() {
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 
-		Optional<AuditableBeanWrapper<Sample>> wrapper = factory.getBeanWrapperFor(sample);
+		var wrapper = factory.getBeanWrapperFor(sample);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
@@ -85,9 +85,9 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-365
 	void discoversAuditingPropertyOnAccessor() {
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 
-		Optional<AuditableBeanWrapper<Sample>> wrapper = factory.getBeanWrapperFor(sample);
+		var wrapper = factory.getBeanWrapperFor(sample);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
@@ -99,9 +99,9 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-365
 	void settingInavailablePropertyIsNoop() {
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 
-		Optional<AuditableBeanWrapper<Sample>> wrapper = factory.getBeanWrapperFor(sample);
+		var wrapper = factory.getBeanWrapperFor(sample);
 
 		assertThat(wrapper).hasValueSatisfying(it -> it.setLastModifiedDate(Instant.now()));
 	}
@@ -121,7 +121,7 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-638
 	void returnsLastModificationCalendarAsCalendar() {
 
-		Date reference = new Date();
+		var reference = new Date();
 
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(reference);
@@ -133,7 +133,7 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-638
 	void returnsLastModificationDateAsCalendar() {
 
-		Date reference = new Date();
+		var reference = new Date();
 
 		assertLastModificationDate(reference, //
 				Jsr310Converters.DateToLocalDateTimeConverter.INSTANCE.convert(reference));
@@ -142,7 +142,7 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-638, DATACMNS-43
 	void returnsLastModificationJsr310DateTimeAsCalendar() {
 
-		LocalDateTime reference = LocalDateTime.now();
+		var reference = LocalDateTime.now();
 
 		assertLastModificationDate(reference, reference);
 	}
@@ -150,10 +150,10 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-1109
 	void exposesInstantAsModificationDate() {
 
-		SampleWithInstant sample = new SampleWithInstant();
+		var sample = new SampleWithInstant();
 		sample.modified = Instant.now();
 
-		Optional<TemporalAccessor> result = factory.getBeanWrapperFor(sample) //
+		var result = factory.getBeanWrapperFor(sample) //
 				.flatMap(it -> it.getLastModifiedDate());
 
 		assertThat(result).hasValue(sample.modified);
@@ -170,22 +170,22 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-1274
 	void writesNestedAuditingData() {
 
-		WithEmbedded target = new WithEmbedded();
+		var target = new WithEmbedded();
 		target.embedded = new Embedded();
 
-		Optional<AuditableBeanWrapper<WithEmbedded>> wrapper = factory.getBeanWrapperFor(target);
+		var wrapper = factory.getBeanWrapperFor(target);
 
 		assertThat(wrapper).hasValueSatisfying(it -> {
 
-			Instant now = Instant.now();
-			String user = "user";
+			var now = Instant.now();
+			var user = "user";
 
 			it.setCreatedBy(user);
 			it.setLastModifiedBy(user);
 			it.setLastModifiedDate(now);
 			it.setCreatedDate(now);
 
-			Embedded embedded = it.getBean().embedded;
+			var embedded = it.getBean().embedded;
 
 			assertThat(embedded.created).isEqualTo(now);
 			assertThat(embedded.creator).isEqualTo(user);
@@ -199,7 +199,7 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-1461, DATACMNS-1671
 	void skipsNullIntermediatesWhenSettingProperties() {
 
-		WithEmbedded withEmbedded = new WithEmbedded();
+		var withEmbedded = new WithEmbedded();
 
 		assertThat(factory.getBeanWrapperFor(withEmbedded)).hasValueSatisfying(it -> {
 			assertThatCode(() -> it.setCreatedBy("user")).doesNotThrowAnyException();
@@ -210,7 +210,7 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 	@Test // DATACMNS-1438
 	void skipsCollectionPropertiesWhenSettingProperties() {
 
-		WithEmbedded withEmbedded = new WithEmbedded();
+		var withEmbedded = new WithEmbedded();
 		withEmbedded.embedded = new Embedded();
 		withEmbedded.embeddeds = Arrays.asList(new Embedded());
 		withEmbedded.embeddedMap = new HashMap<>();
@@ -218,15 +218,15 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		assertThat(factory.getBeanWrapperFor(withEmbedded)).hasValueSatisfying(it -> {
 
-			String user = "user";
-			Instant now = Instant.now();
+			var user = "user";
+			var now = Instant.now();
 
 			it.setCreatedBy(user);
 			it.setLastModifiedBy(user);
 			it.setLastModifiedDate(now);
 			it.setCreatedDate(now);
 
-			Embedded embedded = withEmbedded.embeddeds.iterator().next();
+			var embedded = withEmbedded.embeddeds.iterator().next();
 
 			assertThat(embedded.created).isNull();
 			assertThat(embedded.creator).isNull();
@@ -244,10 +244,10 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 
 	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 		sample.lastModifiedDate = source;
 
-		Optional<TemporalAccessor> result = factory.getBeanWrapperFor(sample) //
+		var result = factory.getBeanWrapperFor(sample) //
 				.flatMap(it -> it.getLastModifiedDate());
 
 		assertThat(result).hasValueSatisfying(ta -> compareTemporalAccessors(expected, ta));
@@ -255,8 +255,8 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 
 	private static AbstractLongAssert<?> compareTemporalAccessors(TemporalAccessor expected, TemporalAccessor actual) {
 
-		long actualSeconds = getInstantSeconds(actual);
-		long expectedSeconds = getInstantSeconds(expected);
+		var actualSeconds = getInstantSeconds(actual);
+		var expectedSeconds = getInstantSeconds(expected);
 
 		return assertThat(actualSeconds) //
 				.describedAs("Difference is %s", actualSeconds - expectedSeconds) //

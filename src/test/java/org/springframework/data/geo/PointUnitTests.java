@@ -49,9 +49,9 @@ class PointUnitTests {
 	@Test // DATACMNS-482
 	void testSerialization() {
 
-		Point point = new Point(1.5, 1.5);
+		var point = new Point(1.5, 1.5);
 
-		Point serialized = (Point) SerializationUtils.deserialize(SerializationUtils.serialize(point));
+		var serialized = (Point) SerializationUtils.deserialize(SerializationUtils.serialize(point));
 		assertThat(serialized).isEqualTo(point);
 	}
 }

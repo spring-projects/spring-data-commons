@@ -53,7 +53,7 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper, BeanC
 	@Override
 	public TypeInformation<?> resolveTypeFrom(Alias alias) {
 
-		String stringAlias = alias.mapTyped(String.class);
+		var stringAlias = alias.mapTyped(String.class);
 
 		if (stringAlias != null) {
 			return cache.computeIfAbsent(stringAlias, this::loadClass).orElse(null);

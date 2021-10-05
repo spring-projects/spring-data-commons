@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.spel.spi.Function;
@@ -47,7 +46,7 @@ class Functions {
 
 		newFunctions.forEach((n, f) -> {
 
-			List<Function> currentElements = get(n);
+			var currentElements = get(n);
 
 			if (!contains(currentElements, f)) {
 				functions.add(n, f);
@@ -59,7 +58,7 @@ class Functions {
 
 		newFunctions.forEach((k, list) -> {
 
-			List<Function> currentElements = get(k);
+			var currentElements = get(k);
 
 			list.stream() //
 					.filter(f -> !contains(currentElements, f)) //
@@ -83,10 +82,10 @@ class Functions {
 	 */
 	Optional<Function> get(String name, List<TypeDescriptor> argumentTypes) {
 
-		Stream<Function> candidates = get(name).stream() //
+		var candidates = get(name).stream() //
 				.filter(f -> f.supports(argumentTypes));
 
-		List<Function> collect = candidates.collect(Collectors.toList());
+		var collect = candidates.collect(Collectors.toList());
 
 		return bestMatch(collect, argumentTypes);
 	}
@@ -105,7 +104,7 @@ class Functions {
 			return Optional.of(candidates.get(0));
 		}
 
-		Optional<Function> exactMatch = candidates.stream().filter(f -> f.supportsExact(argumentTypes)).findFirst();
+		var exactMatch = candidates.stream().filter(f -> f.supportsExact(argumentTypes)).findFirst();
 
 		if (!exactMatch.isPresent()) {
 			throw new IllegalStateException(createErrorMessage(candidates, argumentTypes));
@@ -116,7 +115,7 @@ class Functions {
 
 	private static String createErrorMessage(List<Function> candidates, List<TypeDescriptor> argumentTypes) {
 
-		String argumentTypeString = argumentTypes.stream()//
+		var argumentTypeString = argumentTypes.stream()//
 				.map(TypeDescriptor::getName)//
 				.collect(Collectors.joining(","));
 

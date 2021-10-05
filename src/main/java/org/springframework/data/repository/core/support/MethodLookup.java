@@ -119,11 +119,10 @@ public interface MethodLookup {
 				return true;
 			}
 
-			if (!(o instanceof InvokedMethod)) {
+			if (!(o instanceof InvokedMethod that)) {
 				return false;
 			}
 
-			InvokedMethod that = (InvokedMethod) o;
 			return ObjectUtils.nullSafeEquals(method, that.method);
 		}
 

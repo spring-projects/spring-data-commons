@@ -57,11 +57,10 @@ class TypedExample<T> implements Example<T> {
 			return true;
 		}
 
-		if (!(o instanceof TypedExample)) {
+		if (!(o instanceof TypedExample<?> that)) {
 			return false;
 		}
 
-		TypedExample<?> that = (TypedExample<?>) o;
 		if (!ObjectUtils.nullSafeEquals(probe, that.probe)) {
 			return false;
 		}
@@ -75,7 +74,7 @@ class TypedExample<T> implements Example<T> {
 	 */
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(probe);
+		var result = ObjectUtils.nullSafeHashCode(probe);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(matcher);
 		return result;
 	}

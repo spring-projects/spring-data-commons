@@ -29,7 +29,7 @@ class PairUnitTests {
 	@Test // DATACMNS-790
 	void setsUpSimpleInstance() {
 
-		Pair<Integer, Integer> pair = Pair.of(1, 2);
+		var pair = Pair.of(1, 2);
 
 		assertThat(pair.getFirst()).isEqualTo(1);
 		assertThat(pair.getSecond()).isEqualTo(2);
@@ -48,8 +48,8 @@ class PairUnitTests {
 	@Test // DATACMNS-790
 	void hasCorrectEquals() {
 
-		Pair<Integer, Integer> first = Pair.of(1, 2);
-		Pair<Integer, Integer> second = Pair.of(1, 2);
+		var first = Pair.of(1, 2);
+		var second = Pair.of(1, 2);
 
 		assertThat(first).isEqualTo(first);
 		assertThat(first).isEqualTo(second);
@@ -59,9 +59,9 @@ class PairUnitTests {
 	@Test // DATACMNS-790
 	void hasCorrectHashCode() {
 
-		Pair<Integer, Integer> first = Pair.of(1, 2);
-		Pair<Integer, Integer> second = Pair.of(1, 2);
-		Pair<Integer, Integer> third = Pair.of(2, 2);
+		var first = Pair.of(1, 2);
+		var second = Pair.of(1, 2);
+		var third = Pair.of(2, 2);
 
 		assertThat(first.hashCode()).isEqualTo(second.hashCode());
 		assertThat(first.hashCode()).isNotEqualTo(third.hashCode());

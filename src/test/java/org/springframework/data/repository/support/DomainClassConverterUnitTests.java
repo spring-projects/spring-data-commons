@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -74,7 +74,7 @@ class DomainClassConverterUnitTests {
 	@Test
 	void matchFailsIfNoDaoAvailable() {
 
-		GenericApplicationContext ctx = new GenericApplicationContext();
+		var ctx = new GenericApplicationContext();
 		ctx.refresh();
 		converter.setApplicationContext(ctx);
 		assertMatches(false);
@@ -113,15 +113,15 @@ class DomainClassConverterUnitTests {
 	@Test
 	void convertsStringToUserCorrectly() throws Exception {
 
-		ApplicationContext context = initContextWithRepo();
+		var context = initContextWithRepo();
 		converter.setApplicationContext(context);
 
 		doReturn(1L).when(service).convert(any(), eq(Long.class));
 
 		converter.convert("1", STRING_TYPE, USER_TYPE);
 
-		UserRepository bean = context.getBean(UserRepository.class);
-		UserRepository repo = (UserRepository) ((Advised) bean).getTargetSource().getTarget();
+		var bean = context.getBean(UserRepository.class);
+		var repo = (UserRepository) ((Advised) bean).getTargetSource().getTarget();
 
 		verify(repo, times(1)).findById(1L);
 	}
@@ -129,8 +129,8 @@ class DomainClassConverterUnitTests {
 	@Test // DATACMNS-133
 	void discoversFactoryAndRepoFromParentApplicationContext() {
 
-		ApplicationContext parent = initContextWithRepo();
-		GenericApplicationContext context = new GenericApplicationContext(parent);
+		var parent = initContextWithRepo();
+		var context = new GenericApplicationContext(parent);
 		context.refresh();
 
 		when(service.canConvert(String.class, Long.class)).thenReturn(true);
@@ -180,11 +180,11 @@ class DomainClassConverterUnitTests {
 		assertMatches(false);
 
 		@SuppressWarnings("rawtypes")
-		Optional<ToIdConverter> toIdConverter = (Optional<ToIdConverter>) ReflectionTestUtils.getField(converter,
+		var toIdConverter = (Optional<ToIdConverter>) ReflectionTestUtils.getField(converter,
 				"toIdConverter");
 
-		Method method = Wrapper.class.getMethod("foo", User.class);
-		TypeDescriptor target = TypeDescriptor.nested(new MethodParameter(method, 0), 0);
+		var method = Wrapper.class.getMethod("foo", User.class);
+		var target = TypeDescriptor.nested(new MethodParameter(method, 0), 0);
 
 		assertThat(toIdConverter).map(it -> it.matches(SUB_USER_TYPE, target)).hasValue(false);
 	}
@@ -202,14 +202,14 @@ class DomainClassConverterUnitTests {
 	@Test // DATACMNS-1743
 	void returnsNullForFailedLookup() {
 
-		ApplicationContext context = initContextWithRepo();
+		var context = initContextWithRepo();
 		converter.setApplicationContext(context);
 
 		// Expect ID conversion
 		doReturn(4711L).when(service).convert("4711", Long.class);
 
 		// Configure aggregate lookup to fail
-		UserRepository users = context.getBean(UserRepository.class);
+		var users = context.getBean(UserRepository.class);
 		users = (UserRepository) AopProxyUtils.getSingletonTarget(users);
 		doReturn(Optional.empty()).when(users).findById(any());
 
@@ -218,13 +218,13 @@ class DomainClassConverterUnitTests {
 
 	private ApplicationContext initContextWithRepo() {
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(DummyRepositoryFactoryBean.class);
+		var builder = BeanDefinitionBuilder.rootBeanDefinition(DummyRepositoryFactoryBean.class);
 		builder.addConstructorArgValue(UserRepository.class);
 
-		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+		var factory = new DefaultListableBeanFactory();
 		factory.registerBeanDefinition("provider", builder.getBeanDefinition());
 
-		GenericApplicationContext ctx = new GenericApplicationContext(factory);
+		var ctx = new GenericApplicationContext(factory);
 		ctx.refresh();
 		return ctx;
 	}

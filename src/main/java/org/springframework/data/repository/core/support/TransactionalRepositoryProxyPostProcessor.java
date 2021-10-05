@@ -72,7 +72,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 */
 	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 
-		TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
+		var transactionInterceptor = new TransactionInterceptor();
 		transactionInterceptor.setTransactionAttributeSource(
 				new RepositoryAnnotationTransactionAttributeSource(repositoryInformation, enableDefaultTransactions));
 		transactionInterceptor.setTransactionManagerBeanName(transactionManagerName);
@@ -130,11 +130,11 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 			}
 
 			// Ignore CGLIB subclasses - introspect the actual user class.
-			Class<?> userClass = targetClass == null ? targetClass : ProxyUtils.getUserClass(targetClass);
+			var userClass = targetClass == null ? targetClass : ProxyUtils.getUserClass(targetClass);
 
 			// The method may be on an interface, but we need attributes from the target class.
 			// If the target class is null, the method will be unchanged.
-			Method specificMethod = ClassUtils.getMostSpecificMethod(method, userClass);
+			var specificMethod = ClassUtils.getMostSpecificMethod(method, userClass);
 
 			// If we are dealing with method with generic parameters, find the original method.
 			specificMethod = BridgeMethodResolver.findBridgedMethod(specificMethod);
@@ -178,7 +178,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 
 			// Fallback to implementation class transaction settings of nothing found
 			// return findTransactionAttribute(method);
-			Method targetClassMethod = repositoryInformation.getTargetClassMethod(method);
+			var targetClassMethod = repositoryInformation.getTargetClassMethod(method);
 
 			if (targetClassMethod.equals(method)) {
 				return null;

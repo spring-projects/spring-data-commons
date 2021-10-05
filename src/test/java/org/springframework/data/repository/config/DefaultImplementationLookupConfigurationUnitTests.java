@@ -31,7 +31,7 @@ class DefaultImplementationLookupConfigurationUnitTests {
 	@Test // DATACMNS-1439
 	void shouldConsiderBeanNameDecapitalization() {
 
-		ImplementationDetectionConfiguration idcMock = mock(ImplementationDetectionConfiguration.class);
+		var idcMock = mock(ImplementationDetectionConfiguration.class);
 		when(idcMock.getImplementationPostfix()).thenReturn("Impl");
 
 		assertThat(getImplementationBeanName(idcMock, "com.acme.UDPRepository")).isEqualTo("UDPRepositoryImpl");
@@ -41,10 +41,10 @@ class DefaultImplementationLookupConfigurationUnitTests {
 	@Test // DATACMNS-1754
 	void shouldUseSimpleClassNameWhenDefiningImplementationNames() {
 
-		ImplementationDetectionConfiguration idcMock = mock(ImplementationDetectionConfiguration.class);
+		var idcMock = mock(ImplementationDetectionConfiguration.class);
 		when(idcMock.getImplementationPostfix()).thenReturn("Impl");
 
-		DefaultImplementationLookupConfiguration lookupConfiguration = new DefaultImplementationLookupConfiguration(idcMock,
+		var lookupConfiguration = new DefaultImplementationLookupConfiguration(idcMock,
 				"com.acme.Repositories$NestedRepository");
 		assertThat(lookupConfiguration.getImplementationBeanName()).isEqualTo("repositories.NestedRepositoryImpl");
 		assertThat(lookupConfiguration.getImplementationClassName()).isEqualTo("NestedRepositoryImpl");
@@ -52,7 +52,7 @@ class DefaultImplementationLookupConfigurationUnitTests {
 
 	private static String getImplementationBeanName(ImplementationDetectionConfiguration idcMock, String interfaceName) {
 
-		DefaultImplementationLookupConfiguration configuration = new DefaultImplementationLookupConfiguration(idcMock,
+		var configuration = new DefaultImplementationLookupConfiguration(idcMock,
 				interfaceName);
 		return configuration.getImplementationBeanName();
 	}

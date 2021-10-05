@@ -18,7 +18,6 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assumptions.*;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +31,6 @@ import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
-import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.subpackage.TypeInOtherPackage;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -51,7 +49,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	public static List<Object[]> parameters() throws ReflectiveOperationException {
 
 		List<Object[]> parameters = new ArrayList<>();
-		List<String> propertyNames = Arrays.asList("privateField", "packageDefaultField", "protectedField", "publicField",
+		var propertyNames = Arrays.asList("privateField", "packageDefaultField", "protectedField", "publicField",
 				"privateProperty", "packageDefaultProperty", "protectedProperty", "publicProperty", "syntheticProperty",
 				"immutable", "wither");
 
@@ -79,7 +77,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		List<Object[]> parameters = new ArrayList<>();
 
-		for (String propertyName : propertyNames) {
+		for (var propertyName : propertyNames) {
 			parameters.add(new Object[] { bean, propertyName, expectedConstructorType,
 					bean.getClass().getSimpleName() + "/" + propertyName });
 		}
@@ -103,7 +101,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 		assertThat(getProperty(bean, propertyName)).satisfies(property -> {
 
-			PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
+			var persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
 			if (property.isImmutable() && property.getWither() == null) {
 
 				assertThatThrownBy(() -> persistentPropertyAccessor.setProperty(property, "value"))
@@ -122,9 +120,9 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	void accessorShouldDeclareConstructor(Object bean, String propertyName, Class<?> expectedConstructorType,
 			String displayName) throws Exception {
 
-		PersistentPropertyAccessor persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
+		var persistentPropertyAccessor = getPersistentPropertyAccessor(bean);
 
-		Constructor<?>[] declaredConstructors = persistentPropertyAccessor.getClass().getDeclaredConstructors();
+		var declaredConstructors = persistentPropertyAccessor.getClass().getDeclaredConstructors();
 		assertThat(declaredConstructors.length).isEqualTo(1);
 		assertThat(declaredConstructors[0].getParameterCount()).isEqualTo(1);
 		assertThat(declaredConstructors[0].getParameterTypes()[0]).isEqualTo(expectedConstructorType);
@@ -162,7 +160,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 	void shouldUseClassPropertyAccessorFactory(Object bean, String propertyName, Class<?> expectedConstructorType,
 			String displayName) throws Exception {
 
-		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
+		var persistentEntity = mappingContext
 				.getRequiredPersistentEntity(bean.getClass());
 
 		assertThat(ReflectionTestUtils.getField(persistentEntity, "propertyAccessorFactory"))
@@ -178,7 +176,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 
 	private PersistentProperty<?> getProperty(Object bean, String name) {
 
-		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = mappingContext
+		var persistentEntity = mappingContext
 				.getRequiredPersistentEntity(bean.getClass());
 		return persistentEntity.getPersistentProperty(name);
 	}

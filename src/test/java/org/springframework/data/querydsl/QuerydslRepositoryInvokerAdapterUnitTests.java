@@ -54,7 +54,7 @@ class QuerydslRepositoryInvokerAdapterUnitTests {
 	@Test // DATACMNS-669
 	void forwardsFindAllToExecutorWithPredicate() {
 
-		Sort sort = Sort.by("firstname");
+		var sort = Sort.by("firstname");
 		adapter.invokeFindAll(sort);
 
 		verify(executor, times(1)).findAll(predicate, sort);
@@ -64,7 +64,7 @@ class QuerydslRepositoryInvokerAdapterUnitTests {
 	@Test // DATACMNS-669
 	void forwardsFindAllWithPageableToExecutorWithPredicate() {
 
-		PageRequest pageable = PageRequest.of(0, 10);
+		var pageable = PageRequest.of(0, 10);
 		adapter.invokeFindAll(pageable);
 
 		verify(executor, times(1)).findAll(predicate, pageable);

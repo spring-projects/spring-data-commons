@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.springframework.core.GenericTypeResolver;
@@ -112,17 +111,17 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 			visited.add(type);
 		}
 
-		Map<TypeVariable, Type> source = GenericTypeResolver.getTypeVariableMap(type);
+		var source = GenericTypeResolver.getTypeVariableMap(type);
 		Map<TypeVariable<?>, Type> map = new HashMap<>(source.size());
 
-		for (Entry<TypeVariable, Type> entry : source.entrySet()) {
+		for (var entry : source.entrySet()) {
 
-			Type value = entry.getValue();
+			var value = entry.getValue();
 			map.put(entry.getKey(), entry.getValue());
 
 			if (value instanceof Class) {
 
-				for (Entry<TypeVariable<?>, Type> nestedEntry : getTypeVariableMap((Class<?>) value, visited).entrySet()) {
+				for (var nestedEntry : getTypeVariableMap((Class<?>) value, visited).entrySet()) {
 					if (!map.containsKey(nestedEntry.getKey())) {
 						map.put(nestedEntry.getKey(), nestedEntry.getValue());
 					}

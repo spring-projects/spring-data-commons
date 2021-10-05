@@ -158,11 +158,10 @@ public final class Alias {
 			return true;
 		}
 
-		if (!(o instanceof Alias)) {
+		if (!(o instanceof Alias alias)) {
 			return false;
 		}
 
-		Alias alias = (Alias) o;
 		return ObjectUtils.nullSafeEquals(value, alias.value);
 	}
 

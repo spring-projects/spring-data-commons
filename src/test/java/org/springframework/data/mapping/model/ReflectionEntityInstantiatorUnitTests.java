@@ -71,7 +71,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
 		doReturn(constructor).when(entity).getPersistenceConstructor();
 
-		Object instance = INSTANCE.createInstance(entity, provider);
+		var instance = INSTANCE.createInstance(entity, provider);
 
 		assertThat(instance).isInstanceOf(Foo.class);
 		assertThat(constructor)
@@ -91,15 +91,15 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 	@Test // DATACMNS-134
 	void createsInnerClassInstanceCorrectly() {
 
-		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(from(Inner.class));
+		var entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
 		assertThat(entity.getPersistenceConstructor()).satisfies(it -> {
 
-			Parameter<Object, P> parameter = it.getParameters().iterator().next();
+			var parameter = it.getParameters().iterator().next();
 
 			Object outer = new Outer();
 
 			when(provider.getParameterValue(parameter)).thenReturn(outer);
-			Inner instance = INSTANCE.createInstance(entity, provider);
+			var instance = INSTANCE.createInstance(entity, provider);
 
 			assertThat(instance).isNotNull();
 

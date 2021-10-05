@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -85,7 +84,7 @@ public class PartTree implements Streamable<OrPart> {
 		Assert.notNull(source, "Source must not be null");
 		Assert.notNull(domainClass, "Domain class must not be null");
 
-		Matcher matcher = PREFIX_TEMPLATE.matcher(source);
+		var matcher = PREFIX_TEMPLATE.matcher(source);
 
 		if (!matcher.find()) {
 			this.subject = new Subject(Optional.empty());
@@ -221,7 +220,7 @@ public class PartTree implements Streamable<OrPart> {
 	 */
 	private static String[] split(String text, String keyword) {
 
-		Pattern pattern = Pattern.compile(String.format(KEYWORD_TEMPLATE, keyword));
+		var pattern = Pattern.compile(String.format(KEYWORD_TEMPLATE, keyword));
 		return pattern.split(text);
 	}
 
@@ -242,7 +241,7 @@ public class PartTree implements Streamable<OrPart> {
 		 */
 		OrPart(String source, Class<?> domainClass, boolean alwaysIgnoreCase) {
 
-			String[] split = split(source, "And");
+			var split = split(source, "And");
 
 			this.children = Arrays.stream(split)//
 					.filter(StringUtils::hasText)//
@@ -307,7 +306,7 @@ public class PartTree implements Streamable<OrPart> {
 
 			return subject.map(it -> {
 
-				Matcher grp = LIMITED_QUERY_TEMPLATE.matcher(it);
+				var grp = LIMITED_QUERY_TEMPLATE.matcher(it);
 
 				if (!grp.find()) {
 					return null;
@@ -372,7 +371,7 @@ public class PartTree implements Streamable<OrPart> {
 
 		public Predicate(String predicate, Class<?> domainClass) {
 
-			String[] parts = split(detectAndSetAllIgnoreCase(predicate), ORDER_BY);
+			var parts = split(detectAndSetAllIgnoreCase(predicate), ORDER_BY);
 
 			if (parts.length > 2) {
 				throw new IllegalArgumentException("OrderBy must not be used more than once in a method name!");
@@ -389,7 +388,7 @@ public class PartTree implements Streamable<OrPart> {
 
 		private String detectAndSetAllIgnoreCase(String predicate) {
 
-			Matcher matcher = ALL_IGNORE_CASE.matcher(predicate);
+			var matcher = ALL_IGNORE_CASE.matcher(predicate);
 
 			if (matcher.find()) {
 				alwaysIgnoreCase = true;

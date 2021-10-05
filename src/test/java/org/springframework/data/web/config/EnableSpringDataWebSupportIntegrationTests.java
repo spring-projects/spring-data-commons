@@ -20,9 +20,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,10 +40,7 @@ import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -108,7 +105,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	void registersBasicBeanDefinitions() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
-		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+		var names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names).contains("pageableResolver", "sortResolver");
 
@@ -120,7 +117,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	void registersHateoasSpecificBeanDefinitions() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
-		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+		var names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names).contains("pagedResourcesAssembler", "pagedResourcesAssemblerArgumentResolver");
 		assertResolversRegistered(context, PagedResourcesAssemblerArgumentResolver.class);
@@ -129,11 +126,11 @@ class EnableSpringDataWebSupportIntegrationTests {
 	@Test // DATACMNS-330
 	void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() throws Exception {
 
-		HidingClassLoader classLoader = HidingClassLoader.hide(Link.class);
+		var classLoader = HidingClassLoader.hide(Link.class);
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(classLoader, SampleConfig.class);
 
-		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+		var names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names).contains("pageableResolver", "sortResolver");
 		assertThat(names).doesNotContain("pagedResourcesAssembler", "pagedResourcesAssemblerArgumentResolver");
@@ -143,7 +140,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	void registersJacksonSpecificBeanDefinitions() throws Exception {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
-		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+		var names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names).contains("jacksonGeoModule");
 	}
@@ -154,7 +151,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 		ApplicationContext context = WebTestUtils.createApplicationContext(HidingClassLoader.hide(ObjectMapper.class),
 				SampleConfig.class);
 
-		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+		var names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names).doesNotContain("jacksonGeoModule");
 	}
@@ -164,7 +161,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 
-		ConversionService conversionService = context.getBean(ConversionService.class);
+		var conversionService = context.getBean(ConversionService.class);
 
 		assertThat(conversionService.canConvert(String.class, Distance.class)).isTrue();
 		assertThat(conversionService.canConvert(Distance.class, String.class)).isTrue();
@@ -175,10 +172,10 @@ class EnableSpringDataWebSupportIntegrationTests {
 	@Test // DATACMNS-630
 	void createsProxyForInterfaceBasedControllerMethodParameter() throws Exception {
 
-		WebApplicationContext applicationContext = WebTestUtils.createApplicationContext(SampleConfig.class);
-		MockMvc mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+		var applicationContext = WebTestUtils.createApplicationContext(SampleConfig.class);
+		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/proxy");
+		var builder = UriComponentsBuilder.fromUriString("/proxy");
 		builder.queryParam("name", "Foo");
 		builder.queryParam("shippingAddresses[0].zipCode", "ZIP");
 		builder.queryParam("shippingAddresses[0].city", "City");
@@ -194,7 +191,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	void picksUpWebConfigurationMixins() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
-		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
+		var names = Arrays.asList(context.getBeanDefinitionNames());
 
 		assertThat(names).contains("sampleBean");
 	}
@@ -203,8 +200,8 @@ class EnableSpringDataWebSupportIntegrationTests {
 	void picksUpPageableResolverCustomizer() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(PageableResolverCustomizerConfig.class);
-		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
-		PageableHandlerMethodArgumentResolver resolver = context.getBean("pageableResolver", PageableHandlerMethodArgumentResolver.class);
+		var names = Arrays.asList(context.getBeanDefinitionNames());
+		var resolver = context.getBean("pageableResolver", PageableHandlerMethodArgumentResolver.class);
 
 		assertThat(names).contains("testPageableResolverCustomizer");
 		assertThat((Integer) ReflectionTestUtils.getField(resolver, "maxPageSize")).isEqualTo(100);
@@ -214,8 +211,8 @@ class EnableSpringDataWebSupportIntegrationTests {
 	void picksUpSortResolverCustomizer() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SortResolverCustomizerConfig.class);
-		List<String> names = Arrays.asList(context.getBeanDefinitionNames());
-		SortHandlerMethodArgumentResolver resolver = context.getBean("sortResolver", SortHandlerMethodArgumentResolver.class);
+		var names = Arrays.asList(context.getBeanDefinitionNames());
+		var resolver = context.getBean("sortResolver", SortHandlerMethodArgumentResolver.class);
 
 		assertThat(names).contains("testSortResolverCustomizer");
 		assertThat((String) ReflectionTestUtils.getField(resolver, "sortParameter")).isEqualTo("foo");
@@ -226,7 +223,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 
-		RequestMappingHandlerAdapter adapter = context.getBean(RequestMappingHandlerAdapter.class);
+		var adapter = context.getBean(RequestMappingHandlerAdapter.class);
 
 		assertThat(adapter.getArgumentResolvers().get(0)).isInstanceOf(ProxyingHandlerMethodArgumentResolver.class);
 	}
@@ -234,7 +231,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	@Test // DATACMNS-1235
 	void picksUpEntityPathResolverIfRegistered() {
 
-		WebApplicationContext context = WebTestUtils.createApplicationContext(CustomEntityPathResolver.class);
+		var context = WebTestUtils.createApplicationContext(CustomEntityPathResolver.class);
 
 		assertThat(context.getBean(EntityPathResolver.class)).isEqualTo(CustomEntityPathResolver.resolver);
 		assertThat(context.getBean(QuerydslBindingsFactory.class).getEntityPathResolver())
@@ -243,9 +240,9 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
 
-		RequestMappingHandlerAdapter adapter = context.getBean(RequestMappingHandlerAdapter.class);
+		var adapter = context.getBean(RequestMappingHandlerAdapter.class);
 		assertThat(adapter).isNotNull();
-		List<HandlerMethodArgumentResolver> resolvers = adapter.getCustomArgumentResolvers();
+		var resolvers = adapter.getCustomArgumentResolvers();
 
 		Arrays.asList(resolverTypes).forEach(type -> assertThat(resolvers).hasAtLeastOneElementOfType(type));
 	}

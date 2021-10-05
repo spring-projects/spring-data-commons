@@ -40,7 +40,7 @@ class PolygonUnitTests {
 	@Test // DATACMNS-437
 	void createsSimplePolygon() {
 
-		Polygon polygon = new Polygon(third, second, first);
+		var polygon = new Polygon(third, second, first);
 
 		assertThat(polygon).isNotNull();
 	}
@@ -48,8 +48,8 @@ class PolygonUnitTests {
 	@Test // DATACMNS-437
 	void isEqualForSamePoints() {
 
-		Polygon left = new Polygon(third, second, first);
-		Polygon right = new Polygon(third, second, first);
+		var left = new Polygon(third, second, first);
+		var right = new Polygon(third, second, first);
 
 		assertThat(left).isEqualTo(right);
 		assertThat(right).isEqualTo(left);
@@ -65,9 +65,9 @@ class PolygonUnitTests {
 	@Test // DATACMNS-482
 	void testSerialization() {
 
-		Polygon polygon = new Polygon(third, second, first);
+		var polygon = new Polygon(third, second, first);
 
-		Polygon serialized = (Polygon) SerializationUtils.deserialize(SerializationUtils.serialize(polygon));
+		var serialized = (Polygon) SerializationUtils.deserialize(SerializationUtils.serialize(polygon));
 		assertThat(serialized).isEqualTo(polygon);
 	}
 }

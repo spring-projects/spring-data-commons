@@ -29,7 +29,6 @@ import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.util.Streamable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -51,7 +50,7 @@ class PersistentPropertyPathFactoryUnitTests {
 	@Test // DATACMNS-380
 	void returnsPersistentPropertyPathForDotPath() {
 
-		PersistentPropertyPath<SamplePersistentProperty> path = factory.from(PersonSample.class, "persons.name");
+		var path = factory.from(PersonSample.class, "persons.name");
 
 		assertThat(path.getLength()).isEqualTo(2);
 		assertThat(path.getBaseProperty().getName()).isEqualTo("persons");
@@ -114,7 +113,7 @@ class PersistentPropertyPathFactoryUnitTests {
 	@Test // DATACMNS-1275
 	void returnsShortestsPathsFirst() {
 
-		Streamable<String> paths = factory.from(First.class, it -> true, it -> true) //
+		var paths = factory.from(First.class, it -> true, it -> true) //
 				.map(PersistentPropertyPath::toDotPath);
 
 		assertThat(paths).containsExactly("third", "second", "third.lastname", "second.firstname");
@@ -123,7 +122,7 @@ class PersistentPropertyPathFactoryUnitTests {
 	@Test // DATACMNS-1275
 	void doesNotTraverseAssociationsByDefault() {
 
-		Streamable<String> paths = factory.from(First.class, it -> true) //
+		var paths = factory.from(First.class, it -> true) //
 				.map(PersistentPropertyPath::toDotPath);
 
 		assertThat(paths) //
@@ -134,7 +133,7 @@ class PersistentPropertyPathFactoryUnitTests {
 	@Test // DATACMNS-1275
 	void traversesAssociationsIfTraversalGuardAllowsIt() {
 
-		PersistentPropertyPaths<First, SamplePersistentProperty> paths = //
+		var paths = //
 				factory.from(First.class, it -> true, it -> true);
 
 		assertThat(paths.contains("third.lastname")).isTrue();
@@ -144,7 +143,7 @@ class PersistentPropertyPathFactoryUnitTests {
 	@Test // DATACMNS-1275
 	void returnsEmptyPropertyPathsIfNoneSelected() {
 
-		PersistentPropertyPaths<Third, SamplePersistentProperty> paths = factory.from(Third.class, it -> false);
+		var paths = factory.from(Third.class, it -> false);
 
 		assertThat(paths).isEmpty();
 		assertThat(paths.getFirst()).isEmpty();
@@ -153,7 +152,7 @@ class PersistentPropertyPathFactoryUnitTests {
 	@Test // DATACMNS-1275
 	void returnsShortestPathFirst() {
 
-		PersistentPropertyPaths<First, SamplePersistentProperty> paths = factory.from(First.class, it -> !it.isEntity(),
+		var paths = factory.from(First.class, it -> !it.isEntity(),
 				it -> true);
 
 		assertThat(paths.contains("second.firstname")).isTrue();

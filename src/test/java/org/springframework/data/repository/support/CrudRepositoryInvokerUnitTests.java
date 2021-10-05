@@ -19,7 +19,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -41,7 +40,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.repository.support.RepositoryInvocationTestUtils.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -78,28 +76,28 @@ class CrudRepositoryInvokerUnitTests {
 	@Test // DATACMNS-589
 	void invokesSaveOnCrudRepository() throws Exception {
 
-		Method method = CrudRepository.class.getMethod("save", Object.class);
+		var method = CrudRepository.class.getMethod("save", Object.class);
 		getInvokerFor(personRepository, expectInvocationOf(method)).invokeSave(new Person());
 	}
 
 	@Test // DATACMNS-589
 	void invokesFindOneOnCrudRepository() throws Exception {
 
-		Method method = CrudRepository.class.getMethod("findById", Object.class);
+		var method = CrudRepository.class.getMethod("findById", Object.class);
 		getInvokerFor(personRepository, expectInvocationOf(method)).invokeFindById(1L);
 	}
 
 	@Test // DATACMNS-589, DATAREST-216
 	void invokesDeleteOnCrudRepository() throws Exception {
 
-		Method method = CrudRepository.class.getMethod("deleteById", Object.class);
+		var method = CrudRepository.class.getMethod("deleteById", Object.class);
 		getInvokerFor(personRepository, expectInvocationOf(method)).invokeDeleteById(1L);
 	}
 
 	@Test // DATACMNS-589
 	void invokesFindAllOnCrudRepository() throws Exception {
 
-		Method method = CrudRepository.class.getMethod("findAll");
+		var method = CrudRepository.class.getMethod("findAll");
 
 		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll(Pageable.unpaged());
 		getInvokerFor(orderRepository, expectInvocationOf(method)).invokeFindAll(Sort.unsorted());
@@ -108,9 +106,9 @@ class CrudRepositoryInvokerUnitTests {
 	@Test // DATACMNS-589
 	void invokesCustomFindAllTakingASort() throws Exception {
 
-		CrudWithFindAllWithSort repository = mock(CrudWithFindAllWithSort.class);
+		var repository = mock(CrudWithFindAllWithSort.class);
 
-		Method findAllWithSort = CrudWithFindAllWithSort.class.getMethod("findAll", Sort.class);
+		var findAllWithSort = CrudWithFindAllWithSort.class.getMethod("findAll", Sort.class);
 
 		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(Sort.unsorted());
 		getInvokerFor(repository, expectInvocationOf(findAllWithSort)).invokeFindAll(PageRequest.of(0, 10));
@@ -120,9 +118,9 @@ class CrudRepositoryInvokerUnitTests {
 	@Test // DATACMNS-589
 	void invokesCustomFindAllTakingAPageable() throws Exception {
 
-		CrudWithFindAllWithPageable repository = mock(CrudWithFindAllWithPageable.class);
+		var repository = mock(CrudWithFindAllWithPageable.class);
 
-		Method findAllWithPageable = CrudWithFindAllWithPageable.class.getMethod("findAll", Pageable.class);
+		var findAllWithPageable = CrudWithFindAllWithPageable.class.getMethod("findAll", Pageable.class);
 
 		getInvokerFor(repository, expectInvocationOf(findAllWithPageable)).invokeFindAll(Pageable.unpaged());
 		getInvokerFor(repository, expectInvocationOf(findAllWithPageable)).invokeFindAll(PageRequest.of(0, 10));
@@ -131,7 +129,7 @@ class CrudRepositoryInvokerUnitTests {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static RepositoryInvoker getInvokerFor(Object repository, VerifyingMethodInterceptor interceptor) {
 
-		Object proxy = getVerifyingRepositoryProxy(repository, interceptor);
+		var proxy = getVerifyingRepositoryProxy(repository, interceptor);
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repository.getClass().getInterfaces()[0]);
 		GenericConversionService conversionService = new DefaultFormattingConversionService();

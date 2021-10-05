@@ -18,7 +18,7 @@ package org.springframework.data.spel;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.expression.spel.SpelNode;
+
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
@@ -35,12 +35,12 @@ class ExpressionDependenciesUnitTests {
 	@Test // DATACMNS-1108
 	void shouldExtractDependencies() {
 
-		String expression = "hasRole('ROLE_ADMIN') ? '%' : principal.emailAddress";
+		var expression = "hasRole('ROLE_ADMIN') ? '%' : principal.emailAddress";
 
-		SpelExpression spelExpression = (SpelExpression) PARSER.parseExpression(expression);
-		SpelNode ast = spelExpression.getAST();
+		var spelExpression = (SpelExpression) PARSER.parseExpression(expression);
+		var ast = spelExpression.getAST();
 
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(ast, true);
+		var dependencies = ExpressionDependencies.discover(ast, true);
 
 		assertThat(dependencies).extracting(ExpressionDependencies.ExpressionDependency::getSymbol).containsOnly("hasRole",
 				"principal");
@@ -49,12 +49,12 @@ class ExpressionDependenciesUnitTests {
 	@Test // DATACMNS-1108
 	void shouldExtractDependenciesFromMethodCallArgs() {
 
-		String expression = "hasRole(principal.emailAddress)";
+		var expression = "hasRole(principal.emailAddress)";
 
-		SpelExpression spelExpression = (SpelExpression) PARSER.parseExpression(expression);
-		SpelNode ast = spelExpression.getAST();
+		var spelExpression = (SpelExpression) PARSER.parseExpression(expression);
+		var ast = spelExpression.getAST();
 
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(ast, true);
+		var dependencies = ExpressionDependencies.discover(ast, true);
 
 		assertThat(dependencies).extracting(ExpressionDependencies.ExpressionDependency::getSymbol).containsOnly("hasRole",
 				"principal");
@@ -63,12 +63,12 @@ class ExpressionDependenciesUnitTests {
 	@Test // DATACMNS-1108
 	void shouldExtractFirstMethodAsDependency() {
 
-		String expression = "hello().hasRole(principal.emailAddress, principal.somethingElse).somethingElse()";
+		var expression = "hello().hasRole(principal.emailAddress, principal.somethingElse).somethingElse()";
 
-		SpelExpression spelExpression = (SpelExpression) PARSER.parseExpression(expression);
-		SpelNode ast = spelExpression.getAST();
+		var spelExpression = (SpelExpression) PARSER.parseExpression(expression);
+		var ast = spelExpression.getAST();
 
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(ast, true);
+		var dependencies = ExpressionDependencies.discover(ast, true);
 
 		assertThat(dependencies).extracting(ExpressionDependencies.ExpressionDependency::getSymbol).containsOnly("hello",
 				"principal");
@@ -77,12 +77,12 @@ class ExpressionDependenciesUnitTests {
 	@Test // DATACMNS-1108
 	void shouldExtractAll() {
 
-		String expression = "hello().hasRole(principal.emailAddress, principal.somethingElse).somethingElse()";
+		var expression = "hello().hasRole(principal.emailAddress, principal.somethingElse).somethingElse()";
 
-		SpelExpression spelExpression = (SpelExpression) PARSER.parseExpression(expression);
-		SpelNode ast = spelExpression.getAST();
+		var spelExpression = (SpelExpression) PARSER.parseExpression(expression);
+		var ast = spelExpression.getAST();
 
-		ExpressionDependencies dependencies = ExpressionDependencies.discover(ast, false);
+		var dependencies = ExpressionDependencies.discover(ast, false);
 
 		assertThat(dependencies).extracting(ExpressionDependencies.ExpressionDependency::getSymbol).containsOnly("hello",
 				"hasRole", "principal", "emailAddress", "somethingElse");
@@ -91,8 +91,8 @@ class ExpressionDependenciesUnitTests {
 	@Test // DATACMNS-1108
 	void shouldMergeDependencies() {
 
-		ExpressionDependencies left = ExpressionDependencies.discover(PARSER.parseExpression("hasRole('ROLE_ADMIN')"));
-		ExpressionDependencies right = ExpressionDependencies.discover(PARSER.parseExpression("principal.somethingElse"));
+		var left = ExpressionDependencies.discover(PARSER.parseExpression("hasRole('ROLE_ADMIN')"));
+		var right = ExpressionDependencies.discover(PARSER.parseExpression("principal.somethingElse"));
 
 		assertThat(left.mergeWith(right)).extracting(ExpressionDependencies.ExpressionDependency::getSymbol)
 				.containsOnly("hasRole", "principal");

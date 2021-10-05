@@ -26,6 +26,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -50,7 +51,6 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.BooleanExpression;
 
 /**
  * Unit tests for {@link QuerydslPredicateArgumentResolver}.
@@ -100,7 +100,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("firstname", "rand");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+		var predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand"));
@@ -112,7 +112,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 		request.addParameter("firstname", "rand");
 		request.addParameter("lastname", "al'thor");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+		var predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("al'thor")));
@@ -123,10 +123,10 @@ class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("address.city", "two rivers");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+		var predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
-		BooleanExpression eq = QUser.user.address.city.eq("two rivers");
+		var eq = QUser.user.address.city.eq("two rivers");
 
 		assertThat(predicate).isEqualTo(eq);
 	}
@@ -136,7 +136,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("address.city", "tar valon");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("pagedFind", Predicate.class, Pageable.class),
+		var predicate = resolver.resolveArgument(getMethodParameterFor("pagedFind", Predicate.class, Pageable.class),
 				null, new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo(QUser.user.address.city.eq("tar valon"));
@@ -148,7 +148,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 		request.addParameter("firstname", "egwene");
 		request.addParameter("lastname", "al'vere");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
+		var predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo(
@@ -161,7 +161,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 		request.addParameter("firstname", "egwene");
 		request.addParameter("lastname", "al'vere");
 
-		Object predicate = resolver.resolveArgument(
+		var predicate = resolver.resolveArgument(
 				getMethodParameterFor("specificFindWithMetaAnnotation", Predicate.class), null, new ServletWebRequest(request),
 				null);
 
@@ -174,7 +174,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("inceptionYear", "978");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
+		var predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo(QUser.user.inceptionYear.eq(978L));
@@ -185,7 +185,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 
 		request.addParameter("inceptionYear", new String[] { "978", "998" });
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
+		var predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo(QUser.user.inceptionYear.in(978L, 998L));
@@ -197,7 +197,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 		request.addParameter("address.street", "downhill");
 		request.addParameter("inceptionYear", "973");
 
-		Object predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
+		var predicate = resolver.resolveArgument(getMethodParameterFor("specificFind", Predicate.class), null,
 				new ServletWebRequest(request), null);
 
 		assertThat(predicate.toString()).isEqualTo(QUser.user.inceptionYear.eq(973L).toString());
@@ -230,7 +230,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 	@Test // DATACMNS-1593
 	void returnsEmptyPredicateForEmptyInput() throws Exception {
 
-		MethodParameter parameter = getMethodParameterFor("predicateWithoutAnnotation", Predicate.class);
+		var parameter = getMethodParameterFor("predicateWithoutAnnotation", Predicate.class);
 
 		request.addParameter("firstname", "");
 
@@ -241,7 +241,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 	@Test // DATACMNS-1635
 	void forwardsNullValueForNullablePredicate() throws Exception {
 
-		MethodParameter parameter = getMethodParameterFor("nullablePredicateWithoutAnnotation", Predicate.class);
+		var parameter = getMethodParameterFor("nullablePredicateWithoutAnnotation", Predicate.class);
 
 		request.addParameter("firstname", "");
 
@@ -251,7 +251,7 @@ class QuerydslPredicateArgumentResolverUnitTests {
 	@Test // DATACMNS-1635
 	void returnsOptionalIfDeclared() throws Exception {
 
-		MethodParameter parameter = getMethodParameterFor("optionalPredicateWithoutAnnotation", Optional.class);
+		var parameter = getMethodParameterFor("optionalPredicateWithoutAnnotation", Optional.class);
 
 		request.addParameter("firstname", "");
 

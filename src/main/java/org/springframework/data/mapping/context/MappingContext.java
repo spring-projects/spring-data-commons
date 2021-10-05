@@ -70,7 +70,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 */
 	default E getRequiredPersistentEntity(Class<?> type) throws MappingException {
 
-		E entity = getPersistentEntity(type);
+		var entity = getPersistentEntity(type);
 
 		if (entity != null) {
 			return entity;
@@ -110,7 +110,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 */
 	default E getRequiredPersistentEntity(TypeInformation<?> type) throws MappingException {
 
-		E entity = getPersistentEntity(type);
+		var entity = getPersistentEntity(type);
 
 		if (entity != null) {
 			return entity;
@@ -143,7 +143,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 */
 	default E getRequiredPersistentEntity(P persistentProperty) throws MappingException {
 
-		E entity = getPersistentEntity(persistentProperty);
+		var entity = getPersistentEntity(persistentProperty);
 
 		if (entity != null) {
 			return entity;

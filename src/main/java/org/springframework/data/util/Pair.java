@@ -97,11 +97,9 @@ public final class Pair<S, T> {
 			return true;
 		}
 
-		if (!(o instanceof Pair)) {
+		if (!(o instanceof Pair<?, ?> pair)) {
 			return false;
 		}
-
-		Pair<?, ?> pair = (Pair<?, ?>) o;
 
 		if (!ObjectUtils.nullSafeEquals(first, pair.first)) {
 			return false;
@@ -116,7 +114,7 @@ public final class Pair<S, T> {
 	 */
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(first);
+		var result = ObjectUtils.nullSafeHashCode(first);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(second);
 		return result;
 	}

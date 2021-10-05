@@ -222,7 +222,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		propertyCache.computeIfAbsent(property.getName(), key -> property);
 
-		P candidate = returnPropertyIfBetterIdPropertyCandidateOrNull(property);
+		var candidate = returnPropertyIfBetterIdPropertyCandidateOrNull(property);
 
 		if (candidate != null) {
 			this.idProperty = candidate;
@@ -230,7 +230,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		if (property.isVersionProperty()) {
 
-			P versionProperty = this.versionProperty;
+			var versionProperty = this.versionProperty;
 
 			if (versionProperty != null) {
 
@@ -267,7 +267,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			return null;
 		}
 
-		P idProperty = this.idProperty;
+		var idProperty = this.idProperty;
 
 		if (idProperty != null) {
 			throw new MappingException(String.format("Attempt to add id property %s but already have property %s registered "
@@ -311,7 +311,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private List<P> doFindPersistentProperty(Class<? extends Annotation> annotationType) {
 
-		List<P> annotatedProperties = properties.stream() //
+		var annotatedProperties = properties.stream() //
 				.filter(it -> it.isAnnotationPresent(annotationType)) //
 				.collect(Collectors.toList());
 
@@ -356,7 +356,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(handler, "PropertyHandler must not be null!");
 
-		for (P property : persistentPropertiesCache) {
+		for (var property : persistentPropertiesCache) {
 			handler.doWithPersistentProperty(property);
 		}
 	}
@@ -383,7 +383,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Assert.notNull(handler, "Handler must not be null!");
 
-		for (Association<P> association : associations) {
+		for (var association : associations) {
 			handler.doWithAssociation(association);
 		}
 	}
@@ -522,7 +522,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	@Override
 	public Iterator<P> iterator() {
 
-		Iterator<P> iterator = properties.iterator();
+		var iterator = properties.iterator();
 
 		return new Iterator<P>() {
 
@@ -593,12 +593,13 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	private static Alias getAliasFromAnnotation(Class<?> type) {
 
-		Optional<String> typeAliasValue = Optional
-				.ofNullable(AnnotatedElementUtils.findMergedAnnotation(type, TypeAlias.class))//
-				.map(TypeAlias::value)//
-				.filter(StringUtils::hasText);
+		var typeAlias = AnnotatedElementUtils.findMergedAnnotation(type, TypeAlias.class);
 
-		return Alias.ofNullable(typeAliasValue.orElse(null));
+		if (typeAlias != null && StringUtils.hasText(typeAlias.value())) {
+			return Alias.of(typeAlias.value());
+		}
+
+		return Alias.empty();
 	}
 
 	/**

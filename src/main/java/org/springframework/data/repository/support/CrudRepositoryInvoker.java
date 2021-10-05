@@ -22,7 +22,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
 /**
@@ -55,7 +54,7 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
 		super(repository, metadata, conversionService);
 
-		CrudMethods crudMethods = metadata.getCrudMethods();
+		var crudMethods = metadata.getCrudMethods();
 
 		this.customSaveMethod = isRedeclaredMethod(crudMethods.getSaveMethod());
 		this.customFindOneMethod = isRedeclaredMethod(crudMethods.getFindOneMethod());

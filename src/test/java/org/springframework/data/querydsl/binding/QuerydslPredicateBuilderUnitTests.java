@@ -40,7 +40,6 @@ import org.springframework.util.MultiValueMap;
 
 import com.querydsl.collections.CollQueryFactory;
 import com.querydsl.core.types.Constant;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.StringPath;
 
 /**
@@ -90,7 +89,7 @@ class QuerydslPredicateBuilderUnitTests {
 		DEFAULT_BINDINGS.bind(QUser.user.description).first(CONTAINS_BINDING);
 
 		values.add("description", "Linz");
-		Predicate predicate = this.builder.getPredicate(ClassTypeInformation.from(User.class), values, DEFAULT_BINDINGS);
+		var predicate = this.builder.getPredicate(ClassTypeInformation.from(User.class), values, DEFAULT_BINDINGS);
 
 		assertThat(predicate).hasToString("contains(user.description,Linz)");
 
@@ -107,11 +106,11 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("firstname", "Oliver");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		var predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("Oliver"));
 
-		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
+		var result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
 
 		assertThat(result).containsExactly(Users.OLIVER);
 	}
@@ -124,11 +123,11 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("address.city", "Linz");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		var predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate).isEqualTo(QUser.user.address.city.eq("Linz"));
 
-		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
+		var result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
 
 		assertThat(result).containsExactly(Users.CHRISTOPH);
 	}
@@ -139,7 +138,7 @@ class QuerydslPredicateBuilderUnitTests {
 		values.add("firstname", "rand");
 		values.add("lastname".toUpperCase(), "al'thor");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		var predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand"));
 	}
@@ -149,7 +148,7 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("lastname", null);
 
-		QuerydslBindings bindings = new QuerydslBindings();
+		var bindings = new QuerydslBindings();
 		bindings.bind(QUser.user.lastname).firstOptional((path, value) -> value.map(path::contains));
 
 		builder.getPredicate(USER_TYPE, values, bindings);
@@ -161,9 +160,9 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("address.lonLat", "40.740337,-73.995146");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		var predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
+		var constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
 
 		assertThat(constant.getConstant()).isEqualTo(new Double[] { 40.740337D, -73.995146D });
 	}
@@ -174,9 +173,9 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("address.city", "rivers,two");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		var predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
+		var constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(1);
 
 		assertThat(constant.getConstant()).isEqualTo("rivers,two");
 	}
@@ -186,7 +185,7 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("addresses.street", "VALUE");
 
-		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+		var predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate).isEqualTo(QUser.user.addresses.any().street.eq("VALUE"));
 	}
@@ -196,7 +195,7 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("specialProperty", "VALUE");
 
-		QuerydslBindings bindings = new QuerydslBindings();
+		var bindings = new QuerydslBindings();
 		bindings.bind(QUser.user.as(QSpecialUser.class).specialProperty)//
 				.first(QuerydslBindingsUnitTests.ContainsBinding.INSTANCE);
 
@@ -209,9 +208,9 @@ class QuerydslPredicateBuilderUnitTests {
 
 		values.add("user.specialProperty", "VALUE");
 
-		QUserWrapper wrapper = QUserWrapper.userWrapper;
+		var wrapper = QUserWrapper.userWrapper;
 
-		QuerydslBindings bindings = new QuerydslBindings();
+		var bindings = new QuerydslBindings();
 		bindings.bind(wrapper.user.as(QSpecialUser.class).specialProperty)//
 				.first(QuerydslBindingsUnitTests.ContainsBinding.INSTANCE);
 

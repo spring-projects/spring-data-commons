@@ -23,10 +23,10 @@ import lombok.Data;
 import lombok.Value;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -62,7 +62,7 @@ public class ConvertingPropertyAccessorUnitTests {
 	@Test // DATACMNS-596
 	public void convertsPropertyValueToExpectedType() {
 
-		Entity entity = new Entity();
+		var entity = new Entity();
 		entity.id = 1L;
 
 		assertThat(getIdProperty()).satisfies(
@@ -72,7 +72,7 @@ public class ConvertingPropertyAccessorUnitTests {
 	@Test // DATACMNS-596
 	public void doesNotInvokeConversionForNullValues() {
 
-		ConversionService conversionService = mock(ConversionService.class);
+		var conversionService = mock(ConversionService.class);
 
 		assertThat(getIdProperty()).satisfies(it -> {
 			assertThat(getAccessor(new Entity(), conversionService).getProperty(it, Number.class)).isNull();
@@ -83,10 +83,10 @@ public class ConvertingPropertyAccessorUnitTests {
 	@Test // DATACMNS-596
 	public void doesNotInvokeConversionIfTypeAlreadyMatches() {
 
-		Entity entity = new Entity();
+		var entity = new Entity();
 		entity.id = 1L;
 
-		ConversionService conversionService = mock(ConversionService.class);
+		var conversionService = mock(ConversionService.class);
 
 		assertThat(getIdProperty()).satisfies(it -> {
 			assertThat(getAccessor(entity, conversionService).getProperty(it, Number.class)).isEqualTo(1L);
@@ -97,7 +97,7 @@ public class ConvertingPropertyAccessorUnitTests {
 	@Test // DATACMNS-596
 	public void convertsValueOnSetIfTypesDontMatch() {
 
-		Entity entity = new Entity();
+		var entity = new Entity();
 
 		assertThat(getIdProperty()).satisfies(property -> {
 			getAccessor(entity, CONVERSION_SERVICE).setProperty(property, "1");
@@ -117,15 +117,15 @@ public class ConvertingPropertyAccessorUnitTests {
 	@Test // DATACMNS-1377
 	public void shouldConvertToPropertyPathLeafType() {
 
-		Order order = new Order(new Customer("1"));
+		var order = new Order(new Customer("1"));
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 
-		PersistentPropertyAccessor<Order> accessor = context.getPersistentEntity(Order.class).getPropertyAccessor(order);
-		ConvertingPropertyAccessor<Order> convertingAccessor = new ConvertingPropertyAccessor<>(accessor,
+		var accessor = context.getPersistentEntity(Order.class).getPropertyAccessor(order);
+		var convertingAccessor = new ConvertingPropertyAccessor<Order>(accessor,
 				new DefaultConversionService());
 
-		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath("customer.firstname",
+		var path = context.getPersistentPropertyPath("customer.firstname",
 				Order.class);
 
 		convertingAccessor.setProperty(path, 2);
@@ -141,8 +141,8 @@ public class ConvertingPropertyAccessorUnitTests {
 
 	private static SamplePersistentProperty getIdProperty() {
 
-		SampleMappingContext mappingContext = new SampleMappingContext();
-		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
+		var mappingContext = new SampleMappingContext();
+		var entity = mappingContext
 				.getRequiredPersistentEntity(Entity.class);
 		return entity.getPersistentProperty("id");
 	}

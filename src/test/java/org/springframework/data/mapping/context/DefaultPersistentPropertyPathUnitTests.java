@@ -99,7 +99,7 @@ class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	void calculatesExtensionCorrectly() {
 
-		PersistentPropertyPath<P> extension = twoLegs.getExtensionForBaseOf(oneLeg);
+		var extension = twoLegs.getExtensionForBaseOf(oneLeg);
 
 		assertThat(extension).isEqualTo(new DefaultPersistentPropertyPath<>(Collections.singletonList(second)));
 	}
@@ -117,8 +117,8 @@ class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty<P>> {
 	@Test
 	void returnItselfForEmptyPath() {
 
-		PersistentPropertyPath<P> parent = oneLeg.getParentPath();
-		PersistentPropertyPath<P> parentsParent = parent.getParentPath();
+		var parent = oneLeg.getParentPath();
+		var parentsParent = parent.getParentPath();
 
 		assertThat(parentsParent).isEmpty();
 		assertThat(parentsParent).isSameAs(parent);

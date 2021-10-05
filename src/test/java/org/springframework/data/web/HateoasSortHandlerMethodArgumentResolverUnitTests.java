@@ -21,9 +21,8 @@ import static org.springframework.data.domain.Sort.Direction.*;
 import java.net.URI;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.core.MethodParameter;
+
 import org.springframework.data.domain.Sort;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -51,9 +50,9 @@ class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandlerMetho
 	@Test // DATACMNS-418
 	void returnCorrectTemplateVariables() {
 
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/").build();
+		var uriComponents = UriComponentsBuilder.fromPath("/").build();
 
-		HateoasSortHandlerMethodArgumentResolver resolver = new HateoasSortHandlerMethodArgumentResolver();
+		var resolver = new HateoasSortHandlerMethodArgumentResolver();
 		assertThat(resolver.getSortTemplateVariables(null, uriComponents).toString()).isEqualTo("{?sort}");
 	}
 
@@ -63,8 +62,8 @@ class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandlerMetho
 
 	private void assertUriStringFor(Sort sort, String expected, String baseUri) throws Exception {
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUri(new URI(baseUri));
-		MethodParameter parameter = getParameterOfMethod("supportedMethod");
+		var builder = UriComponentsBuilder.fromUri(new URI(baseUri));
+		var parameter = getParameterOfMethod("supportedMethod");
 
 		new HateoasSortHandlerMethodArgumentResolver().enhance(builder, parameter, sort);
 

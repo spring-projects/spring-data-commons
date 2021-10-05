@@ -139,11 +139,9 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 			return true;
 		}
 
-		if (!(o instanceof Revision)) {
+		if (!(o instanceof Revision<?, ?> revision)) {
 			return false;
 		}
-
-		Revision<?, ?> revision = (Revision<?, ?>) o;
 
 		if (!ObjectUtils.nullSafeEquals(metadata, revision.metadata)) {
 			return false;
@@ -158,7 +156,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 	 */
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(metadata);
+		var result = ObjectUtils.nullSafeHashCode(metadata);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(entity);
 		return result;
 	}

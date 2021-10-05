@@ -99,7 +99,7 @@ public class DummyReactiveRepositoryFactory extends ReactiveRepositoryFactorySup
 	@Override
 	protected RepositoryComposition.RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
 
-		RepositoryComposition.RepositoryFragments fragments = super.getRepositoryFragments(metadata);
+		var fragments = super.getRepositoryFragments(metadata);
 
 		return QuerydslPredicateExecutor.class.isAssignableFrom(metadata.getRepositoryInterface()) //
 				? fragments.append(RepositoryComposition.RepositoryFragments.just(querydsl)) //

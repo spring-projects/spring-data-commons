@@ -58,7 +58,7 @@ class ReactiveWrapperRepositoryFactorySupportUnitTests {
 	@Test // DATACMNS-836
 	void invokesCustomMethodIfItRedeclaresACRUDOne() {
 
-		ObjectRepository repository = factory.getRepository(ObjectRepository.class, customImplementation);
+		var repository = factory.getRepository(ObjectRepository.class, customImplementation);
 		repository.findById(1);
 
 		verify(customImplementation, times(1)).findById(1);
@@ -72,7 +72,7 @@ class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		Long id = 1L;
 		when(backingRepo.findById(id)).thenReturn(Mono.just(true));
 
-		RxJava3ConvertingRepository repository = factory.getRepository(RxJava3ConvertingRepository.class);
+		var repository = factory.getRepository(RxJava3ConvertingRepository.class);
 		repository.findById(id);
 
 		verify(backingRepo, times(1)).findById(id);
@@ -84,7 +84,7 @@ class ReactiveWrapperRepositoryFactorySupportUnitTests {
 		Serializable id = 1L;
 		when(backingRepo.deleteById(id)).thenReturn(Mono.empty());
 
-		RxJava3ConvertingRepository repository = factory.getRepository(RxJava3ConvertingRepository.class);
+		var repository = factory.getRepository(RxJava3ConvertingRepository.class);
 		repository.deleteById(id);
 
 		verify(backingRepo, times(1)).deleteById(id);

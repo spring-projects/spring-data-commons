@@ -80,10 +80,10 @@ public abstract class ParsingUtils {
 
 		Assert.notNull(source, "Source string must not be null!");
 
-		String[] parts = CAMEL_CASE.split(source);
+		var parts = CAMEL_CASE.split(source);
 		List<String> result = new ArrayList<>(parts.length);
 
-		for (String part : parts) {
+		for (var part : parts) {
 			result.add(toLower ? part.toLowerCase() : part);
 		}
 

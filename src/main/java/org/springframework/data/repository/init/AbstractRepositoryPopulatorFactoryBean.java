@@ -78,7 +78,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 	@Override
 	protected ResourceReaderRepositoryPopulator createInstance() {
 
-		ResourceReaderRepositoryPopulator initializer = new ResourceReaderRepositoryPopulator(getResourceReader());
+		var initializer = new ResourceReaderRepositoryPopulator(getResourceReader());
 		initializer.setResources(resources);
 
 		if (context != null) {
@@ -96,7 +96,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 	 */
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
-		RepositoryPopulator populator = this.populator;
+		var populator = this.populator;
 
 		if (populator == null) {
 			throw new IllegalStateException("RepositoryPopulator was not properly initialized!");
@@ -104,7 +104,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 
 		if (event.getApplicationContext().equals(context)) {
 
-			Repositories repositories = new Repositories(event.getApplicationContext());
+			var repositories = new Repositories(event.getApplicationContext());
 			populator.populate(repositories);
 		}
 	}

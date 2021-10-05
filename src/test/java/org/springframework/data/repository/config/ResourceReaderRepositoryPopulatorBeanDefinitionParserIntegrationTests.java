@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.config.BeanDefinition;
+
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.ClassPathResource;
@@ -41,51 +41,51 @@ class ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTests {
 	@Test // DATACMNS-333
 	void registersJackson2InitializerCorrectly() {
 
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
+		var beanFactory = new DefaultListableBeanFactory();
+		var reader = new XmlBeanDefinitionReader(beanFactory);
 		reader.loadBeanDefinitions(getPopulatorResource());
 
-		BeanDefinition definition = beanFactory.getBeanDefinition("jackson2-populator");
+		var definition = beanFactory.getBeanDefinition("jackson2-populator");
 		assertThat(definition).isNotNull();
 
-		Object bean = beanFactory.getBean("jackson2-populator");
+		var bean = beanFactory.getBean("jackson2-populator");
 		assertThat(bean).isInstanceOf(ResourceReaderRepositoryPopulator.class);
-		Object resourceReader = ReflectionTestUtils.getField(bean, "reader");
+		var resourceReader = ReflectionTestUtils.getField(bean, "reader");
 		assertThat(resourceReader).isInstanceOf(Jackson2ResourceReader.class);
 
-		Object resources = ReflectionTestUtils.getField(bean, "resources");
+		var resources = ReflectionTestUtils.getField(bean, "resources");
 		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.json");
 	}
 
 	@Test // DATACMNS-58
 	void registersXmlInitializerCorrectly() {
 
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
+		var beanFactory = new DefaultListableBeanFactory();
+		var reader = new XmlBeanDefinitionReader(beanFactory);
 		reader.loadBeanDefinitions(getPopulatorResource());
 
-		BeanDefinition definition = beanFactory.getBeanDefinition("xml-populator");
+		var definition = beanFactory.getBeanDefinition("xml-populator");
 		assertThat(definition).isNotNull();
 
-		Object bean = beanFactory.getBean("xml-populator");
+		var bean = beanFactory.getBean("xml-populator");
 		assertThat(bean).isInstanceOf(ResourceReaderRepositoryPopulator.class);
-		Object resourceReader = ReflectionTestUtils.getField(bean, "reader");
+		var resourceReader = ReflectionTestUtils.getField(bean, "reader");
 		assertThat(resourceReader).isInstanceOf(UnmarshallingResourceReader.class);
-		Object unmarshaller = ReflectionTestUtils.getField(resourceReader, "unmarshaller");
+		var unmarshaller = ReflectionTestUtils.getField(resourceReader, "unmarshaller");
 		assertThat(unmarshaller).isInstanceOf(Jaxb2Marshaller.class);
 
-		Object resources = ReflectionTestUtils.getField(bean, "resources");
+		var resources = ReflectionTestUtils.getField(bean, "resources");
 		assertIsListOfClasspathResourcesWithPath(resources, "org/springframework/data/repository/init/data.xml");
 	}
 
 	private static void assertIsListOfClasspathResourcesWithPath(Object source, String path) {
 
 		assertThat(source).isInstanceOf(List.class);
-		List<?> list = (List<?>) source;
+		var list = (List<?>) source;
 		assertThat(list).isNotEmpty();
-		Object element = list.get(0);
+		var element = list.get(0);
 		assertThat(element).isInstanceOf(ClassPathResource.class);
-		ClassPathResource resource = (ClassPathResource) element;
+		var resource = (ClassPathResource) element;
 		assertThat(resource.getPath()).isEqualTo(path);
 	}
 

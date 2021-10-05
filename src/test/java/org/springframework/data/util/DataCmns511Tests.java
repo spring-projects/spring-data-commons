@@ -33,12 +33,12 @@ public class DataCmns511Tests {
 	@Test // DATACMNS-511
 	public void detectsEqualTypeVariableTypeInformationInstances() {
 
-		TypeInformation<?> createdBy = ClassTypeInformation.from(AbstractRole.class).getProperty("createdBy");
+		var createdBy = ClassTypeInformation.from(AbstractRole.class).getProperty("createdBy");
 
 		assertThat(createdBy.getProperty("roles").getActualType().getProperty("createdBy"))//
 				.satisfies(second -> {
 
-					TypeInformation<?> third = second.getProperty("roles").getActualType().getProperty("createdBy");
+					var third = second.getProperty("roles").getActualType().getProperty("createdBy");
 
 					assertThat(third).isEqualTo(second);
 					assertThat(third.hashCode()).isEqualTo(second.hashCode());

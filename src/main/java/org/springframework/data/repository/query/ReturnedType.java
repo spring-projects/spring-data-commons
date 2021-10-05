@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -203,7 +202,7 @@ public abstract class ReturnedType {
 
 			List<String> properties = new ArrayList<>();
 
-			for (PropertyDescriptor descriptor : information.getInputProperties()) {
+			for (var descriptor : information.getInputProperties()) {
 				if (!properties.contains(descriptor.getName())) {
 					properties.add(descriptor.getName());
 				}
@@ -368,11 +367,9 @@ public abstract class ReturnedType {
 				return true;
 			}
 
-			if (!(o instanceof CacheKey)) {
+			if (!(o instanceof CacheKey cacheKey)) {
 				return false;
 			}
-
-			CacheKey cacheKey = (CacheKey) o;
 
 			if (projectionFactoryHashCode != cacheKey.projectionFactoryHashCode) {
 				return false;
@@ -391,7 +388,7 @@ public abstract class ReturnedType {
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(returnedType);
+			var result = ObjectUtils.nullSafeHashCode(returnedType);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(domainType);
 			result = 31 * result + projectionFactoryHashCode;
 			return result;

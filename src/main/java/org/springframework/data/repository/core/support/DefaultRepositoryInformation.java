@@ -113,7 +113,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 			return methodCache.get(method);
 		}
 
-		Method result = composition.findMethod(method).orElse(method);
+		var result = composition.findMethod(method).orElse(method);
 
 		if (!result.equals(method)) {
 			return cacheAndReturn(method, result);
@@ -141,7 +141,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 
 		Set<Method> result = new HashSet<>();
 
-		for (Method method : getRepositoryInterface().getMethods()) {
+		for (var method : getRepositoryInterface().getMethods()) {
 			method = ClassUtils.getMostSpecificMethod(method, getRepositoryInterface());
 			if (isQueryMethodCandidate(method)) {
 				result.add(method);
@@ -211,14 +211,14 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	@Override
 	public boolean hasCustomMethod() {
 
-		Class<?> repositoryInterface = getRepositoryInterface();
+		var repositoryInterface = getRepositoryInterface();
 
 		// No detection required if no typing interface was configured
 		if (isGenericRepositoryInterface(repositoryInterface)) {
 			return false;
 		}
 
-		for (Method method : repositoryInterface.getMethods()) {
+		for (var method : repositoryInterface.getMethods()) {
 			if (isCustomMethod(method) && !isBaseClassMethod(method)) {
 				return true;
 			}

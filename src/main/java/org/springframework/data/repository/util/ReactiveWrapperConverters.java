@@ -28,7 +28,6 @@ import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
 
-import org.springframework.core.ReactiveAdapter;
 import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -147,7 +146,7 @@ public abstract class ReactiveWrapperConverters {
 
 		Assert.notNull(type, "type must not be null");
 
-		Class<?> rawType = type.getType();
+		var rawType = type.getType();
 
 		return supports(rawType) ? unwrapWrapperTypes(type.getRequiredComponentType()) : type;
 	}
@@ -521,10 +520,10 @@ public abstract class ReactiveWrapperConverters {
 		public <T> Converter<Object, T> getConverter(Class<T> targetType) {
 			return source -> {
 
-				Publisher<?> publisher = source instanceof Publisher ? (Publisher<?>) source
+				var publisher = source instanceof Publisher ? (Publisher<?>) source
 						: RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(Publisher.class, source).toPublisher(source);
 
-				ReactiveAdapter adapter = RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(targetType);
+				var adapter = RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(targetType);
 
 				return (T) adapter.fromPublisher(publisher);
 			};

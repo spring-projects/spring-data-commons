@@ -52,10 +52,10 @@ class DefaultRepositoryInvokerFactoryIntegrationTests {
 	void findOneShouldDelegateToAppropriateRepository() {
 
 		// Mockito.reset(productRepository);
-		Product product = new Product();
+		var product = new Product();
 		when(productRepository.findById(4711L)).thenReturn(product);
 
-		Optional<Object> invokeFindOne = factory.getInvokerFor(Product.class).invokeFindById(4711L);
+		var invokeFindOne = factory.getInvokerFor(Product.class).invokeFindById(4711L);
 
 		assertThat(invokeFindOne).isEqualTo(Optional.of(product));
 	}
@@ -72,7 +72,7 @@ class DefaultRepositoryInvokerFactoryIntegrationTests {
 	@Test // DATACMNS-589
 	void returnsSameInvokerInstanceForSubsequentCalls() {
 
-		RepositoryInvoker invoker = factory.getInvokerFor(Product.class);
+		var invoker = factory.getInvokerFor(Product.class);
 
 		assertThat(factory.getInvokerFor(Product.class)).isEqualTo(invoker);
 	}
@@ -80,7 +80,7 @@ class DefaultRepositoryInvokerFactoryIntegrationTests {
 	@Test // DATACMNS-589
 	void createsReflectionRepositoryInvokerForRepositoryNotExtendingADedicatedBaseRepository() {
 
-		RepositoryInvoker invoker = factory.getInvokerFor(Product.class);
+		var invoker = factory.getInvokerFor(Product.class);
 
 		assertThat(invoker)//
 				.isInstanceOf(ReflectionRepositoryInvoker.class)//
@@ -90,7 +90,7 @@ class DefaultRepositoryInvokerFactoryIntegrationTests {
 	@Test // DATACMNS-589
 	void createsCrudRepositoryInvokerForRepositoryExtendingCrudRepository() {
 
-		RepositoryInvoker invoker = factory.getInvokerFor(User.class);
+		var invoker = factory.getInvokerFor(User.class);
 
 		assertThat(invoker)//
 				.isInstanceOf(CrudRepositoryInvoker.class)//

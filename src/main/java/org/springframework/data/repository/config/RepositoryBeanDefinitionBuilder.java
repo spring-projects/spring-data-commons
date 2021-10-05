@@ -15,14 +15,13 @@
  */
 package org.springframework.data.repository.config;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.env.Environment;
@@ -94,7 +93,7 @@ class RepositoryBeanDefinitionBuilder {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder
+		var builder = BeanDefinitionBuilder
 				.rootBeanDefinition(configuration.getRepositoryFactoryBeanClassName());
 
 		builder.getRawBeanDefinition().setSource(configuration.getSource());
@@ -107,7 +106,7 @@ class RepositoryBeanDefinitionBuilder {
 		configuration.getRepositoryBaseClassName()//
 				.ifPresent(it -> builder.addPropertyValue("repositoryBaseClass", it));
 
-		NamedQueriesBeanDefinitionBuilder definitionBuilder = new NamedQueriesBeanDefinitionBuilder(
+		var definitionBuilder = new NamedQueriesBeanDefinitionBuilder(
 				extension.getDefaultNamedQueryLocation());
 		configuration.getNamedQueriesLocation().ifPresent(definitionBuilder::setLocations);
 
@@ -118,10 +117,10 @@ class RepositoryBeanDefinitionBuilder {
 			builder.addDependsOn(it);
 		});
 
-		BeanDefinitionBuilder fragmentsBuilder = BeanDefinitionBuilder
+		var fragmentsBuilder = BeanDefinitionBuilder
 				.rootBeanDefinition(RepositoryFragmentsFactoryBean.class);
 
-		List<String> fragmentBeanNames = registerRepositoryFragmentsImplementation(configuration) //
+		var fragmentBeanNames = registerRepositoryFragmentsImplementation(configuration) //
 				.map(RepositoryFragmentConfiguration::getFragmentBeanName) //
 				.collect(Collectors.toList());
 
@@ -135,16 +134,16 @@ class RepositoryBeanDefinitionBuilder {
 
 	private Optional<String> registerCustomImplementation(RepositoryConfiguration<?> configuration) {
 
-		ImplementationLookupConfiguration lookup = configuration.toLookupConfiguration(metadataReaderFactory);
+		var lookup = configuration.toLookupConfiguration(metadataReaderFactory);
 
-		String beanName = lookup.getImplementationBeanName();
+		var beanName = lookup.getImplementationBeanName();
 
 		// Already a bean configured?
 		if (registry.containsBeanDefinition(beanName)) {
 			return Optional.of(beanName);
 		}
 
-		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(lookup);
+		var beanDefinition = implementationDetector.detectCustomImplementation(lookup);
 
 		return beanDefinition.map(it -> {
 
@@ -163,7 +162,7 @@ class RepositoryBeanDefinitionBuilder {
 	private Stream<RepositoryFragmentConfiguration> registerRepositoryFragmentsImplementation(
 			RepositoryConfiguration<?> configuration) {
 
-		ImplementationDetectionConfiguration config = configuration
+		var config = configuration
 				.toImplementationDetectionConfiguration(metadataReaderFactory);
 
 		return fragmentMetadata.getFragmentInterfaces(configuration.getRepositoryInterface()) //
@@ -176,8 +175,8 @@ class RepositoryBeanDefinitionBuilder {
 	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(String fragmentInterface,
 			ImplementationDetectionConfiguration config) {
 
-		ImplementationLookupConfiguration lookup = config.forFragment(fragmentInterface);
-		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(lookup);
+		var lookup = config.forFragment(fragmentInterface);
+		var beanDefinition = implementationDetector.detectCustomImplementation(lookup);
 
 		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterface, bd));
 	}
@@ -185,7 +184,7 @@ class RepositoryBeanDefinitionBuilder {
 	private void potentiallyRegisterFragmentImplementation(RepositoryConfiguration<?> repositoryConfiguration,
 			RepositoryFragmentConfiguration fragmentConfiguration) {
 
-		String beanName = fragmentConfiguration.getImplementationBeanName();
+		var beanName = fragmentConfiguration.getImplementationBeanName();
 
 		// Already a bean configured?
 		if (registry.containsBeanDefinition(beanName)) {
@@ -207,7 +206,7 @@ class RepositoryBeanDefinitionBuilder {
 	private void potentiallyRegisterRepositoryFragment(RepositoryConfiguration<?> configuration,
 			RepositoryFragmentConfiguration fragmentConfiguration) {
 
-		String beanName = fragmentConfiguration.getFragmentBeanName();
+		var beanName = fragmentConfiguration.getFragmentBeanName();
 
 		// Already a bean configured?
 		if (registry.containsBeanDefinition(beanName)) {
@@ -218,7 +217,7 @@ class RepositoryBeanDefinitionBuilder {
 			logger.debug("Registering repository fragment: " + beanName);
 		}
 
-		BeanDefinitionBuilder fragmentBuilder = BeanDefinitionBuilder.rootBeanDefinition(RepositoryFragment.class,
+		var fragmentBuilder = BeanDefinitionBuilder.rootBeanDefinition(RepositoryFragment.class,
 				"implemented");
 
 		fragmentBuilder.addConstructorArgValue(fragmentConfiguration.getInterfaceName());

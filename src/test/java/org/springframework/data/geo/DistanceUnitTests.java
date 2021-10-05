@@ -20,7 +20,7 @@ import static org.springframework.data.geo.Metrics.*;
 
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.Range;
+
 import org.springframework.data.domain.Range.Bound;
 import org.springframework.util.SerializationUtils;
 
@@ -45,8 +45,8 @@ class DistanceUnitTests {
 	@Test // DATACMNS-437
 	void addsDistancesWithoutExplicitMetric() {
 
-		Distance left = new Distance(2.5, KILOMETERS);
-		Distance right = new Distance(2.5, KILOMETERS);
+		var left = new Distance(2.5, KILOMETERS);
+		var right = new Distance(2.5, KILOMETERS);
 
 		assertThat(left.add(right)).isEqualTo(new Distance(5.0, KILOMETERS));
 	}
@@ -54,8 +54,8 @@ class DistanceUnitTests {
 	@Test // DATACMNS-437
 	void addsDistancesWithExplicitMetric() {
 
-		Distance left = new Distance(2.5, KILOMETERS);
-		Distance right = new Distance(2.5, KILOMETERS);
+		var left = new Distance(2.5, KILOMETERS);
+		var right = new Distance(2.5, KILOMETERS);
 
 		assertThat(left.add(right, MILES)).isEqualTo(new Distance(3.106856281073925, MILES));
 	}
@@ -109,9 +109,9 @@ class DistanceUnitTests {
 	@Test // DATACMNS-482
 	void testSerialization() {
 
-		Distance dist = new Distance(10, KILOMETERS);
+		var dist = new Distance(10, KILOMETERS);
 
-		Distance serialized = (Distance) SerializationUtils.deserialize(SerializationUtils.serialize(dist));
+		var serialized = (Distance) SerializationUtils.deserialize(SerializationUtils.serialize(dist));
 		assertThat(serialized).isEqualTo(dist);
 	}
 
@@ -123,10 +123,10 @@ class DistanceUnitTests {
 	@Test // DATACMNS-651
 	void createsARangeCorrectly() {
 
-		Distance twoKilometers = new Distance(2, KILOMETERS);
-		Distance tenKilometers = new Distance(10, KILOMETERS);
+		var twoKilometers = new Distance(2, KILOMETERS);
+		var tenKilometers = new Distance(10, KILOMETERS);
 
-		Range<Distance> range = Distance.between(twoKilometers, tenKilometers);
+		var range = Distance.between(twoKilometers, tenKilometers);
 
 		assertThat(range).isNotNull();
 		assertThat(range.getLowerBound()).isEqualTo(Bound.inclusive(twoKilometers));
@@ -136,10 +136,10 @@ class DistanceUnitTests {
 	@Test // DATACMNS-651
 	void createsARangeFromPiecesCorrectly() {
 
-		Distance twoKilometers = new Distance(2, KILOMETERS);
-		Distance tenKilometers = new Distance(10, KILOMETERS);
+		var twoKilometers = new Distance(2, KILOMETERS);
+		var tenKilometers = new Distance(10, KILOMETERS);
 
-		Range<Distance> range = Distance.between(2, KILOMETERS, 10, KILOMETERS);
+		var range = Distance.between(2, KILOMETERS, 10, KILOMETERS);
 
 		assertThat(range).isNotNull();
 		assertThat(range.getLowerBound()).isEqualTo(Bound.inclusive(twoKilometers));
@@ -149,9 +149,9 @@ class DistanceUnitTests {
 	@Test // DATACMNS-651
 	void implementsComparableCorrectly() {
 
-		Distance twoKilometers = new Distance(2, KILOMETERS);
-		Distance tenKilometers = new Distance(10, KILOMETERS);
-		Distance tenKilometersInMiles = new Distance(6.21371256214785, MILES);
+		var twoKilometers = new Distance(2, KILOMETERS);
+		var tenKilometers = new Distance(10, KILOMETERS);
+		var tenKilometersInMiles = new Distance(6.21371256214785, MILES);
 
 		assertThat(tenKilometers.compareTo(tenKilometers)).isEqualTo(0);
 		assertThat(tenKilometers.compareTo(tenKilometersInMiles)).isEqualTo(0);

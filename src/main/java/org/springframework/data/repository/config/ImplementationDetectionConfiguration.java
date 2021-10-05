@@ -70,7 +70,7 @@ public interface ImplementationDetectionConfiguration {
 
 		Assert.notNull(definition, "BeanDefinition must not be null!");
 
-		String beanName = definition.getBeanClassName();
+		var beanName = definition.getBeanClassName();
 
 		if (beanName == null) {
 			throw new IllegalStateException("Cannot generate bean name for BeanDefinition without bean class name!");

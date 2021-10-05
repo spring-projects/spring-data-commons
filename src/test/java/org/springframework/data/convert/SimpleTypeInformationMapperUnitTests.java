@@ -37,7 +37,7 @@ class SimpleTypeInformationMapperUnitTests {
 	@Test
 	void resolvesTypeByLoadingClass() {
 
-		TypeInformation<?> type = mapper.resolveTypeFrom(Alias.of("java.lang.String"));
+		var type = mapper.resolveTypeFrom(Alias.of("java.lang.String"));
 
 		TypeInformation<?> expected = ClassTypeInformation.from(String.class);
 

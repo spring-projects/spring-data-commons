@@ -34,9 +34,9 @@ public class ProxyUtilsUnitTests {
 	@Test // DATACMNS-1324
 	public void detectsStandardProxy() {
 
-		ProxyFactory factory = new ProxyFactory();
+		var factory = new ProxyFactory();
 		factory.setTarget(new Sample());
-		Object proxy = factory.getProxy();
+		var proxy = factory.getProxy();
 
 		assertThat(proxy.getClass()).isNotEqualTo(Sample.class);
 		assertThat(ProxyUtils.getUserClass(proxy)).isEqualTo(Sample.class);
@@ -45,9 +45,9 @@ public class ProxyUtilsUnitTests {
 	@Test // DATACMNS-1324
 	public void usesCustomProxyDetector() {
 
-		ProxyFactory factory = new ProxyFactory();
+		var factory = new ProxyFactory();
 		factory.setTarget(new AnotherSample());
-		Object proxy = factory.getProxy();
+		var proxy = factory.getProxy();
 
 		assertThat(ProxyUtils.getUserClass(proxy)).isEqualTo(UserType.class);
 	}
@@ -55,10 +55,10 @@ public class ProxyUtilsUnitTests {
 	@Test // DATACMNS-1341
 	public void detectsTargetTypeOfJdkProxy() {
 
-		ProxyFactory factory = new ProxyFactory();
+		var factory = new ProxyFactory();
 		factory.setTarget(new SomeTypeWithInterface());
 		factory.setInterfaces(Serializable.class);
-		Object proxy = factory.getProxy();
+		var proxy = factory.getProxy();
 
 		assertThat(ProxyUtils.getUserClass(proxy)).isEqualTo(SomeTypeWithInterface.class);
 	}

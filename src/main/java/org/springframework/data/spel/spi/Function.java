@@ -82,23 +82,23 @@ public class Function {
 			return method.invoke(target, arguments);
 		}
 
-		Class<?>[] types = method.getParameterTypes();
-		Class<?> tailType = types[types.length - 1];
+		var types = method.getParameterTypes();
+		var tailType = types[types.length - 1];
 
 		if (tailType.isArray()) {
 
 			List<Object> argumentsToUse = new ArrayList<>(types.length);
 
 			// Add all arguments up until the last one
-			for (int i = 0; i < types.length - 1; i++) {
+			for (var i = 0; i < types.length - 1; i++) {
 				argumentsToUse.add(arguments[i]);
 			}
 
 			// Gather all other arguments into an array of the tail type
-			Object[] varargs = (Object[]) Array.newInstance(tailType.getComponentType(), arguments.length - types.length + 1);
-			int count = 0;
+			var varargs = (Object[]) Array.newInstance(tailType.getComponentType(), arguments.length - types.length + 1);
+			var count = 0;
 
-			for (int i = types.length - 1; i < arguments.length; i++) {
+			for (var i = types.length - 1; i < arguments.length; i++) {
 				varargs[count++] = arguments[i];
 			}
 

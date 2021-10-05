@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -185,12 +184,12 @@ public class SpelQueryContext {
 			Assert.notNull(query, "Query must not be null");
 
 			Map<String, String> expressions = new HashMap<>();
-			Matcher matcher = SPEL_PATTERN.matcher(query);
-			StringBuilder resultQuery = new StringBuilder();
-			QuotationMap quotedAreas = new QuotationMap(query);
+			var matcher = SPEL_PATTERN.matcher(query);
+			var resultQuery = new StringBuilder();
+			var quotedAreas = new QuotationMap(query);
 
-			int expressionCounter = 0;
-			int matchedUntil = 0;
+			var expressionCounter = 0;
+			var matchedUntil = 0;
 
 			while (matcher.find()) {
 
@@ -200,11 +199,11 @@ public class SpelQueryContext {
 
 				} else {
 
-					String spelExpression = matcher.group(EXPRESSION_GROUP_INDEX);
-					String prefix = matcher.group(PREFIX_GROUP_INDEX);
+					var spelExpression = matcher.group(EXPRESSION_GROUP_INDEX);
+					var prefix = matcher.group(PREFIX_GROUP_INDEX);
 
-					String parameterName = parameterNameSource.apply(expressionCounter, spelExpression);
-					String replacement = replacementSource.apply(prefix, parameterName);
+					var parameterName = parameterNameSource.apply(expressionCounter, spelExpression);
+					var replacement = replacementSource.apply(prefix, parameterName);
 
 					resultQuery.append(query, matchedUntil, matcher.start());
 					resultQuery.append(replacement);
@@ -288,11 +287,11 @@ public class SpelQueryContext {
 			}
 
 			Character inQuotation = null;
-			int start = 0;
+			var start = 0;
 
-			for (int i = 0; i < query.length(); i++) {
+			for (var i = 0; i < query.length(); i++) {
 
-				char currentChar = query.charAt(i);
+				var currentChar = query.charAt(i);
 
 				if (QUOTING_CHARACTERS.contains(currentChar)) {
 

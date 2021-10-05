@@ -165,11 +165,10 @@ public interface RepositoryFragment<T> {
 				return true;
 			}
 
-			if (!(o instanceof StructuralRepositoryFragment)) {
+			if (!(o instanceof StructuralRepositoryFragment<?> that)) {
 				return false;
 			}
 
-			StructuralRepositoryFragment<?> that = (StructuralRepositoryFragment<?>) o;
 			return ObjectUtils.nullSafeEquals(interfaceOrImplementation, that.interfaceOrImplementation);
 		}
 
@@ -262,11 +261,9 @@ public interface RepositoryFragment<T> {
 				return true;
 			}
 
-			if (!(o instanceof ImplementedRepositoryFragment)) {
+			if (!(o instanceof ImplementedRepositoryFragment<?> that)) {
 				return false;
 			}
-
-			ImplementedRepositoryFragment<?> that = (ImplementedRepositoryFragment<?>) o;
 
 			if (!ObjectUtils.nullSafeEquals(interfaceClass, that.interfaceClass)) {
 				return false;
@@ -285,7 +282,7 @@ public interface RepositoryFragment<T> {
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(interfaceClass);
+			var result = ObjectUtils.nullSafeHashCode(interfaceClass);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(implementation);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(optionalImplementation);
 			return result;

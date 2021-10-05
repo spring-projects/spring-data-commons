@@ -69,12 +69,12 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	@Override
 	public Streamable<BeanDefinition> getCandidates(ResourceLoader loader) {
 
-		RepositoryComponentProvider scanner = new RepositoryComponentProvider(getIncludeFilters(), registry);
+		var scanner = new RepositoryComponentProvider(getIncludeFilters(), registry);
 		scanner.setConsiderNestedRepositoryInterfaces(shouldConsiderNestedRepositories());
 		scanner.setEnvironment(environment);
 		scanner.setResourceLoader(loader);
 
-		getExcludeFilters().forEach(it -> scanner.addExcludeFilter(it));
+		getExcludeFilters().forEach(scanner::addExcludeFilter);
 
 		return Streamable.of(() -> getBasePackages().stream()//
 				.flatMap(it -> scanner.findCandidateComponents(it).stream()));

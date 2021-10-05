@@ -102,11 +102,9 @@ public class Circle implements Shape {
 			return true;
 		}
 
-		if (!(o instanceof Circle)) {
+		if (!(o instanceof Circle circle)) {
 			return false;
 		}
-
-		Circle circle = (Circle) o;
 
 		if (!ObjectUtils.nullSafeEquals(center, circle.center)) {
 			return false;
@@ -121,7 +119,7 @@ public class Circle implements Shape {
 	 */
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(center);
+		var result = ObjectUtils.nullSafeHashCode(center);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(radius);
 		return result;
 	}

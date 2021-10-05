@@ -45,7 +45,7 @@ class PageableExecutionUtilsUnitTests {
 	@Test // DATAMCNS-884
 	void firstPageRequestIsLessThanOneFullPageDoesNotRequireTotal() {
 
-		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), PageRequest.of(0, 10),
+		var page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), PageRequest.of(0, 10),
 				totalSupplierMock);
 
 		assertThat(page).contains(1, 2, 3);
@@ -56,7 +56,7 @@ class PageableExecutionUtilsUnitTests {
 	@Test // DATAMCNS-884
 	void noPageableRequestDoesNotRequireTotal() {
 
-		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), Pageable.unpaged(), totalSupplierMock);
+		var page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), Pageable.unpaged(), totalSupplierMock);
 
 		assertThat(page).contains(1, 2, 3);
 		assertThat(page.getTotalElements()).isEqualTo(3L);
@@ -67,7 +67,7 @@ class PageableExecutionUtilsUnitTests {
 	@Test // DATAMCNS-884
 	void subsequentPageRequestIsLessThanOneFullPageDoesNotRequireTotal() {
 
-		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), PageRequest.of(5, 10),
+		var page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), PageRequest.of(5, 10),
 				totalSupplierMock);
 
 		assertThat(page).contains(1, 2, 3);
@@ -81,7 +81,7 @@ class PageableExecutionUtilsUnitTests {
 
 		doReturn(4L).when(totalSupplierMock).getAsLong();
 
-		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), PageRequest.of(0, 3),
+		var page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), PageRequest.of(0, 3),
 				totalSupplierMock);
 
 		assertThat(page).contains(1, 2, 3);
@@ -95,7 +95,7 @@ class PageableExecutionUtilsUnitTests {
 
 		doReturn(7L).when(totalSupplierMock).getAsLong();
 
-		Page<Integer> page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), PageRequest.of(1, 3),
+		var page = PageableExecutionUtils.getPage(Arrays.asList(1, 2, 3), PageRequest.of(1, 3),
 				totalSupplierMock);
 
 		assertThat(page).contains(1, 2, 3);

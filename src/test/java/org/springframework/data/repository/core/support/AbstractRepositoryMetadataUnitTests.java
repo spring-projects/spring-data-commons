@@ -18,11 +18,11 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,14 +44,14 @@ class AbstractRepositoryMetadataUnitTests {
 	void discoversSimpleReturnTypeCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
-		Method method = UserRepository.class.getMethod("findSingle");
+		var method = UserRepository.class.getMethod("findSingle");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	@Test // DATACMNS-98
 	void resolvesTypeParameterReturnType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ConcreteRepository.class);
-		Method method = ConcreteRepository.class.getMethod("intermediateMethod");
+		var method = ConcreteRepository.class.getMethod("intermediateMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
@@ -59,7 +59,7 @@ class AbstractRepositoryMetadataUnitTests {
 	void determinesReturnTypeFromPageable() throws Exception {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
-		Method method = ExtendingRepository.class.getMethod("findByFirstname", Pageable.class, String.class);
+		var method = ExtendingRepository.class.getMethod("findByFirstname", Pageable.class, String.class);
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
@@ -80,7 +80,7 @@ class AbstractRepositoryMetadataUnitTests {
 	@Test // DATACMNS-98
 	void determinesReturnTypeFromGenericType() throws Exception {
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
-		Method method = ExtendingRepository.class.getMethod("someMethod");
+		var method = ExtendingRepository.class.getMethod("someMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(GenericType.class);
 	}
 
@@ -88,7 +88,7 @@ class AbstractRepositoryMetadataUnitTests {
 	void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
 
 		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
-		Method method = ExtendingRepository.class.getMethod("anotherMethod");
+		var method = ExtendingRepository.class.getMethod("anotherMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(Map.class);
 	}
 
@@ -96,7 +96,7 @@ class AbstractRepositoryMetadataUnitTests {
 	void detectsArrayReturnTypeCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PagedRepository.class);
-		Method method = PagedRepository.class.getMethod("returnsArray");
+		var method = PagedRepository.class.getMethod("returnsArray");
 
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
@@ -104,9 +104,9 @@ class AbstractRepositoryMetadataUnitTests {
 	@Test // DATACMNS-1299
 	void doesNotUnwrapCustomTypeImplementingIterable() throws Exception {
 
-		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ContainerRepository.class);
+		var metadata = AbstractRepositoryMetadata.getMetadata(ContainerRepository.class);
 
-		Method method = ContainerRepository.class.getMethod("someMethod");
+		var method = ContainerRepository.class.getMethod("someMethod");
 
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(Container.class);
 	}

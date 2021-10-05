@@ -20,11 +20,9 @@ import static org.springframework.hateoas.TemplateVariable.VariableType.*;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.TemplateVariable;
-import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.server.mvc.UriComponentsContributor;
 import org.springframework.lang.Nullable;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -49,16 +47,16 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 	 */
 	public TemplateVariables getSortTemplateVariables(MethodParameter parameter, UriComponents template) {
 
-		String sortParameter = getSortParameter(parameter);
-		MultiValueMap<String, String> queryParameters = template.getQueryParams();
-		boolean append = !queryParameters.isEmpty();
+		var sortParameter = getSortParameter(parameter);
+		var queryParameters = template.getQueryParams();
+		var append = !queryParameters.isEmpty();
 
 		if (queryParameters.containsKey(sortParameter)) {
 			return TemplateVariables.NONE;
 		}
 
-		String description = String.format("pagination.%s.description", sortParameter);
-		VariableType type = append ? REQUEST_PARAM_CONTINUED : REQUEST_PARAM;
+		var description = String.format("pagination.%s.description", sortParameter);
+		var type = append ? REQUEST_PARAM_CONTINUED : REQUEST_PARAM;
 		return new TemplateVariables(new TemplateVariable(sortParameter, type, description));
 	}
 
@@ -69,16 +67,15 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 	@Override
 	public void enhance(UriComponentsBuilder builder, @Nullable MethodParameter parameter, @Nullable Object value) {
 
-		if (!(value instanceof Sort)) {
+		if (!(value instanceof Sort sort)) {
 			return;
 		}
 
-		Sort sort = (Sort) value;
-		String sortParameter = getSortParameter(parameter);
+		var sortParameter = getSortParameter(parameter);
 
 		builder.replaceQueryParam(sortParameter);
 
-		for (String expression : foldIntoExpressions(sort)) {
+		for (var expression : foldIntoExpressions(sort)) {
 			builder.queryParam(sortParameter, expression);
 		}
 	}

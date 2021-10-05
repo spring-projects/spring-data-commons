@@ -92,7 +92,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 			return false;
 		}
 
-		Class<?> type = parameter.getParameterType();
+		var type = parameter.getParameterType();
 
 		if (!type.isInterface()) {
 			return false;
@@ -109,7 +109,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		}
 
 		// Fallback for only user defined interfaces
-		String packageName = ClassUtils.getPackageName(type);
+		var packageName = ClassUtils.getPackageName(type);
 
 		return !IGNORED_PACKAGES.stream().anyMatch(it -> packageName.startsWith(it));
 	}
@@ -122,7 +122,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	protected Object createAttribute(String attributeName, MethodParameter parameter, WebDataBinderFactory binderFactory,
 			NativeWebRequest request) throws Exception {
 
-		MapDataBinder binder = new MapDataBinder(parameter.getParameterType(), conversionService.getObject());
+		var binder = new MapDataBinder(parameter.getParameterType(), conversionService.getObject());
 		binder.bind(new MutablePropertyValues(request.getParameterMap()));
 
 		return proxyFactory.createProjection(parameter.getParameterType(), binder.getTarget());

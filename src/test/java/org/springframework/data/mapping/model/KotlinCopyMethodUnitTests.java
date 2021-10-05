@@ -17,8 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -35,7 +33,7 @@ class KotlinCopyMethodUnitTests {
 	@Test // #2324
 	void shouldLookupPrimaryConstructor() {
 
-		Optional<KotlinCopyMethod> optional = KotlinCopyMethod.findCopyMethod(DataClassKt.class);
+		var optional = KotlinCopyMethod.findCopyMethod(DataClassKt.class);
 
 		assertThat(optional).hasValueSatisfying(actual -> {
 			// $this, 1 component, 1 defaulting mask, 1 Object marker
@@ -49,7 +47,7 @@ class KotlinCopyMethodUnitTests {
 	@Test // #2324
 	void shouldLookupPrimaryConstructorWhenTwoCopyMethodsArePresent() {
 
-		Optional<KotlinCopyMethod> optional = KotlinCopyMethod.findCopyMethod(WithCustomCopyMethod.class);
+		var optional = KotlinCopyMethod.findCopyMethod(WithCustomCopyMethod.class);
 
 		assertThat(optional).hasValueSatisfying(actual -> {
 			// $this, 7 components, 1 defaulting mask, 1 Object marker
@@ -67,7 +65,7 @@ class KotlinCopyMethodUnitTests {
 	@Test // #2324
 	void shouldUsePublicKotlinMethodForSinglePropertyEntities() {
 
-		KotlinCopyMethod copyMethod = KotlinCopyMethod.findCopyMethod(DataClassKt.class).get();
+		var copyMethod = KotlinCopyMethod.findCopyMethod(DataClassKt.class).get();
 
 		assertThat(copyMethod.shouldUsePublicCopyMethod(mappingContext.getRequiredPersistentEntity(DataClassKt.class)))
 				.isTrue();

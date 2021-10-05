@@ -61,11 +61,9 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 			return true;
 		}
 
-		if (!(obj instanceof TypeVariableTypeInformation)) {
+		if (!(obj instanceof TypeVariableTypeInformation<?> that)) {
 			return false;
 		}
-
-		TypeVariableTypeInformation<?> that = (TypeVariableTypeInformation<?>) obj;
 
 		return getType().equals(that.getType());
 	}
@@ -77,7 +75,7 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 	@Override
 	public int hashCode() {
 
-		int result = 17;
+		var result = 17;
 
 		result += 31 * nullSafeHashCode(getType());
 

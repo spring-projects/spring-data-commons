@@ -42,7 +42,7 @@ class PropertyAccessingMethodInterceptorUnitTests {
 	@Test // DATAREST-221
 	void triggersPropertyAccessOnTarget() throws Throwable {
 
-		Source source = new Source();
+		var source = new Source();
 		source.firstname = "Dave";
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("getFirstname"));
@@ -79,7 +79,7 @@ class PropertyAccessingMethodInterceptorUnitTests {
 	@Test // DATACMNS-820
 	void triggersWritePropertyAccessOnTarget() throws Throwable {
 
-		Source source = new Source();
+		var source = new Source();
 		source.firstname = "Dave";
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setFirstname", String.class));
@@ -93,7 +93,7 @@ class PropertyAccessingMethodInterceptorUnitTests {
 	@Test // DATACMNS-820
 	void throwsAppropriateExceptionIfTheInvocationHasNoArguments() throws Throwable {
 
-		Source source = new Source();
+		var source = new Source();
 
 		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("setFirstname", String.class));
 		when(invocation.getArguments()).thenReturn(new Object[0]);

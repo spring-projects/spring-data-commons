@@ -51,7 +51,7 @@ class SpelQueryContextUnitTests {
 	@Test // DATACMNS-1258
 	void rejectsNullEvaluationContextProvider() {
 
-		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> context.withEvaluationContextProvider(null));
@@ -60,7 +60,7 @@ class SpelQueryContextUnitTests {
 	@Test // DATACMNS-1258
 	void createsEvaluatingContextUsingProvider() {
 
-		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
 		assertThat(context.withEvaluationContextProvider(EVALUATION_CONTEXT_PROVIDER)).isNotNull();
 	}
@@ -68,9 +68,9 @@ class SpelQueryContextUnitTests {
 	@Test // DATACMNS-1683
 	void reportsQuotationCorrectly() {
 
-		SpelQueryContext context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
-		SpelQueryContext.SpelExtractor extractor = context.parse(
+		var extractor = context.parse(
 				"select n from NetworkServer n where (LOWER(n.name) LIKE LOWER(NULLIF(text(concat('%',:#{#networkRequest.name},'%')), '')) OR :#{#networkRequest.name} IS NULL )");
 
 		assertThat(extractor.getQueryString()).isEqualTo(

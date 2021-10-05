@@ -18,7 +18,6 @@ package org.springframework.data.repository.config;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
@@ -69,7 +68,7 @@ class RepositoryBeanNameGenerator {
 	 */
 	public String generateBeanName(BeanDefinition definition) {
 
-		AnnotatedBeanDefinition beanDefinition = definition instanceof AnnotatedBeanDefinition //
+		var beanDefinition = definition instanceof AnnotatedBeanDefinition //
 				? (AnnotatedBeanDefinition) definition //
 				: new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
 
@@ -86,14 +85,14 @@ class RepositoryBeanNameGenerator {
 	 */
 	private Class<?> getRepositoryInterfaceFrom(BeanDefinition beanDefinition) {
 
-		ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, Class.class);
+		var argumentValue = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, Class.class);
 
 		if (argumentValue == null) {
 			throw new IllegalStateException(
 					String.format("Failed to obtain first constructor parameter value of BeanDefinition %s!", beanDefinition));
 		}
 
-		Object value = argumentValue.getValue();
+		var value = argumentValue.getValue();
 
 		if (value == null) {
 

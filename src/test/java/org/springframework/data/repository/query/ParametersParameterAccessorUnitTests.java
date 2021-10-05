@@ -17,11 +17,9 @@ package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.lang.reflect.Method;
-import java.util.Iterator;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -44,7 +42,7 @@ class ParametersParameterAccessorUnitTests {
 
 		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { "Foo", 2 });
 
-		Iterator<Object> iterator = accessor.iterator();
+		var iterator = accessor.iterator();
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo("Foo");
 		assertThat(iterator.hasNext()).isTrue();
@@ -58,8 +56,8 @@ class ParametersParameterAccessorUnitTests {
 		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { null, 5 });
 		assertThat(accessor.hasBindableNullValue()).isTrue();
 
-		Method method = Sample.class.getMethod("method", Pageable.class, String.class);
-		DefaultParameters parameters = new DefaultParameters(method);
+		var method = Sample.class.getMethod("method", Pageable.class, String.class);
+		var parameters = new DefaultParameters(method);
 
 		accessor = new ParametersParameterAccessor(parameters, new Object[] { null, "Foo" });
 		assertThat(accessor.hasBindableNullValue()).isFalse();
@@ -68,10 +66,10 @@ class ParametersParameterAccessorUnitTests {
 	@Test // DATACMNS-804
 	void iteratesonlyOverBindableValues() throws Exception {
 
-		Method method = Sample.class.getMethod("method", Pageable.class, String.class);
-		DefaultParameters parameters = new DefaultParameters(method);
+		var method = Sample.class.getMethod("method", Pageable.class, String.class);
+		var parameters = new DefaultParameters(method);
 
-		ParametersParameterAccessor accessor = new ParametersParameterAccessor(parameters,
+		var accessor = new ParametersParameterAccessor(parameters,
 				new Object[] { PageRequest.of(0, 10), "Foo" });
 
 		assertThat(accessor).hasSize(1);

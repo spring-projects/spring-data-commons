@@ -64,7 +64,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	private final Lazy<Boolean> usePropertyAccess = Lazy.of(() -> {
 
-		AccessType accessType = findPropertyOrOwnerAnnotation(AccessType.class);
+		var accessType = findPropertyOrOwnerAnnotation(AccessType.class);
 
 		return accessType != null && Type.PROPERTY.equals(accessType.value()) || super.usePropertyAccess();
 	});
@@ -105,7 +105,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 		populateAnnotationCache(property);
 
-		Value value = findAnnotation(Value.class);
+		var value = findAnnotation(Value.class);
 
 		this.value = value == null ? null : value.value();
 	}
@@ -121,11 +121,11 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 		Optionals.toStream(property.getGetter(), property.getSetter()).forEach(it -> {
 
-			for (Annotation annotation : it.getAnnotations()) {
+			for (var annotation : it.getAnnotations()) {
 
-				Class<? extends Annotation> annotationType = annotation.annotationType();
+				var annotationType = annotation.annotationType();
 
-				Annotation mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
+				var mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
 
 				validateAnnotation(mergedAnnotation,
 						"Ambiguous mapping! Annotation %s configured "
@@ -139,10 +139,10 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 		property.getField().ifPresent(it -> {
 
-			for (Annotation annotation : it.getAnnotations()) {
+			for (var annotation : it.getAnnotations()) {
 
-				Class<? extends Annotation> annotationType = annotation.annotationType();
-				Annotation mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
+				var annotationType = annotation.annotationType();
+				var mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
 
 				validateAnnotation(mergedAnnotation,
 						"Ambiguous mapping! Annotation %s configured " + "on field %s and one of its accessor methods in class %s!",
@@ -164,7 +164,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	private void validateAnnotation(Annotation candidate, String message, Object... arguments) {
 
-		Class<? extends Annotation> annotationType = candidate.annotationType();
+		var annotationType = candidate.annotationType();
 
 		if (!annotationType.getName().startsWith(SPRING_DATA_PACKAGE)) {
 			return;
@@ -251,7 +251,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@SuppressWarnings("unchecked")
 	private <A extends Annotation> Optional<A> doFindAnnotation(Class<A> annotationType) {
 
-		Optional<? extends Annotation> annotation = annotationCache.get(annotationType);
+		var annotation = annotationCache.get(annotationType);
 
 		if (annotation != null) {
 			return (Optional<A>) annotation;
@@ -274,7 +274,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Override
 	public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 
-		A annotation = findAnnotation(annotationType);
+		var annotation = findAnnotation(annotationType);
 
 		return annotation != null ? annotation : getOwner().findAnnotation(annotationType);
 	}
@@ -319,7 +319,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			populateAnnotationCache(getProperty());
 		}
 
-		String builder = annotationCache.values().stream() //
+		var builder = annotationCache.values().stream() //
 				.flatMap(Optionals::toStream) //
 				.map(Object::toString) //
 				.collect(Collectors.joining(" "));

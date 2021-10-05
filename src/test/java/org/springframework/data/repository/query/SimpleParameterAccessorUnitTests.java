@@ -78,7 +78,7 @@ class SimpleParameterAccessorUnitTests {
 	@Test
 	void returnsSortIfAvailable() {
 
-		Sort sort = Sort.by("foo");
+		var sort = Sort.by("foo");
 		ParameterAccessor accessor = new ParametersParameterAccessor(sortParameters, new Object[] { "test", sort });
 
 		assertThat(accessor.getSort()).isEqualTo(sort);
@@ -98,7 +98,7 @@ class SimpleParameterAccessorUnitTests {
 	@Test
 	void returnsSortFromPageableIfAvailable() throws Exception {
 
-		Sort sort = Sort.by("foo");
+		var sort = Sort.by("foo");
 		Pageable pageable = PageRequest.of(0, 10, sort);
 		ParameterAccessor accessor = new ParametersParameterAccessor(pageableParameters, new Object[] { "test", pageable });
 

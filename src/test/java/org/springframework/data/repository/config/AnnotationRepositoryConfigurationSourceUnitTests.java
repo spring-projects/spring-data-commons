@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.config.BeanDefinition;
+
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Primary;
@@ -34,7 +34,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link AnnotationRepositoryConfigurationSource}.
@@ -72,7 +71,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-47, DATACMNS-102
 	void evaluatesExcludeFiltersCorrectly() {
 
-		Streamable<BeanDefinition> candidates = source.getCandidates(new DefaultResourceLoader());
+		var candidates = source.getCandidates(new DefaultResourceLoader());
 
 		assertThat(candidates).extracting("beanClassName")
 				.contains(MyRepository.class.getName(), ComposedRepository.class.getName())
@@ -82,7 +81,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-47
 	void defaultsToPackageOfAnnotatedClass() {
 
-		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfiguration.class);
+		var source = getConfigSource(DefaultConfiguration.class);
 		Iterable<String> packages = source.getBasePackages();
 
 		assertThat(packages).contains(DefaultConfiguration.class.getPackage().getName());
@@ -92,7 +91,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-47
 	void returnsConfiguredBasePackage() {
 
-		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithBasePackage.class);
+		var source = getConfigSource(DefaultConfigurationWithBasePackage.class);
 
 		assertThat(source.getBasePackages()).contains("foo");
 	}
@@ -100,7 +99,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-90
 	void returnsConsiderNestedRepositories() {
 
-		AnnotationRepositoryConfigurationSource source = getConfigSource(DefaultConfigurationWithNestedRepositories.class);
+		var source = getConfigSource(DefaultConfigurationWithNestedRepositories.class);
 		assertThat(source.shouldConsiderNestedRepositories()).isTrue();
 	}
 
@@ -114,7 +113,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-502
 	void returnsEmptyStringForBasePackage() throws Exception {
 
-		StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(
+		var metadata = new StandardAnnotationMetadata(
 				getClass().getClassLoader().loadClass("TypeInDefaultPackage"), true);
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				EnableRepositories.class, resourceLoader, environment, registry);

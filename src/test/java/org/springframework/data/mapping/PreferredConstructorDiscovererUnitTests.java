@@ -112,7 +112,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 		assertThat(PreferredConstructorDiscoverer.discover(entity)).satisfies(constructor -> {
 
-			PersistenceConstructor annotation = constructor.getConstructor().getAnnotation(PersistenceConstructor.class);
+			var annotation = constructor.getConstructor().getAnnotation(PersistenceConstructor.class);
 			assertThat(annotation).isNotNull();
 			assertThat(constructor.getConstructor().isSynthetic()).isFalse();
 		});

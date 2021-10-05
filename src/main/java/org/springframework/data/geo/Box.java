@@ -97,7 +97,7 @@ public class Box implements Shape {
 	@Override
 	public int hashCode() {
 
-		int result = 31;
+		var result = 31;
 
 		result += 17 * first.hashCode();
 		result += 17 * second.hashCode();
@@ -116,11 +116,9 @@ public class Box implements Shape {
 			return true;
 		}
 
-		if (!(obj instanceof Box)) {
+		if (!(obj instanceof Box that)) {
 			return false;
 		}
-
-		Box that = (Box) obj;
 
 		return this.first.equals(that.first) && this.second.equals(that.second);
 	}

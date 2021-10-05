@@ -65,7 +65,7 @@ class PagedResourcesAssemblerUnitTests {
 	@Test
 	void addsNextLinkForFirstPage() {
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(0));
+		var resources = assembler.toModel(createPage(0));
 
 		assertThat(resources.getLink(IanaLinkRelations.PREV)).isEmpty();
 		assertThat(resources.getLink(IanaLinkRelations.SELF)).isNotEmpty();
@@ -75,7 +75,7 @@ class PagedResourcesAssemblerUnitTests {
 	@Test
 	void addsPreviousAndNextLinksForMiddlePage() {
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
+		var resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getLink(IanaLinkRelations.PREV)).isNotEmpty();
 		assertThat(resources.getLink(IanaLinkRelations.SELF)).isNotEmpty();
@@ -85,7 +85,7 @@ class PagedResourcesAssemblerUnitTests {
 	@Test
 	void addsPreviousLinkForLastPage() {
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(2));
+		var resources = assembler.toModel(createPage(2));
 
 		assertThat(resources.getLink(IanaLinkRelations.PREV)).isNotEmpty();
 		assertThat(resources.getLink(IanaLinkRelations.SELF)).isNotEmpty();
@@ -95,10 +95,10 @@ class PagedResourcesAssemblerUnitTests {
 	@Test
 	void usesBaseUriIfConfigured() {
 
-		UriComponents baseUri = UriComponentsBuilder.fromUriString("https://foo:9090").build();
+		var baseUri = UriComponentsBuilder.fromUriString("https://foo:9090").build();
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, baseUri);
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
+		var assembler = new PagedResourcesAssembler<Person>(resolver, baseUri);
+		var resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.PREV).getHref()).startsWith(baseUri.toUriString());
 		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF)).isNotNull();
@@ -108,9 +108,9 @@ class PagedResourcesAssemblerUnitTests {
 	@Test
 	void usesCustomLinkProvided() {
 
-		Link link = Link.of("https://foo:9090", "rel");
+		var link = Link.of("https://foo:9090", "rel");
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1), link);
+		var resources = assembler.toModel(createPage(1), link);
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.PREV).getHref()).startsWith(link.getHref());
 		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF)).isEqualTo(link.withSelfRel());
@@ -131,7 +131,7 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-418, DATACMNS-515
 	void createsACanonicalLinkWithoutTemplateParameters() {
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
+		var resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF).getHref()).doesNotContain("{").doesNotContain("}");
 	}
@@ -139,13 +139,13 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-418
 	void invokesCustomElementResourceAssembler() {
 
-		PersonResourceAssembler personAssembler = new PersonResourceAssembler();
+		var personAssembler = new PersonResourceAssembler();
 
-		PagedModel<PersonResource> resources = assembler.toModel(createPage(0), personAssembler);
+		var resources = assembler.toModel(createPage(0), personAssembler);
 
 		assertThat(resources.hasLink(IanaLinkRelations.SELF)).isTrue();
 		assertThat(resources.hasLink(IanaLinkRelations.NEXT)).isTrue();
-		Collection<PersonResource> content = resources.getContent();
+		var content = resources.getContent();
 		assertThat(content).hasSize(1);
 		assertThat(content.iterator().next().name).isEqualTo("Dave");
 	}
@@ -153,11 +153,11 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATAMCNS-563
 	void createsPaginationLinksForOneIndexedArgumentResolverCorrectly() {
 
-		HateoasPageableHandlerMethodArgumentResolver argumentResolver = new HateoasPageableHandlerMethodArgumentResolver();
+		var argumentResolver = new HateoasPageableHandlerMethodArgumentResolver();
 		argumentResolver.setOneIndexedParameters(true);
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(argumentResolver, null);
-		PagedModel<EntityModel<Person>> resource = assembler.toModel(createPage(1));
+		var assembler = new PagedResourcesAssembler<Person>(argumentResolver, null);
+		var resource = assembler.toModel(createPage(1));
 
 		assertThat(resource.hasLink("prev")).isTrue();
 		assertThat(resource.hasLink("next")).isTrue();
@@ -172,7 +172,7 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-515
 	void generatedLinksShouldNotBeTemplated() {
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
+		var resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.SELF).getHref()).doesNotContain("{").doesNotContain("}");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.NEXT).getHref()).endsWith("?page=2&size=1");
@@ -182,12 +182,12 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-699
 	void generatesEmptyPagedResourceWithEmbeddedWrapper() {
 
-		PagedModel<?> result = assembler.toEmptyModel(EMPTY_PAGE, Person.class);
+		var result = assembler.toEmptyModel(EMPTY_PAGE, Person.class);
 
-		Collection<?> content = result.getContent();
+		var content = result.getContent();
 		assertThat(content).hasSize(1);
 
-		Object element = content.iterator().next();
+		var element = content.iterator().next();
 		assertThat(element).isInstanceOf(EmbeddedWrapper.class);
 		assertThat(((EmbeddedWrapper) element).getRelTargetType()).isEqualTo(Person.class);
 	}
@@ -205,7 +205,7 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-701
 	void addsFirstAndLastLinksForMultiplePages() {
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(1));
+		var resources = assembler.toModel(createPage(1));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=1");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=2&size=1");
@@ -214,7 +214,7 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-701
 	void addsFirstAndLastLinksForFirstPage() {
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(0));
+		var resources = assembler.toModel(createPage(0));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=1");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=2&size=1");
@@ -223,7 +223,7 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-701
 	void addsFirstAndLastLinksForLastPage() {
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(createPage(2));
+		var resources = assembler.toModel(createPage(2));
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=1");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=2&size=1");
@@ -232,10 +232,10 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-701
 	void alwaysAddsFirstAndLastLinkIfConfiguredTo() {
 
-		PagedResourcesAssembler<Person> assembler = new PagedResourcesAssembler<>(resolver, null);
+		var assembler = new PagedResourcesAssembler<Person>(resolver, null);
 		assembler.setForceFirstAndLastRels(true);
 
-		PagedModel<EntityModel<Person>> resources = assembler.toModel(EMPTY_PAGE);
+		var resources = assembler.toModel(EMPTY_PAGE);
 
 		assertThat(resources.getRequiredLink(IanaLinkRelations.FIRST).getHref()).endsWith("?page=0&size=20");
 		assertThat(resources.getRequiredLink(IanaLinkRelations.LAST).getHref()).endsWith("?page=0&size=20");
@@ -253,7 +253,7 @@ class PagedResourcesAssemblerUnitTests {
 	@Test // DATACMNS-1042
 	void selfLinkContainsCoordinatesForCurrentPage() {
 
-		PagedModel<EntityModel<Person>> resource = assembler.toModel(createPage(0));
+		var resource = assembler.toModel(createPage(0));
 
 		assertThat(resource.getRequiredLink(IanaLinkRelations.SELF).getHref()).endsWith("?page=0&size=1");
 	}
@@ -263,7 +263,7 @@ class PagedResourcesAssemblerUnitTests {
 
 		WebTestUtils.initWebTest(new MockHttpServletRequest("GET", "/sample?foo=bar"));
 
-		PagedModel<EntityModel<Person>> model = assembler.toModel(createPage(1));
+		var model = assembler.toModel(createPage(1));
 
 		assertThat(model.getRequiredLink(IanaLinkRelations.FIRST).getHref())
 				.isEqualTo("http://localhost/sample?foo=bar&page=0&size=1");
@@ -273,7 +273,7 @@ class PagedResourcesAssemblerUnitTests {
 
 		Pageable request = PageRequest.of(index, 1);
 
-		Person person = new Person();
+		var person = new Person();
 		person.name = "Dave";
 
 		return new PageImpl<>(Collections.singletonList(person), request, 3);
@@ -281,7 +281,7 @@ class PagedResourcesAssemblerUnitTests {
 
 	private static Map<String, String> getQueryParameters(Link link) {
 
-		UriComponents uriComponents = UriComponentsBuilder.fromUri(URI.create(link.expand().getHref())).build();
+		var uriComponents = UriComponentsBuilder.fromUri(URI.create(link.expand().getHref())).build();
 		return uriComponents.getQueryParams().toSingleValueMap();
 	}
 
@@ -301,7 +301,7 @@ class PagedResourcesAssemblerUnitTests {
 		 */
 		@Override
 		public PersonResource toModel(Person entity) {
-			PersonResource resource = new PersonResource();
+			var resource = new PersonResource();
 			resource.name = entity.name;
 			return resource;
 		}

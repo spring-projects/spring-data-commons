@@ -41,7 +41,7 @@ class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-457
 	void returnsManagedType() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.initialize();
 
@@ -51,7 +51,7 @@ class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-457
 	void indicatesManagedType() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.initialize();
 
@@ -61,7 +61,7 @@ class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-243
 	void createsPersistentEntityForInterfaceCorrectly() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context
 				.getRequiredPersistentEntity(InterfaceOnly.class);
 
@@ -71,11 +71,11 @@ class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-65
 	void foo() throws InterruptedException {
 
-		final DummyMappingContext context = new DummyMappingContext();
+		final var context = new DummyMappingContext();
 
-		Thread a = new Thread(() -> context.getPersistentEntity(Person.class));
+		var a = new Thread(() -> context.getPersistentEntity(Person.class));
 
-		Thread b = new Thread(() -> {
+		var b = new Thread(() -> {
 
 			PersistentEntity<Object, T> entity = context.getRequiredPersistentEntity(Person.class);
 
@@ -109,7 +109,7 @@ class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 		protected T createPersistentProperty(Property property, BasicPersistentEntity<Object, T> owner,
 				SimpleTypeHolder simpleTypeHolder) {
 
-			PersistentProperty prop = mock(PersistentProperty.class);
+			var prop = mock(PersistentProperty.class);
 
 			when(prop.getTypeInformation()).thenReturn(owner.getTypeInformation());
 			when(prop.getName()).thenReturn(property.getName());

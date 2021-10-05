@@ -226,11 +226,9 @@ public final class Range<T extends Comparable<T>> {
 			return true;
 		}
 
-		if (!(o instanceof Range)) {
+		if (!(o instanceof Range<?> range)) {
 			return false;
 		}
-
-		Range<?> range = (Range<?>) o;
 
 		if (!ObjectUtils.nullSafeEquals(lowerBound, range.lowerBound)) {
 			return false;
@@ -245,7 +243,7 @@ public final class Range<T extends Comparable<T>> {
 	 */
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(lowerBound);
+		var result = ObjectUtils.nullSafeHashCode(lowerBound);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(upperBound);
 		return result;
 	}
@@ -436,11 +434,9 @@ public final class Range<T extends Comparable<T>> {
 				return true;
 			}
 
-			if (!(o instanceof Bound)) {
+			if (!(o instanceof Bound<?> bound)) {
 				return false;
 			}
-
-			Bound<?> bound = (Bound<?>) o;
 
 			if (inclusive != bound.inclusive)
 				return false;
@@ -454,7 +450,7 @@ public final class Range<T extends Comparable<T>> {
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(value);
+			var result = ObjectUtils.nullSafeHashCode(value);
 			result = 31 * result + (inclusive ? 1 : 0);
 			return result;
 		}

@@ -17,10 +17,10 @@ package org.springframework.data.spel.spi;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.util.ReflectionUtils;
 
@@ -34,11 +34,11 @@ class FunctionUnitTests {
 	@Test // DATACMNS-1518
 	void detectsVarArgsOverload() {
 
-		Method method = ReflectionUtils.findMethod(Sample.class, "someMethod", String[].class);
+		var method = ReflectionUtils.findMethod(Sample.class, "someMethod", String[].class);
 
-		Function function = new Function(method, new Sample());
+		var function = new Function(method, new Sample());
 
-		TypeDescriptor stringDescriptor = TypeDescriptor.valueOf(String.class);
+		var stringDescriptor = TypeDescriptor.valueOf(String.class);
 
 		assertThat(function.supports(Arrays.asList(stringDescriptor, stringDescriptor))).isTrue();
 	}
@@ -46,11 +46,11 @@ class FunctionUnitTests {
 	@Test // DATACMNS-1518
 	void detectsObjectVarArgsOverload() {
 
-		Method method = ReflectionUtils.findMethod(Sample.class, "onePlusObjectVarargs", String.class, Object[].class);
+		var method = ReflectionUtils.findMethod(Sample.class, "onePlusObjectVarargs", String.class, Object[].class);
 
-		Function function = new Function(method, new Sample());
+		var function = new Function(method, new Sample());
 
-		TypeDescriptor stringDescriptor = TypeDescriptor.valueOf(String.class);
+		var stringDescriptor = TypeDescriptor.valueOf(String.class);
 
 		assertThat(function.supports(Arrays.asList(stringDescriptor, stringDescriptor))).isTrue();
 	}

@@ -20,8 +20,6 @@ import static org.mockito.Mockito.*;
 
 import lombok.Data;
 
-import java.lang.reflect.Method;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,10 +55,10 @@ class RepositoryCompositionUnitTests {
 		RepositoryInformation repositoryInformation = new DefaultRepositoryInformation(
 				new DefaultRepositoryMetadata(PersonRepository.class), backingRepo.getClass(), RepositoryComposition.empty());
 
-		RepositoryFragment<QueryByExampleExecutor> mixin = RepositoryFragment.implemented(QueryByExampleExecutor.class,
+		var mixin = RepositoryFragment.implemented(QueryByExampleExecutor.class,
 				queryByExampleExecutor);
 
-		RepositoryFragment<PersonRepository> base = RepositoryFragment.implemented(backingRepo);
+		var base = RepositoryFragment.implemented(backingRepo);
 
 		repositoryComposition = RepositoryComposition.of(RepositoryFragments.of(mixin, base))
 				.withMethodLookup(MethodLookups.forRepositoryTypes(repositoryInformation));
@@ -76,11 +74,11 @@ class RepositoryCompositionUnitTests {
 	@Test // DATACMNS-102
 	void shouldCallSaveOnBackingRepo() throws Throwable {
 
-		Method save = ReflectionUtils.findMethod(PersonRepository.class, "save", Person.class);
+		var save = ReflectionUtils.findMethod(PersonRepository.class, "save", Person.class);
 
-		Method method = repositoryComposition.findMethod(save).get();
+		var method = repositoryComposition.findMethod(save).get();
 
-		Person person = new Person();
+		var person = new Person();
 		repositoryComposition.invoke(method, person);
 
 		verify(backingRepo).save(person);
@@ -89,11 +87,11 @@ class RepositoryCompositionUnitTests {
 	@Test // DATACMNS-102
 	void shouldCallObjectSaveOnBackingRepo() throws Throwable {
 
-		Method save = ReflectionUtils.findMethod(PersonRepository.class, "save", Object.class);
+		var save = ReflectionUtils.findMethod(PersonRepository.class, "save", Object.class);
 
-		Method method = repositoryComposition.findMethod(save).get();
+		var method = repositoryComposition.findMethod(save).get();
 
-		Person person = new Person();
+		var person = new Person();
 		repositoryComposition.invoke(method, person);
 
 		verify(backingRepo).save((Object) person);
@@ -102,12 +100,12 @@ class RepositoryCompositionUnitTests {
 	@Test // DATACMNS-102
 	void shouldCallFindOneOnMixin() throws Throwable {
 
-		Method findOne = ReflectionUtils.findMethod(PersonRepository.class, "findOne", Example.class);
+		var findOne = ReflectionUtils.findMethod(PersonRepository.class, "findOne", Example.class);
 
-		Method method = repositoryComposition.findMethod(findOne).get();
+		var method = repositoryComposition.findMethod(findOne).get();
 
-		Person person = new Person();
-		Example<Person> example = Example.of(person);
+		var person = new Person();
+		var example = Example.of(person);
 
 		repositoryComposition.invoke(method, example);
 
@@ -123,13 +121,13 @@ class RepositoryCompositionUnitTests {
 		RepositoryFragment<?> foo = RepositoryFragment.implemented(FooMixinImpl.INSTANCE);
 		RepositoryFragment<?> bar = RepositoryFragment.implemented(BarMixinImpl.INSTANCE);
 
-		RepositoryComposition fooBar = RepositoryComposition.of(RepositoryFragments.of(foo, bar))
+		var fooBar = RepositoryComposition.of(RepositoryFragments.of(foo, bar))
 				.withMethodLookup(MethodLookups.forRepositoryTypes(repositoryInformation));
 
-		RepositoryComposition barFoo = RepositoryComposition.of(RepositoryFragments.of(bar, foo))
+		var barFoo = RepositoryComposition.of(RepositoryFragments.of(bar, foo))
 				.withMethodLookup(MethodLookups.forRepositoryTypes(repositoryInformation));
 
-		Method getString = ReflectionUtils.findMethod(OrderedRepository.class, "getString");
+		var getString = ReflectionUtils.findMethod(OrderedRepository.class, "getString");
 
 		assertThat(fooBar.invoke(fooBar.findMethod(getString).get())).isEqualTo("foo");
 
@@ -139,7 +137,7 @@ class RepositoryCompositionUnitTests {
 	@Test // DATACMNS-102, GH-2341
 	void shouldValidateStructuralFragments() {
 
-		RepositoryComposition mixed = RepositoryComposition.of(RepositoryFragment.structural(QueryByExampleExecutor.class),
+		var mixed = RepositoryComposition.of(RepositoryFragment.structural(QueryByExampleExecutor.class),
 				RepositoryFragment.implemented(backingRepo));
 
 		assertThatExceptionOfType(FragmentNotImplementedException.class) //
@@ -152,7 +150,7 @@ class RepositoryCompositionUnitTests {
 	@Test // DATACMNS-102
 	void shouldValidateImplementationFragments() {
 
-		RepositoryComposition mixed = RepositoryComposition.of(RepositoryFragment.implemented(backingRepo));
+		var mixed = RepositoryComposition.of(RepositoryFragment.implemented(backingRepo));
 
 		mixed.validateImplementation();
 	}
@@ -161,8 +159,8 @@ class RepositoryCompositionUnitTests {
 	@SuppressWarnings("rawtypes")
 	void shouldAppendCorrectly() {
 
-		RepositoryFragment<PersonRepository> initial = RepositoryFragment.implemented(backingRepo);
-		RepositoryFragment<QueryByExampleExecutor> structural = RepositoryFragment.structural(QueryByExampleExecutor.class);
+		var initial = RepositoryFragment.implemented(backingRepo);
+		var structural = RepositoryFragment.structural(QueryByExampleExecutor.class);
 
 		assertThat(RepositoryComposition.of(initial).append(structural).getFragments()).containsSequence(initial,
 				structural);

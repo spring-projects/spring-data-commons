@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.MethodLookup.InvokedMethod;
-import org.springframework.data.repository.core.support.MethodLookup.MethodPredicate;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
@@ -71,15 +70,15 @@ public class RepositoryComposition {
 
 		if (ReactiveWrappers.isAvailable()) {
 
-			Class<?>[] parameterTypes = method.getParameterTypes();
+			var parameterTypes = method.getParameterTypes();
 
-			Object[] converted = new Object[args.length];
-			for (int i = 0; i < args.length; i++) {
+			var converted = new Object[args.length];
+			for (var i = 0; i < args.length; i++) {
 
-				Object value = args[i];
-				Object convertedArg = value;
+				var value = args[i];
+				var convertedArg = value;
 
-				Class<?> parameterType = parameterTypes.length > i ? parameterTypes[i] : null;
+				var parameterType = parameterTypes.length > i ? parameterTypes[i] : null;
 
 				if (value != null && parameterType != null) {
 					if (!parameterType.isAssignableFrom(value.getClass())
@@ -274,7 +273,7 @@ public class RepositoryComposition {
 	 */
 	Object invoke(RepositoryInvocationMulticaster listener, Method method, Object[] args) throws Throwable {
 
-		Method methodToCall = getMethod(method);
+		var methodToCall = getMethod(method);
 
 		if (methodToCall == null) {
 			throw new IllegalArgumentException(String.format("No fragment found for method %s", method));
@@ -317,7 +316,7 @@ public class RepositoryComposition {
 
 		fragments.stream().forEach(it -> it.getImplementation() //
 				.orElseThrow(() -> {
-					Class<?> repositoryInterface = metadata != null ? metadata.getRepositoryInterface() : Object.class;
+					var repositoryInterface = metadata != null ? metadata.getRepositoryInterface() : Object.class;
 					return new FragmentNotImplementedException(String.format("Fragment %s used in %s has no implementation.",
 							ClassUtils.getQualifiedName(it.getSignatureContributor()),
 							ClassUtils.getQualifiedName(repositoryInterface)), repositoryInterface, it);
@@ -335,11 +334,10 @@ public class RepositoryComposition {
 			return true;
 		}
 
-		if (!(o instanceof RepositoryComposition)) {
+		if (!(o instanceof RepositoryComposition that)) {
 			return false;
 		}
 
-		RepositoryComposition that = (RepositoryComposition) o;
 		return ObjectUtils.nullSafeEquals(fragments, that.fragments);
 	}
 
@@ -510,14 +508,14 @@ public class RepositoryComposition {
 		Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster listener, Method invokedMethod,
 				Method methodToCall, Object[] args) throws Throwable {
 
-			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
-			Optional<?> optional = fragment.getImplementation();
+			var fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
+			var optional = fragment.getImplementation();
 
 			if (!optional.isPresent()) {
 				throw new IllegalArgumentException(String.format("No implementation found for method %s", methodToCall));
 			}
 
-			RepositoryMethodInvoker repositoryMethodInvoker = invocationMetadataCache.get(invokedMethod);
+			var repositoryMethodInvoker = invocationMetadataCache.get(invokedMethod);
 
 			if (repositoryMethodInvoker == null) {
 
@@ -541,9 +539,9 @@ public class RepositoryComposition {
 		private static Method findMethod(InvokedMethod invokedMethod, MethodLookup lookup,
 				Supplier<Stream<Method>> methodStreamSupplier) {
 
-			for (MethodPredicate methodPredicate : lookup.getLookups()) {
+			for (var methodPredicate : lookup.getLookups()) {
 
-				Optional<Method> resolvedMethod = methodStreamSupplier.get()
+				var resolvedMethod = methodStreamSupplier.get()
 						.filter(it -> methodPredicate.test(invokedMethod, it)) //
 						.findFirst();
 
@@ -585,11 +583,9 @@ public class RepositoryComposition {
 				return true;
 			}
 
-			if (!(o instanceof RepositoryFragments)) {
+			if (!(o instanceof RepositoryFragments that)) {
 				return false;
 			}
-
-			RepositoryFragments that = (RepositoryFragments) o;
 
 			if (!ObjectUtils.nullSafeEquals(fragmentCache, that.fragmentCache)) {
 				return false;
@@ -608,7 +604,7 @@ public class RepositoryComposition {
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(fragmentCache);
+			var result = ObjectUtils.nullSafeHashCode(fragmentCache);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(invocationMetadataCache);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(fragments);
 			return result;

@@ -47,7 +47,7 @@ public class UnmarshallingResourceReader implements ResourceReader {
 
 		Assert.notNull(resource, "Resource must not be null!");
 
-		StreamSource source = new StreamSource(resource.getInputStream());
+		var source = new StreamSource(resource.getInputStream());
 		return unmarshaller.unmarshal(source);
 	}
 }

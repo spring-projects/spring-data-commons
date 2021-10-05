@@ -43,7 +43,7 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 	@Test
 	void equalsRegardsSortCorrectly() {
 
-		Sort sort = Sort.by(Direction.DESC, "foo");
+		var sort = Sort.by(Direction.DESC, "foo");
 		AbstractPageRequest request = PageRequest.ofSize(10).withPage(1).withSort(sort);
 
 		// Equals itself

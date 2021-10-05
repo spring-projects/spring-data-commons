@@ -30,7 +30,7 @@ public class AnnotatedTypeScannerUnitTests {
 	@Test // DATACMNS-452
 	public void findsAnnotatedTypes() {
 
-		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Persistent.class);
+		var scanner = new AnnotatedTypeScanner(Persistent.class);
 
 		assertThat(scanner.findTypes(AnnotatedTypeScanner.class.getPackage().getName())).contains(Type.class);
 	}

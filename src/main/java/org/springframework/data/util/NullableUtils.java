@@ -22,8 +22,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -36,7 +34,6 @@ import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.lang.NonNullApi;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.MultiValueMap;
 
 /**
  * Utility methods to introspect nullability rules declared in packages, classes and methods.
@@ -132,9 +129,9 @@ public abstract class NullableUtils {
 	 */
 	public static boolean isNonNull(AnnotatedElement element, ElementType elementType) {
 
-		for (Annotation annotation : element.getAnnotations()) {
+		for (var annotation : element.getAnnotations()) {
 
-			boolean isNonNull = NON_NULL_ANNOTATION_CLASS.isPresent() ? isNonNull(annotation, elementType)
+			var isNonNull = NON_NULL_ANNOTATION_CLASS.isPresent() ? isNonNull(annotation, elementType)
 					: NON_NULLABLE_ANNOTATIONS.contains(annotation.annotationType());
 
 			if (isNonNull) {
@@ -151,7 +148,7 @@ public abstract class NullableUtils {
 			return false;
 		}
 
-		Class<Annotation> annotationClass = NON_NULL_ANNOTATION_CLASS.get();
+		var annotationClass = NON_NULL_ANNOTATION_CLASS.get();
 
 		if (annotation.annotationType().equals(annotationClass)) {
 			return true;
@@ -186,9 +183,9 @@ public abstract class NullableUtils {
 
 	private static boolean isExplicitNullable(Annotation[] annotations) {
 
-		for (Annotation annotation : annotations) {
+		for (var annotation : annotations) {
 
-			boolean isNullable = NON_NULL_ANNOTATION_CLASS.isPresent() ? isNullable(annotation)
+			var isNullable = NON_NULL_ANNOTATION_CLASS.isPresent() ? isNullable(annotation)
 					: NULLABLE_ANNOTATIONS.contains(annotation.annotationType());
 
 			if (isNullable) {
@@ -227,21 +224,21 @@ public abstract class NullableUtils {
 
 		if (annotation.annotationType().getName().equals(metaAnnotationName)) {
 
-			Map<String, Object> attributes = AnnotationUtils.getAnnotationAttributes(annotation);
+			var attributes = AnnotationUtils.getAnnotationAttributes(annotation);
 
 			return !attributes.isEmpty() && filter.test((T) attributes.get(attribute));
 		}
 
-		MultiValueMap<String, Object> attributes = AnnotatedElementUtils
+		var attributes = AnnotatedElementUtils
 				.getAllAnnotationAttributes(annotation.annotationType(), metaAnnotationName);
 
 		if (attributes == null || attributes.isEmpty()) {
 			return false;
 		}
 
-		List<Object> elementTypes = attributes.get(attribute);
+		var elementTypes = attributes.get(attribute);
 
-		for (Object value : elementTypes) {
+		for (var value : elementTypes) {
 
 			if (filter.test((T) value)) {
 				return true;

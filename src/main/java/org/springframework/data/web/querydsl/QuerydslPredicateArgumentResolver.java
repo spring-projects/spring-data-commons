@@ -16,8 +16,6 @@
 package org.springframework.data.web.querydsl;
 
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
@@ -31,8 +29,6 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-
-import com.querydsl.core.types.Predicate;
 
 /**
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.querydsl.core.types.Predicate} into Spring MVC
@@ -79,18 +75,18 @@ public class QuerydslPredicateArgumentResolver extends QuerydslPredicateArgument
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
-		MultiValueMap<String, String> queryParameters = getQueryParameters(webRequest);
-		Predicate result = getPredicate(parameter, queryParameters);
+		var queryParameters = getQueryParameters(webRequest);
+		var result = getPredicate(parameter, queryParameters);
 
 		return potentiallyConvertMethodParameterValue(parameter, result);
 	}
 
 	private static MultiValueMap<String, String> getQueryParameters(NativeWebRequest webRequest) {
 
-		Map<String, String[]> parameterMap = webRequest.getParameterMap();
+		var parameterMap = webRequest.getParameterMap();
 		MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>(parameterMap.size());
 
-		for (Entry<String, String[]> entry : parameterMap.entrySet()) {
+		for (var entry : parameterMap.entrySet()) {
 			queryParameters.put(entry.getKey(), Arrays.asList(entry.getValue()));
 		}
 

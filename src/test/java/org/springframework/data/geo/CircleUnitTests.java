@@ -41,8 +41,8 @@ class CircleUnitTests {
 	@Test // DATACMNS-437
 	void considersTwoCirclesEqualCorrectly() {
 
-		Circle left = new Circle(1, 1, 1);
-		Circle right = new Circle(1, 1, 1);
+		var left = new Circle(1, 1, 1);
+		var right = new Circle(1, 1, 1);
 
 		assertThat(left).isEqualTo(right);
 		assertThat(right).isEqualTo(left);
@@ -62,9 +62,9 @@ class CircleUnitTests {
 	@Test // DATACMNS-482
 	void testSerialization() {
 
-		Circle circle = new Circle(1, 1, 1);
+		var circle = new Circle(1, 1, 1);
 
-		Circle serialized = (Circle) SerializationUtils.deserialize(SerializationUtils.serialize(circle));
+		var serialized = (Circle) SerializationUtils.deserialize(SerializationUtils.serialize(circle));
 		assertThat(serialized).isEqualTo(circle);
 	}
 }

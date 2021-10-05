@@ -22,6 +22,7 @@ import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
@@ -29,7 +30,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -116,11 +116,11 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 		RepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories);
 
-		for (Resource resource : resources) {
+		for (var resource : resources) {
 
 			logger.info(String.format("Reading resource: %s", resource));
 
-			Object result = readObjectFrom(resource);
+			var result = readObjectFrom(resource);
 
 			if (result instanceof Collection) {
 				for (Object element : (Collection<?>) result) {
@@ -162,7 +162,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 */
 	private void persist(Object object, RepositoryInvokerFactory invokerFactory) {
 
-		RepositoryInvoker invoker = invokerFactory.getInvokerFor(object.getClass());
+		var invoker = invokerFactory.getInvokerFor(object.getClass());
 		logger.debug(String.format("Persisting %s using repository %s", object, invoker));
 		invoker.invokeSave(object);
 	}

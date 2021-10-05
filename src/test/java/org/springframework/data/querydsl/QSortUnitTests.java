@@ -31,7 +31,6 @@ import org.springframework.data.domain.Sort.Order;
 import com.querydsl.core.annotations.QueryInit;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.PathBuilderFactory;
-import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QSort}.
@@ -50,8 +49,8 @@ class QSortUnitTests {
 	@Test // DATACMNS-402
 	void sortBySingleProperty() {
 
-		QUser user = QUser.user;
-		QSort qsort = new QSort(user.firstname.asc());
+		var user = QUser.user;
+		var qsort = new QSort(user.firstname.asc());
 
 		assertThat(qsort.getOrderSpecifiers()).hasSize(1);
 		assertThat(qsort.getOrderSpecifiers().get(0)).isEqualTo(user.firstname.asc());
@@ -61,8 +60,8 @@ class QSortUnitTests {
 	@Test // DATACMNS-402
 	void sortByMultiplyProperties() {
 
-		QUser user = QUser.user;
-		QSort qsort = new QSort(user.firstname.asc(), user.lastname.desc());
+		var user = QUser.user;
+		var qsort = new QSort(user.firstname.asc(), user.lastname.desc());
 
 		assertThat(qsort.getOrderSpecifiers()).hasSize(2);
 		assertThat(qsort.getOrderSpecifiers().get(0)).isEqualTo(user.firstname.asc());
@@ -74,8 +73,8 @@ class QSortUnitTests {
 	@Test // DATACMNS-402
 	void sortByMultiplyPropertiesWithAnd() {
 
-		QUser user = QUser.user;
-		QSort qsort = new QSort(user.firstname.asc()).and(new QSort(user.lastname.desc()));
+		var user = QUser.user;
+		var qsort = new QSort(user.firstname.asc()).and(new QSort(user.lastname.desc()));
 
 		assertThat(qsort.getOrderSpecifiers()).hasSize(2);
 		assertThat(qsort.getOrderSpecifiers().get(0)).isEqualTo(user.firstname.asc());
@@ -87,8 +86,8 @@ class QSortUnitTests {
 	@Test // DATACMNS-402
 	void sortByMultiplyPropertiesWithAndAndVarArgs() {
 
-		QUser user = QUser.user;
-		QSort qsort = new QSort(user.firstname.asc()).and(user.lastname.desc());
+		var user = QUser.user;
+		var qsort = new QSort(user.firstname.asc()).and(user.lastname.desc());
 
 		assertThat(qsort.getOrderSpecifiers()).hasSize(2);
 		assertThat(qsort.getOrderSpecifiers().get(0)).isEqualTo(user.firstname.asc());
@@ -100,8 +99,8 @@ class QSortUnitTests {
 	@Test // DATACMNS-402
 	void ensureInteroperabilityWithSort() {
 
-		QUser user = QUser.user;
-		QSort qsort = new QSort(user.firstname.asc(), user.lastname.desc());
+		var user = QUser.user;
+		var qsort = new QSort(user.firstname.asc(), user.lastname.desc());
 
 		Sort sort = qsort;
 
@@ -112,10 +111,10 @@ class QSortUnitTests {
 	@Test // DATACMNS-402
 	void concatenatesPlainSortCorrectly() {
 
-		QUser user = QUser.user;
-		QSort sort = new QSort(user.firstname.asc());
+		var user = QUser.user;
+		var sort = new QSort(user.firstname.asc());
 
-		Sort result = sort.and(Sort.by(Direction.ASC, "lastname"));
+		var result = sort.and(Sort.by(Direction.ASC, "lastname"));
 		assertThat(result).hasSize(2);
 		assertThat(result).contains(new Order(Direction.ASC, "lastname"), new Order(Direction.ASC, "firstname"));
 	}
@@ -123,10 +122,10 @@ class QSortUnitTests {
 	@Test // DATACMNS-566
 	void shouldSupportSortByOperatorExpressions() {
 
-		QUser user = QUser.user;
-		QSort sort = new QSort(user.dateOfBirth.yearMonth().asc());
+		var user = QUser.user;
+		var sort = new QSort(user.dateOfBirth.yearMonth().asc());
 
-		Sort result = sort.and(Sort.by(Direction.ASC, "lastname"));
+		var result = sort.and(Sort.by(Direction.ASC, "lastname"));
 		assertThat(result).hasSize(2);
 		assertThat(result).contains(new Order(Direction.ASC, "lastname"),
 				new Order(Direction.ASC, user.dateOfBirth.yearMonth().toString()));
@@ -135,7 +134,7 @@ class QSortUnitTests {
 	@Test // DATACMNS-621
 	void shouldCreateSortForNestedPathCorrectly() {
 
-		QSort sort = new QSort(userWrapper.user.firstname.asc());
+		var sort = new QSort(userWrapper.user.firstname.asc());
 
 		assertThat(sort).contains(new Order(Direction.ASC, "user.firstname"));
 	}
@@ -143,7 +142,7 @@ class QSortUnitTests {
 	@Test // DATACMNS-621
 	void shouldCreateSortForDeepNestedPathCorrectly() {
 
-		QSort sort = new QSort(wrapperForUserWrapper.wrapper.user.firstname.asc());
+		var sort = new QSort(wrapperForUserWrapper.wrapper.user.firstname.asc());
 
 		assertThat(sort).contains(new Order(Direction.ASC, "wrapper.user.firstname"));
 	}
@@ -151,7 +150,7 @@ class QSortUnitTests {
 	@Test // DATACMNS-621
 	void shouldCreateSortForReallyDeepNestedPathCorrectly() {
 
-		QSort sort = new QSort(wrapperToWrapWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname.asc());
+		var sort = new QSort(wrapperToWrapWrapperForUserWrapper.wrapperForUserWrapper.wrapper.user.firstname.asc());
 
 		assertThat(sort).contains(new Order(Direction.ASC, "wrapperForUserWrapper.wrapper.user.firstname"));
 	}
@@ -159,9 +158,9 @@ class QSortUnitTests {
 	@Test // DATACMNS-755
 	void handlesPlainStringPathsCorrectly() {
 
-		StringPath path = new PathBuilderFactory().create(User.class).getString("firstname");
+		var path = new PathBuilderFactory().create(User.class).getString("firstname");
 
-		QSort sort = new QSort(new OrderSpecifier<>(com.querydsl.core.types.Order.ASC, path));
+		var sort = new QSort(new OrderSpecifier<>(com.querydsl.core.types.Order.ASC, path));
 
 		assertThat(sort).contains(new Order(Direction.ASC, "firstname"));
 	}

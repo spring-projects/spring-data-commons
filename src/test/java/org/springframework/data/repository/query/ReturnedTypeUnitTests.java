@@ -17,12 +17,12 @@ package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,7 +41,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-89
 	void treatsSimpleDomainTypeAsIs() throws Exception {
 
-		ReturnedType type = getReturnedType("findAll");
+		var type = getReturnedType("findAll");
 
 		assertThat(type.getTypeToRead()).isEqualTo(Sample.class);
 		assertThat(type.getInputProperties()).isEmpty();
@@ -52,7 +52,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-89
 	void detectsDto() throws Exception {
 
-		ReturnedType type = getReturnedType("findAllDtos");
+		var type = getReturnedType("findAllDtos");
 
 		assertThat(type.getTypeToRead()).isEqualTo(SampleDto.class);
 		assertThat(type.getInputProperties()).contains("firstname");
@@ -64,7 +64,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-89
 	void detectsProjection() throws Exception {
 
-		ReturnedType type = getReturnedType("findAllProjection");
+		var type = getReturnedType("findAllProjection");
 
 		assertThat(type.getTypeToRead()).isNull();
 		assertThat(type.getInputProperties()).contains("lastname");
@@ -73,7 +73,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-89
 	void detectsVoidMethod() throws Exception {
 
-		ReturnedType type = getReturnedType("voidMethod");
+		var type = getReturnedType("voidMethod");
 
 		assertThat(type.getDomainType()).isEqualTo(Sample.class);
 		assertThat(type.getReturnedType()).isEqualTo(void.class);
@@ -82,7 +82,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-89
 	void detectsClosedProjection() throws Exception {
 
-		ReturnedType type = getReturnedType("findOneProjection");
+		var type = getReturnedType("findOneProjection");
 
 		assertThat(type.getReturnedType()).isEqualTo(SampleProjection.class);
 		assertThat(type.isProjecting()).isTrue();
@@ -92,7 +92,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-89
 	void detectsOpenProjection() throws Exception {
 
-		ReturnedType type = getReturnedType("findOneOpenProjection");
+		var type = getReturnedType("findOneOpenProjection");
 
 		assertThat(type.getReturnedType()).isEqualTo(OpenProjection.class);
 		assertThat(type.isProjecting()).isTrue();
@@ -103,7 +103,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-89
 	void detectsComplexNumberTypes() throws Exception {
 
-		ReturnedType type = getReturnedType("countQuery");
+		var type = getReturnedType("countQuery");
 
 		assertThat(type.isProjecting()).isFalse();
 		assertThat(type.needsCustomConstruction()).isFalse();
@@ -113,7 +113,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-840
 	void detectsSampleDtoWithDefaultConstructor() throws Exception {
 
-		ReturnedType type = getReturnedType("dtoWithMultipleConstructors");
+		var type = getReturnedType("dtoWithMultipleConstructors");
 
 		assertThat(type.getInputProperties()).isEmpty();
 		assertThat(type.needsCustomConstruction()).isFalse();
@@ -122,7 +122,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-840
 	void doesNotConsiderAnEnumProjecting() throws Exception {
 
-		ReturnedType type = getReturnedType("findEnum");
+		var type = getReturnedType("findEnum");
 
 		assertThat(type.needsCustomConstruction()).isFalse();
 		assertThat(type.isProjecting()).isFalse();
@@ -131,7 +131,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-850
 	void considersAllJavaTypesAsNotProjecting() throws Exception {
 
-		ReturnedType type = getReturnedType("timeQuery");
+		var type = getReturnedType("timeQuery");
 
 		assertThat(type.needsCustomConstruction()).isFalse();
 		assertThat(type.isProjecting()).isFalse();
@@ -140,7 +140,7 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-862
 	void considersInterfaceImplementedByDomainTypeNotProjecting() throws Exception {
 
-		ReturnedType type = getReturnedType("findOneInterface");
+		var type = getReturnedType("findOneInterface");
 
 		assertThat(type.needsCustomConstruction()).isFalse();
 		assertThat(type.isProjecting()).isFalse();
@@ -149,9 +149,9 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-963
 	void detectsDistinctInputProperties() {
 
-		ReturnedType type = ReturnedType.of(Child.class, Object.class, new SpelAwareProxyProjectionFactory());
+		var type = ReturnedType.of(Child.class, Object.class, new SpelAwareProxyProjectionFactory());
 
-		List<String> properties = type.getInputProperties();
+		var properties = type.getInputProperties();
 
 		assertThat(properties).hasSize(1);
 		assertThat(properties).containsExactly("firstname");
@@ -160,10 +160,10 @@ class ReturnedTypeUnitTests {
 	@Test // DATACMNS-1112
 	void cachesInstancesBySourceTypes() {
 
-		SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+		var factory = new SpelAwareProxyProjectionFactory();
 
-		ReturnedType left = ReturnedType.of(Child.class, Object.class, factory);
-		ReturnedType right = ReturnedType.of(Child.class, Object.class, factory);
+		var left = ReturnedType.of(Child.class, Object.class, factory);
+		var right = ReturnedType.of(Child.class, Object.class, factory);
 
 		assertThat(left).isSameAs(right);
 	}
@@ -174,7 +174,7 @@ class ReturnedTypeUnitTests {
 
 	private static QueryMethod getQueryMethod(String name, Class<?>... parameters) throws Exception {
 
-		Method method = SampleRepository.class.getMethod(name, parameters);
+		var method = SampleRepository.class.getMethod(name, parameters);
 		return new QueryMethod(method, new DefaultRepositoryMetadata(SampleRepository.class),
 				new SpelAwareProxyProjectionFactory());
 	}

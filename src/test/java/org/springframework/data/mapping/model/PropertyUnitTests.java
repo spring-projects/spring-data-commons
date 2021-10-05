@@ -45,7 +45,7 @@ class PropertyUnitTests {
 	@Test // DATACMNS-1322
 	void shouldDiscoverWitherMethod() {
 
-		Property property = Property.of(ClassTypeInformation.from(WitherType.class),
+		var property = Property.of(ClassTypeInformation.from(WitherType.class),
 				ReflectionUtils.findField(WitherType.class, "id"));
 
 		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
@@ -57,7 +57,7 @@ class PropertyUnitTests {
 	@Test // DATACMNS-1421
 	void shouldDiscoverDerivedWitherMethod() {
 
-		Property property = Property.of(ClassTypeInformation.from(DerivedWitherClass.class),
+		var property = Property.of(ClassTypeInformation.from(DerivedWitherClass.class),
 				ReflectionUtils.findField(DerivedWitherClass.class, "id"));
 
 		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
@@ -70,7 +70,7 @@ class PropertyUnitTests {
 	@Test // DATACMNS-1421
 	void shouldNotDiscoverWitherMethodWithIncompatibleReturnType() {
 
-		Property property = Property.of(ClassTypeInformation.from(AnotherLevel.class),
+		var property = Property.of(ClassTypeInformation.from(AnotherLevel.class),
 				ReflectionUtils.findField(AnotherLevel.class, "id"));
 
 		assertThat(property.getWither()).isEmpty();

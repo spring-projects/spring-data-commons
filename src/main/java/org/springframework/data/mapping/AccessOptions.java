@@ -186,7 +186,7 @@ public class AccessOptions {
 			Assert.isTrue(type.isAssignableFrom(property.getType()), () -> String
 					.format("Cannot register a property handler for %s on a property of type %s!", type, property.getType()));
 
-			Function<Object, T> caster = it -> type.cast(it);
+			var caster = (Function<Object, T>) it -> type.cast(it);
 
 			return registerHandler(property, caster.andThen(handler));
 		}
@@ -201,7 +201,7 @@ public class AccessOptions {
 		@Nullable
 		Object postProcess(PersistentProperty<?> property, @Nullable Object value) {
 
-			Function<Object, Object> handler = handlers.get(property);
+			var handler = handlers.get(property);
 
 			return handler == null ? value : handler.apply(value);
 		}

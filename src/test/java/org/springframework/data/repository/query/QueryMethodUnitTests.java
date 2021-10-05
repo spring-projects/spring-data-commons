@@ -19,16 +19,15 @@ import static org.assertj.core.api.Assertions.*;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
+import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Mono;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,35 +55,35 @@ class QueryMethodUnitTests {
 	@Test // DATAJPA-59
 	void rejectsPagingMethodWithInvalidReturnType() throws Exception {
 
-		Method method = SampleRepository.class.getMethod("pagingMethodWithInvalidReturnType", Pageable.class);
+		var method = SampleRepository.class.getMethod("pagingMethodWithInvalidReturnType", Pageable.class);
 
 		assertThatIllegalStateException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
 	}
 
 	@Test // DATAJPA-59
 	void rejectsPagingMethodWithoutPageable() throws Exception {
-		Method method = SampleRepository.class.getMethod("pagingMethodWithoutPageable");
+		var method = SampleRepository.class.getMethod("pagingMethodWithoutPageable");
 
 		assertThatIllegalArgumentException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
 	}
 
 	@Test // DATACMNS-64
 	void setsUpSimpleQueryMethodCorrectly() throws Exception {
-		Method method = SampleRepository.class.getMethod("findByUsername", String.class);
+		var method = SampleRepository.class.getMethod("findByUsername", String.class);
 		new QueryMethod(method, metadata, factory);
 	}
 
 	@Test // DATACMNS-61
 	void considersIterableMethodForCollectionQuery() throws Exception {
-		Method method = SampleRepository.class.getMethod("sampleMethod");
-		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
+		var method = SampleRepository.class.getMethod("sampleMethod");
+		var queryMethod = new QueryMethod(method, metadata, factory);
 		assertThat(queryMethod.isCollectionQuery()).isTrue();
 	}
 
 	@Test // DATACMNS-67
 	void doesNotConsiderPageMethodCollectionQuery() throws Exception {
-		Method method = SampleRepository.class.getMethod("anotherSampleMethod", Pageable.class);
-		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
+		var method = SampleRepository.class.getMethod("anotherSampleMethod", Pageable.class);
+		var queryMethod = new QueryMethod(method, metadata, factory);
 		assertThat(queryMethod.isPageQuery()).isTrue();
 		assertThat(queryMethod.isCollectionQuery()).isFalse();
 	}
@@ -92,8 +91,8 @@ class QueryMethodUnitTests {
 	@Test // DATACMNS-171
 	void detectsAnEntityBeingReturned() throws Exception {
 
-		Method method = SampleRepository.class.getMethod("returnsEntitySubclass");
-		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
+		var method = SampleRepository.class.getMethod("returnsEntitySubclass");
+		var queryMethod = new QueryMethod(method, metadata, factory);
 
 		assertThat(queryMethod.isQueryForEntity()).isTrue();
 	}
@@ -101,8 +100,8 @@ class QueryMethodUnitTests {
 	@Test // DATACMNS-171
 	void detectsNonEntityBeingReturned() throws Exception {
 
-		Method method = SampleRepository.class.getMethod("returnsProjection");
-		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
+		var method = SampleRepository.class.getMethod("returnsProjection");
+		var queryMethod = new QueryMethod(method, metadata, factory);
 
 		assertThat(queryMethod.isQueryForEntity()).isFalse();
 	}
@@ -111,8 +110,8 @@ class QueryMethodUnitTests {
 	void detectsSliceMethod() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("sliceOfUsers");
-		QueryMethod queryMethod = new QueryMethod(method, repositoryMetadata, factory);
+		var method = SampleRepository.class.getMethod("sliceOfUsers");
+		var queryMethod = new QueryMethod(method, repositoryMetadata, factory);
 
 		assertThat(queryMethod.isSliceQuery()).isTrue();
 		assertThat(queryMethod.isCollectionQuery()).isFalse();
@@ -123,7 +122,7 @@ class QueryMethodUnitTests {
 	void detectsCollectionMethodForArrayRetrunType() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("arrayOfUsers");
+		var method = SampleRepository.class.getMethod("arrayOfUsers");
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
@@ -132,7 +131,7 @@ class QueryMethodUnitTests {
 	void considersMethodReturningAStreamStreaming() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("streaming");
+		var method = SampleRepository.class.getMethod("streaming");
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isStreamQuery()).isTrue();
 	}
@@ -141,7 +140,7 @@ class QueryMethodUnitTests {
 	void doesNotRejectStreamingForPagination() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("streaming", Pageable.class);
+		var method = SampleRepository.class.getMethod("streaming", Pageable.class);
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isStreamQuery()).isTrue();
 	}
@@ -150,7 +149,7 @@ class QueryMethodUnitTests {
 	void doesNotRejectCompletableFutureQueryForSingleEntity() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("returnsCompletableFutureForSingleEntity");
+		var method = SampleRepository.class.getMethod("returnsCompletableFutureForSingleEntity");
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isFalse();
 	}
@@ -159,7 +158,7 @@ class QueryMethodUnitTests {
 	void doesNotRejectCompletableFutureQueryForEntityCollection() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("returnsCompletableFutureForEntityCollection");
+		var method = SampleRepository.class.getMethod("returnsCompletableFutureForEntityCollection");
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
@@ -168,7 +167,7 @@ class QueryMethodUnitTests {
 	void doesNotRejectFutureQueryForSingleEntity() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("returnsFutureForSingleEntity");
+		var method = SampleRepository.class.getMethod("returnsFutureForSingleEntity");
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isFalse();
 	}
@@ -177,7 +176,7 @@ class QueryMethodUnitTests {
 	void doesNotRejectFutureQueryForEntityCollection() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("returnsFutureForEntityCollection");
+		var method = SampleRepository.class.getMethod("returnsFutureForEntityCollection");
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
@@ -189,7 +188,7 @@ class QueryMethodUnitTests {
 	void detectsCustomCollectionReturnType() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("returnsSeq");
+		var method = SampleRepository.class.getMethod("returnsSeq");
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
@@ -201,7 +200,7 @@ class QueryMethodUnitTests {
 	void detectsWrapperWithinWrapper() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("returnsFutureOfSeq");
+		var method = SampleRepository.class.getMethod("returnsFutureOfSeq");
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
@@ -213,7 +212,7 @@ class QueryMethodUnitTests {
 	void detectsSingleValueWrapperWithinWrapper() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("returnsFutureOfOption");
+		var method = SampleRepository.class.getMethod("returnsFutureOfOption");
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isFalse();
 	}
@@ -222,7 +221,7 @@ class QueryMethodUnitTests {
 	void doesNotRejectSeqForPagination() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("returnsSeq", Pageable.class);
+		var method = SampleRepository.class.getMethod("returnsSeq", Pageable.class);
 
 		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
 	}
@@ -230,8 +229,8 @@ class QueryMethodUnitTests {
 	@Test // DATACMNS-1300
 	void doesNotConsiderMethodForIterableAggregateACollectionQuery() throws Exception {
 
-		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(ContainerRepository.class);
-		Method method = ContainerRepository.class.getMethod("someMethod");
+		var metadata = AbstractRepositoryMetadata.getMetadata(ContainerRepository.class);
+		var method = ContainerRepository.class.getMethod("someMethod");
 
 		assertThat(new QueryMethod(method, metadata, factory).isCollectionQuery()).isFalse();
 	}
@@ -240,10 +239,10 @@ class QueryMethodUnitTests {
 	void detectsReactiveSliceQuery() throws Exception {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
-		Method method = SampleRepository.class.getMethod("reactiveSlice");
+		var method = SampleRepository.class.getMethod("reactiveSlice");
 
-		QueryMethod queryMethod = new QueryMethod(method, repositoryMetadata, factory);
-		ReturnedType returnedType = queryMethod.getResultProcessor().getReturnedType();
+		var queryMethod = new QueryMethod(method, repositoryMetadata, factory);
+		var returnedType = queryMethod.getResultProcessor().getReturnedType();
 		assertThat(queryMethod.isSliceQuery()).isTrue();
 		assertThat(returnedType.getTypeToRead()).isEqualTo(User.class);
 		assertThat(returnedType.getDomainType()).isEqualTo(User.class);

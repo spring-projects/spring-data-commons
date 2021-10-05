@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -115,7 +114,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		Assert.notNull(annotation, "Annotation must not be null!");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
 
-		Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(annotation.getName());
+		var annotationAttributes = metadata.getAnnotationAttributes(annotation.getName());
 
 		if (annotationAttributes == null) {
 			throw new IllegalStateException(String.format("Unable to obtain annotation attributes for %s!", annotation));
@@ -134,14 +133,14 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	public Streamable<String> getBasePackages() {
 
-		String[] value = attributes.getStringArray("value");
-		String[] basePackages = attributes.getStringArray(BASE_PACKAGES);
-		Class<?>[] basePackageClasses = attributes.getClassArray(BASE_PACKAGE_CLASSES);
+		var value = attributes.getStringArray("value");
+		var basePackages = attributes.getStringArray(BASE_PACKAGES);
+		var basePackageClasses = attributes.getClassArray(BASE_PACKAGE_CLASSES);
 
 		// Default configuration - return package of annotated class
 		if (value.length == 0 && basePackages.length == 0 && basePackageClasses.length == 0) {
 
-			String className = configMetadata.getClassName();
+			var className = configMetadata.getClassName();
 			return Streamable.of(ClassUtils.getPackageName(className));
 		}
 
@@ -149,9 +148,9 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		packages.addAll(Arrays.asList(value));
 		packages.addAll(Arrays.asList(basePackages));
 
-		Arrays.stream(basePackageClasses)//
-				.map(ClassUtils::getPackageName)//
-				.forEach(it -> packages.add(it));
+		for (var c : basePackageClasses) {
+			packages.add(ClassUtils.getPackageName(c));
+		}
 
 		return Streamable.of(packages);
 	}
@@ -227,7 +226,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			return Optional.empty();
 		}
 
-		Class<? extends Object> repositoryBaseClass = attributes.getClass(REPOSITORY_BASE_CLASS);
+		var repositoryBaseClass = attributes.getClass(REPOSITORY_BASE_CLASS);
 		return DefaultRepositoryBaseClass.class.equals(repositoryBaseClass) ? Optional.empty()
 				: Optional.of(repositoryBaseClass.getName());
 	}
@@ -279,7 +278,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			throw new IllegalArgumentException(String.format("No attribute named %s found!", name));
 		}
 
-		Object value = attributes.get(name);
+		var value = attributes.get(name);
 
 		if (value == null) {
 			return Optional.empty();
@@ -289,7 +288,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 				() -> String.format("Attribute value for %s is of type %s but was expected to be of type %s!", name,
 						value.getClass(), type));
 
-		Object result = String.class.isInstance(value) //
+		var result = value instanceof String //
 				? StringUtils.hasText((String) value) ? value : null //
 				: value;
 
@@ -326,15 +325,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	@Override
 	public String getResourceDescription() {
 
-		String simpleClassName = ClassUtils.getShortName(configMetadata.getClassName());
-		String annoationClassName = ClassUtils.getShortName(enableAnnotationMetadata.getClassName());
+		var simpleClassName = ClassUtils.getShortName(configMetadata.getClassName());
+		var annoationClassName = ClassUtils.getShortName(enableAnnotationMetadata.getClassName());
 
 		return String.format("@%s declared on %s", annoationClassName, simpleClassName);
 	}
 
 	private Streamable<TypeFilter> parseFilters(String attributeName) {
 
-		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);
+		var filters = attributes.getAnnotationArray(attributeName);
 
 		return Streamable.of(() -> Arrays.stream(filters).flatMap(it -> typeFiltersFor(it).stream()));
 	}
@@ -348,7 +347,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	private Optional<String> getNullDefaultedAttribute(String attributeName) {
 
-		String attribute = attributes.getString(attributeName);
+		var attribute = attributes.getString(attributeName);
 
 		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
@@ -364,13 +363,13 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		List<TypeFilter> typeFilters = new ArrayList<>();
 		FilterType filterType = filterAttributes.getEnum("type");
 
-		for (Class<?> filterClass : filterAttributes.getClassArray("value")) {
+		for (var filterClass : filterAttributes.getClassArray("value")) {
 			switch (filterType) {
 				case ANNOTATION:
 					Assert.isAssignable(Annotation.class, filterClass,
 							"An error occured when processing a @ComponentScan " + "ANNOTATION type filter: ");
 					@SuppressWarnings("unchecked")
-					Class<Annotation> annoClass = (Class<Annotation>) filterClass;
+					var annoClass = (Class<Annotation>) filterClass;
 					typeFilters.add(new AnnotationTypeFilter(annoClass));
 					break;
 				case ASSIGNABLE_TYPE:
@@ -386,9 +385,9 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			}
 		}
 
-		for (String expression : getPatterns(filterAttributes)) {
+		for (var expression : getPatterns(filterAttributes)) {
 
-			String rawName = filterType.toString();
+			var rawName = filterType.toString();
 
 			if ("REGEX".equals(rawName)) {
 				typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(expression)));

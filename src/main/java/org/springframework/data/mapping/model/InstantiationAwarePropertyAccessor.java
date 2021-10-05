@@ -19,10 +19,8 @@ import java.util.function.Function;
 
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -76,8 +74,8 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 	@Override
 	public void setProperty(PersistentProperty<?> property, @Nullable Object value) {
 
-		PersistentEntity<?, ?> owner = property.getOwner();
-		PersistentPropertyAccessor<T> delegate = delegateFunction.apply(this.bean);
+		var owner = property.getOwner();
+		var delegate = delegateFunction.apply(this.bean);
 
 		if (!property.isImmutable() || property.getWither() != null || KotlinDetector.isKotlinType(owner.getType())) {
 
@@ -87,7 +85,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 			return;
 		}
 
-		PreferredConstructor<?, ?> constructor = owner.getPersistenceConstructor();
+		var constructor = owner.getPersistenceConstructor();
 
 		if (constructor == null) {
 			throw new IllegalStateException(String.format(NO_SETTER_OR_CONSTRUCTOR, property.getName(), owner.getType()));
@@ -106,7 +104,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 			}
 		});
 
-		EntityInstantiator instantiator = instantiators.getInstantiatorFor(owner);
+		var instantiator = instantiators.getInstantiatorFor(owner);
 
 		this.bean = (T) instantiator.createInstance(owner, new ParameterValueProvider() {
 

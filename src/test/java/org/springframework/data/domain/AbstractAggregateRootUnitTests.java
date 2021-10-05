@@ -29,9 +29,9 @@ class AbstractAggregateRootUnitTests {
 	@Test // DATACMNS-928
 	void registersEvent() {
 
-		Object event = new Object();
+		var event = new Object();
 
-		SampleAggregate aggregate = new SampleAggregate();
+		var aggregate = new SampleAggregate();
 		aggregate.registerEvent(event);
 
 		assertThat(aggregate.domainEvents()).containsExactly(event);
@@ -40,9 +40,9 @@ class AbstractAggregateRootUnitTests {
 	@Test // DATACMNS-928
 	void clearsEvents() {
 
-		Object event = new Object();
+		var event = new Object();
 
-		SampleAggregate aggregate = new SampleAggregate();
+		var aggregate = new SampleAggregate();
 		aggregate.registerEvent(event);
 
 		assertThat(aggregate.domainEvents()).isNotEmpty();
@@ -55,10 +55,10 @@ class AbstractAggregateRootUnitTests {
 	@Test // DATACMNS-928, DATACMNS-1162
 	void copiesEventsFromExistingAggregate() {
 
-		SampleAggregate aggregate = new SampleAggregate();
+		var aggregate = new SampleAggregate();
 		aggregate.registerEvent(new Object());
 
-		SampleAggregate result = new SampleAggregate().andEventsFrom(aggregate);
+		var result = new SampleAggregate().andEventsFrom(aggregate);
 
 		assertThat(result.domainEvents()).isEqualTo(aggregate.domainEvents());
 	}
@@ -66,13 +66,13 @@ class AbstractAggregateRootUnitTests {
 	@Test // DATACMNS-928, DATACMNS-1162
 	void addsEventAndReturnsAggregate() {
 
-		Object first = new Object();
-		Object second = new Object();
+		var first = new Object();
+		var second = new Object();
 
-		SampleAggregate aggregate = new SampleAggregate();
+		var aggregate = new SampleAggregate();
 		aggregate.registerEvent(first);
 
-		SampleAggregate result = aggregate.andEvent(second);
+		var result = aggregate.andEvent(second);
 
 		assertThat(result).isSameAs(aggregate);
 		assertThat(result.domainEvents()).containsExactly(first, second);

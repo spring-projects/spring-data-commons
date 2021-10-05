@@ -72,7 +72,7 @@ public abstract class ClassUtils {
 	public static void ifPresent(String className, @Nullable ClassLoader classLoader, Consumer<Class<?>> action) {
 
 		try {
-			Class<?> theClass = org.springframework.util.ClassUtils.forName(className, classLoader);
+			var theClass = org.springframework.util.ClassUtils.forName(className, classLoader);
 			action.accept(theClass);
 		} catch (IllegalAccessError err) {
 			throw new IllegalStateException(
@@ -112,8 +112,8 @@ public abstract class ClassUtils {
 	 */
 	public static int getNumberOfOccurences(Method method, Class<?> type) {
 
-		int result = 0;
-		for (Class<?> clazz : method.getParameterTypes()) {
+		var result = 0;
+		for (var clazz : method.getParameterTypes()) {
 			if (type.equals(clazz)) {
 				result++;
 			}
@@ -134,7 +134,7 @@ public abstract class ClassUtils {
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notEmpty(types, "Types must not be null or empty!");
 
-		TypeInformation<?> returnType = getEffectivelyReturnedTypeFrom(method);
+		var returnType = getEffectivelyReturnedTypeFrom(method);
 
 		Arrays.stream(types)//
 				.filter(it -> it.isAssignableFrom(returnType.getType()))//

@@ -131,13 +131,13 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 
 		Assert.notNull(property, "Property must not be null!");
 
-		Boolean cached = isPropertyParameterCache.get(property);
+		var cached = isPropertyParameterCache.get(property);
 
 		if (cached != null) {
 			return cached;
 		}
 
-		boolean result = false;
+		var result = false;
 		for (Parameter<?, P> parameter : parameters) {
 			if (parameter.maps(property)) {
 				result = true;
@@ -214,7 +214,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 					throw new IllegalStateException();
 				}
 
-				Class<T> owningType = entity.getType();
+				var owningType = entity.getType();
 				return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
 			});
 
@@ -297,11 +297,9 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 				return true;
 			}
 
-			if (!(o instanceof Parameter)) {
+			if (!(o instanceof Parameter<?, ?> parameter)) {
 				return false;
 			}
-
-			Parameter<?, ?> parameter = (Parameter<?, ?>) o;
 
 			if (!ObjectUtils.nullSafeEquals(name, parameter.name)) {
 				return false;
@@ -324,7 +322,7 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(name);
+			var result = ObjectUtils.nullSafeHashCode(name);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(type);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(key);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(entity);
@@ -339,10 +337,10 @@ public class PreferredConstructor<T, P extends PersistentProperty<P>> {
 		 */
 		boolean maps(PersistentProperty<?> property) {
 
-			PersistentEntity<T, P> entity = this.entity;
-			String name = this.name;
+			var entity = this.entity;
+			var name = this.name;
 
-			P referencedProperty = entity == null ? null : name == null ? null : entity.getPersistentProperty(name);
+			var referencedProperty = entity == null ? null : name == null ? null : entity.getPersistentProperty(name);
 
 			return property.equals(referencedProperty);
 		}

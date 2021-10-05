@@ -89,7 +89,7 @@ public class Revisions<N extends Number & Comparable<N>, T> implements Streamabl
 	 * @return
 	 */
 	public Revision<N, T> getLatestRevision() {
-		int index = latestLast ? revisions.size() - 1 : 0;
+		var index = latestLast ? revisions.size() - 1 : 0;
 		return revisions.get(index);
 	}
 

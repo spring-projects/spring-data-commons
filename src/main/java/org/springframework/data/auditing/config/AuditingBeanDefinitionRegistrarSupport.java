@@ -60,7 +60,7 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null!");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
-		AbstractBeanDefinition ahbd = registerAuditHandlerBeanDefinition(registry, getConfiguration(annotationMetadata));
+		var ahbd = registerAuditHandlerBeanDefinition(registry, getConfiguration(annotationMetadata));
 		registerAuditListenerBeanDefinition(ahbd, registry);
 	}
 
@@ -77,7 +77,7 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 		Assert.notNull(configuration, "AuditingConfiguration must not be null!");
 
-		AbstractBeanDefinition ahbd = getAuditHandlerBeanDefinitionBuilder(configuration).getBeanDefinition();
+		var ahbd = getAuditHandlerBeanDefinitionBuilder(configuration).getBeanDefinition();
 		registry.registerBeanDefinition(getAuditingHandlerBeanName(), ahbd);
 		return ahbd;
 	}
@@ -178,10 +178,10 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 
 	private BeanDefinition createLazyInitTargetSourceBeanDefinition(String auditorAwareRef) {
 
-		BeanDefinitionBuilder targetSourceBuilder = rootBeanDefinition(LazyInitTargetSource.class);
+		var targetSourceBuilder = rootBeanDefinition(LazyInitTargetSource.class);
 		targetSourceBuilder.addPropertyValue("targetBeanName", auditorAwareRef);
 
-		BeanDefinitionBuilder builder = rootBeanDefinition(ProxyFactoryBean.class);
+		var builder = rootBeanDefinition(ProxyFactoryBean.class);
 		builder.addPropertyValue("targetSource", targetSourceBuilder.getBeanDefinition());
 
 		return builder.getBeanDefinition();

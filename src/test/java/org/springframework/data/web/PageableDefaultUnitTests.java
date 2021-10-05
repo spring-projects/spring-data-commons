@@ -60,7 +60,7 @@ abstract class PageableDefaultUnitTests {
 	@Test
 	void doesNotSupportNonPageable() {
 
-		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
+		var parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
 		assertThat(getResolver().supportsParameter(parameter)).isFalse();
 	}
 
@@ -98,7 +98,7 @@ abstract class PageableDefaultUnitTests {
 	@Test
 	void rejectsInvalidQulifiers() throws Exception {
 
-		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "invalidQualifiers",
+		var parameter = TestUtils.getParameterOfMethod(getControllerClass(), "invalidQualifiers",
 				Pageable.class, Pageable.class);
 
 		HandlerMethodArgumentResolver resolver = getResolver();
@@ -112,7 +112,7 @@ abstract class PageableDefaultUnitTests {
 	@Test
 	void rejectsNoQualifiers() throws Exception {
 
-		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "noQualifiers", Pageable.class,
+		var parameter = TestUtils.getParameterOfMethod(getControllerClass(), "noQualifiers", Pageable.class,
 				Pageable.class);
 
 		HandlerMethodArgumentResolver resolver = getResolver();

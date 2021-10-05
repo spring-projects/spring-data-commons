@@ -69,7 +69,7 @@ class SpringDataJaxbUnitTests {
 	@BeforeEach
 	void setUp() throws Exception {
 
-		JAXBContext context = JAXBContext.newInstance("org.springframework.data.domain.jaxb");
+		var context = JAXBContext.newInstance("org.springframework.data.domain.jaxb");
 
 		marshaller = context.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -80,8 +80,8 @@ class SpringDataJaxbUnitTests {
 	@Test
 	void usesCustomTypeAdapterForPageRequests() throws Exception {
 
-		StringWriter writer = new StringWriter();
-		Wrapper wrapper = new Wrapper();
+		var writer = new StringWriter();
+		var wrapper = new Wrapper();
 		wrapper.pageable = pageable;
 		wrapper.sort = sort;
 		wrapper.pageableWithoutSort = PageRequest.of(10, 20);
@@ -93,7 +93,7 @@ class SpringDataJaxbUnitTests {
 	@Test
 	void readsPageRequest() throws Exception {
 
-		Object result = unmarshaller.unmarshal(resource.getFile());
+		var result = unmarshaller.unmarshal(resource.getFile());
 
 		assertThat(result).isInstanceOf(Wrapper.class);
 		assertThat(((Wrapper) result).pageable).isEqualTo(pageable);
@@ -103,8 +103,8 @@ class SpringDataJaxbUnitTests {
 	@Test
 	void writesPlainPage() throws Exception {
 
-		PageWrapper wrapper = new PageWrapper();
-		Content content = new Content();
+		var wrapper = new PageWrapper();
+		var content = new Content();
 		content.name = "Foo";
 		wrapper.page = new PageImpl<>(Collections.singletonList(content));
 		wrapper.pageWithLinks = new PageImpl<>(Collections.singletonList(content));
@@ -116,8 +116,8 @@ class SpringDataJaxbUnitTests {
 
 		try {
 
-			Scanner scanner = new Scanner(resource.getInputStream());
-			StringBuilder builder = new StringBuilder();
+			var scanner = new Scanner(resource.getInputStream());
+			var builder = new StringBuilder();
 
 			while (scanner.hasNextLine()) {
 				builder.append(scanner.nextLine()).append("\n");

@@ -59,31 +59,31 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-351
 	void fallbackToGivenDefaultSort() {
 
-		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		Sort fallbackSort = Sort.by(Direction.ASC, "ID");
+		var parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
+		var resolver = new SortHandlerMethodArgumentResolver();
+		var fallbackSort = Sort.by(Direction.ASC, "ID");
 		resolver.setFallbackSort(fallbackSort);
 
-		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
+		var sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
 		assertThat(sort).isEqualTo(fallbackSort);
 	}
 
 	@Test // DATACMNS-351
 	void fallbackToDefaultDefaultSort() {
 
-		MethodParameter parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		var parameter = TestUtils.getParameterOfMethod(getControllerClass(), "unsupportedMethod", String.class);
+		var resolver = new SortHandlerMethodArgumentResolver();
 
-		Sort sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
+		var sort = resolver.resolveArgument(parameter, null, new ServletWebRequest(new MockHttpServletRequest()), null);
 		assertThat(sort.isSorted()).isFalse();
 	}
 
 	@Test
 	void discoversSimpleSortFromRequest() {
 
-		MethodParameter parameter = getParameterOfMethod("simpleDefault");
-		Sort reference = Sort.by("bar", "foo");
-		NativeWebRequest request = getRequestWithSort(reference);
+		var parameter = getParameterOfMethod("simpleDefault");
+		var reference = Sort.by("bar", "foo");
+		var request = getRequestWithSort(reference);
 
 		assertSupportedAndResolvedTo(request, parameter, reference);
 	}
@@ -91,8 +91,8 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test
 	void discoversComplexSortFromRequest() {
 
-		MethodParameter parameter = getParameterOfMethod("simpleDefault");
-		Sort reference = Sort.by("bar", "foo").and(Sort.by("fizz", "buzz"));
+		var parameter = getParameterOfMethod("simpleDefault");
+		var reference = Sort.by("bar", "foo").and(Sort.by("fizz", "buzz"));
 
 		assertSupportedAndResolvedTo(getRequestWithSort(reference), parameter, reference);
 	}
@@ -100,8 +100,8 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test
 	void discoversQualifiedSortFromRequest() {
 
-		MethodParameter parameter = getParameterOfMethod("qualifiedSort");
-		Sort reference = Sort.by("bar", "foo");
+		var parameter = getParameterOfMethod("qualifiedSort");
+		var reference = Sort.by("bar", "foo");
 
 		assertSupportedAndResolvedTo(getRequestWithSort(reference, "qual"), parameter, reference);
 	}
@@ -109,33 +109,33 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test
 	void returnsNullForSortParameterSetToNothing() {
 
-		MethodParameter parameter = getParameterOfMethod("supportedMethod");
+		var parameter = getParameterOfMethod("supportedMethod");
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", (String) null);
 
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
+		var resolver = new SortHandlerMethodArgumentResolver();
+		var result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
 		assertThat(result.isSorted()).isFalse();
 	}
 
 	@Test // DATACMNS-366
 	void requestForMultipleSortPropertiesIsUnmarshalledCorrectly() {
 
-		MethodParameter parameter = getParameterOfMethod("supportedMethod");
+		var parameter = getParameterOfMethod("supportedMethod");
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", SORT_3);
 
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		Sort result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
+		var resolver = new SortHandlerMethodArgumentResolver();
+		var result = resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
 		assertThat(result).isEqualTo(Sort.by(Direction.ASC, "firstname", "lastname"));
 	}
 
 	@Test // DATACMNS-408
 	void parsesEmptySortToNull() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", "");
 
 		assertThat(resolveSort(request, PARAMETER).isSorted()).isFalse();
@@ -144,7 +144,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-408
 	void sortParamIsInvalidProperty() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", ",DESC");
 
 		assertThat(resolveSort(request, PARAMETER).isSorted()).isFalse();
@@ -153,7 +153,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-408
 	void sortParamIsInvalidPropertyWhenMultiProperty() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", "property1,,DESC");
 
 		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(DESC, "property1"));
@@ -162,7 +162,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-408
 	void sortParamIsEmptyWhenMultiParams() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", "property,DESC");
 		request.addParameter("sort", "");
 
@@ -172,7 +172,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-658
 	void sortParamHandlesSortOrderAndIgnoreCase() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", "property,DESC,IgnoreCase");
 		request.addParameter("sort", "");
 
@@ -182,7 +182,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-658
 	void sortParamHandlesMultiplePropertiesWithSortOrderAndIgnoreCase() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", "property1,property2,DESC,IgnoreCase");
 
 		assertThat(resolveSort(request, PARAMETER))
@@ -192,7 +192,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-658
 	void sortParamHandlesIgnoreCase() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", "property,IgnoreCase");
 		request.addParameter("sort", "");
 
@@ -202,7 +202,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-658
 	void returnsDefaultCaseInsensitive() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", "");
 
 		assertThat(resolveSort(request, getParameterOfMethod("simpleDefaultWithDirectionCaseInsensitive")))
@@ -212,7 +212,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-379
 	void parsesCommaParameterForSort() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", ",");
 
 		assertThat(resolveSort(request, PARAMETER).isSorted()).isFalse();
@@ -221,7 +221,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-753, DATACMNS-408
 	void doesNotReturnNullWhenAnnotatedWithSortDefault() throws Exception {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 		request.addParameter("sort", "");
 
 		assertThat(resolveSort(request, getParameterOfMethod("simpleDefault"))).isEqualTo(Sort.by("firstname", "lastname"));
@@ -233,7 +233,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
 		Stream.of(".", ".,ASC").forEach(it -> {
 
-			MockHttpServletRequest request = new MockHttpServletRequest();
+			var request = new MockHttpServletRequest();
 			request.addParameter("sort", it);
 
 			assertThatCode(() -> {
@@ -245,8 +245,8 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-1827
 	void emptyQualifierIsUsedInParameterLookup() {
 
-		MethodParameter parameter = getParameterOfMethod("emptyQualifier");
-		Sort reference = Sort.by("bar", "foo");
+		var parameter = getParameterOfMethod("emptyQualifier");
+		var reference = Sort.by("bar", "foo");
 
 		assertSupportedAndResolvedTo(getRequestWithSort(reference, ""), parameter, reference);
 	}
@@ -254,21 +254,21 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	@Test // DATACMNS-1827
 	void mergedQualifierIsUsedInParameterLookup() {
 
-		MethodParameter parameter = getParameterOfMethod("mergedQualifier");
-		Sort reference = Sort.by("bar", "foo");
+		var parameter = getParameterOfMethod("mergedQualifier");
+		var reference = Sort.by("bar", "foo");
 
 		assertSupportedAndResolvedTo(getRequestWithSort(reference, "merged"), parameter, reference);
 	}
 
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
 
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		var resolver = new SortHandlerMethodArgumentResolver();
 		return resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null);
 	}
 
 	private static void assertSupportedAndResolvedTo(NativeWebRequest request, MethodParameter parameter, Sort sort) {
 
-		SortHandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
+		var resolver = new SortHandlerMethodArgumentResolver();
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 
 		try {
@@ -284,16 +284,16 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
 	private static NativeWebRequest getRequestWithSort(@Nullable Sort sort, @Nullable String qualifier) {
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
+		var request = new MockHttpServletRequest();
 
 		if (sort == null) {
 			return new ServletWebRequest(request);
 		}
 
-		for (Order order : sort) {
+		for (var order : sort) {
 
-			String prefix = StringUtils.hasText(qualifier) ? qualifier + "_" : "";
-			String suffix = order.isIgnoreCase() ? ",IgnoreCase" : "";
+			var prefix = StringUtils.hasText(qualifier) ? qualifier + "_" : "";
+			var suffix = order.isIgnoreCase() ? ",IgnoreCase" : "";
 			request.addParameter(prefix + "sort",
 					String.format("%s,%s%s", order.getProperty(), order.getDirection().name(), suffix));
 		}

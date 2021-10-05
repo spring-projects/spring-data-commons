@@ -35,7 +35,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.projection.Accessor;
 import org.springframework.data.projection.MethodInterceptorFactory;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -87,7 +86,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		Assert.notNull(jsonProvider, "JsonProvider must not be null!");
 		Assert.notNull(mappingProvider, "MappingProvider must not be null!");
 
-		Configuration configuration = Configuration.builder()//
+		var configuration = Configuration.builder()//
 				.options(Option.ALWAYS_RETURN_LIST) //
 				.jsonProvider(jsonProvider) //
 				.mappingProvider(mappingProvider) //
@@ -103,7 +102,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 	@Override
 	public MethodInterceptor createMethodInterceptor(Object source, Class<?> targetType) {
 
-		DocumentContext context = InputStream.class.isInstance(source) ? this.context.parse((InputStream) source)
+		var context = InputStream.class.isInstance(source) ? this.context.parse((InputStream) source)
 				: this.context.parse(source);
 
 		return new InputMessageProjecting(context);
@@ -132,7 +131,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 	 */
 	private static boolean hasJsonPathAnnotation(Class<?> type) {
 
-		for (Method method : type.getMethods()) {
+		for (var method : type.getMethods()) {
 			if (AnnotationUtils.findAnnotation(method, org.springframework.data.web.JsonPath.class) != null) {
 				return true;
 			}
@@ -157,32 +156,32 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		@Override
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
-			Method method = invocation.getMethod();
-			TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
-			ResolvableType type = ResolvableType.forMethodReturnType(method);
-			boolean isCollectionResult = Collection.class.isAssignableFrom(type.getRawClass());
+			var method = invocation.getMethod();
+			var returnType = ClassTypeInformation.fromReturnTypeOf(method);
+			var type = ResolvableType.forMethodReturnType(method);
+			var isCollectionResult = Collection.class.isAssignableFrom(type.getRawClass());
 			type = isCollectionResult ? type : ResolvableType.forClassWithGenerics(List.class, type);
 
 			Iterable<String> jsonPaths = getJsonPaths(method);
 
-			for (String jsonPath : jsonPaths) {
+			for (var jsonPath : jsonPaths) {
 
 				try {
 
 					if (returnType.getRequiredActualType().getType().isInterface()) {
 
 						List<?> result = context.read(jsonPath);
-						Object nested = result.isEmpty() ? null : result.get(0);
+						var nested = result.isEmpty() ? null : result.get(0);
 
 						return isCollectionResult && !(nested instanceof Collection) ? result : nested;
 					}
 
-					boolean definitePath = JsonPath.isPathDefinite(jsonPath);
+					var definitePath = JsonPath.isPathDefinite(jsonPath);
 					type = isCollectionResult && definitePath
 							? ResolvableType.forClassWithGenerics(List.class, type)
 							: type;
 
-					List<?> result = (List<?>) context.read(jsonPath, new ResolvableTypeRef(type));
+					var result = (List<?>) context.read(jsonPath, new ResolvableTypeRef(type));
 
 					if (isCollectionResult && definitePath) {
 						result = (List<?>) result.get(0);
@@ -206,7 +205,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		 */
 		private static Collection<String> getJsonPaths(Method method) {
 
-			org.springframework.data.web.JsonPath annotation = AnnotationUtils.findAnnotation(method,
+			var annotation = AnnotationUtils.findAnnotation(method,
 					org.springframework.data.web.JsonPath.class);
 
 			if (annotation != null) {

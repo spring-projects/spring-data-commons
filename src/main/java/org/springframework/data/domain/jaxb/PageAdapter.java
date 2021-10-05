@@ -44,7 +44,7 @@ public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 			return null;
 		}
 
-		PageDto dto = new PageDto();
+		var dto = new PageDto();
 		dto.content = source.getContent();
 		dto.add(getLinks(source));
 

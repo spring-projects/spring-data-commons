@@ -80,7 +80,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		}
 
 		@SuppressWarnings("null")
-		Class<?> leafPropertyType = getLeafProperty().getActualType();
+		var leafPropertyType = getLeafProperty().getActualType();
 
 		Assert.isTrue(property.getOwner().getType().equals(leafPropertyType),
 				() -> String.format("Cannot append property %s to type %s!", property.getName(), leafPropertyType.getName()));
@@ -128,7 +128,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		Assert.hasText(delimiter, "Delimiter must not be null or empty!");
 		Assert.notNull(converter, "Converter must not be null!");
 
-		String result = properties.stream() //
+		var result = properties.stream() //
 				.map(converter::convert) //
 				.filter(StringUtils::hasText) //
 				.collect(Collectors.joining(delimiter));
@@ -162,15 +162,15 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 
 		Assert.notNull(path, "PersistentPropertyPath must not be null!");
 
-		Iterator<P> iterator = path.iterator();
+		var iterator = path.iterator();
 
-		for (P property : this) {
+		for (var property : this) {
 
 			if (!iterator.hasNext()) {
 				return false;
 			}
 
-			P reference = iterator.next();
+			var reference = iterator.next();
 
 			if (!property.equals(reference)) {
 				return false;
@@ -191,9 +191,9 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		}
 
 		List<P> result = new ArrayList<>();
-		Iterator<P> iterator = iterator();
+		var iterator = iterator();
 
-		for (int i = 0; i < base.getLength(); i++) {
+		for (var i = 0; i < base.getLength(); i++) {
 			iterator.next();
 		}
 
@@ -210,7 +210,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	 */
 	public PersistentPropertyPath<P> getParentPath() {
 
-		int size = properties.size();
+		var size = properties.size();
 
 		return size == 0 ? this : new DefaultPersistentPropertyPath<>(properties.subList(0, size - 1));
 	}
@@ -256,11 +256,10 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 			return true;
 		}
 
-		if (!(o instanceof DefaultPersistentPropertyPath)) {
+		if (!(o instanceof DefaultPersistentPropertyPath<?> that)) {
 			return false;
 		}
 
-		DefaultPersistentPropertyPath<?> that = (DefaultPersistentPropertyPath<?>) o;
 		return ObjectUtils.nullSafeEquals(properties, that.properties);
 	}
 

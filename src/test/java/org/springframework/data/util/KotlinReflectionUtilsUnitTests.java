@@ -77,9 +77,9 @@ public class KotlinReflectionUtilsUnitTests {
 	void runTest(String testName)
 			throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException {
 
-		KotlinExcludingURLClassLoader classLoader = new KotlinExcludingURLClassLoader(
+		var classLoader = new KotlinExcludingURLClassLoader(
 				((URLClassLoader) getClass().getClassLoader()).getURLs());
-		Class<?> testClass = ClassUtils.forName(getClass().getName(), classLoader);
+		var testClass = ClassUtils.forName(getClass().getName(), classLoader);
 
 		ReflectionUtils.invokeMethod(testClass.getMethod(testName), testClass.newInstance());
 	}

@@ -65,7 +65,7 @@ class SelectionSetUnitTests {
 	@Test // DATACMNS-764
 	void returnsUniqueResultAfterFilter() {
 
-		SelectionSet<String> selection = SelectionSet.of(asList("one", "two", "three"))
+		var selection = SelectionSet.of(asList("one", "two", "three"))
 				.filterIfNecessary(s -> s.contains("w"));
 
 		assertThat(selection.uniqueResult()).hasValue("two");
@@ -74,7 +74,7 @@ class SelectionSetUnitTests {
 	@Test // DATACMNS-764
 	void ignoresFilterWhenResultIsAlreadyUnique() {
 
-		SelectionSet<String> selection = SelectionSet.of(asList("one")).filterIfNecessary(s -> s.contains("w"));
+		var selection = SelectionSet.of(asList("one")).filterIfNecessary(s -> s.contains("w"));
 
 		assertThat(selection.uniqueResult()).hasValue("one");
 	}

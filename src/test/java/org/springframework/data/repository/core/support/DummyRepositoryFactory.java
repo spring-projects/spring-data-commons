@@ -65,12 +65,12 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 				Mockito.any(ProjectionFactory.class), Mockito.any(NamedQueries.class))).thenReturn(queryOne);
 
 		this.applicationStartup = mock(ApplicationStartup.class);
-		StartupStep startupStep = mock(StartupStep.class);
+		var startupStep = mock(StartupStep.class);
 		when(applicationStartup.start(anyString())).thenReturn(startupStep);
 		when(startupStep.tag(anyString(), anyString())).thenReturn(startupStep);
 		when(startupStep.tag(anyString(), ArgumentMatchers.<Supplier<String>> any())).thenReturn(startupStep);
 
-		BeanFactory beanFactory = Mockito.mock(BeanFactory.class);
+		var beanFactory = Mockito.mock(BeanFactory.class);
 		when(beanFactory.getBean(ApplicationStartup.class)).thenReturn(applicationStartup);
 		setBeanFactory(beanFactory);
 	}
@@ -120,7 +120,7 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
 
-		RepositoryFragments fragments = super.getRepositoryFragments(metadata);
+		var fragments = super.getRepositoryFragments(metadata);
 
 		return QuerydslPredicateExecutor.class.isAssignableFrom(metadata.getRepositoryInterface()) //
 				? fragments.append(RepositoryFragments.just(querydsl)) //

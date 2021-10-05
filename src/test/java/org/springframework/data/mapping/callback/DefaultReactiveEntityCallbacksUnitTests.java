@@ -41,12 +41,12 @@ class DefaultReactiveEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void dispatchResolvesOnSubscribe() {
 
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
+		var ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
-		DefaultReactiveEntityCallbacks callbacks = new DefaultReactiveEntityCallbacks(ctx);
+		var callbacks = new DefaultReactiveEntityCallbacks(ctx);
 
-		PersonDocument personDocument = new PersonDocument(null, "Walter", null);
-		Mono<PersonDocument> afterCallback = callbacks.callback(ReactiveBeforeSaveCallback.class, personDocument);
+		var personDocument = new PersonDocument(null, "Walter", null);
+		var afterCallback = callbacks.callback(ReactiveBeforeSaveCallback.class, personDocument);
 
 		assertThat(personDocument.getSsn()).isNull();
 
@@ -58,7 +58,7 @@ class DefaultReactiveEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void invokeGenericEvent() {
 
-		DefaultReactiveEntityCallbacks callbacks = new DefaultReactiveEntityCallbacks();
+		var callbacks = new DefaultReactiveEntityCallbacks();
 		callbacks.addEntityCallback(new GenericPersonCallback());
 
 		callbacks.callback(GenericPersonCallback.class, new PersonDocument(null, "Walter", null)) //
@@ -73,11 +73,11 @@ class DefaultReactiveEntityCallbacksUnitTests {
 		CapturingEntityCallback first = new FirstCallback();
 		CapturingEntityCallback second = new SecondCallback();
 
-		DefaultReactiveEntityCallbacks callbacks = new DefaultReactiveEntityCallbacks();
+		var callbacks = new DefaultReactiveEntityCallbacks();
 		callbacks.addEntityCallback(first);
 		callbacks.addEntityCallback(second);
 
-		PersonDocument initial = new PersonDocument(null, "Walter", null);
+		var initial = new PersonDocument(null, "Walter", null);
 
 		callbacks.callback(CapturingEntityCallback.class, initial) //
 				.as(StepVerifier::create) //
@@ -93,7 +93,7 @@ class DefaultReactiveEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void errorsOnNullEntity() {
 
-		DefaultReactiveEntityCallbacks callbacks = new DefaultReactiveEntityCallbacks();
+		var callbacks = new DefaultReactiveEntityCallbacks();
 		callbacks.addEntityCallback(new CapturingEntityCallback());
 
 		assertThatIllegalArgumentException()
@@ -107,12 +107,12 @@ class DefaultReactiveEntityCallbacksUnitTests {
 		CapturingEntityCallback second = new SecondCallback(null);
 		CapturingEntityCallback third = new ThirdCallback();
 
-		DefaultReactiveEntityCallbacks callbacks = new DefaultReactiveEntityCallbacks();
+		var callbacks = new DefaultReactiveEntityCallbacks();
 		callbacks.addEntityCallback(first);
 		callbacks.addEntityCallback(second);
 		callbacks.addEntityCallback(third);
 
-		PersonDocument initial = new PersonDocument(null, "Walter", null);
+		var initial = new PersonDocument(null, "Walter", null);
 
 		callbacks.callback(CapturingEntityCallback.class, initial) //
 				.as(StepVerifier::create) //
@@ -143,7 +143,7 @@ class DefaultReactiveEntityCallbacksUnitTests {
 		@Override
 		public Mono<Person> onBeforeSave(Person object) {
 
-			PersonDocument result = new PersonDocument(object.getFirstName().length(), object.getFirstName(),
+			var result = new PersonDocument(object.getFirstName().length(), object.getFirstName(),
 					object.getLastName());
 
 			return Mono.just(result);

@@ -51,14 +51,14 @@ class ReflectionUtilsUnitTests {
 	@Test
 	void findsFieldByFilter() {
 
-		Field field = ReflectionUtils.findField(Sample.class, (FieldFilter) new FieldNameFieldFilter("field"));
+		var field = ReflectionUtils.findField(Sample.class, (FieldFilter) new FieldNameFieldFilter("field"));
 		assertThat(field).isEqualTo(reference);
 	}
 
 	@Test
 	void returnsNullIfNoFieldFound() {
 
-		Field field = ReflectionUtils.findField(Sample.class, (FieldFilter) new FieldNameFieldFilter("foo"));
+		var field = ReflectionUtils.findField(Sample.class, (FieldFilter) new FieldNameFieldFilter("foo"));
 		assertThat(field).isNull();
 	}
 
@@ -71,7 +71,7 @@ class ReflectionUtilsUnitTests {
 	@Test
 	void findsUniqueField() {
 
-		Field field = ReflectionUtils.findField(Sample.class, new FieldNameFieldFilter("field"), false);
+		var field = ReflectionUtils.findField(Sample.class, new FieldNameFieldFilter("field"), false);
 		assertThat(field).isEqualTo(reference);
 	}
 
@@ -82,15 +82,15 @@ class ReflectionUtilsUnitTests {
 
 		}
 
-		Field field = ReflectionUtils.findField(Subclass.class, new FieldNameFieldFilter("field"));
+		var field = ReflectionUtils.findField(Subclass.class, new FieldNameFieldFilter("field"));
 		assertThat(field).isEqualTo(reference);
 	}
 
 	@Test
 	void setsNonPublicField() {
 
-		Sample sample = new Sample();
-		Field field = ReflectionUtils.findField(Sample.class, new FieldNameFieldFilter("first"));
+		var sample = new Sample();
+		var field = ReflectionUtils.findField(Sample.class, new FieldNameFieldFilter("first"));
 		ReflectionUtils.setField(field, sample, "foo");
 		assertThat(sample.first).isEqualTo("foo");
 	}
@@ -118,28 +118,28 @@ class ReflectionUtilsUnitTests {
 	@Test // DATACMNS-1154
 	void discoversNoReturnType() throws Exception {
 
-		MethodParameter parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("noReturnValue"), -1);
+		var parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("noReturnValue"), -1);
 		assertThat(ReflectionUtils.isNullable(parameter)).isTrue();
 	}
 
 	@Test // DATACMNS-1154
 	void discoversNullableReturnType() throws Exception {
 
-		MethodParameter parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("nullableReturnValue"), -1);
+		var parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("nullableReturnValue"), -1);
 		assertThat(ReflectionUtils.isNullable(parameter)).isTrue();
 	}
 
 	@Test // DATACMNS-1154
 	void discoversNonNullableReturnType() throws Exception {
 
-		MethodParameter parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("mandatoryReturnValue"), -1);
+		var parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("mandatoryReturnValue"), -1);
 		assertThat(ReflectionUtils.isNullable(parameter)).isFalse();
 	}
 
 	@Test // DATACMNS-1154
 	void discoversNullableParameter() throws Exception {
 
-		MethodParameter parameter = new MethodParameter(
+		var parameter = new MethodParameter(
 				DummyInterface.class.getDeclaredMethod("nullableParameter", User.class), 0);
 		assertThat(ReflectionUtils.isNullable(parameter)).isTrue();
 	}
@@ -147,7 +147,7 @@ class ReflectionUtilsUnitTests {
 	@Test // DATACMNS-1154
 	void discoversNonNullablePrimitiveParameter() throws Exception {
 
-		MethodParameter parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("primitive", int.class), 0);
+		var parameter = new MethodParameter(DummyInterface.class.getDeclaredMethod("primitive", int.class), 0);
 		assertThat(ReflectionUtils.isNullable(parameter)).isFalse();
 	}
 

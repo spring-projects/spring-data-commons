@@ -17,7 +17,6 @@ package org.springframework.data.repository.config;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
@@ -67,22 +66,22 @@ public class NamedQueriesBeanDefinitionBuilder {
 	 */
 	public BeanDefinition build(@Nullable Object source) {
 
-		BeanDefinitionBuilder properties = BeanDefinitionBuilder.rootBeanDefinition(PropertiesFactoryBean.class);
+		var properties = BeanDefinitionBuilder.rootBeanDefinition(PropertiesFactoryBean.class);
 
-		String locationsToUse = StringUtils.hasText(locations) ? locations : defaultLocation;
+		var locationsToUse = StringUtils.hasText(locations) ? locations : defaultLocation;
 		properties.addPropertyValue("locations", locationsToUse);
 
 		if (!StringUtils.hasText(locations)) {
 			properties.addPropertyValue("ignoreResourceNotFound", true);
 		}
 
-		AbstractBeanDefinition propertiesDefinition = properties.getBeanDefinition();
+		var propertiesDefinition = properties.getBeanDefinition();
 		propertiesDefinition.setSource(source);
 
-		BeanDefinitionBuilder namedQueries = BeanDefinitionBuilder.rootBeanDefinition(PropertiesBasedNamedQueries.class);
+		var namedQueries = BeanDefinitionBuilder.rootBeanDefinition(PropertiesBasedNamedQueries.class);
 		namedQueries.addConstructorArgValue(propertiesDefinition);
 
-		AbstractBeanDefinition namedQueriesDefinition = namedQueries.getBeanDefinition();
+		var namedQueriesDefinition = namedQueries.getBeanDefinition();
 		namedQueriesDefinition.setSource(source);
 
 		return namedQueriesDefinition;

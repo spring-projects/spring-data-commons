@@ -62,11 +62,9 @@ public final class GeoResult<T> implements Serializable {
 			return true;
 		}
 
-		if (!(o instanceof GeoResult)) {
+		if (!(o instanceof GeoResult<?> geoResult)) {
 			return false;
 		}
-
-		GeoResult<?> geoResult = (GeoResult<?>) o;
 
 		if (!ObjectUtils.nullSafeEquals(content, geoResult.content)) {
 			return false;
@@ -81,7 +79,7 @@ public final class GeoResult<T> implements Serializable {
 	 */
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(content);
+		var result = ObjectUtils.nullSafeHashCode(content);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(distance);
 		return result;
 	}

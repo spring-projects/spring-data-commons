@@ -47,7 +47,7 @@ class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-988
 	void discoversRxJava3MethodWithoutComparingReturnType() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(RxJava3InterfaceWithGenerics.class, "deleteAll");
+		var reference = extractTargetMethodFromRepository(RxJava3InterfaceWithGenerics.class, "deleteAll");
 
 		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
 		assertThat(reference.getName()).isEqualTo("deleteAll");
@@ -56,7 +56,7 @@ class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-988
 	void discoversRxJava3MethodWithConvertibleArguments() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(RxJava3InterfaceWithGenerics.class, "saveAll", Flowable.class);
+		var reference = extractTargetMethodFromRepository(RxJava3InterfaceWithGenerics.class, "saveAll", Flowable.class);
 
 		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
 		assertThat(reference.getName()).isEqualTo("saveAll");
@@ -66,7 +66,7 @@ class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-836
 	void discoversMethodAssignableArguments() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(ReactiveSortingRepository.class, "saveAll", Publisher.class);
+		var reference = extractTargetMethodFromRepository(ReactiveSortingRepository.class, "saveAll", Publisher.class);
 
 		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
 		assertThat(reference.getName()).isEqualTo("saveAll");
@@ -76,7 +76,7 @@ class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-836
 	void discoversMethodExactIterableArguments() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "saveAll",
+		var reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "saveAll",
 				Iterable.class);
 
 		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
@@ -87,7 +87,7 @@ class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-836
 	void discoversMethodExactObjectArguments() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "save", Object.class);
+		var reference = extractTargetMethodFromRepository(ReactiveJavaInterfaceWithGenerics.class, "save", Object.class);
 
 		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
 		assertThat(reference.getName()).isEqualTo("save");
@@ -97,7 +97,7 @@ class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-1023
 	void usesCorrectSaveOverload() throws Exception {
 
-		Method reference = extractTargetMethodFromRepository(DummyRepository.class, "saveAll", Iterable.class);
+		var reference = extractTargetMethodFromRepository(DummyRepository.class, "saveAll", Iterable.class);
 
 		assertThat(reference).isEqualTo(ReactiveCrudRepository.class.getMethod("saveAll", Iterable.class));
 	}
@@ -107,7 +107,7 @@ class ReactiveRepositoryInformationUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryType);
 
-		RepositoryComposition composition = RepositoryComposition.of(RepositoryFragment.structural(BASE_CLASS))
+		var composition = RepositoryComposition.of(RepositoryFragment.structural(BASE_CLASS))
 				.withMethodLookup(MethodLookups.forReactiveTypes(metadata));
 
 		return composition.findMethod(repositoryType.getMethod(methodName, args)).get();

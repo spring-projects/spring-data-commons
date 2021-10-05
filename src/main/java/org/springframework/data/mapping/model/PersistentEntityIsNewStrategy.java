@@ -53,7 +53,7 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 				? entity.getRequiredVersionProperty().getType() //
 				: entity.hasIdProperty() ? entity.getRequiredIdProperty().getType() : null;
 
-		Class<?> type = valueType;
+		var type = valueType;
 
 		if (type != null && type.isPrimitive()) {
 
@@ -93,7 +93,7 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 	@Override
 	public boolean isNew(Object entity) {
 
-		Object value = valueLookup.apply(entity);
+		var value = valueLookup.apply(entity);
 
 		if (value == null) {
 			return true;

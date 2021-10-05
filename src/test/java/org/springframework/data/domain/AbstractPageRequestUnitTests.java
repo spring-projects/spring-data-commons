@@ -46,7 +46,7 @@ public abstract class AbstractPageRequestUnitTests {
 		assertThat(request.hasPrevious()).isTrue();
 		assertThat(request.next()).isEqualTo((Pageable) newPageRequest(2, 10));
 
-		Pageable first = request.previousOrFirst();
+		var first = request.previousOrFirst();
 
 		assertThat(first.hasPrevious()).isFalse();
 		assertThat(first).isEqualTo(newPageRequest(0, 10));
@@ -57,7 +57,7 @@ public abstract class AbstractPageRequestUnitTests {
 	@Test // DATACMNS-402
 	void equalsHonoursPageAndSize() {
 
-		AbstractPageRequest request = newPageRequest(0, 10);
+		var request = newPageRequest(0, 10);
 
 		// Equals itself
 		assertEqualsAndHashcode(request, request);
@@ -80,7 +80,7 @@ public abstract class AbstractPageRequestUnitTests {
 	@Test // DATACMNS-1327
 	void getOffsetShouldNotCauseOverflow() {
 
-		AbstractPageRequest request = newPageRequest(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		var request = newPageRequest(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
 		assertThat(request.getOffset()).isGreaterThan(Integer.MAX_VALUE);
 	}

@@ -17,10 +17,8 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-
 import org.junit.jupiter.api.Test;
+
 import org.springframework.http.MediaType;
 
 /**
@@ -54,8 +52,8 @@ class ProjectingJackson2HttpMessageConverterUnitTests {
 	@Test // DATACMNS-972
 	void doesNotConsiderTypeVariableBoundTo() throws Throwable {
 
-		Method method = BaseController.class.getDeclaredMethod("createEntity", AbstractDto.class);
-		Type type = method.getGenericParameterTypes()[0];
+		var method = BaseController.class.getDeclaredMethod("createEntity", AbstractDto.class);
+		var type = method.getGenericParameterTypes()[0];
 
 		assertThat(converter.canRead(type, BaseController.class, ANYTHING_JSON)).isFalse();
 	}
@@ -63,8 +61,8 @@ class ProjectingJackson2HttpMessageConverterUnitTests {
 	@Test // DATACMNS-972
 	void genericTypeOnConcreteOne() throws Throwable {
 
-		Method method = ConcreteController.class.getMethod("createEntity", AbstractDto.class);
-		Type type = method.getGenericParameterTypes()[0];
+		var method = ConcreteController.class.getMethod("createEntity", AbstractDto.class);
+		var type = method.getGenericParameterTypes()[0];
 
 		assertThat(converter.canRead(type, ConcreteController.class, ANYTHING_JSON)).isFalse();
 	}

@@ -17,10 +17,8 @@ package org.springframework.data.util;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -59,7 +57,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	static {
 
-		ClassLoader classLoader = TypeDiscoverer.class.getClassLoader();
+		var classLoader = TypeDiscoverer.class.getClassLoader();
 
 		Set<Class<?>> mapTypes = new HashSet<>();
 		mapTypes.add(Map.class);
@@ -127,15 +125,13 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return ClassTypeInformation.from((Class<?>) fieldType);
 		}
 
-		if (fieldType instanceof ParameterizedType) {
+		if (fieldType instanceof ParameterizedType parameterizedType) {
 
-			ParameterizedType parameterizedType = (ParameterizedType) fieldType;
 			return new ParameterizedTypeInformation(parameterizedType, this);
 		}
 
-		if (fieldType instanceof TypeVariable) {
+		if (fieldType instanceof TypeVariable<?> variable) {
 
-			TypeVariable<?> variable = (TypeVariable<?>) fieldType;
 			return new TypeVariableTypeInformation(variable, this);
 		}
 
@@ -143,10 +139,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return new GenericArrayTypeInformation((GenericArrayType) fieldType, this);
 		}
 
-		if (fieldType instanceof WildcardType) {
+		if (fieldType instanceof WildcardType wildcardType) {
 
-			WildcardType wildcardType = (WildcardType) fieldType;
-			Type[] bounds = wildcardType.getLowerBounds();
+			var bounds = wildcardType.getLowerBounds();
 
 			if (bounds.length > 0) {
 				return createInfo(bounds[0]);
@@ -186,7 +181,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.notNull(constructor, "Constructor must not be null!");
 
 		List<TypeInformation<?>> parameterTypes = new ArrayList<>(constructor.getParameterCount());
-		for (Parameter parameter : constructor.getParameters()) {
+		for (var parameter : constructor.getParameters()) {
 			parameterTypes.add(createInfo(parameter.getParameterizedType()));
 		}
 		return parameterTypes;
@@ -199,14 +194,14 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	public TypeInformation<?> getProperty(String fieldname) {
 
-		int separatorIndex = fieldname.indexOf('.');
+		var separatorIndex = fieldname.indexOf('.');
 
 		if (separatorIndex == -1) {
 			return fieldTypes.computeIfAbsent(fieldname, this::getPropertyInformation).orElse(null);
 		}
 
-		String head = fieldname.substring(0, separatorIndex);
-		TypeInformation<?> info = getProperty(head);
+		var head = fieldname.substring(0, separatorIndex);
+		var info = getProperty(head);
 
 		if (info == null) {
 			return null;
@@ -227,7 +222,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private Optional<TypeInformation<?>> getPropertyInformation(String fieldname) {
 
 		Class<?> rawType = getType();
-		Field field = ReflectionUtils.findField(rawType, fieldname);
+		var field = ReflectionUtils.findField(rawType, fieldname);
 
 		if (field != null) {
 			return Optional.of(createInfo(field.getGenericType()));
@@ -245,7 +240,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	private static Optional<PropertyDescriptor> findPropertyDescriptor(Class<?> type, String fieldname) {
 
-		PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(type, fieldname);
+		var descriptor = BeanUtils.getPropertyDescriptor(type, fieldname);
 
 		if (descriptor != null) {
 			return Optional.of(descriptor);
@@ -270,7 +265,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	private static Type getGenericType(PropertyDescriptor descriptor) {
 
-		Method method = descriptor.getReadMethod();
+		var method = descriptor.getReadMethod();
 
 		if (method != null) {
 			return method.getGenericReturnType();
@@ -282,7 +277,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return null;
 		}
 
-		Type[] parameterTypes = method.getGenericParameterTypes();
+		var parameterTypes = method.getGenericParameterTypes();
 		return parameterTypes.length == 0 ? null : parameterTypes[0];
 	}
 
@@ -333,9 +328,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public boolean isMap() {
 
-		Class<S> type = getType();
+		var type = getType();
 
-		for (Class<?> mapType : MAP_TYPES) {
+		for (var mapType : MAP_TYPES) {
 			if (mapType.isAssignableFrom(type)) {
 				return true;
 			}
@@ -385,7 +380,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	protected TypeInformation<?> doGetComponentType() {
 
-		Class<S> rawType = getType();
+		var rawType = getType();
 
 		if (rawType.isArray()) {
 			return createInfo(rawType.getComponentType());
@@ -403,7 +398,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getTypeArgument(rawType, 0);
 		}
 
-		List<TypeInformation<?>> arguments = getTypeArguments();
+		var arguments = getTypeArguments();
 
 		return arguments.size() > 0 ? arguments.get(0) : null;
 	}
@@ -449,7 +444,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		List<Type> candidates = new ArrayList<>();
-		Type genericSuperclass = rawType.getGenericSuperclass();
+		var genericSuperclass = rawType.getGenericSuperclass();
 
 		if (genericSuperclass != null) {
 			candidates.add(genericSuperclass);
@@ -457,15 +452,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		candidates.addAll(Arrays.asList(rawType.getGenericInterfaces()));
 
-		for (Type candidate : candidates) {
+		for (var candidate : candidates) {
 
-			TypeInformation<?> candidateInfo = createInfo(candidate);
+			var candidateInfo = createInfo(candidate);
 
 			if (superType.equals(candidateInfo.getType())) {
 				return candidateInfo;
 			} else {
 
-				TypeInformation<?> nestedSuperType = candidateInfo.getSuperTypeInformation(superType);
+				var nestedSuperType = candidateInfo.getSuperTypeInformation(superType);
 
 				if (nestedSuperType != null) {
 					return nestedSuperType;
@@ -489,7 +484,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public boolean isAssignableFrom(TypeInformation<?> target) {
 
-		TypeInformation<?> superTypeInformation = target.getSuperTypeInformation(getType());
+		var superTypeInformation = target.getSuperTypeInformation(getType());
 
 		return superTypeInformation == null ? false : superTypeInformation.equals(this);
 	}
@@ -506,7 +501,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.isTrue(getType().isAssignableFrom(type.getType()),
 				() -> String.format("%s must be assignable from %s", getType(), type.getType()));
 
-		List<TypeInformation<?>> typeArguments = getTypeArguments();
+		var typeArguments = getTypeArguments();
 
 		return (TypeInformation<? extends S>) (typeArguments.isEmpty() //
 				? type //
@@ -516,7 +511,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	private TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
 
-		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
+		var arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
 
 		if (arguments != null) {
 			return createInfo(arguments[index]);
@@ -529,9 +524,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private Class<?> getBaseType(Class<?>[] candidates) {
 
-		Class<S> type = getType();
+		var type = getType();
 
-		for (Class<?> candidate : candidates) {
+		for (var candidate : candidates) {
 			if (candidate.isAssignableFrom(type)) {
 				return candidate;
 			}
@@ -563,7 +558,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return false;
 		}
 
-		TypeDiscoverer<?> that = (TypeDiscoverer<?>) obj;
+		var that = (TypeDiscoverer<?>) obj;
 
 		if (!this.type.equals(that.type)) {
 			return false;
@@ -627,9 +622,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		@Override
 		public Type[] getActualTypeArguments() {
 
-			Type[] result = new Type[typeParameters.size()];
+			var result = new Type[typeParameters.size()];
 
-			for (int i = 0; i < typeParameters.size(); i++) {
+			for (var i = 0; i < typeParameters.size(); i++) {
 				result[i] = typeParameters.get(i).getType();
 			}
 
@@ -647,11 +642,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 				return true;
 			}
 
-			if (!(o instanceof SyntheticParamterizedType)) {
+			if (!(o instanceof SyntheticParamterizedType that)) {
 				return false;
 			}
-
-			SyntheticParamterizedType that = (SyntheticParamterizedType) o;
 
 			if (!ObjectUtils.nullSafeEquals(typeInformation, that.typeInformation)) {
 				return false;
@@ -666,7 +659,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(typeInformation);
+			var result = ObjectUtils.nullSafeHashCode(typeInformation);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(typeParameters);
 			return result;
 		}

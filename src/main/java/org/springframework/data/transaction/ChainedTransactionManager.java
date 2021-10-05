@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.HeuristicCompletionException;
@@ -107,7 +107,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 	 */
 	public MultiTransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
 
-		MultiTransactionStatus mts = new MultiTransactionStatus(transactionManagers.get(0));
+		var mts = new MultiTransactionStatus(transactionManagers.get(0));
 
 		if (definition == null) {
 			return mts;
@@ -120,15 +120,15 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 
 		try {
 
-			for (PlatformTransactionManager transactionManager : transactionManagers) {
+			for (var transactionManager : transactionManagers) {
 				mts.registerTransactionManager(definition, transactionManager);
 			}
 
 		} catch (Exception ex) {
 
-			Map<PlatformTransactionManager, TransactionStatus> transactionStatuses = mts.getTransactionStatuses();
+			var transactionStatuses = mts.getTransactionStatuses();
 
-			for (PlatformTransactionManager transactionManager : transactionManagers) {
+			for (var transactionManager : transactionManagers) {
 				try {
 					if (transactionStatuses.get(transactionManager) != null) {
 						transactionManager.rollback(transactionStatuses.get(transactionManager));
@@ -154,13 +154,13 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 	 */
 	public void commit(TransactionStatus status) throws TransactionException {
 
-		MultiTransactionStatus multiTransactionStatus = (MultiTransactionStatus) status;
+		var multiTransactionStatus = (MultiTransactionStatus) status;
 
-		boolean commit = true;
+		var commit = true;
 		Exception commitException = null;
 		PlatformTransactionManager commitExceptionTransactionManager = null;
 
-		for (PlatformTransactionManager transactionManager : reverse(transactionManagers)) {
+		for (var transactionManager : reverse(transactionManagers)) {
 
 			if (commit) {
 
@@ -189,8 +189,8 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 		}
 
 		if (commitException != null) {
-			boolean firstTransactionManagerFailed = commitExceptionTransactionManager == getLastTransactionManager();
-			int transactionState = firstTransactionManagerFailed ? HeuristicCompletionException.STATE_ROLLED_BACK
+			var firstTransactionManagerFailed = commitExceptionTransactionManager == getLastTransactionManager();
+			var transactionState = firstTransactionManagerFailed ? HeuristicCompletionException.STATE_ROLLED_BACK
 					: HeuristicCompletionException.STATE_MIXED;
 			throw new HeuristicCompletionException(transactionState, commitException);
 		}
@@ -205,9 +205,9 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 		Exception rollbackException = null;
 		PlatformTransactionManager rollbackExceptionTransactionManager = null;
 
-		MultiTransactionStatus multiTransactionStatus = (MultiTransactionStatus) status;
+		var multiTransactionStatus = (MultiTransactionStatus) status;
 
-		for (PlatformTransactionManager transactionManager : reverse(transactionManagers)) {
+		for (var transactionManager : reverse(transactionManagers)) {
 			try {
 				multiTransactionStatus.rollback(transactionManager);
 			} catch (Exception ex) {

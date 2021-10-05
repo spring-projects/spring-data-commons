@@ -75,11 +75,9 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 			return true;
 		}
 
-		if (!(obj instanceof GeoPage)) {
+		if (!(obj instanceof GeoPage<?> that)) {
 			return false;
 		}
-
-		GeoPage<?> that = (GeoPage<?>) obj;
 
 		return super.equals(obj) && ObjectUtils.nullSafeEquals(this.averageDistance, that.averageDistance);
 	}

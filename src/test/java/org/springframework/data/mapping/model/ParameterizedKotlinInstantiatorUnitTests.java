@@ -62,10 +62,10 @@ public class ParameterizedKotlinInstantiatorUnitTests {
 	@Parameters(name = "{5}")
 	public static List<Object[]> parameters() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 
-		KotlinClassGeneratingEntityInstantiator generatingInstantiator = new KotlinClassGeneratingEntityInstantiator();
-		ReflectionEntityInstantiator reflectionInstantiator = ReflectionEntityInstantiator.INSTANCE;
+		var generatingInstantiator = new KotlinClassGeneratingEntityInstantiator();
+		var reflectionInstantiator = ReflectionEntityInstantiator.INSTANCE;
 
 		List<Object[]> fixtures = new ArrayList<>();
 		fixtures.addAll(createFixture(context, With32Args.class, 32, generatingInstantiator));
@@ -79,7 +79,7 @@ public class ParameterizedKotlinInstantiatorUnitTests {
 	private static List<Object[]> createFixture(SampleMappingContext context, Class<?> entityType, int propertyCount,
 			EntityInstantiator entityInstantiator) {
 
-		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = context.getPersistentEntity(entityType);
+		var persistentEntity = context.getPersistentEntity(entityType);
 
 		return IntStream.range(0, propertyCount).mapToObj(i -> {
 
@@ -92,11 +92,11 @@ public class ParameterizedKotlinInstantiatorUnitTests {
 	@Test // DATACMNS-1402
 	public void shouldCreateInstanceWithSinglePropertySet() {
 
-		Object instance = entityInstantiator.createInstance(entity, new SingleParameterValueProvider());
+		var instance = entityInstantiator.createInstance(entity, new SingleParameterValueProvider());
 
-		for (int i = 0; i < propertyCount; i++) {
+		for (var i = 0; i < propertyCount; i++) {
 
-			Object value = ReflectionTestUtils.getField(instance, Integer.toString(i));
+			var value = ReflectionTestUtils.getField(instance, Integer.toString(i));
 
 			if (propertyUnderTestIndex == i) {
 				assertThat(value).describedAs("Property " + i + " of " + entity).isEqualTo(valueToSet);
@@ -109,11 +109,11 @@ public class ParameterizedKotlinInstantiatorUnitTests {
 	@Test // DATACMNS-1402
 	public void shouldCreateInstanceWithAllExceptSinglePropertySet() {
 
-		Object instance = entityInstantiator.createInstance(entity, new AllButParameterValueProvider());
+		var instance = entityInstantiator.createInstance(entity, new AllButParameterValueProvider());
 
-		for (int i = 0; i < propertyCount; i++) {
+		for (var i = 0; i < propertyCount; i++) {
 
-			Object value = ReflectionTestUtils.getField(instance, Integer.toString(i));
+			var value = ReflectionTestUtils.getField(instance, Integer.toString(i));
 
 			if (propertyUnderTestIndex == i) {
 				assertThat(value).describedAs("Property " + i + " of " + entity).isEqualTo("");

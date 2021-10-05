@@ -41,8 +41,8 @@ class AnnotationRevisionMetadataUnitTests {
 	@Test // DATACMNS-1173
 	void exposesNoInformationOnEmptyProbe() {
 
-		Sample sample = new Sample();
-		RevisionMetadata<Long> metadata = getMetadata(sample);
+		var sample = new Sample();
+		var metadata = getMetadata(sample);
 
 		assertThat(metadata.getRevisionNumber()).isEmpty();
 
@@ -57,10 +57,10 @@ class AnnotationRevisionMetadataUnitTests {
 	@Test // DATACMNS-1173
 	void exposesRevisionNumber() {
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 		sample.revisionNumber = 1L;
 
-		RevisionMetadata<Long> metadata = getMetadata(sample);
+		var metadata = getMetadata(sample);
 
 		softly.assertThat(metadata.getRevisionNumber()).hasValue(1L);
 		softly.assertThat(metadata.getRequiredRevisionNumber()).isEqualTo(1L);
@@ -71,11 +71,11 @@ class AnnotationRevisionMetadataUnitTests {
 	@Test // DATACMNS-1173
 	void exposesRevisionDateAndInstantForLocalDateTime() {
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 		sample.revisionDate = LocalDateTime.now();
-		Instant expectedInstant = sample.revisionDate.atZone(ZoneOffset.systemDefault()).toInstant();
+		var expectedInstant = sample.revisionDate.atZone(ZoneOffset.systemDefault()).toInstant();
 
-		RevisionMetadata<Long> metadata = getMetadata(sample);
+		var metadata = getMetadata(sample);
 
 		softly.assertThat(metadata.getRevisionInstant()).hasValue(expectedInstant);
 		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(expectedInstant);
@@ -86,11 +86,11 @@ class AnnotationRevisionMetadataUnitTests {
 	@Test // DATACMNS-1251
 	void exposesRevisionDateAndInstantForInstant() {
 
-		SampleWithInstant sample = new SampleWithInstant();
+		var sample = new SampleWithInstant();
 		sample.revisionInstant = Instant.now();
-		LocalDateTime expectedLocalDateTime = LocalDateTime.ofInstant(sample.revisionInstant, ZoneOffset.systemDefault());
+		var expectedLocalDateTime = LocalDateTime.ofInstant(sample.revisionInstant, ZoneOffset.systemDefault());
 
-		RevisionMetadata<Long> metadata = getMetadata(sample);
+		var metadata = getMetadata(sample);
 
 		softly.assertThat(metadata.getRevisionInstant()).hasValue(sample.revisionInstant);
 		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(sample.revisionInstant);
@@ -101,13 +101,13 @@ class AnnotationRevisionMetadataUnitTests {
 	@Test // DATACMNS-1290
 	void exposesRevisionDateAndInstantForLong() {
 
-		SampleWithLong sample = new SampleWithLong();
+		var sample = new SampleWithLong();
 		sample.revisionLong = 4711L;
 
-		Instant expectedInstant = Instant.ofEpochMilli(sample.revisionLong);
-		LocalDateTime expectedLocalDateTime = LocalDateTime.ofInstant(expectedInstant, ZoneOffset.systemDefault());
+		var expectedInstant = Instant.ofEpochMilli(sample.revisionLong);
+		var expectedLocalDateTime = LocalDateTime.ofInstant(expectedInstant, ZoneOffset.systemDefault());
 
-		RevisionMetadata<Long> metadata = getMetadata(sample);
+		var metadata = getMetadata(sample);
 
 		softly.assertThat(metadata.getRevisionInstant()).hasValue(expectedInstant);
 		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(expectedInstant);
@@ -118,11 +118,11 @@ class AnnotationRevisionMetadataUnitTests {
 	@Test // DATACMNS-1384
 	void supportsTimestampRevisionInstant() {
 
-		SampleWithTimestamp sample = new SampleWithTimestamp();
-		Instant now = Instant.now();
+		var sample = new SampleWithTimestamp();
+		var now = Instant.now();
 		sample.revision = Timestamp.from(now);
 
-		RevisionMetadata<Long> metadata = getMetadata(sample);
+		var metadata = getMetadata(sample);
 
 		assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(now);
 	}
@@ -130,11 +130,11 @@ class AnnotationRevisionMetadataUnitTests {
 	@Test // DATACMNS-1384
 	void supportsDateRevisionInstant() {
 
-		SampleWithDate sample = new SampleWithDate();
-		Date date = new Date();
+		var sample = new SampleWithDate();
+		var date = new Date();
 		sample.revision = date;
 
-		RevisionMetadata<Long> metadata = getMetadata(sample);
+		var metadata = getMetadata(sample);
 
 		assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(date.toInstant());
 	}

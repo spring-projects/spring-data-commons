@@ -74,7 +74,7 @@ class ReflectionAuditingBeanWrapperUnitTests {
 			@LastModifiedDate long modifiedDate;
 		}
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 		AuditableBeanWrapper<Sample> wrapper = new ReflectionAuditingBeanWrapper<>(conversionService, sample);
 
 		wrapper.setCreatedDate(time);
@@ -87,7 +87,7 @@ class ReflectionAuditingBeanWrapperUnitTests {
 	@Test
 	void setsAuditorFieldsCorrectly() {
 
-		Object object = new Object();
+		var object = new Object();
 
 		wrapper.setCreatedBy(object);
 		assertThat(user.createdBy).isEqualTo(object);

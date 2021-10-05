@@ -30,7 +30,6 @@ import reactor.core.publisher.Mono;
 import scala.Option;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -43,13 +42,13 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.Streamable;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -169,7 +168,7 @@ class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-1005
 	void registersAllowedPageabletypes() {
 
-		Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
+		var allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
 		assertThat(allowedPageableTypes).contains(Page.class, Slice.class, List.class, Seq.class);
 	}
 
@@ -191,7 +190,7 @@ class QueryExecutionConvertersUnitTests {
 		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Set.class)).isTrue();
 		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Map.class)).isFalse();
 
-		List<Integer> integers = Arrays.asList(1, 2, 3);
+		var integers = Arrays.asList(1, 2, 3);
 
 		io.vavr.collection.Traversable<?> result = conversionService.convert(integers,
 				io.vavr.collection.Traversable.class);
@@ -207,7 +206,7 @@ class QueryExecutionConvertersUnitTests {
 		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.List.class)).isTrue();
 		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Map.class)).isFalse();
 
-		Set<Integer> integers = Collections.singleton(1);
+		var integers = Collections.singleton(1);
 
 		io.vavr.collection.Traversable<?> result = conversionService.convert(integers,
 				io.vavr.collection.Traversable.class);
@@ -223,7 +222,7 @@ class QueryExecutionConvertersUnitTests {
 		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.Set.class)).isFalse();
 		assertThat(conversionService.canConvert(Map.class, io.vavr.collection.List.class)).isFalse();
 
-		Map<String, String> map = Collections.singletonMap("key", "value");
+		var map = Collections.singletonMap("key", "value");
 
 		io.vavr.collection.Traversable<?> result = conversionService.convert(map, io.vavr.collection.Traversable.class);
 
@@ -241,14 +240,14 @@ class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-1065
 	void vavrSeqIsASupportedPageableType() {
 
-		Set<Class<?>> allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
+		var allowedPageableTypes = QueryExecutionConverters.getAllowedPageableTypes();
 		assertThat(allowedPageableTypes).contains(io.vavr.collection.Seq.class);
 	}
 
 	@Test // DATAJPA-1258
 	void convertsJavaListsToVavrSet() {
 
-		List<String> source = Collections.singletonList("foo");
+		var source = Collections.singletonList("foo");
 
 		assertThat(conversionService.convert(source, io.vavr.collection.Set.class)) //
 				.isInstanceOf(io.vavr.collection.Set.class);
@@ -257,8 +256,8 @@ class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-1299
 	void unwrapsPages() throws Exception {
 
-		Method method = Sample.class.getMethod("pages");
-		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+		var method = Sample.class.getMethod("pages");
+		var returnType = ClassTypeInformation.fromReturnTypeOf(method);
 
 		assertThat(QueryExecutionConverters.unwrapWrapperTypes(returnType).getType())
 				.isEqualTo(String.class);
@@ -267,7 +266,7 @@ class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-983
 	void exposesExecutionAdapterForJavaslangTry() throws Throwable {
 
-		Object result = getExecutionAdapter(Try.class).apply(() -> {
+		var result = getExecutionAdapter(Try.class).apply(() -> {
 			throw new IOException("Some message!");
 		});
 
@@ -277,11 +276,11 @@ class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-983
 	void unwrapsDomainTypeFromJavaslangTryWrapper() throws Exception {
 
-		for (String methodName : Arrays.asList("tryMethod", "tryForSeqMethod")) {
+		for (var methodName : Arrays.asList("tryMethod", "tryForSeqMethod")) {
 
-			Method method = Sample.class.getMethod(methodName);
+			var method = Sample.class.getMethod(methodName);
 
-			TypeInformation<?> type = QueryExecutionConverters
+			var type = QueryExecutionConverters
 					.unwrapWrapperTypes(ClassTypeInformation.fromReturnTypeOf(method));
 
 			assertThat(type.getType()).isEqualTo(Sample.class);
@@ -291,7 +290,7 @@ class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-983
 	void exposesExecutionAdapterForVavrTry() throws Throwable {
 
-		Object result = getExecutionAdapter(io.vavr.control.Try.class).apply(() -> {
+		var result = getExecutionAdapter(io.vavr.control.Try.class).apply(() -> {
 			throw new IOException("Some message!");
 		});
 
@@ -301,11 +300,11 @@ class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-983
 	void unwrapsDomainTypeFromVavrTryWrapper() throws Exception {
 
-		for (String methodName : Arrays.asList("tryMethod", "tryForSeqMethod")) {
+		for (var methodName : Arrays.asList("tryMethod", "tryForSeqMethod")) {
 
-			Method method = Sample.class.getMethod(methodName);
+			var method = Sample.class.getMethod(methodName);
 
-			TypeInformation<?> type = QueryExecutionConverters
+			var type = QueryExecutionConverters
 					.unwrapWrapperTypes(ClassTypeInformation.fromReturnTypeOf(method));
 
 			assertThat(type.getType()).isEqualTo(Sample.class);
@@ -338,7 +337,7 @@ class QueryExecutionConvertersUnitTests {
 	@Test // DATACMNS-1484
 	void doesNotConvertCollectionToStreamableIfReturnTypeIsIterable() {
 
-		List<String> source = Arrays.asList("1", "2");
+		var source = Arrays.asList("1", "2");
 
 		assertThat(conversionService.convert(source, Iterable.class)).isSameAs(source);
 

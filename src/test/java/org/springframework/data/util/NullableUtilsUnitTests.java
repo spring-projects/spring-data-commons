@@ -18,9 +18,9 @@ package org.springframework.data.util;
 import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.ElementType;
-import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.util.nonnull.NullableAnnotatedType;
 import org.springframework.data.util.nonnull.packagelevel.NonNullOnPackage;
@@ -39,7 +39,7 @@ class NullableUtilsUnitTests {
 	@Test // DATACMNS-1154
 	void packageAnnotatedShouldConsiderNonNullAnnotation() {
 
-		Method method = ReflectionUtils.findMethod(NonNullOnPackage.class, "nonNullReturnValue");
+		var method = ReflectionUtils.findMethod(NonNullOnPackage.class, "nonNullReturnValue");
 
 		assertThat(NullableUtils.isNonNull(method, ElementType.METHOD)).isTrue();
 		assertThat(NullableUtils.isNonNull(method, ElementType.PARAMETER)).isTrue();
@@ -84,10 +84,10 @@ class NullableUtilsUnitTests {
 	@Test // DATACMNS-1154
 	void shouldConsiderParametersWithoutNullableAnnotation() {
 
-		Method method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "nonNullMethod", String.class);
+		var method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "nonNullMethod", String.class);
 
-		MethodParameter returnValue = new MethodParameter(method, -1);
-		MethodParameter parameter = new MethodParameter(method, 0);
+		var returnValue = new MethodParameter(method, -1);
+		var parameter = new MethodParameter(method, 0);
 
 		assertThat(NullableUtils.isExplicitNullable(returnValue)).isFalse();
 		assertThat(NullableUtils.isExplicitNullable(parameter)).isFalse();
@@ -96,7 +96,7 @@ class NullableUtilsUnitTests {
 	@Test // DATACMNS-1154
 	void shouldConsiderParametersNullableAnnotation() {
 
-		Method method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "nullableReturn");
+		var method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "nullableReturn");
 
 		assertThat(NullableUtils.isExplicitNullable(new MethodParameter(method, -1))).isTrue();
 	}
@@ -104,7 +104,7 @@ class NullableUtilsUnitTests {
 	@Test // DATACMNS-1154
 	void shouldConsiderParametersJsr305NullableMetaAnnotation() {
 
-		Method method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "jsr305NullableReturn");
+		var method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "jsr305NullableReturn");
 
 		assertThat(NullableUtils.isExplicitNullable(new MethodParameter(method, -1))).isTrue();
 	}
@@ -112,7 +112,7 @@ class NullableUtilsUnitTests {
 	@Test // DATACMNS-1154
 	void shouldConsiderParametersJsr305NonnullAnnotation() {
 
-		Method method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "jsr305NullableReturnWhen");
+		var method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "jsr305NullableReturnWhen");
 
 		assertThat(NullableUtils.isExplicitNullable(new MethodParameter(method, -1))).isTrue();
 	}

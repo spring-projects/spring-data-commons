@@ -43,8 +43,8 @@ public abstract class AbstractEntityInformation<T, ID> implements EntityInformat
 	 */
 	public boolean isNew(T entity) {
 
-		ID id = getId(entity);
-		Class<ID> idType = getIdType();
+		var id = getId(entity);
+		var idType = getIdType();
 
 		if (!idType.isPrimitive()) {
 			return id == null;

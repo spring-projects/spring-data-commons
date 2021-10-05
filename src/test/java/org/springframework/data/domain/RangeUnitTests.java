@@ -39,7 +39,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-651
 	void excludesLowerBoundIfConfigured() {
 
-		Range<Long> range = Range.from(Bound.exclusive(10L)).to(Bound.inclusive(20L));
+		var range = Range.from(Bound.exclusive(10L)).to(Bound.inclusive(20L));
 
 		assertThat(range.contains(10L)).isFalse();
 		assertThat(range.contains(20L)).isTrue();
@@ -51,7 +51,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-651
 	void excludesUpperBoundIfConfigured() {
 
-		Range<Long> range = Range.of(Bound.inclusive(10L), Bound.exclusive(20L));
+		var range = Range.of(Bound.inclusive(10L), Bound.exclusive(20L));
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isFalse();
@@ -63,7 +63,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-651, DATACMNS-1050
 	void handlesOpenUpperBoundCorrectly() {
 
-		Range<Long> range = Range.of(Bound.inclusive(10L), Bound.unbounded());
+		var range = Range.of(Bound.inclusive(10L), Bound.unbounded());
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();
@@ -78,7 +78,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-651, DATACMNS-1050
 	void handlesOpenLowerBoundCorrectly() {
 
-		Range<Long> range = Range.of(Bound.unbounded(), Bound.inclusive(20L));
+		var range = Range.of(Bound.unbounded(), Bound.inclusive(20L));
 
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();
@@ -92,7 +92,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-1050
 	void createsInclusiveBoundaryCorrectly() {
 
-		Bound<Integer> bound = Bound.inclusive(10);
+		var bound = Bound.inclusive(10);
 
 		assertThat(bound.isInclusive()).isTrue();
 		assertThat(bound.getValue()).contains(10);
@@ -101,7 +101,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-1050
 	void createsExclusiveBoundaryCorrectly() {
 
-		Bound<Double> bound = Bound.exclusive(10d);
+		var bound = Bound.exclusive(10d);
 
 		assertThat(bound.isInclusive()).isFalse();
 		assertThat(bound.getValue()).contains(10d);
@@ -110,10 +110,10 @@ class RangeUnitTests {
 	@Test // DATACMNS-1050
 	void createsRangeFromBoundariesCorrectly() {
 
-		Bound<Long> lower = Bound.inclusive(10L);
-		Bound<Long> upper = Bound.inclusive(20L);
+		var lower = Bound.inclusive(10L);
+		var upper = Bound.inclusive(20L);
 
-		Range<Long> range = Range.of(lower, upper);
+		var range = Range.of(lower, upper);
 
 		assertThat(range.contains(9L)).isFalse();
 		assertThat(range.contains(10L)).isTrue();
@@ -124,7 +124,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-1050
 	void shouldExclusiveBuildRangeLowerFirst() {
 
-		Range<Long> range = Range.from(Bound.exclusive(10L)).to(Bound.exclusive(20L));
+		var range = Range.from(Bound.exclusive(10L)).to(Bound.exclusive(20L));
 
 		assertThat(range.contains(9L)).isFalse();
 		assertThat(range.contains(10L)).isFalse();
@@ -138,7 +138,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-1050
 	void shouldBuildRange() {
 
-		Range<Long> range = Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L));
+		var range = Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L));
 
 		assertThat(range.contains(9L)).isFalse();
 		assertThat(range.contains(10L)).isTrue();
@@ -162,7 +162,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-1499
 	void createsOpenRange() {
 
-		Range<Long> range = Range.open(5L, 10L);
+		var range = Range.open(5L, 10L);
 
 		assertThat(range.contains(5L)).isFalse();
 		assertThat(range.contains(10L)).isFalse();
@@ -171,7 +171,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-1499
 	void createsClosedRange() {
 
-		Range<Long> range = Range.closed(5L, 10L);
+		var range = Range.closed(5L, 10L);
 
 		assertThat(range.contains(5L)).isTrue();
 		assertThat(range.contains(10L)).isTrue();
@@ -180,7 +180,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-1499
 	void createsLeftOpenRange() {
 
-		Range<Long> range = Range.leftOpen(5L, 10L);
+		var range = Range.leftOpen(5L, 10L);
 
 		assertThat(range.contains(5L)).isFalse();
 		assertThat(range.contains(10L)).isTrue();
@@ -189,7 +189,7 @@ class RangeUnitTests {
 	@Test // DATACMNS-1499
 	void createsRightOpenRange() {
 
-		Range<Long> range = Range.rightOpen(5L, 10L);
+		var range = Range.rightOpen(5L, 10L);
 
 		assertThat(range.contains(5L)).isTrue();
 		assertThat(range.contains(10L)).isFalse();

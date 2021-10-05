@@ -59,7 +59,7 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 
 		if (path instanceof CollectionPathBase) {
 
-			BooleanBuilder builder = new BooleanBuilder();
+			var builder = new BooleanBuilder();
 
 			for (Object element : value) {
 				builder.and(((CollectionPathBase) path).contains(element));
@@ -68,15 +68,13 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 			return Optional.of(builder.getValue());
 		}
 
-		if (path instanceof SimpleExpression) {
-
-			SimpleExpression expression = (SimpleExpression) path;
+		if (path instanceof SimpleExpression expression) {
 
 			if (value.size() > 1) {
 				return Optional.of(expression.in(value));
 			}
 
-			Object object = value.iterator().next();
+			var object = value.iterator().next();
 
 			return Optional.of(object == null //
 					? expression.isNull() //

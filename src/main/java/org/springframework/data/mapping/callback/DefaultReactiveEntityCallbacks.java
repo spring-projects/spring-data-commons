@@ -21,9 +21,9 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.reactivestreams.Publisher;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
@@ -69,22 +69,22 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 
 		Assert.notNull(entity, "Entity must not be null!");
 
-		Class<T> entityType = (Class<T>) (entity != null ? ClassUtils.getUserClass(entity.getClass())
+		var entityType = (Class<T>) (entity != null ? ClassUtils.getUserClass(entity.getClass())
 				: callbackDiscoverer.resolveDeclaredEntityType(callbackType).getRawClass());
 
-		Method callbackMethod = callbackMethodCache.computeIfAbsent(callbackType, it -> {
+		var callbackMethod = callbackMethodCache.computeIfAbsent(callbackType, it -> {
 
-			Method method = EntityCallbackDiscoverer.lookupCallbackMethod(it, entityType, args);
+			var method = EntityCallbackDiscoverer.lookupCallbackMethod(it, entityType, args);
 			ReflectionUtils.makeAccessible(method);
 			return method;
 		});
 
-		Mono<T> deferredCallbackChain = Mono.just(entity);
+		var deferredCallbackChain = Mono.just(entity);
 
-		for (EntityCallback<T> callback : callbackDiscoverer.getEntityCallbacks(entityType,
+		for (var callback : callbackDiscoverer.getEntityCallbacks(entityType,
 				ResolvableType.forClass(callbackType))) {
 
-			BiFunction<EntityCallback<T>, T, Object> callbackFunction = EntityCallbackDiscoverer
+			var callbackFunction = EntityCallbackDiscoverer
 					.computeCallbackInvokerFunction(callback, callbackMethod, args);
 
 			deferredCallbackChain = deferredCallbackChain
@@ -111,7 +111,7 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 
 			try {
 
-				Object value = callbackInvokerFunction.apply(callback, entity);
+				var value = callbackInvokerFunction.apply(callback, entity);
 
 				if (value != null) {
 					return value instanceof Publisher ? Mono.from((Publisher<T>) value) : Mono.just((T) value);
@@ -121,12 +121,12 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 						String.format("Callback invocation on %s returned null value for %s", callback.getClass(), entity));
 			} catch (ClassCastException ex) {
 
-				String msg = ex.getMessage();
+				var msg = ex.getMessage();
 				if (msg == null || EntityCallbackInvoker.matchesClassCastMessage(msg, entity.getClass())) {
 
 					// Possibly a lambda-defined listener which we could not resolve the generic event type for
 					// -> let's suppress the exception and just log a debug message.
-					Log logger = LogFactory.getLog(getClass());
+					var logger = LogFactory.getLog(getClass());
 					if (logger.isDebugEnabled()) {
 						logger.debug("Non-matching callback type for entity callback: " + callback, ex);
 					}

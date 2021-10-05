@@ -171,9 +171,9 @@ public class ParameterTypes {
 			return false;
 		}
 
-		Class<?>[] parameterTypes = method.getParameterTypes();
+		var parameterTypes = method.getParameterTypes();
 
-		for (int i = 0; i < parameterTypes.length; i++) {
+		for (var i = 0; i < parameterTypes.length; i++) {
 			if (parameterTypes[i] != types.get(i).getType()) {
 				return false;
 			}
@@ -208,7 +208,7 @@ public class ParameterTypes {
 
 	protected Optional<ParameterTypes> withLastVarArgs() {
 
-		TypeDescriptor lastDescriptor = types.get(types.size() - 1);
+		var lastDescriptor = types.get(types.size() - 1);
 
 		return lastDescriptor.isArray() //
 				? Optional.empty() //
@@ -218,7 +218,7 @@ public class ParameterTypes {
 	@SuppressWarnings("null")
 	private ParameterTypes withVarArgs(TypeDescriptor descriptor) {
 
-		TypeDescriptor lastDescriptor = types.get(types.size() - 1);
+		var lastDescriptor = types.get(types.size() - 1);
 
 		if (lastDescriptor.isArray() && lastDescriptor.getElementTypeDescriptor().equals(descriptor)) {
 			return this;
@@ -240,7 +240,7 @@ public class ParameterTypes {
 
 		withLastVarArgs().ifPresent(alternatives::add);
 
-		ParameterTypes objectVarArgs = withVarArgs(OBJECT_DESCRIPTOR);
+		var objectVarArgs = withVarArgs(OBJECT_DESCRIPTOR);
 
 		if (!alternatives.contains(objectVarArgs)) {
 			alternatives.add(objectVarArgs);
@@ -263,9 +263,9 @@ public class ParameterTypes {
 			return false;
 		}
 
-		Class<?>[] parameterTypes = method.getParameterTypes();
+		var parameterTypes = method.getParameterTypes();
 
-		for (int i = 0; i < parameterTypes.length; i++) {
+		for (var i = 0; i < parameterTypes.length; i++) {
 			if (!TypeUtils.isAssignable(parameterTypes[i], types.get(i).getType())) {
 				return false;
 			}
@@ -289,11 +289,9 @@ public class ParameterTypes {
 			return true;
 		}
 
-		if (!(o instanceof ParameterTypes)) {
+		if (!(o instanceof ParameterTypes that)) {
 			return false;
 		}
-
-		ParameterTypes that = (ParameterTypes) o;
 
 		return ObjectUtils.nullSafeEquals(types, that.types);
 	}
@@ -359,15 +357,13 @@ public class ParameterTypes {
 				return true;
 			}
 
-			if (!(o instanceof ParentParameterTypes)) {
+			if (!(o instanceof ParentParameterTypes that)) {
 				return false;
 			}
 
 			if (!super.equals(o)) {
 				return false;
 			}
-
-			ParentParameterTypes that = (ParentParameterTypes) o;
 
 			return ObjectUtils.nullSafeEquals(tail, that.tail);
 		}
@@ -379,7 +375,7 @@ public class ParameterTypes {
 		@Override
 		public int hashCode() {
 
-			int result = super.hashCode();
+			var result = super.hashCode();
 
 			result = 31 * result + ObjectUtils.nullSafeHashCode(tail);
 

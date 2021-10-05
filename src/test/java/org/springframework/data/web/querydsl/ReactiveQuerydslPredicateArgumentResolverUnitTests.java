@@ -74,9 +74,9 @@ class ReactiveQuerydslPredicateArgumentResolverUnitTests {
 	@Test // DATACMNS-1785
 	void resolveArgumentShouldCreateSingleStringParameterPredicateCorrectly() {
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("").queryParam("firstname", "rand").build();
+		var request = MockServerHttpRequest.get("").queryParam("firstname", "rand").build();
 
-		Object predicate = resolver.resolveArgumentValue(getMethodParameterFor("simpleFind", Predicate.class), null,
+		var predicate = resolver.resolveArgumentValue(getMethodParameterFor("simpleFind", Predicate.class), null,
 				MockServerWebExchange.from(request));
 
 		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand"));
@@ -85,10 +85,10 @@ class ReactiveQuerydslPredicateArgumentResolverUnitTests {
 	@Test // DATACMNS-1785
 	void resolveArgumentShouldHonorCustomSpecification() {
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("").queryParam("firstname", "egwene")
+		var request = MockServerHttpRequest.get("").queryParam("firstname", "egwene")
 				.queryParam("lastname", "al'vere").build();
 
-		Object predicate = resolver.resolveArgumentValue(getMethodParameterFor("specificFind", Predicate.class), null,
+		var predicate = resolver.resolveArgumentValue(getMethodParameterFor("specificFind", Predicate.class), null,
 				MockServerWebExchange.from(request));
 
 		assertThat(predicate).isEqualTo(
@@ -98,9 +98,9 @@ class ReactiveQuerydslPredicateArgumentResolverUnitTests {
 	@Test // DATACMNS-1785
 	void returnsEmptyPredicateForEmptyInput() {
 
-		MethodParameter parameter = getMethodParameterFor("predicateWithoutAnnotation", Predicate.class);
+		var parameter = getMethodParameterFor("predicateWithoutAnnotation", Predicate.class);
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("").queryParam("firstname", "").build();
+		var request = MockServerHttpRequest.get("").queryParam("firstname", "").build();
 
 		assertThat(resolver.resolveArgumentValue(parameter, null, MockServerWebExchange.from(request))) //
 				.isNotNull();
@@ -109,9 +109,9 @@ class ReactiveQuerydslPredicateArgumentResolverUnitTests {
 	@Test // DATACMNS-1785
 	void forwardsNullValueForNullablePredicate() {
 
-		MethodParameter parameter = getMethodParameterFor("nullablePredicateWithoutAnnotation", Predicate.class);
+		var parameter = getMethodParameterFor("nullablePredicateWithoutAnnotation", Predicate.class);
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("").queryParam("firstname", "").build();
+		var request = MockServerHttpRequest.get("").queryParam("firstname", "").build();
 
 		assertThat(resolver.resolveArgumentValue(parameter, null, MockServerWebExchange.from(request))).isNull();
 	}
@@ -119,9 +119,9 @@ class ReactiveQuerydslPredicateArgumentResolverUnitTests {
 	@Test // DATACMNS-1785
 	void returnsOptionalIfDeclared() {
 
-		MethodParameter parameter = getMethodParameterFor("optionalPredicateWithoutAnnotation", Optional.class);
+		var parameter = getMethodParameterFor("optionalPredicateWithoutAnnotation", Optional.class);
 
-		MockServerHttpRequest request = MockServerHttpRequest.get("").queryParam("firstname", "").build();
+		var request = MockServerHttpRequest.get("").queryParam("firstname", "").build();
 
 		assertThat(resolver.resolveArgumentValue(parameter, null, MockServerWebExchange.from(request))) //
 				.isInstanceOfSatisfying(Optional.class, it -> assertThat(it).isEmpty());

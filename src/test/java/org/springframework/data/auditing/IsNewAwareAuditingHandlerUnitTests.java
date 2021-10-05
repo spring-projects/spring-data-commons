@@ -59,7 +59,7 @@ class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
 	@Test
 	void delegatesToMarkCreatedForNewEntity() {
 
-		AuditedUser user = new AuditedUser();
+		var user = new AuditedUser();
 
 		getHandler().markAudited(user);
 
@@ -70,7 +70,7 @@ class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
 	@Test
 	void delegatesToMarkModifiedForNonNewEntity() {
 
-		AuditedUser user = new AuditedUser();
+		var user = new AuditedUser();
 		user.id = 1L;
 
 		getHandler().markAudited(user);
@@ -92,7 +92,7 @@ class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
 	@Test // DATACMNS-638
 	void handlingOptionalIsANoOp() {
 
-		IsNewAwareAuditingHandler handler = getHandler();
+		var handler = getHandler();
 
 		handler.markAudited(Optional.empty());
 		handler.markCreated(Optional.empty());
@@ -107,10 +107,10 @@ class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
 	@Test // DATACMNS-1780
 	void singleContextAllowsInFlightMetadataCreationForUnknownPersistentEntities() {
 
-		SampleMappingContext mappingContext = spy(new SampleMappingContext());
+		var mappingContext = spy(new SampleMappingContext());
 		mappingContext.afterPropertiesSet();
 
-		AuditedUser user = new AuditedUser();
+		var user = new AuditedUser();
 		user.id = 1L;
 
 		new IsNewAwareAuditingHandler(PersistentEntities.of(mappingContext)).markAudited(user);

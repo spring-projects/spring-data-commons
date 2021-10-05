@@ -113,8 +113,8 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	@Override
 	public String toString() {
 
-		String contentType = "UNKNOWN";
-		List<T> content = getContent();
+		var contentType = "UNKNOWN";
+		var content = getContent();
 
 		if (!content.isEmpty() && content.get(0) != null) {
 			contentType = content.get(0).getClass().getName();
@@ -134,11 +134,9 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 			return true;
 		}
 
-		if (!(obj instanceof PageImpl<?>)) {
+		if (!(obj instanceof PageImpl<?> that)) {
 			return false;
 		}
-
-		PageImpl<?> that = (PageImpl<?>) obj;
 
 		return this.total == that.total && super.equals(obj);
 	}
@@ -150,7 +148,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	@Override
 	public int hashCode() {
 
-		int result = 17;
+		var result = 17;
 
 		result += 31 * (int) (total ^ total >>> 32);
 		result += 31 * super.hashCode();

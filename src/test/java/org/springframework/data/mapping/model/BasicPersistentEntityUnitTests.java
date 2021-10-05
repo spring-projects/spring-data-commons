@@ -25,7 +25,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,6 +36,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -108,16 +108,16 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@SuppressWarnings("unchecked")
 	void considersComparatorForPropertyOrder() {
 
-		BasicPersistentEntity<Person, T> entity = createEntity(Person.class,
+		var entity = createEntity(Person.class,
 				Comparator.comparing(PersistentProperty::getName));
 
-		T lastName = (T) Mockito.mock(PersistentProperty.class);
+		var lastName = (T) Mockito.mock(PersistentProperty.class);
 		when(lastName.getName()).thenReturn("lastName");
 
-		T firstName = (T) Mockito.mock(PersistentProperty.class);
+		var firstName = (T) Mockito.mock(PersistentProperty.class);
 		when(firstName.getName()).thenReturn("firstName");
 
-		T ssn = (T) Mockito.mock(PersistentProperty.class);
+		var ssn = (T) Mockito.mock(PersistentProperty.class);
 		when(ssn.getName()).thenReturn("ssn");
 
 		entity.addPersistentProperty(lastName);
@@ -125,10 +125,10 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		entity.addPersistentProperty(ssn);
 		entity.verify();
 
-		List<T> properties = (List<T>) ReflectionTestUtils.getField(entity, "properties");
+		var properties = (List<T>) ReflectionTestUtils.getField(entity, "properties");
 
 		assertThat(properties).hasSize(3);
-		Iterator<T> iterator = properties.iterator();
+		var iterator = properties.iterator();
 
 		assertThat(entity.getPersistentProperty("firstName")).isEqualTo(iterator.next());
 		assertThat(entity.getPersistentProperty("lastName")).isEqualTo(iterator.next());
@@ -164,10 +164,10 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-365
 	void detectsPropertyWithAnnotation() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
-		SamplePersistentProperty property = entity.getPersistentProperty(LastModifiedBy.class);
+		var property = entity.getPersistentProperty(LastModifiedBy.class);
 
 		assertThat(property.getName()).isEqualTo("field");
 
@@ -181,7 +181,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-1122
 	void reportsRequiredPropertyName() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		assertThatThrownBy(() -> entity.getRequiredPersistentProperty("foo"))
@@ -192,19 +192,19 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@SuppressWarnings("rawtypes")
 	void returnsGeneratedPropertyAccessorForPropertyAccessor() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
-		Entity value = new Entity();
+		var value = new Entity();
 		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(value);
 
 		assertThat(accessor).isNotInstanceOf(BeanWrapper.class);
 		assertThat(accessor).isInstanceOfSatisfying(InstantiationAwarePropertyAccessor.class, it -> {
 
-			Function<Object, PersistentPropertyAccessor<Object>> delegateFunction = (Function<Object, PersistentPropertyAccessor<Object>>) ReflectionTestUtils
+			var delegateFunction = (Function<Object, PersistentPropertyAccessor<Object>>) ReflectionTestUtils
 					.getField(it, "delegateFunction");
 
-			PersistentPropertyAccessor<Object> delegate = delegateFunction.apply(value);
+			var delegate = delegateFunction.apply(value);
 			assertThat(delegate.getClass().getName()).contains("_Accessor_");
 			assertThat(delegate.getBean()).isEqualTo(value);
 		});
@@ -213,7 +213,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-596
 	void rejectsNullBeanForPropertyAccessor() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		assertThatIllegalArgumentException().isThrownBy(() -> entity.getPropertyAccessor(null));
@@ -222,7 +222,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-596
 	void rejectsNonMatchingBeanForPropertyAccessor() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		assertThatIllegalArgumentException().isThrownBy(() -> entity.getPropertyAccessor("foo"));
@@ -231,7 +231,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-597
 	void supportsSubtypeInstancesOnPropertyAccessorLookup() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		assertThat(entity.getPropertyAccessor(new Subtype())).isNotNull();
@@ -282,9 +282,9 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@Test // DATACMNS-1210
 	void findAnnotationShouldBeThreadSafe() throws InterruptedException {
 
-		CountDownLatch latch = new CountDownLatch(2);
-		CountDownLatch syncLatch = new CountDownLatch(1);
-		AtomicBoolean failed = new AtomicBoolean(false);
+		var latch = new CountDownLatch(2);
+		var syncLatch = new CountDownLatch(1);
+		var failed = new AtomicBoolean(false);
 
 		PersistentEntity<EntityWithAnnotation, T> entity = new BasicPersistentEntity<EntityWithAnnotation, T>(
 				ClassTypeInformation.from(EntityWithAnnotation.class), null) {
@@ -303,7 +303,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 			}
 		};
 
-		Runnable findAccessType = () -> {
+		var findAccessType = (Runnable) () -> {
 
 			try {
 				entity.findAnnotation(AccessType.class);
@@ -314,7 +314,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 			}
 		};
 
-		Runnable findPersistent = () -> {
+		var findPersistent = (Runnable) () -> {
 
 			try {
 				entity.findAnnotation(Persistent.class);
@@ -383,7 +383,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 	private static PersistentEntity<Object, ?> createPopulatedPersistentEntity(Class<?> type) {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		return context.getRequiredPersistentEntity(type);
 	}
 

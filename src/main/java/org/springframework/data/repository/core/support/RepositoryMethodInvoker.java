@@ -16,7 +16,6 @@
 package org.springframework.data.repository.core.support;
 
 import kotlin.coroutines.Continuation;
-import kotlin.reflect.KFunction;
 import kotlinx.coroutines.reactive.AwaitKt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -129,12 +128,12 @@ abstract class RepositoryMethodInvoker {
 	private Object doInvoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, Object[] args)
 			throws Exception {
 
-		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
+		var invocationResultCaptor = RepositoryMethodInvocationCaptor
 				.captureInvocationOn(repositoryInterface);
 
 		try {
 
-			Object result = invokable.invoke(args);
+			var result = invokable.invoke(args);
 
 			if (result != null && ReactiveWrappers.supports(result.getClass())) {
 				return new ReactiveInvocationListenerDecorator().decorate(repositoryInterface, multicaster, args, result);
@@ -167,7 +166,7 @@ abstract class RepositoryMethodInvoker {
 		Continuation<Object> continuation = (Continuation) args[args.length - 1];
 		args[args.length - 1] = null;
 
-		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
+		var invocationResultCaptor = RepositoryMethodInvocationCaptor
 				.captureInvocationOn(repositoryInterface);
 		try {
 
@@ -280,7 +279,7 @@ abstract class RepositoryMethodInvoker {
 					 * We're invoking a method without Continuation as we expect the method to return any sort of reactive type,
 					 * therefore we need to strip the Continuation parameter.
 					 */
-					Object[] invocationArguments = new Object[args.length - 1];
+					var invocationArguments = new Object[args.length - 1];
 					System.arraycopy(args, 0, invocationArguments, 0, invocationArguments.length);
 
 					return baseClassMethod.invoke(instance, invocationArguments);
@@ -331,16 +330,16 @@ abstract class RepositoryMethodInvoker {
 							baseClassMethod.getParameterCount());
 				}
 
-				KFunction<?> declaredFunction = KotlinDetector.isKotlinType(declaredMethod.getDeclaringClass())
+				var declaredFunction = KotlinDetector.isKotlinType(declaredMethod.getDeclaringClass())
 						? KotlinReflectionUtils.findKotlinFunction(declaredMethod)
 						: null;
-				KFunction<?> baseClassFunction = KotlinDetector.isKotlinType(baseClassMethod.getDeclaringClass())
+				var baseClassFunction = KotlinDetector.isKotlinType(baseClassMethod.getDeclaringClass())
 						? KotlinReflectionUtils.findKotlinFunction(baseClassMethod)
 						: null;
 
-				boolean suspendedDeclaredMethod = declaredFunction != null && declaredFunction.isSuspend();
-				boolean suspendedBaseClassMethod = baseClassFunction != null && baseClassFunction.isSuspend();
-				boolean reactiveBaseClassMethod = !suspendedBaseClassMethod
+				var suspendedDeclaredMethod = declaredFunction != null && declaredFunction.isSuspend();
+				var suspendedBaseClassMethod = baseClassFunction != null && baseClassFunction.isSuspend();
+				var reactiveBaseClassMethod = !suspendedBaseClassMethod
 						&& ReactiveWrapperConverters.supports(baseClassMethod.getReturnType());
 
 				return new CoroutineAdapterInformation(suspendedDeclaredMethod, suspendedBaseClassMethod,

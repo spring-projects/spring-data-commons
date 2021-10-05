@@ -79,7 +79,7 @@ class EntityCallbackDiscoverer {
 
 			// Explicitly remove target for a proxy, if registered already,
 			// in order to avoid double invocations of the same callback.
-			Object singletonTarget = AopProxyUtils.getSingletonTarget(callback);
+			var singletonTarget = AopProxyUtils.getSingletonTarget(callback);
 			if (singletonTarget instanceof EntityCallback) {
 				this.defaultRetriever.entityCallbacks.remove(singletonTarget);
 			}
@@ -134,10 +134,10 @@ class EntityCallbackDiscoverer {
 	<T extends S, S> Collection<EntityCallback<S>> getEntityCallbacks(Class<T> entity, ResolvableType callbackType) {
 
 		Class<?> sourceType = entity;
-		CallbackCacheKey cacheKey = new CallbackCacheKey(callbackType, sourceType);
+		var cacheKey = new CallbackCacheKey(callbackType, sourceType);
 
 		// Quick check for existing entry on ConcurrentHashMap...
-		CallbackRetriever retriever = this.retrieverCache.get(cacheKey);
+		var retriever = this.retrieverCache.get(cacheKey);
 		if (retriever != null) {
 			return (Collection<EntityCallback<S>>) (Collection) retriever.getEntityCallbacks();
 		}
@@ -152,7 +152,7 @@ class EntityCallbackDiscoverer {
 					return (Collection<EntityCallback<S>>) (Collection) retriever.getEntityCallbacks();
 				}
 				retriever = new CallbackRetriever(true);
-				Collection<EntityCallback<?>> callbacks = retrieveEntityCallbacks(ResolvableType.forClass(sourceType),
+				var callbacks = retrieveEntityCallbacks(ResolvableType.forClass(sourceType),
 						callbackType, retriever);
 				this.retrieverCache.put(cacheKey, retriever);
 				return (Collection<EntityCallback<S>>) (Collection) callbacks;
@@ -166,7 +166,7 @@ class EntityCallbackDiscoverer {
 	@Nullable
 	ResolvableType resolveDeclaredEntityType(Class<?> callbackType) {
 
-		ResolvableType eventType = entityTypeCache.get(callbackType);
+		var eventType = entityTypeCache.get(callbackType);
 
 		if (eventType == null) {
 			eventType = ResolvableType.forClass(callbackType).as(EntityCallback.class).getGeneric();
@@ -196,7 +196,7 @@ class EntityCallbackDiscoverer {
 			callbackBeans = new LinkedHashSet<>(this.defaultRetriever.entityCallbackBeans);
 		}
 
-		for (EntityCallback<?> callback : callbacks) {
+		for (var callback : callbacks) {
 			if (supportsEvent(callback, entityType, callbackType)) {
 				if (retriever != null) {
 					retriever.getEntityCallbacks().add(callback);
@@ -206,10 +206,10 @@ class EntityCallbackDiscoverer {
 		}
 
 		if (!callbackBeans.isEmpty()) {
-			BeanFactory beanFactory = getRequiredBeanFactory();
-			for (String callbackBeanName : callbackBeans) {
+			var beanFactory = getRequiredBeanFactory();
+			for (var callbackBeanName : callbackBeans) {
 				try {
-					Class<?> callbackImplType = beanFactory.getType(callbackBeanName);
+					var callbackImplType = beanFactory.getType(callbackBeanName);
 					if (callbackImplType == null || supportsEvent(callbackImplType, entityType)) {
 						EntityCallback<?> callback = beanFactory.getBean(callbackBeanName, EntityCallback.class);
 						if (!allCallbacks.contains(callback) && supportsEvent(callback, entityType, callbackType)) {
@@ -253,7 +253,7 @@ class EntityCallbackDiscoverer {
 	 */
 	protected boolean supportsEvent(Class<?> callback, ResolvableType entityType) {
 
-		ResolvableType declaredEventType = resolveDeclaredEntityType(callback);
+		var declaredEventType = resolveDeclaredEntityType(callback);
 		return (declaredEventType == null || declaredEventType.isAssignableFrom(entityType));
 	}
 
@@ -291,8 +291,7 @@ class EntityCallbackDiscoverer {
 
 		this.beanFactory = beanFactory;
 
-		if (beanFactory instanceof ConfigurableBeanFactory) {
-			ConfigurableBeanFactory cbf = (ConfigurableBeanFactory) beanFactory;
+		if (beanFactory instanceof ConfigurableBeanFactory cbf) {
 			if (this.beanClassLoader == null) {
 				this.beanClassLoader = cbf.getBeanClassLoader();
 			}
@@ -332,7 +331,7 @@ class EntityCallbackDiscoverer {
 
 		return (entityCallback, entity) -> {
 
-			Object[] invocationArgs = new Object[args.length + 1];
+			var invocationArgs = new Object[args.length + 1];
 			invocationArgs[0] = entity;
 			if (args.length > 0) {
 				System.arraycopy(args, 0, invocationArgs, 1, args.length);
@@ -372,8 +371,8 @@ class EntityCallbackDiscoverer {
 			allCallbacks.addAll(this.entityCallbacks);
 
 			if (!this.entityCallbackBeans.isEmpty()) {
-				BeanFactory beanFactory = getRequiredBeanFactory();
-				for (String callbackBeanName : this.entityCallbackBeans) {
+				var beanFactory = getRequiredBeanFactory();
+				for (var callbackBeanName : this.entityCallbackBeans) {
 					try {
 						EntityCallback<?> callback = beanFactory.getBean(callbackBeanName, EntityCallback.class);
 						if (this.preFiltered || !allCallbacks.contains(callback)) {
@@ -427,7 +426,7 @@ class EntityCallbackDiscoverer {
 				return true;
 			}
 
-			CallbackCacheKey otherKey = (CallbackCacheKey) other;
+			var otherKey = (CallbackCacheKey) other;
 
 			return (this.callbackType.equals(otherKey.callbackType)
 					&& ObjectUtils.nullSafeEquals(this.entityType, otherKey.entityType));

@@ -37,7 +37,6 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Integration tests for {@link PagedResourcesAssembler}.
@@ -64,12 +63,12 @@ class PageableResourcesAssemblerIntegrationTests {
 	@Test
 	void injectsPagedResourcesAssembler() {
 
-		WebApplicationContext context = WebTestUtils.createApplicationContext(Config.class);
-		SampleController controller = context.getBean(SampleController.class);
+		var context = WebTestUtils.createApplicationContext(Config.class);
+		var controller = context.getBean(SampleController.class);
 
 		assertThat(controller.assembler).isNotNull();
 
-		PagedModel<EntityModel<Person>> resources = controller.sample(PageRequest.of(1, 1));
+		var resources = controller.sample(PageRequest.of(1, 1));
 
 		assertThat(resources.getLink(IanaLinkRelations.PREV)).isNotNull();
 		assertThat(resources.getLink(IanaLinkRelations.NEXT)).isNotNull();
@@ -79,7 +78,7 @@ class PageableResourcesAssemblerIntegrationTests {
 	@Test // DATACMNS-471
 	void setsUpPagedResourcesAssemblerFromManualXmlConfig() {
 
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("manual.xml", getClass());
+		var context = new ClassPathXmlApplicationContext("manual.xml", getClass());
 		assertThat(context.getBean(PagedResourcesAssembler.class)).isNotNull();
 		context.close();
 	}
@@ -87,7 +86,7 @@ class PageableResourcesAssemblerIntegrationTests {
 	@Test // DATACMNS-471
 	void setsUpPagedResourcesAssemblerFromJavaConfigXmlConfig() {
 
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("via-config-class.xml", getClass());
+		var context = new ClassPathXmlApplicationContext("via-config-class.xml", getClass());
 		assertThat(context.getBean(PagedResourcesAssembler.class)).isNotNull();
 		context.close();
 	}

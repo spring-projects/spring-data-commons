@@ -230,7 +230,7 @@ class QuerydslBindingsUnitTests {
 
 		bindings.bind(QUser.user.address.city).as("city").first(CONTAINS_BINDING);
 
-		PathInformation path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
+		var path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
 
 		assertThat(path).isNotNull();
 		assertThat(bindings.isPathAvailable("city", User.class)).isTrue();
@@ -245,14 +245,14 @@ class QuerydslBindingsUnitTests {
 		bindings.including(QUser.user.address.city);
 		bindings.bind(QUser.user.address.city).as("city").first(CONTAINS_BINDING);
 
-		PathInformation path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
+		var path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
 
 		assertThat(path).isNotNull();
 		assertThat(bindings.isPathAvailable("city", User.class)).isTrue();
 
 		assertThat(bindings.isPathAvailable("address.city", User.class)).isTrue();
 
-		PathInformation propertyPath = bindings.getPropertyPath("address.city", ClassTypeInformation.from(User.class));
+		var propertyPath = bindings.getPropertyPath("address.city", ClassTypeInformation.from(User.class));
 		assertThat(propertyPath).isNotNull();
 
 		assertAdapterWithTargetBinding(bindings.getBindingForPath(propertyPath), CONTAINS_BINDING);
@@ -263,7 +263,7 @@ class QuerydslBindingsUnitTests {
 
 		bindings.bind(QUser.user.address.city).as("city").withDefaultBinding();
 
-		PathInformation path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
+		var path = bindings.getPropertyPath("city", ClassTypeInformation.from(User.class));
 		assertThat(path).isNotNull();
 
 		assertThat(bindings.getBindingForPath(path)).isNotPresent();

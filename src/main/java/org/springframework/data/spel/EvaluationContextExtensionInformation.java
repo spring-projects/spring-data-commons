@@ -17,7 +17,6 @@ package org.springframework.data.spel;
 
 import static org.springframework.data.util.StreamUtils.*;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -74,7 +73,7 @@ class EvaluationContextExtensionInformation {
 
 		Assert.notNull(type, "Extension type must not be null!");
 
-		Class<?> rootObjectType = org.springframework.data.util.ReflectionUtils.findRequiredMethod(type, "getRootObject")
+		var rootObjectType = org.springframework.data.util.ReflectionUtils.findRequiredMethod(type, "getRootObject")
 				.getReturnType();
 
 		this.rootObjectInformation = Optional
@@ -221,8 +220,8 @@ class EvaluationContextExtensionInformation {
 					return false;
 				}
 
-				boolean methodStatic = Modifier.isStatic(method.getModifiers());
-				boolean staticMatch = staticOnly ? methodStatic : !methodStatic;
+				var methodStatic = Modifier.isStatic(method.getModifiers());
+				var staticMatch = staticOnly ? methodStatic : !methodStatic;
 
 				return Modifier.isPublic(method.getModifiers()) && staticMatch;
 			}
@@ -234,8 +233,8 @@ class EvaluationContextExtensionInformation {
 			@Override
 			public boolean matches(Field field) {
 
-				boolean fieldStatic = Modifier.isStatic(field.getModifiers());
-				boolean staticMatch = staticOnly ? fieldStatic : !fieldStatic;
+				var fieldStatic = Modifier.isStatic(field.getModifiers());
+				var staticMatch = staticOnly ? fieldStatic : !fieldStatic;
 
 				return Modifier.isPublic(field.getModifiers()) && staticMatch;
 			}
@@ -274,7 +273,7 @@ class EvaluationContextExtensionInformation {
 				return;
 			}
 
-			Streamable<PropertyDescriptor> descriptors = Streamable.of(BeanUtils.getPropertyDescriptors(type));
+			var descriptors = Streamable.of(BeanUtils.getPropertyDescriptors(type));
 
 			ReflectionUtils.doWithMethods(type, method -> {
 
@@ -343,7 +342,7 @@ class EvaluationContextExtensionInformation {
 					return true;
 				}
 
-				for (Field field : fields) {
+				for (var field : fields) {
 					if (field.getName().equals(dependency.getSymbol())) {
 						return true;
 					}

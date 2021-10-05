@@ -36,7 +36,7 @@ class RepositoryInvocationTestUtils {
 	@SuppressWarnings("unchecked")
 	static <T> T getVerifyingRepositoryProxy(T target, VerifyingMethodInterceptor interceptor) {
 
-		ProxyFactory factory = new ProxyFactory();
+		var factory = new ProxyFactory();
 		factory.setInterfaces(target.getClass().getInterfaces());
 		factory.setTarget(target);
 		factory.addAdvice(interceptor);
@@ -75,7 +75,7 @@ class RepositoryInvocationTestUtils {
 				assertThat(methods).contains(invocation.getMethod());
 			} else {
 
-				Class<?> type = invocation.getMethod().getDeclaringClass();
+				var type = invocation.getMethod().getDeclaringClass();
 
 				assertThat(type).as("Expected methods invocation on %s but was invoked on %s!", expectedInvocationTarget, type)
 						.isEqualTo(expectedInvocationTarget);

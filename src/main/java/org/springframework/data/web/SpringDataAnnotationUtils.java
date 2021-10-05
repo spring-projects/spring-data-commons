@@ -23,7 +23,6 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
@@ -47,14 +46,14 @@ abstract class SpringDataAnnotationUtils {
 	 */
 	public static void assertPageableUniqueness(MethodParameter parameter) {
 
-		Method method = parameter.getMethod();
+		var method = parameter.getMethod();
 
 		if (method == null) {
 			throw new IllegalArgumentException(String.format("Method parameter %s is not backed by a method.", parameter));
 		}
 
 		if (containsMoreThanOnePageableParameter(method)) {
-			Annotation[][] annotations = method.getParameterAnnotations();
+			var annotations = method.getParameterAnnotations();
 			assertQualifiersFor(method.getParameterTypes(), annotations);
 		}
 	}
@@ -67,9 +66,9 @@ abstract class SpringDataAnnotationUtils {
 	 */
 	private static boolean containsMoreThanOnePageableParameter(Method method) {
 
-		boolean pageableFound = false;
+		var pageableFound = false;
 
-		for (Class<?> type : method.getParameterTypes()) {
+		for (var type : method.getParameterTypes()) {
 
 			if (pageableFound && type.equals(Pageable.class)) {
 				return true;
@@ -94,10 +93,10 @@ abstract class SpringDataAnnotationUtils {
 	@SuppressWarnings("unchecked")
 	public static <T> T getSpecificPropertyOrDefaultFromValue(Annotation annotation, String property) {
 
-		Object propertyDefaultValue = AnnotationUtils.getDefaultValue(annotation, property);
-		Object propertyValue = AnnotationUtils.getValue(annotation, property);
+		var propertyDefaultValue = AnnotationUtils.getDefaultValue(annotation, property);
+		var propertyValue = AnnotationUtils.getValue(annotation, property);
 
-		Object result = ObjectUtils.nullSafeEquals(propertyDefaultValue, propertyValue) //
+		var result = ObjectUtils.nullSafeEquals(propertyDefaultValue, propertyValue) //
 				? AnnotationUtils.getValue(annotation) //
 				: propertyValue;
 
@@ -122,8 +121,8 @@ abstract class SpringDataAnnotationUtils {
 			return null;
 		}
 
-		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
-		MergedAnnotation<Qualifier> qualifier = annotations.get(Qualifier.class);
+		var annotations = MergedAnnotations.from(parameter.getParameter());
+		var qualifier = annotations.get(Qualifier.class);
 
 		return qualifier.isPresent() ? qualifier.getString("value") : null;
 	}
@@ -139,11 +138,11 @@ abstract class SpringDataAnnotationUtils {
 
 		Set<String> values = new HashSet<>();
 
-		for (int i = 0; i < annotations.length; i++) {
+		for (var i = 0; i < annotations.length; i++) {
 
 			if (Pageable.class.equals(parameterTypes[i])) {
 
-				Qualifier qualifier = findAnnotation(annotations[i]);
+				var qualifier = findAnnotation(annotations[i]);
 
 				if (null == qualifier) {
 					throw new IllegalStateException(
@@ -169,7 +168,7 @@ abstract class SpringDataAnnotationUtils {
 	@Nullable
 	private static Qualifier findAnnotation(Annotation[] annotations) {
 
-		for (Annotation annotation : annotations) {
+		for (var annotation : annotations) {
 			if (annotation instanceof Qualifier) {
 				return (Qualifier) annotation;
 			}

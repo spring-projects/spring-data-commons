@@ -184,14 +184,12 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 			return true;
 		}
 
-		if (!(obj instanceof Chunk<?>)) {
+		if (!(obj instanceof Chunk<?> that)) {
 			return false;
 		}
 
-		Chunk<?> that = (Chunk<?>) obj;
-
-		boolean contentEqual = this.content.equals(that.content);
-		boolean pageableEqual = this.pageable.equals(that.pageable);
+		var contentEqual = this.content.equals(that.content);
+		var pageableEqual = this.pageable.equals(that.pageable);
 
 		return contentEqual && pageableEqual;
 	}
@@ -203,7 +201,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	@Override
 	public int hashCode() {
 
-		int result = 17;
+		var result = 17;
 
 		result += 31 * pageable.hashCode();
 		result += 31 * content.hashCode();

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.web;
 
-import java.beans.PropertyDescriptor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,10 +32,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.Expression;
 import org.springframework.expression.TypedValue;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelParserConfiguration;
@@ -81,7 +78,7 @@ class MapDataBinder extends WebDataBinder {
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getTarget() {
 
-		Object target = super.getTarget();
+		var target = super.getTarget();
 
 		if (target == null) {
 			throw new IllegalStateException("Target bean should never be null!");
@@ -176,15 +173,15 @@ class MapDataBinder extends WebDataBinder {
 				throw new NotWritablePropertyException(type, propertyName);
 			}
 
-			PropertyPath leafProperty = getPropertyPath(propertyName).getLeafProperty();
-			TypeInformation<?> owningType = leafProperty.getOwningType();
-			TypeInformation<?> propertyType = leafProperty.getTypeInformation();
+			var leafProperty = getPropertyPath(propertyName).getLeafProperty();
+			var owningType = leafProperty.getOwningType();
+			var propertyType = leafProperty.getTypeInformation();
 
 			propertyType = propertyName.endsWith("]") ? propertyType.getActualType() : propertyType;
 
 			if (propertyType != null && conversionRequired(value, propertyType.getType())) {
 
-				PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(owningType.getType(),
+				var descriptor = BeanUtils.getPropertyDescriptor(owningType.getType(),
 						leafProperty.getSegment());
 
 				if (descriptor == null) {
@@ -192,8 +189,8 @@ class MapDataBinder extends WebDataBinder {
 							leafProperty.getSegment(), owningType.getType()));
 				}
 
-				MethodParameter methodParameter = new MethodParameter(descriptor.getReadMethod(), -1);
-				TypeDescriptor typeDescriptor = TypeDescriptor.nested(methodParameter, 0);
+				var methodParameter = new MethodParameter(descriptor.getReadMethod(), -1);
+				var typeDescriptor = TypeDescriptor.nested(methodParameter, 0);
 
 				if (typeDescriptor == null) {
 					throw new IllegalStateException(
@@ -209,7 +206,7 @@ class MapDataBinder extends WebDataBinder {
 					.withRootObject(map) //
 					.build();
 
-			Expression expression = PARSER.parseExpression(propertyName);
+			var expression = PARSER.parseExpression(propertyName);
 
 			try {
 				expression.setValue(context, value);
@@ -229,7 +226,7 @@ class MapDataBinder extends WebDataBinder {
 
 		private PropertyPath getPropertyPath(String propertyName) {
 
-			String plainPropertyPath = propertyName.replaceAll("\\[.*?\\]", "");
+			var plainPropertyPath = propertyName.replaceAll("\\[.*?\\]", "");
 			return PropertyPath.from(plainPropertyPath, type);
 		}
 
@@ -281,13 +278,13 @@ class MapDataBinder extends WebDataBinder {
 					return TypedValue.NULL;
 				}
 
-				PropertyPath path = PropertyPath.from(name, type);
+				var path = PropertyPath.from(name, type);
 
 				try {
 					return super.read(context, target, name);
 				} catch (AccessException o_O) {
 
-					Object emptyResult = path.isCollection() ? CollectionFactory.createCollection(List.class, 0)
+					var emptyResult = path.isCollection() ? CollectionFactory.createCollection(List.class, 0)
 							: CollectionFactory.createMap(Map.class, 0);
 
 					((Map<String, Object>) target).put(name, emptyResult);
@@ -307,9 +304,9 @@ class MapDataBinder extends WebDataBinder {
 			 */
 			private TypeDescriptor getDescriptor(PropertyPath path, Object emptyValue) {
 
-				Class<?> actualPropertyType = path.getType();
+				var actualPropertyType = path.getType();
 
-				TypeDescriptor valueDescriptor = conversionService.canConvert(String.class, actualPropertyType)
+				var valueDescriptor = conversionService.canConvert(String.class, actualPropertyType)
 						? TypeDescriptor.valueOf(String.class)
 						: TypeDescriptor.valueOf(HashMap.class);
 

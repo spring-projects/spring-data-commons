@@ -32,9 +32,9 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Parser to populate the given {@link ClassPathScanningCandidateComponentProvider} with {@link TypeFilter}s parsed from
@@ -85,13 +85,13 @@ public class TypeFilterParser {
 	 */
 	public Collection<TypeFilter> parseTypeFilters(Element element, Type type) {
 
-		NodeList nodeList = element.getChildNodes();
+		var nodeList = element.getChildNodes();
 		Collection<TypeFilter> filters = new HashSet<>();
 
-		for (int i = 0; i < nodeList.getLength(); i++) {
+		for (var i = 0; i < nodeList.getLength(); i++) {
 
-			Node node = nodeList.item(i);
-			Element childElement = type.getElement(node);
+			var node = nodeList.item(i);
+			var childElement = type.getElement(node);
 
 			if (childElement == null) {
 				continue;
@@ -116,12 +116,12 @@ public class TypeFilterParser {
 	 */
 	protected TypeFilter createTypeFilter(Element element, ClassLoader classLoader) {
 
-		String filterType = element.getAttribute(FILTER_TYPE_ATTRIBUTE);
-		String expression = element.getAttribute(FILTER_EXPRESSION_ATTRIBUTE);
+		var filterType = element.getAttribute(FILTER_TYPE_ATTRIBUTE);
+		var expression = element.getAttribute(FILTER_EXPRESSION_ATTRIBUTE);
 
 		try {
 
-			FilterType filter = FilterType.fromString(filterType);
+			var filter = FilterType.fromString(filterType);
 			return filter.getFilter(expression, classLoader);
 
 		} catch (ClassNotFoundException ex) {
@@ -136,7 +136,7 @@ public class TypeFilterParser {
 	 * @author Oliver Gierke
 	 * @see #getFilter(String, ClassLoader)
 	 */
-	private static enum FilterType {
+	private enum FilterType {
 
 		ANNOTATION {
 			@Override
@@ -171,7 +171,7 @@ public class TypeFilterParser {
 			@Override
 			public TypeFilter getFilter(String expression, ClassLoader classLoader) throws ClassNotFoundException {
 
-				Class<?> filterClass = classLoader.loadClass(expression);
+				var filterClass = classLoader.loadClass(expression);
 				if (!TypeFilter.class.isAssignableFrom(filterClass)) {
 					throw new IllegalArgumentException(
 							"Class is not assignable to [" + TypeFilter.class.getName() + "]: " + expression);
@@ -199,7 +199,7 @@ public class TypeFilterParser {
 		 */
 		static FilterType fromString(String typeString) {
 
-			for (FilterType filter : FilterType.values()) {
+			for (var filter : FilterType.values()) {
 				if (filter.name().equalsIgnoreCase(typeString)) {
 					return filter;
 				}
@@ -209,13 +209,13 @@ public class TypeFilterParser {
 		}
 	}
 
-	public static enum Type {
+	public enum Type {
 
 		INCLUDE("include-filter"), EXCLUDE("exclude-filter");
 
-		private String elementName;
+		private final String elementName;
 
-		private Type(String elementName) {
+		Type(String elementName) {
 			this.elementName = elementName;
 		}
 
@@ -230,7 +230,7 @@ public class TypeFilterParser {
 		Element getElement(Node node) {
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				String localName = node.getLocalName();
+				var localName = node.getLocalName();
 				if (elementName.equals(localName)) {
 					return (Element) node;
 				}

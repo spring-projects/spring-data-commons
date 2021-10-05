@@ -107,7 +107,7 @@ public abstract class AuditingHandlerSupport {
 	 * @param auditor can be {@literal null}.
 	 * @param source must not be {@literal null}.
 	 */
-	<T> T markCreated(Auditor auditor, T source) {
+	<T> T markCreated(Auditor<?> auditor, T source) {
 
 		Assert.notNull(source, "Source entity must not be null!");
 
@@ -120,16 +120,16 @@ public abstract class AuditingHandlerSupport {
 	 * @param auditor
 	 * @param source
 	 */
-	<T> T markModified(Auditor auditor, T source) {
+	<T> T markModified(Auditor<?> auditor, T source) {
 
 		Assert.notNull(source, "Source entity must not be null!");
 
 		return touch(auditor, source, false);
 	}
 
-	private <T> T touch(Auditor auditor, T target, boolean isNew) {
+	private <T> T touch(Auditor<?> auditor, T target, boolean isNew) {
 
-		Optional<AuditableBeanWrapper<T>> wrapper = factory.getBeanWrapperFor(target);
+		var wrapper = factory.getBeanWrapperFor(target);
 
 		return wrapper.map(it -> {
 
@@ -157,7 +157,7 @@ public abstract class AuditingHandlerSupport {
 	 * @param isNew
 	 * @return
 	 */
-	private void touchAuditor(Auditor auditor, AuditableBeanWrapper<?> wrapper, boolean isNew) {
+	private void touchAuditor(Auditor<?> auditor, AuditableBeanWrapper<?> wrapper, boolean isNew) {
 
 		if(!auditor.isPresent()) {
 			return;
@@ -185,7 +185,7 @@ public abstract class AuditingHandlerSupport {
 
 		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null!");
 
-		Optional<TemporalAccessor> now = dateTimeProvider.getNow();
+		var now = dateTimeProvider.getNow();
 
 		Assert.notNull(now, () -> String.format("Now must not be null! Returned by: %s!", dateTimeProvider.getClass()));
 

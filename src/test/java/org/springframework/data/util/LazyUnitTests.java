@@ -49,7 +49,7 @@ class LazyUnitTests {
 	@Test
 	void createsLazyFromValue() {
 
-		Object value = new Object();
+		var value = new Object();
 
 		assertThat(Lazy.of(value).get()).isEqualTo(value);
 	}
@@ -57,9 +57,9 @@ class LazyUnitTests {
 	@Test
 	void returnsLastValueInChain() {
 
-		Object reference = new Object();
+		var reference = new Object();
 
-		Object foo = Lazy.of(() -> null) //
+		var foo = Lazy.of(() -> null) //
 				.or(() -> null) //
 				.or(() -> reference) //
 				.get();
@@ -70,7 +70,7 @@ class LazyUnitTests {
 	@Test
 	void returnsCachedInstanceOnMultipleAccesses() {
 
-		Lazy<Object> lazy = Lazy.of(() -> new Object());
+		var lazy = Lazy.of(() -> new Object());
 
 		assertThat(lazy.get()).isSameAs(lazy.get());
 	}
@@ -95,10 +95,10 @@ class LazyUnitTests {
 	@Test
 	void ignoresElseIfValuePresent() {
 
-		Object first = new Object();
-		Object second = new Object();
+		var first = new Object();
+		var second = new Object();
 
-		Lazy<Object> nonEmpty = Lazy.of(() -> first);
+		var nonEmpty = Lazy.of(() -> first);
 
 		assertThat(nonEmpty.orElse(second)).isEqualTo(first);
 		assertThat(nonEmpty.or(second).get()).isEqualTo(first);
@@ -108,9 +108,9 @@ class LazyUnitTests {
 	@Test
 	void returnsElseValue() {
 
-		Object reference = new Object();
+		var reference = new Object();
 
-		Lazy<Object> empty = Lazy.of(() -> null);
+		var empty = Lazy.of(() -> null);
 
 		assertThat(empty.orElse(reference)).isEqualTo(reference);
 		assertThat(empty.or(reference).get()).isEqualTo(reference);

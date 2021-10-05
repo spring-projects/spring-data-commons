@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.ConfigurablePropertyAccessor;
+
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.NotWritablePropertyException;
 import org.springframework.beans.PropertyValues;
@@ -47,9 +47,9 @@ class MapDataBinderUnitTests {
 	@Test // DATACMNS-630
 	void honorsFormattingAnnotationOnAccessor() {
 
-		Date reference = new Date();
+		var reference = new Date();
 
-		MutablePropertyValues values = new MutablePropertyValues();
+		var values = new MutablePropertyValues();
 		values.add("foo.date", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(reference));
 
 		Map<String, Object> nested = new HashMap<>();
@@ -61,10 +61,10 @@ class MapDataBinderUnitTests {
 	@Test // DATACMNS-630
 	void bindsNestedCollectionElement() {
 
-		MutablePropertyValues values = new MutablePropertyValues();
+		var values = new MutablePropertyValues();
 		values.add("foo.bar.fooBar[0]", "String");
 
-		Map<String, Object> result = bind(values);
+		var result = bind(values);
 
 		List<String> list = new ArrayList<>();
 		list.add("String");
@@ -75,11 +75,11 @@ class MapDataBinderUnitTests {
 	@Test // DATACMNS-630
 	void bindsNestedPrimitive() {
 
-		MutablePropertyValues values = new MutablePropertyValues();
+		var values = new MutablePropertyValues();
 		values.add("foo.firstname", "Dave");
 		values.add("foo.lastname", "Matthews");
 
-		Map<String, Object> result = bind(values);
+		var result = bind(values);
 
 		Map<String, Object> dave = new HashMap<>();
 		dave.put("firstname", "Dave");
@@ -91,7 +91,7 @@ class MapDataBinderUnitTests {
 	@Test // DATACMNS-630
 	void skipsPropertyNotExposedByTheTypeHierarchy() {
 
-		MutablePropertyValues values = new MutablePropertyValues();
+		var values = new MutablePropertyValues();
 		values.add("somethingWeird", "Value");
 
 		assertThat(bind(values)).isEqualTo(Collections.emptyMap());
@@ -100,7 +100,7 @@ class MapDataBinderUnitTests {
 	@Test // DATACMNS-1264
 	void dropsMapExpressionsForCollectionReferences() {
 
-		ConfigurablePropertyAccessor accessor = new MapDataBinder(Bar.class, new DefaultFormattingConversionService())
+		var accessor = new MapDataBinder(Bar.class, new DefaultFormattingConversionService())
 				.getPropertyAccessor();
 
 		assertThatExceptionOfType(NotWritablePropertyException.class) //
@@ -111,7 +111,7 @@ class MapDataBinderUnitTests {
 	@Test // DATACMNS-1264
 	void rejectsExpressionContainingTypeExpression() {
 
-		ConfigurablePropertyAccessor accessor = new MapDataBinder(Bar.class, new DefaultFormattingConversionService())
+		var accessor = new MapDataBinder(Bar.class, new DefaultFormattingConversionService())
 				.getPropertyAccessor();
 
 		assertThatExceptionOfType(NotWritablePropertyException.class) //
@@ -121,7 +121,7 @@ class MapDataBinderUnitTests {
 
 	private static Map<String, Object> bind(PropertyValues values) {
 
-		MapDataBinder binder = new MapDataBinder(Root.class, new DefaultFormattingConversionService());
+		var binder = new MapDataBinder(Root.class, new DefaultFormattingConversionService());
 		binder.bind(values);
 
 		return binder.getTarget();

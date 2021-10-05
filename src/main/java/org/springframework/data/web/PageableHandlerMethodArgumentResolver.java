@@ -18,7 +18,6 @@ package org.springframework.data.web;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -84,11 +83,11 @@ public class PageableHandlerMethodArgumentResolver extends PageableHandlerMethod
 	public Pageable resolveArgument(MethodParameter methodParameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
-		String page = webRequest.getParameter(getParameterNameToUse(getPageParameterName(), methodParameter));
-		String pageSize = webRequest.getParameter(getParameterNameToUse(getSizeParameterName(), methodParameter));
+		var page = webRequest.getParameter(getParameterNameToUse(getPageParameterName(), methodParameter));
+		var pageSize = webRequest.getParameter(getParameterNameToUse(getSizeParameterName(), methodParameter));
 
-		Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
-		Pageable pageable = getPageable(methodParameter, page, pageSize);
+		var sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
+		var pageable = getPageable(methodParameter, page, pageSize);
 
 		if (sort.isSorted()) {
 			return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);

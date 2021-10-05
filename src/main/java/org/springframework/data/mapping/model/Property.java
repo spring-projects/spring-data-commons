@@ -223,11 +223,9 @@ public class Property {
 			return true;
 		}
 
-		if (!(obj instanceof Property)) {
+		if (!(obj instanceof Property that)) {
 			return false;
 		}
-
-		Property that = (Property) obj;
 
 		return this.field.isPresent() ? this.field.equals(that.field) : this.descriptor.equals(that.descriptor);
 	}
@@ -278,8 +276,8 @@ public class Property {
 
 	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
 
-		AtomicReference<Method> resultHolder = new AtomicReference<>();
-		String methodName = String.format("with%s", StringUtils.capitalize(propertyName));
+		var resultHolder = new AtomicReference<Method>();
+		var methodName = String.format("with%s", StringUtils.capitalize(propertyName));
 
 		ReflectionUtils.doWithMethods(owner.getType(), it -> {
 
@@ -288,7 +286,7 @@ public class Property {
 			}
 		}, it -> isMethodWithSingleParameterOfType(it, methodName, rawType));
 
-		Method method = resultHolder.get();
+		var method = resultHolder.get();
 		return method != null ? Optional.of(method) : Optional.empty();
 	}
 

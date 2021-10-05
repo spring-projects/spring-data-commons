@@ -53,7 +53,7 @@ class DefaultMethodsMetadataReader implements MethodsMetadataReader {
 
 	DefaultMethodsMetadataReader(Resource resource, @Nullable ClassLoader classLoader) throws IOException {
 
-		MethodsMetadataReadingVisitor visitor = new MethodsMetadataReadingVisitor(classLoader);
+		var visitor = new MethodsMetadataReadingVisitor(classLoader);
 		createClassReader(resource).accept(visitor, ClassReader.SKIP_DEBUG);
 
 		this.resource = resource;
@@ -131,7 +131,7 @@ class DefaultMethodsMetadataReader implements MethodsMetadataReader {
 				return super.visitMethod(access, name, desc, signature, exceptions);
 			}
 
-			MethodMetadataReadingVisitor visitor = new MethodMetadataReadingVisitor(name, access, getClassName(),
+			var visitor = new MethodMetadataReadingVisitor(name, access, getClassName(),
 					Type.getReturnType(desc).getClassName(), this.classLoader, this.methodMetadataSet);
 
 			this.methodMetadataSet.add(visitor);

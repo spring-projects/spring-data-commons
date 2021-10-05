@@ -107,9 +107,9 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	@Override
 	protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 
-		boolean isNonRepositoryInterface = !ClassUtils.isGenericRepositoryInterface(beanDefinition.getBeanClassName());
-		boolean isTopLevelType = !beanDefinition.getMetadata().hasEnclosingClass();
-		boolean isConsiderNestedRepositories = isConsiderNestedRepositoryInterfaces();
+		var isNonRepositoryInterface = !ClassUtils.isGenericRepositoryInterface(beanDefinition.getBeanClassName());
+		var isTopLevelType = !beanDefinition.getMetadata().hasEnclosingClass();
+		var isConsiderNestedRepositories = isConsiderNestedRepositoryInterfaces();
 
 		return isNonRepositoryInterface && (isTopLevelType || isConsiderNestedRepositories);
 	}
@@ -120,9 +120,9 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	@Override
 	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
 
-		Set<BeanDefinition> candidates = super.findCandidateComponents(basePackage);
+		var candidates = super.findCandidateComponents(basePackage);
 
-		for (BeanDefinition candidate : candidates) {
+		for (var candidate : candidates) {
 			if (candidate instanceof AnnotatedBeanDefinition) {
 				AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 			}
@@ -214,7 +214,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
 				throws IOException {
 
-			for (TypeFilter filter : delegates) {
+			for (var filter : delegates) {
 				if (!filter.match(metadataReader, metadataReaderFactory)) {
 					return false;
 				}

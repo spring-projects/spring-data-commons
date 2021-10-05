@@ -39,7 +39,7 @@ class AuditorUnitTests {
 	@Test // DATACMNS-1231
 	void auditorOfMustNotWrapOtherAuditor() {
 
-		Auditor<String> source = Auditor.of("batman");
+		var source = Auditor.of("batman");
 		assertThat(Auditor.of(source)).isSameAs(source);
 	}
 

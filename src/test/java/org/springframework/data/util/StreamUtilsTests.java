@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.util.StreamUtils.*;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,9 +35,9 @@ public class StreamUtilsTests {
 	@Test // DATACMNS-650
 	public void shouldConvertAnIteratorToAStream() {
 
-		List<String> input = Arrays.asList("a", "b", "c");
-		Stream<String> stream = createStreamFromIterator(input.iterator());
-		List<String> output = stream.collect(Collectors.toList());
+		var input = Arrays.asList("a", "b", "c");
+		var stream = createStreamFromIterator(input.iterator());
+		var output = stream.collect(Collectors.toList());
 
 		assertThat(input).isEqualTo(output);
 	}
@@ -46,8 +45,8 @@ public class StreamUtilsTests {
 	@Test // #2426
 	void combinesInfiniteStreamCorrectly() {
 
-		Stream<Long> indices = Stream.iterate(1L, n -> n + 1);
-		Stream<String> lines = Stream.of("first line", "second line");
+		var indices = Stream.iterate(1L, n -> n + 1);
+		var lines = Stream.of("first line", "second line");
 
 		assertThat(StreamUtils.zip(indices, lines, (index, line) -> index + ":" + line).count()).isEqualTo(2);
 	}

@@ -17,7 +17,6 @@ package org.springframework.data.util;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Type;
 
 import org.springframework.lang.NonNull;
 
@@ -61,7 +60,7 @@ class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 	@NonNull
 	protected TypeInformation<?> doGetComponentType() {
 
-		Type componentType = type.getGenericComponentType();
+		var componentType = type.getGenericComponentType();
 		return createInfo(componentType);
 	}
 

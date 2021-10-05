@@ -68,7 +68,7 @@ class DefaultTypeMapperUnitTests {
 	@Test
 	void cachesResolvedTypeInformation() {
 
-		TypeInformation<?> information = typeMapper.readType(source);
+		var information = typeMapper.readType(source);
 		assertThat(information).isEqualTo(STRING_TYPE_INFO);
 		verify(mapper, times(1)).resolveTypeFrom(ALIAS);
 
@@ -79,7 +79,7 @@ class DefaultTypeMapperUnitTests {
 	@Test // DATACMNS-349
 	void returnsTypeAliasForInformation() {
 
-		Alias alias = Alias.of("alias");
+		var alias = Alias.of("alias");
 		doReturn(alias).when(mapper).createAliasFor(STRING_TYPE_INFO);
 
 		assertThat(this.typeMapper.getAliasFor(STRING_TYPE_INFO)).isEqualTo(alias);
@@ -88,14 +88,14 @@ class DefaultTypeMapperUnitTests {
 	@Test // DATACMNS-783
 	void specializesRawSourceTypeUsingGenericContext() {
 
-		ClassTypeInformation<Foo> root = ClassTypeInformation.from(Foo.class);
-		TypeInformation<?> propertyType = root.getProperty("abstractBar");
+		var root = ClassTypeInformation.from(Foo.class);
+		var propertyType = root.getProperty("abstractBar");
 		TypeInformation<?> barType = ClassTypeInformation.from(Bar.class);
 
 		doReturn(Alias.of(barType)).when(accessor).readAliasFrom(source);
 		doReturn(barType).when(mapper).resolveTypeFrom(Alias.of(barType));
 
-		TypeInformation<?> result = typeMapper.readType(source, propertyType);
+		var result = typeMapper.readType(source, propertyType);
 
 		assertThat(result).isInstanceOf(TypeInformation.class);
 

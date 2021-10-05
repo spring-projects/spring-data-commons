@@ -71,8 +71,8 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	@Override
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
-		Method method = invocation.getMethod();
-		Nullability nullability = nullabilityCache.get(method);
+		var method = invocation.getMethod();
+		var nullability = nullabilityCache.get(method);
 
 		if (nullability == null) {
 
@@ -80,9 +80,9 @@ public class MethodInvocationValidator implements MethodInterceptor {
 			nullabilityCache.put(method, nullability);
 		}
 
-		Object[] arguments = invocation.getArguments();
+		var arguments = invocation.getArguments();
 
-		for (int i = 0; i < method.getParameterCount(); i++) {
+		for (var i = 0; i < method.getParameterCount(); i++) {
 
 			if (nullability.isNullableParameter(i)) {
 				continue;
@@ -95,7 +95,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 			}
 		}
 
-		Object result = invocation.proceed();
+		var result = invocation.proceed();
 
 		if (result == null && !nullability.isNullableReturn()) {
 			throw new EmptyResultDataAccessException("Result must not be null!", 1);
@@ -118,13 +118,13 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 		static Nullability of(Method method, ParameterNameDiscoverer discoverer) {
 
-			boolean nullableReturn = isNullableParameter(new MethodParameter(method, -1));
-			boolean[] nullableParameters = new boolean[method.getParameterCount()];
-			MethodParameter[] methodParameters = new MethodParameter[method.getParameterCount()];
+			var nullableReturn = isNullableParameter(new MethodParameter(method, -1));
+			var nullableParameters = new boolean[method.getParameterCount()];
+			var methodParameters = new MethodParameter[method.getParameterCount()];
 
-			for (int i = 0; i < method.getParameterCount(); i++) {
+			for (var i = 0; i < method.getParameterCount(); i++) {
 
-				MethodParameter parameter = new MethodParameter(method, i);
+				var parameter = new MethodParameter(method, i);
 				parameter.initParameterNameDiscovery(discoverer);
 				nullableParameters[i] = isNullableParameter(parameter);
 				methodParameters[i] = parameter;
@@ -135,7 +135,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 		String getMethodParameterName(int index) {
 
-			String parameterName = methodParameters[index].getParameterName();
+			var parameterName = methodParameters[index].getParameterName();
 
 			if (parameterName == null) {
 				parameterName = String.format("of type %s at index %d",
@@ -183,11 +183,9 @@ public class MethodInvocationValidator implements MethodInterceptor {
 				return true;
 			}
 
-			if (!(o instanceof Nullability)) {
+			if (!(o instanceof Nullability that)) {
 				return false;
 			}
-
-			Nullability that = (Nullability) o;
 
 			if (nullableReturn != that.nullableReturn) {
 				return false;
@@ -206,7 +204,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		 */
 		@Override
 		public int hashCode() {
-			int result = (nullableReturn ? 1 : 0);
+			var result = (nullableReturn ? 1 : 0);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(nullableParameters);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(methodParameters);
 			return result;

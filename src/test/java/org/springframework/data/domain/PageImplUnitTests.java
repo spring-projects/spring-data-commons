@@ -35,7 +35,7 @@ class PageImplUnitTests {
 	@Test
 	void assertEqualsForSimpleSetup() {
 
-		PageImpl<String> page = new PageImpl<>(Collections.singletonList("Foo"));
+		var page = new PageImpl<String>(Collections.singletonList("Foo"));
 
 		assertEqualsAndHashcode(page, page);
 		assertEqualsAndHashcode(page, new PageImpl<>(Collections.singletonList("Foo")));
@@ -45,9 +45,9 @@ class PageImplUnitTests {
 	void assertEqualsForComplexSetup() {
 
 		Pageable pageable = PageRequest.of(0, 10);
-		List<String> content = Collections.singletonList("Foo");
+		var content = Collections.singletonList("Foo");
 
-		PageImpl<String> page = new PageImpl<>(content, pageable, 100);
+		var page = new PageImpl<String>(content, pageable, 100);
 
 		assertEqualsAndHashcode(page, page);
 		assertEqualsAndHashcode(page, new PageImpl<>(content, pageable, 100));
@@ -127,7 +127,7 @@ class PageImplUnitTests {
 	@Test // DATACMNS-635
 	void transformsPageCorrectly() {
 
-		Page<Integer> transformed = new PageImpl<>(Arrays.asList("foo", "bar"), PageRequest.of(0, 2), 10)
+		var transformed = new PageImpl<>(Arrays.asList("foo", "bar"), PageRequest.of(0, 2), 10)
 				.map(String::length);
 
 		assertThat(transformed.getContent()).hasSize(2).contains(3, 3);

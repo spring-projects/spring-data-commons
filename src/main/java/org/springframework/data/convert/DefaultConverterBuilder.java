@@ -44,19 +44,9 @@ import org.springframework.util.ObjectUtils;
  * @soundtrack John Mayer - Still Feel Like Your Man (The Search for Everything)
  */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-class DefaultConverterBuilder<S, T>
+record DefaultConverterBuilder<S, T> (ConvertiblePair convertiblePair,
+		Optional<Function<? super S, ? extends T>> writing, Optional<Function<? super T, ? extends S>> reading)
 		implements ConverterAware, ReadingConverterBuilder<T, S>, WritingConverterBuilder<S, T> {
-
-	private final ConvertiblePair convertiblePair;
-	private final Optional<Function<? super S, ? extends T>> writing;
-	private final Optional<Function<? super T, ? extends S>> reading;
-
-	DefaultConverterBuilder(ConvertiblePair convertiblePair, Optional<Function<? super S, ? extends T>> writing,
-			Optional<Function<? super T, ? extends S>> reading) {
-		this.convertiblePair = convertiblePair;
-		this.writing = writing;
-		this.reading = reading;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -172,11 +162,9 @@ class DefaultConverterBuilder<S, T>
 				return true;
 			}
 
-			if (!(o instanceof ConfigurableGenericConverter)) {
+			if (!(o instanceof ConfigurableGenericConverter<?, ?> that)) {
 				return false;
 			}
-
-			ConfigurableGenericConverter<?, ?> that = (ConfigurableGenericConverter<?, ?>) o;
 
 			if (!ObjectUtils.nullSafeEquals(convertiblePair, that.convertiblePair)) {
 				return false;
@@ -191,7 +179,7 @@ class DefaultConverterBuilder<S, T>
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(convertiblePair);
+			var result = ObjectUtils.nullSafeHashCode(convertiblePair);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(function);
 			return result;
 		}

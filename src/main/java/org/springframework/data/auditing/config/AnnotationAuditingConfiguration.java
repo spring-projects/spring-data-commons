@@ -16,7 +16,6 @@
 package org.springframework.data.auditing.config;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
 
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
@@ -47,7 +46,7 @@ public class AnnotationAuditingConfiguration implements AuditingConfiguration {
 		Assert.notNull(metadata, "AnnotationMetadata must not be null!");
 		Assert.notNull(annotation, "Annotation must not be null!");
 
-		Map<String, Object> attributesSource = metadata.getAnnotationAttributes(annotation.getName());
+		var attributesSource = metadata.getAnnotationAttributes(annotation.getName());
 
 		if (attributesSource == null) {
 			throw new IllegalArgumentException(String.format(MISSING_ANNOTATION_ATTRIBUTES, annotation, metadata));

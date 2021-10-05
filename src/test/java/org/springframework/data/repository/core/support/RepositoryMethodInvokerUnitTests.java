@@ -175,7 +175,7 @@ class RepositoryMethodInvokerUnitTests {
 	@Test // DATACMNS-1764
 	void capturesStreamDurationAsSumOfDelayTillCancel() throws Exception {
 
-		Delays delays = delays(250, 100);
+		var delays = delays(250, 100);
 		when(query.execute(any())).thenReturn(Stream.generate(() -> {
 
 			delays.delay();
@@ -246,7 +246,7 @@ class RepositoryMethodInvokerUnitTests {
 	@Test // DATACMNS-1764
 	void capturesKotlinSuspendFunctionsCorrectly() throws Exception {
 
-		Flux<TestDummy> result = Flux.just(new TestDummy());
+		var result = Flux.just(new TestDummy());
 		when(query.execute(any())).thenReturn(result);
 
 		Flow<TestDummy> flow = new RepositoryMethodInvokerStub(MyCoroutineRepository.class, multicaster,
@@ -293,7 +293,7 @@ class RepositoryMethodInvokerUnitTests {
 		Delays(Integer... delays) {
 
 			this.delays = new ArrayBlockingQueue(delays.length);
-			for (Integer delay : delays) {
+			for (var delay : delays) {
 				this.delays.add(delay);
 			}
 		}

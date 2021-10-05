@@ -63,7 +63,7 @@ public final class ReflectionUtils {
 	public static <T> T createInstanceIfPresent(String classname, T defaultInstance) {
 
 		try {
-			Class<?> type = ClassUtils.forName(classname, ClassUtils.getDefaultClassLoader());
+			var type = ClassUtils.forName(classname, ClassUtils.getDefaultClassLoader());
 			return (T) BeanUtils.instantiateClass(type);
 		} catch (Exception e) {
 			return defaultInstance;
@@ -190,12 +190,12 @@ public final class ReflectionUtils {
 		Assert.notNull(type, "Type must not be null!");
 		Assert.notNull(filter, "Filter must not be null!");
 
-		Class<?> targetClass = type;
+		var targetClass = type;
 		Field foundField = null;
 
 		while (targetClass != Object.class) {
 
-			for (Field field : targetClass.getDeclaredFields()) {
+			for (var field : targetClass.getDeclaredFields()) {
 
 				if (!filter.matches(field)) {
 					continue;
@@ -228,7 +228,7 @@ public final class ReflectionUtils {
 	 */
 	public static Field findRequiredField(Class<?> type, String name) {
 
-		Field result = org.springframework.util.ReflectionUtils.findField(type, name);
+		var result = org.springframework.util.ReflectionUtils.findField(type, name);
 
 		if (result == null) {
 			throw new IllegalArgumentException(String.format("Unable to find field %s on %s!", name, type));
@@ -283,11 +283,11 @@ public final class ReflectionUtils {
 		Assert.notNull(name, "Method name must not be null");
 
 		Method result = null;
-		Class<?> searchType = type;
+		var searchType = type;
 		while (searchType != null) {
-			Method[] methods = (searchType.isInterface() ? searchType.getMethods()
+			var methods = (searchType.isInterface() ? searchType.getMethods()
 					: org.springframework.util.ReflectionUtils.getDeclaredMethods(searchType));
-			for (Method method : methods) {
+			for (var method : methods) {
 				if (name.equals(method.getName()) && hasSameParams(method, parameterTypes)) {
 					if (result == null || result.isSynthetic() || result.isBridge()) {
 						result = method;
@@ -299,7 +299,7 @@ public final class ReflectionUtils {
 
 		if (result == null) {
 
-			String parameterTypeNames = Arrays.stream(parameterTypes) //
+			var parameterTypeNames = Arrays.stream(parameterTypes) //
 					.map(Object::toString) //
 					.collect(Collectors.joining(", "));
 
@@ -326,7 +326,7 @@ public final class ReflectionUtils {
 		Assert.notNull(method, "Method must not be null!");
 
 		Stream<Class<?>> returnType = Stream.of(method.getReturnType());
-		Stream<Class<?>> parameterTypes = Arrays.stream(method.getParameterTypes());
+		var parameterTypes = Arrays.stream(method.getParameterTypes());
 
 		return Stream.concat(returnType, parameterTypes);
 	}
@@ -350,7 +350,7 @@ public final class ReflectionUtils {
 				.map(ResolvableType::getRawClass)//
 				.collect(Collectors.toList());
 
-		Method method = org.springframework.util.ReflectionUtils.findMethod(type, name,
+		var method = org.springframework.util.ReflectionUtils.findMethod(type, name,
 				collect.toArray(new Class<?>[collect.size()]));
 
 		return Optional.ofNullable(method)//
@@ -364,11 +364,11 @@ public final class ReflectionUtils {
 			return false;
 		}
 
-		int index = 0;
+		var index = 0;
 
-		for (Class<?> argumentType : parameterTypes) {
+		for (var argumentType : parameterTypes) {
 
-			Object argument = arguments[index];
+			var argument = arguments[index];
 
 			// Reject nulls for primitives
 			if (argumentType.isPrimitive() && argument == null) {

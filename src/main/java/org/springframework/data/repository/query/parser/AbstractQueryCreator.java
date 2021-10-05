@@ -22,7 +22,6 @@ import java.util.Optional;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
-import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -106,17 +105,17 @@ public abstract class AbstractQueryCreator<T, S> {
 	private S createCriteria(PartTree tree) {
 
 		S base = null;
-		Iterator<Object> iterator = parameters.map(ParameterAccessor::iterator).orElse(Collections.emptyIterator());
+		var iterator = parameters.map(ParameterAccessor::iterator).orElse(Collections.emptyIterator());
 
-		for (OrPart node : tree) {
+		for (var node : tree) {
 
-			Iterator<Part> parts = node.iterator();
+			var parts = node.iterator();
 
 			if (!parts.hasNext()) {
 				throw new IllegalStateException(String.format("No part found in PartTree %s!", tree));
 			}
 
-			S criteria = create(parts.next(), iterator);
+			var criteria = create(parts.next(), iterator);
 
 			while (parts.hasNext()) {
 				criteria = and(parts.next(), criteria, iterator);

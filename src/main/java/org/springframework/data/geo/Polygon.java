@@ -111,11 +111,10 @@ public class Polygon implements Iterable<Point>, Shape {
 			return true;
 		}
 
-		if (!(o instanceof Polygon)) {
+		if (!(o instanceof Polygon that)) {
 			return false;
 		}
 
-		Polygon that = (Polygon) o;
 		return ObjectUtils.nullSafeEquals(points, that.points);
 	}
 

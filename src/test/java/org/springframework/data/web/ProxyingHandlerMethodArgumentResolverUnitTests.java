@@ -17,10 +17,10 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTests.SampleInterface;
@@ -40,8 +40,8 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void supportAnnotatedInterface() throws Exception {
 
-		Method method = Controller.class.getMethod("with", AnnotatedInterface.class);
-		MethodParameter parameter = new MethodParameter(method, 0);
+		var method = Controller.class.getMethod("with", AnnotatedInterface.class);
+		var parameter = new MethodParameter(method, 0);
 
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 	}
@@ -49,8 +49,8 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void supportsUnannotatedInterfaceFromUserPackage() throws Exception {
 
-		Method method = Controller.class.getMethod("with", SampleInterface.class);
-		MethodParameter parameter = new MethodParameter(method, 0);
+		var method = Controller.class.getMethod("with", SampleInterface.class);
+		var parameter = new MethodParameter(method, 0);
 
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 	}
@@ -58,8 +58,8 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void doesNotSupportUnannotatedInterfaceFromSpringNamespace() throws Exception {
 
-		Method method = Controller.class.getMethod("with", UnannotatedInterface.class);
-		MethodParameter parameter = new MethodParameter(method, 0);
+		var method = Controller.class.getMethod("with", UnannotatedInterface.class);
+		var parameter = new MethodParameter(method, 0);
 
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
 	}
@@ -67,8 +67,8 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void doesNotSupportCoreJavaType() throws Exception {
 
-		Method method = Controller.class.getMethod("with", List.class);
-		MethodParameter parameter = new MethodParameter(method, 0);
+		var method = Controller.class.getMethod("with", List.class);
+		var parameter = new MethodParameter(method, 0);
 
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
 	}

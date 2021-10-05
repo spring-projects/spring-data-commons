@@ -128,7 +128,7 @@ public class QuerydslBindings {
 
 		Assert.notEmpty(paths, "At least one path has to be provided!");
 
-		for (Path<?> path : paths) {
+		for (var path : paths) {
 			this.denyList.add(toDotPath(Optional.of(path)));
 		}
 	}
@@ -142,7 +142,7 @@ public class QuerydslBindings {
 
 		Assert.notEmpty(paths, "At least one path has to be provided!");
 
-		for (Path<?> path : paths) {
+		for (var path : paths) {
 			this.allowList.add(toDotPath(Optional.of(path)));
 		}
 	}
@@ -204,11 +204,11 @@ public class QuerydslBindings {
 
 		Assert.notNull(path, "PropertyPath must not be null!");
 
-		PathAndBinding<S, T> pathAndBinding = (PathAndBinding<S, T>) pathSpecs.get(createKey(path));
+		var pathAndBinding = (PathAndBinding<S, T>) pathSpecs.get(createKey(path));
 
 		if (pathAndBinding != null) {
 
-			Optional<MultiValueBinding<S, T>> binding = pathAndBinding.getBinding();
+			var binding = pathAndBinding.getBinding();
 
 			if (binding.isPresent()) {
 				return binding;
@@ -251,7 +251,7 @@ public class QuerydslBindings {
 		}
 
 		// fully-qualified path lookup
-		String key = createKey(type, path);
+		var key = createKey(type, path);
 		if (pathSpecs.containsKey(key)) {
 			return pathSpecs.get(key).getPath()//
 					.map(QuerydslPathInformation::of)//
@@ -303,9 +303,9 @@ public class QuerydslBindings {
 	 */
 	private boolean isPathVisible(PathInformation path) {
 
-		List<String> segments = Arrays.asList(path.toDotPath().split("\\."));
+		var segments = Arrays.asList(path.toDotPath().split("\\."));
 
-		for (int i = 1; i <= segments.size(); i++) {
+		for (var i = 1; i <= segments.size(); i++) {
 
 			if (!isPathVisible(StringUtils.collectionToDelimitedString(segments.subList(0, i), "."))) {
 
@@ -354,7 +354,7 @@ public class QuerydslBindings {
 
 	private static String fromRootPath(Path<?> path) {
 
-		Path<?> rootPath = path.getMetadata().getRootPath();
+		var rootPath = path.getMetadata().getRootPath();
 
 		if (rootPath == null) {
 			throw new IllegalStateException(String.format("Couldn't find root path on path %s!", path));
@@ -485,7 +485,7 @@ public class QuerydslBindings {
 
 			super.registerBinding(binding);
 
-			String dotPath = toDotPath(binding.getPath());
+			var dotPath = toDotPath(binding.getPath());
 
 			if (alias != null) {
 				QuerydslBindings.this.pathSpecs.put(alias, binding);
@@ -584,10 +584,9 @@ public class QuerydslBindings {
 			if (this == o) {
 				return true;
 			}
-			if (!(o instanceof PathAndBinding)) {
+			if (!(o instanceof PathAndBinding<?, ?> that)) {
 				return false;
 			}
-			PathAndBinding<?, ?> that = (PathAndBinding<?, ?>) o;
 			if (!ObjectUtils.nullSafeEquals(path, that.path)) {
 				return false;
 			}
@@ -600,7 +599,7 @@ public class QuerydslBindings {
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(path);
+			var result = ObjectUtils.nullSafeHashCode(path);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(binding);
 			return result;
 		}

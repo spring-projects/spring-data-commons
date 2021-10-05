@@ -44,15 +44,15 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		PreferredConstructor<? extends T, P> constructor = entity.getPersistenceConstructor();
+		var constructor = entity.getPersistenceConstructor();
 
 		if (constructor == null) {
 
 			try {
 				Class<?> clazz = entity.getType();
 				if (clazz.isArray()) {
-					Class<?> ctype = clazz;
-					int dims = 0;
+					var ctype = clazz;
+					var dims = 0;
 					while (ctype.isArray()) {
 						ctype = ctype.getComponentType();
 						dims++;
@@ -65,10 +65,10 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 				throw new MappingInstantiationException(entity, Collections.emptyList(), e);
 			}
 		}
-		int parameterCount = constructor.getConstructor().getParameterCount();
+		var parameterCount = constructor.getConstructor().getParameterCount();
 
-		Object[] params = parameterCount == 0 ? EMPTY_ARGS : new Object[parameterCount];
-		int i = 0;
+		var params = parameterCount == 0 ? EMPTY_ARGS : new Object[parameterCount];
+		var i = 0;
 		for (Parameter<?, P> parameter : constructor.getParameters()) {
 			params[i++] = provider.getParameterValue(parameter);
 		}

@@ -119,7 +119,7 @@ public abstract class SpringDataJaxb {
 
 		List<T> result = new ArrayList<>(source.size());
 
-		for (S element : source) {
+		for (var element : source) {
 			try {
 				result.add(adapter.unmarshal(element));
 			} catch (Exception o_O) {
@@ -146,7 +146,7 @@ public abstract class SpringDataJaxb {
 
 		List<S> result = new ArrayList<>();
 
-		for (T element : source) {
+		for (var element : source) {
 			try {
 				result.add(adapter.marshal(element));
 			} catch (Exception o_O) {

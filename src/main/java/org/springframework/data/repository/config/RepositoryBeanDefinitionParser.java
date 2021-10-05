@@ -18,17 +18,14 @@ package org.springframework.data.repository.config;
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.*;
 
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.parsing.ReaderContext;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.beans.factory.xml.XmlReaderContext;
-import org.springframework.core.env.Environment;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
 import org.w3c.dom.Element;
 
 /**
@@ -60,22 +57,22 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parser) {
 
-		XmlReaderContext readerContext = parser.getReaderContext();
+		var readerContext = parser.getReaderContext();
 
 		try {
 
-			ResourceLoader resourceLoader = ConfigurationUtils.getRequiredResourceLoader(readerContext);
-			Environment environment = readerContext.getEnvironment();
-			BeanDefinitionRegistry registry = parser.getRegistry();
+			var resourceLoader = ConfigurationUtils.getRequiredResourceLoader(readerContext);
+			var environment = readerContext.getEnvironment();
+			var registry = parser.getRegistry();
 
-			XmlRepositoryConfigurationSource configSource = new XmlRepositoryConfigurationSource(element, parser,
+			var configSource = new XmlRepositoryConfigurationSource(element, parser,
 					environment);
-			RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, resourceLoader,
+			var delegate = new RepositoryConfigurationDelegate(configSource, resourceLoader,
 					environment);
 
 			RepositoryConfigurationUtils.exposeRegistration(extension, registry, configSource);
 
-			for (BeanComponentDefinition definition : delegate.registerRepositoriesIn(registry, extension)) {
+			for (var definition : delegate.registerRepositoriesIn(registry, extension)) {
 				readerContext.fireComponentRegistered(definition);
 			}
 
@@ -100,7 +97,7 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 	 */
 	protected static boolean hasBean(Class<?> type, BeanDefinitionRegistry registry) {
 
-		String name = String.format("%s%s0", type.getName(), GENERATED_BEAN_NAME_SEPARATOR);
+		var name = String.format("%s%s0", type.getName(), GENERATED_BEAN_NAME_SEPARATOR);
 		return registry.containsBeanDefinition(name);
 	}
 }

@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Sort;
@@ -75,16 +74,16 @@ class OrderBySource {
 			return;
 		}
 
-		for (String part : clause.split(BLOCK_SPLIT)) {
+		for (var part : clause.split(BLOCK_SPLIT)) {
 
-			Matcher matcher = DIRECTION_SPLIT.matcher(part);
+			var matcher = DIRECTION_SPLIT.matcher(part);
 
 			if (!matcher.find()) {
 				throw new IllegalArgumentException(String.format(INVALID_ORDER_SYNTAX, part));
 			}
 
-			String propertyString = matcher.group(1);
-			String directionString = matcher.group(2);
+			var propertyString = matcher.group(1);
+			var directionString = matcher.group(2);
 
 			// No property, but only a direction keyword
 			if (DIRECTION_KEYWORDS.contains(propertyString) && directionString == null) {
@@ -109,7 +108,7 @@ class OrderBySource {
 
 		return domainClass.map(type -> {
 
-			PropertyPath propertyPath = PropertyPath.from(propertySource, type);
+			var propertyPath = PropertyPath.from(propertySource, type);
 			return direction.map(it -> new Order(it, propertyPath.toDotPath()))
 					.orElseGet(() -> Order.by(propertyPath.toDotPath()));
 

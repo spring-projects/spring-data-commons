@@ -18,7 +18,6 @@ package org.springframework.data.projection;
 import static org.assertj.core.api.Assertions.*;
 
 import java.beans.PropertyDescriptor;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,18 +44,18 @@ class SpelAwareProxyProjectionFactoryUnitTests {
 	@Test // DATAREST-221, DATACMNS-630
 	void exposesSpelInvokingMethod() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.firstname = "Dave";
 		customer.lastname = "Matthews";
 
-		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+		var excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 		assertThat(excerpt.getFullName()).isEqualTo("Dave Matthews");
 	}
 
 	@Test // DATACMNS-630
 	void excludesAtValueAnnotatedMethodsForInputProperties() {
 
-		List<PropertyDescriptor> properties = factory //
+		var properties = factory //
 				.getProjectionInformation(CustomerExcerpt.class) //
 				.getInputProperties();
 
@@ -68,7 +67,7 @@ class SpelAwareProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-89
 	void considersProjectionUsingAtValueNotClosed() {
 
-		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
+		var information = factory.getProjectionInformation(CustomerExcerpt.class);
 
 		assertThat(information.isClosed()).isFalse();
 	}
@@ -76,10 +75,10 @@ class SpelAwareProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-820
 	void setsValueUsingProjection() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.firstname = "Dave";
 
-		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+		var excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 		excerpt.setFirstname("Carl");
 
 		assertThat(customer.firstname).isEqualTo("Carl");
@@ -88,10 +87,10 @@ class SpelAwareProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-820
 	void settingNotWriteablePropertyFails() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.firstname = "Dave";
 
-		ProjectionWithNotWriteableProperty projection = factory.createProjection(ProjectionWithNotWriteableProperty.class,
+		var projection = factory.createProjection(ProjectionWithNotWriteableProperty.class,
 				customer);
 
 		assertThatExceptionOfType(NotWritablePropertyException.class).isThrownBy(() -> projection.setFirstName("Carl"));

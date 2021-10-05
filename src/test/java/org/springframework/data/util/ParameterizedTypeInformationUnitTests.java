@@ -55,11 +55,11 @@ class ParameterizedTypeInformationUnitTests {
 	@Test
 	void considersTypeInformationsWithDifferingParentsNotEqual() {
 
-		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, emptyMap());
-		TypeDiscoverer<Object> objectParent = new TypeDiscoverer<>(Object.class, emptyMap());
+		var stringParent = new TypeDiscoverer<String>(String.class, emptyMap());
+		var objectParent = new TypeDiscoverer<Object>(Object.class, emptyMap());
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, objectParent);
+		var first = new ParameterizedTypeInformation<Object>(one, stringParent);
+		var second = new ParameterizedTypeInformation<Object>(one, objectParent);
 
 		assertThat(first).isNotEqualTo(second);
 	}
@@ -67,10 +67,10 @@ class ParameterizedTypeInformationUnitTests {
 	@Test
 	void considersTypeInformationsWithSameParentsNotEqual() {
 
-		TypeDiscoverer<String> stringParent = new TypeDiscoverer<>(String.class, emptyMap());
+		var stringParent = new TypeDiscoverer<String>(String.class, emptyMap());
 
-		ParameterizedTypeInformation<Object> first = new ParameterizedTypeInformation<>(one, stringParent);
-		ParameterizedTypeInformation<Object> second = new ParameterizedTypeInformation<>(one, stringParent);
+		var first = new ParameterizedTypeInformation<Object>(one, stringParent);
+		var second = new ParameterizedTypeInformation<Object>(one, stringParent);
 
 		assertThat(first.equals(second)).isTrue();
 	}
@@ -79,8 +79,8 @@ class ParameterizedTypeInformationUnitTests {
 	void resolvesMapValueTypeCorrectly() {
 
 		TypeInformation<Foo> type = ClassTypeInformation.from(Foo.class);
-		TypeInformation<?> propertyType = type.getProperty("param");
-		TypeInformation<?> value = propertyType.getProperty("value");
+		var propertyType = type.getProperty("param");
+		var value = propertyType.getProperty("value");
 
 		assertThat(value.getType()).isEqualTo(String.class);
 		assertThat(propertyType.getMapValueType().getType()).isEqualTo(String.class);
@@ -102,8 +102,8 @@ class ParameterizedTypeInformationUnitTests {
 	@Test // DATACMNS-485
 	void hashCodeShouldBeConsistentWithEqualsForResolvedTypes() {
 
-		TypeInformation<?> first = from(First.class).getProperty("property");
-		TypeInformation<?> second = from(Second.class).getProperty("property");
+		var first = from(First.class).getProperty("property");
+		var second = from(Second.class).getProperty("property");
 
 		assertThat(first).isEqualTo(second);
 
@@ -114,7 +114,7 @@ class ParameterizedTypeInformationUnitTests {
 	@Test // DATACMNS-485
 	void getActualTypeShouldNotUnwrapParameterizedTypes() {
 
-		TypeInformation<?> type = from(First.class).getProperty("property");
+		var type = from(First.class).getProperty("property");
 
 		assertThat(type.getActualType()).isEqualTo(type);
 	}
@@ -131,7 +131,7 @@ class ParameterizedTypeInformationUnitTests {
 	@Test // DATACMNS-899
 	void returnsEmptyOptionalMapValueTypeForNonMapProperties() {
 
-		TypeInformation<?> typeInformation = ClassTypeInformation.from(Bar.class).getProperty("param");
+		var typeInformation = ClassTypeInformation.from(Bar.class).getProperty("param");
 		assertThat(typeInformation).isInstanceOf(ParameterizedTypeInformation.class);
 		assertThat(typeInformation.getMapValueType()).isNull();
 	}
@@ -139,9 +139,9 @@ class ParameterizedTypeInformationUnitTests {
 	@Test // DATACMNS-1135
 	void prefersLocalGenericsDeclarationOverParentBound() {
 
-		ClassTypeInformation<Candidate> candidate = ClassTypeInformation.from(Candidate.class);
+		var candidate = ClassTypeInformation.from(Candidate.class);
 
-		TypeInformation<?> componentType = candidate.getRequiredProperty("experiences.values").getRequiredComponentType();
+		var componentType = candidate.getRequiredProperty("experiences.values").getRequiredComponentType();
 		componentType = componentType.getRequiredProperty("responsibilities.values").getRequiredComponentType();
 
 		assertThat(componentType.getType()).isEqualTo(Responsibility.class);
@@ -150,7 +150,7 @@ class ParameterizedTypeInformationUnitTests {
 	@Test // DATACMNS-1196
 	void detectsNestedGenerics() {
 
-		TypeInformation<?> myList = ClassTypeInformation.from(EnumGeneric.class).getRequiredProperty("inner.myList");
+		var myList = ClassTypeInformation.from(EnumGeneric.class).getRequiredProperty("inner.myList");
 
 		assertThat(myList.getRequiredComponentType().getType()).isEqualTo(MyEnum.class);
 	}

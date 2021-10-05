@@ -35,7 +35,7 @@ class PrimaryRepositoryIntegrationTests {
 	@Test // DATACMNS-1591
 	void returnsPrimaryInstance() {
 
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
+		var context = new AnnotationConfigApplicationContext(Config.class);
 
 		// Two beans available but FirstRepository is the primary one
 		assertThatCode(() -> context.getBean(FirstRepository.class)).doesNotThrowAnyException();

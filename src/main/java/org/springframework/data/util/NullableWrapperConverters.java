@@ -107,7 +107,7 @@ public abstract class NullableWrapperConverters {
 
 		return supportsCache.computeIfAbsent(type, key -> {
 
-			for (WrapperType candidate : WRAPPER_TYPES) {
+			for (var candidate : WRAPPER_TYPES) {
 				if (candidate.getType().isAssignableFrom(key)) {
 					return true;
 				}
@@ -127,7 +127,7 @@ public abstract class NullableWrapperConverters {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		for (WrapperType candidate : UNWRAPPER_TYPES) {
+		for (var candidate : UNWRAPPER_TYPES) {
 			if (candidate.getType().isAssignableFrom(type)) {
 				return true;
 			}
@@ -138,7 +138,7 @@ public abstract class NullableWrapperConverters {
 
 	public static boolean isSingleValue(Class<?> type) {
 
-		for (WrapperType candidate : WRAPPER_TYPES) {
+		for (var candidate : WRAPPER_TYPES) {
 			if (candidate.getType().isAssignableFrom(type)) {
 				return candidate.isSingleValue();
 			}
@@ -184,9 +184,9 @@ public abstract class NullableWrapperConverters {
 			return source;
 		}
 
-		for (Converter<Object, Object> converter : UNWRAPPERS) {
+		for (var converter : UNWRAPPERS) {
 
-			Object result = converter.convert(source);
+			var result = converter.convert(source);
 
 			if (result != source) {
 				return result;
@@ -206,9 +206,9 @@ public abstract class NullableWrapperConverters {
 
 		Assert.notNull(type, "type must not be null");
 
-		Class<?> rawType = type.getType();
+		var rawType = type.getType();
 
-		boolean needToUnwrap = supports(rawType) //
+		var needToUnwrap = supports(rawType) //
 				|| Stream.class.isAssignableFrom(rawType);
 
 		return needToUnwrap ? unwrapActualType(type.getRequiredComponentType()) : type;
@@ -267,8 +267,8 @@ public abstract class NullableWrapperConverters {
 				return null;
 			}
 
-			NullableWrapper wrapper = (NullableWrapper) source;
-			Object value = wrapper.getValue();
+			var wrapper = (NullableWrapper) source;
+			var value = wrapper.getValue();
 
 			return value == null ? nullValue : wrap(value);
 		}
@@ -519,11 +519,9 @@ public abstract class NullableWrapperConverters {
 				return true;
 			}
 
-			if (!(o instanceof WrapperType)) {
+			if (!(o instanceof WrapperType that)) {
 				return false;
 			}
-
-			WrapperType that = (WrapperType) o;
 
 			if (!ObjectUtils.nullSafeEquals(type, that.type)) {
 				return false;
@@ -538,7 +536,7 @@ public abstract class NullableWrapperConverters {
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(type);
+			var result = ObjectUtils.nullSafeHashCode(type);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(cardinality);
 			return result;
 		}

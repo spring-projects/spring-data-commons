@@ -76,9 +76,9 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-928
 	void exposesEventsExposedByEntityToPublisher() {
 
-		SomeEvent first = new SomeEvent();
-		SomeEvent second = new SomeEvent();
-		MultipleEvents entity = MultipleEvents.of(Arrays.asList(first, second));
+		var first = new SomeEvent();
+		var second = new SomeEvent();
+		var entity = MultipleEvents.of(Arrays.asList(first, second));
 
 		EventPublishingMethod.of(MultipleEvents.class).publishEventsFrom(entity, publisher);
 
@@ -89,8 +89,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-928
 	void exposesSingleEventByEntityToPublisher() {
 
-		SomeEvent event = new SomeEvent();
-		OneEvent entity = OneEvent.of(event);
+		var event = new SomeEvent();
+		var entity = OneEvent.of(event);
 
 		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(entity, publisher);
 
@@ -100,7 +100,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-928
 	void doesNotExposeNullEvent() {
 
-		OneEvent entity = OneEvent.of(null);
+		var entity = OneEvent.of(null);
 
 		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(entity, publisher);
 
@@ -115,8 +115,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-928
 	void interceptsSaveMethod() throws Throwable {
 
-		SomeEvent event = new SomeEvent();
-		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		var event = new SomeEvent();
+		var sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("save", Object.class), sample);
 
 		EventPublishingMethodInterceptor//
@@ -128,8 +128,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 	@Test // DATACMNS-1663
 	void interceptsDeleteMethod() throws Throwable {
-		SomeEvent event = new SomeEvent();
-		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		var event = new SomeEvent();
+		var sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("delete", Object.class), sample);
 
 		EventPublishingMethodInterceptor//
@@ -169,7 +169,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		RepositoryInformation information = new DummyRepositoryInformation(SampleRepository.class);
 		RepositoryProxyPostProcessor processor = new EventPublishingRepositoryProxyPostProcessor(publisher);
 
-		ProxyFactory factory = mock(ProxyFactory.class);
+		var factory = mock(ProxyFactory.class);
 
 		processor.postProcess(factory, information);
 
@@ -182,7 +182,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		RepositoryInformation information = new DummyRepositoryInformation(CrudRepository.class);
 		RepositoryProxyPostProcessor processor = new EventPublishingRepositoryProxyPostProcessor(publisher);
 
-		ProxyFactory factory = mock(ProxyFactory.class);
+		var factory = mock(ProxyFactory.class);
 
 		processor.postProcess(factory, information);
 
@@ -192,8 +192,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-928
 	void publishesEventsForCallToSaveWithIterable() throws Throwable {
 
-		SomeEvent event = new SomeEvent();
-		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		var event = new SomeEvent();
+		var sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), sample);
 
 		EventPublishingMethodInterceptor//
@@ -206,8 +206,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-1663
 	void publishesEventsForCallToDeleteWithIterable() throws Throwable {
 
-		SomeEvent event = new SomeEvent();
-		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		var event = new SomeEvent();
+		var sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAll", Iterable.class), sample);
 
 		EventPublishingMethodInterceptor//
@@ -220,8 +220,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // GH-2448
 	void publishesEventsForCallToDeleteInBatchWithIterable() throws Throwable {
 
-		SomeEvent event = new SomeEvent();
-		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		var event = new SomeEvent();
+		var sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("deleteInBatch", Iterable.class), sample);
 
 		EventPublishingMethodInterceptor//
@@ -234,8 +234,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // GH-2448
 	void publishesEventsForCallToDeleteAllInBatchWithIterable() throws Throwable {
 
-		SomeEvent event = new SomeEvent();
-		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		var event = new SomeEvent();
+		var sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAllInBatch", Iterable.class), sample);
 
 		EventPublishingMethodInterceptor//
@@ -262,8 +262,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-1113
 	void invokesEventsForMethodsThatStartsWithSave() throws Throwable {
 
-		SomeEvent event = new SomeEvent();
-		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
+		var event = new SomeEvent();
+		var sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("saveAndFlush", MultipleEvents.class), sample);
 
 		EventPublishingMethodInterceptor//
@@ -276,7 +276,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-1067
 	void clearsEventsEvenIfNoneWereExposedToPublish() {
 
-		EventsWithClearing entity = spy(EventsWithClearing.of(Collections.emptyList()));
+		var entity = spy(EventsWithClearing.of(Collections.emptyList()));
 
 		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
 
@@ -286,7 +286,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-1067
 	void clearsEventsIfThereWereSomeToBePublished() {
 
-		EventsWithClearing entity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
+		var entity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
 
 		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
 
@@ -296,8 +296,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-1067
 	void clearsEventsForOperationOnMutlipleAggregates() {
 
-		EventsWithClearing firstEntity = spy(EventsWithClearing.of(Collections.emptyList()));
-		EventsWithClearing secondEntity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
+		var firstEntity = spy(EventsWithClearing.of(Collections.emptyList()));
+		var secondEntity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
 
 		Collection<EventsWithClearing> entities = Arrays.asList(firstEntity, secondEntity);
 
@@ -310,11 +310,11 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // DATACMNS-1163
 	void publishesEventFromParameter() throws Throwable {
 
-		Object event = new Object();
-		MultipleEvents parameter = MultipleEvents.of(Collections.singleton(event));
-		MultipleEvents returnValue = MultipleEvents.of(Collections.emptySet());
+		var event = new Object();
+		var parameter = MultipleEvents.of(Collections.singleton(event));
+		var returnValue = MultipleEvents.of(Collections.emptySet());
 
-		Method method = SampleRepository.class.getMethod("save", Object.class);
+		var method = SampleRepository.class.getMethod("save", Object.class);
 		mockInvocation(invocation, method, parameter, returnValue);
 
 		EventPublishingMethodInterceptor.of(EventPublishingMethod.of(MultipleEvents.class), publisher).invoke(invocation);
@@ -325,7 +325,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	@Test // GH-2448
 	void doesNotEmitEventsFromPrimitiveValue() throws Throwable {
 
-		Method method = SampleRepository.class.getMethod("delete", Object.class);
+		var method = SampleRepository.class.getMethod("delete", Object.class);
 		mockInvocation(invocation, method, "foo", MultipleEvents.of(Collections.emptySet()));
 
 		EventPublishingMethodInterceptor.of(EventPublishingMethod.of(MultipleEvents.class), publisher).invoke(invocation);

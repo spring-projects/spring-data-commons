@@ -36,12 +36,12 @@ class InstantiationAwarePersistentPropertyAccessorUnitTests {
 	@Test // DATACMNS-1639
 	void shouldCreateNewInstance() {
 
-		EntityInstantiators instantiators = new EntityInstantiators();
-		SampleMappingContext context = new SampleMappingContext();
+		var instantiators = new EntityInstantiators();
+		var context = new SampleMappingContext();
 
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Sample.class);
 
-		Sample sample = new Sample("Dave", "Matthews", 42);
+		var sample = new Sample("Dave", "Matthews", 42);
 
 		PersistentPropertyAccessor<Sample> wrapper = new InstantiationAwarePropertyAccessor<>(sample,
 				entity::getPropertyAccessor,
@@ -55,12 +55,12 @@ class InstantiationAwarePersistentPropertyAccessorUnitTests {
 	@Test // DATACMNS-1768
 	void shouldSetMultipleProperties() {
 
-		EntityInstantiators instantiators = new EntityInstantiators();
-		SampleMappingContext context = new SampleMappingContext();
+		var instantiators = new EntityInstantiators();
+		var context = new SampleMappingContext();
 
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Sample.class);
 
-		Sample bean = new Sample("Dave", "Matthews", 42);
+		var bean = new Sample("Dave", "Matthews", 42);
 
 		PersistentPropertyAccessor<Sample> wrapper = new InstantiationAwarePropertyAccessor<>(bean,
 				entity::getPropertyAccessor, instantiators);

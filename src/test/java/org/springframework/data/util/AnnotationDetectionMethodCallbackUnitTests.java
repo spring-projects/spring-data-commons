@@ -33,7 +33,7 @@ public class AnnotationDetectionMethodCallbackUnitTests {
 	@Test // DATACMNS-452
 	public void findsMethodWithAnnotation() throws Exception {
 
-		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class);
+		var callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
 		ReflectionUtils.doWithMethods(Sample.class, callback);
 
 		assertThat(callback.hasFoundAnnotation()).isTrue();
@@ -45,7 +45,7 @@ public class AnnotationDetectionMethodCallbackUnitTests {
 	@Test // DATACMNS-452
 	public void detectsAmbiguousAnnotations() {
 
-		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class, true);
+		var callback = new AnnotationDetectionMethodCallback<Value>(Value.class, true);
 
 		assertThatIllegalStateException() //
 				.isThrownBy(() -> ReflectionUtils.doWithMethods(Multiple.class, callback)) //

@@ -42,7 +42,7 @@ class PersistentEntityIsNewStrategyUnitTests {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PrimitiveIdEntity.class);
 
-		PrimitiveIdEntity bean = new PrimitiveIdEntity();
+		var bean = new PrimitiveIdEntity();
 		assertThat(entity.isNew(bean)).isTrue();
 	}
 
@@ -51,7 +51,7 @@ class PersistentEntityIsNewStrategyUnitTests {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PrimitiveIdEntity.class);
 
-		PrimitiveIdEntity bean = new PrimitiveIdEntity();
+		var bean = new PrimitiveIdEntity();
 
 		bean.id = 1L;
 		assertThat(entity.isNew(bean)).isFalse();
@@ -62,7 +62,7 @@ class PersistentEntityIsNewStrategyUnitTests {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PrimitiveWrapperIdEntity.class);
 
-		PrimitiveWrapperIdEntity bean = new PrimitiveWrapperIdEntity();
+		var bean = new PrimitiveWrapperIdEntity();
 		assertThat(entity.isNew(bean)).isTrue();
 	}
 
@@ -71,7 +71,7 @@ class PersistentEntityIsNewStrategyUnitTests {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(PrimitiveWrapperIdEntity.class);
 
-		PrimitiveWrapperIdEntity bean = new PrimitiveWrapperIdEntity();
+		var bean = new PrimitiveWrapperIdEntity();
 
 		bean.id = 0L;
 		assertThat(entity.isNew(bean)).isFalse();
@@ -108,7 +108,7 @@ class PersistentEntityIsNewStrategyUnitTests {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(VersionedEntity.class);
 
-		VersionedEntity bean = new VersionedEntity();
+		var bean = new VersionedEntity();
 
 		bean.id = 1L;
 		assertThat(entity.isNew(bean)).isTrue();

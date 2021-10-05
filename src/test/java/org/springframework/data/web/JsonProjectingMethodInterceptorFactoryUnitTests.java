@@ -54,14 +54,14 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 	@BeforeEach
 	void setUp() {
 
-		String json = "{\"firstname\" : \"Dave\", "//
+		var json = "{\"firstname\" : \"Dave\", "//
 				+ "\"address\" : { \"zipCode\" : \"01097\", \"city\" : \"Dresden\" }," //
 				+ "\"addresses\" : [ { \"zipCode\" : \"01097\", \"city\" : \"Dresden\" }, { \"zipCode\" : \"69469\", \"city\" : \"Weinheim\" }]"
 				+ " }";
 
-		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+		var projectionFactory = new SpelAwareProxyProjectionFactory();
 
-		ObjectMapper objectMapper = new ObjectMapper();
+		var objectMapper = new ObjectMapper();
 		MappingProvider mappingProvider = new JacksonMappingProvider(objectMapper);
 		JsonProvider jsonProvider = new JacksonJsonProvider(objectMapper);
 		projectionFactory
@@ -121,7 +121,7 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 	@Test // DATCMNS-885
 	void accessCollectionPropertyThatUsesJsonPathProjectionInTurn() {
 
-		List<AnotherAddressProjection> projections = customer.getAnotherAddressProjections();
+		var projections = customer.getAnotherAddressProjections();
 
 		assertThat(projections).hasSize(2);
 		assertThat(projections.get(0).getZipCodeButNotCity()).isEqualTo("01097");
@@ -130,7 +130,7 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 	@Test // DATCMNS-885
 	void accessAsCollectionPropertyThatUsesJsonPathProjectionInTurn() {
 
-		Set<AnotherAddressProjection> projections = customer.getAnotherAddressProjectionAsCollection();
+		var projections = customer.getAnotherAddressProjectionAsCollection();
 
 		assertThat(projections).hasSize(1);
 		assertThat(projections.iterator().next().getZipCodeButNotCity()).isEqualTo("01097");
@@ -139,7 +139,7 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 	@Test // DATCMNS-885
 	void accessNestedPropertyButStayOnRootLevel() {
 
-		Name name = customer.getName();
+		var name = customer.getName();
 
 		assertThat(name).isNotNull();
 		assertThat(name.getFirstname()).isEqualTo("Dave");
@@ -165,10 +165,10 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 	@Test // gh-2270
 	void shouldProjectOnArray() {
 
-		String json = "[ { \"creationDate\": 1610111331413, \"changeDate\": 1610111332160, \"person\": { \"caption\": \"Test2 TEST2\", \"firstName\": \"Test2\", \"lastName\": \"Test2\" } }, "
+		var json = "[ { \"creationDate\": 1610111331413, \"changeDate\": 1610111332160, \"person\": { \"caption\": \"Test2 TEST2\", \"firstName\": \"Test2\", \"lastName\": \"Test2\" } }, "
 				+ "{ \"creationDate\": 1609775450502, \"changeDate\": 1609775451333, \"person\": { \"caption\": \"Test TEST\", \"firstName\": \"Test\", \"lastName\": \"Test\" } }]";
 
-		UserPayload projection = projectionFactory.createProjection(UserPayload.class,
+		var projection = projectionFactory.createProjection(UserPayload.class,
 				new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
 
 		assertThat(projection.users()).hasSize(2);

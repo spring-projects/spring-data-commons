@@ -50,8 +50,8 @@ class ParametersUnitTests {
 	@Test
 	void checksValidMethodCorrectly() throws Exception {
 
-		Method validWithPageable = SampleDao.class.getMethod("validWithPageable", String.class, Pageable.class);
-		Method validWithSort = SampleDao.class.getMethod("validWithSort", String.class, Sort.class);
+		var validWithPageable = SampleDao.class.getMethod("validWithPageable", String.class, Pageable.class);
+		var validWithSort = SampleDao.class.getMethod("validWithSort", String.class, Sort.class);
 
 		new DefaultParameters(valid);
 		new DefaultParameters(validWithPageable);
@@ -68,7 +68,7 @@ class ParametersUnitTests {
 
 		Parameters<?, ?> parameters = getParametersFor("validWithSort", String.class, Sort.class);
 
-		Parameter parameter = parameters.getParameter(0);
+		var parameter = parameters.getParameter(0);
 
 		assertThat(parameter.isNamedParameter()).isTrue();
 		assertThat(parameter.getPlaceholder()).isEqualTo(":username");
@@ -82,7 +82,7 @@ class ParametersUnitTests {
 	@Test
 	void calculatesPlaceholderPositionCorrectly() throws Exception {
 
-		Method method = SampleDao.class.getMethod("validWithSortFirst", Sort.class, String.class);
+		var method = SampleDao.class.getMethod("validWithSortFirst", Sort.class, String.class);
 
 		Parameters<?, ?> parameters = new DefaultParameters(method);
 		assertThat(parameters.getBindableParameter(0).getIndex()).isEqualTo(1);
@@ -122,7 +122,7 @@ class ParametersUnitTests {
 	@Test // DATACMNS-731
 	void detectsExplicitlyNamedParameter() throws Exception {
 
-		Parameter parameter = getParametersFor("valid", String.class).getBindableParameter(0);
+		var parameter = getParametersFor("valid", String.class).getBindableParameter(0);
 
 		assertThat(parameter.getName()).isNotNull();
 		assertThat(parameter.isExplicitlyNamed()).isTrue();
@@ -131,9 +131,9 @@ class ParametersUnitTests {
 	@Test // DATACMNS-731
 	void doesNotConsiderParameterExplicitlyNamedEvenIfNamePresent() throws Exception {
 
-		Parameter parameter = getParametersFor("validWithSortFirst", Sort.class, String.class).getBindableParameter(0);
+		var parameter = getParametersFor("validWithSortFirst", Sort.class, String.class).getBindableParameter(0);
 
-		Object methodParameter = ReflectionTestUtils.getField(parameter, "parameter");
+		var methodParameter = ReflectionTestUtils.getField(parameter, "parameter");
 		ReflectionTestUtils.setField(methodParameter, "parameterName", "name");
 
 		assertThat(parameter.getName()).isNotNull();
@@ -143,7 +143,7 @@ class ParametersUnitTests {
 	@Test // DATACMNS-89
 	void detectsDynamicProjectionParameter() throws Exception {
 
-		Parameters<?, Parameter> parameters = getParametersFor("dynamicBind", Class.class, Class.class, Class.class);
+		var parameters = getParametersFor("dynamicBind", Class.class, Class.class, Class.class);
 
 		assertThat(parameters.getParameter(0).isDynamicProjectionParameter()).isTrue();
 		assertThat(parameters.getParameter(1).isDynamicProjectionParameter()).isFalse();
@@ -153,7 +153,7 @@ class ParametersUnitTests {
 	@Test // DATACMNS-863
 	void unwrapsOptionals() throws Exception {
 
-		Parameters<?, Parameter> parameters = getParametersFor("methodWithOptional", Optional.class);
+		var parameters = getParametersFor("methodWithOptional", Optional.class);
 
 		assertThat(parameters.getParameter(0).getType()).isEqualTo(String.class);
 	}
@@ -161,7 +161,7 @@ class ParametersUnitTests {
 	@Test // DATACMNS-836
 	void keepsReactiveStreamsWrapper() throws Exception {
 
-		Parameters<?, Parameter> parameters = getParametersFor("methodWithPublisher", Publisher.class);
+		var parameters = getParametersFor("methodWithPublisher", Publisher.class);
 
 		assertThat(parameters.getParameter(0).getType()).isAssignableFrom(Publisher.class);
 	}
@@ -169,7 +169,7 @@ class ParametersUnitTests {
 	@Test // DATACMNS-836
 	void keepsRxJavaWrapper() throws Exception {
 
-		Parameters<?, Parameter> parameters = getParametersFor("methodWithSingle", Single.class);
+		var parameters = getParametersFor("methodWithSingle", Single.class);
 
 		assertThat(parameters.getParameter(0).getType()).isAssignableFrom(Single.class);
 	}
@@ -177,7 +177,7 @@ class ParametersUnitTests {
 	@Test // DATACMNS-1383
 	void acceptsCustomPageableParameter() throws Exception {
 
-		Parameters<?, Parameter> parameters = getParametersFor("customPageable", SomePageable.class);
+		var parameters = getParametersFor("customPageable", SomePageable.class);
 
 		assertThat(parameters.hasPageableParameter()).isTrue();
 	}
@@ -185,7 +185,7 @@ class ParametersUnitTests {
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
-		Method method = SampleDao.class.getMethod(methodName, parameterTypes);
+		var method = SampleDao.class.getMethod(methodName, parameterTypes);
 
 		return new DefaultParameters(method);
 	}

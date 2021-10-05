@@ -44,7 +44,6 @@ import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ExtensionIdAware;
 import org.springframework.data.spel.spi.Function;
-import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
@@ -129,7 +128,7 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 	void exposesPageableParameter() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Pageable.class);
-		PageRequest pageable = PageRequest.of(2, 3, Sort.by(Direction.DESC, "lastname"));
+		var pageable = PageRequest.of(2, 3, Sort.by(Direction.DESC, "lastname"));
 
 		assertThat(evaluateExpression("#pageable.offset", new Object[] { "test", pageable })).isEqualTo(6L);
 		assertThat(evaluateExpression("#pageable.pageSize", new Object[] { "test", pageable })).isEqualTo(3);
@@ -141,7 +140,7 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 	void exposesSortParameter() throws Exception {
 
 		this.method = SampleRepo.class.getMethod("findByFirstname", String.class, Sort.class);
-		Sort sort = Sort.by(Direction.DESC, "lastname");
+		var sort = Sort.by(Direction.DESC, "lastname");
 
 		assertThat(evaluateExpression("#sort.toString()", new Object[] { "test", sort })).isEqualTo("lastname: DESC");
 	}
@@ -205,7 +204,7 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-533
 	void shouldBeAbleToAccessCustomRootObjectPropertiesAndFunctionsFromDynamicTargetSource() {
 
-		final AtomicInteger counter = new AtomicInteger();
+		final var counter = new AtomicInteger();
 
 		this.provider = new ExtensionAwareQueryMethodEvaluationContextProvider(Collections.singletonList( //
 				new DummyExtension("_first", "first") {
@@ -289,9 +288,9 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1534
 	void contextProviderShouldLazilyLookUpExtensions() {
 
-		ListableBeanFactory beanFactory = Mockito.mock(ListableBeanFactory.class);
+		var beanFactory = Mockito.mock(ListableBeanFactory.class);
 
-		ExtensionAwareEvaluationContextProvider contextProvider = new ExtensionAwareEvaluationContextProvider(beanFactory);
+		var contextProvider = new ExtensionAwareEvaluationContextProvider(beanFactory);
 
 		verify(beanFactory, never()).getBeansOfType(eq(EvaluationContextExtension.class), anyBoolean(), anyBoolean());
 
@@ -303,9 +302,9 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 	@Test // DATACMNS-1534
 	void contextProviderShouldLookupExtensionsOnlyOnce() {
 
-		ListableBeanFactory beanFactory = Mockito.mock(ListableBeanFactory.class);
+		var beanFactory = Mockito.mock(ListableBeanFactory.class);
 
-		ExtensionAwareEvaluationContextProvider contextProvider = new ExtensionAwareEvaluationContextProvider(beanFactory);
+		var contextProvider = new ExtensionAwareEvaluationContextProvider(beanFactory);
 
 		contextProvider.getEvaluationContext(null);
 		contextProvider.getEvaluationContext(null);
@@ -398,8 +397,8 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 
 	private Object evaluateExpression(String expression, Object[] args) {
 
-		DefaultParameters parameters = new DefaultParameters(method);
-		EvaluationContext evaluationContext = provider.getEvaluationContext(parameters, args);
+		var parameters = new DefaultParameters(method);
+		var evaluationContext = provider.getEvaluationContext(parameters, args);
 		return new SpelExpressionParser().parseExpression(expression).getValue(evaluationContext);
 	}
 

@@ -21,10 +21,8 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
-import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.ParseContext;
 
 /**
  * Integration tests for projections.
@@ -36,11 +34,11 @@ class ProjectionIntegrationTests {
 	@Test // DATACMNS-909
 	void jacksonSerializationDoesNotExposeDecoratedClass() throws Exception {
 
-		ProxyProjectionFactory factory = new ProxyProjectionFactory();
-		SampleProjection projection = factory.createProjection(SampleProjection.class);
+		var factory = new ProxyProjectionFactory();
+		var projection = factory.createProjection(SampleProjection.class);
 
-		ParseContext context = JsonPath.using(new ConfigurationBuilder().options(Option.SUPPRESS_EXCEPTIONS).build());
-		DocumentContext json = context.parse(new ObjectMapper().writeValueAsString(projection));
+		var context = JsonPath.using(new ConfigurationBuilder().options(Option.SUPPRESS_EXCEPTIONS).build());
+		var json = context.parse(new ObjectMapper().writeValueAsString(projection));
 
 		assertThat(json.read("$.decoratedClass", String.class)).isNull();
 	}

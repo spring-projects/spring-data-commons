@@ -99,7 +99,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThat(entity.getPersistentProperty("meta")).satisfies(property -> {
 
 			// Assert direct annotations are cached on construction
-			Map<Class<? extends Annotation>, Annotation> cache = getAnnotationCache(property);
+			var cache = getAnnotationCache(property);
 			assertThat(cache.containsKey(MyAnnotationAsMeta.class)).isTrue();
 			assertThat(cache.containsKey(MyAnnotation.class)).isFalse();
 
@@ -187,13 +187,13 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@SuppressWarnings("unchecked")
 	public void cachesNonPresenceOfAnnotationOnField() {
 
-		SamplePersistentProperty property = getProperty(Sample.class, "getterWithoutField");
+		var property = getProperty(Sample.class, "getterWithoutField");
 
 		assertThat(property).satisfies(it -> {
 
 			assertThat(it.findAnnotation(MyAnnotation.class)).isNull();
 
-			Map<Class<?>, ?> field = (Map<Class<?>, ?>) ReflectionTestUtils.getField(it, "annotationCache");
+			var field = (Map<Class<?>, ?>) ReflectionTestUtils.getField(it, "annotationCache");
 
 			assertThat(field.containsKey(MyAnnotation.class)).isTrue();
 			assertThat(field.get(MyAnnotation.class)).isEqualTo(Optional.empty());
@@ -206,7 +206,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThat(entity.getPersistentProperty("metaAliased")).satisfies(property -> {
 
 			// Assert direct annotations are cached on construction
-			Map<Class<? extends Annotation>, Annotation> cache = getAnnotationCache(property);
+			var cache = getAnnotationCache(property);
 			assertThat(cache.containsKey(MyComposedAnnotationUsingAliasFor.class)).isTrue();
 			assertThat(cache.containsKey(MyAnnotation.class)).isFalse();
 
@@ -253,14 +253,14 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@TestFactory // DATACMNS-1318
 	public Stream<DynamicTest> detectsUltimateAssociationTargetClass() {
 
-		Function<String, ClassAssert> verifier = it -> assertThat(
+		var verifier = (Function<String, ClassAssert>) it -> assertThat(
 				getProperty(WithReferences.class, it).getAssociationTargetType());
 
-		Stream<DynamicTest> positives = DynamicTest.stream(Stream.of("toSample", "toSample2", "sample"), //
+		var positives = DynamicTest.stream(Stream.of("toSample", "toSample2", "sample"), //
 				it -> String.format("Property %s resolves to %s.", it, Sample.class.getSimpleName()), //
 				it -> verifier.apply(it).isEqualTo(Sample.class));
 
-		Stream<DynamicTest> negatives = DynamicTest.stream(Stream.of("withoutAnnotation"), //
+		var negatives = DynamicTest.stream(Stream.of("withoutAnnotation"), //
 				it -> String.format("Property %s resolves to null.", it), //
 				it -> verifier.apply(it).isNull());
 
@@ -270,7 +270,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test // DATACMNS-1359
 	public void missingRequiredGetterThrowsException() {
 
-		SamplePersistentProperty property = getProperty(Sample.class, "field");
+		var property = getProperty(Sample.class, "field");
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> property.getRequiredGetter()) //
@@ -281,7 +281,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test // DATACMNS-1359
 	public void missingRequiredSetterThrowsException() {
 
-		SamplePersistentProperty property = getProperty(Sample.class, "field");
+		var property = getProperty(Sample.class, "field");
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> property.getRequiredSetter()) //
@@ -292,7 +292,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test // DATACMNS-1359
 	public void missingRequiredWitherThrowsException() {
 
-		SamplePersistentProperty property = getProperty(Sample.class, "field");
+		var property = getProperty(Sample.class, "field");
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> property.getRequiredWither()) //
@@ -303,7 +303,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test
 	public void missingRequiredFieldThrowsException() {
 
-		SamplePersistentProperty property = getProperty(NoField.class, "firstname");
+		var property = getProperty(NoField.class, "firstname");
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> property.getRequiredField()) //
@@ -314,7 +314,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test // GH-2315
 	void detectsJMoleculesAssociation() {
 
-		SamplePersistentProperty property = getProperty(JMolecules.class, "association");
+		var property = getProperty(JMolecules.class, "association");
 
 		assertThat(property.isAssociation()).isTrue();
 		assertThat(property.getAssociationTargetType()).isEqualTo(JMoleculesAggregate.class);
@@ -323,7 +323,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test // GH-2409
 	void exposesAssociationTargetClassAsPersistentEntityType() {
 
-		SamplePersistentProperty property = getProperty(WithReferences.class, "toSample");
+		var property = getProperty(WithReferences.class, "toSample");
 
 		assertThat(property.getPersistentEntityTypeInformation()) //
 				.isNotEmpty() //
@@ -333,7 +333,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test // #2438
 	void detectsJMoleculesIdentity() {
 
-		SamplePersistentProperty property = getProperty(JMolecules.class, "identifier");
+		var property = getProperty(JMolecules.class, "identifier");
 
 		assertThat(property.isIdProperty()).isTrue();
 	}
@@ -346,7 +346,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	private <A extends Annotation> A assertAnnotationPresent(Class<A> annotationType,
 			AnnotationBasedPersistentProperty<?> property) {
 
-		A annotation = property.findAnnotation(annotationType);
+		var annotation = property.findAnnotation(annotationType);
 
 		assertThat(annotation).isNotNull();
 

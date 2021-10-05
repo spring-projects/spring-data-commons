@@ -73,21 +73,21 @@ class ReactiveWrapperConvertersUnitTests {
 	@Test // DATACMNS-836
 	void toWrapperShouldCastMonoToMono() {
 
-		Mono<String> foo = Mono.just("foo");
+		var foo = Mono.just("foo");
 		assertThat(ReactiveWrapperConverters.toWrapper(foo, Mono.class)).isSameAs(foo);
 	}
 
 	@Test // DATACMNS-836
 	void toWrapperShouldConvertMonoToFlux() {
 
-		Mono<String> foo = Mono.just("foo");
+		var foo = Mono.just("foo");
 		assertThat(ReactiveWrapperConverters.toWrapper(foo, Flux.class)).isInstanceOf(Flux.class);
 	}
 
 	@Test // DATACMNS-836
 	void shouldMapMono() {
 
-		Mono<String> foo = Mono.just("foo");
+		var foo = Mono.just("foo");
 		Mono<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
 		assertThat(map.block()).isEqualTo(1L);
 	}
@@ -95,7 +95,7 @@ class ReactiveWrapperConvertersUnitTests {
 	@Test // DATACMNS-836
 	void shouldMapFlux() {
 
-		Flux<String> foo = Flux.just("foo");
+		var foo = Flux.just("foo");
 		Flux<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
 		assertThat(map.next().block()).isEqualTo(1L);
 	}
@@ -103,7 +103,7 @@ class ReactiveWrapperConvertersUnitTests {
 	@Test // DATACMNS-1653
 	void shouldMapRxJava3Single() {
 
-		io.reactivex.rxjava3.core.Single<String> foo = io.reactivex.rxjava3.core.Single.just("foo");
+		var foo = io.reactivex.rxjava3.core.Single.just("foo");
 		io.reactivex.rxjava3.core.Single<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
 		assertThat(map.blockingGet()).isEqualTo(1L);
 	}
@@ -111,7 +111,7 @@ class ReactiveWrapperConvertersUnitTests {
 	@Test // DATACMNS-1653
 	void shouldMapRxJava3Maybe() {
 
-		io.reactivex.rxjava3.core.Maybe<String> foo = io.reactivex.rxjava3.core.Maybe.just("foo");
+		var foo = io.reactivex.rxjava3.core.Maybe.just("foo");
 		io.reactivex.rxjava3.core.Maybe<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
 		assertThat(map.toSingle().blockingGet()).isEqualTo(1L);
 	}
@@ -119,7 +119,7 @@ class ReactiveWrapperConvertersUnitTests {
 	@Test // DATACMNS-1653
 	void shouldMapRxJava3Observable() {
 
-		io.reactivex.rxjava3.core.Observable<String> foo = io.reactivex.rxjava3.core.Observable.just("foo");
+		var foo = io.reactivex.rxjava3.core.Observable.just("foo");
 		io.reactivex.rxjava3.core.Observable<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
 		assertThat(map.blockingFirst()).isEqualTo(1L);
 	}
@@ -127,7 +127,7 @@ class ReactiveWrapperConvertersUnitTests {
 	@Test // DATACMNS-1653
 	void shouldMapRxJava3Flowable() {
 
-		io.reactivex.rxjava3.core.Flowable<String> foo = io.reactivex.rxjava3.core.Flowable.just("foo");
+		var foo = io.reactivex.rxjava3.core.Flowable.just("foo");
 		io.reactivex.rxjava3.core.Flowable<Long> map = ReactiveWrapperConverters.map(foo, source -> 1L);
 		assertThat(map.blockingFirst()).isEqualTo(1L);
 	}
@@ -136,7 +136,7 @@ class ReactiveWrapperConvertersUnitTests {
 	@SuppressWarnings("deprecation")
 	void shouldMapKotlinFlow() {
 
-		Flow<String> flow = FlowKt.asFlow(new String[] { "foo" });
+		var flow = FlowKt.asFlow(new String[] { "foo" });
 		Flow<Long> map = ReactiveWrapperConverters.map(flow, source -> 1L);
 		StepVerifier.create(ReactiveFlowKt.asPublisher(map)).expectNext(1L).verifyComplete();
 	}

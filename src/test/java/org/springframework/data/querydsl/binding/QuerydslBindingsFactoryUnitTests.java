@@ -60,15 +60,15 @@ class QuerydslBindingsFactoryUnitTests {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void createBindingsShouldHonorQuerydslBinderCustomizerHookWhenPresent() {
 
-		Repositories repositories = mock(Repositories.class);
+		var repositories = mock(Repositories.class);
 
 		when(repositories.hasRepositoryFor(User.class)).thenReturn(true);
 		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(new SampleRepo()));
 
-		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
+		var factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 		ReflectionTestUtils.setField(factory, "repositories", Optional.of(repositories));
 
-		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE);
+		var bindings = factory.createBindingsFor(USER_TYPE);
 		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
 				.getBindingForPath(PropertyPathInformation.of("firstname", User.class));
 
@@ -82,13 +82,13 @@ class QuerydslBindingsFactoryUnitTests {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void shouldReuseExistingQuerydslBinderCustomizer() {
 
-		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
+		var beanFactory = mock(AutowireCapableBeanFactory.class);
 		when(beanFactory.getBean(SpecificBinding.class)).thenReturn(new SpecificBinding());
 
-		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
+		var factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 		ReflectionTestUtils.setField(factory, "beanFactory", Optional.of(beanFactory));
 
-		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, SpecificBinding.class);
+		var bindings = factory.createBindingsFor(USER_TYPE, SpecificBinding.class);
 		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
 				.getBindingForPath(PropertyPathInformation.of("firstname", User.class));
 
@@ -102,14 +102,14 @@ class QuerydslBindingsFactoryUnitTests {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void shouldApplyDefaultCustomizers() {
 
-		GenericApplicationContext context = new GenericApplicationContext();
+		var context = new GenericApplicationContext();
 		context.registerBean(DefaultCustomizer.class);
 		context.refresh();
 
-		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
+		var factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 		factory.setApplicationContext(context);
 
-		QuerydslBindings bindings = factory.createBindingsFor(USER_TYPE, SpecificBinding.class);
+		var bindings = factory.createBindingsFor(USER_TYPE, SpecificBinding.class);
 		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
 				.getBindingForPath(PropertyPathInformation.of("inceptionYear", User.class));
 

@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.data.util.ClassTypeInformation;
@@ -83,8 +82,8 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.notNull(owningType, "Owning type must not be null!");
 		Assert.notNull(base, "Previously found properties must not be null!");
 
-		String propertyName = Introspector.decapitalize(name);
-		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
+		var propertyName = Introspector.decapitalize(name);
+		var propertyType = owningType.getProperty(propertyName);
 
 		if (propertyType == null) {
 			throw new PropertyReferenceException(propertyName, owningType, base);
@@ -123,7 +122,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 */
 	public PropertyPath getLeafProperty() {
 
-		PropertyPath result = this;
+		var result = this;
 
 		while (result.hasNext()) {
 			result = result.requiredNext();
@@ -209,7 +208,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 		Assert.hasText(path, "Path must not be null or empty!");
 
-		String lookup = toDotPath().concat(".").concat(path);
+		var lookup = toDotPath().concat(".").concat(path);
 
 		return PropertyPath.from(lookup, owningType);
 	}
@@ -231,7 +230,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			@Nullable
 			public PropertyPath next() {
 
-				PropertyPath result = current;
+				var result = current;
 
 				if (result == null) {
 					return null;
@@ -258,11 +257,9 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			return true;
 		}
 
-		if (!(o instanceof PropertyPath)) {
+		if (!(o instanceof PropertyPath that)) {
 			return false;
 		}
-
-		PropertyPath that = (PropertyPath) o;
 
 		if (isCollection != that.isCollection) {
 			return false;
@@ -293,7 +290,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 */
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(owningType);
+		var result = ObjectUtils.nullSafeHashCode(owningType);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(name);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(typeInformation);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(actualTypeInformation);
@@ -310,7 +307,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 */
 	private PropertyPath requiredNext() {
 
-		PropertyPath result = next;
+		var result = next;
 
 		if (result == null) {
 			throw new IllegalStateException(
@@ -349,17 +346,17 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 			List<String> iteratorSource = new ArrayList<>();
 
-			Matcher matcher = isQuoted(it.path) ? SPLITTER_FOR_QUOTED.matcher(it.path.replace("\\Q", "").replace("\\E", ""))
+			var matcher = isQuoted(it.path) ? SPLITTER_FOR_QUOTED.matcher(it.path.replace("\\Q", "").replace("\\E", ""))
 					: SPLITTER.matcher("_" + it.path);
 
 			while (matcher.find()) {
 				iteratorSource.add(matcher.group(1));
 			}
 
-			Iterator<String> parts = iteratorSource.iterator();
+			var parts = iteratorSource.iterator();
 
 			PropertyPath result = null;
-			Stack<PropertyPath> current = new Stack<>();
+			var current = new Stack<PropertyPath>();
 
 			while (parts.hasNext()) {
 				if (result == null) {
@@ -392,9 +389,9 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 */
 	private static PropertyPath create(String source, Stack<PropertyPath> base) {
 
-		PropertyPath previous = base.peek();
+		var previous = base.peek();
 
-		PropertyPath propertyPath = create(source, previous.typeInformation.getRequiredActualType(), base);
+		var propertyPath = create(source, previous.typeInformation.getRequiredActualType(), base);
 		previous.next = propertyPath;
 		return propertyPath;
 	}
@@ -458,13 +455,13 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			exception = e;
 		}
 
-		Matcher matcher = NESTED_PROPERTY_PATTERN.matcher(source);
+		var matcher = NESTED_PROPERTY_PATTERN.matcher(source);
 
 		if (matcher.find() && matcher.start() != 0) {
 
-			int position = matcher.start();
-			String head = source.substring(0, position);
-			String tail = source.substring(position);
+			var position = matcher.start();
+			var head = source.substring(0, position);
+			var tail = source.substring(position);
 
 			try {
 				return create(head, type, tail + addTail, base);
@@ -518,11 +515,9 @@ public class PropertyPath implements Streamable<PropertyPath> {
 				return true;
 			}
 
-			if (!(o instanceof Key)) {
+			if (!(o instanceof Key key)) {
 				return false;
 			}
-
-			Key key = (Key) o;
 
 			if (!ObjectUtils.nullSafeEquals(type, key.type)) {
 				return false;
@@ -537,7 +532,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		 */
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(type);
+			var result = ObjectUtils.nullSafeHashCode(type);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(path);
 			return result;
 		}

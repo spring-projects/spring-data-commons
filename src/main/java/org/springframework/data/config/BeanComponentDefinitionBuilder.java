@@ -16,12 +16,12 @@
 package org.springframework.data.config;
 
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
 import org.w3c.dom.Element;
 
 /**
@@ -60,8 +60,8 @@ public class BeanComponentDefinitionBuilder {
 
 		Assert.notNull(builder, "Builder must not be null!");
 
-		AbstractBeanDefinition definition = builder.getRawBeanDefinition();
-		String name = BeanDefinitionReaderUtils.generateBeanName(definition, context.getRegistry(), context.isNested());
+		var definition = builder.getRawBeanDefinition();
+		var name = BeanDefinitionReaderUtils.generateBeanName(definition, context.getRegistry(), context.isNested());
 
 		return getComponent(builder, name);
 	}
@@ -78,7 +78,7 @@ public class BeanComponentDefinitionBuilder {
 
 		Assert.hasText(fallback, "Fallback component id must not be null or empty!");
 
-		String id = defaultSource.getAttribute("id");
+		var id = defaultSource.getAttribute("id");
 		return getComponent(builder, StringUtils.hasText(id) ? id : fallback);
 	}
 
@@ -107,7 +107,7 @@ public class BeanComponentDefinitionBuilder {
 		Assert.notNull(builder, "Builder must not be null!");
 		Assert.hasText(name, "Name of bean must not be null or empty!");
 
-		AbstractBeanDefinition definition = builder.getRawBeanDefinition();
+		var definition = builder.getRawBeanDefinition();
 		definition.setSource(context.extractSource(rawSource));
 
 		return new BeanComponentDefinition(definition, name);

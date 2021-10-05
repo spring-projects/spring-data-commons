@@ -55,8 +55,8 @@ public interface EntityCallbacks {
 	 */
 	static EntityCallbacks create(EntityCallback<?>... callbacks) {
 
-		EntityCallbacks entityCallbacks = create();
-		for (EntityCallback<?> callback : callbacks) {
+		var entityCallbacks = create();
+		for (var callback : callbacks) {
 			entityCallbacks.addEntityCallback(callback);
 		}
 		return entityCallbacks;

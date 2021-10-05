@@ -19,10 +19,7 @@ import kotlin.reflect.KCallable;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.KParameter.Kind;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.mapping.MappingException;
@@ -68,7 +65,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 			if (property.isImmutable()) {
 
-				Method wither = property.getWither();
+				var wither = property.getWither();
 
 				if (wither != null) {
 
@@ -89,14 +86,14 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 			if (!property.usePropertyAccess()) {
 
-				Field field = property.getRequiredField();
+				var field = property.getRequiredField();
 
 				ReflectionUtils.makeAccessible(field);
 				ReflectionUtils.setField(field, bean, value);
 				return;
 			}
 
-			Method setter = property.getRequiredSetter();
+			var setter = property.getRequiredSetter();
 
 			ReflectionUtils.makeAccessible(setter);
 			ReflectionUtils.invokeMethod(setter, bean, value);
@@ -133,13 +130,13 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 			if (!property.usePropertyAccess()) {
 
-				Field field = property.getRequiredField();
+				var field = property.getRequiredField();
 
 				ReflectionUtils.makeAccessible(field);
 				return ReflectionUtils.getField(field, bean);
 			}
 
-			Method getter = property.getRequiredGetter();
+			var getter = property.getRequiredGetter();
 
 			ReflectionUtils.makeAccessible(getter);
 			return ReflectionUtils.invokeMethod(getter, bean);
@@ -175,8 +172,8 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 		 */
 		static <T> Object setProperty(PersistentProperty<?> property, T bean, @Nullable Object value) {
 
-			Class<?> type = property.getOwner().getType();
-			KCallable<?> copy = copyMethodCache.computeIfAbsent(type, it -> getCopyMethod(it, property));
+			var type = property.getOwner().getType();
+			var copy = copyMethodCache.computeIfAbsent(type, it -> getCopyMethod(it, property));
 
 			if (copy == null) {
 				throw new UnsupportedOperationException(String.format(
@@ -191,9 +188,9 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 			Map<KParameter, Object> args = new LinkedHashMap<>(2, 1);
 
-			List<KParameter> parameters = callable.getParameters();
+			var parameters = callable.getParameters();
 
-			for (KParameter parameter : parameters) {
+			for (var parameter : parameters) {
 
 				if (parameter.getKind() == Kind.INSTANCE) {
 					args.put(parameter, bean);

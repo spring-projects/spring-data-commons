@@ -19,7 +19,6 @@ import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.spi.AfterDeploymentValidation;
-import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
@@ -73,13 +72,13 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	 */
 	protected <X> void processAnnotatedType(@Observes ProcessAnnotatedType<X> processAnnotatedType) {
 
-		AnnotatedType<X> annotatedType = processAnnotatedType.getAnnotatedType();
-		Class<X> repositoryType = annotatedType.getJavaClass();
+		var annotatedType = processAnnotatedType.getAnnotatedType();
+		var repositoryType = annotatedType.getJavaClass();
 
 		if (isRepository(repositoryType)) {
 
 			// Determine the qualifiers of the repository type.
-			Set<Annotation> qualifiers = getQualifiers(repositoryType);
+			var qualifiers = getQualifiers(repositoryType);
 
 			if (logger.isDebugEnabled()) {
 				logger.debug(
@@ -98,10 +97,10 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	 */
 	private boolean isRepository(Class<?> type) {
 
-		boolean isInterface = type.isInterface();
-		boolean extendsRepository = Repository.class.isAssignableFrom(type);
-		boolean isAnnotated = isAnnotatedWith(type, RepositoryDefinition.class);
-		boolean excludedByAnnotation = isAnnotatedDirectlyWith(type, NoRepositoryBean.class);
+		var isInterface = type.isInterface();
+		var extendsRepository = Repository.class.isAssignableFrom(type);
+		var isAnnotated = isAnnotatedWith(type, RepositoryDefinition.class);
+		var excludedByAnnotation = isAnnotatedDirectlyWith(type, NoRepositoryBean.class);
 
 		return isInterface && (extendsRepository || isAnnotated) && !excludedByAnnotation;
 	}
@@ -112,9 +111,9 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	private Set<Annotation> getQualifiers(final Class<?> type) {
 
 		Set<Annotation> qualifiers = new HashSet<>();
-		Annotation[] annotations = type.getAnnotations();
-		for (Annotation annotation : annotations) {
-			Class<? extends Annotation> annotationType = annotation.annotationType();
+		var annotations = type.getAnnotations();
+		for (var annotation : annotations) {
+			var annotationType = annotation.annotationType();
 			if (isAnnotatedWith(annotationType, Qualifier.class)) {
 				qualifiers.add(annotation);
 			}
@@ -139,7 +138,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	 */
 	void afterDeploymentValidation(@Observes AfterDeploymentValidation event, BeanManager manager) {
 
-		for (CdiRepositoryBean<?> bean : eagerRepositories) {
+		for (var bean : eagerRepositories) {
 
 			logger.debug(LogMessage.format("Eagerly instantiating CDI repository bean for %s.", bean.getBeanClass()));
 			bean.initialize();
@@ -164,7 +163,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	 */
 	protected void registerBean(CdiRepositoryBean<?> bean) {
 
-		Class<?> repositoryInterface = bean.getBeanClass();
+		var repositoryInterface = bean.getBeanClass();
 
 		if (isAnnotatedWith(repositoryInterface, Eager.class)) {
 			this.eagerRepositories.add(bean);

@@ -43,7 +43,7 @@ public class SortAdapter extends XmlAdapter<SortDto, Sort> {
 			return null;
 		}
 
-		SortDto dto = new SortDto();
+		var dto = new SortDto();
 		dto.orders = SpringDataJaxb.marshal(source, OrderAdapter.INSTANCE);
 
 		return dto;

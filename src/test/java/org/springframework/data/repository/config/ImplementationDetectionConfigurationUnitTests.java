@@ -41,7 +41,7 @@ class ImplementationDetectionConfigurationUnitTests {
 
 	private static String getBeanName(String className) {
 
-		MockImplementationDetectionConfiguration configuration = new MockImplementationDetectionConfiguration();
+		var configuration = new MockImplementationDetectionConfiguration();
 
 		return configuration.generateBeanName(BeanDefinitionBuilder.rootBeanDefinition(className).getBeanDefinition());
 	}

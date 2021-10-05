@@ -54,10 +54,10 @@ public class JMoleculesConverters {
 
 		List<Object> converters = new ArrayList<>();
 
-		Supplier<ConversionService> conversionService = () -> DefaultConversionService.getSharedInstance();
+		var conversionService = (Supplier<ConversionService>) () -> DefaultConversionService.getSharedInstance();
 
-		IdentifierToPrimitivesConverter toPrimitives = new IdentifierToPrimitivesConverter(conversionService);
-		PrimitivesToIdentifierConverter toIdentifier = new PrimitivesToIdentifierConverter(conversionService);
+		var toPrimitives = new IdentifierToPrimitivesConverter(conversionService);
+		var toIdentifier = new PrimitivesToIdentifierConverter(conversionService);
 
 		converters.add(toPrimitives);
 		converters.add(toIdentifier);

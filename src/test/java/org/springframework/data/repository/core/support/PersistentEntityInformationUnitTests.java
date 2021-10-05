@@ -36,13 +36,13 @@ class PersistentEntityInformationUnitTests {
 	@Test // DATACMNS-480
 	void obtainsIdAndIdTypeInformationFromPersistentEntity() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Sample.class);
 
 		EntityInformation<Object, Long> information = new PersistentEntityInformation<>(entity);
 		assertThat(information.getIdType()).isEqualTo(Long.class);
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 		sample.id = 5L;
 
 		assertThat(information.getId(sample)).isEqualTo(5L);
@@ -51,11 +51,11 @@ class PersistentEntityInformationUnitTests {
 	@Test // DATACMNS-596
 	void returnsNullIfNoIdPropertyPresent() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context
 				.getRequiredPersistentEntity(EntityWithoutId.class);
 
-		PersistentEntityInformation<Object, Serializable> information = new PersistentEntityInformation<>(
+		var information = new PersistentEntityInformation<Object, Serializable>(
 				entity);
 		assertThat(information.getId(new EntityWithoutId())).isNull();
 	}

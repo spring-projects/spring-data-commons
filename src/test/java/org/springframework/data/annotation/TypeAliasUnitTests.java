@@ -17,9 +17,8 @@ package org.springframework.data.annotation;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Set;
-
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.util.AnnotatedTypeScanner;
 
 /**
@@ -33,8 +32,8 @@ class TypeAliasUnitTests {
 	@SuppressWarnings("unchecked")
 	void scanningforAtPersistentFindsTypeAliasAnnotatedTypes() {
 
-		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Persistent.class);
-		Set<Class<?>> types = scanner.findTypes(getClass().getPackage().getName());
+		var scanner = new AnnotatedTypeScanner(Persistent.class);
+		var types = scanner.findTypes(getClass().getPackage().getName());
 
 		assertThat(types).containsExactlyInAnyOrder(SampleType.class, TypeAlias.class);
 	}

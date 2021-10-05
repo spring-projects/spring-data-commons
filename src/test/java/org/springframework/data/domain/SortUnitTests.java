@@ -92,14 +92,14 @@ class SortUnitTests {
 	@Test
 	void allowsCombiningSorts() {
 
-		Sort sort = Sort.by("foo").and(Sort.by("bar"));
+		var sort = Sort.by("foo").and(Sort.by("bar"));
 		assertThat(sort).containsExactly(Order.by("foo"), Order.by("bar"));
 	}
 
 	@Test
 	void handlesAdditionalNullSort() {
 
-		Sort sort = Sort.by("foo").and(Sort.unsorted());
+		var sort = Sort.by("foo").and(Sort.unsorted());
 
 		assertThat(sort).containsExactly(Order.by("foo"));
 	}
@@ -127,8 +127,8 @@ class SortUnitTests {
 	@Test // DATACMNS-436
 	void ordersWithDifferentIgnoreCaseDoNotEqual() {
 
-		Order foo = Order.by("foo");
-		Order fooIgnoreCase = Order.by("foo").ignoreCase();
+		var foo = Order.by("foo");
+		var fooIgnoreCase = Order.by("foo").ignoreCase();
 
 		assertThat(foo).isNotEqualTo(fooIgnoreCase);
 		assertThat(foo.hashCode()).isNotEqualTo(fooIgnoreCase.hashCode());
@@ -157,8 +157,8 @@ class SortUnitTests {
 	@Test // DATACMNS-908
 	void createsNewOrderForDifferentProperty() {
 
-		Order source = Order.desc("foo").nullsFirst().ignoreCase();
-		Order result = source.withProperty("bar");
+		var source = Order.desc("foo").nullsFirst().ignoreCase();
+		var result = source.withProperty("bar");
 
 		assertThat(result.getProperty()).isEqualTo("bar");
 		assertThat(result.getDirection()).isEqualTo(source.getDirection());

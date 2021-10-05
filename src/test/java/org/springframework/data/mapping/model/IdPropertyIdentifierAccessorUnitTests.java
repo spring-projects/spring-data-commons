@@ -45,7 +45,7 @@ class IdPropertyIdentifierAccessorUnitTests {
 	@Test // DATACMNS-599
 	void returnsIdentifierValue() {
 
-		SampleWithId sample = new SampleWithId();
+		var sample = new SampleWithId();
 		sample.id = 1L;
 
 		IdentifierAccessor accessor = new IdPropertyIdentifierAccessor(

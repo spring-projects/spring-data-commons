@@ -17,7 +17,6 @@ package org.springframework.data.projection;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Proxy;
 import java.time.LocalDateTime;
 import java.util.Calendar;
@@ -25,12 +24,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.aop.Advisor;
+
 import org.springframework.aop.TargetClassAware;
 import org.springframework.aop.framework.Advised;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -70,7 +68,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATAREST-221, DATACMNS-630
 	void createsProjectingProxy() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.firstname = "Dave";
 		customer.lastname = "Matthews";
 
@@ -78,7 +76,7 @@ class ProxyProjectionFactoryUnitTests {
 		customer.address.city = "New York";
 		customer.address.zipCode = "ZIP";
 
-		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+		var excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 
 		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
 		assertThat(excerpt.getAddress().getZipCode()).isEqualTo("ZIP");
@@ -87,7 +85,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATAREST-221, DATACMNS-630
 	void proxyExposesTargetClassAware() {
 
-		CustomerExcerpt proxy = factory.createProjection(CustomerExcerpt.class);
+		var proxy = factory.createProjection(CustomerExcerpt.class);
 
 		assertThat(proxy).isInstanceOf(TargetClassAware.class);
 		assertThat(((TargetClassAware) proxy).getTargetClass()).isEqualTo(HashMap.class);
@@ -101,7 +99,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-630
 	void createsMapBasedProxyFromSource() {
 
-		HashMap<String, Object> addressSource = new HashMap<>();
+		var addressSource = new HashMap<String, Object>();
 		addressSource.put("zipCode", "ZIP");
 		addressSource.put("city", "NewYork");
 
@@ -110,11 +108,11 @@ class ProxyProjectionFactoryUnitTests {
 		source.put("lastname", "Matthews");
 		source.put("address", addressSource);
 
-		CustomerExcerpt projection = factory.createProjection(CustomerExcerpt.class, source);
+		var projection = factory.createProjection(CustomerExcerpt.class, source);
 
 		assertThat(projection.getFirstname()).isEqualTo("Dave");
 
-		AddressExcerpt address = projection.getAddress();
+		var address = projection.getAddress();
 		assertThat(address).isNotNull();
 		assertThat(address.getZipCode()).isEqualTo("ZIP");
 	}
@@ -122,7 +120,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-630
 	void createsEmptyMapBasedProxy() {
 
-		CustomerProxy proxy = factory.createProjection(CustomerProxy.class);
+		var proxy = factory.createProjection(CustomerProxy.class);
 
 		assertThat(proxy).isNotNull();
 
@@ -133,8 +131,8 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-630
 	void returnsAllPropertiesAsInputProperties() {
 
-		ProjectionInformation projectionInformation = factory.getProjectionInformation(CustomerExcerpt.class);
-		List<PropertyDescriptor> result = projectionInformation.getInputProperties();
+		var projectionInformation = factory.getProjectionInformation(CustomerExcerpt.class);
+		var result = projectionInformation.getInputProperties();
 
 		assertThat(result).hasSize(6);
 	}
@@ -142,10 +140,10 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-655
 	void invokesDefaultMethodOnProxy() {
 
-		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
+		var excerpt = factory.createProjection(CustomerExcerpt.class);
 
-		Advised advised = (Advised) ReflectionTestUtils.getField(Proxy.getInvocationHandler(excerpt), "advised");
-		Advisor[] advisors = advised.getAdvisors();
+		var advised = (Advised) ReflectionTestUtils.getField(Proxy.getInvocationHandler(excerpt), "advised");
+		var advisors = advised.getAdvisors();
 
 		assertThat(advisors.length).isGreaterThan(0);
 		assertThat(advisors[0].getAdvice()).isInstanceOf(DefaultMethodInvokingMethodInterceptor.class);
@@ -154,7 +152,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-648
 	void exposesProxyTarget() {
 
-		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
+		var excerpt = factory.createProjection(CustomerExcerpt.class);
 
 		assertThat(excerpt).isInstanceOf(TargetAware.class);
 		assertThat(((TargetAware) excerpt).getTarget()).isInstanceOf(Map.class);
@@ -163,10 +161,10 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-722
 	void doesNotProjectPrimitiveArray() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.picture = "binarydata".getBytes();
 
-		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+		var excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 
 		assertThat(excerpt.getPicture()).isEqualTo(customer.picture);
 	}
@@ -174,14 +172,14 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-722
 	void projectsNonPrimitiveArray() {
 
-		Address address = new Address();
+		var address = new Address();
 		address.city = "New York";
 		address.zipCode = "ZIP";
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.shippingAddresses = new Address[] { address };
 
-		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+		var excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 
 		assertThat(excerpt.getShippingAddresses()).hasSize(1);
 	}
@@ -189,10 +187,10 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-782
 	void convertsPrimitiveValues() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.id = 1L;
 
-		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class, customer);
+		var excerpt = factory.createProjection(CustomerExcerpt.class, customer);
 
 		assertThat(excerpt.getId()).isEqualTo(customer.id.toString());
 	}
@@ -200,7 +198,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-89
 	void exposesProjectionInformationCorrectly() {
 
-		ProjectionInformation information = factory.getProjectionInformation(CustomerExcerpt.class);
+		var information = factory.getProjectionInformation(CustomerExcerpt.class);
 
 		assertThat(information.getType()).isEqualTo(CustomerExcerpt.class);
 		assertThat(information.isClosed()).isTrue();
@@ -209,10 +207,10 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-829
 	void projectsMapOfStringToObjectCorrectly() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.data = Collections.singletonMap("key", null);
 
-		Map<String, Object> data = factory.createProjection(CustomerExcerpt.class, customer).getData();
+		var data = factory.createProjection(CustomerExcerpt.class, customer).getData();
 
 		assertThat(data).isNotNull();
 		assertThat(data.containsKey("key")).isTrue();
@@ -222,7 +220,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-1121
 	void doesNotCreateWrappingProxyIfTargetImplementsProjectionInterface() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 
 		assertThat(factory.createProjection(Contact.class, customer)).isSameAs(customer);
 	}
@@ -230,10 +228,10 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-1762
 	void supportsOptionalAsReturnTypeIfEmpty() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.picture = null;
 
-		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+		var excerpt = factory.createProjection(CustomerWithOptional.class, customer);
 
 		assertThat(excerpt.getPicture()).isEmpty();
 	}
@@ -241,10 +239,10 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-1762
 	void supportsOptionalAsReturnTypeIfPresent() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.picture = new byte[] { 1, 2, 3 };
 
-		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+		var excerpt = factory.createProjection(CustomerWithOptional.class, customer);
 
 		assertThat(excerpt.getPicture()).hasValueSatisfying(bytes -> {
 			assertThat(bytes).isEqualTo(new byte[] { 1, 2, 3 });
@@ -254,10 +252,10 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-1762
 	void supportsOptionalBackedByOptional() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.optional = Optional.of("foo");
 
-		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+		var excerpt = factory.createProjection(CustomerWithOptional.class, customer);
 
 		assertThat(excerpt.getOptional()).hasValue("foo");
 	}
@@ -265,7 +263,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-1762
 	void supportsOptionalWithProjectionAsReturnTypeIfPresent() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.firstname = "Dave";
 		customer.lastname = "Matthews";
 
@@ -273,7 +271,7 @@ class ProxyProjectionFactoryUnitTests {
 		customer.address.city = "New York";
 		customer.address.zipCode = "ZIP";
 
-		CustomerWithOptionalHavingProjection excerpt = factory.createProjection(CustomerWithOptionalHavingProjection.class,
+		var excerpt = factory.createProjection(CustomerWithOptionalHavingProjection.class,
 				customer);
 
 		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
@@ -285,7 +283,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-1836
 	void supportsDateToLocalDateTimeConversion() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.firstname = "Dave";
 		customer.birthdate = new GregorianCalendar(1967, Calendar.JANUARY, 9).getTime();
 
@@ -293,7 +291,7 @@ class ProxyProjectionFactoryUnitTests {
 		customer.address.city = "New York";
 		customer.address.zipCode = "ZIP";
 
-		CustomerWithLocalDateTime excerpt = factory.createProjection(CustomerWithLocalDateTime.class, customer);
+		var excerpt = factory.createProjection(CustomerWithLocalDateTime.class, customer);
 
 		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
 		assertThat(excerpt.getBirthdate()).isEqualTo(LocalDateTime.of(1967, 1, 9, 0, 0));
@@ -302,7 +300,7 @@ class ProxyProjectionFactoryUnitTests {
 	@Test // DATACMNS-1836
 	void supportsNullableWrapperDateToLocalDateTimeConversion() {
 
-		Customer customer = new Customer();
+		var customer = new Customer();
 		customer.firstname = "Dave";
 		customer.birthdate = new GregorianCalendar(1967, Calendar.JANUARY, 9).getTime();
 
@@ -310,7 +308,7 @@ class ProxyProjectionFactoryUnitTests {
 		customer.address.city = "New York";
 		customer.address.zipCode = "ZIP";
 
-		CustomerWithOptional excerpt = factory.createProjection(CustomerWithOptional.class, customer);
+		var excerpt = factory.createProjection(CustomerWithOptional.class, customer);
 
 		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
 		assertThat(excerpt.getBirthdate()).contains(LocalDateTime.of(1967, 1, 9, 0, 0));

@@ -60,8 +60,8 @@ class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-610
 	void convertsListsToSet() throws Exception {
 
-		Method method = getMethod("set");
-		List<Entity> source = Collections.singletonList(new Entity());
+		var method = getMethod("set");
+		var source = Collections.singletonList(new Entity());
 
 		assertThat(handler.postProcessInvocationResult(source, method)).isInstanceOf(Set.class);
 	}
@@ -69,7 +69,7 @@ class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-483
 	void turnsNullIntoJdk8Optional() throws Exception {
 
-		Object result = handler.postProcessInvocationResult(null, getMethod("jdk8Optional"));
+		var result = handler.postProcessInvocationResult(null, getMethod("jdk8Optional"));
 		assertThat(result).isEqualTo(Optional.empty());
 	}
 
@@ -77,19 +77,19 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void wrapsValueIntoJdk8Optional() throws Exception {
 
-		Entity entity = new Entity();
+		var entity = new Entity();
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("jdk8Optional"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("jdk8Optional"));
 		assertThat(result).isInstanceOf(Optional.class);
 
-		Optional<Entity> optional = (Optional<Entity>) result;
+		var optional = (Optional<Entity>) result;
 		assertThat(optional).isEqualTo(Optional.of(entity));
 	}
 
 	@Test // DATACMNS-483
 	void turnsNullIntoGuavaOptional() throws Exception {
 
-		Object result = handler.postProcessInvocationResult(null, getMethod("guavaOptional"));
+		var result = handler.postProcessInvocationResult(null, getMethod("guavaOptional"));
 		assertThat(result).isEqualTo(com.google.common.base.Optional.absent());
 	}
 
@@ -97,12 +97,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void wrapsValueIntoGuavaOptional() throws Exception {
 
-		Entity entity = new Entity();
+		var entity = new Entity();
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("guavaOptional"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("guavaOptional"));
 		assertThat(result).isInstanceOf(com.google.common.base.Optional.class);
 
-		com.google.common.base.Optional<Entity> optional = (com.google.common.base.Optional<Entity>) result;
+		var optional = (com.google.common.base.Optional<Entity>) result;
 		assertThat(optional).isEqualTo(com.google.common.base.Optional.of(entity));
 	}
 
@@ -115,12 +115,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaSingleIntoPublisher() throws Exception {
 
-		Single<Entity> entity = Single.just(new Entity());
+		var entity = Single.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("publisher"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("publisher"));
 		assertThat(result).isInstanceOf(Publisher.class);
 
-		Mono<Entity> mono = Mono.from((Publisher<Entity>) result);
+		var mono = Mono.from((Publisher<Entity>) result);
 		assertThat(mono.block()).isEqualTo(entity.blockingGet());
 	}
 
@@ -128,12 +128,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaSingleIntoMono() throws Exception {
 
-		Single<Entity> entity = Single.just(new Entity());
+		var entity = Single.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
-		Mono<Entity> mono = (Mono<Entity>) result;
+		var mono = (Mono<Entity>) result;
 		assertThat(mono.block()).isEqualTo(entity.blockingGet());
 	}
 
@@ -141,12 +141,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaSingleIntoFlux() throws Exception {
 
-		Single<Entity> entity = Single.just(new Entity());
+		var entity = Single.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("flux"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("flux"));
 		assertThat(result).isInstanceOf(Flux.class);
 
-		Flux<Entity> flux = (Flux<Entity>) result;
+		var flux = (Flux<Entity>) result;
 		assertThat(flux.next().block()).isEqualTo(entity.blockingGet());
 	}
 
@@ -154,12 +154,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaObservableIntoPublisher() throws Exception {
 
-		Observable<Entity> entity = Observable.just(new Entity());
+		var entity = Observable.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("publisher"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("publisher"));
 		assertThat(result).isInstanceOf(Publisher.class);
 
-		Mono<Entity> mono = Mono.from((Publisher<Entity>) result);
+		var mono = Mono.from((Publisher<Entity>) result);
 		assertThat(mono.block()).isEqualTo(entity.blockingFirst());
 	}
 
@@ -167,12 +167,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaObservableIntoMono() throws Exception {
 
-		Observable<Entity> entity = Observable.just(new Entity());
+		var entity = Observable.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
-		Mono<Entity> mono = (Mono<Entity>) result;
+		var mono = (Mono<Entity>) result;
 		assertThat(mono.block()).isEqualTo(entity.blockingFirst());
 	}
 
@@ -180,12 +180,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaObservableIntoFlux() throws Exception {
 
-		Observable<Entity> entity = Observable.just(new Entity());
+		var entity = Observable.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("flux"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("flux"));
 		assertThat(result).isInstanceOf(Flux.class);
 
-		Flux<Entity> flux = (Flux<Entity>) result;
+		var flux = (Flux<Entity>) result;
 		assertThat(flux.next().block()).isEqualTo(entity.blockingFirst());
 	}
 
@@ -193,12 +193,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaObservableIntoSingle() throws Exception {
 
-		Observable<Entity> entity = Observable.just(new Entity());
+		var entity = Observable.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("single"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("single"));
 		assertThat(result).isInstanceOf(Single.class);
 
-		Single<Entity> single = (Single<Entity>) result;
+		var single = (Single<Entity>) result;
 		assertThat(single.blockingGet()).isEqualTo(entity.blockingFirst());
 	}
 
@@ -206,12 +206,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaSingleIntoObservable() throws Exception {
 
-		Single<Entity> entity = Single.just(new Entity());
+		var entity = Single.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("observable"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("observable"));
 		assertThat(result).isInstanceOf(Observable.class);
 
-		Observable<Entity> observable = (Observable<Entity>) result;
+		var observable = (Observable<Entity>) result;
 		assertThat(observable.blockingFirst()).isEqualTo(entity.blockingGet());
 	}
 
@@ -219,12 +219,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsReactorMonoIntoSingle() throws Exception {
 
-		Mono<Entity> entity = Mono.just(new Entity());
+		var entity = Mono.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("single"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("single"));
 		assertThat(result).isInstanceOf(Single.class);
 
-		Single<Entity> single = (Single<Entity>) result;
+		var single = (Single<Entity>) result;
 		assertThat(single.blockingGet()).isEqualTo(entity.block());
 	}
 
@@ -232,12 +232,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsReactorMonoIntoCompletable() throws Exception {
 
-		Mono<Entity> entity = Mono.just(new Entity());
+		var entity = Mono.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("completable"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("completable"));
 		assertThat(result).isInstanceOf(Completable.class);
 
-		Completable completable = (Completable) result;
+		var completable = (Completable) result;
 		completable.blockingAwait();
 	}
 
@@ -247,10 +247,10 @@ class QueryExecutionResultHandlerUnitTests {
 
 		Mono<Entity> entity = Mono.error(new InvalidDataAccessApiUsageException("err"));
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("completable"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("completable"));
 		assertThat(result).isInstanceOf(Completable.class);
 
-		Completable completable = (Completable) result;
+		var completable = (Completable) result;
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class).isThrownBy(completable::blockingAwait);
 	}
 
@@ -258,12 +258,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaCompletableIntoMono() throws Exception {
 
-		Completable entity = Completable.complete();
+		var entity = Completable.complete();
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
-		Mono mono = (Mono) result;
+		var mono = (Mono) result;
 		assertThat(mono.block()).isNull();
 	}
 
@@ -271,12 +271,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsRxJavaCompletableIntoMonoWithException() throws Exception {
 
-		Completable entity = Completable.error(new InvalidDataAccessApiUsageException("err"));
+		var entity = Completable.error(new InvalidDataAccessApiUsageException("err"));
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
-		Mono mono = (Mono) result;
+		var mono = (Mono) result;
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class).isThrownBy(mono::block);
 	}
@@ -285,12 +285,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsReactorMonoIntoObservable() throws Exception {
 
-		Mono<Entity> entity = Mono.just(new Entity());
+		var entity = Mono.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("observable"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("observable"));
 		assertThat(result).isInstanceOf(Observable.class);
 
-		Observable<Entity> observable = (Observable<Entity>) result;
+		var observable = (Observable<Entity>) result;
 		assertThat(observable.blockingFirst()).isEqualTo(entity.block());
 	}
 
@@ -298,12 +298,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsReactorFluxIntoSingle() throws Exception {
 
-		Flux<Entity> entity = Flux.just(new Entity());
+		var entity = Flux.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("single"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("single"));
 		assertThat(result).isInstanceOf(Single.class);
 
-		Single<Entity> single = (Single<Entity>) result;
+		var single = (Single<Entity>) result;
 		assertThat(single.blockingGet()).isEqualTo(entity.next().block());
 	}
 
@@ -311,12 +311,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsReactorFluxIntoObservable() throws Exception {
 
-		Flux<Entity> entity = Flux.just(new Entity());
+		var entity = Flux.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("observable"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("observable"));
 		assertThat(result).isInstanceOf(Observable.class);
 
-		Observable<Entity> observable = (Observable<Entity>) result;
+		var observable = (Observable<Entity>) result;
 		assertThat(observable.blockingFirst()).isEqualTo(entity.next().block());
 	}
 
@@ -324,12 +324,12 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsReactorFluxIntoMono() throws Exception {
 
-		Flux<Entity> entity = Flux.just(new Entity());
+		var entity = Flux.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("mono"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("mono"));
 		assertThat(result).isInstanceOf(Mono.class);
 
-		Mono<Entity> mono = (Mono<Entity>) result;
+		var mono = (Mono<Entity>) result;
 		assertThat(mono.block()).isEqualTo(entity.next().block());
 	}
 
@@ -337,22 +337,22 @@ class QueryExecutionResultHandlerUnitTests {
 	@SuppressWarnings("unchecked")
 	void convertsReactorMonoIntoFlux() throws Exception {
 
-		Mono<Entity> entity = Mono.just(new Entity());
+		var entity = Mono.just(new Entity());
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("flux"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("flux"));
 		assertThat(result).isInstanceOf(Flux.class);
 
-		Flux<Entity> flux = (Flux<Entity>) result;
+		var flux = (Flux<Entity>) result;
 		assertThat(flux.next().block()).isEqualTo(entity.block());
 	}
 
 	@Test // DATACMNS-1056
 	void convertsOptionalToThirdPartyOption() throws Exception {
 
-		Entity value = new Entity();
-		Optional<Entity> entity = Optional.of(value);
+		var value = new Entity();
+		var entity = Optional.of(value);
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("option"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("option"));
 
 		assertThat(result).isInstanceOfSatisfying(Option.class, it -> assertThat(it.get()).isEqualTo(value));
 	}
@@ -363,7 +363,7 @@ class QueryExecutionResultHandlerUnitTests {
 
 		Iterable<?> source = asList(new Object());
 
-		Object result = handler.postProcessInvocationResult(source, getMethod("streamable"));
+		var result = handler.postProcessInvocationResult(source, getMethod("streamable"));
 
 		assertThat(result).isInstanceOfSatisfying(Streamable.class,
 				it -> assertThat(it.stream().collect(Collectors.toList())).isEqualTo(source));
@@ -372,9 +372,9 @@ class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-938
 	void resolvesNestedWrapperIfOuterDoesntNeedConversion() throws Exception {
 
-		Entity entity = new Entity();
+		var entity = new Entity();
 
-		Object result = handler.postProcessInvocationResult(entity, getMethod("tryOfOption"));
+		var result = handler.postProcessInvocationResult(entity, getMethod("tryOfOption"));
 
 		assertThat(result).isInstanceOfSatisfying(Option.class, it -> assertThat(it.get()).isEqualTo(entity));
 	}
@@ -382,7 +382,7 @@ class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-1430
 	void convertsElementsAndValueIntoCustomStreamable() throws Exception {
 
-		Object result = handler.postProcessInvocationResult(Arrays.asList("foo"), getMethod("customStreamable"));
+		var result = handler.postProcessInvocationResult(Arrays.asList("foo"), getMethod("customStreamable"));
 
 		assertThat(result).isInstanceOfSatisfying(CustomStreamableWrapper.class, it -> {
 			assertThat(it).containsExactly("foo");
@@ -392,7 +392,7 @@ class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-1482
 	void nestedConversion() throws Exception {
 
-		Object result = handler.postProcessInvocationResult(asList(BigDecimal.ZERO, BigDecimal.ONE),
+		var result = handler.postProcessInvocationResult(asList(BigDecimal.ZERO, BigDecimal.ONE),
 				getMethod("listOfInteger"));
 
 		assertThat(result).isInstanceOfSatisfying(List.class, list -> {
@@ -409,7 +409,7 @@ class QueryExecutionResultHandlerUnitTests {
 	@Test // DATACMNS-1552
 	void keepsVavrOptionType() throws Exception {
 
-		Option<Entity> source = Option.of(new Entity());
+		var source = Option.of(new Entity());
 
 		assertThat(handler.postProcessInvocationResult(source, getMethod("option"))).isSameAs(source);
 	}

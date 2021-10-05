@@ -22,10 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -123,8 +120,8 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 	 */
 	protected Sort getDefaultFromAnnotationOrFallback(MethodParameter parameter) {
 
-		SortDefaults annotatedDefaults = parameter.getParameterAnnotation(SortDefaults.class);
-		SortDefault annotatedDefault = parameter.getParameterAnnotation(SortDefault.class);
+		var annotatedDefaults = parameter.getParameterAnnotation(SortDefaults.class);
+		var annotatedDefault = parameter.getParameterAnnotation(SortDefault.class);
 
 		if (annotatedDefault != null && annotatedDefaults != null) {
 			throw new IllegalArgumentException(
@@ -138,9 +135,9 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 		if (annotatedDefaults != null) {
 
-			Sort sort = Sort.unsorted();
+			var sort = Sort.unsorted();
 
-			for (SortDefault currentAnnotatedDefault : annotatedDefaults.value()) {
+			for (var currentAnnotatedDefault : annotatedDefaults.value()) {
 				sort = appendOrCreateSortTo(currentAnnotatedDefault, sort);
 			}
 
@@ -167,9 +164,9 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		}
 
 		List<Order> orders = new ArrayList<>(fields.length);
-		for (String field : fields) {
+		for (var field : fields) {
 
-			Order order = new Order(sortDefault.direction(), field);
+			var order = new Order(sortDefault.direction(), field);
 			orders.add(sortDefault.caseSensitive() ? order : order.ignoreCase());
 		}
 
@@ -184,9 +181,9 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 	 */
 	protected String getSortParameter(@Nullable MethodParameter parameter) {
 
-		StringBuilder builder = new StringBuilder();
+		var builder = new StringBuilder();
 
-		String value = SpringDataAnnotationUtils.getQualifier(parameter);
+		var value = SpringDataAnnotationUtils.getQualifier(parameter);
 
 		if (StringUtils.hasLength(value)) {
 			builder.append(value);
@@ -211,7 +208,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 		List<Order> allOrders = new ArrayList<>();
 
-		for (String part : source) {
+		for (var part : source) {
 
 			if (part == null) {
 				continue;
@@ -238,9 +235,9 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		List<String> expressions = new ArrayList<>();
 		ExpressionBuilder builder = null;
 
-		for (Order order : sort) {
+		for (var order : sort) {
 
-			Direction direction = order.getDirection();
+			var direction = order.getDirection();
 
 			if (builder == null) {
 				builder = new ExpressionBuilder(direction);
@@ -268,9 +265,9 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		List<String> expressions = new ArrayList<>();
 		ExpressionBuilder builder = null;
 
-		for (Order order : sort) {
+		for (var order : sort) {
 
-			Direction direction = order.getDirection();
+			var direction = order.getDirection();
 
 			if (builder == null) {
 				builder = new ExpressionBuilder(direction);
@@ -391,7 +388,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		 */
 		public static SortOrderParser parse(String part, String delimiter) {
 
-			String[] elements = Arrays.stream(part.split(delimiter)) //
+			var elements = Arrays.stream(part.split(delimiter)) //
 					.filter(SortHandlerMethodArgumentResolver::notOnlyDots) //
 					.toArray(String[]::new);
 
@@ -430,7 +427,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		 */
 		public void forEachOrder(Consumer<? super Order> callback) {
 
-			for (int i = 0; i < lastIndex; i++) {
+			for (var i = 0; i < lastIndex; i++) {
 				toOrder(elements[i]).ifPresent(callback);
 			}
 		}
@@ -445,7 +442,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 				return Optional.empty();
 			}
 
-			Order order = direction.map(it -> new Order(it, property)).orElseGet(() -> Order.by(property));
+			var order = direction.map(it -> new Order(it, property)).orElseGet(() -> Order.by(property));
 
 			if (ignoreCase.isPresent()) {
 				return Optional.of(order.ignoreCase());

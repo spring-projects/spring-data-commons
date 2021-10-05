@@ -55,7 +55,7 @@ public abstract class ParsingUtils {
 		Assert.hasText(attrName, "Attribute name must not be null!");
 		Assert.hasText(propertyName, "Property name must not be null!");
 
-		String attr = element.getAttribute(attrName);
+		var attr = element.getAttribute(attrName);
 
 		if (StringUtils.hasText(attr)) {
 			builder.addPropertyValue(propertyName, attr);
@@ -90,7 +90,7 @@ public abstract class ParsingUtils {
 		Assert.hasText(attribute, "Attribute name must not be null!");
 		Assert.hasText(property, "Property name must not be null!");
 
-		String value = element.getAttribute(attribute);
+		var value = element.getAttribute(attribute);
 
 		if (StringUtils.hasText(value)) {
 			builder.addPropertyReference(property, value);
@@ -126,7 +126,7 @@ public abstract class ParsingUtils {
 
 		Assert.notNull(builder, "Builder must not be null!");
 
-		AbstractBeanDefinition definition = builder.getRawBeanDefinition();
+		var definition = builder.getRawBeanDefinition();
 		definition.setSource(source);
 		return definition;
 	}
@@ -143,7 +143,7 @@ public abstract class ParsingUtils {
 
 		Assert.hasText(targetBeanName, "Target bean name must not be null or empty!");
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(ObjectFactoryCreatingFactoryBean.class);
+		var builder = BeanDefinitionBuilder.rootBeanDefinition(ObjectFactoryCreatingFactoryBean.class);
 		builder.addPropertyValue("targetBeanName", targetBeanName);
 		builder.setRole(AbstractBeanDefinition.ROLE_INFRASTRUCTURE);
 

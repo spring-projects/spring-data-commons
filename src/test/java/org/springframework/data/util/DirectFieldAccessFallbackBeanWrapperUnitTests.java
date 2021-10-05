@@ -32,7 +32,7 @@ public class DirectFieldAccessFallbackBeanWrapperUnitTests {
 	@Test // DATACMNS-452
 	public void usesFieldAccessForReadIfNoAccessorCanBeFound() {
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 		sample.firstname = "Dave";
 
 		BeanWrapper wrapper = new DirectFieldAccessFallbackBeanWrapper(sample);
@@ -43,7 +43,7 @@ public class DirectFieldAccessFallbackBeanWrapperUnitTests {
 	@Test // DATACMNS-452
 	public void usesFieldAccessForWriteIfNoAccessorCanBeFound() {
 
-		Sample sample = new Sample();
+		var sample = new Sample();
 
 		BeanWrapper wrapper = new DirectFieldAccessFallbackBeanWrapper(sample);
 		wrapper.setPropertyValue("firstname", "Dave");

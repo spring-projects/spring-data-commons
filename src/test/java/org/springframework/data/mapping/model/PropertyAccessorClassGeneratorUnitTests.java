@@ -33,7 +33,7 @@ class PropertyAccessorClassGeneratorUnitTests {
 	@Test // DATACMNS-1602
 	void reusesAlreadyDeclaredClass() {
 
-		SampleMappingContext context = new SampleMappingContext();
+		var context = new SampleMappingContext();
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(Sample.class);
 
 		PropertyAccessorClassGenerator.generateCustomAccessorClass(entity);

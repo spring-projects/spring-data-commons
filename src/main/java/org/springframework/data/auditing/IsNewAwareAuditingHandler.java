@@ -16,7 +16,6 @@
 package org.springframework.data.auditing;
 
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.support.IsNewStrategy;
@@ -62,7 +61,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 			return object;
 		}
 
-		PersistentEntity<?, ? extends PersistentProperty<?>> entity = entities
+		var entity = entities
 				.getRequiredPersistentEntity(object.getClass());
 
 		return entity.isNew(object) ? markCreated(object) : markModified(object);

@@ -50,7 +50,7 @@ class ReactiveAuditingHandlerUnitTests {
 	@BeforeEach
 	void setUp() {
 
-		SampleMappingContext sampleMappingContext = new SampleMappingContext();
+		var sampleMappingContext = new SampleMappingContext();
 		sampleMappingContext.getRequiredPersistentEntity(Immutable.class); // initialize to ensure we're using mapping
 		// metadata instead of plain reflection
 
@@ -64,7 +64,7 @@ class ReactiveAuditingHandlerUnitTests {
 	@Test // DATACMNS-1231
 	void markCreatedShouldSetDatesIfAuditorNotSet() {
 
-		Immutable immutable = new Immutable(null, null, null, null);
+		var immutable = new Immutable(null, null, null, null);
 
 		handler.markCreated(immutable).as(StepVerifier::create).consumeNextWith(actual -> {
 
@@ -81,7 +81,7 @@ class ReactiveAuditingHandlerUnitTests {
 	@Test // DATACMNS-1231
 	void markModifiedSetsModifiedFields() {
 
-		AuditedUser audited = new AuditedUser();
+		var audited = new AuditedUser();
 		audited.id = 1L;
 
 		handler.setAuditorAware(auditorAware);

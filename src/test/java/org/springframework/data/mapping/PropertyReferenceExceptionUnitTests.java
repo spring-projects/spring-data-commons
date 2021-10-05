@@ -17,7 +17,6 @@ package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -61,9 +60,9 @@ public class PropertyReferenceExceptionUnitTests {
 	@Test // DATACMNS-801
 	public void exposesPotentialMatch() {
 
-		PropertyReferenceException exception = new PropertyReferenceException("nme", TYPE_INFO, NO_PATHS);
+		var exception = new PropertyReferenceException("nme", TYPE_INFO, NO_PATHS);
 
-		Collection<String> matches = exception.getPropertyMatches();
+		var matches = exception.getPropertyMatches();
 
 		assertThat(matches).containsExactly("name");
 	}

@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.AccessOptions.SetOptions.SetNulls;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPathAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
@@ -55,7 +55,7 @@ class SimplePersistentPropertyPathAccessorUnitTests {
 	@Test // DATACMNS-1438
 	void setsPropertyContainingCollectionPathForAllElements() {
 
-		Customers customers = new Customers(Arrays.asList(first, second), Collections.emptyMap());
+		var customers = new Customers(Arrays.asList(first, second), Collections.emptyMap());
 
 		assertFirstnamesSetFor(customers, "customers.firstname");
 	}
@@ -67,7 +67,7 @@ class SimplePersistentPropertyPathAccessorUnitTests {
 		map.put("1", first);
 		map.put("2", second);
 
-		Customers customers = new Customers(Collections.emptyList(), map);
+		var customers = new Customers(Collections.emptyList(), map);
 
 		assertFirstnamesSetFor(customers, "customerMap.firstname");
 	}
@@ -75,10 +75,10 @@ class SimplePersistentPropertyPathAccessorUnitTests {
 	@Test // DATACMNS-1461
 	void skipsNullValueIfConfigured() {
 
-		CustomerWrapper wrapper = new CustomerWrapper(null);
+		var wrapper = new CustomerWrapper(null);
 
-		PersistentPropertyPathAccessor<CustomerWrapper> accessor = getAccessor(wrapper);
-		PersistentPropertyPath<SamplePersistentProperty> path = context.getPersistentPropertyPath("customer.firstname",
+		var accessor = getAccessor(wrapper);
+		var path = context.getPersistentPropertyPath("customer.firstname",
 				CustomerWrapper.class);
 
 		assertThatCode(() -> {
@@ -89,10 +89,10 @@ class SimplePersistentPropertyPathAccessorUnitTests {
 	@Test // DATACMNS-1296
 	void skipsIntermediateNullsWhenSettingNestedValues() {
 
-		CustomerWrapperWrapper wrapper = new CustomerWrapperWrapper(null);
+		var wrapper = new CustomerWrapperWrapper(null);
 
-		PersistentPropertyPathAccessor<CustomerWrapperWrapper> accessor = getAccessor(wrapper);
-		PersistentPropertyPath<SamplePersistentProperty> path = context
+		var accessor = getAccessor(wrapper);
+		var path = context
 				.getPersistentPropertyPath("wrapper.customer.firstname", CustomerWrapperWrapper.class);
 
 		assertThatCode(() -> {
@@ -102,7 +102,7 @@ class SimplePersistentPropertyPathAccessorUnitTests {
 
 	private void assertFirstnamesSetFor(Customers customers, String path) {
 
-		PersistentPropertyPath<SamplePersistentProperty> propertyPath = context.getPersistentPropertyPath(path,
+		var propertyPath = context.getPersistentPropertyPath(path,
 				Customers.class);
 
 		getAccessor(customers).setProperty(propertyPath, "firstname");
@@ -114,10 +114,10 @@ class SimplePersistentPropertyPathAccessorUnitTests {
 
 	private <T> PersistentPropertyPathAccessor<T> getAccessor(T source) {
 
-		Class<? extends Object> type = source.getClass();
+		var type = source.getClass();
 
 		PersistentEntity<Object, SamplePersistentProperty> entity = context.getRequiredPersistentEntity(type);
-		PersistentPropertyPathAccessor<T> accessor = entity.getPropertyPathAccessor(source);
+		var accessor = entity.getPropertyPathAccessor(source);
 
 		return accessor;
 	}

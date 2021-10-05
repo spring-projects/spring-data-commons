@@ -83,7 +83,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 	 */
 	public Field getRequiredField() {
 
-		Field field = this.field;
+		var field = this.field;
 
 		if (field == null) {
 			throw new IllegalStateException(String.format("No field found for annotation %s!", annotationType));
@@ -100,7 +100,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 	@Nullable
 	public Class<?> getType() {
 
-		Field field = this.field;
+		var field = this.field;
 
 		return field == null ? null : field.getType();
 	}
@@ -127,7 +127,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 
 		Assert.notNull(source, "Source object must not be null!");
 
-		Field field = this.field;
+		var field = this.field;
 
 		if (field == null) {
 			return null;

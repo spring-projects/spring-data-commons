@@ -55,10 +55,10 @@ class ExampleUnitTests {
 	@Test // DATACMNS-900
 	void shouldCompareUsingHashCodeAndEquals() throws Exception {
 
-		Example<Person> example = Example.of(person, matching().withIgnoreCase("firstname"));
-		Example<Person> sameAsExample = Example.of(person, matching().withIgnoreCase("firstname"));
+		var example = Example.of(person, matching().withIgnoreCase("firstname"));
+		var sameAsExample = Example.of(person, matching().withIgnoreCase("firstname"));
 
-		Example<Person> different = Example.of(person,
+		var different = Example.of(person,
 				matching().withMatcher("firstname", GenericPropertyMatchers.contains()));
 
 		assertThat(example.hashCode()).isEqualTo(sameAsExample.hashCode());

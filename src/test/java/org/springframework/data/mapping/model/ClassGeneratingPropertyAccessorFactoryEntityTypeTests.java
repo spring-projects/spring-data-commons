@@ -21,9 +21,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.repository.core.EntityInformation;
@@ -51,7 +51,7 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 	@Test // DATACMNS-853
 	void getIdentifierOfClassBasedEntity() {
 
-		Person jonDoe = new Person("JonDoe");
+		var jonDoe = new Person("JonDoe");
 
 		assertThat(getEntityInformation(Person.class).getId(jonDoe)).isEqualTo(jonDoe.name);
 	}
@@ -59,8 +59,8 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 	@Test // #2324
 	void shouldGeneratePropertyAccessorForKotlinClassWithMultipleCopyMethods() {
 
-		ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
-		PersistentPropertyAccessor<WithCustomCopyMethod> propertyAccessor = factory.getPropertyAccessor(
+		var factory = new ClassGeneratingPropertyAccessorFactory();
+		var propertyAccessor = factory.getPropertyAccessor(
 				mappingContext.getRequiredPersistentEntity(WithCustomCopyMethod.class),
 				new WithCustomCopyMethod("", "", "", 1, LocalDateTime.MAX, LocalDateTime.MAX, ""));
 

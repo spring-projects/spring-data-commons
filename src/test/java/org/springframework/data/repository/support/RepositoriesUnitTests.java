@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -66,7 +66,7 @@ class RepositoriesUnitTests {
 	@BeforeEach
 	void setUp() {
 
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		var beanFactory = new DefaultListableBeanFactory();
 		beanFactory.registerBeanDefinition("addressRepository", getRepositoryBeanDefinition(AddressRepository.class));
 		beanFactory.registerBeanDefinition("personRepository", getRepositoryBeanDefinition(PersonRepository.class));
 
@@ -76,7 +76,7 @@ class RepositoriesUnitTests {
 
 	private AbstractBeanDefinition getRepositoryBeanDefinition(Class<?> repositoryInterface) {
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(DummyRepositoryFactoryBean.class);
+		var builder = BeanDefinitionBuilder.rootBeanDefinition(DummyRepositoryFactoryBean.class);
 		builder.addConstructorArgValue(repositoryInterface);
 
 		return builder.getBeanDefinition();
@@ -85,7 +85,7 @@ class RepositoriesUnitTests {
 	@Test
 	void doesNotConsiderCrudRepositoriesOnly() {
 
-		Repositories repositories = new Repositories(context);
+		var repositories = new Repositories(context);
 
 		assertThat(repositories.hasRepositoryFor(Person.class)).isTrue();
 		assertThat(repositories.hasRepositoryFor(Address.class)).isTrue();
@@ -93,7 +93,7 @@ class RepositoriesUnitTests {
 
 	@Test
 	void doesNotFindInformationForNonManagedDomainClass() {
-		Repositories repositories = new Repositories(context);
+		var repositories = new Repositories(context);
 		assertThat(repositories.hasRepositoryFor(String.class)).isFalse();
 		assertThat(repositories.getRepositoryFor(String.class)).isNotPresent();
 	}
@@ -106,7 +106,7 @@ class RepositoriesUnitTests {
 	@Test // DATACMNS-256
 	void exposesPersistentEntityForDomainTypes() {
 
-		Repositories repositories = new Repositories(context);
+		var repositories = new Repositories(context);
 		assertThat(repositories.getPersistentEntity(Person.class)).isNotNull();
 		assertThat(repositories.getPersistentEntity(Address.class)).isNotNull();
 	}
@@ -122,11 +122,11 @@ class RepositoriesUnitTests {
 		RepositoryMetadata metadata = new CustomRepositoryMetadata(SampleRepository.class);
 		RepositoryFactoryInformation<?, ?> information = new SampleRepoFactoryInformation<>(metadata);
 
-		GenericApplicationContext context = new GenericApplicationContext();
+		var context = new GenericApplicationContext();
 		context.getBeanFactory().registerSingleton("foo", information);
 		context.refresh();
 
-		Repositories repositories = new Repositories(context);
+		var repositories = new Repositories(context);
 
 		assertThat(repositories.getRepositoryFor(Sample.class)).isNotNull();
 		assertThat(repositories.getRepositoryFor(SampleEntity.class)).isNotNull();
@@ -137,7 +137,7 @@ class RepositoriesUnitTests {
 	@Test // DATACMNS-794
 	void exposesRepositoryFactoryInformationForRepository() {
 
-		Optional<RepositoryInformation> information = new Repositories(context)
+		var information = new Repositories(context)
 				.getRepositoryInformation(PersonRepository.class);
 
 		assertThat(information)
@@ -147,15 +147,15 @@ class RepositoriesUnitTests {
 	@Test // DATACMNS-1215
 	void exposesRepositoryForProxyType() {
 
-		ProxyFactory factory = new ProxyFactory();
+		var factory = new ProxyFactory();
 		factory.setTarget(new Person());
 		factory.setProxyTargetClass(true);
 
-		Object proxy = factory.getProxy();
+		var proxy = factory.getProxy();
 
 		assertThat(ClassUtils.isCglibProxy(proxy)).isTrue();
 
-		Repositories repositories = new Repositories(context);
+		var repositories = new Repositories(context);
 
 		assertThat(repositories.hasRepositoryFor(proxy.getClass())).isTrue();
 		assertThat(repositories.getRepositoryFor(proxy.getClass())).isNotEmpty();
@@ -164,10 +164,10 @@ class RepositoriesUnitTests {
 	@Test // DATACMNS-1448
 	void keepsPrimaryRepositoryInCaseOfMultipleOnes() {
 
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		var beanFactory = new DefaultListableBeanFactory();
 		beanFactory.registerBeanDefinition("first", getRepositoryBeanDefinition(FirstRepository.class));
 
-		AbstractBeanDefinition definition = getRepositoryBeanDefinition(PrimaryRepository.class);
+		var definition = getRepositoryBeanDefinition(PrimaryRepository.class);
 		definition.setPrimary(true);
 
 		beanFactory.registerBeanDefinition("primary", definition);
@@ -176,7 +176,7 @@ class RepositoriesUnitTests {
 		context = new GenericApplicationContext(beanFactory);
 		context.refresh();
 
-		Repositories repositories = new Repositories(beanFactory);
+		var repositories = new Repositories(beanFactory);
 
 		assertThat(repositories.getRepositoryFor(SomeEntity.class)).hasValueSatisfying(it -> {
 			assertThat(it).isInstanceOf(PrimaryRepository.class);
@@ -186,10 +186,10 @@ class RepositoriesUnitTests {
 	@Test // DATACMNS-1142
 	void keepsPrimaryRepositoryInCaseOfMultipleOnesIfContextIsNotAConfigurableListableBeanFactory() {
 
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		var beanFactory = new DefaultListableBeanFactory();
 		beanFactory.registerBeanDefinition("first", getRepositoryBeanDefinition(FirstRepository.class));
 
-		AbstractBeanDefinition definition = getRepositoryBeanDefinition(PrimaryRepository.class);
+		var definition = getRepositoryBeanDefinition(PrimaryRepository.class);
 		definition.setPrimary(true);
 
 		beanFactory.registerBeanDefinition("primary", definition);
@@ -198,7 +198,7 @@ class RepositoriesUnitTests {
 		context = new GenericApplicationContext(beanFactory);
 		context.refresh();
 
-		Repositories repositories = new Repositories(context);
+		var repositories = new Repositories(context);
 
 		assertThat(repositories.getRepositoryFor(SomeEntity.class)).hasValueSatisfying(it -> {
 			assertThat(it).isInstanceOf(PrimaryRepository.class);
@@ -208,7 +208,7 @@ class RepositoriesUnitTests {
 	@Test // GH-2406
 	void exposesParentRepositoryForChildIfOnlyParentRepositoryIsRegistered() {
 
-		Repositories repositories = bootstrapRepositories(ParentRepository.class);
+		var repositories = bootstrapRepositories(ParentRepository.class);
 
 		assertRepositoryAvailableFor(repositories, Child.class, ParentRepository.class);
 	}
@@ -216,7 +216,7 @@ class RepositoriesUnitTests {
 	@Test // GH-2406
 	void usesChildRepositoryIfRegistered() {
 
-		Repositories repositories = bootstrapRepositories(ParentRepository.class, ChildRepository.class);
+		var repositories = bootstrapRepositories(ParentRepository.class, ChildRepository.class);
 
 		assertRepositoryAvailableFor(repositories, Child.class, ChildRepository.class);
 	}
@@ -233,9 +233,9 @@ class RepositoriesUnitTests {
 
 	private Repositories bootstrapRepositories(Class<?>... repositoryInterfaces) {
 
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		var beanFactory = new DefaultListableBeanFactory();
 
-		for (Class<?> repositoryInterface : repositoryInterfaces) {
+		for (var repositoryInterface : repositoryInterfaces) {
 			beanFactory.registerBeanDefinition(repositoryInterface.getName(),
 					getRepositoryBeanDefinition(repositoryInterface));
 		}
@@ -299,7 +299,7 @@ class RepositoriesUnitTests {
 
 			super(repositoryInterface);
 
-			String domainType = super.getDomainType().getName().concat("Entity");
+			var domainType = super.getDomainType().getName().concat("Entity");
 
 			try {
 				this.domainType = ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader());

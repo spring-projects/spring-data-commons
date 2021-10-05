@@ -24,7 +24,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Simple ChangeSet implementation backed by a HashMap.
- * 
+ *
  * @author Thomas Risberg
  * @author Rod Johnson
  * @author Christoph Strobl
@@ -61,7 +61,7 @@ public class HashMapChangeSet implements ChangeSet {
 	@Nullable
 	public <T> T get(String key, Class<T> requiredClass, ConversionService conversionService) {
 
-		Object value = values.get(key);
+		var value = values.get(key);
 
 		if (value == null) {
 			return null;

@@ -17,13 +17,11 @@ package org.springframework.data.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.MethodParameter;
 
 /**
  * Unit tests for {@link MethodParameters}.
@@ -35,8 +33,8 @@ class MethodParametersUnitTests {
 	@Test
 	void prefersAnnotatedParameterOverDiscovered() throws Exception {
 
-		Method method = Sample.class.getMethod("method", String.class, String.class, Object.class);
-		MethodParameters parameters = new MethodParameters(method, Optional.of(new AnnotationAttribute(Qualifier.class)));
+		var method = Sample.class.getMethod("method", String.class, String.class, Object.class);
+		var parameters = new MethodParameters(method, Optional.of(new AnnotationAttribute(Qualifier.class)));
 
 		assertThat(parameters.getParameter("param")).isPresent();
 		assertThat(parameters.getParameter("foo")).isPresent();
@@ -49,10 +47,10 @@ class MethodParametersUnitTests {
 	@Test
 	void returnsParametersOfAGivenType() throws Exception {
 
-		Method method = Sample.class.getMethod("method", String.class, String.class, Object.class);
-		MethodParameters methodParameters = new MethodParameters(method);
+		var method = Sample.class.getMethod("method", String.class, String.class, Object.class);
+		var methodParameters = new MethodParameters(method);
 
-		List<MethodParameter> objectParameters = methodParameters.getParametersOfType(Object.class);
+		var objectParameters = methodParameters.getParametersOfType(Object.class);
 
 		assertThat(objectParameters).hasSize(1);
 		assertThat(objectParameters.get(0).getParameterIndex()).isEqualTo(2);

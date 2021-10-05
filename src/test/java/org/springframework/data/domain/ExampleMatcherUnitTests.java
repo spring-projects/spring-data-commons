@@ -125,7 +125,7 @@ class ExampleMatcherUnitTests {
 	void withCreatesNewInstance() {
 
 		matcher = matching().withIgnorePaths("foo", "bar", "foo");
-		ExampleMatcher configuredExampleSpec = matcher.withIgnoreCase();
+		var configuredExampleSpec = matcher.withIgnoreCase();
 
 		assertThat(matcher).isNotSameAs(configuredExampleSpec);
 		assertThat(matcher.getIgnoredPaths()).hasSize(2);
@@ -166,14 +166,14 @@ class ExampleMatcherUnitTests {
 				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
 				.withMatcher("world", GenericPropertyMatcher::endsWith);
 
-		ExampleMatcher sameAsMatcher = matching() //
+		var sameAsMatcher = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //
 				.withNullHandler(NullHandler.IGNORE) //
 				.withIgnoreCase("ignored-case") //
 				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
 				.withMatcher("world", GenericPropertyMatcher::endsWith);
 
-		ExampleMatcher different = matching() //
+		var different = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //
 				.withNullHandler(NullHandler.IGNORE) //
 				.withMatcher("hello", GenericPropertyMatchers.contains().ignoreCase());

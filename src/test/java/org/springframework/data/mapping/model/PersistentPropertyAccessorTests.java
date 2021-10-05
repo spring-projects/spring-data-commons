@@ -51,10 +51,10 @@ public class PersistentPropertyAccessorTests {
 
 		List<Object[]> parameters = new ArrayList<>();
 
-		ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
+		var factory = new ClassGeneratingPropertyAccessorFactory();
 
-		Function<Object, PersistentPropertyAccessor<?>> beanWrapper = BeanWrapper::new;
-		Function<Object, PersistentPropertyAccessor<?>> classGenerating = it -> factory
+		var beanWrapper = (Function<Object, PersistentPropertyAccessor<?>>) BeanWrapper::new;
+		var classGenerating = (Function<Object, PersistentPropertyAccessor<?>>) it -> factory
 				.getPropertyAccessor(MAPPING_CONTEXT.getRequiredPersistentEntity(it.getClass()), it);
 
 		parameters.add(new Object[] { beanWrapper, "BeanWrapper" });
@@ -67,9 +67,9 @@ public class PersistentPropertyAccessorTests {
 	@MethodSource("parameters")
 	void shouldSetProperty(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		DataClass bean = new DataClass();
+		var bean = new DataClass();
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
-		SamplePersistentProperty property = getProperty(bean, "id");
+		var property = getProperty(bean, "id");
 
 		accessor.setProperty(property, "value");
 
@@ -82,9 +82,9 @@ public class PersistentPropertyAccessorTests {
 	@MethodSource("parameters")
 	void shouldSetKotlinDataClassProperty(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		DataClassKt bean = new DataClassKt("foo");
+		var bean = new DataClassKt("foo");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
-		SamplePersistentProperty property = getProperty(bean, "id");
+		var property = getProperty(bean, "id");
 
 		accessor.setProperty(property, "value");
 
@@ -98,9 +98,9 @@ public class PersistentPropertyAccessorTests {
 	void shouldSetExtendedKotlinDataClassProperty(
 			Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		ExtendedDataClassKt bean = new ExtendedDataClassKt(0, "bar");
+		var bean = new ExtendedDataClassKt(0, "bar");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
-		SamplePersistentProperty property = getProperty(bean, "id");
+		var property = getProperty(bean, "id");
 
 		accessor.setProperty(property, 1L);
 
@@ -113,9 +113,9 @@ public class PersistentPropertyAccessorTests {
 	@MethodSource("parameters")
 	void shouldUseKotlinGeneratedCopyMethod(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		UnusedCustomCopy bean = new UnusedCustomCopy(new Timestamp(100));
+		var bean = new UnusedCustomCopy(new Timestamp(100));
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
-		SamplePersistentProperty property = getProperty(bean, "date");
+		var property = getProperty(bean, "date");
 
 		accessor.setProperty(property, new Timestamp(200));
 
@@ -129,9 +129,9 @@ public class PersistentPropertyAccessorTests {
 	void kotlinCopyMethodShouldNotSetUnsettableProperty(
 			Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		SingleSettableProperty bean = new SingleSettableProperty(1.1);
+		var bean = new SingleSettableProperty(1.1);
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
-		SamplePersistentProperty property = getProperty(bean, "version");
+		var property = getProperty(bean, "version");
 
 		assertThatThrownBy(() -> accessor.setProperty(property, 1)).isInstanceOf(UnsupportedOperationException.class);
 	}
@@ -141,13 +141,13 @@ public class PersistentPropertyAccessorTests {
 	void shouldSet17thImmutableNullableKotlinProperty(
 			Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		With33Args bean = new With33Args();
+		var bean = new With33Args();
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
-		SamplePersistentProperty property = getProperty(bean, "17");
+		var property = getProperty(bean, "17");
 
 		accessor.setProperty(property, "foo");
 
-		With33Args updated = (With33Args) accessor.getBean();
+		var updated = (With33Args) accessor.getBean();
 		assertThat(updated.get17()).isEqualTo("foo");
 	}
 
@@ -155,9 +155,9 @@ public class PersistentPropertyAccessorTests {
 	@MethodSource("parameters")
 	void shouldWitherProperty(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		ValueClass bean = new ValueClass("foo", "bar");
+		var bean = new ValueClass("foo", "bar");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
-		SamplePersistentProperty property = getProperty(bean, "id");
+		var property = getProperty(bean, "id");
 
 		accessor.setProperty(property, "value");
 
@@ -170,9 +170,9 @@ public class PersistentPropertyAccessorTests {
 	@MethodSource("parameters")
 	void shouldRejectImmutablePropertyUpdate(Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		ValueClass bean = new ValueClass("foo", "bar");
+		var bean = new ValueClass("foo", "bar");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
-		SamplePersistentProperty property = getProperty(bean, "immutable");
+		var property = getProperty(bean, "immutable");
 
 		assertThatThrownBy(() -> accessor.setProperty(property, "value")).isInstanceOf(UnsupportedOperationException.class);
 	}
@@ -182,9 +182,9 @@ public class PersistentPropertyAccessorTests {
 	void shouldRejectImmutableKotlinClassPropertyUpdate(
 			Function<Object, PersistentPropertyAccessor<?>> propertyAccessorFunction) {
 
-		ValueClassKt bean = new ValueClassKt("foo");
+		var bean = new ValueClassKt("foo");
 		PersistentPropertyAccessor accessor = propertyAccessorFunction.apply(bean);
-		SamplePersistentProperty property = getProperty(bean, "immutable");
+		var property = getProperty(bean, "immutable");
 
 		assertThatThrownBy(() -> accessor.setProperty(property, "value")).isInstanceOf(UnsupportedOperationException.class);
 	}
@@ -192,14 +192,14 @@ public class PersistentPropertyAccessorTests {
 	@Test // DATACMNS-1422
 	void shouldUseReflectionIfFrameworkTypesNotVisible() throws Exception {
 
-		HidingClassLoader classLoader = HidingClassLoader.hide(Assert.class);
+		var classLoader = HidingClassLoader.hide(Assert.class);
 		classLoader.excludePackage("org.springframework.data.mapping.model");
 
-		Class<?> entityType = classLoader
+		var entityType = classLoader
 				.loadClass("org.springframework.data.mapping.model.PersistentPropertyAccessorTests$ClassLoaderTest");
 
-		ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
-		BasicPersistentEntity<Object, SamplePersistentProperty> entity = MAPPING_CONTEXT
+		var factory = new ClassGeneratingPropertyAccessorFactory();
+		var entity = MAPPING_CONTEXT
 				.getRequiredPersistentEntity(entityType);
 
 		assertThat(factory.isSupported(entity)).isFalse();

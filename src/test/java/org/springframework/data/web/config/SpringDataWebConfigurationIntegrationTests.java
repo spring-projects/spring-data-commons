@@ -120,7 +120,7 @@ class SpringDataWebConfigurationIntegrationTests {
 		List<Class<?>> configClasses = new ArrayList<>(Arrays.asList(additionalConfigurationClasses));
 		configClasses.add(SpringDataWebConfiguration.class);
 
-		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+		try (var context = new AnnotationConfigApplicationContext(
 				configClasses.toArray(new Class<?>[configClasses.size()]))) {
 
 			context.setClassLoader(classLoader);
@@ -131,8 +131,8 @@ class SpringDataWebConfigurationIntegrationTests {
 	private static Class<?> loadWithout(Class<?> configurationClass, Class<?>... typesOfPackagesToExclude)
 			throws ClassNotFoundException {
 
-		HidingClassLoader hidingClassLoader = HidingClassLoader.hide(typesOfPackagesToExclude);
-		ShadowingClassLoader loader = new ShadowingClassLoader(hidingClassLoader);
+		var hidingClassLoader = HidingClassLoader.hide(typesOfPackagesToExclude);
+		var loader = new ShadowingClassLoader(hidingClassLoader);
 		loader.excludeClass(configurationClass.getName());
 
 		return loader.loadClass(configurationClass.getName());

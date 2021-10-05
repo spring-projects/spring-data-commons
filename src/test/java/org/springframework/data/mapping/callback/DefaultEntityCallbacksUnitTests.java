@@ -43,12 +43,12 @@ class DefaultEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void shouldDispatchCallback() {
 
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfig.class);
+		var ctx = new AnnotationConfigApplicationContext(MyConfig.class);
 
-		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks(ctx);
+		var callbacks = new DefaultEntityCallbacks(ctx);
 
-		PersonDocument personDocument = new PersonDocument(null, "Walter", null);
-		PersonDocument afterCallback = callbacks.callback(BeforeSaveCallback.class, personDocument);
+		var personDocument = new PersonDocument(null, "Walter", null);
+		var afterCallback = callbacks.callback(BeforeSaveCallback.class, personDocument);
 
 		assertThat(afterCallback.getSsn()).isEqualTo(6);
 	}
@@ -56,12 +56,12 @@ class DefaultEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void shouldDispatchCallsToLambdaReceivers() {
 
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(LambdaConfig.class);
+		var ctx = new AnnotationConfigApplicationContext(LambdaConfig.class);
 
-		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks(ctx);
+		var callbacks = new DefaultEntityCallbacks(ctx);
 
-		PersonDocument personDocument = new PersonDocument(null, "Walter", null);
-		PersonDocument afterCallback = callbacks.callback(BeforeSaveCallback.class, personDocument);
+		var personDocument = new PersonDocument(null, "Walter", null);
+		var afterCallback = callbacks.callback(BeforeSaveCallback.class, personDocument);
 
 		assertThat(afterCallback).isSameAs(personDocument);
 	}
@@ -69,7 +69,7 @@ class DefaultEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void invokeGenericEvent() {
 
-		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
+		var callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new GenericPersonCallback());
 
 		Person afterCallback = callbacks.callback(GenericPersonCallback.class, new PersonDocument(null, "Walter", null));
@@ -80,7 +80,7 @@ class DefaultEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void invokeGenericEventWithArgs() {
 
-		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
+		var callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new GenericPersonCallbackWithArgs());
 
 		Person afterCallback = callbacks.callback(GenericPersonCallbackWithArgs.class,
@@ -92,7 +92,7 @@ class DefaultEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void invokeInvalidEvent() {
 
-		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
+		var callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new InvalidEntityCallback() {});
 
 		assertThatIllegalStateException()
@@ -106,11 +106,11 @@ class DefaultEntityCallbacksUnitTests {
 		CapturingEntityCallback first = new FirstCallback();
 		CapturingEntityCallback second = new SecondCallback();
 
-		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
+		var callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(first);
 		callbacks.addEntityCallback(second);
 
-		PersonDocument initial = new PersonDocument(null, "Walter", null);
+		var initial = new PersonDocument(null, "Walter", null);
 
 		callbacks.callback(CapturingEntityCallback.class, initial);
 
@@ -123,7 +123,7 @@ class DefaultEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void errorsOnNullEntity() {
 
-		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
+		var callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new CapturingEntityCallback());
 
 		assertThatIllegalArgumentException()
@@ -137,12 +137,12 @@ class DefaultEntityCallbacksUnitTests {
 		CapturingEntityCallback second = new SecondCallback(null);
 		CapturingEntityCallback third = new ThirdCallback();
 
-		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
+		var callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(first);
 		callbacks.addEntityCallback(second);
 		callbacks.addEntityCallback(third);
 
-		PersonDocument initial = new PersonDocument(null, "Walter", null);
+		var initial = new PersonDocument(null, "Walter", null);
 
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, initial));
@@ -155,11 +155,11 @@ class DefaultEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void detectsMultipleCallbacksWithinOneClass() {
 
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MultipleCallbacksInOneClassConfig.class);
+		var ctx = new AnnotationConfigApplicationContext(MultipleCallbacksInOneClassConfig.class);
 
-		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks(ctx);
+		var callbacks = new DefaultEntityCallbacks(ctx);
 
-		PersonDocument personDocument = new PersonDocument(null, "Walter", null);
+		var personDocument = new PersonDocument(null, "Walter", null);
 		callbacks.callback(BeforeSaveCallback.class, personDocument);
 
 		assertThat(ctx.getBean("callbacks", MultipleCallbacks.class).invocations).containsExactly("save");

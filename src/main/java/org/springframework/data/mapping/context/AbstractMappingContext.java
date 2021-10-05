@@ -17,7 +17,6 @@ package org.springframework.data.mapping.context;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -114,8 +112,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		this.persistentPropertyPathFactory = new PersistentPropertyPathFactory<>(this);
 
-		EntityInstantiators instantiators = new EntityInstantiators();
-		PersistentPropertyAccessorFactory accessorFactory = NativeDetector.inNativeImage()
+		var instantiators = new EntityInstantiators();
+		var accessorFactory = NativeDetector.inNativeImage()
 				? BeanWrapperPropertyAccessorFactory.INSTANCE
 				: new ClassGeneratingPropertyAccessorFactory();
 
@@ -218,7 +216,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		Assert.notNull(type, "Type must not be null!");
 
-		Optional<E> entity = persistentEntities.get(ClassTypeInformation.from(type));
+		var entity = persistentEntities.get(ClassTypeInformation.from(type));
 
 		return entity == null ? false : entity.isPresent();
 	}
@@ -237,7 +235,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			read.lock();
 
-			Optional<E> entity = persistentEntities.get(type);
+			var entity = persistentEntities.get(type);
 
 			if (entity != null) {
 				return entity.orElse(null);
@@ -280,7 +278,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			return null;
 		}
 
-		TypeInformation<?> typeInfo = persistentProperty.getTypeInformation();
+		var typeInfo = persistentProperty.getTypeInformation();
 		return getPersistentEntity(typeInfo.getRequiredActualType());
 	}
 
@@ -355,7 +353,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			read.lock();
 
-			Optional<E> persistentEntity = persistentEntities.get(typeInformation);
+			var persistentEntity = persistentEntities.get(typeInformation);
 
 			if (persistentEntity != null) {
 				return persistentEntity;
@@ -400,9 +398,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		try {
 
-			Class<?> type = userTypeInformation.getType();
+			var type = userTypeInformation.getType();
 
-			E entity = createPersistentEntity(userTypeInformation);
+			var entity = createPersistentEntity(userTypeInformation);
 			entity.setEvaluationContextProvider(evaluationContextProvider);
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
@@ -413,14 +411,14 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				persistentEntities.put(typeInformation, Optional.of(entity));
 			}
 
-			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
+			var pds = BeanUtils.getPropertyDescriptors(type);
 			Map<String, PropertyDescriptor> descriptors = new HashMap<>();
 
-			for (PropertyDescriptor descriptor : pds) {
+			for (var descriptor : pds) {
 				descriptors.put(descriptor.getName(), descriptor);
 			}
 
-			PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
+			var persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
 			ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
 			persistentPropertyCreator.addPropertiesForRemainingDescriptors();
 
@@ -544,12 +542,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 */
 		public void doWith(Field field) {
 
-			String fieldName = field.getName();
-			TypeInformation<?> type = entity.getTypeInformation();
+			var fieldName = field.getName();
+			var type = entity.getTypeInformation();
 
 			ReflectionUtils.makeAccessible(field);
 
-			Property property = Optional.ofNullable(descriptors.get(fieldName))//
+			var property = Optional.ofNullable(descriptors.get(fieldName))//
 					.map(it -> Property.of(type, field, it))//
 					.orElseGet(() -> Property.of(type, field));
 
@@ -575,7 +573,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		private void createAndRegisterProperty(Property input) {
 
-			P property = createPersistentProperty(input, entity, simpleTypeHolder);
+			var property = createPersistentProperty(input, entity, simpleTypeHolder);
 
 			if (property.isTransient()) {
 				return;
@@ -609,17 +607,17 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		protected boolean shouldSkipOverrideProperty(P property) {
 
-			P existingProperty = entity.getPersistentProperty(property.getName());
+			var existingProperty = entity.getPersistentProperty(property.getName());
 
 			if (existingProperty == null) {
 				return false;
 			}
 
-			Class<?> declaringClass = getDeclaringClass(property);
-			Class<?> existingDeclaringClass = getDeclaringClass(existingProperty);
+			var declaringClass = getDeclaringClass(property);
+			var existingDeclaringClass = getDeclaringClass(existingProperty);
 
-			Class<?> propertyType = getPropertyType(property);
-			Class<?> existingPropertyType = getPropertyType(existingProperty);
+			var propertyType = getPropertyType(property);
+			var existingPropertyType = getPropertyType(existingProperty);
 
 			if (!propertyType.isAssignableFrom(existingPropertyType)) {
 
@@ -638,12 +636,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		private Class<?> getDeclaringClass(PersistentProperty<?> persistentProperty) {
 
-			Field field = persistentProperty.getField();
+			var field = persistentProperty.getField();
 			if (field != null) {
 				return field.getDeclaringClass();
 			}
 
-			Method accessor = persistentProperty.getGetter();
+			var accessor = persistentProperty.getGetter();
 
 			if (accessor == null) {
 				accessor = persistentProperty.getSetter();
@@ -662,22 +660,22 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		private Class<?> getPropertyType(PersistentProperty<?> persistentProperty) {
 
-			Field field = persistentProperty.getField();
+			var field = persistentProperty.getField();
 			if (field != null) {
 				return field.getType();
 			}
 
-			Method getter = persistentProperty.getGetter();
+			var getter = persistentProperty.getGetter();
 			if (getter != null) {
 				return getter.getReturnType();
 			}
 
-			Method setter = persistentProperty.getSetter();
+			var setter = persistentProperty.getSetter();
 			if (setter != null) {
 				return setter.getParameterTypes()[0];
 			}
 
-			Method wither = persistentProperty.getWither();
+			var wither = persistentProperty.getWither();
 			if (wither != null) {
 				return wither.getParameterTypes()[0];
 			}
