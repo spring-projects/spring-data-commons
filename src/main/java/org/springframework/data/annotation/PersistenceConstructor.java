@@ -21,9 +21,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Annotation to declare a constructor for instantiation.
+ *
  * @author Jon Brisbin
+ * @author Mark Paluch
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.CONSTRUCTOR)
+@Target({ ElementType.CONSTRUCTOR, ElementType.ANNOTATION_TYPE })
+@EntityCreatorAnnotation
 public @interface PersistenceConstructor {
 }

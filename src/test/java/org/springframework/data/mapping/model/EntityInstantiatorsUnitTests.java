@@ -45,13 +45,6 @@ class EntityInstantiatorsUnitTests {
 	}
 
 	@Test
-	void usesReflectionEntityInstantiatorAsDefaultFallback() {
-
-		EntityInstantiators instantiators = new EntityInstantiators();
-		assertThat(instantiators.getInstantiatorFor(entity)).isInstanceOf(ClassGeneratingEntityInstantiator.class);
-	}
-
-	@Test
 	void returnsCustomInstantiatorForTypeIfRegistered() {
 
 		doReturn(String.class).when(entity).getType();

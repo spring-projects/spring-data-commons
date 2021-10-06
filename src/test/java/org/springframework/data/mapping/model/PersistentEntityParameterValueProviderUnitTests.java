@@ -24,11 +24,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProviderUnitTests.Outer.Inner;
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -57,7 +56,7 @@ class PersistentEntityParameterValueProviderUnitTests<P extends PersistentProper
 			}
 		};
 
-		assertThat(entity.getPersistenceConstructor()).satisfies(constructor -> {
+		assertThat(entity.getEntityCreator()).satisfies(constructor -> {
 
 			Iterator<Parameter<Object, P>> iterator = constructor.getParameters().iterator();
 			ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider,
@@ -76,7 +75,7 @@ class PersistentEntityParameterValueProviderUnitTests<P extends PersistentProper
 		ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider,
 				Optional.of(property));
 
-		assertThat(entity.getPersistenceConstructor())
+		assertThat(entity.getEntityCreator())
 				.satisfies(constructor -> assertThatExceptionOfType(MappingException.class)//
 						.isThrownBy(() -> provider.getParameterValue(constructor.getParameters().iterator().next()))//
 						.withMessageContaining("bar")//

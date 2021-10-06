@@ -19,10 +19,13 @@ import kotlin.reflect.KFunction;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.mapping.FactoryMethod;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.util.KotlinReflectionUtils;
@@ -43,7 +46,7 @@ public class MappingInstantiationException extends RuntimeException {
 	private static final String TEXT_TEMPLATE = "Failed to instantiate %s using constructor %s with arguments %s";
 
 	private final Class<?> entityType;
-	private final Constructor<?> constructor;
+	private final EntityCreatorMetadata<?> entityCreator;
 	private final List<Object> constructorArguments;
 
 	/**
@@ -74,8 +77,7 @@ public class MappingInstantiationException extends RuntimeException {
 		super(buildExceptionMessage(entity, arguments, message), cause);
 
 		this.entityType = entity.map(PersistentEntity::getType).orElse(null);
-		this.constructor = entity.map(PersistentEntity::getPersistenceConstructor).map(PreferredConstructor::getConstructor)
-				.orElse(null);
+		this.entityCreator = entity.map(PersistentEntity::getEntityCreator).orElse(null);
 		this.constructorArguments = arguments;
 	}
 
@@ -84,7 +86,7 @@ public class MappingInstantiationException extends RuntimeException {
 
 		return entity.map(it -> {
 
-			Optional<? extends PreferredConstructor<?, ?>> constructor = Optional.ofNullable(it.getPersistenceConstructor());
+			Optional<? extends EntityCreatorMetadata<?>> constructor = Optional.ofNullable(it.getEntityCreator());
 			List<String> toStringArgs = new ArrayList<>(arguments.size());
 
 			for (Object o : arguments) {
@@ -96,6 +98,19 @@ public class MappingInstantiationException extends RuntimeException {
 					String.join(",", toStringArgs));
 
 		}).orElse(defaultMessage);
+	}
+
+	private static String toString(EntityCreatorMetadata<?> creator) {
+
+		if (creator instanceof PreferredConstructor) {
+			return toString((PreferredConstructor<?, ?>) creator);
+		}
+
+		if (creator instanceof FactoryMethod) {
+			return toString((FactoryMethod<?, ?>) creator);
+		}
+
+		return creator.toString();
 	}
 
 	private static String toString(PreferredConstructor<?, ?> preferredConstructor) {
@@ -114,6 +129,22 @@ public class MappingInstantiationException extends RuntimeException {
 		return constructor.toString();
 	}
 
+	private static String toString(FactoryMethod<?, ?> factoryMethod) {
+
+		Method method = factoryMethod.getFactoryMethod();
+
+		if (KotlinReflectionUtils.isSupportedKotlinClass(method.getDeclaringClass())) {
+
+			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(method);
+
+			if (kotlinFunction != null) {
+				return kotlinFunction.toString();
+			}
+		}
+
+		return method.toString();
+	}
+
 	/**
 	 * Returns the type of the entity that was attempted to instantiate.
 	 *
@@ -127,9 +158,22 @@ public class MappingInstantiationException extends RuntimeException {
 	 * The constructor used during the instantiation attempt.
 	 *
 	 * @return the constructor
+	 * @deprecated since 3.0, use {@link #getEntityCreator()} instead.
 	 */
+	@Deprecated
 	public Optional<Constructor<?>> getConstructor() {
-		return Optional.ofNullable(constructor);
+		return getEntityCreator().filter(PreferredConstructor.class::isInstance).map(PreferredConstructor.class::cast)
+				.map(PreferredConstructor::getConstructor);
+	}
+
+	/**
+	 * The entity creator used during the instantiation attempt.
+	 *
+	 * @return the entity creator
+	 * @since 3.0
+	 */
+	public Optional<EntityCreatorMetadata<?>> getEntityCreator() {
+		return Optional.ofNullable(entityCreator);
 	}
 
 	/**

@@ -30,10 +30,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.ReflectionEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.util.ReflectionUtils;
 
@@ -69,7 +69,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
 		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
-		doReturn(constructor).when(entity).getPersistenceConstructor();
+		doReturn(constructor).when(entity).getEntityCreator();
 
 		Object instance = INSTANCE.createInstance(entity, provider);
 
@@ -91,8 +91,8 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 	@Test // DATACMNS-134
 	void createsInnerClassInstanceCorrectly() {
 
-		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(from(Inner.class));
-		assertThat(entity.getPersistenceConstructor()).satisfies(it -> {
+		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
+		assertThat(entity.getEntityCreator()).satisfies(it -> {
 
 			Parameter<Object, P> parameter = it.getParameters().iterator().next();
 

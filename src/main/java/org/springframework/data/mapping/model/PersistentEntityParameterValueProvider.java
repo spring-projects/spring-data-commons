@@ -15,11 +15,11 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.springframework.data.mapping.EntityCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.lang.Nullable;
 
 /**
@@ -52,9 +52,9 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	@SuppressWarnings("unchecked")
 	public <T> T getParameterValue(Parameter<T, P> parameter) {
 
-		PreferredConstructor<?, P> constructor = entity.getPersistenceConstructor();
+		EntityCreatorMetadata<P> creator = entity.getEntityCreator();
 
-		if (constructor != null && constructor.isEnclosingClassParameter(parameter)) {
+		if (creator != null && creator.isParentParameter(parameter)) {
 			return (T) parent;
 		}
 

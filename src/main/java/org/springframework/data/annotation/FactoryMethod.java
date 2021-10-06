@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping.model;
+package org.springframework.data.annotation;
 
-import org.springframework.data.mapping.Parameter;
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Callback interface to lookup values for a given {@link Parameter}.
+ * Annotation to declare a {@code static} method as factory method for class instantiation.
  *
- * @author Oliver Gierke
+ * @author Mark Paluch
+ * @since 3.0
  */
-public interface ParameterValueProvider<P extends PersistentProperty<P>> {
-
-	/**
-	 * Returns the value to be used for the given {@link Parameter} (usually when entity instances are created).
-	 *
-	 * @param parameter must not be {@literal null}.
-	 * @return
-	 */
-	@Nullable
-	<T> T getParameterValue(Parameter<T, P> parameter);
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+@EntityCreatorAnnotation
+public @interface FactoryMethod {
 }

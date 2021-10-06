@@ -32,12 +32,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
+import org.springframework.data.annotation.FactoryMethod;
 import org.springframework.data.classloadersupport.HidingClassLoader;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator.ObjectInstantiator;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
 import org.springframework.data.util.ClassTypeInformation;
@@ -56,7 +56,7 @@ import org.springframework.util.ReflectionUtils;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
-	ClassGeneratingEntityInstantiator instance = new ClassGeneratingEntityInstantiator();
+	ClassGeneratingEntityInstantiator instance = new ClassGeneratingEntityInstantiator(false);
 
 	@Mock PersistentEntity<?, P> entity;
 	@Mock ParameterValueProvider<P> provider;
@@ -83,7 +83,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
 		doReturn(Foo.class).when(entity).getType();
-		doReturn(constructor).when(entity).getPersistenceConstructor();
+		doReturn(constructor).when(entity).getEntityCreator();
 
 		assertThat(instance.createInstance(entity, provider)).isInstanceOf(Foo.class);
 
@@ -104,8 +104,8 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	@Test // DATACMNS-134, DATACMNS-578
 	void createsInnerClassInstanceCorrectly() {
 
-		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(from(Inner.class));
-		assertThat(entity.getPersistenceConstructor()).satisfies(constructor -> {
+		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
+		assertThat(entity.getEntityCreator()).satisfies(constructor -> {
 
 			Parameter<Object, P> parameter = constructor.getParameters().iterator().next();
 
@@ -189,12 +189,43 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 		assertThat(reference.sample.name).isEqualTo("FOO");
 	}
 
+	@Test // DATACMNS-1175
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	void createsInstancesWithFactoryMethodCorrectly() {
+
+		PersistentEntity<WithFactoryMethod, P> entity = new BasicPersistentEntity<>(from(WithFactoryMethod.class));
+
+		doReturn(2L, "FOO").when(provider).getParameterValue(any(Parameter.class));
+
+		ParameterValueProvider<P> provider = new ParameterValueProvider<P>() {
+
+			@Override
+			public <T> T getParameterValue(Parameter<T, P> parameter) {
+
+				if (parameter.getName().equals("id")) {
+					return (T) Long.valueOf(1);
+				}
+
+				if (parameter.getName().equals("name")) {
+					return (T) "Walter";
+				}
+
+				throw new UnsupportedOperationException(parameter.getName());
+			}
+		};
+
+		WithFactoryMethod result = this.instance.createInstance(entity, provider);
+
+		assertThat(result.id).isEqualTo(1L);
+		assertThat(result.name).isEqualTo("Hello Walter");
+	}
+
 	@Test // DATACMNS-578, DATACMNS-1126
 	void instantiateObjCtorDefault() {
 
 		doReturn(ObjCtorDefault.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjCtorDefault.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2)
 				.forEach(i -> assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ObjCtorDefault.class));
@@ -205,7 +236,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjCtorNoArgs.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjCtorNoArgs.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2).forEach(i -> {
 
@@ -224,7 +255,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjCtor1ParamString.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjCtor1ParamString.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 		doReturn("FOO").when(provider).getParameterValue(any());
 
 		IntStream.range(0, 2).forEach(i -> {
@@ -242,7 +273,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjCtor2ParamStringString.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjCtor2ParamStringString.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2).forEach(i -> {
 
@@ -262,7 +293,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjectCtor1ParamInt.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjectCtor1ParamInt.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2).forEach(i -> {
 
@@ -280,7 +311,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjectCtor1ParamInt.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjectCtor1ParamInt.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		assertThatThrownBy(() -> this.instance.createInstance(entity, provider)) //
 				.hasCauseInstanceOf(IllegalArgumentException.class);
@@ -292,7 +323,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjectCtor7ParamsString5IntsString.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjectCtor7ParamsString5IntsString.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2).forEach(i -> {
 
@@ -412,7 +443,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(type).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(type))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 	}
 
 	static class Foo {
@@ -426,6 +457,23 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		class Inner {
 
+		}
+	}
+
+	static class WithFactoryMethod {
+
+		final Long id;
+		final String name;
+
+		private WithFactoryMethod(Long id, String name) {
+
+			this.id = id;
+			this.name = name;
+		}
+
+		@FactoryMethod
+		public static WithFactoryMethod create(Long id, String name) {
+			return new WithFactoryMethod(id, "Hello " + name);
 		}
 	}
 

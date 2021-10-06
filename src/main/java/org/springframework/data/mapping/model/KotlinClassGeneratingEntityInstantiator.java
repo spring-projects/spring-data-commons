@@ -24,10 +24,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
@@ -49,9 +50,10 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 	@Override
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
 
-		PreferredConstructor<?, ?> constructor = entity.getPersistenceConstructor();
+		EntityCreatorMetadata<?> creator = entity.getEntityCreator();
 
-		if (KotlinReflectionUtils.isSupportedKotlinClass(entity.getType()) && constructor != null) {
+		if (KotlinReflectionUtils.isSupportedKotlinClass(entity.getType())
+				&& creator instanceof PreferredConstructor) {
 
 			PreferredConstructor<?, ?> defaultConstructor = new DefaultingKotlinConstructorResolver(entity)
 					.getDefaultConstructor();
@@ -60,7 +62,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 
 				ObjectInstantiator instantiator = createObjectInstantiator(entity, defaultConstructor);
 
-				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, constructor);
+				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, (PreferredConstructor<?, ?>) creator);
 			}
 		}
 
@@ -82,9 +84,12 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		DefaultingKotlinConstructorResolver(PersistentEntity<?, ?> entity) {
 
 			Constructor<?> hit = resolveDefaultConstructor(entity);
-			PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
+			EntityCreatorMetadata<?> creator = entity.getEntityCreator();
 
-			if (hit != null && persistenceConstructor != null) {
+			if (hit != null && creator instanceof PreferredConstructor) {
+
+				PreferredConstructor<?, ?> persistenceConstructor = (PreferredConstructor<?, ?>) creator;
+
 				this.defaultConstructor = new PreferredConstructor<>(hit,
 						persistenceConstructor.getParameters().toArray(new Parameter[0]));
 			} else {
@@ -95,11 +100,13 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		@Nullable
 		private static Constructor<?> resolveDefaultConstructor(PersistentEntity<?, ?> entity) {
 
-			PreferredConstructor<?, ?> persistenceConstructor = entity.getPersistenceConstructor();
+			EntityCreatorMetadata<?> creator = entity.getEntityCreator();
 
-			if (persistenceConstructor == null) {
+			if (!(creator instanceof PreferredConstructor)) {
 				return null;
 			}
+
+			PreferredConstructor<?, ?> persistenceConstructor = (PreferredConstructor<?, ?>) entity.getEntityCreator();
 
 			Constructor<?> hit = null;
 			Constructor<?> constructor = persistenceConstructor.getConstructor();
@@ -199,7 +206,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			Object[] params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+			Object[] params = extractInvocationArguments(entity.getEntityCreator(), provider);
 
 			try {
 				return (T) instantiator.newInstance(params);
@@ -209,17 +216,17 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		}
 
 		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				@Nullable PreferredConstructor<? extends T, P> preferredConstructor, ParameterValueProvider<P> provider) {
+				@Nullable EntityCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
 
-			if (preferredConstructor == null) {
-				throw new IllegalArgumentException("PreferredConstructor must not be null!");
+			if (entityCreator == null) {
+				throw new IllegalArgumentException("EntityCreator must not be null!");
 			}
 
 			Object[] params = allocateArguments(synthetic.getParameterCount()
 					+ KotlinDefaultMask.getMaskCount(synthetic.getParameterCount()) + /* DefaultConstructorMarker */1);
 			int userParameterCount = kParameters.size();
 
-			List<Parameter<Object, P>> parameters = preferredConstructor.getParameters();
+			List<Parameter<Object, P>> parameters = entityCreator.getParameters();
 
 			// Prepare user-space arguments
 			for (int i = 0; i < userParameterCount; i++) {
