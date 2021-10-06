@@ -17,8 +17,6 @@ package org.springframework.data.repository.util;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
 import kotlinx.coroutines.flow.Flow;
 import kotlinx.coroutines.flow.FlowKt;
 import kotlinx.coroutines.reactive.ReactiveFlowKt;
@@ -62,6 +60,7 @@ import org.springframework.util.ClassUtils;
  * @author Mark Paluch
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Hantsy Bai
  * @since 2.0
  * @see ReactiveWrappers
  * @see ReactiveAdapterRegistry
@@ -536,6 +535,9 @@ public abstract class ReactiveWrapperConverters {
 
 	/**
 	 * Wrapper for SmallRye Mutiny's {@link io.smallrye.mutiny.Uni}.
+	 *
+	 * @author Hantsy Bai
+	 * @since 2.6
 	 */
 	private enum UniWrapper implements ReactiveTypeWrapper<io.smallrye.mutiny.Uni<?>> {
 
@@ -548,12 +550,15 @@ public abstract class ReactiveWrapperConverters {
 
 		@Override
 		public io.smallrye.mutiny.Uni<?> map(Object wrapper, Function<Object, Object> function) {
-			return ((io.smallrye.mutiny.Uni<?>) wrapper).map(function::apply);
+			return ((io.smallrye.mutiny.Uni<?>) wrapper).map(function);
 		}
 	}
 
 	/**
 	 * Wrapper for SmallRye Mutiny's {@link io.smallrye.mutiny.Multi}.
+	 *
+	 * @author Hantsy Bai
+	 * @since 2.6
 	 */
 	private enum MultiWrapper implements ReactiveTypeWrapper<io.smallrye.mutiny.Multi<?>> {
 
@@ -566,7 +571,7 @@ public abstract class ReactiveWrapperConverters {
 
 		@Override
 		public io.smallrye.mutiny.Multi<?> map(Object wrapper, Function<Object, Object> function) {
-			return ((io.smallrye.mutiny.Multi<?>) wrapper).map(function::apply);
+			return ((io.smallrye.mutiny.Multi<?>) wrapper).map(function);
 		}
 	}
 

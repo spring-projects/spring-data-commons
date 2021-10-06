@@ -44,6 +44,7 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Gerrit Meier
+ * @author Hantsy Bai
  * @since 2.0
  * @see org.reactivestreams.Publisher
  * @see rx.Single
@@ -59,6 +60,8 @@ import org.springframework.util.ClassUtils;
  * @see io.reactivex.rxjava3.core.Observable
  * @see io.reactivex.rxjava3.core.Completable
  * @see io.reactivex.rxjava3.core.Flowable
+ * @see io.smallrye.mutiny.Multi
+ * @see io.smallrye.mutiny.Uni
  * @see Mono
  * @see Flux
  */

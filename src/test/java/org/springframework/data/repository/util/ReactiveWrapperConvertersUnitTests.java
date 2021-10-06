@@ -37,6 +37,7 @@ import org.reactivestreams.Publisher;
  * Unit tests for {@link ReactiveWrapperConverters}.
  *
  * @author Mark Paluch
+ * @author Hantsy Bai
  */
 class ReactiveWrapperConvertersUnitTests {
 
@@ -84,7 +85,7 @@ class ReactiveWrapperConvertersUnitTests {
 		assertThat(ReactiveWrapperConverters.supports(io.reactivex.rxjava3.core.Completable.class)).isTrue();
 	}
 
-	@Test
+	@Test // GH-2471
 	void shouldSupportMutinyTypes() {
 
 		assertThat(ReactiveWrapperConverters.supports(Uni.class)).isTrue();
