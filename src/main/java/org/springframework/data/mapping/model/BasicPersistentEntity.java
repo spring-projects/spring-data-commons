@@ -63,7 +63,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)!";
 
-	private final @Nullable PreferredConstructor<T, P> constructor;
+	private final @Nullable EntityCreator<T, P> constructor;
 	private final TypeInformation<T> information;
 	private final List<P> properties;
 	private final List<P> persistentPropertiesCache;
@@ -109,7 +109,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.properties = new ArrayList<>();
 		this.persistentPropertiesCache = new ArrayList<>();
 		this.comparator = comparator;
-		this.constructor = PreferredConstructorDiscoverer.discover(this);
+		this.constructor = EntityCreatorDiscoverer.discover(this);
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
 		this.propertyCache = new HashMap<>(16, 1f);
@@ -129,6 +129,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	@Nullable
 	public PreferredConstructor<T, P> getPersistenceConstructor() {
+		return constructor instanceof PreferredConstructor ? (PreferredConstructor<T, P>) constructor : null;
+	}
+
+	@Override
+	public EntityCreator<T, P> getEntityCreator() {
 		return constructor;
 	}
 

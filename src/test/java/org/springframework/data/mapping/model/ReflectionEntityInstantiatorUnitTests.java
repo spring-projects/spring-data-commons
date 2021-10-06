@@ -69,7 +69,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
 		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
-		doReturn(constructor).when(entity).getPersistenceConstructor();
+		doReturn(constructor).when(entity).getEntityCreator();
 
 		var instance = INSTANCE.createInstance(entity, provider);
 

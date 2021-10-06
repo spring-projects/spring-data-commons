@@ -43,7 +43,7 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 			)
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "White")
-		every { entity.persistenceConstructor } returns constructor
+		every { entity.entityCreator } returns constructor
 
 		val instance: Contact =
 			ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider)
@@ -63,7 +63,7 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 			)
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", null)
-		every { entity.persistenceConstructor } returns constructor
+		every { entity.entityCreator } returns constructor
 
 		val instance: ContactWithDefaulting =
 			ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider)

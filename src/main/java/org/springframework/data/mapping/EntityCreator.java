@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.annotation;
+package org.springframework.data.mapping;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.List;
 
 /**
- * @author Jon Brisbin
+ * Mechanism to create an entity instance.
+ *
+ * @author Mark Paluch
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.CONSTRUCTOR, ElementType.ANNOTATION_TYPE })
-public @interface PersistenceConstructor {
+public interface EntityCreator<T, P extends PersistentProperty<P>> {
+
+	// TODO: Rename to isCreatorParameter
+	boolean isConstructorParameter(PersistentProperty<?> property);
+
+	int getParameterCount();
+
+	List<Parameter<Object, P>> getParameters();
 }

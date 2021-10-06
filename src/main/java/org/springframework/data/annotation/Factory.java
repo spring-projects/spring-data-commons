@@ -21,9 +21,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author Jon Brisbin
+ * Annotation to declare a {@code  static} method as factory method for a class.
+ *
+ * @author Mark Paluch
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.CONSTRUCTOR, ElementType.ANNOTATION_TYPE })
-public @interface PersistenceConstructor {
+@Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+public @interface Factory {
 }
