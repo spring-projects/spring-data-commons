@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.projection.ProjectionFactory;
@@ -261,7 +262,7 @@ public abstract class ReturnedType {
 
 			List<String> properties = new ArrayList<>(constructor.getConstructor().getParameterCount());
 
-			for (PreferredConstructor.Parameter<Object, ?> parameter : constructor.getParameters()) {
+			for (Parameter<Object, ?> parameter : constructor.getParameters()) {
 				properties.add(parameter.getName());
 			}
 

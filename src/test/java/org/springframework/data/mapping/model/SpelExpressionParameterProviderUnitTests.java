@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTests.SamplePersistentProperty;
 
 /**

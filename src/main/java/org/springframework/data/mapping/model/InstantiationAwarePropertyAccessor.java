@@ -19,9 +19,9 @@ import java.util.function.Function;
 
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
