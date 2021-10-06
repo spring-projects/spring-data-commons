@@ -19,9 +19,9 @@ import java.util.function.Function;
 
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -81,22 +81,22 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 			return;
 		}
 
-		var constructor = owner.getPersistenceConstructor();
+		var creator = owner.getEntityCreator();
 
-		if (constructor == null) {
+		if (creator == null) {
 			throw new IllegalStateException(String.format(NO_SETTER_OR_CONSTRUCTOR, property.getName(), owner.getType()));
 		}
 
-		if (!constructor.isConstructorParameter(property)) {
+		if (!creator.isCreatorParameter(property)) {
 			throw new IllegalStateException(
-					String.format(NO_CONSTRUCTOR_PARAMETER, property.getName(), constructor.getConstructor()));
+					String.format(NO_CONSTRUCTOR_PARAMETER, property.getName(), creator));
 		}
 
-		constructor.getParameters().forEach(it -> {
+		creator.getParameters().forEach(it -> {
 
 			if (it.getName() == null) {
 				throw new IllegalStateException(
-						String.format("Cannot detect parameter names of copy constructor of %s!", owner.getType()));
+						String.format("Cannot detect parameter names of copy creator of %s!", owner.getType()));
 			}
 		});
 

@@ -45,7 +45,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 			)
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "White")
-		every { entity.persistenceConstructor } returns constructor
+		every { entity.entityCreator } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
@@ -73,7 +73,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 			null, "Walter", null, "Junior", null
 		)
 
-		every { entity.persistenceConstructor } returns constructor
+		every { entity.entityCreator } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
@@ -97,7 +97,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 			)
 
 		every { provider.getParameterValue<Boolean>(any()) } returns null
-		every { entity.persistenceConstructor } returns constructor
+		every { entity.entityCreator } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
@@ -130,7 +130,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		every { provider.getParameterValue<Double>(any()) } returns null
 		every { provider.getParameterValue<Char>(any()) } returns null
 		every { provider.getParameterValue<Boolean>(any()) } returns null
-		every { entity.persistenceConstructor } returns constructor
+		every { entity.entityCreator } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
@@ -156,7 +156,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 			)
 
 		every { provider.getParameterValue<String>(any()) } returns "Walter"
-		every { entity.persistenceConstructor } returns constructor
+		every { entity.entityCreator } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 

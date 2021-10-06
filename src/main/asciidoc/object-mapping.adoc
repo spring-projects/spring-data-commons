@@ -17,12 +17,13 @@ This means we need two fundamental steps:
 Spring Data automatically tries to detect a persistent entity's constructor to be used to materialize objects of that type.
 The resolution algorithm works as follows:
 
-1. If there is a single constructor, it is used.
-2. If there are multiple constructors and exactly one is annotated with `@PersistenceConstructor`, it is used.
-3. If there's a no-argument constructor, it is used.
+1. If there is a single static factory method annotated with `@FactoryMethod` then it is used.
+2. If there is a single constructor, it is used.
+3. If there are multiple constructors and exactly one is annotated with `@PersistenceConstructor`, it is used.
+4. If there's a no-argument constructor, it is used.
 Other constructors will be ignored.
 
-The value resolution assumes constructor argument names to match the property names of the entity, i.e. the resolution will be performed as if the property was to be populated, including all customizations in mapping (different datastore column or field name etc.).
+The value resolution assumes constructor/factory method argument names to match the property names of the entity, i.e. the resolution will be performed as if the property was to be populated, including all customizations in mapping (different datastore column or field name etc.).
 This also requires either parameter names information available in the class file or an `@ConstructorProperties` annotation being present on the constructor.
 
 The value resolution can be customized by using Spring Framework's `@Value` value annotation using a store-specific SpEL expression.
@@ -206,6 +207,7 @@ Even if the intent is that the calculation should be preferred, it's important t
 <6> The class exposes a factory method and a constructor for object creation.
 The core idea here is to use factory methods instead of additional constructors to avoid the need for constructor disambiguation through `@PersistenceConstructor`.
 Instead, defaulting of properties is handled within the factory method.
+If you want Spring Data to use the factory method for object instantiation, annotate it with `@FactoryMethod`.
 
 [[mapping.general-recommendations]]
 == General recommendations

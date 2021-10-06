@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.PreferredConstructorDiscovererUnitTests.Outer.Inner;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
@@ -100,7 +99,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 		assertThat(PreferredConstructorDiscoverer.discover(entity)).satisfies(constructor -> {
 
 			Parameter<?, P> parameter = constructor.getParameters().iterator().next();
-			assertThat(constructor.isEnclosingClassParameter(parameter)).isTrue();
+			assertThat(constructor.isParentParameter(parameter)).isTrue();
 		});
 	}
 

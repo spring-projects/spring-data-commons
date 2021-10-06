@@ -22,10 +22,12 @@ import java.util.Collections;
 
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.mapping.FactoryMethod;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * {@link EntityInstantiator} that uses the {@link PersistentEntity}'s {@link PreferredConstructor} to instantiate an
@@ -44,39 +46,58 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		var constructor = entity.getPersistenceConstructor();
+		var creator = entity.getEntityCreator();
 
-		if (constructor == null) {
-
-			try {
-				Class<?> clazz = entity.getType();
-				if (clazz.isArray()) {
-					var ctype = clazz;
-					var dims = 0;
-					while (ctype.isArray()) {
-						ctype = ctype.getComponentType();
-						dims++;
-					}
-					return (T) Array.newInstance(clazz, dims);
-				} else {
-					return BeanUtils.instantiateClass(entity.getType());
-				}
-			} catch (BeanInstantiationException e) {
-				throw new MappingInstantiationException(entity, Collections.emptyList(), e);
-			}
+		if (creator == null) {
+			return instantiateClass(entity);
 		}
-		var parameterCount = constructor.getConstructor().getParameterCount();
+		var parameterCount = creator.getParameterCount();
 
 		var params = parameterCount == 0 ? EMPTY_ARGS : new Object[parameterCount];
 		var i = 0;
-		for (Parameter<?, P> parameter : constructor.getParameters()) {
+		for (Parameter<?, P> parameter : creator.getParameters()) {
 			params[i++] = provider.getParameterValue(parameter);
 		}
 
+		if (creator instanceof FactoryMethod method) {
+
+			try {
+				var t = (T) ReflectionUtils.invokeMethod(method.getFactoryMethod(), null, params);
+
+				if (t == null) {
+					throw new IllegalStateException("Method %s returned null!".formatted(method.getFactoryMethod()));
+				}
+				return t;
+			} catch (Exception e) {
+				throw new MappingInstantiationException(entity, new ArrayList<>(Arrays.asList(params)), e);
+			}
+		}
+
 		try {
-			return BeanUtils.instantiateClass(constructor.getConstructor(), params);
+			return BeanUtils.instantiateClass(((PreferredConstructor<T, ?>) creator).getConstructor(), params);
 		} catch (BeanInstantiationException e) {
 			throw new MappingInstantiationException(entity, new ArrayList<>(Arrays.asList(params)), e);
+		}
+	}
+
+	private <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T instantiateClass(
+			E entity) {
+
+		try {
+			Class<?> clazz = entity.getType();
+			if (clazz.isArray()) {
+				var ctype = clazz;
+				var dims = 0;
+				while (ctype.isArray()) {
+					ctype = ctype.getComponentType();
+					dims++;
+				}
+				return (T) Array.newInstance(clazz, dims);
+			} else {
+				return BeanUtils.instantiateClass(entity.getType());
+			}
+		} catch (BeanInstantiationException e) {
+			throw new MappingInstantiationException(entity, Collections.emptyList(), e);
 		}
 	}
 }

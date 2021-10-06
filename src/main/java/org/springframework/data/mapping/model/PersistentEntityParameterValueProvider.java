@@ -16,9 +16,9 @@
 package org.springframework.data.mapping.model;
 
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.lang.Nullable;
 
 /**
@@ -47,10 +47,10 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	@SuppressWarnings("unchecked")
 	public <T> T getParameterValue(Parameter<T, P> parameter) {
 
-		var constructor = entity.getPersistenceConstructor();
+		var creator = entity.getEntityCreator();
 
-		if (constructor != null && constructor.isEnclosingClassParameter(parameter)) {
-			return (T) parent;
+		if (creator.isParentParameter(parameter)) {
+				return (T) parent;
 		}
 
 		var name = parameter.getName();

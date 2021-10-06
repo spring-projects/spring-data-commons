@@ -33,19 +33,22 @@ import org.springframework.asm.Type;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.NativeDetector;
+import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.mapping.FactoryMethod;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
  * An {@link EntityInstantiator} that can generate byte code to speed-up dynamic object instantiation. Uses the
  * {@link PersistentEntity}'s {@link PreferredConstructor} to instantiate an instance of the entity by dynamically
  * generating factory methods with appropriate constructor invocations via ASM. If we cannot generate byte code for a
- * type, we gracefully fall-back to the {@link ReflectionEntityInstantiator}.
+ * type, we gracefully fallback to the {@link ReflectionEntityInstantiator}.
  *
  * @author Thomas Darimont
  * @author Oliver Gierke
@@ -64,11 +67,21 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	private volatile Map<TypeInformation<?>, EntityInstantiator> entityInstantiators = new HashMap<>(32);
 
+	private final boolean fallbackToReflectionOnError;
+
 	/**
 	 * Creates a new {@link ClassGeneratingEntityInstantiator}.
 	 */
 	public ClassGeneratingEntityInstantiator() {
+		this(true);
+	}
+
+	/**
+	 * Creates a new {@link ClassGeneratingEntityInstantiator}.
+	 */
+	ClassGeneratingEntityInstantiator(boolean fallbackToReflectionOnError) {
 		this.generator = new ObjectInstantiatorClassGenerator();
+		this.fallbackToReflectionOnError = fallbackToReflectionOnError;
 	}
 
 	@Override
@@ -122,18 +135,22 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return MappingInstantiationExceptionEntityInstantiator.create(entity.getType());
 		}
 
-		try {
-			return doCreateEntityInstantiator(entity);
-		} catch (Throwable ex) {
+		if (fallbackToReflectionOnError) {
+			try {
+				return doCreateEntityInstantiator(entity);
+			} catch (Throwable ex) {
 
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(
-						String.format("Cannot create entity instantiator for %s. Falling back to ReflectionEntityInstantiator.",
-								entity.getName()),
-						ex);
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug(
+							String.format("Cannot create entity instantiator for %s. Falling back to ReflectionEntityInstantiator.",
+									entity.getName()),
+							ex);
+				}
+				return ReflectionEntityInstantiator.INSTANCE;
 			}
-			return ReflectionEntityInstantiator.INSTANCE;
 		}
+
+		return doCreateEntityInstantiator(entity);
 	}
 
 	/**
@@ -141,7 +158,8 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
-		return new EntityInstantiatorAdapter(createObjectInstantiator(entity, entity.getPersistenceConstructor()));
+		return new EntityInstantiatorAdapter(
+				createObjectInstantiator(entity, entity.getEntityCreator()));
 	}
 
 	/**
@@ -169,9 +187,24 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return true;
 		}
 
-		var persistenceConstructor = entity.getPersistenceConstructor();
-		if (persistenceConstructor == null || Modifier.isPrivate(persistenceConstructor.getConstructor().getModifiers())) {
+		var entityCreator = entity.getEntityCreator();
+
+		if (entityCreator == null) {
 			return true;
+		}
+
+		if (entityCreator instanceof PreferredConstructor<?, ?> persistenceConstructor) {
+
+			if (Modifier.isPrivate(persistenceConstructor.getConstructor().getModifiers())) {
+				return true;
+			}
+		}
+
+		if (entityCreator instanceof FactoryMethod<?, ?> factoryMethod) {
+
+			if (Modifier.isPrivate(factoryMethod.getFactoryMethod().getModifiers())) {
+				return true;
+			}
 		}
 
 		if (!ClassUtils.isPresent(ObjectInstantiator.class.getName(), type.getClassLoader())) {
@@ -194,7 +227,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	/**
 	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link PersistentEntity} and
-	 * {@link PreferredConstructor}. There will always be exactly one {@link ObjectInstantiator} instance per
+	 * {@link EntityCreatorMetadata}. There will always be exactly one {@link ObjectInstantiator} instance per
 	 * {@link PersistentEntity}.
 	 *
 	 * @param entity
@@ -202,7 +235,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity,
-			@Nullable PreferredConstructor<?, ?> constructor) {
+			@Nullable EntityCreatorMetadata<?> constructor) {
 
 		try {
 			return (ObjectInstantiator) this.generator.generateCustomInstantiatorClass(entity, constructor).newInstance();
@@ -236,7 +269,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			var params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+			var params = extractInvocationArguments(entity.getEntityCreator(), provider);
 
 			try {
 				return (T) instantiator.newInstance(params);
@@ -254,13 +287,13 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	static <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-			@Nullable PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
+			@Nullable EntityCreatorMetadata<P> constructor, ParameterValueProvider<P> provider) {
 
 		if (constructor == null || !constructor.hasParameters()) {
 			return allocateArguments(0);
 		}
 
-		var params = allocateArguments(constructor.getConstructor().getParameterCount());
+		var params = allocateArguments(constructor.getParameterCount());
 
 		var index = 0;
 		for (Parameter<?, P> parameter : constructor.getParameters()) {
@@ -303,7 +336,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			var params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+			var params = extractInvocationArguments(entity.getEntityCreator(), provider);
 
 			throw new MappingInstantiationException(entity, Arrays.asList(params),
 					new BeanInstantiationException(typeToCreate, "Class is abstract"));
@@ -353,7 +386,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		private static final String INIT = "<init>";
 		private static final String TAG = "_Instantiator_";
-		private static final String JAVA_LANG_OBJECT = "java/lang/Object";
+		private static final String JAVA_LANG_OBJECT = Type.getInternalName(Object.class);
 		private static final String CREATE_METHOD_NAME = "newInstance";
 
 		private static final String[] IMPLEMENTED_INTERFACES = new String[] {
@@ -367,7 +400,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @return
 		 */
 		public Class<?> generateCustomInstantiatorClass(PersistentEntity<?, ?> entity,
-				@Nullable PreferredConstructor<?, ?> constructor) {
+				@Nullable EntityCreatorMetadata<?> constructor) {
 
 			var className = generateClassName(entity);
 			var type = entity.getType();
@@ -404,11 +437,11 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 *
 		 * @param internalClassName
 		 * @param entity
-		 * @param constructor
+		 * @param entityCreator
 		 * @return
 		 */
 		public byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity,
-				@Nullable PreferredConstructor<?, ?> constructor) {
+				@Nullable EntityCreatorMetadata<?> entityCreator) {
 
 			var cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
@@ -417,7 +450,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 			visitDefaultConstructor(cw);
 
-			visitCreateMethod(cw, entity, constructor);
+			visitCreateMethod(cw, entity, entityCreator);
 
 			cw.visitEnd();
 
@@ -440,49 +473,79 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 *
 		 * @param cw
 		 * @param entity
-		 * @param constructor
+		 * @param entityCreator
 		 */
 		private void visitCreateMethod(ClassWriter cw, PersistentEntity<?, ?> entity,
-				@Nullable PreferredConstructor<?, ?> constructor) {
+				@Nullable EntityCreatorMetadata<?> entityCreator) {
 
 			var entityTypeResourcePath = Type.getInternalName(entity.getType());
 
 			var mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, CREATE_METHOD_NAME,
-					"([Ljava/lang/Object;)Ljava/lang/Object;", null, null);
+					"([" + BytecodeUtil.referenceName(Object.class) + ")" + BytecodeUtil.referenceName(Object.class),
+					null, null);
 			mv.visitCode();
 			mv.visitTypeInsn(NEW, entityTypeResourcePath);
 			mv.visitInsn(DUP);
 
-			if (constructor != null) {
+			if (entityCreator instanceof PreferredConstructor<?, ?> constructor) {
+				visitConstructorCreation(constructor, mv, entityTypeResourcePath);
+			}
 
-				var ctor = constructor.getConstructor();
-				var parameterTypes = ctor.getParameterTypes();
-				List<? extends Parameter<Object, ?>> parameters = constructor.getParameters();
+			if (entityCreator instanceof FactoryMethod<?, ?> factoryMethod) {
+				visitFactoryMethodCreation(factoryMethod, mv, entityTypeResourcePath);
+			}
 
-				for (var i = 0; i < parameterTypes.length; i++) {
+			mv.visitInsn(ARETURN);
+			mv.visitMaxs(0, 0); // (0, 0) = computed via ClassWriter.COMPUTE_MAXS
+			mv.visitEnd();
+		}
 
-					mv.visitVarInsn(ALOAD, 1);
+		private static void visitConstructorCreation(PreferredConstructor<?, ?> constructor, MethodVisitor mv,
+				String entityTypeResourcePath) {
 
-					visitArrayIndex(mv, i);
+			var ctor = constructor.getConstructor();
+			var parameterTypes = ctor.getParameterTypes();
+			List<? extends Parameter<Object, ?>> parameters = constructor.getParameters();
 
-					mv.visitInsn(AALOAD);
+			visitParameterTypes(mv, parameterTypes, parameters);
 
-					if (parameterTypes[i].isPrimitive()) {
+			mv.visitMethodInsn(INVOKESPECIAL, entityTypeResourcePath, INIT, Type.getConstructorDescriptor(ctor), false);
+		}
 
-						mv.visitInsn(DUP);
-						var parameterName = parameters.size() > i ? parameters.get(i).getName() : null;
+		private static void visitFactoryMethodCreation(FactoryMethod<?, ?> factoryMethod, MethodVisitor mv,
+				String entityTypeResourcePath) {
 
-						insertAssertNotNull(mv, parameterName == null ? String.format("at index %d", i) : parameterName);
-						insertUnboxInsns(mv, Type.getType(parameterTypes[i]).toString().charAt(0), "");
-					} else {
-						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(parameterTypes[i]));
-					}
+			var method = factoryMethod.getFactoryMethod();
+			var parameterTypes = method.getParameterTypes();
+			List<? extends Parameter<Object, ?>> parameters = factoryMethod.getParameters();
+
+			visitParameterTypes(mv, parameterTypes, parameters);
+
+			mv.visitMethodInsn(INVOKESTATIC, entityTypeResourcePath, method.getName(), Type.getMethodDescriptor(method),
+					false);
+		}
+
+		private static void visitParameterTypes(MethodVisitor mv, Class<?>[] parameterTypes,
+				List<? extends Parameter<Object, ?>> parameters) {
+
+			for (var i = 0; i < parameterTypes.length; i++) {
+
+				mv.visitVarInsn(ALOAD, 1);
+
+				visitArrayIndex(mv, i);
+
+				mv.visitInsn(AALOAD);
+
+				if (parameterTypes[i].isPrimitive()) {
+
+					mv.visitInsn(DUP);
+					var parameterName = parameters.size() > i ? parameters.get(i).getName() : null;
+
+					insertAssertNotNull(mv, parameterName == null ? String.format("at index %d", i) : parameterName);
+					insertUnboxInsns(mv, Type.getType(parameterTypes[i]).toString().charAt(0), "");
+				} else {
+					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(parameterTypes[i]));
 				}
-
-				mv.visitMethodInsn(INVOKESPECIAL, entityTypeResourcePath, INIT, Type.getConstructorDescriptor(ctor), false);
-				mv.visitInsn(ARETURN);
-				mv.visitMaxs(0, 0); // (0, 0) = computed via ClassWriter.COMPUTE_MAXS
-				mv.visitEnd();
 			}
 		}
 
@@ -512,8 +575,8 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 			// Assert.notNull(property)
 			mv.visitLdcInsn(String.format("Parameter %s must not be null!", parameterName));
-			mv.visitMethodInsn(INVOKESTATIC, "org/springframework/util/Assert", "notNull",
-					String.format("(%s%s)V", String.format("L%s;", JAVA_LANG_OBJECT), "Ljava/lang/String;"), false);
+			mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(Assert.class), "notNull", String.format("(%s%s)V",
+					BytecodeUtil.referenceName(JAVA_LANG_OBJECT), BytecodeUtil.referenceName(String.class)), false);
 		}
 
 		/**
@@ -529,52 +592,52 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 			switch (ch) {
 				case 'Z':
-					if (!stackDescriptor.equals("Ljava/lang/Boolean")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Boolean");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Boolean.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Boolean.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Boolean.class), "booleanValue", "()Z", false);
 					break;
 				case 'B':
-					if (!stackDescriptor.equals("Ljava/lang/Byte")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Byte");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Byte.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Byte.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Byte.class), "byteValue", "()B", false);
 					break;
 				case 'C':
-					if (!stackDescriptor.equals("Ljava/lang/Character")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Character");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Character.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Character.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Character.class), "charValue", "()C", false);
 					break;
 				case 'D':
-					if (!stackDescriptor.equals("Ljava/lang/Double")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Double");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Double.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Double.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Double.class), "doubleValue", "()D", false);
 					break;
 				case 'F':
-					if (!stackDescriptor.equals("Ljava/lang/Float")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Float");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Float.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Float.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Float.class), "floatValue", "()F", false);
 					break;
 				case 'I':
-					if (!stackDescriptor.equals("Ljava/lang/Integer")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Integer");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Integer.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Integer.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Integer.class), "intValue", "()I", false);
 					break;
 				case 'J':
-					if (!stackDescriptor.equals("Ljava/lang/Long")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Long");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Long.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Long.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Long.class), "longValue", "()J", false);
 					break;
 				case 'S':
-					if (!stackDescriptor.equals("Ljava/lang/Short")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Short");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Short.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Short.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Short", "shortValue", "()S", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Short.class), "shortValue", "()S", false);
 					break;
 				default:
 					throw new IllegalArgumentException("Unboxing should not be attempted for descriptor '" + ch + "'");
