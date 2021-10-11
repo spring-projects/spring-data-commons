@@ -60,6 +60,7 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionalProxy;
@@ -101,6 +102,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private ClassLoader classLoader;
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 	private BeanFactory beanFactory;
+	private Lazy<ProjectionFactory> projectionFactory;
 
 	private final QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
@@ -117,6 +119,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.queryPostProcessors = new ArrayList<>();
 		this.queryPostProcessors.add(collectingListener);
 		this.methodInvocationListeners = new ArrayList<>();
+		this.projectionFactory = createProjectionFactory();
 	}
 
 	/**
@@ -144,6 +147,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader == null ? org.springframework.util.ClassUtils.getDefaultClassLoader() : classLoader;
+		this.projectionFactory = createProjectionFactory();
 	}
 
 	/*
@@ -153,6 +157,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
+		this.projectionFactory = createProjectionFactory();
 	}
 
 	/**
@@ -354,10 +359,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
-		ProjectionFactory projectionFactory = getProjectionFactory(classLoader, beanFactory);
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 				evaluationContextProvider);
-		result.addAdvice(new QueryExecutorMethodInterceptor(information, projectionFactory, queryLookupStrategy,
+		result.addAdvice(new QueryExecutorMethodInterceptor(information, getProjectionFactory(), queryLookupStrategy,
 				namedQueries, queryPostProcessors, methodInvocationListeners));
 
 		result.addAdvice(
@@ -454,6 +458,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 	protected List<QueryMethod> getQueryMethods() {
 		return collectingListener.getQueryMethods();
+	}
+
+	/**
+	 * Returns a {@link ProjectionFactory} instance.
+	 *
+	 * @return
+	 * @since 2.6
+	 */
+	protected ProjectionFactory getProjectionFactory() {
+		return projectionFactory.get();
 	}
 
 	/**
@@ -584,6 +598,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		StartupStep step = applicationStartup.start(name);
 		return step.tag("repository", repositoryInterface.getName());
+	}
+
+	private Lazy<ProjectionFactory> createProjectionFactory() {
+		return Lazy.of(() -> getProjectionFactory(this.classLoader, this.beanFactory));
 	}
 
 	/**
