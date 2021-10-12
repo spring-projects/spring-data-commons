@@ -34,7 +34,7 @@ import org.springframework.data.domain.Sort;
 public interface QueryByExampleExecutor<T> {
 
 	/**
-	 * Returns a single entity matching the given {@link Example} or {@literal null} if none was found.
+	 * Returns a single entity matching the given {@link Example} or {@link Optional#empty()} if none was found.
 	 *
 	 * @param example must not be {@literal null}.
 	 * @return a single entity matching the given {@link Example} or {@link Optional#empty()} if none was found.
