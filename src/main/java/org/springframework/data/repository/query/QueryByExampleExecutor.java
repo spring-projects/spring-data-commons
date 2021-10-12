@@ -29,12 +29,13 @@ import org.springframework.data.domain.Sort;
  * @param <T>
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Ali Kilickaya
  * @since 1.12
  */
 public interface QueryByExampleExecutor<T> {
 
 	/**
-	 * Returns a single entity matching the given {@link Example} or {@literal null} if none was found.
+	 * Returns a single entity matching the given {@link Example} or {@link Optional#empty()} if none was found.
 	 *
 	 * @param example must not be {@literal null}.
 	 * @return a single entity matching the given {@link Example} or {@link Optional#empty()} if none was found.
