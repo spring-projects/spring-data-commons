@@ -425,6 +425,11 @@ class PartTreeUnitTests {
 		assertThat(tree.isDistinct()).isTrue();
 	}
 
+	@Test // GH-2472
+	void resolvesPropertyPathsWithNumbers() {
+		assertThat(new PartTree("findByUserLastname2", UserHolder.class)).isNotNull();
+	}
+
 	@Test // DATAJPA-324
 	void resolvesPropertyPathFromGettersOnInterfaces() {
 		assertThat(new PartTree("findByCategoryId", Product.class)).isNotNull();
@@ -735,9 +740,14 @@ class PartTreeUnitTests {
 		return result;
 	}
 
+	class UserHolder {
+		User user;
+	}
+
 	class User {
 		String firstname;
 		String lastname;
+		String lastname2;
 		double[] location;
 		boolean active;
 		Date birthday;
