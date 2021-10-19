@@ -50,6 +50,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	private static final String ALL_UPPERCASE = "[A-Z0-9._$]+";
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final Pattern SPLITTER_FOR_QUOTED = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", "\\."));
+	private static final Pattern NESTED_PROPERTY_PATTERN = Pattern.compile("\\p{Lu}[\\p{Ll}\\p{Nd}]*$");
 	private static final Map<Key, PropertyPath> cache = new ConcurrentReferenceHashMap<>();
 
 	private final TypeInformation<?> owningType;
@@ -81,7 +82,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 		Assert.hasText(name, "Name must not be null or empty!");
 		Assert.notNull(owningType, "Owning type must not be null!");
-		Assert.notNull(base, "Perviously found properties must not be null!");
+		Assert.notNull(base, "Previously found properties must not be null!");
 
 		String propertyName = Introspector.decapitalize(name);
 		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
@@ -458,8 +459,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			exception = e;
 		}
 
-		Pattern pattern = Pattern.compile("\\p{Lu}\\p{Ll}*$");
-		Matcher matcher = pattern.matcher(source);
+		Matcher matcher = NESTED_PROPERTY_PATTERN.matcher(source);
 
 		if (matcher.find() && matcher.start() != 0) {
 
