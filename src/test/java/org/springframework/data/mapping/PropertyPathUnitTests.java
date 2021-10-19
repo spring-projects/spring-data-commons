@@ -218,6 +218,20 @@ public class PropertyPathUnitTests {
 				.isThrownBy(() -> from("PropertyThatWillFail4Sure", Foo.class));
 	}
 
+	@Test // GH-2472
+	public void acceptsValidPathWithDigits() {
+		assertThat(from("bar1", Sample.class)).isNotNull();
+		assertThat(from("bar1foo", Sample.class)).isNotNull();
+	}
+
+	@Test // GH-2472
+	public void acceptsValidNestedPathWithDigits() {
+		assertThat(from("sample.bar1", SampleHolder.class)).isNotNull();
+		assertThat(from("sample.bar1foo", SampleHolder.class)).isNotNull();
+		assertThat(from("sampleBar1", SampleHolder.class)).isNotNull();
+		assertThat(from("sampleBar1foo", SampleHolder.class)).isNotNull();
+	}
+
 	@Test
 	public void rejectsInvalidProperty() {
 
@@ -353,7 +367,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-1199
-	public void rejectsNonExistantNestedPath() {
+	public void rejectsNonExistentNestedPath() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class) //
 				.isThrownBy(() -> from("user", Bar.class).nested("nonexistant")) //
@@ -419,6 +433,13 @@ public class PropertyPathUnitTests {
 		private String userName;
 		private FooBar user;
 		private Bar bar;
+		private Bar bar1;
+		private Bar bar1foo;
+	}
+
+	private class SampleHolder {
+
+		private Sample sample;
 	}
 
 	private class Sample2 {
