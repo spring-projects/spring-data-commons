@@ -71,7 +71,7 @@ class RepositoryComponentProviderUnitTests {
 		provider.setConsiderNestedRepositoryInterfaces(true);
 
 		var components = provider.findCandidateComponents("org.springframework.data.repository.config");
-		var nestedRepositoryClassName = "org.springframework.data.repository.config.RepositoryComponentProviderUnitTests$MyNestedRepository";
+		var nestedRepositoryClassName = "org.springframework.data.repository.config.RepositoryComponentProviderUnitTests$MyNestedRepositoryDefinition";
 
 		assertThat(components.size()).isGreaterThanOrEqualTo(1);
 		assertThat(components).extracting(BeanDefinition::getBeanClassName).contains(nestedRepositoryClassName);
@@ -91,5 +91,5 @@ class RepositoryComponentProviderUnitTests {
 		assertThat(provider.getRegistry()).isEqualTo(registry);
 	}
 
-	interface MyNestedRepository extends Repository<Person, Long> {}
+	interface MyNestedRepositoryDefinition extends Repository<Person, Long> {}
 }

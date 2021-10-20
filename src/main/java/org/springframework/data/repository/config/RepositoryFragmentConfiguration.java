@@ -36,6 +36,7 @@ public final class RepositoryFragmentConfiguration {
 	private final String interfaceName;
 	private final String className;
 	private final Optional<AbstractBeanDefinition> beanDefinition;
+	private final String beanName;
 
 	/**
 	 * Creates a {@link RepositoryFragmentConfiguration} given {@code interfaceName} and {@code className} of the
@@ -45,13 +46,7 @@ public final class RepositoryFragmentConfiguration {
 	 * @param className must not be {@literal null} or empty.
 	 */
 	public RepositoryFragmentConfiguration(String interfaceName, String className) {
-
-		Assert.hasText(interfaceName, "Interface name must not be null or empty");
-		Assert.hasText(className, "Class name must not be null or empty");
-
-		this.interfaceName = interfaceName;
-		this.className = className;
-		this.beanDefinition = Optional.empty();
+		this(interfaceName, className, Optional.empty(), generateBeanName(className));
 	}
 
 	/**
@@ -69,20 +64,40 @@ public final class RepositoryFragmentConfiguration {
 		this.interfaceName = interfaceName;
 		this.className = ConfigurationUtils.getRequiredBeanClassName(beanDefinition);
 		this.beanDefinition = Optional.of(beanDefinition);
+		this.beanName = generateBeanName();
 	}
 
-	public RepositoryFragmentConfiguration(String interfaceName, String className,
-			Optional<AbstractBeanDefinition> beanDefinition) {
+	RepositoryFragmentConfiguration(String interfaceName, AbstractBeanDefinition beanDefinition, String beanName) {
+		this(interfaceName, ConfigurationUtils.getRequiredBeanClassName(beanDefinition), Optional.of(beanDefinition),
+				beanName);
+	}
+
+	private RepositoryFragmentConfiguration(String interfaceName, String className,
+			Optional<AbstractBeanDefinition> beanDefinition, String beanName) {
+
+		Assert.hasText(interfaceName, "Interface name must not be null or empty!");
+		Assert.notNull(beanDefinition, "Bean definition must not be null!");
+		Assert.notNull(beanName, "Bean name must not be null!");
+
 		this.interfaceName = interfaceName;
 		this.className = className;
 		this.beanDefinition = beanDefinition;
+		this.beanName = beanName;
+	}
+
+	private String generateBeanName() {
+		return generateBeanName(getClassName());
+	}
+
+	private static String generateBeanName(String className) {
+		return Introspector.decapitalize(ClassUtils.getShortName(className));
 	}
 
 	/**
 	 * @return name of the implementation bean.
 	 */
 	public String getImplementationBeanName() {
-		return Introspector.decapitalize(ClassUtils.getShortName(getClassName()));
+		return this.beanName;
 	}
 
 	/**

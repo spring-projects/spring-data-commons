@@ -18,7 +18,13 @@ package org.springframework.data.repository.config;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.beans.Introspector;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.util.ClassUtils;
 
 /**
  * Unit tests for {@link DefaultImplementationLookupConfigurationUnitTests}.
@@ -28,11 +34,17 @@ import org.junit.jupiter.api.Test;
  */
 class DefaultImplementationLookupConfigurationUnitTests {
 
+	ImplementationDetectionConfiguration idcMock = mock(ImplementationDetectionConfiguration.class);
+
+	@BeforeEach
+	void setUp() {
+		when(idcMock.getImplementationPostfix()).thenReturn("Impl");
+		when(idcMock.forRepositoryConfiguration(any())).thenCallRealMethod();
+		when(idcMock.forFragment(any())).thenCallRealMethod();
+	}
+
 	@Test // DATACMNS-1439
 	void shouldConsiderBeanNameDecapitalization() {
-
-		var idcMock = mock(ImplementationDetectionConfiguration.class);
-		when(idcMock.getImplementationPostfix()).thenReturn("Impl");
 
 		assertThat(getImplementationBeanName(idcMock, "com.acme.UDPRepository")).isEqualTo("UDPRepositoryImpl");
 		assertThat(getImplementationBeanName(idcMock, "com.acme.UdpRepository")).isEqualTo("udpRepositoryImpl");
@@ -41,19 +53,20 @@ class DefaultImplementationLookupConfigurationUnitTests {
 	@Test // DATACMNS-1754
 	void shouldUseSimpleClassNameWhenDefiningImplementationNames() {
 
-		var idcMock = mock(ImplementationDetectionConfiguration.class);
-		when(idcMock.getImplementationPostfix()).thenReturn("Impl");
-
-		var lookupConfiguration = new DefaultImplementationLookupConfiguration(idcMock,
-				"com.acme.Repositories$NestedRepository");
+		var lookupConfiguration = idcMock.forFragment("com.acme.Repositories$NestedRepository");
 		assertThat(lookupConfiguration.getImplementationBeanName()).isEqualTo("repositories.NestedRepositoryImpl");
 		assertThat(lookupConfiguration.getImplementationClassName()).isEqualTo("NestedRepositoryImpl");
 	}
 
 	private static String getImplementationBeanName(ImplementationDetectionConfiguration idcMock, String interfaceName) {
 
-		var configuration = new DefaultImplementationLookupConfiguration(idcMock,
-				interfaceName);
+		var source = mock(RepositoryConfigurationSource.class);
+		when(source.generateBeanName(any())).thenReturn(Introspector.decapitalize(ClassUtils.getShortName(interfaceName)));
+
+		RepositoryConfiguration<?> repoConfig = new DefaultRepositoryConfiguration<>(source,
+				BeanDefinitionBuilder.rootBeanDefinition(interfaceName).getBeanDefinition(), null);
+
+		var configuration = idcMock.forRepositoryConfiguration(repoConfig);
 		return configuration.getImplementationBeanName();
 	}
 }

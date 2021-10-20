@@ -147,7 +147,7 @@ class RepositoryBeanDefinitionBuilder {
 
 		List<RepositoryFragmentConfiguration> repositoryFragmentConfigurationStream = fragmentMetadata
 				.getFragmentInterfaces(configuration.getRepositoryInterface()) //
-				.map(it -> detectRepositoryFragmentConfiguration(it, config)) //
+				.map(it -> detectRepositoryFragmentConfiguration(it, config, configuration)) //
 				.flatMap(Optionals::toStream).toList();
 
 		if (repositoryFragmentConfigurationStream.isEmpty()) {
@@ -183,26 +183,42 @@ class RepositoryBeanDefinitionBuilder {
 
 		ImplementationLookupConfiguration lookup = configuration.toLookupConfiguration(metadataReaderFactory);
 
-		String beanName = lookup.getImplementationBeanName();
+		String configurationBeanName = lookup.getImplementationBeanName();
 
 		// Already a bean configured?
-		if (registry.containsBeanDefinition(beanName)) {
-			return Optional.of(beanName);
+		if (registry.containsBeanDefinition(configurationBeanName)) {
+
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("Custom repository implementation already registered: %s", configurationBeanName));
+			}
+
+			return Optional.of(configurationBeanName);
 		}
 
 		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(lookup);
 
 		return beanDefinition.map(it -> {
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("Registering custom repository implementation: " + lookup.getImplementationBeanName() + " "
-						+ it.getBeanClassName());
+			String scannedBeanName = configuration.getConfigurationSource().generateBeanName(it);
+			it.setSource(configuration.getSource());
+
+			if (registry.containsBeanDefinition(scannedBeanName)) {
+
+				if (logger.isDebugEnabled()) {
+					logger.debug(String.format("Custom repository implementation already registered: %s %s", scannedBeanName,
+							it.getBeanClassName()));
+				}
+			} else {
+
+				if (logger.isDebugEnabled()) {
+					logger.debug(String.format("Registering custom repository implementation: %s %s", scannedBeanName,
+							it.getBeanClassName()));
+				}
+
+				registry.registerBeanDefinition(scannedBeanName, it);
 			}
 
-			it.setSource(configuration.getSource());
-			registry.registerBeanDefinition(beanName, it);
-
-			return beanName;
+			return scannedBeanName;
 		});
 	}
 
@@ -232,19 +248,20 @@ class RepositoryBeanDefinitionBuilder {
 				.toImplementationDetectionConfiguration(metadataReaderFactory);
 
 		return fragmentMetadata.getFragmentInterfaces(configuration.getRepositoryInterface()) //
-				.map(it -> detectRepositoryFragmentConfiguration(it, config)) //
+				.map(it -> detectRepositoryFragmentConfiguration(it, config, configuration)) //
 				.flatMap(Optionals::toStream) //
 				.peek(it -> potentiallyRegisterFragmentImplementation(configuration, it)) //
 				.peek(it -> potentiallyRegisterRepositoryFragment(configuration, it));
 	}
 
 	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(String fragmentInterface,
-			ImplementationDetectionConfiguration config) {
+			ImplementationDetectionConfiguration config, RepositoryConfiguration<?> configuration) {
 
 		ImplementationLookupConfiguration lookup = config.forFragment(fragmentInterface);
 		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(lookup);
 
-		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterface, bd));
+		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterface, bd,
+				configuration.getConfigurationSource().generateBeanName(bd)));
 	}
 
 	private void potentiallyRegisterFragmentImplementation(RepositoryConfiguration<?> repositoryConfiguration,
@@ -254,15 +271,20 @@ class RepositoryBeanDefinitionBuilder {
 
 		// Already a bean configured?
 		if (registry.containsBeanDefinition(beanName)) {
+
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("Repository fragment implementation already registered: %s", beanName));
+			}
+
 			return;
 		}
 
-		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("Registering repository fragment implementation: %s %s", beanName,
-					fragmentConfiguration.getClassName()));
-		}
-
 		fragmentConfiguration.getBeanDefinition().ifPresent(bd -> {
+
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("Registering repository fragment implementation: %s %s", beanName,
+						fragmentConfiguration.getClassName()));
+			}
 
 			bd.setSource(repositoryConfiguration.getSource());
 			registry.registerBeanDefinition(beanName, bd);
@@ -276,11 +298,16 @@ class RepositoryBeanDefinitionBuilder {
 
 		// Already a bean configured?
 		if (registry.containsBeanDefinition(beanName)) {
+
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("RepositoryFragment already registered: %s", beanName));
+			}
+
 			return;
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Registering repository fragment: " + beanName);
+			logger.debug(String.format("Registering RepositoryFragment: %s", beanName));
 		}
 
 		BeanDefinitionBuilder fragmentBuilder = BeanDefinitionBuilder.rootBeanDefinition(RepositoryFragment.class,

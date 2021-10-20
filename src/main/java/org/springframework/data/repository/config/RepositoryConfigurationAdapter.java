@@ -76,6 +76,16 @@ class RepositoryConfigurationAdapter<T extends RepositoryConfigurationSource>
 	}
 
 	@Override
+	public String getImplementationBeanName() {
+		return repositoryConfiguration.getImplementationBeanName();
+	}
+
+	@Override
+	public String getRepositoryBeanName() {
+		return repositoryConfiguration.getRepositoryBeanName();
+	}
+
+	@Override
 	@Nullable
 	public Object getSource() {
 		return repositoryConfiguration.getSource();

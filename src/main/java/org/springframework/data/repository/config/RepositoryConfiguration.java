@@ -85,6 +85,22 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	String getRepositoryFactoryBeanClassName();
 
 	/**
+	 * Returns the custom implementation bean name to be used.
+	 *
+	 * @return
+	 * @since 3.0
+	 */
+	String getImplementationBeanName();
+
+	/**
+	 * Returns the bean name of the repository to be used.
+	 *
+	 * @return
+	 * @since 3.0
+	 */
+	String getRepositoryBeanName();
+
+	/**
 	 * Returns the source of the {@link RepositoryConfiguration}.
 	 *
 	 * @return

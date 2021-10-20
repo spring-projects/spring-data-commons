@@ -18,6 +18,7 @@ package org.springframework.data.repository.config;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -107,8 +108,22 @@ public class CustomRepositoryImplementationDetector {
 				.filter(lookup::matches) //
 				.collect(StreamUtils.toUnmodifiableSet());
 
+		return selectImplementationCandidate(lookup, definitions, () -> {
+
+			if (definitions.isEmpty()) {
+				return Optional.empty();
+			}
+
+			return Optional.of(definitions.iterator().next());
+		});
+	}
+
+	private static Optional<AbstractBeanDefinition> selectImplementationCandidate(
+			ImplementationLookupConfiguration lookup, Set<BeanDefinition> definitions,
+			Supplier<Optional<BeanDefinition>> fallback) {
+
 		return SelectionSet //
-				.of(definitions, c -> c.isEmpty() ? Optional.empty() : throwAmbiguousCustomImplementationException(c)) //
+				.of(definitions, c -> c.isEmpty() ? fallback.get() : throwAmbiguousCustomImplementationException(c)) //
 				.filterIfNecessary(lookup::hasMatchingBeanName) //
 				.uniqueResult() //
 				.map(AbstractBeanDefinition.class::cast);
