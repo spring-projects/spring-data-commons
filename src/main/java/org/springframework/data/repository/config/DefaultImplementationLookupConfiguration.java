@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import java.beans.Introspector;
 import java.io.IOException;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -42,22 +41,16 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 	private final String interfaceName;
 	private final String beanName;
 
-	/**
-	 * Creates a new {@link DefaultImplementationLookupConfiguration} for the given
-	 * {@link ImplementationDetectionConfiguration} and interface name.
-	 *
-	 * @param config must not be {@literal null}.
-	 * @param interfaceName must not be {@literal null} or empty.
-	 */
-	DefaultImplementationLookupConfiguration(ImplementationDetectionConfiguration config, String interfaceName) {
+	DefaultImplementationLookupConfiguration(ImplementationDetectionConfiguration config, String interfaceName,
+			String beanName) {
 
 		Assert.notNull(config, "ImplementationDetectionConfiguration must not be null");
 		Assert.hasText(interfaceName, "Interface name must not be null or empty");
+		Assert.hasText(beanName, "Bean name must not be null or empty!");
 
 		this.config = config;
 		this.interfaceName = interfaceName;
-		this.beanName = Introspector
-				.decapitalize(ClassUtils.getShortName(interfaceName).concat(config.getImplementationPostfix()));
+		this.beanName = beanName;
 	}
 
 	@Override

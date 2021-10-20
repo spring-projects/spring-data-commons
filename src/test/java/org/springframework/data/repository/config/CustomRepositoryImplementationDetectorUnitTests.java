@@ -19,6 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.beans.Introspector;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 
@@ -36,6 +40,7 @@ import org.springframework.mock.env.MockEnvironment;
  * tests {@link CustomRepositoryImplementationDetector}
  *
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 class CustomRepositoryImplementationDetectorUnitTests {
 
@@ -48,7 +53,8 @@ class CustomRepositoryImplementationDetectorUnitTests {
 	CustomRepositoryImplementationDetector detector = new CustomRepositoryImplementationDetector(environment,
 			resourceLoader, configuration);
 
-	{
+	@BeforeEach
+	void setUp() {
 		when(configuration.forRepositoryConfiguration(any(RepositoryConfiguration.class))).thenCallRealMethod();
 		when(configuration.getMetadataReaderFactory()).thenReturn(metadataFactory);
 		when(configuration.getBasePackages()).thenReturn(Streamable.of(this.getClass().getPackage().getName()));
@@ -58,7 +64,8 @@ class CustomRepositoryImplementationDetectorUnitTests {
 	@Test // DATACMNS-764, DATACMNS-1371
 	void returnsNullWhenNoImplementationFound() {
 
-		var mock = mock(RepositoryConfiguration.class);
+		RepositoryConfiguration<?> mock = mock(RepositoryConfiguration.class);
+		when(mock.getImplementationBeanName()).thenReturn("NoImplementationRepositoryImpl");
 
 		var lookup = configuration
 				.forRepositoryConfiguration(configFor(NoImplementationRepository.class));
@@ -91,6 +98,7 @@ class CustomRepositoryImplementationDetectorUnitTests {
 			return className.contains("$First$") ? "canonicalSampleRepositoryTestImpl" : "otherBeanName";
 		});
 
+
 		var lookup = configuration
 				.forRepositoryConfiguration(configFor(CanonicalSampleRepository.class));
 
@@ -113,11 +121,13 @@ class CustomRepositoryImplementationDetectorUnitTests {
 		});
 	}
 
-	private RepositoryConfiguration configFor(Class<?> type) {
+	private RepositoryConfiguration<?> configFor(Class<?> type) {
 
 		RepositoryConfiguration<?> configuration = mock(RepositoryConfiguration.class);
 
 		when(configuration.getRepositoryInterface()).thenReturn(type.getSimpleName());
+		when(configuration.getImplementationBeanName())
+				.thenReturn(Introspector.decapitalize(type.getSimpleName()) + "TestImpl");
 		when(configuration.getImplementationBasePackages())
 				.thenReturn(Streamable.of(this.getClass().getPackage().getName()));
 

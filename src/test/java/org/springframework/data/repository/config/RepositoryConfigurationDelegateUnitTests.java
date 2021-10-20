@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -27,6 +26,9 @@ import org.mockito.quality.Strictness;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.parsing.BeanComponentDefinition;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -34,8 +36,12 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.metrics.ApplicationStartup;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver;
+import org.springframework.data.repository.config.excluded.MyOtherRepositoryImpl;
+import org.springframework.data.repository.config.stereotype.MyStereotypeRepository;
+import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 import org.springframework.data.repository.sample.AddressRepository;
 import org.springframework.data.repository.sample.AddressRepositoryClient;
 import org.springframework.data.repository.sample.ProductRepository;
@@ -44,13 +50,14 @@ import org.springframework.data.repository.sample.ProductRepository;
  * Unit tests for {@link RepositoryConfigurationDelegate}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Richard Spaven - Tribute (Whole Other*)
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class RepositoryConfigurationDelegateUnitTests {
 
-	@Mock RepositoryConfigurationExtension extension;
+	RepositoryConfigurationExtension extension = new DummyConfigurationExtension();
 
 	@Test // DATACMNS-892
 	void registersRepositoryBeanNameAsAttribute() {
@@ -126,6 +133,60 @@ class RepositoryConfigurationDelegateUnitTests {
 		Mockito.verify(startup).start("spring.data.repository.scanning");
 	}
 
+	@Test // GH-2487
+	void considersDefaultBeanNames() {
+
+		StandardEnvironment environment = new StandardEnvironment();
+		GenericApplicationContext context = new GenericApplicationContext();
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(DefaultBeanNamesConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
+
+		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+
+		delegate.registerRepositoriesIn(context, extension);
+
+		assertThat(context.getBeanFactory().getBeanDefinition("myOtherRepository")).isNotNull();
+		assertThat(context.getBeanFactory().getBeanDefinition("myOtherRepositoryImpl")).isNotNull();
+	}
+
+	@Test // GH-2487
+	void considersAnnotatedBeanNamesFromRepository() {
+
+		StandardEnvironment environment = new StandardEnvironment();
+		GenericApplicationContext context = new GenericApplicationContext();
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(AnnotatedBeanNamesConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
+
+		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+
+		delegate.registerRepositoriesIn(context, extension);
+
+		assertThat(context.getBeanFactory().getBeanDefinition("fooRepository")).isNotNull();
+		assertThat(context.getBeanFactory().getBeanDefinition("fooRepositoryImpl")).isNotNull();
+	}
+
+	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
+
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(configClass);
+
+		assertThat(context.getDefaultListableBeanFactory().getAutowireCandidateResolver())
+				.isInstanceOf(LazyRepositoryInjectionPointResolver.class);
+
+		AddressRepositoryClient client = context.getBean(AddressRepositoryClient.class);
+		AddressRepository repository = client.getRepository();
+
+		assertThat(Advised.class.isInstance(repository)).isTrue();
+
+		TargetSource targetSource = Advised.class.cast(repository).getTargetSource();
+		assertThat(targetSource).isNotNull();
+
+		return context.getDefaultListableBeanFactory();
+	}
+
 	@EnableRepositories(basePackageClasses = ProductRepository.class)
 	static class TestConfig {}
 
@@ -140,4 +201,25 @@ class RepositoryConfigurationDelegateUnitTests {
 			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AddressRepository.class),
 			bootstrapMode = BootstrapMode.DEFERRED)
 	static class DeferredConfig {}
+
+	@EnableRepositories(basePackageClasses = MyOtherRepository.class,
+			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = MyOtherRepository.class),
+			excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = MyOtherRepositoryImpl.class))
+	static class DefaultBeanNamesConfig {}
+
+	@EnableRepositories(basePackageClasses = MyStereotypeRepository.class,
+			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = MyStereotypeRepository.class))
+	static class AnnotatedBeanNamesConfig {}
+
+	static class DummyConfigurationExtension extends RepositoryConfigurationExtensionSupport {
+
+		public String getRepositoryFactoryBeanClassName() {
+			return DummyRepositoryFactoryBean.class.getName();
+		}
+
+		@Override
+		protected String getModulePrefix() {
+			return "commons";
+		}
+	}
 }
