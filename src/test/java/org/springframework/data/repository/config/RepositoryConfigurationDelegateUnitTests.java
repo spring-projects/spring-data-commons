@@ -39,6 +39,9 @@ import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver;
+import org.springframework.data.repository.config.annotated.MyAnnotatedRepository;
+import org.springframework.data.repository.config.annotated.MyAnnotatedRepositoryImpl;
+import org.springframework.data.repository.config.annotated.MyFragmentImpl;
 import org.springframework.data.repository.config.excluded.MyOtherRepositoryImpl;
 import org.springframework.data.repository.config.stereotype.MyStereotypeRepository;
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
@@ -158,7 +161,8 @@ class RepositoryConfigurationDelegateUnitTests {
 		GenericApplicationContext context = new GenericApplicationContext();
 
 		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
-				AnnotationMetadata.introspect(AnnotatedBeanNamesConfig.class), EnableRepositories.class, context, environment,
+				AnnotationMetadata.introspect(AnnotatedDerivedBeanNamesConfig.class), EnableRepositories.class, context,
+				environment,
 				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
 
 		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
@@ -167,6 +171,49 @@ class RepositoryConfigurationDelegateUnitTests {
 
 		assertThat(context.getBeanFactory().getBeanDefinition("fooRepository")).isNotNull();
 		assertThat(context.getBeanFactory().getBeanDefinition("fooRepositoryImpl")).isNotNull();
+	}
+
+	@Test // GH-2487
+	void considersAnnotatedBeanNamesFromAtComponent() {
+
+		StandardEnvironment environment = new StandardEnvironment();
+		GenericApplicationContext context = new GenericApplicationContext();
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(AnnotatedBeanNamesConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
+
+		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+
+		delegate.registerRepositoriesIn(context, extension);
+
+		assertThat(context.getBeanFactory().getBeanDefinition("myAnnotatedRepository")).isNotNull();
+		assertThat(context.getBeanFactory().getBeanDefinition("anotherBeanName")).isNotNull();
+		assertThat(context.getBeanFactory().getBeanDefinition("fragment")).isNotNull();
+		assertThat(context.getBeanFactory().getBeanDefinition("fragmentFragment")).isNotNull();
+	}
+
+	@Test // GH-2487
+	void skipsRegistrationOnAlreadyRegisteredBeansUsingAtComponentNames() {
+
+		StandardEnvironment environment = new StandardEnvironment();
+		GenericApplicationContext context = new GenericApplicationContext();
+		context.setAllowBeanDefinitionOverriding(false);
+		context.registerBean("fragment", MyFragmentImpl.class);
+		context.registerBean("anotherBeanName", MyAnnotatedRepositoryImpl.class);
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(AnnotatedBeanNamesConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
+
+		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+
+		delegate.registerRepositoriesIn(context, extension);
+
+		assertThat(context.getBeanFactory().getBeanDefinition("myAnnotatedRepository")).isNotNull();
+		assertThat(context.getBeanFactory().getBeanDefinition("anotherBeanName")).isNotNull();
+		assertThat(context.getBeanFactory().getBeanDefinition("fragment")).isNotNull();
+		assertThat(context.getBeanFactory().getBeanDefinition("fragmentFragment")).isNotNull();
 	}
 
 	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
@@ -209,6 +256,9 @@ class RepositoryConfigurationDelegateUnitTests {
 
 	@EnableRepositories(basePackageClasses = MyStereotypeRepository.class,
 			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = MyStereotypeRepository.class))
+	static class AnnotatedDerivedBeanNamesConfig {}
+
+	@EnableRepositories(basePackageClasses = MyAnnotatedRepository.class)
 	static class AnnotatedBeanNamesConfig {}
 
 	static class DummyConfigurationExtension extends RepositoryConfigurationExtensionSupport {
