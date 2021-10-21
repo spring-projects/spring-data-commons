@@ -32,6 +32,7 @@ import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
+import org.springframework.util.ObjectUtils;
 
 /**
  * {@link TypeInformation} for a plain {@link Class}.
@@ -176,5 +177,27 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	@Override
 	public String toString() {
 		return type.getName();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+
+		if (!super.equals(o)) {
+			return false;
+		}
+
+		ClassTypeInformation<?> that = (ClassTypeInformation<?>) o;
+		return ObjectUtils.nullSafeEquals(type, that.type);
+	}
+
+	@Override
+	public int hashCode() {
+
+		int result = super.hashCode();
+		result = 31 * result + ObjectUtils.nullSafeHashCode(type);
+		return result;
 	}
 }
