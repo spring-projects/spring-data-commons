@@ -28,8 +28,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.aopalliance.aop.Advice;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.SpringProxy;
+import org.springframework.aop.TargetSource;
+import org.springframework.aop.framework.Advised;
+import org.springframework.aop.framework.AopConfigException;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.mapping.Person;
+import org.springframework.lang.Nullable;
 
 /**
  * Unit tests for {@link ClassTypeInformation}.
@@ -469,6 +477,15 @@ public class ClassTypeInformationUnitTests {
 		assertThat(justMap.getMapValueType().getType()).isEqualTo(Long.class);
 	}
 
+	@Test // GH-2485
+	public void proxyTypeInformationShouldNotEqualUserClassTypeInfo () {
+
+		ClassTypeInformation<Leaf> typeInfoLeaf = from(Leaf.class);
+		ClassTypeInformation<Leaf$$SpringProxy$873fa2e> typeInformationLeafProxy = from(Leaf$$SpringProxy$873fa2e.class);
+
+		assertThat(typeInfoLeaf).isNotEqualTo(typeInformationLeafProxy);
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -717,5 +734,124 @@ public class ClassTypeInformationUnitTests {
 		StringKeyMap<Long> typedMap;
 		MultiValueMap<Long> longMultiValueMap;
 		Map<String, Long> justMap;
+	}
+
+	static class Leaf$$SpringProxy$873fa2e extends Leaf implements SpringProxy, Advised {
+
+		@Override
+		public boolean isFrozen() {
+			return false;
+		}
+
+		@Override
+		public boolean isProxyTargetClass() {
+			return false;
+		}
+
+		@Override
+		public Class<?>[] getProxiedInterfaces() {
+			return new Class[0];
+		}
+
+		@Override
+		public boolean isInterfaceProxied(Class<?> intf) {
+			return false;
+		}
+
+		@Override
+		public void setTargetSource(TargetSource targetSource) {
+
+		}
+
+		@Override
+		public TargetSource getTargetSource() {
+			return null;
+		}
+
+		@Override
+		public void setExposeProxy(boolean exposeProxy) {
+
+		}
+
+		@Override
+		public boolean isExposeProxy() {
+			return false;
+		}
+
+		@Override
+		public void setPreFiltered(boolean preFiltered) {
+
+		}
+
+		@Override
+		public boolean isPreFiltered() {
+			return false;
+		}
+
+		@Override
+		public Advisor[] getAdvisors() {
+			return new Advisor[0];
+		}
+
+		@Override
+		public void addAdvisor(Advisor advisor) throws AopConfigException {
+
+		}
+
+		@Override
+		public void addAdvisor(int pos, Advisor advisor) throws AopConfigException {
+
+		}
+
+		@Override
+		public boolean removeAdvisor(Advisor advisor) {
+			return false;
+		}
+
+		@Override
+		public void removeAdvisor(int index) throws AopConfigException {
+
+		}
+
+		@Override
+		public int indexOf(Advisor advisor) {
+			return 0;
+		}
+
+		@Override
+		public boolean replaceAdvisor(Advisor a, Advisor b) throws AopConfigException {
+			return false;
+		}
+
+		@Override
+		public void addAdvice(Advice advice) throws AopConfigException {
+
+		}
+
+		@Override
+		public void addAdvice(int pos, Advice advice) throws AopConfigException {
+
+		}
+
+		@Override
+		public boolean removeAdvice(Advice advice) {
+			return false;
+		}
+
+		@Override
+		public int indexOf(Advice advice) {
+			return 0;
+		}
+
+		@Override
+		public String toProxyConfigString() {
+			return null;
+		}
+
+		@Nullable
+		@Override
+		public Class<?> getTargetClass() {
+			return null;
+		}
 	}
 }

@@ -360,6 +360,17 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return persistentEntity;
 			}
 
+			if(typeInformation.isProxyTypeInformation()) {
+
+				TypeInformation<?> userTypeInformation = typeInformation.getUserTypeInformation();
+				persistentEntity = persistentEntities.get(userTypeInformation);
+
+				if (persistentEntity != null) {
+					persistentEntities.put(typeInformation, persistentEntity);
+					return persistentEntity;
+				}
+			}
+
 		} finally {
 			read.unlock();
 		}
@@ -369,7 +380,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		try {
 
 			write.lock();
-			entity = doAddPersistentEntity(typeInformation);
+			entity = doAddPersistentEntity(typeInformation.getUserTypeInformation());
+			if(typeInformation.isProxyTypeInformation()) {
+				persistentEntities.put(typeInformation, Optional.of(entity));
+			}
 
 		} catch (BeansException e) {
 			throw new MappingException(e.getMessage(), e);
