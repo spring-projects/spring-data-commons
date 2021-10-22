@@ -41,7 +41,7 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 	/**
 	 * Creates a new {@link GeoPage} from the given {@link GeoResults}.
 	 *
-	 * @param content must not be {@literal null}.
+	 * @param results must not be {@literal null}.
 	 */
 	public GeoPage(GeoResults<T> results) {
 

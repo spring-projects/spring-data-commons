@@ -36,10 +36,10 @@ import org.springframework.data.util.TypeInformation;
  * @author Mark Paluch
  */
 @SuppressWarnings("unused")
-public class PropertyPathUnitTests {
+class PropertyPathUnitTests {
 
 	@Test
-	public void parsesSimplePropertyCorrectly() throws Exception {
+	void parsesSimplePropertyCorrectly() {
 
 		PropertyPath reference = PropertyPath.from("userName", Foo.class);
 
@@ -49,7 +49,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void parsesPathPropertyCorrectly() throws Exception {
+	void parsesPathPropertyCorrectly() {
 
 		PropertyPath reference = PropertyPath.from("userName", Bar.class);
 		assertThat(reference.hasNext()).isTrue();
@@ -58,7 +58,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void prefersLongerMatches() throws Exception {
+	void prefersLongerMatches() {
 
 		PropertyPath reference = PropertyPath.from("userName", Sample.class);
 		assertThat(reference.hasNext()).isFalse();
@@ -66,7 +66,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void testname() throws Exception {
+	void testname() {
 
 		PropertyPath reference = PropertyPath.from("userName", Sample2.class);
 		assertThat(reference.getSegment()).isEqualTo("user");
@@ -75,7 +75,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void prefersExplicitPaths() throws Exception {
+	void prefersExplicitPaths() {
 
 		PropertyPath reference = PropertyPath.from("user_name", Sample.class);
 		assertThat(reference.getSegment()).isEqualTo("user");
@@ -84,7 +84,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void handlesGenericsCorrectly() throws Exception {
+	void handlesGenericsCorrectly() {
 
 		PropertyPath reference = PropertyPath.from("usersName", Bar.class);
 		assertThat(reference.getSegment()).isEqualTo("users");
@@ -94,7 +94,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void handlesMapCorrectly() throws Exception {
+	void handlesMapCorrectly() {
 
 		PropertyPath reference = PropertyPath.from("userMapName", Bar.class);
 		assertThat(reference.getSegment()).isEqualTo("userMap");
@@ -104,7 +104,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void handlesArrayCorrectly() throws Exception {
+	void handlesArrayCorrectly() {
 
 		PropertyPath reference = PropertyPath.from("userArrayName", Bar.class);
 		assertThat(reference.getSegment()).isEqualTo("userArray");
@@ -114,7 +114,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void handlesInvalidCollectionCompountTypeProperl() {
+	void handlesInvalidCollectionCompountTypeProperl() {
 
 		try {
 			PropertyPath.from("usersMame", Bar.class);
@@ -126,7 +126,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void handlesInvalidMapValueTypeProperly() {
+	void handlesInvalidMapValueTypeProperly() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
 				.isThrownBy(() -> PropertyPath.from("userMapMame", Bar.class))//
@@ -135,7 +135,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void findsNested() {
+	void findsNested() {
 
 		PropertyPath from = PropertyPath.from("barUserName", Sample.class);
 
@@ -144,7 +144,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-45
-	public void handlesEmptyUnderscoresCorrectly() {
+	void handlesEmptyUnderscoresCorrectly() {
 
 		PropertyPath propertyPath = PropertyPath.from("_foo", Sample2.class);
 		assertThat(propertyPath.getSegment()).isEqualTo("_foo");
@@ -155,7 +155,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void supportsDotNotationAsWell() {
+	void supportsDotNotationAsWell() {
 
 		PropertyPath propertyPath = PropertyPath.from("bar.userMap.name", Sample.class);
 
@@ -165,7 +165,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void returnsCorrectIteratorForSingleElement() {
+	void returnsCorrectIteratorForSingleElement() {
 
 		PropertyPath propertyPath = PropertyPath.from("userName", Foo.class);
 
@@ -176,7 +176,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void returnsCorrectIteratorForMultipleElement() {
+	void returnsCorrectIteratorForMultipleElement() {
 
 		PropertyPath propertyPath = PropertyPath.from("user.name", Bar.class);
 
@@ -189,7 +189,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-139
-	public void rejectsInvalidPropertyWithLeadingUnderscore() {
+	void rejectsInvalidPropertyWithLeadingUnderscore() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
 				.isThrownBy(() -> PropertyPath.from("_id", Foo.class))//
@@ -197,7 +197,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-139
-	public void rejectsNestedInvalidPropertyWithLeadingUnderscore() {
+	void rejectsNestedInvalidPropertyWithLeadingUnderscore() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
 				.isThrownBy(() -> PropertyPath.from("_foo_id", Sample2.class))//
@@ -205,7 +205,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-139
-	public void rejectsNestedInvalidPropertyExplictlySplitWithLeadingUnderscore() {
+	void rejectsNestedInvalidPropertyExplictlySplitWithLeadingUnderscore() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
 				.isThrownBy(() -> PropertyPath.from("_foo__id", Sample2.class))//
@@ -213,13 +213,27 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS 158
-	public void rejectsInvalidPathsContainingDigits() {
+	void rejectsInvalidPathsContainingDigits() {
 		assertThatExceptionOfType(PropertyReferenceException.class)
 				.isThrownBy(() -> from("PropertyThatWillFail4Sure", Foo.class));
 	}
 
+	@Test // GH-2472
+	void acceptsValidPathWithDigits() {
+		assertThat(from("bar1", Sample.class)).isNotNull();
+		assertThat(from("bar1foo", Sample.class)).isNotNull();
+	}
+
+	@Test // GH-2472
+	void acceptsValidNestedPathWithDigits() {
+		assertThat(from("sample.bar1", SampleHolder.class)).isNotNull();
+		assertThat(from("sample.bar1foo", SampleHolder.class)).isNotNull();
+		assertThat(from("sampleBar1", SampleHolder.class)).isNotNull();
+		assertThat(from("sampleBar1foo", SampleHolder.class)).isNotNull();
+	}
+
 	@Test
-	public void rejectsInvalidProperty() {
+	void rejectsInvalidProperty() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
 				.isThrownBy(() -> from("_foo_id", Sample2.class))//
@@ -227,7 +241,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void samePathsEqual() {
+	void samePathsEqual() {
 
 		PropertyPath left = PropertyPath.from("user.name", Bar.class);
 		PropertyPath right = PropertyPath.from("user.name", Bar.class);
@@ -243,7 +257,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test
-	public void hashCodeTests() {
+	void hashCodeTests() {
 
 		PropertyPath left = PropertyPath.from("user.name", Bar.class);
 		PropertyPath right = PropertyPath.from("user.name", Bar.class);
@@ -255,7 +269,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-257
-	public void findsAllUppercaseProperty() {
+	void findsAllUppercaseProperty() {
 
 		PropertyPath path = PropertyPath.from("UUID", Foo.class);
 
@@ -264,7 +278,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-257
-	public void findsNestedAllUppercaseProperty() {
+	void findsNestedAllUppercaseProperty() {
 
 		PropertyPath path = PropertyPath.from("_fooUUID", Sample2.class);
 
@@ -275,7 +289,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-381
-	public void exposesPreviouslyReferencedPathInExceptionMessage() {
+	void exposesPreviouslyReferencedPathInExceptionMessage() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class).isThrownBy(() -> from("userNameBar", Bar.class)) //
 				.withMessageContaining("bar") // missing variable
@@ -284,34 +298,34 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-387
-	public void rejectsNullSource() {
+	void rejectsNullSource() {
 		assertThatIllegalArgumentException().isThrownBy(() -> from(null, Foo.class));
 	}
 
 	@Test // DATACMNS-387
-	public void rejectsEmptySource() {
+	void rejectsEmptySource() {
 		assertThatIllegalArgumentException().isThrownBy(() -> from("", Foo.class));
 	}
 
 	@Test // DATACMNS-387
-	public void rejectsNullClass() {
+	void rejectsNullClass() {
 		assertThatIllegalArgumentException().isThrownBy(() -> from("foo", (Class<?>) null));
 	}
 
 	@Test // DATACMNS-387
-	public void rejectsNullTypeInformation() {
+	void rejectsNullTypeInformation() {
 		assertThatIllegalArgumentException().isThrownBy(() -> from("foo", (TypeInformation<?>) null));
 	}
 
 	@Test // DATACMNS-546
-	public void returnsCompletePathIfResolutionFailedCompletely() {
+	void returnsCompletePathIfResolutionFailedCompletely() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class) //
 				.isThrownBy(() -> from("somethingDifferent", Foo.class)).withMessageContaining("somethingDifferent");
 	}
 
 	@Test // DATACMNS-546
-	public void includesResolvedPathInExceptionMessage() {
+	void includesResolvedPathInExceptionMessage() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class) //
 				.isThrownBy(() -> from("userFooName", Bar.class)) //
@@ -321,14 +335,14 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-703
-	public void includesPropertyHintsOnTypos() {
+	void includesPropertyHintsOnTypos() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class) //
 				.isThrownBy(() -> from("userAme", Foo.class)).withMessageContaining("userName");
 	}
 
 	@Test // DATACMNS-867
-	public void preservesUnderscoresForQuotedNames() {
+	void preservesUnderscoresForQuotedNames() {
 
 		PropertyPath path = from(Pattern.quote("var_name_with_underscore"), Foo.class);
 
@@ -338,22 +352,22 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-1120
-	public void cachesPropertyPathsByPathAndType() {
+	void cachesPropertyPathsByPathAndType() {
 		assertThat(from("userName", Foo.class)).isSameAs(from("userName", Foo.class));
 	}
 
 	@Test // DATACMNS-1198
-	public void exposesLeafPropertyType() {
+	void exposesLeafPropertyType() {
 		assertThat(from("user.name", Bar.class).getLeafType()).isEqualTo(String.class);
 	}
 
 	@Test // DATACMNS-1199
-	public void createsNestedPropertyPath() {
+	void createsNestedPropertyPath() {
 		assertThat(from("user", Bar.class).nested("name")).isEqualTo(from("user.name", Bar.class));
 	}
 
 	@Test // DATACMNS-1199
-	public void rejectsNonExistantNestedPath() {
+	void rejectsNonExistentNestedPath() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class) //
 				.isThrownBy(() -> from("user", Bar.class).nested("nonexistant")) //
@@ -362,7 +376,7 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-1285
-	public void rejectsTooLongPath() {
+	void rejectsTooLongPath() {
 
 		String source = "foo.bar";
 
@@ -379,17 +393,17 @@ public class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-1304
-	public void resolvesPropertyPathWithSingleUppercaseLetterPropertyEnding() {
+	void resolvesPropertyPathWithSingleUppercaseLetterPropertyEnding() {
 		assertThat(from("categoryB", Product.class).toDotPath()).isEqualTo("categoryB");
 	}
 
 	@Test // DATACMNS-1304
-	public void resolvesPropertyPathWithUppercaseLettersPropertyEnding() {
+	void resolvesPropertyPathWithUppercaseLettersPropertyEnding() {
 		assertThat(from("categoryABId", Product.class).toDotPath()).isEqualTo("categoryAB.id");
 	}
 
 	@Test // DATACMNS-1304
-	public void detectsNestedSingleCharacterProperty() {
+	void detectsNestedSingleCharacterProperty() {
 		assertThat(from("category_B", Product.class).toDotPath()).isEqualTo("category.b");
 	}
 
@@ -419,6 +433,13 @@ public class PropertyPathUnitTests {
 		private String userName;
 		private FooBar user;
 		private Bar bar;
+		private Bar bar1;
+		private Bar bar1foo;
+	}
+
+	private class SampleHolder {
+
+		private Sample sample;
 	}
 
 	private class Sample2 {

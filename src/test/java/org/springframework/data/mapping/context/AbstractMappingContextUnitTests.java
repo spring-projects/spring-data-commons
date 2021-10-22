@@ -296,13 +296,13 @@ class AbstractMappingContextUnitTests {
 	}
 
 	@Test // GH-2390
-	void detectsEntityTypeEveneIfSimpleTypeHolderConsidersCollectionsSimple() {
+	void detectsEntityTypeEvenIfSimpleTypeHolderConsidersCollectionsSimple() {
 
 		context.setSimpleTypeHolder(new SimpleTypeHolder(Collections.emptySet(), true) {
 
 			@Override
 			public boolean isSimpleType(Class<?> type) {
-				return type.getName().startsWith("java.util.");
+				return type == String.class || type.getName().startsWith("java.util.");
 			}
 		});
 

@@ -48,7 +48,7 @@ public class ReactiveQuerydslWebConfiguration implements WebFluxConfigurer {
 	@Autowired BeanFactory beanFactory;
 
 	/**
-	 * Default {@link ReactiveQuerydslPredicateArgumentResolver} to create Querydsl {@link Predicate} instances for Spring
+	 * Default {@link ReactiveQuerydslPredicateArgumentResolver} to create Querydsl {@code Predicate} instances for Spring
 	 * WebFlux controller methods.
 	 *
 	 * @return

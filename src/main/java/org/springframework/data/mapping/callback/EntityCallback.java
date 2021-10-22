@@ -19,29 +19,28 @@ package org.springframework.data.mapping.callback;
  * Marker interface for entity callbacks to be implemented in specific callback subtypes. Intended for internal usage
  * within store specific implementations.
  * <h3>Ordering {@link EntityCallback}</h3>
- * <p/>
+ * <p>
  * Multiple entity callbacks are invoked sequentially with the result of the previous callback. Callbacks are unordered
  * by default. It is possible to define the order in which listeners for a certain domain type are to be invoked. To do
  * so, add Spring's common {@link org.springframework.core.annotation.Order @Order} annotation or implement
  * {@link org.springframework.core.Ordered}.
  * <h3>Exception Handling</h3>
- * <p />
+ * <p>
  * While it is possible for a {@link EntityCallback} to declare that it throws arbitrary exception types, any checked
  * exceptions thrown from a {@link EntityCallback} are wrapped in an
  * {@link java.lang.reflect.UndeclaredThrowableException UndeclaredThrowableException} since the callback mechanism can
  * only handle runtime exceptions. Entity callback processing is stopped on the {@link EntityCallback} that raised an
  * exception and the caused exception is propagated to the caller.
  * <h3>Domain Type Binding</h3>
- * <p />
+ * <p>
  * An {@link EntityCallback} can generically declare the domain type that it is able to process by specifying the
  * generic type parameter {@code <T>}. When registered with a Spring
  * {@link org.springframework.context.ApplicationContext}, callbacks are filtered accordingly, with the callback getting
  * invoked for assignable domain objects only.
- * <p/>
+ * <p>
  * Typically, entity callbacks are invoked after publishing {@link org.springframework.context.ApplicationEvent events}.
- * <p/>
  * <h3>Defining {@link EntityCallback} Interfaces</h3>
- * <p />
+ * <p>
  * A {@link EntityCallback} interface needs to define a callback method accepting an object of the parameterized type as
  * its first argument followed by additional <i>optional</i> arguments.
  *

@@ -33,8 +33,8 @@ import org.w3c.dom.Element;
 
 /**
  * Base class to implement repository namespaces. These will typically consist of a main XML element potentially having
- * child elements. The parser will wrap the XML element into a {@link GlobalRepositoryConfigInformation} object and
- * allow either manual configuration or automatic detection of repository interfaces.
+ * child elements. The parser will wrap the XML element into a {@link XmlRepositoryConfigurationSource} object and allow
+ * either manual configuration or automatic detection of repository interfaces.
  *
  * @author Oliver Gierke
  */

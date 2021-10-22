@@ -44,7 +44,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * {@link ResourceAssembler} to easily convert {@link Page} instances into {@link PagedResources}.
+ * {@link RepresentationModelAssembler} to easily convert {@link Page} instances into {@link PagedModel}.
  *
  * @since 1.6
  * @author Oliver Gierke
@@ -75,12 +75,12 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	}
 
 	/**
-	 * Configures whether to always add {@code first} and {@code last} links to the {@link PagedResources} created.
-	 * Defaults to {@literal false} which means that {@code first} and {@code last} links only appear in conjunction with
+	 * Configures whether to always add {@code first} and {@code last} links to the {@link PagedModel} created. Defaults
+	 * to {@literal false} which means that {@code first} and {@code last} links only appear in conjunction with
 	 * {@code prev} and {@code next} links.
 	 *
-	 * @param forceFirstAndLastRels whether to always add {@code first} and {@code last} links to the
-	 *          {@link PagedResources} created.
+	 * @param forceFirstAndLastRels whether to always add {@code first} and {@code last} links to the {@link PagedModel}
+	 *          created.
 	 * @since 1.11
 	 */
 	public void setForceFirstAndLastRels(boolean forceFirstAndLastRels) {
@@ -97,8 +97,8 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	}
 
 	/**
-	 * Creates a new {@link PagedResources} by converting the given {@link Page} into a {@link PageMetadata} instance and
-	 * wrapping the contained elements into {@link Resource} instances. Will add pagination links based on the given the
+	 * Creates a new {@link PagedModel} by converting the given {@link Page} into a {@link PageMetadata} instance and
+	 * wrapping the contained elements into {@link PagedModel} instances. Will add pagination links based on the given the
 	 * self link.
 	 *
 	 * @param page must not be {@literal null}.
@@ -110,8 +110,8 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	}
 
 	/**
-	 * Creates a new {@link PagedResources} by converting the given {@link Page} into a {@link PageMetadata} instance and
-	 * using the given {@link ResourceAssembler} to turn elements of the {@link Page} into resources.
+	 * Creates a new {@link PagedModel} by converting the given {@link Page} into a {@link PageMetadata} instance and
+	 * using the given {@link PagedModel} to turn elements of the {@link Page} into resources.
 	 *
 	 * @param page must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
@@ -123,9 +123,9 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	}
 
 	/**
-	 * Creates a new {@link PagedResources} by converting the given {@link Page} into a {@link PageMetadata} instance and
-	 * using the given {@link ResourceAssembler} to turn elements of the {@link Page} into resources. Will add pagination
-	 * links based on the given the self link.
+	 * Creates a new {@link PagedModel} by converting the given {@link Page} into a {@link PageMetadata} instance and
+	 * using the given {@link PagedModel} to turn elements of the {@link Page} into resources. Will add pagination links
+	 * based on the given the self link.
 	 *
 	 * @param page must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
@@ -141,7 +141,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	}
 
 	/**
-	 * Creates a {@link PagedResources} with an empt collection {@link EmbeddedWrapper} for the given domain type.
+	 * Creates a {@link PagedModel} with an empt collection {@link EmbeddedWrapper} for the given domain type.
 	 *
 	 * @param page must not be {@literal null}, content must be empty.
 	 * @param type must not be {@literal null}.
@@ -153,7 +153,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	}
 
 	/**
-	 * Creates a {@link PagedResources} with an empt collection {@link EmbeddedWrapper} for the given domain type.
+	 * Creates a {@link PagedModel} with an empt collection {@link EmbeddedWrapper} for the given domain type.
 	 *
 	 * @param page must not be {@literal null}, content must be empty.
 	 * @param type must not be {@literal null}.
@@ -181,9 +181,9 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	}
 
 	/**
-	 * Creates the {@link PagedResources} to be equipped with pagination links downstream.
+	 * Creates the {@link PagedModel} to be equipped with pagination links downstream.
 	 *
-	 * @param resources the original page's elements mapped into {@link ResourceSupport} instances.
+	 * @param resources the original page's elements mapped into {@link RepresentationModel} instances.
 	 * @param metadata the calculated {@link PageMetadata}, must not be {@literal null}.
 	 * @param page the original page handed to the assembler, must not be {@literal null}.
 	 * @return must not be {@literal null}.

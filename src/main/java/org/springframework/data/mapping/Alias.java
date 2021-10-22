@@ -22,10 +22,10 @@ import org.springframework.util.ObjectUtils;
 /**
  * A container object which may or may not contain a type alias value. If a value is present, {@code isPresent()} will
  * return {@code true} and {@link #getValue()} will return the value.
- * <p/>
+ * <p>
  * Additional methods that depend on the presence or absence of a contained value are provided, such as
  * {@link #hasValue(Object)} or {@link #isPresent()}
- * <p/>
+ * <p>
  * Aliases are immutable once created.
  *
  * @author Oliver Gierke

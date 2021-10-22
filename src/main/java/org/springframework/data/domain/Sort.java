@@ -402,7 +402,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 *
 		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
 		 * @param property must not be {@literal null} or empty.
-		 * @param nullHandling must not be {@literal null}.
+		 * @param nullHandlingHint must not be {@literal null}.
 		 */
 		public Order(@Nullable Direction direction, String property, NullHandling nullHandlingHint) {
 			this(direction, property, DEFAULT_IGNORE_CASE, nullHandlingHint);

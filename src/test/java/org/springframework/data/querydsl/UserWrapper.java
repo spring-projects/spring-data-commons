@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping;
+package org.springframework.data.querydsl;
 
-import org.springframework.data.annotation.Persistent;
+import com.querydsl.core.annotations.QueryEntity;
 
-/**
- * @author Jon Brisbin
- */
-@Persistent
-public class Child extends PersonWithId {
-
-	public Child(Integer ssn, String firstName, String lastName) {
-		super(ssn, firstName, lastName);
-	}
-
+@QueryEntity
+public final class UserWrapper {
+	public User user;
 }

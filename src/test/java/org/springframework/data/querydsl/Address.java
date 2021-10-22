@@ -25,6 +25,7 @@ public class Address {
 
 	public String street, city;
 	public Double[] lonLat;
+	public String description;
 
 	public Address(String street, String city) {
 		this.street = street;

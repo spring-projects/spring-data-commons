@@ -18,7 +18,12 @@ package org.springframework.data.querydsl;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.function.Function;
+
+import org.reactivestreams.Publisher;
+
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.FluentQuery;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
@@ -127,4 +132,16 @@ public interface ReactiveQuerydslPredicateExecutor<T> {
 	 * @throws IllegalArgumentException if the required parameter is {@literal null}.
 	 */
 	Mono<Boolean> exists(Predicate predicate);
+
+	/**
+	 * Returns entities matching the given {@link Predicate} applying the {@link Function queryFunction} that defines the
+	 * query and its result type.
+	 *
+	 * @param predicate must not be {@literal null}.
+	 * @param queryFunction the query function defining projection, sorting, and the result type
+	 * @return all entities matching the given {@link Predicate}.
+	 * @since 2.6
+	 */
+	<S extends T, R, P extends Publisher<R>> P findBy(Predicate predicate,
+			Function<FluentQuery.ReactiveFluentQuery<S>, P> queryFunction);
 }

@@ -146,7 +146,7 @@ public class Lazy<T> implements Supplier<T> {
 	/**
 	 * Returns a new Lazy that will return the given value in case the current one does not yield in a result.
 	 *
-	 * @param supplier must not be {@literal null}.
+	 * @param value must not be {@literal null}.
 	 * @return
 	 */
 	public Lazy<T> or(T value) {

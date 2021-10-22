@@ -72,7 +72,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 	 * {@link org.springframework.data.repository.PagingAndSortingRepository#findAll(Sort)}) or the plain equivalent to
 	 * {@link org.springframework.data.repository.CrudRepository#findAll()}.
 	 *
-	 * @param pageable can be {@literal null}.
+	 * @param sort can be {@literal null}.
 	 * @return the result of the invocation of the find-all method.
 	 * @throws IllegalStateException if the repository does not expose a find-all-method.
 	 */

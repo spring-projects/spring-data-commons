@@ -44,6 +44,7 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Gerrit Meier
+ * @author Hantsy Bai
  * @since 2.0
  * @see org.reactivestreams.Publisher
  * @see rx.Single
@@ -59,6 +60,8 @@ import org.springframework.util.ClassUtils;
  * @see io.reactivex.rxjava3.core.Observable
  * @see io.reactivex.rxjava3.core.Completable
  * @see io.reactivex.rxjava3.core.Flowable
+ * @see io.smallrye.mutiny.Multi
+ * @see io.smallrye.mutiny.Uni
  * @see Mono
  * @see Flux
  */
@@ -73,6 +76,7 @@ public abstract class ReactiveWrappers {
 			&& ClassUtils.isPresent("rx.RxReactiveStreams",
 			ReactiveWrappers.class.getClassLoader());
 
+	@Deprecated
 	private static final boolean RXJAVA2_PRESENT = ClassUtils.isPresent("io.reactivex.Flowable",
 			ReactiveWrappers.class.getClassLoader());
 
@@ -80,6 +84,9 @@ public abstract class ReactiveWrappers {
 			ReactiveWrappers.class.getClassLoader());
 
 	private static final boolean KOTLIN_COROUTINES_PRESENT = ClassUtils.isPresent("kotlinx.coroutines.reactor.MonoKt",
+			ReactiveWrappers.class.getClassLoader());
+
+	private static final boolean MUTINY_PRESENT = ClassUtils.isPresent("io.smallrye.mutiny.Multi",
 			ReactiveWrappers.class.getClassLoader());
 
 	private ReactiveWrappers() {}
@@ -94,10 +101,16 @@ public abstract class ReactiveWrappers {
 		PROJECT_REACTOR,
 
 		/**
-		 * @deprecated since 2.4, use RxJava 2 or 3 instead.
+		 * @deprecated since 2.4, use RxJava 3 instead. To be removed with Spring Data 3.0.
 		 */
 		@Deprecated
-		RXJAVA1, RXJAVA2, RXJAVA3, KOTLIN_COROUTINES;
+		RXJAVA1,
+
+		/**
+		 * @deprecated since 2.6, use RxJava 3 instead. To be removed with Spring Data 3.0.
+		 */
+		@Deprecated
+		RXJAVA2, RXJAVA3, KOTLIN_COROUTINES, MUTINY;
 	}
 
 	/**
@@ -131,6 +144,8 @@ public abstract class ReactiveWrappers {
 				return RXJAVA3_PRESENT;
 			case KOTLIN_COROUTINES:
 				return PROJECT_REACTOR_PRESENT && KOTLIN_COROUTINES_PRESENT;
+			case MUTINY:
+				return MUTINY_PRESENT;
 			default:
 				throw new IllegalArgumentException(String.format("Reactive library %s not supported", reactiveLibrary));
 		}

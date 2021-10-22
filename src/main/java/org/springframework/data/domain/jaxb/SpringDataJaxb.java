@@ -108,7 +108,6 @@ public abstract class SpringDataJaxb {
 	 * @param source
 	 * @param adapter must not be {@literal null}.
 	 * @return
-	 * @throws Exception
 	 */
 	public static <T, S> List<T> unmarshal(Collection<S> source, XmlAdapter<S, T> adapter) {
 
@@ -136,7 +135,6 @@ public abstract class SpringDataJaxb {
 	 * @param source
 	 * @param adapter must not be {@literal null}.
 	 * @return
-	 * @throws Exception
 	 */
 	public static <T, S> List<S> marshal(@Nullable Iterable<T> source, XmlAdapter<S, T> adapter) {
 

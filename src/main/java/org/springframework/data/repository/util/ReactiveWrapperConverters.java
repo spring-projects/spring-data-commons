@@ -60,6 +60,7 @@ import org.springframework.util.ClassUtils;
  * @author Mark Paluch
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Hantsy Bai
  * @since 2.0
  * @see ReactiveWrappers
  * @see ReactiveAdapterRegistry
@@ -102,6 +103,11 @@ public abstract class ReactiveWrapperConverters {
 
 		if (ReactiveWrappers.isAvailable(ReactiveLibrary.KOTLIN_COROUTINES)) {
 			REACTIVE_WRAPPERS.add(FlowWrapper.INSTANCE);
+		}
+
+		if (ReactiveWrappers.isAvailable(ReactiveLibrary.MUTINY)) {
+			REACTIVE_WRAPPERS.add(UniWrapper.INSTANCE);
+			REACTIVE_WRAPPERS.add(MultiWrapper.INSTANCE);
 		}
 
 		registerConvertersIn(GENERIC_CONVERSION_SERVICE);
@@ -526,6 +532,49 @@ public abstract class ReactiveWrapperConverters {
 			return ((io.reactivex.rxjava3.core.Flowable<?>) wrapper).map(function::apply);
 		}
 	}
+
+	/**
+	 * Wrapper for SmallRye Mutiny's {@link io.smallrye.mutiny.Uni}.
+	 *
+	 * @author Hantsy Bai
+	 * @since 2.6
+	 */
+	private enum UniWrapper implements ReactiveTypeWrapper<io.smallrye.mutiny.Uni<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Class<? super io.smallrye.mutiny.Uni<?>> getWrapperClass() {
+			return io.smallrye.mutiny.Uni.class;
+		}
+
+		@Override
+		public io.smallrye.mutiny.Uni<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.smallrye.mutiny.Uni<?>) wrapper).map(function);
+		}
+	}
+
+	/**
+	 * Wrapper for SmallRye Mutiny's {@link io.smallrye.mutiny.Multi}.
+	 *
+	 * @author Hantsy Bai
+	 * @since 2.6
+	 */
+	private enum MultiWrapper implements ReactiveTypeWrapper<io.smallrye.mutiny.Multi<?>> {
+
+		INSTANCE;
+
+		@Override
+		public Class<? super io.smallrye.mutiny.Multi<?>> getWrapperClass() {
+			return io.smallrye.mutiny.Multi.class;
+		}
+
+		@Override
+		public io.smallrye.mutiny.Multi<?> map(Object wrapper, Function<Object, Object> function) {
+			return ((io.smallrye.mutiny.Multi<?>) wrapper).map(function);
+		}
+	}
+
 
 	// -------------------------------------------------------------------------
 	// ReactiveStreams converters

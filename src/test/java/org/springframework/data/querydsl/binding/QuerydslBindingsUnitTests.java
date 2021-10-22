@@ -23,6 +23,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.querydsl.Address;
+import org.springframework.data.querydsl.QAddress;
 import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
@@ -67,6 +69,27 @@ class QuerydslBindingsUnitTests {
 		assertThat(bindings.getBindingForPath(path)).isEmpty();
 	}
 
+	@Test // GH-2418
+	void shouldConsiderOwningTypeWhenObtainingBindings() {
+
+		bindings.bind(QUser.user.description).first(CONTAINS_BINDING);
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(PropertyPathInformation.of("description", User.class)),
+				CONTAINS_BINDING);
+		assertThat(bindings.getBindingForPath(PropertyPathInformation.of("address.description", User.class))).isEmpty();
+		assertThat(bindings.getBindingForPath(PropertyPathInformation.of("description", Address.class))).isEmpty();
+	}
+
+	@Test // GH-2418
+	void shouldConsiderOwningTypeWhenObtainingBindingsWithQuerydslPathInformation() {
+
+		bindings.bind(QUser.user.description).first(CONTAINS_BINDING);
+
+		assertAdapterWithTargetBinding(bindings.getBindingForPath(QuerydslPathInformation.of(QUser.user.description)),
+				CONTAINS_BINDING);
+		assertThat(bindings.getBindingForPath(QuerydslPathInformation.of(QAddress.address.description))).isEmpty();
+	}
+
 	@Test // DATACMNS-669
 	void returnsRegisteredBindingForSimplePath() {
 
@@ -78,7 +101,7 @@ class QuerydslBindingsUnitTests {
 	}
 
 	@Test // DATACMNS-669
-	void getBindingForPathShouldReturnSpeficicBindingForNestedElementsWhenAvailable() {
+	void getBindingForPathShouldReturnSpecificBindingForNestedElementsWhenAvailable() {
 
 		bindings.bind(QUser.user.address.street).first(CONTAINS_BINDING);
 

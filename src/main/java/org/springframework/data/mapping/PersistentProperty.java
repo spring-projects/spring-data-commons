@@ -128,7 +128,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	/**
 	 * Returns the with {@link Method} to set a property value on a new object instance. Might return {@literal null} in
 	 * case there is no with available.
-	 * <p/>
+	 * <p>
 	 * With {@link Method methods} are property-bound instance {@link Method methods} that accept a single argument of the
 	 * property type creating a new object instance.
 	 *

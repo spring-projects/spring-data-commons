@@ -16,7 +16,7 @@
 package org.springframework.data.mapping;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 @Document
 public class PersonDocument extends Person {

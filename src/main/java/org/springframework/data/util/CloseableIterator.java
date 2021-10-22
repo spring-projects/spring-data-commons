@@ -59,7 +59,7 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
 
 	/**
 	 * Return a sequential {@code Stream} with this {@link Iterator} as its source. The resulting stream calls
-	 * {@link #clone()} when {@link Stream#close() closed}. The resulting {@link Stream} must be closed after use, it can
+	 * {@link #close()} when {@link Stream#close() closed}. The resulting {@link Stream} must be closed after use, it can
 	 * be declared as a resource in a {@code try}-with-resources statement.
 	 * <p>
 	 * This method should be overridden when the {@link #spliterator()} method cannot return a spliterator that is

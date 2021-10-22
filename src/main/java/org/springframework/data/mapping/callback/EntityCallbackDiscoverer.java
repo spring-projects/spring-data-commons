@@ -64,7 +64,7 @@ class EntityCallbackDiscoverer {
 
 	/**
 	 * Create a new {@link EntityCallback} instance.
-	 * <p />
+	 * <p>
 	 * Pre loads {@link EntityCallback} beans by scanning the {@link BeanFactory}.
 	 */
 	EntityCallbackDiscoverer(BeanFactory beanFactory) {

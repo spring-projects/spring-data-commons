@@ -23,7 +23,7 @@ import org.springframework.util.Assert;
  * Domain service to allow accessing and setting {@link PersistentProperty}s of an entity. Usually obtained through
  * {@link PersistentEntity#getPropertyAccessor(Object)}. In case type conversion shall be applied on property access,
  * use a {@link ConvertingPropertyAccessor}.
- * <p />
+ * <p>
  * This service supports mutation for immutable classes by creating new object instances. These are managed as state of
  * {@link PersistentPropertyAccessor} and must be obtained from {@link #getBean()} after processing all updates.
  *

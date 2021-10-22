@@ -16,10 +16,12 @@
 package org.springframework.data.querydsl;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.FluentQuery;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
@@ -108,4 +110,15 @@ public interface QuerydslPredicateExecutor<T> {
 	 * @return {@literal true} if the data store contains elements that match the given {@link Predicate}.
 	 */
 	boolean exists(Predicate predicate);
+
+	/**
+	 * Returns entities matching the given {@link Predicate} applying the {@link Function queryFunction} that defines the
+	 * query and its result type.
+	 *
+	 * @param predicate must not be {@literal null}.
+	 * @param queryFunction the query function defining projection, sorting, and the result type
+	 * @return all entities matching the given {@link Predicate}.
+	 * @since 2.6
+	 */
+	<S extends T, R> R findBy(Predicate predicate, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
 }

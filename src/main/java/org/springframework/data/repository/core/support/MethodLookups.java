@@ -65,7 +65,7 @@ interface MethodLookups {
 
 	/**
 	 * Repository type-aware method lookup composed of {@link #direct()} and {@link RepositoryAwareMethodLookup}.
-	 * <p/>
+	 * <p>
 	 * Repository-aware lookups resolve generic types from the repository declaration to verify assignability to Id/domain
 	 * types. This lookup also permits assignable method signatures but prefers {@link #direct()} matches.
 	 *
@@ -79,7 +79,7 @@ interface MethodLookups {
 
 	/**
 	 * Repository type-aware method lookup composed of {@link #direct()} and {@link ReactiveTypeInteropMethodLookup}.
-	 * <p/>
+	 * <p>
 	 * This method lookup considers adaptability of reactive types in method signatures. Repository methods accepting a
 	 * reactive type can be possibly called with a different reactive type if the reactive type can be adopted to the
 	 * target type. This lookup also permits assignable method signatures and resolves repository id/entity types but

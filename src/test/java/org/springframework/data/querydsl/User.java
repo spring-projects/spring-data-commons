@@ -37,6 +37,7 @@ public class User {
 	public List<Address> addresses;
 	public List<String> nickNames;
 	public Long inceptionYear;
+	public String description;
 
 	public User(String firstname, String lastname, Address address) {
 
@@ -56,7 +57,3 @@ class SpecialUser extends User {
 	}
 }
 
-@QueryEntity
-class UserWrapper {
-	public User user;
-}

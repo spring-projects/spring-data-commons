@@ -49,8 +49,7 @@ public class InvalidPersistentPropertyPath extends MappingException {
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param unresolvableSegment must not be {@literal null} or empty.
-	 * @param resolvedPath
-	 * @param message must not be {@literal null} or empty.
+	 * @param resolvedPath must not be {@literal null} or empty.
 	 */
 	public InvalidPersistentPropertyPath(String source, TypeInformation<?> type, String unresolvableSegment,
 			PersistentPropertyPath<? extends PersistentProperty<?>> resolvedPath) {

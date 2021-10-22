@@ -65,6 +65,7 @@ import com.querydsl.core.types.Path;
  */
 public class QuerydslBindings {
 
+	// pathSpecs key format: <class.simpleName>.<pathInformation.toDotPath>
 	private final Map<String, PathAndBinding<?, ?>> pathSpecs;
 	private final Map<Class<?>, PathAndBinding<?, ?>> typeSpecs;
 	private final Set<String> allowList;
@@ -135,7 +136,7 @@ public class QuerydslBindings {
 	/**
 	 * Include properties for binding. Include the property considered a binding candidate.
 	 *
-	 * @param properties must not be {@literal null} or empty.
+	 * @param paths must not be {@literal null} or empty.
 	 */
 	public final void including(Path<?>... paths) {
 
@@ -203,7 +204,7 @@ public class QuerydslBindings {
 
 		Assert.notNull(path, "PropertyPath must not be null!");
 
-		PathAndBinding<S, T> pathAndBinding = (PathAndBinding<S, T>) pathSpecs.get(path.toDotPath());
+		PathAndBinding<S, T> pathAndBinding = (PathAndBinding<S, T>) pathSpecs.get(createKey(path));
 
 		if (pathAndBinding != null) {
 
@@ -229,7 +230,7 @@ public class QuerydslBindings {
 
 		Assert.notNull(path, "PropertyPath must not be null!");
 
-		return Optional.ofNullable(pathSpecs.get(path.toDotPath())).flatMap(PathAndBinding::getPath);
+		return Optional.ofNullable(pathSpecs.get(createKey(path))).flatMap(PathAndBinding::getPath);
 	}
 
 	/**
@@ -249,6 +250,15 @@ public class QuerydslBindings {
 			return null;
 		}
 
+		// fully-qualified path lookup
+		String key = createKey(type, path);
+		if (pathSpecs.containsKey(key)) {
+			return pathSpecs.get(key).getPath()//
+					.map(QuerydslPathInformation::of)//
+					.orElse(null);
+		}
+
+		// alias lookup
 		if (pathSpecs.containsKey(path)) {
 			return pathSpecs.get(path).getPath()//
 					.map(QuerydslPathInformation::of)//
@@ -261,6 +271,28 @@ public class QuerydslBindings {
 		} catch (PropertyReferenceException o_O) {
 			return null;
 		}
+	}
+
+	/**
+	 * Returns the property path key for the given {@link Path}.
+	 *
+	 * @param path can be {@literal null}.
+	 * @return
+	 */
+	private static String createKey(Optional<Path<?>> path) {
+		return path.map(QuerydslPathInformation::of).map(QuerydslBindings::createKey).orElse("");
+	}
+
+	private static String createKey(PathInformation path) {
+		return createKey(path.getRootParentType(), path.toDotPath());
+	}
+
+	private static String createKey(TypeInformation<?> type, String path) {
+		return createKey(type.getType(), path);
+	}
+
+	private static String createKey(Class<?> type, String path) {
+		return type.getSimpleName() + "." + path;
 	}
 
 	/**
@@ -356,7 +388,6 @@ public class QuerydslBindings {
 		 * Defines the given {@link SingleValueBinding} to be used for the paths.
 		 *
 		 * @param binding must not be {@literal null}.
-		 * @return
 		 */
 		public void firstOptional(OptionalValueBinding<P, T> binding) {
 
@@ -375,7 +406,6 @@ public class QuerydslBindings {
 		 * Defines the given {@link MultiValueBinding} to be used for the paths.
 		 *
 		 * @param binding must not be {@literal null}.
-		 * @return
 		 */
 		public void all(MultiValueBinding<P, T> binding) {
 
@@ -385,7 +415,7 @@ public class QuerydslBindings {
 		}
 
 		protected void registerBinding(PathAndBinding<P, T> binding) {
-			QuerydslBindings.this.pathSpecs.put(toDotPath(binding.getPath()), binding);
+			QuerydslBindings.this.pathSpecs.put(createKey(binding.getPath()), binding);
 		}
 	}
 
@@ -455,10 +485,12 @@ public class QuerydslBindings {
 
 			super.registerBinding(binding);
 
+			String dotPath = toDotPath(binding.getPath());
+
 			if (alias != null) {
 				QuerydslBindings.this.pathSpecs.put(alias, binding);
 				QuerydslBindings.this.aliases.add(alias);
-				QuerydslBindings.this.denyList.add(toDotPath(binding.getPath()));
+				QuerydslBindings.this.denyList.add(dotPath);
 			}
 		}
 	}

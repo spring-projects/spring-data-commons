@@ -858,7 +858,7 @@ ListenableFuture<User> findOneByLastname(String lastname);    <3>
 [[repositories.create-instances]]
 == Creating Repository Instances
 
-This section covers how to create instances and bean definitions for the defined repository interfaces.One way to do so is by using the Spring namespace that is shipped with each Spring Data module that supports the repository mechanism, although we generally recommend using Java configuration.
+This section covers how to create instances and bean definitions for the defined repository interfaces. One way to do so is by using the Spring namespace that is shipped with each Spring Data module that supports the repository mechanism, although we generally recommend using Java configuration.
 
 [[repositories.create-instances.spring]]
 === XML Configuration
@@ -916,7 +916,7 @@ The preceding example excludes all interfaces ending in `SomeRepository` from be
 [[repositories.create-instances.java-config]]
 === Java Configuration
 
-You can also trigger the repository infrastructure by using a store-specific `@Enable${store}Repositories` annotation on a Java configuration class.For an introduction to Java-based configuration of the Spring container, see {spring-framework-docs}/core.html#beans-java[JavaConfig in the Spring reference documentation].
+You can also trigger the repository infrastructure by using a store-specific `@Enable${store}Repositories` annotation on a Java configuration class. For an introduction to Java-based configuration of the Spring container, see {spring-framework-docs}/core.html#beans-java[JavaConfig in the Spring reference documentation].
 
 A sample configuration to enable Spring Data repositories resembles the following:
 
@@ -936,12 +936,12 @@ class ApplicationConfiguration {
 ----
 ====
 
-NOTE: The preceding example uses the JPA-specific annotation, which you would change according to the store module you actually use.The same applies to the definition of the `EntityManagerFactory` bean.See the sections covering the store-specific configuration.
+NOTE: The preceding example uses the JPA-specific annotation, which you would change according to the store module you actually use. The same applies to the definition of the `EntityManagerFactory` bean. See the sections covering the store-specific configuration.
 
 [[repositories.create-instances.standalone]]
 === Standalone Usage
 
-You can also use the repository infrastructure outside of a Spring container -- for example, in CDI environments.You still need some Spring libraries in your classpath, but, generally, you can set up repositories programmatically as well.The Spring Data modules that provide repository support ship with a persistence technology-specific `RepositoryFactory` that you can use, as follows:
+You can also use the repository infrastructure outside of a Spring container -- for example, in CDI environments. You still need some Spring libraries in your classpath, but, generally, you can set up repositories programmatically as well. The Spring Data modules that provide repository support ship with a persistence technology-specific `RepositoryFactory` that you can use, as follows:
 
 .Standalone usage of the repository factory
 ====
@@ -1006,7 +1006,7 @@ interface UserRepository extends CrudRepository<User, Long>, CustomizedUserRepos
 
 Extending the fragment interface with your repository interface combines the CRUD and custom functionality and makes it available to clients.
 
-Spring Data repositories are implemented by using fragments that form a repository composition.Fragments are the base repository, functional aspects (such as <<core.extensions.querydsl,QueryDsl>>), and custom interfaces along with their implementations.Each time you add an interface to your repository interface, you enhance the composition by adding a fragment.The base repository and repository aspect implementations are provided by each Spring Data module.
+Spring Data repositories are implemented by using fragments that form a repository composition. Fragments are the base repository, functional aspects (such as <<core.extensions.querydsl,QueryDsl>>), and custom interfaces along with their implementations. Each time you add an interface to your repository interface, you enhance the composition by adding a fragment. The base repository and repository aspect implementations are provided by each Spring Data module.
 
 The following example shows custom interfaces and their implementations:
 
@@ -1058,7 +1058,7 @@ interface UserRepository extends CrudRepository<User, Long>, HumanRepository, Co
 ----
 ====
 
-Repositories may be composed of multiple custom implementations that are imported in the order of their declaration.Custom implementations have a higher priority than the base implementation and repository aspects.This ordering lets you override base repository and aspect methods and resolves ambiguity if two fragments contribute the same method signature.Repository fragments are not limited to use in a single repository interface.Multiple repositories may use a fragment interface, letting you reuse customizations across different repositories.
+Repositories may be composed of multiple custom implementations that are imported in the order of their declaration. Custom implementations have a higher priority than the base implementation and repository aspects. This ordering lets you override base repository and aspect methods and resolves ambiguity if two fragments contribute the same method signature. Repository fragments are not limited to use in a single repository interface. Multiple repositories may use a fragment interface, letting you reuse customizations across different repositories.
 
 The following example shows a repository fragment and its implementation:
 

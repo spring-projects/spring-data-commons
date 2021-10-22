@@ -18,7 +18,7 @@ package org.springframework.data.mapping;
 import org.springframework.data.annotation.Id;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 public class PersonWithId extends Person {
 
