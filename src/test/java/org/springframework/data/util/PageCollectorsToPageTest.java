@@ -15,7 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Test methods for {@link PageCollectors}s.
+ * Test methods for {@link PageCollectors}.
  *
  * @author Bertrand Moreau
  */

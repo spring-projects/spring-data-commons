@@ -1,6 +1,7 @@
 package org.springframework.data.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -86,10 +87,7 @@ public final class PageCollectors<T> {
 
 		@Override
 		public BinaryOperator<List<T>> combiner() {
-			return (left, right) -> {
-				left.addAll(right);
-				return left;
-			};
+			return (left, right) -> Stream.of(left, right).flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
 		@Override
@@ -135,10 +133,7 @@ public final class PageCollectors<T> {
 
 		@Override
 		public BinaryOperator<List<T>> combiner() {
-			return (left, right) -> {
-				left.addAll(right);
-				return left;
-			};
+			return (left, right) -> Stream.of(left, right).flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
 		@Override
@@ -193,10 +188,7 @@ public final class PageCollectors<T> {
 
 		@Override
 		public BinaryOperator<List<T>> combiner() {
-			return (left, right) -> {
-				left.addAll(right);
-				return left;
-			};
+			return (left, right) -> Stream.of(left, right).flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
 		@Override
@@ -255,10 +247,7 @@ public final class PageCollectors<T> {
 
 		@Override
 		public BinaryOperator<List<T>> combiner() {
-			return (left, right) -> {
-				left.addAll(right);
-				return left;
-			};
+			return (left, right) -> Stream.of(left, right).flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
 		@Override
@@ -319,10 +308,7 @@ public final class PageCollectors<T> {
 
 		@Override
 		public BinaryOperator<List<T>> combiner() {
-			return (left, right) -> {
-				left.addAll(right);
-				return left;
-			};
+			return (left, right) -> Stream.of(left, right).flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
 		@Override

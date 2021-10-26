@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 
 /**
- * Test methods for {@link PageCollectors}s.
+ * Test methods for {@link PageCollectors}.
  *
  * @author Bertrand Moreau
  */
