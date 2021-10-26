@@ -1,5 +1,6 @@
 package org.springframework.data.util;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
@@ -12,14 +13,13 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Test methods for {@link PageCollectors}s.
  *
  * @author Bertrand Moreau
  */
-public class PageCollectorsToPageTest {
+public class PageCollectorToSimplePageTest {
 
 	private List<Integer> ints;
 	private int size;
@@ -33,8 +33,7 @@ public class PageCollectorsToPageTest {
 
 	@Test
 	void fullPage() {
-		final Pageable pageable = Pageable.ofSize(size);
-		final Page<Integer> page = ints.stream().collect(PageCollectors.toPage(pageable));
+		final Page<Integer> page = ints.stream().collect(PageCollectors.toSimplePage());
 
 		assertEquals(size, page.getSize());
 		assertEquals(size, page.getContent().size());
@@ -42,20 +41,10 @@ public class PageCollectorsToPageTest {
 
 	@Test
 	void emptyPage() {
-		final Pageable pageable = Pageable.ofSize(size);
-		final Page<Object> page = Collections.emptyList().stream().collect(PageCollectors.toPage(pageable));
+		final Page<Object> page = Collections.emptyList().stream().collect(PageCollectors.toSimplePage());
 
-		assertEquals(size, page.getSize());
+		assertEquals(0, page.getSize());
 		assertEquals(0, page.getContent().size());
-	}
-
-	@Test
-	void secondPage() {
-		final Pageable pageable = Pageable.ofSize(size / 4).withPage(2);
-		final Page<Integer> page = ints.stream().collect(PageCollectors.toPage(pageable));
-
-		assertEquals(size / 4, page.getSize());
-		assertEquals(size / 4, page.getContent().size());
 	}
 
 	@Test
@@ -64,14 +53,11 @@ public class PageCollectorsToPageTest {
 				"dix");
 
 		final int size = datas.size();
-		final Pageable pageable = Pageable.ofSize(size / 5).withPage(2);
-		final Page<String> page = datas.stream().collect(PageCollectors.toPage(pageable));
+		final Page<String> page = datas.stream().collect(PageCollectors.toSimplePage());
 
-		assertEquals(size / 4, page.getSize());
-		assertEquals(size / 4, page.getContent().size());
-		assertEquals("cinq", page.getContent().get(0));
-		assertEquals("six", page.getContent().get(1));
-
+		assertEquals(size, page.getSize());
+		assertEquals(size, page.getContent().size());
+		assertArrayEquals(datas.toArray(), page.getContent().toArray());
 	}
 
 }

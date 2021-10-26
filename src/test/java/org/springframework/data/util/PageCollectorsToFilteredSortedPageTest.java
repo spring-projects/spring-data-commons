@@ -17,6 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+/**
+ * Test methods for {@link PageCollectors}s.
+ *
+ * @author Bertrand Moreau
+ */
 public class PageCollectorsToFilteredSortedPageTest {
 
 	private List<Integer> ints;

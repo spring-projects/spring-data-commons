@@ -20,9 +20,56 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+/**
+ * Utility methods to work with {@link Page}s.
+ *
+ * @author Bertrand Moreau
+ */
 public final class PageCollectors<T> {
 
 	private static final Set<Characteristics> characteristics = Collections.emptySet();
+
+	/**
+	 * Simply put all the {@link Stream} data into a {@link Page}.
+	 *
+	 * @param <T>
+	 * @return a {@link Page} containing all the {@link Stream} datas
+	 */
+	public static <T> Collector<T, List<T>, Page<T>> toSimplePage() {
+		return new SimplePageCollectorImpl<>();
+	}
+
+	private static class SimplePageCollectorImpl<T> implements Collector<T, List<T>, Page<T>> {
+
+		@Override
+		public Set<Characteristics> characteristics() {
+			return characteristics;
+		}
+
+		@Override
+		public Supplier<List<T>> supplier() {
+			return ArrayList::new;
+		}
+
+		@Override
+		public BiConsumer<List<T>, T> accumulator() {
+			return List::add;
+		}
+
+		@Override
+		public BinaryOperator<List<T>> combiner() {
+			return (left, right) -> {
+				left.addAll(right);
+				return left;
+			};
+		}
+
+		@Override
+		public Function<List<T>, Page<T>> finisher() {
+			return PageImpl::new;
+		}
+
+	}
 
 	/**
 	 * Reduce the {@link Stream} as {@link Page} based on the {@link Pageable}
