@@ -59,7 +59,8 @@ public final class PageCollectors<T> {
 	private static final Set<Characteristics> characteristics = Collections.emptySet();
 
 	/**
-	 * Simply put all the {@link Stream} data into a {@link Page}.
+	 * Simply put all the {@link Stream} data into a {@link Page}.<strong>Use is IF the {@link Page} is already returned
+	 * by the repo BUT processed after</strong>
 	 *
 	 * @param p
 	 * @param <T>
