@@ -61,6 +61,17 @@ public final class PageCollectors<T> {
 	/**
 	 * Simply put all the {@link Stream} data into a {@link Page}.
 	 *
+	 * @param p
+	 * @param <T>
+	 * @return a {@link Page} containing all the {@link Stream} data and the {@link Pageable} informations.
+	 */
+	public static <T> Collector<T, List<T>, Page<T>> toSimplePage(final Pageable p) {
+		return new SimplePageCollectorImpl<>(p);
+	}
+
+	/**
+	 * Simply put all the {@link Stream} data into a {@link Page}.
+	 *
 	 * @param <T>
 	 * @return a {@link Page} containing all the {@link Stream} datas
 	 */
@@ -69,6 +80,14 @@ public final class PageCollectors<T> {
 	}
 
 	private static class SimplePageCollectorImpl<T> implements Collector<T, List<T>, Page<T>> {
+
+		private Pageable p = null;
+
+		public SimplePageCollectorImpl() {}
+
+		public SimplePageCollectorImpl(final Pageable p) {
+			this.p = Objects.requireNonNull(p);
+		}
 
 		@Override
 		public Set<Characteristics> characteristics() {
@@ -92,7 +111,7 @@ public final class PageCollectors<T> {
 
 		@Override
 		public Function<List<T>, Page<T>> finisher() {
-			return PageImpl::new;
+			return t -> p == null ? new PageImpl<>(t) : new PageImpl<>(t, p, t.size());
 		}
 
 	}
