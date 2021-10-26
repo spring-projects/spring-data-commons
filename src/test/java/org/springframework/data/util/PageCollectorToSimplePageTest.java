@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Test methods for {@link PageCollectors}.
@@ -37,6 +38,17 @@ public class PageCollectorToSimplePageTest {
 
 		assertEquals(size, page.getSize());
 		assertEquals(size, page.getContent().size());
+		assertEquals(0, page.getNumber());
+	}
+
+	@Test
+	void fullPageWithPageable() {
+		final Pageable p = Pageable.ofSize(size).withPage(3);
+		final Page<Integer> page = ints.stream().collect(PageCollectors.toSimplePage(p));
+
+		assertEquals(size, page.getSize());
+		assertEquals(size, page.getContent().size());
+		assertEquals(3, page.getNumber());
 	}
 
 	@Test
@@ -45,6 +57,7 @@ public class PageCollectorToSimplePageTest {
 
 		assertEquals(0, page.getSize());
 		assertEquals(0, page.getContent().size());
+		assertEquals(0, page.getNumber());
 	}
 
 	@Test
@@ -58,6 +71,7 @@ public class PageCollectorToSimplePageTest {
 		assertEquals(size, page.getSize());
 		assertEquals(size, page.getContent().size());
 		assertArrayEquals(datas.toArray(), page.getContent().toArray());
+		assertEquals(0, page.getNumber());
 	}
 
 }
