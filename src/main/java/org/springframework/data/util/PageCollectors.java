@@ -130,7 +130,7 @@ public final class PageCollectors<T> {
 
 	private static class PageCollectorImpl<T> implements Collector<T, List<T>, Page<T>> {
 
-		Pageable p;
+		private final Pageable p;
 
 		public PageCollectorImpl(final Pageable p) {
 			this.p = Objects.requireNonNull(p);
@@ -183,8 +183,8 @@ public final class PageCollectors<T> {
 
 	private static class SortedPageCollectorImpl<T> implements Collector<T, List<T>, Page<T>> {
 
-		Pageable p;
-		Comparator<T> c;
+		private final Pageable p;
+		private final Comparator<T> c;
 
 		public SortedPageCollectorImpl(final Pageable p, final Comparator<T> c) {
 			this.p = Objects.requireNonNull(p);
@@ -242,8 +242,8 @@ public final class PageCollectors<T> {
 
 	private static class FilteredPageCollectorImpl<T> implements Collector<T, List<T>, Page<T>> {
 
-		Pageable p;
-		Predicate<T> f;
+		private final Pageable p;
+		private final Predicate<T> f;
 
 		public FilteredPageCollectorImpl(final Pageable p, final Predicate<T> f) {
 			this.p = Objects.requireNonNull(p);
@@ -301,9 +301,9 @@ public final class PageCollectors<T> {
 
 	private static class FilteredSortedPageCollectorImpl<T> implements Collector<T, List<T>, Page<T>> {
 
-		Pageable p;
-		Predicate<T> f;
-		Comparator<T> c;
+		private final Pageable p;
+		private final Predicate<T> f;
+		private final Comparator<T> c;
 
 		public FilteredSortedPageCollectorImpl(final Pageable p, final Predicate<T> f, final Comparator<T> c) {
 			this.p = Objects.requireNonNull(p);
