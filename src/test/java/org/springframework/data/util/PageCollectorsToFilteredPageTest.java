@@ -49,7 +49,7 @@ public class PageCollectorsToFilteredPageTest {
 	@Test
 	void emptyPage() {
 		final Pageable pageable = Pageable.ofSize(size);
-		final Page<Integer> page = Collections.<Integer>emptyList().stream()
+		final Page<Integer> page = Collections.<Integer> emptyList().stream()
 				.collect(PageCollectors.toFilteredPage(pageable, i -> i > 0));
 
 		assertEquals(size, page.getSize());

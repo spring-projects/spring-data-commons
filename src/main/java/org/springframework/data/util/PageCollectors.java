@@ -72,8 +72,7 @@ public final class PageCollectors<T> {
 	}
 
 	/**
-	 * Reduce the {@link Stream} as {@link Page} based on the {@link Pageable}
-	 * information.
+	 * Reduce the {@link Stream} as {@link Page} based on the {@link Pageable} information.
 	 *
 	 * @param <T>
 	 * @param p
@@ -129,13 +128,11 @@ public final class PageCollectors<T> {
 	}
 
 	/**
-	 * Reduce the {@link Stream} as {@link Page} based on the {@link Pageable}
-	 * information.
+	 * Reduce the {@link Stream} as {@link Page} based on the {@link Pageable} information.
 	 *
 	 * @param <T>
 	 * @param p
-	 * @return a {@link Page} containing a subset of the {@link Stream} sort
-	 *         following the {@link Comparator}
+	 * @return a {@link Page} containing a subset of the {@link Stream} sort following the {@link Comparator}
 	 */
 	public static <T> Collector<T, List<T>, Page<T>> toSortedPage(final Pageable p, final Comparator<T> c) {
 		return new SortedPageCollectorImpl<>(p, c);
@@ -192,11 +189,8 @@ public final class PageCollectors<T> {
 	}
 
 	/**
-	 * Reduce the {@link Stream} as {@link Page} based on the {@link Pageable}
-	 * information. <br>
-	 *
-	 * <strong>The {@link Stream} is filtered before subset of data
-	 * isolated</strong>
+	 * Reduce the {@link Stream} as {@link Page} based on the {@link Pageable} information. <br>
+	 * <strong>The {@link Stream} is filtered before subset of data isolated</strong>
 	 *
 	 * @param <T>
 	 * @param p
@@ -256,11 +250,8 @@ public final class PageCollectors<T> {
 	}
 
 	/**
-	 * Reduce the {@link Stream} as {@link Page} based on the {@link Pageable}
-	 * information. <br>
-	 *
-	 * <strong>The {@link Stream} is filtered then sorted then the subset of data
-	 * isolated</strong>
+	 * Reduce the {@link Stream} as {@link Page} based on the {@link Pageable} information. <br>
+	 * <strong>The {@link Stream} is filtered then sorted then the subset of data isolated</strong>
 	 *
 	 * @param <T>
 	 * @param p

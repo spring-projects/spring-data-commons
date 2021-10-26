@@ -56,7 +56,7 @@ public class PageCollectorsToFilteredSortedPageTest {
 	@Test
 	void emptyPage() {
 		final Pageable pageable = Pageable.ofSize(size);
-		final Page<Integer> page = Collections.<Integer>emptyList().stream()
+		final Page<Integer> page = Collections.<Integer> emptyList().stream()
 				.collect(PageCollectors.toFilteredSortedPage(pageable, i -> i > 0, Integer::compare));
 
 		assertEquals(size, page.getSize());

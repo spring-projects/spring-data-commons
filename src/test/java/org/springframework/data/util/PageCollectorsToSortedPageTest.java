@@ -50,7 +50,7 @@ public class PageCollectorsToSortedPageTest {
 	@Test
 	void emptyPage() {
 		final Pageable pageable = Pageable.ofSize(size);
-		final Page<Integer> page = Collections.<Integer>emptyList().stream()
+		final Page<Integer> page = Collections.<Integer> emptyList().stream()
 				.collect(PageCollectors.toSortedPage(pageable, Integer::compare));
 
 		assertEquals(size, page.getSize());
