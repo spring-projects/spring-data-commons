@@ -21,7 +21,35 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Utility methods to work with {@link Page}s.
+ * Utility methods to work with {@link Stream} and {@link Page}s. </br>
+ * It has been thought to provide some writing like that: </br>
+ * </br>
+ * <code>
+ * class DatasProvider {</br>
+ *  	public Page<T> getDatasPage() {</br>
+ *  		Collection<T> items = [FILL THE ITEMS];</br>
+ *  		return items.stream().map(...).filter(...).collector(PageCollectors.toSimplePage());</br>
+ *  	}</br>
+ *  }</br>
+ * </code></br>
+ * or</br>
+ * <code>
+ * class DatasProvider {</br>
+ *  	public Page<T> getDatasPage() {</br>
+ *  		Page<T> page = repo.[ANY PAGED SEARCH];</br>
+ *  		return page.stream().map(...).filter(...).collector(PageCollectors.toSimplePage());</br>
+ *  	}</br>
+ *  }</br>
+ * </code></br>
+ * or</br>
+ * <code>
+ *  class DatasProvider {</br>
+ *  	public Page<T> getDatasPage(Pageable pageable) {</br>
+ *  		Collection<T> items = [FILL THE ITEMS];</br>
+ *  		return items.stream().map(...).filter(...).collector(PageCollectors.toPage(pageable));</br>
+ *  	}</br>
+ *  }</br>
+ *  </code>
  *
  * @author Bertrand Moreau
  */
