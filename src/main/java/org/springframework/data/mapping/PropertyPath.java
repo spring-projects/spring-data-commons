@@ -108,7 +108,15 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns the name of the {@link PropertyPath}.
+	 * Returns the first part of the {@link PropertyPath}.
+	 *
+	 * <pre>
+	 * {@code
+	 * PropertyPath.from("a.b.c", Some.class).getSegment();
+	 * }
+	 * </pre>
+	 *
+	 * will result in {@code "a"}
 	 *
 	 * @return the name will never be {@literal null}.
 	 */
@@ -156,7 +164,15 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns the next nested {@link PropertyPath}.
+	 * Returns the {@link PropertyPath} path that results from removing the first element of the current one.
+	 *
+	 * <pre>
+	 * {@code
+	 * System.out.println(PropertyPath.from("a.b.c", Some.class).next().toDotPath());
+	 * }
+	 * </pre>
+	 *
+	 * Will result in the output: {@code b.c}
 	 *
 	 * @return the next nested {@link PropertyPath} or {@literal null} if no nested {@link PropertyPath} available.
 	 * @see #hasNext()
@@ -214,9 +230,28 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return PropertyPath.from(lookup, owningType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
+	/**
+	 * Returns an {@link Iterator<PropertyPath>} that iterates over all the partial property paths with the same leaf type
+	 * but decreasing length.
+	 *
+	 * <pre>
+	 * {@code
+	 * PropertyPath propertyPath = PropertyPath.from("a.b.c", Some.class);
+	 * for (p : propertyPath.iterator()) {
+	 *     System.out.println(p.toDotPath());
+	 * };
+	 * }
+	 * </pre>
+	 *
+	 * Results in the output:
+	 *
+	 * <pre>
+	 * {@code
+	 * a.b.c
+	 * b.c
+	 * c
+	 * }
+	 * </pre>
 	 */
 	public Iterator<PropertyPath> iterator() {
 
@@ -321,11 +356,18 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and type.
+	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}. <br />
+	 * Uses {@link #SPLITTER} by default and {@link #SPLITTER_FOR_QUOTED} for {@link Pattern#quote(String) quoted}
+	 * literals.
+	 * <p>
+	 * Separate parts of the path may be separated by {@code "."} or by {@code "_"} or by camel case. When the match to
+	 * properties is ambiguous longer property names are preferred. So for "userAddressCity" the interpretation
+	 * "userAddress.city" is preferred over "user.address.city".
+	 * </p>
 	 *
-	 * @param source
-	 * @param type
-	 * @return
+	 * @param source a String denoting the property path. Must not be {@literal null}.
+	 * @param type the owning type of the property path. Must not be {@literal null}.
+	 * @return a new {@link PropertyPath} guaranteed to be not {@literal null}.
 	 */
 	public static PropertyPath from(String source, Class<?> type) {
 		return from(source, ClassTypeInformation.from(type));
@@ -335,10 +377,15 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}. <br />
 	 * Uses {@link #SPLITTER} by default and {@link #SPLITTER_FOR_QUOTED} for {@link Pattern#quote(String) quoted}
 	 * literals.
+	 * <p>
+	 * Separate parts of the path may be separated by {@code "."} or by {@code "_"} or by camel case. When the match to
+	 * properties is ambiguous longer property names are preferred. So for "userAddressCity" the interpretation
+	 * "userAddress.city" is preferred over "user.address.city".
+	 * </p>
 	 *
-	 * @param source must not be {@literal null}.
-	 * @param type
-	 * @return
+	 * @param source a String denoting the property path. Must not be {@literal null}.
+	 * @param type the owning type of the property path. Must not be {@literal null}.
+	 * @return a new {@link PropertyPath} guaranteed to be not {@literal null}.
 	 */
 	public static PropertyPath from(String source, TypeInformation<?> type) {
 

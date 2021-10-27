@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
@@ -34,6 +33,7 @@ import org.springframework.data.util.TypeInformation;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 @SuppressWarnings("unused")
 public class PropertyPathUnitTests {
@@ -186,6 +186,16 @@ public class PropertyPathUnitTests {
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo(propertyPath.next());
 		assertThat(iterator.hasNext()).isFalse();
+	}
+
+	@Test // GH-2491
+	public void nextReturnsPathWithoutFirstElement() {
+
+		PropertyPath propertyPath = PropertyPath.from("bar.user.name", Sample.class);
+
+		final PropertyPath next = propertyPath.next();
+		assertThat(next).isNotNull();
+		assertThat(next.toDotPath()).isEqualTo("user.name");
 	}
 
 	@Test // DATACMNS-139
