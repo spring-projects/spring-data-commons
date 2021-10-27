@@ -163,16 +163,6 @@ public interface TypeInformation<S> {
 	}
 
 	/**
-	 * Returns if {@link #getType()} refers to a proxy or user class.
-	 *
-	 * @return true if type is a proxy.
-	 * @since 2.6
-	 */
-	default boolean isProxyTypeInformation() {
-		return !this.equals(getUserTypeInformation());
-	}
-
-	/**
 	 * Returns a {@link ClassTypeInformation} to represent the {@link TypeInformation} of the raw type of the current
 	 * instance.
 	 *

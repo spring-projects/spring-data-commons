@@ -37,14 +37,11 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
-import org.aopalliance.aop.Advice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.aop.Advisor;
+
 import org.springframework.aop.SpringProxy;
-import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.Advised;
-import org.springframework.aop.framework.AopConfigException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
@@ -60,7 +57,6 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 
 /**
  * Unit test for {@link AbstractMappingContext}.
@@ -334,13 +330,15 @@ class AbstractMappingContextUnitTests {
 	void contextSeesUserTypeBeforeProxy() {
 
 		SampleMappingContext context = new SampleMappingContext();
-		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = context.getPersistentEntity(Base.class);
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = context
+				.getRequiredPersistentEntity(Base.class);
 		persistentEntity.getTypeInformation().getType().equals(Base.class);
 
 		assertThat(context.hasPersistentEntityFor(Base.class)).isTrue();
 		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isFalse();
 
-		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntityForProxy = context.getPersistentEntity(Base$$SpringProxy$873fa2e.class);
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntityForProxy = context
+				.getRequiredPersistentEntity(Base$$SpringProxy$873fa2e.class);
 		persistentEntityForProxy.getTypeInformation().getType().equals(Base.class);
 		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isTrue();
 
@@ -352,13 +350,15 @@ class AbstractMappingContextUnitTests {
 
 		SampleMappingContext context = new SampleMappingContext();
 
-		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntityForProxy = context.getPersistentEntity(Base$$SpringProxy$873fa2e.class);
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntityForProxy = context
+				.getRequiredPersistentEntity(Base$$SpringProxy$873fa2e.class);
 		persistentEntityForProxy.getTypeInformation().getType().equals(Base.class);
 
 		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isTrue();
 		assertThat(context.hasPersistentEntityFor(Base.class)).isTrue();
 
-		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = context.getPersistentEntity(Base.class);
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = context
+				.getRequiredPersistentEntity(Base.class);
 		persistentEntity.getTypeInformation().getType().equals(Base.class);
 
 		assertThat(context.getPersistentEntities()).hasSize(1); // only one distinct instance
@@ -546,123 +546,8 @@ class AbstractMappingContextUnitTests {
 		Map<MapKey, Integer> mapOfKeyToPerson;
 	}
 
-	static class Base$$SpringProxy$873fa2e extends Base implements SpringProxy, Advised {
+	static abstract class Base$$SpringProxy$873fa2e extends Base implements SpringProxy, Advised {
 
-		@Override
-		public boolean isFrozen() {
-			return false;
-		}
-
-		@Override
-		public boolean isProxyTargetClass() {
-			return false;
-		}
-
-		@Override
-		public Class<?>[] getProxiedInterfaces() {
-			return new Class[0];
-		}
-
-		@Override
-		public boolean isInterfaceProxied(Class<?> intf) {
-			return false;
-		}
-
-		@Override
-		public void setTargetSource(TargetSource targetSource) {
-
-		}
-
-		@Override
-		public TargetSource getTargetSource() {
-			return null;
-		}
-
-		@Override
-		public void setExposeProxy(boolean exposeProxy) {
-
-		}
-
-		@Override
-		public boolean isExposeProxy() {
-			return false;
-		}
-
-		@Override
-		public void setPreFiltered(boolean preFiltered) {
-
-		}
-
-		@Override
-		public boolean isPreFiltered() {
-			return false;
-		}
-
-		@Override
-		public Advisor[] getAdvisors() {
-			return new Advisor[0];
-		}
-
-		@Override
-		public void addAdvisor(Advisor advisor) throws AopConfigException {
-
-		}
-
-		@Override
-		public void addAdvisor(int pos, Advisor advisor) throws AopConfigException {
-
-		}
-
-		@Override
-		public boolean removeAdvisor(Advisor advisor) {
-			return false;
-		}
-
-		@Override
-		public void removeAdvisor(int index) throws AopConfigException {
-
-		}
-
-		@Override
-		public int indexOf(Advisor advisor) {
-			return 0;
-		}
-
-		@Override
-		public boolean replaceAdvisor(Advisor a, Advisor b) throws AopConfigException {
-			return false;
-		}
-
-		@Override
-		public void addAdvice(Advice advice) throws AopConfigException {
-
-		}
-
-		@Override
-		public void addAdvice(int pos, Advice advice) throws AopConfigException {
-
-		}
-
-		@Override
-		public boolean removeAdvice(Advice advice) {
-			return false;
-		}
-
-		@Override
-		public int indexOf(Advice advice) {
-			return 0;
-		}
-
-		@Override
-		public String toProxyConfigString() {
-			return null;
-		}
-
-		@Nullable
-		@Override
-		public Class<?> getTargetClass() {
-			return null;
-		}
 	}
 
 }

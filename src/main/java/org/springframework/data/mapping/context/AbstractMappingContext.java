@@ -354,23 +354,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			read.lock();
 
-			Optional<E> persistentEntity = persistentEntities.get(typeInformation);
+			Optional<E> persistentEntity = persistentEntities.computeIfAbsent(typeInformation,
+					it -> persistentEntities.get(typeInformation.getUserTypeInformation()));
 
 			if (persistentEntity != null) {
 				return persistentEntity;
 			}
-
-			if(typeInformation.isProxyTypeInformation()) {
-
-				TypeInformation<?> userTypeInformation = typeInformation.getUserTypeInformation();
-				persistentEntity = persistentEntities.get(userTypeInformation);
-
-				if (persistentEntity != null) {
-					persistentEntities.put(typeInformation, persistentEntity);
-					return persistentEntity;
-				}
-			}
-
 		} finally {
 			read.unlock();
 		}
@@ -380,11 +369,13 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		try {
 
 			write.lock();
+
+			TypeInformation<?> typeInformationToUse = typeInformation.getUserTypeInformation();
 			entity = doAddPersistentEntity(typeInformation.getUserTypeInformation());
-			if(typeInformation.isProxyTypeInformation()) {
+
+			if (!typeInformationToUse.equals(typeInformation)) {
 				persistentEntities.put(typeInformation, Optional.of(entity));
 			}
-
 		} catch (BeansException e) {
 			throw new MappingException(e.getMessage(), e);
 		} finally {
