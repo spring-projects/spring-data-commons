@@ -39,7 +39,6 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.context.ApplicationContext;
@@ -343,6 +342,7 @@ class AbstractMappingContextUnitTests {
 		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isTrue();
 
 		assertThat(context.getPersistentEntities()).hasSize(1); // only one distinct instance
+		assertThat(persistentEntity).isSameAs(persistentEntityForProxy);
 	}
 
 	@Test // GH-2485
@@ -362,6 +362,7 @@ class AbstractMappingContextUnitTests {
 		persistentEntity.getTypeInformation().getType().equals(Base.class);
 
 		assertThat(context.getPersistentEntities()).hasSize(1); // only one distinct instance
+		assertThat(persistentEntity).isSameAs(persistentEntityForProxy);
 	}
 
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {

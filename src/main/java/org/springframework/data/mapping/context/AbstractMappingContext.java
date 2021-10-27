@@ -354,12 +354,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			read.lock();
 
-			Optional<E> persistentEntity = persistentEntities.computeIfAbsent(typeInformation,
-					it -> persistentEntities.get(typeInformation.getUserTypeInformation()));
+			Optional<E> persistentEntity = persistentEntities.get(typeInformation);
 
 			if (persistentEntity != null) {
 				return persistentEntity;
 			}
+
 		} finally {
 			read.unlock();
 		}
@@ -370,12 +370,15 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			write.lock();
 
-			TypeInformation<?> typeInformationToUse = typeInformation.getUserTypeInformation();
-			entity = doAddPersistentEntity(typeInformation.getUserTypeInformation());
+			Optional<E> userTypeEntity = persistentEntities.get(typeInformation.getUserTypeInformation());
 
-			if (!typeInformationToUse.equals(typeInformation)) {
-				persistentEntities.put(typeInformation, Optional.of(entity));
+			if (userTypeEntity != null) {
+				persistentEntities.put(typeInformation, userTypeEntity);
+				return userTypeEntity;
 			}
+
+			entity = doAddPersistentEntity(typeInformation);
+
 		} catch (BeansException e) {
 			throw new MappingException(e.getMessage(), e);
 		} finally {
@@ -392,19 +395,26 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	private E doAddPersistentEntity(TypeInformation<?> typeInformation) {
 
+		TypeInformation<?> userTypeInformation = typeInformation.getUserTypeInformation();
+
 		try {
 
-			Class<?> type = typeInformation.getType();
+			Class<?> type = userTypeInformation.getType();
 
-			E entity = createPersistentEntity(typeInformation);
+			E entity = createPersistentEntity(userTypeInformation);
 			entity.setEvaluationContextProvider(evaluationContextProvider);
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
-			persistentEntities.put(typeInformation, Optional.of(entity));
+			persistentEntities.put(userTypeInformation, Optional.of(entity));
+
+			// Cache original TypeInformation as well.
+			if (!userTypeInformation.equals(typeInformation)) {
+				persistentEntities.put(typeInformation, Optional.of(entity));
+			}
 
 			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
-
 			Map<String, PropertyDescriptor> descriptors = new HashMap<>();
+
 			for (PropertyDescriptor descriptor : pds) {
 				descriptors.put(descriptor.getName(), descriptor);
 			}
@@ -420,8 +430,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			}
 
 			return entity;
+
 		} catch (RuntimeException e) {
+
+			persistentEntities.remove(userTypeInformation);
 			persistentEntities.remove(typeInformation);
+
 			throw e;
 		}
 	}
