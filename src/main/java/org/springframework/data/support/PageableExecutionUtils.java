@@ -42,10 +42,11 @@ public abstract class PageableExecutionUtils {
 	 * optimizations. The construction of {@link Page} omits a count query if the total can be determined based on the
 	 * result size and {@link Pageable}.
 	 *
-	 * @param content must not be {@literal null}.
+	 * @param content result of a query with applied {@link Pageable}. The list must not be {@literal null} and must
+	 *          contain up to {@link Pageable#getPageSize()} items.
 	 * @param pageable must not be {@literal null}.
 	 * @param totalSupplier must not be {@literal null}.
-	 * @return the {@link Page}.
+	 * @return the {@link Page} for {@link List content} and a total size.
 	 */
 	public static <T> Page<T> getPage(List<T> content, Pageable pageable, LongSupplier totalSupplier) {
 
