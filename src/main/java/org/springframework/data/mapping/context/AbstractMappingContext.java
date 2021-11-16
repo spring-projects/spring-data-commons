@@ -31,8 +31,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -91,7 +92,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, InitializingBean {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(MappingContext.class);
+	private static final Log LOGGER = LogFactory.getLog(MappingContext.class);
 
 	private final Optional<E> NONE = Optional.empty();
 	private final Map<TypeInformation<?>, Optional<E>> persistentEntities = new HashMap<>();
