@@ -25,42 +25,42 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.context.EntityProjectionDiscoverer.ReturnedTypeDescriptor;
+import org.springframework.data.mapping.context.EntityProjectionIntrospector.EntityProjection;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 
 /**
- * Unit tests for {@link EntityProjectionDiscoverer}.
+ * Unit tests for {@link EntityProjectionIntrospector}.
  *
  * @author Mark Paluch
  */
-class EntityProjectionDiscovererUnitTests {
+class EntityProjectionIntrospectorUnitTests {
 
 	SampleMappingContext mappingContext = new SampleMappingContext();
 	SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
-	EntityProjectionDiscoverer.ProjectionPredicate predicate = (target,
+	EntityProjectionIntrospector.ProjectionPredicate predicate = (target,
 			underlyingType) -> !SimpleTypeHolder.DEFAULT.isSimpleType(target);
-	EntityProjectionDiscoverer discoverer = EntityProjectionDiscoverer.create(projectionFactory,
-			predicate.and(EntityProjectionDiscoverer.ProjectionPredicate.typeHierarchy()), mappingContext);
+	EntityProjectionIntrospector discoverer = EntityProjectionIntrospector.create(projectionFactory,
+			predicate.and(EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy()), mappingContext);
 
-	@Test
+	@Test // GH-2420
 	void shouldDiscoverTypeHierarchy() {
 
 		// super type
-		assertThat(discoverer.introspectReturnType(Root.class, Middle.class).isProjecting()).isFalse();
+		assertThat(discoverer.introspect(Root.class, Middle.class).isProjection()).isFalse();
 
-		assertThat(discoverer.introspectReturnType(SuperInterface.class, Middle.class).isProjecting()).isFalse();
+		assertThat(discoverer.introspect(SuperInterface.class, Middle.class).isProjection()).isFalse();
 
 		// subtypes
-		assertThat(discoverer.introspectReturnType(Leaf.class, Middle.class).isProjecting()).isFalse();
+		assertThat(discoverer.introspect(Leaf.class, Middle.class).isProjection()).isFalse();
 	}
 
-	@Test
+	@Test // GH-2420
 	void shouldConsiderTopLevelInterfaceProperties() {
 
-		ReturnedTypeDescriptor descriptor = discoverer.introspectReturnType(DomainClassProjection.class, DomainClass.class);
+		EntityProjection<?, ?> descriptor = discoverer.introspect(DomainClassProjection.class, DomainClass.class);
 
-		assertThat(descriptor.isProjecting()).isTrue();
+		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
 		descriptor.forEach(paths::add);
@@ -68,12 +68,12 @@ class EntityProjectionDiscovererUnitTests {
 		assertThat(paths).hasSize(2).extracting(PropertyPath::toDotPath).containsOnly("id", "value");
 	}
 
-	@Test
+	@Test // GH-2420
 	void shouldConsiderTopLevelDtoProperties() {
 
-		ReturnedTypeDescriptor descriptor = discoverer.introspectReturnType(DomainClassDto.class, DomainClass.class);
+		EntityProjection<?, ?> descriptor = discoverer.introspect(DomainClassDto.class, DomainClass.class);
 
-		assertThat(descriptor.isProjecting()).isTrue();
+		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
 		descriptor.forEach(paths::add);
@@ -81,13 +81,13 @@ class EntityProjectionDiscovererUnitTests {
 		assertThat(paths).hasSize(2).extracting(PropertyPath::toDotPath).containsOnly("id", "value");
 	}
 
-	@Test
+	@Test // GH-2420
 	void shouldConsiderNestedProjectionProperties() {
 
-		ReturnedTypeDescriptor descriptor = discoverer.introspectReturnType(WithNestedProjection.class,
+		EntityProjection<?, ?> descriptor = discoverer.introspect(WithNestedProjection.class,
 				WithComplexObject.class);
 
-		assertThat(descriptor.isProjecting()).isTrue();
+		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
 		descriptor.forEach(paths::add);
@@ -96,12 +96,12 @@ class EntityProjectionDiscovererUnitTests {
 				"domain2");
 	}
 
-	@Test
+	@Test // GH-2420
 	void shouldConsiderOpenProjection() {
 
-		ReturnedTypeDescriptor descriptor = discoverer.introspectReturnType(OpenProjection.class, DomainClass.class);
+		EntityProjection<?, ?> descriptor = discoverer.introspect(OpenProjection.class, DomainClass.class);
 
-		assertThat(descriptor.isProjecting()).isTrue();
+		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
 		descriptor.forEach(paths::add);
@@ -109,18 +109,34 @@ class EntityProjectionDiscovererUnitTests {
 		assertThat(paths).isEmpty();
 	}
 
-	@Test
-	void shouldConsiderCyclicProjections() {
+	@Test // GH-2420
+	void shouldConsiderCyclicPaths() {
 
-		ReturnedTypeDescriptor descriptor = discoverer.introspectReturnType(CyclicProjection1.class, CyclicDomain1.class);
+		EntityProjection<?, ?> descriptor = discoverer.introspect(PersonProjection.class, Person.class);
 
-		assertThat(descriptor.isProjecting()).isTrue();
+		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
 		descriptor.forEach(paths::add);
 
-		assertThat(paths).hasSize(4).extracting(PropertyPath::toDotPath).containsOnly("name", "level1.name",
-				"level1.level2.name", "level1.level2.level1");
+		// cycles are tracked on a per-property root basis. Global tracking would not expand "secondaryAddress" into its
+		// components.
+		assertThat(paths).extracting(PropertyPath::toDotPath).containsOnly("primaryAddress.owner.primaryAddress",
+				"primaryAddress.owner.secondaryAddress.owner", "secondaryAddress.owner.primaryAddress.owner",
+				"secondaryAddress.owner.secondaryAddress");
+	}
+
+	@Test // GH-2420
+	void shouldConsiderCollectionProjection() {
+
+		EntityProjection<?, ?> descriptor = discoverer.introspect(WithCollectionProjection.class, WithCollection.class);
+
+		assertThat(descriptor.isProjection()).isTrue();
+
+		List<PropertyPath> paths = new ArrayList<>();
+		descriptor.forEach(paths::add);
+
+		assertThat(paths).hasSize(2).extracting(PropertyPath::toDotPath).containsOnly("domains.id", "domains.value");
 	}
 
 	interface SuperInterface {
@@ -137,6 +153,16 @@ class EntityProjectionDiscovererUnitTests {
 
 	static class Leaf extends Middle {
 
+	}
+
+	static class WithCollection {
+
+		List<DomainClass> domains;
+	}
+
+	interface WithCollectionProjection {
+
+		List<DomainClassProjection> getDomains();
 	}
 
 	static class DomainClass {
@@ -186,30 +212,27 @@ class EntityProjectionDiscovererUnitTests {
 		}
 	}
 
-	static class CyclicDomain1 {
+	static class Person {
 
-		CyclicDomain2 level1;
-		String name;
+		Address primaryAddress;
+
+		Address secondaryAddress;
 	}
 
-	static class CyclicDomain2 {
+	static class Address {
 
-		CyclicDomain1 level2;
-		String name;
+		Person owner;
 	}
 
-	static interface CyclicProjection1 {
+	interface PersonProjection {
 
-		CyclicProjection2 getLevel1();
+		AddressProjection getPrimaryAddress();
 
-		String getName();
+		AddressProjection getSecondaryAddress();
 	}
 
-	static interface CyclicProjection2 {
+	interface AddressProjection {
 
-		CyclicProjection1 getLevel2();
-
-		String getName();
+		PersonProjection getOwner();
 	}
-
 }
