@@ -146,7 +146,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
-			TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+			TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 			ResolvableType type = ResolvableType.forMethodReturnType(method);
 			boolean isCollectionResult = Collection.class.isAssignableFrom(type.getRawClass());
 			type = isCollectionResult ? type : ResolvableType.forClassWithGenerics(List.class, type);

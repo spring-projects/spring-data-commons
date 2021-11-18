@@ -279,6 +279,9 @@ public interface TypeInformation<S> {
 	 */
 	TypeInformation<? extends S> specialize(ClassTypeInformation<?> type);
 
+	default TypeInformation<? extends S> specialize(TypeInformation<?> type) {
+		return specialize(ClassTypeInformation.from(type.getType()));
+	}
 	/**
 	 * Returns whether the current type is a sub type of the given one, i.e. whether it's assignable but not the same one.
 	 *

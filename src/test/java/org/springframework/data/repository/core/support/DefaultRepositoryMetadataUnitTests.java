@@ -58,7 +58,7 @@ class DefaultRepositoryMetadataUnitTests {
 
 	@Test // DATACMNS-406
 	void rejectsUnparameterizedRepositoryInterface() {
-		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(Repository.class));
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultRepositoryMetadata(RepoWithoutArgs.class));
 	}
 
 	@Test
@@ -201,4 +201,6 @@ class DefaultRepositoryMetadataUnitTests {
 		// Contrived example but to make sure recursive wrapper resolution works
 		Optional<Optional<User>> findByLastname(String lastname);
 	}
+
+	interface RepoWithoutArgs extends Repository {}
 }

@@ -34,7 +34,6 @@ import org.springframework.aop.SpringProxy;
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AopConfigException;
-import org.springframework.aop.framework.ProxyFactory;
 
 import org.springframework.data.mapping.Person;
 import org.springframework.lang.Nullable;
@@ -486,6 +485,16 @@ public class ClassTypeInformationUnitTests {
 		assertThat(typeInfoLeaf).isNotEqualTo(typeInformationLeafProxy);
 	}
 
+	@Test  // GH-2312
+	void typeInfoShouldPreserveGenericParameter() {
+
+		TypeInformation<Wrapper> wrapperTypeInfo = ClassTypeInformation.from(Wrapper.class);
+		TypeInformation<?> fieldTypeInfo = wrapperTypeInfo.getProperty("field");
+		TypeInformation<?> valueTypeInfo = fieldTypeInfo.getProperty("value");
+
+		assertThat(valueTypeInfo.getType()).isEqualTo(Leaf.class);
+	}
+
 	static class StringMapContainer extends MapContainer<String> {
 
 	}
@@ -696,6 +705,12 @@ public class ClassTypeInformationUnitTests {
 	}
 
 	static class SomeConcrete extends SomeGeneric<String> {}
+
+	static class GenericExtendingSomeGeneric<T> extends SomeGeneric<T> { }
+
+	static class Wrapper {
+		GenericExtendingSomeGeneric<Leaf> field;
+	}
 
 	static class WildcardedWrapper {
 		SomeGeneric<?> wildcarded;
