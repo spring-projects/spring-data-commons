@@ -66,7 +66,7 @@ class ProjectingMethodInterceptorUnitTests {
 	}
 
 	@Test // DATAREST-221
-	void retunsDelegateResultAsIsIfTypesMatch() throws Throwable {
+	void returnsDelegateResultAsIsIfTypesMatch() throws Throwable {
 
 		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor, conversionService);
 

@@ -191,6 +191,7 @@ public abstract class ClassUtils {
 		throw ex;
 	}
 
+	// TODO: we should also consider having the owning type here so we can resolve generics better.
 	private static TypeInformation<?> getEffectivelyReturnedTypeFrom(Method method) {
 
 		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);

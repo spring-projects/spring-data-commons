@@ -299,6 +299,7 @@ public class QueryMethod {
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notEmpty(types, "Types must not be null or empty!");
 
+		// TODO: to resolve generics fully we'd need the actual repository interface here
 		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 
 		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) //
