@@ -30,8 +30,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.MethodMetadata;
-import org.springframework.core.type.classreading.AnnotationMetadataReadingVisitor;
-import org.springframework.core.type.classreading.MethodMetadataReadingVisitor;
 import org.springframework.data.type.MethodsMetadata;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.lang.Nullable;
