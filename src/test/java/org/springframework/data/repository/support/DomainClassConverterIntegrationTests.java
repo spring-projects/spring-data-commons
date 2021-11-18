@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.support.GenericApplicationContext;
@@ -87,7 +87,7 @@ class DomainClassConverterIntegrationTests {
 
 	}
 
-	static class PredictingProcessor extends InstantiationAwareBeanPostProcessorAdapter {
+	static class PredictingProcessor implements SmartInstantiationAwareBeanPostProcessor {
 
 		@Override
 		public Class<?> predictBeanType(Class<?> beanClass, String beanName) {
