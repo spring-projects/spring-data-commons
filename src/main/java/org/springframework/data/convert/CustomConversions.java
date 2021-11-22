@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.core.convert.converter.ConverterRegistry;
@@ -42,6 +43,7 @@ import org.springframework.core.convert.converter.GenericConverter.ConvertiblePa
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -57,6 +59,7 @@ import org.springframework.util.ObjectUtils;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Xeno Amess
  * @since 2.0
  */
 public class CustomConversions {
@@ -757,8 +760,8 @@ public class CustomConversions {
 			Assert.notNull(converter, "Converter must not be null!");
 
 			Class<?> type = converter.getClass();
-			boolean isWriting = type.isAnnotationPresent(WritingConverter.class);
-			boolean isReading = type.isAnnotationPresent(ReadingConverter.class);
+			boolean isWriting = AnnotationUtils.findAnnotation(type, WritingConverter.class) != null;
+			boolean isReading = AnnotationUtils.findAnnotation(type, ReadingConverter.class) != null;
 
 			if (converter instanceof ConverterAware) {
 

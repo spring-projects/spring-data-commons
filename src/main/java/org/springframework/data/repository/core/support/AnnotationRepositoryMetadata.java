@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.Assert;
@@ -25,6 +26,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Xeno Amess
  */
 public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 
@@ -44,7 +46,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 
 		super(repositoryInterface);
 
-		Assert.isTrue(repositoryInterface.isAnnotationPresent(RepositoryDefinition.class),
+		Assert.isTrue(AnnotationUtils.findAnnotation(repositoryInterface, RepositoryDefinition.class) != null,
 				String.format(NO_ANNOTATION_FOUND, repositoryInterface.getName()));
 
 		this.idType = resolveIdType(repositoryInterface);
