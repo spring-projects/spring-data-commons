@@ -27,6 +27,8 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.context.expression.MapAccessor;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ParserContext;
@@ -45,6 +47,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Christoph Strobl
+ * @author Xeno Amess
  * @see 1.10
  */
 class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
@@ -108,11 +111,10 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 
 		for (Method method : targetInterface.getMethods()) {
 
-			if (!method.isAnnotationPresent(Value.class)) {
+			Value value = AnnotationUtils.findAnnotation(method, Value.class);
+			if (value == null) {
 				continue;
 			}
-
-			Value value = method.getAnnotation(Value.class);
 
 			if (!StringUtils.hasText(value.value())) {
 				throw new IllegalStateException(String.format("@Value annotation on %s contains empty expression!", method));

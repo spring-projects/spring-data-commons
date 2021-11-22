@@ -49,6 +49,7 @@ import org.springframework.data.repository.config.CustomRepositoryImplementation
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Xeno Amess
  */
 public abstract class CdiRepositoryExtensionSupport implements Extension {
 
@@ -98,8 +99,8 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 		boolean isInterface = type.isInterface();
 		boolean extendsRepository = Repository.class.isAssignableFrom(type);
-		boolean isAnnotated = type.isAnnotationPresent(RepositoryDefinition.class);
-		boolean excludedByAnnotation = type.isAnnotationPresent(NoRepositoryBean.class);
+		boolean isAnnotated = AnnotationUtils.findAnnotation(type, RepositoryDefinition.class) != null;
+		boolean excludedByAnnotation = AnnotationUtils.findAnnotation(type, NoRepositoryBean.class) != null;
 
 		return isInterface && (extendsRepository || isAnnotated) && !excludedByAnnotation;
 	}
@@ -113,7 +114,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 		Annotation[] annotations = type.getAnnotations();
 		for (Annotation annotation : annotations) {
 			Class<? extends Annotation> annotationType = annotation.annotationType();
-			if (annotationType.isAnnotationPresent(Qualifier.class)) {
+			if (AnnotationUtils.findAnnotation(annotationType, Qualifier.class) != null) {
 				qualifiers.add(annotation);
 			}
 		}
