@@ -18,7 +18,6 @@ package org.springframework.data.type.classreading;
 import org.springframework.asm.AnnotationVisitor;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.type.classreading.SimpleAnnotationMetadataReadingVisitor;
 import org.springframework.lang.Nullable;
 
 /**

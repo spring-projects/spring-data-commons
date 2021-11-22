@@ -23,7 +23,6 @@ import java.util.List;
 import org.springframework.asm.AnnotationVisitor;
 import org.springframework.asm.Type;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.type.classreading.SimpleAnnotationMetadataReadingVisitor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
