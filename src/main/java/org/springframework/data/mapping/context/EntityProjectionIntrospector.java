@@ -102,7 +102,6 @@ public class EntityProjectionIntrospector {
 					false);
 		}
 
-
 		PersistentEntity<?, ?> persistentEntity = mappingContext.getRequiredPersistentEntity(domainType);
 		List<PropertyProjection<?, ?>> propertyDescriptors = getProperties(null, projectionInformation,
 				returnedTypeInformation,
@@ -111,12 +110,13 @@ public class EntityProjectionIntrospector {
 		return EntityProjection.projecting(returnedTypeInformation, domainTypeInformation, propertyDescriptors, true);
 	}
 
-
 	private List<PropertyProjection<?, ?>> getProperties(@Nullable PropertyPath propertyPath,
 			ProjectionInformation projectionInformation, TypeInformation<?> projectionTypeInformation,
 			PersistentEntity<?, ?> persistentEntity, @Nullable CycleGuard cycleGuard) {
 
 		List<PropertyProjection<?, ?>> propertyDescriptors = new ArrayList<>();
+
+		// TODO: PropertyDescriptor only created for DTO's with getters/setters
 		for (PropertyDescriptor inputProperty : projectionInformation.getInputProperties()) {
 
 			PersistentProperty<?> persistentProperty = persistentEntity.getPersistentProperty(inputProperty.getName());
@@ -226,6 +226,18 @@ public class EntityProjectionIntrospector {
 				TypeInformation<D> domainType,
 				List<PropertyProjection<?, ?>> properties) {
 			return new EntityProjection<>(mappedType, domainType, properties, false, false);
+		}
+
+		/**
+		 * Create a non-projecting variant of a mapped type.
+		 *
+		 * @param mappedType
+		 * @param domainType
+		 * @return
+		 */
+		public static <T> EntityProjection<T, T> nonProjecting(Class<T> type) {
+			ClassTypeInformation<T> typeInformation = ClassTypeInformation.from(type);
+			return new EntityProjection<>(typeInformation, typeInformation, Collections.emptyList(), false, false);
 		}
 
 		/**
