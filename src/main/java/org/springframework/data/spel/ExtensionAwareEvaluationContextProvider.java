@@ -38,6 +38,7 @@ import org.springframework.data.spel.spi.ExtensionIdAware;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
+import org.springframework.data.util.Predicates;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.MethodExecutor;
@@ -107,7 +108,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 */
 	@Override
 	public StandardEvaluationContext getEvaluationContext(Object rootObject) {
-		return doGetEvaluationContext(rootObject, getExtensions(it -> true));
+		return doGetEvaluationContext(rootObject, getExtensions(Predicates.isTrue()));
 	}
 
 	/*

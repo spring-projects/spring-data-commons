@@ -44,6 +44,7 @@ import org.springframework.core.convert.converter.GenericConverter.ConvertiblePa
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.Predicates;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -892,7 +893,7 @@ public class CustomConversions {
 		 * @param userConverters must not be {@literal null} use {@link Collections#emptyList()} instead.
 		 */
 		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters) {
-			this(storeConversions, userConverters, it -> true);
+			this(storeConversions, userConverters, Predicates.isTrue());
 		}
 
 		/**

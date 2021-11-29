@@ -27,6 +27,7 @@ import org.springframework.core.ResolvableType;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ExtensionIdAware;
 import org.springframework.data.spel.spi.ReactiveEvaluationContextExtension;
+import org.springframework.data.util.Predicates;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -93,7 +94,7 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 	 */
 	@Override
 	public Mono<StandardEvaluationContext> getEvaluationContextLater(Object rootObject) {
-		return getExtensions(it -> true) //
+		return getExtensions(Predicates.isTrue()) //
 				.map(it -> evaluationContextProvider.doGetEvaluationContext(rootObject, it));
 	}
 
