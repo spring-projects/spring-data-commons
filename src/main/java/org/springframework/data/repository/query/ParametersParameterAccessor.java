@@ -157,6 +157,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 * @param index
 	 * @return
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
 	protected <T> T getValue(int index) {
 		return (T) values[index];
