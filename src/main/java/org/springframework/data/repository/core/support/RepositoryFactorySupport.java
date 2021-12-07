@@ -310,7 +310,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		if (logger.isDebugEnabled()) {
 			logger
-					.debug(LogMessage.format("Finished creation of repository instance for {}.", repositoryInterface.getName()));
+					.debug(LogMessage.format("Finished creation of repository instance for %s.", repositoryInterface.getName()));
 		}
 
 		return repository;
