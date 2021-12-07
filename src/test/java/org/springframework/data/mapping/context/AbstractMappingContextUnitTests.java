@@ -39,6 +39,8 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.SpringProxy;
+import org.springframework.aop.framework.Advised;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
@@ -323,6 +325,46 @@ class AbstractMappingContextUnitTests {
 				.doesNotContain(List.class, Map.class, String.class, Integer.class);
 	}
 
+	@Test // GH-2485
+	void contextSeesUserTypeBeforeProxy() {
+
+		SampleMappingContext context = new SampleMappingContext();
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = context
+				.getRequiredPersistentEntity(Base.class);
+		persistentEntity.getTypeInformation().getType().equals(Base.class);
+
+		assertThat(context.hasPersistentEntityFor(Base.class)).isTrue();
+		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isFalse();
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntityForProxy = context
+				.getRequiredPersistentEntity(Base$$SpringProxy$873fa2e.class);
+		persistentEntityForProxy.getTypeInformation().getType().equals(Base.class);
+		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isTrue();
+
+		assertThat(context.getPersistentEntities()).hasSize(1); // only one distinct instance
+		assertThat(persistentEntity).isSameAs(persistentEntityForProxy);
+	}
+
+	@Test // GH-2485
+	void contextSeesProxyBeforeUserType() {
+
+		SampleMappingContext context = new SampleMappingContext();
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntityForProxy = context
+				.getRequiredPersistentEntity(Base$$SpringProxy$873fa2e.class);
+		persistentEntityForProxy.getTypeInformation().getType().equals(Base.class);
+
+		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isTrue();
+		assertThat(context.hasPersistentEntityFor(Base.class)).isTrue();
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntity = context
+				.getRequiredPersistentEntity(Base.class);
+		persistentEntity.getTypeInformation().getType().equals(Base.class);
+
+		assertThat(context.getPersistentEntities()).hasSize(1); // only one distinct instance
+		assertThat(persistentEntity).isSameAs(persistentEntityForProxy);
+	}
+
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
 
 		boolean found = false;
@@ -503,6 +545,10 @@ class AbstractMappingContextUnitTests {
 		Map<String, List<Base>> mapOfStringToList;
 		Map<String, Person> mapOfStringToPerson;
 		Map<MapKey, Integer> mapOfKeyToPerson;
+	}
+
+	static abstract class Base$$SpringProxy$873fa2e extends Base implements SpringProxy, Advised {
+
 	}
 
 }

@@ -150,6 +150,19 @@ public interface TypeInformation<S> {
 	Class<S> getType();
 
 	/**
+	 * Returns the user type of the property if proxied.
+	 *
+	 * @return the unpacked (if proxied) type of the property.
+	 * @see ProxyUtils#getUserClass(Class)
+	 * @since 2.6
+	 */
+	default TypeInformation<?> getUserTypeInformation() {
+
+		Class<?> userType = ProxyUtils.getUserClass(getType());
+		return userType.equals(getType()) ? this : ClassTypeInformation.from(userType);
+	}
+
+	/**
 	 * Returns a {@link ClassTypeInformation} to represent the {@link TypeInformation} of the raw type of the current
 	 * instance.
 	 *

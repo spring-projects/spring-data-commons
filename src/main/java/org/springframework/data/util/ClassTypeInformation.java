@@ -90,7 +90,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @param type
 	 */
 	ClassTypeInformation(Class<S> type) {
-		super(ProxyUtils.getUserClass(type), getTypeVariableMap(type));
+		super(type, getTypeVariableMap(type));
 		this.type = type;
 	}
 
