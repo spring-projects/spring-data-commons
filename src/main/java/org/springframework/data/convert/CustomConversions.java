@@ -15,6 +15,7 @@
  */
 package org.springframework.data.convert;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,7 +44,6 @@ import org.springframework.core.convert.converter.GenericConverter.ConvertiblePa
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -760,8 +760,8 @@ public class CustomConversions {
 			Assert.notNull(converter, "Converter must not be null!");
 
 			Class<?> type = converter.getClass();
-			boolean isWriting = AnnotationUtils.findAnnotation(type, WritingConverter.class) != null;
-			boolean isReading = AnnotationUtils.findAnnotation(type, ReadingConverter.class) != null;
+			boolean isWriting = isAnnotatedWith(type, WritingConverter.class);
+			boolean isReading = isAnnotatedWith(type, ReadingConverter.class);
 
 			if (converter instanceof ConverterAware) {
 
@@ -787,6 +787,10 @@ public class CustomConversions {
 			} else {
 				throw new IllegalArgumentException(String.format("Unsupported converter type %s!", converter));
 			}
+		}
+
+		private static boolean isAnnotatedWith(Class<?> type, Class<? extends Annotation> annotationType) {
+			return AnnotationUtils.findAnnotation(type, annotationType) != null;
 		}
 
 		private Streamable<ConverterRegistration> getRegistrationFor(Object converter, Class<?> type, boolean isReading,

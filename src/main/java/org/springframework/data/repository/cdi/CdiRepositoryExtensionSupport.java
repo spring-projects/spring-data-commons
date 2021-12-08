@@ -99,8 +99,8 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 		boolean isInterface = type.isInterface();
 		boolean extendsRepository = Repository.class.isAssignableFrom(type);
-		boolean isAnnotated = AnnotationUtils.findAnnotation(type, RepositoryDefinition.class) != null;
-		boolean excludedByAnnotation = AnnotationUtils.findAnnotation(type, NoRepositoryBean.class) != null;
+		boolean isAnnotated = isAnnotatedWith(type, RepositoryDefinition.class);
+		boolean excludedByAnnotation = isAnnotatedDirectlyWith(type, NoRepositoryBean.class);
 
 		return isInterface && (extendsRepository || isAnnotated) && !excludedByAnnotation;
 	}
@@ -114,7 +114,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 		Annotation[] annotations = type.getAnnotations();
 		for (Annotation annotation : annotations) {
 			Class<? extends Annotation> annotationType = annotation.annotationType();
-			if (AnnotationUtils.findAnnotation(annotationType, Qualifier.class) != null) {
+			if (isAnnotatedWith(annotationType, Qualifier.class)) {
 				qualifiers.add(annotation);
 			}
 		}
@@ -165,7 +165,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 
 		Class<?> repositoryInterface = bean.getBeanClass();
 
-		if (AnnotationUtils.findAnnotation(repositoryInterface, Eager.class) != null) {
+		if (isAnnotatedWith(repositoryInterface, Eager.class)) {
 			this.eagerRepositories.add(bean);
 		}
 	}
@@ -183,6 +183,14 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	 */
 	protected CdiRepositoryContext getRepositoryContext() {
 		return context;
+	}
+
+	private static boolean isAnnotatedWith(Class<?> type, Class<? extends Annotation> annotationType) {
+		return AnnotationUtils.findAnnotation(type, annotationType) != null;
+	}
+
+	private static boolean isAnnotatedDirectlyWith(Class<?> type, Class<? extends Annotation> annotationType) {
+		return AnnotationUtils.isAnnotationDeclaredLocally(annotationType, type);
 	}
 
 	@SuppressWarnings("all")
