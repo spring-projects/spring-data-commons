@@ -78,10 +78,14 @@ public class EntityProjectionIntrospector {
 	 * <p>
 	 * Nested properties (direct types, within maps, collections) are introspected for nested projections and contain
 	 * property paths for closed projections.
+	 * <p>
+	 * Deeply nested types (e.g. {@code Map&lt;?, List&lt;Person&gt;&gt;}) are represented with a property path that uses
+	 * the unwrapped type and no longer the root domain type {@code D}.
 	 *
-	 * @param mappedType
-	 * @param domainType
-	 * @return
+	 * @param mappedType must not be {@literal null}.
+	 * @param domainType must not be {@literal null}.
+	 * @return the introspection result.
+	 * @see org.springframework.data.mapping.context.EntityProjection.ContainerPropertyProjection
 	 */
 	public <M, D> EntityProjection<M, D> introspect(Class<M> mappedType, Class<D> domainType) {
 
@@ -103,8 +107,7 @@ public class EntityProjectionIntrospector {
 
 		PersistentEntity<?, ?> persistentEntity = mappingContext.getRequiredPersistentEntity(domainType);
 		List<EntityProjection.PropertyProjection<?, ?>> propertyDescriptors = getProperties(null, projectionInformation,
-				returnedTypeInformation,
-				persistentEntity, null);
+				returnedTypeInformation, persistentEntity, null);
 
 		return EntityProjection.projecting(returnedTypeInformation, domainTypeInformation, propertyDescriptors, true);
 	}
@@ -127,36 +130,63 @@ public class EntityProjectionIntrospector {
 			CycleGuard cycleGuardToUse = cycleGuard != null ? cycleGuard : new CycleGuard();
 
 			TypeInformation<?> property = projectionTypeInformation.getRequiredProperty(inputProperty.getName());
+			TypeInformation<?> actualType = property.getRequiredActualType();
+
+			boolean container = isContainer(actualType);
 
 			PropertyPath nestedPropertyPath = propertyPath == null
 					? PropertyPath.from(persistentProperty.getName(), persistentEntity.getTypeInformation())
 					: propertyPath.nested(persistentProperty.getName());
 
-			TypeInformation<?> returnedType = property.getRequiredActualType();
-			TypeInformation<?> domainType = persistentProperty.getTypeInformation().getRequiredActualType();
+			TypeInformation<?> unwrappedReturnedType = unwrapContainerType(property.getRequiredActualType());
+			TypeInformation<?> unwrappedDomainType = unwrapContainerType(
+					persistentProperty.getTypeInformation().getRequiredActualType());
 
-			if (isProjection(returnedType, domainType)) {
+			if (isProjection(unwrappedReturnedType, unwrappedDomainType)) {
 
 				List<EntityProjection.PropertyProjection<?, ?>> nestedPropertyDescriptors;
 
 				if (cycleGuardToUse.isCycleFree(persistentProperty)) {
-					nestedPropertyDescriptors = getProjectedProperties(nestedPropertyPath, returnedType, domainType,
-							cycleGuardToUse);
+					nestedPropertyDescriptors = getProjectedProperties(container ? null : nestedPropertyPath,
+							unwrappedReturnedType, unwrappedDomainType, cycleGuardToUse);
 				} else {
 					nestedPropertyDescriptors = Collections.emptyList();
 				}
 
-				propertyDescriptors.add(EntityProjection.PropertyProjection.projecting(nestedPropertyPath, property,
-						persistentProperty.getTypeInformation(),
-						nestedPropertyDescriptors, projectionInformation.isClosed()));
+				if (container) {
+					propertyDescriptors.add(EntityProjection.ContainerPropertyProjection.projecting(nestedPropertyPath, property,
+							persistentProperty.getTypeInformation(), nestedPropertyDescriptors, projectionInformation.isClosed()));
+				} else {
+					propertyDescriptors.add(EntityProjection.PropertyProjection.projecting(nestedPropertyPath, property,
+							persistentProperty.getTypeInformation(), nestedPropertyDescriptors, projectionInformation.isClosed()));
+				}
+
 			} else {
-				propertyDescriptors
-						.add(EntityProjection.PropertyProjection.nonProjecting(nestedPropertyPath, property,
-								persistentProperty.getTypeInformation()));
+				if (container) {
+					propertyDescriptors.add(EntityProjection.ContainerPropertyProjection.nonProjecting(nestedPropertyPath,
+							property, persistentProperty.getTypeInformation()));
+				} else {
+					propertyDescriptors.add(EntityProjection.PropertyProjection.nonProjecting(nestedPropertyPath, property,
+							persistentProperty.getTypeInformation()));
+				}
 			}
 		}
 
 		return propertyDescriptors;
+	}
+
+	private static TypeInformation<?> unwrapContainerType(TypeInformation<?> type) {
+
+		TypeInformation<?> unwrapped = type;
+		while (isContainer(unwrapped)) {
+			unwrapped = unwrapped.getRequiredActualType();
+		}
+
+		return unwrapped;
+	}
+
+	private static boolean isContainer(TypeInformation<?> actualType) {
+		return actualType.isCollectionLike() || actualType.isMap();
 	}
 
 	private boolean isProjection(TypeInformation<?> returnedType, TypeInformation<?> domainType) {
@@ -164,7 +194,7 @@ public class EntityProjectionIntrospector {
 				domainType.getRequiredActualType().getType());
 	}
 
-	private List<EntityProjection.PropertyProjection<?, ?>> getProjectedProperties(PropertyPath propertyPath,
+	private List<EntityProjection.PropertyProjection<?, ?>> getProjectedProperties(@Nullable PropertyPath propertyPath,
 			TypeInformation<?> returnedType, TypeInformation<?> domainType, CycleGuard cycleGuard) {
 
 		ProjectionInformation projectionInformation = projectionFactory.getProjectionInformation(returnedType.getType());

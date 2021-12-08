@@ -17,10 +17,12 @@ package org.springframework.data.mapping.context;
 
 import static org.assertj.core.api.Assertions.*;
 
+import lombok.Getter;
 import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -62,7 +64,7 @@ class EntityProjectionIntrospectorUnitTests {
 		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
-		descriptor.forEach(paths::add);
+		descriptor.forEachRecursive(it -> paths.add(it.getPropertyPath()));
 
 		assertThat(paths).hasSize(2).extracting(PropertyPath::toDotPath).containsOnly("id", "value");
 	}
@@ -75,7 +77,7 @@ class EntityProjectionIntrospectorUnitTests {
 		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
-		descriptor.forEach(paths::add);
+		descriptor.forEachRecursive(it -> paths.add(it.getPropertyPath()));
 
 		assertThat(paths).hasSize(2).extracting(PropertyPath::toDotPath).containsOnly("id", "value");
 	}
@@ -89,7 +91,7 @@ class EntityProjectionIntrospectorUnitTests {
 		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
-		descriptor.forEach(paths::add);
+		descriptor.forEachRecursive(it -> paths.add(it.getPropertyPath()));
 
 		assertThat(paths).hasSize(3).extracting(PropertyPath::toDotPath).containsOnly("domain.id", "domain.value",
 				"domain2");
@@ -103,7 +105,7 @@ class EntityProjectionIntrospectorUnitTests {
 		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
-		descriptor.forEach(paths::add);
+		descriptor.forEachRecursive(it -> paths.add(it.getPropertyPath()));
 
 		assertThat(paths).isEmpty();
 	}
@@ -116,7 +118,7 @@ class EntityProjectionIntrospectorUnitTests {
 		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
-		descriptor.forEach(paths::add);
+		descriptor.forEachRecursive(it -> paths.add(it.getPropertyPath()));
 
 		// cycles are tracked on a per-property root basis. Global tracking would not expand "secondaryAddress" into its
 		// components.
@@ -133,9 +135,25 @@ class EntityProjectionIntrospectorUnitTests {
 		assertThat(descriptor.isProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
-		descriptor.forEach(paths::add);
+		descriptor.forEachRecursive(it -> paths.add(it.getPropertyPath()));
 
 		assertThat(paths).hasSize(2).extracting(PropertyPath::toDotPath).containsOnly("domains.id", "domains.value");
+	}
+
+	@Test // GH-2420
+	void considersPropertiesWithinContainers() {
+
+		EntityProjection<?, ?> descriptor = discoverer.introspect(WithMapOfCollectionProjection.class,
+				WithMapOfCollection.class);
+
+		assertThat(descriptor.isProjection()).isTrue();
+
+		List<PropertyPath> paths = new ArrayList<>();
+		descriptor.forEachRecursive(it -> {
+			paths.add(it.getPropertyPath());
+		});
+
+		assertThat(paths).hasSize(3).extracting(PropertyPath::toDotPath).containsOnly("domains", "id", "value");
 	}
 
 	interface SuperInterface {
@@ -157,6 +175,17 @@ class EntityProjectionIntrospectorUnitTests {
 	static class WithCollection {
 
 		List<DomainClass> domains;
+	}
+
+	static class WithMapOfCollection {
+
+		Map<String, List<DomainClass>> domains;
+	}
+
+	@Getter
+	static class WithMapOfCollectionProjection {
+
+		Map<String, List<DomainClassProjection>> domains;
 	}
 
 	interface WithCollectionProjection {

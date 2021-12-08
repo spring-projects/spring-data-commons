@@ -15,12 +15,16 @@
  */
 package org.springframework.data.mapping.context;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
@@ -32,7 +36,7 @@ import org.springframework.lang.Nullable;
  * @param <D> the domain type.
  * @since 2.7
  */
-public class EntityProjection<M, D> {
+public class EntityProjection<M, D> implements Streamable<EntityProjection.PropertyProjection<?, ?>> {
 
 	private final TypeInformation<M> mappedType;
 	private final TypeInformation<D> domainType;
@@ -87,6 +91,34 @@ public class EntityProjection<M, D> {
 	}
 
 	/**
+	 * Performs the given action for each element of the {@link Streamable} recursively until all elements of the graph
+	 * have been processed or the action throws an exception. Unless otherwise specified by the implementing class,
+	 * actions are performed in the order of iteration (if an iteration order is specified). Exceptions thrown by the
+	 * action are relayed to the caller.
+	 *
+	 * @param action
+	 */
+	public void forEachRecursive(Consumer<? super PropertyProjection<?, ?>> action) {
+
+		for (PropertyProjection<?, ?> descriptor : properties) {
+
+			if (descriptor instanceof ContainerPropertyProjection) {
+				action.accept(descriptor);
+				descriptor.forEachRecursive(action);
+			} else if (descriptor.getProperties().isEmpty()) {
+				action.accept(descriptor);
+			} else {
+				descriptor.forEachRecursive(action);
+			}
+		}
+	}
+
+	@Override
+	public Iterator<PropertyProjection<?, ?>> iterator() {
+		return properties.iterator();
+	}
+
+	/**
 	 * @return the mapped type used by this type view.
 	 */
 	public TypeInformation<M> getMappedType() {
@@ -132,24 +164,6 @@ public class EntityProjection<M, D> {
 
 	List<PropertyProjection<?, ?>> getProperties() {
 		return properties;
-	}
-
-	/**
-	 * Perform the given {@code action} for each element of the {@code ReturnedTypeDescriptor} until all elements have
-	 * been processed or the action throws an exception.
-	 *
-	 * @param action the action to be performed for each element
-	 */
-	public void forEach(Consumer<PropertyPath> action) {
-
-		for (PropertyProjection<?, ?> descriptor : properties) {
-
-			if (descriptor.getProperties().isEmpty()) {
-				action.accept(descriptor.getPropertyPath());
-			} else {
-				descriptor.forEach(action);
-			}
-		}
 	}
 
 	/**
@@ -236,5 +250,53 @@ public class EntityProjection<M, D> {
 		public String toString() {
 			return String.format("%s AS %s", propertyPath.toDotPath(), getActualMappedType().getType().getName());
 		}
+
+	}
+
+	/**
+	 * Descriptor for a property-level type along its potential projection that is held within a {@link Collection}-like
+	 * or {@link Map}-like container. Property paths within containers use the deeply unwrapped actual type of the
+	 * container as root type and as they cannot be tied immediately to the root entity.
+	 *
+	 * @param <M> the mapped type acting as view onto the domain type.
+	 * @param <D> the domain type.
+	 */
+	public static class ContainerPropertyProjection<M, D> extends PropertyProjection<M, D> {
+
+		ContainerPropertyProjection(PropertyPath propertyPath, TypeInformation<M> mappedType, TypeInformation<D> domainType,
+				List<PropertyProjection<?, ?>> properties, boolean projecting, boolean closedProjection) {
+			super(propertyPath, mappedType, domainType, properties, projecting, closedProjection);
+		}
+
+		/**
+		 * Create a projecting variant of a mapped type.
+		 *
+		 * @param propertyPath
+		 * @param mappedType
+		 * @param domainType
+		 * @param properties
+		 * @return
+		 */
+		public static <M, D> ContainerPropertyProjection<M, D> projecting(PropertyPath propertyPath,
+				TypeInformation<M> mappedType, TypeInformation<D> domainType, List<PropertyProjection<?, ?>> properties,
+				boolean closedProjection) {
+			return new ContainerPropertyProjection<>(propertyPath, mappedType, domainType, properties, true,
+					closedProjection);
+		}
+
+		/**
+		 * Create a non-projecting variant of a mapped type.
+		 *
+		 * @param propertyPath
+		 * @param mappedType
+		 * @param domainType
+		 * @return
+		 */
+		public static <M, D> ContainerPropertyProjection<M, D> nonProjecting(PropertyPath propertyPath,
+				TypeInformation<M> mappedType, TypeInformation<D> domainType) {
+			return new ContainerPropertyProjection<>(propertyPath, mappedType, domainType, Collections.emptyList(), false,
+					false);
+		}
+
 	}
 }
