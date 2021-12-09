@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -33,9 +34,11 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class SimpleTypeInformationMapper implements TypeInformationMapper {
+public class SimpleTypeInformationMapper implements TypeInformationMapper, BeanClassLoaderAware {
 
 	private final Map<String, Optional<ClassTypeInformation<?>>> cache = new ConcurrentHashMap<>();
+
+	private @Nullable ClassLoader classLoader;
 
 	/**
 	 * Returns the {@link TypeInformation} that shall be used when the given {@link String} value is found as type hint.
@@ -53,7 +56,7 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 		String stringAlias = alias.mapTyped(String.class);
 
 		if (stringAlias != null) {
-			return cache.computeIfAbsent(stringAlias, SimpleTypeInformationMapper::loadClass).orElse(null);
+			return cache.computeIfAbsent(stringAlias, this::loadClass).orElse(null);
 		}
 
 		return null;
@@ -70,10 +73,19 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper {
 		return Alias.of(type.getType().getName());
 	}
 
-	private static Optional<ClassTypeInformation<?>> loadClass(String typeName) {
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
+
+	private Optional<ClassTypeInformation<?>> loadClass(String typeName) {
 
 		try {
-			return Optional.of(ClassTypeInformation.from(ClassUtils.forName(typeName, null)));
+			return Optional.of(ClassTypeInformation.from(ClassUtils.forName(typeName, this.classLoader)));
 		} catch (ClassNotFoundException e) {
 			return Optional.empty();
 		}

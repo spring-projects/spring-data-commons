@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
@@ -39,7 +40,7 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @author Mark Paluch
  */
-public class DefaultTypeMapper<S> implements TypeMapper<S> {
+public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware {
 
 	private final TypeAliasAccessor<S> accessor;
 	private final List<? extends TypeInformationMapper> mappers;
@@ -212,6 +213,19 @@ public class DefaultTypeMapper<S> implements TypeMapper<S> {
 		Alias alias = getAliasFor(info);
 		if (alias.isPresent()) {
 			accessor.writeTypeTo(sink, alias.getValue());
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		for (TypeInformationMapper mapper : mappers) {
+			if (mapper instanceof BeanClassLoaderAware) {
+				((BeanClassLoaderAware) mapper).setBeanClassLoader(classLoader);
+			}
 		}
 	}
 

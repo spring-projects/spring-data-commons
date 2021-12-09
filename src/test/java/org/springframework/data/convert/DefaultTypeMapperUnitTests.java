@@ -18,6 +18,8 @@ package org.springframework.data.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Map;
 
@@ -29,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -47,7 +50,7 @@ class DefaultTypeMapperUnitTests {
 	static final Alias ALIAS = Alias.of(String.class.getName());
 
 	@Mock TypeAliasAccessor<Map<String, String>> accessor;
-	@Mock TypeInformationMapper mapper;
+	@Mock(extraInterfaces = BeanClassLoaderAware.class) TypeInformationMapper mapper;
 
 	DefaultTypeMapper<Map<String, String>> typeMapper;
 	Map<String, String> source;
@@ -100,6 +103,15 @@ class DefaultTypeMapperUnitTests {
 
 		assertThat(typeInformation.getType()).isEqualTo(Bar.class);
 		assertThat(typeInformation.getProperty("field").getType()).isEqualTo(Character.class);
+	}
+
+	@Test // GH-2508
+	void configuresClassLoaderOnTypeInformationMapper() {
+
+		ClassLoader loader = new URLClassLoader(new URL[0]);
+		typeMapper.setBeanClassLoader(loader);
+
+		verify((BeanClassLoaderAware) mapper).setBeanClassLoader(loader);
 	}
 
 	static class TypeWithAbstractGenericType<T> {
