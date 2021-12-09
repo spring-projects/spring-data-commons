@@ -69,6 +69,7 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper, BeanC
 	 * @param type must not be {@literal null}.
 	 * @return the String representation to be stored or {@literal null} if no type information shall be stored.
 	 */
+	@Override
 	public Alias createAliasFor(TypeInformation<?> type) {
 		return Alias.of(type.getType().getName());
 	}
