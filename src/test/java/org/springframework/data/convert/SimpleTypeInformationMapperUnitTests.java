@@ -18,6 +18,8 @@ package org.springframework.data.convert;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
+import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -26,10 +28,11 @@ import org.springframework.data.util.TypeInformation;
  * Unit tests for {@link SimpleTypeInformationMapper}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 class SimpleTypeInformationMapperUnitTests {
 
-	TypeInformationMapper mapper = new SimpleTypeInformationMapper();
+	SimpleTypeInformationMapper mapper = new SimpleTypeInformationMapper();
 
 	@Test
 	void resolvesTypeByLoadingClass() {
@@ -39,6 +42,16 @@ class SimpleTypeInformationMapperUnitTests {
 		TypeInformation<?> expected = ClassTypeInformation.from(String.class);
 
 		assertThat(type).isEqualTo(expected);
+	}
+
+	@Test // GH-2508
+	void usesConfiguredClassloader() {
+
+		mapper.setBeanClassLoader(HidingClassLoader.hide(SimpleTypeInformationMapperUnitTests.class));
+		TypeInformation<?> type = mapper
+				.resolveTypeFrom(Alias.of("org.springframework.data.convert.SimpleTypeInformationMapperUnitTests.User"));
+
+		assertThat(type).isNull();
 	}
 
 	@Test
@@ -62,5 +75,9 @@ class SimpleTypeInformationMapperUnitTests {
 
 		assertThat(mapper.createAliasFor(ClassTypeInformation.from(String.class)))
 				.isEqualTo(Alias.of(String.class.getName()));
+	}
+
+	static class User {
+
 	}
 }
