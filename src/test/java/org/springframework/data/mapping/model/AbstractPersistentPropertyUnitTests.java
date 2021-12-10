@@ -36,6 +36,7 @@ import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Identifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.convert.PropertyValueConverter;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -43,6 +44,7 @@ import org.springframework.data.mapping.Person;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -381,10 +383,18 @@ public class AbstractPersistentPropertyUnitTests {
 			return false;
 		}
 
+		@Nullable
+		@Override
+		public PropertyValueConverter<?, ?> getValueConverter() {
+			return null;
+		}
+
 		@Override
 		public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 			return null;
 		}
+
+
 	}
 
 	static class Sample {

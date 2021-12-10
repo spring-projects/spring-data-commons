@@ -17,6 +17,7 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -48,6 +50,7 @@ import org.springframework.data.util.Optionals;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.expression.BeanResolver;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -97,6 +100,22 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 				.orElseGet(() -> super.getAssociationTargetTypeInformation());
 	});
 
+	private final Lazy<PropertyValueConverter<?, ?>> propertyValueConverter = Lazy.of(() -> {
+
+		PersistentEntity<?, ?> owner = getOwner();
+		if (owner instanceof BasicPersistentEntity) {
+
+			BeanResolver beanResolver = ((BasicPersistentEntity) owner).getEvaluationContext(null).getBeanResolver();
+			if (beanResolver != null) {
+				Field beanFactory = org.springframework.util.ReflectionUtils.findField(BeanFactoryResolver.class, "beanFactory");
+				org.springframework.util.ReflectionUtils.makeAccessible(beanFactory);
+				BeanFactory field = (BeanFactory) org.springframework.util.ReflectionUtils.getField(beanFactory, beanResolver);
+				return resolveConverter(field);
+			}
+		}
+		return resolveConverter(null);
+	});
+
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
 	 *
@@ -137,8 +156,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 								+ "multiple times on accessor methods of property %s in class %s!",
 						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
 
-				annotationCache.put(annotationType,
-						Optional.of(mergedAnnotation));
+				annotationCache.put(annotationType, Optional.of(mergedAnnotation));
 			}
 		});
 
@@ -153,8 +171,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 						"Ambiguous mapping! Annotation %s configured " + "on field %s and one of its accessor methods in class %s!",
 						annotationType.getSimpleName(), it.getName(), getOwner().getType().getSimpleName());
 
-				annotationCache.put(annotationType,
-						Optional.of(mergedAnnotation));
+				annotationCache.put(annotationType, Optional.of(mergedAnnotation));
 			}
 		});
 	}
@@ -322,21 +339,25 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 				.orElse(null);
 	}
 
-	protected PropertyValueConverter<?,?> resolveConverter(@Nullable BeanFactory beanFactory) {
+	public PropertyValueConverter<?, ?> getValueConverter() {
+		return propertyValueConverter.get();
+	}
+
+	protected PropertyValueConverter<?, ?> resolveConverter(@Nullable BeanFactory beanFactory) {
 
 		// TODO: caching
-
-		if(!hasValueConverter()) {
+		if (!hasValueConverter()) {
 			return null;
 		}
 
 		Class<? extends PropertyValueConverter<?, ?>> target = getValueConverterType();
-		if(beanFactory == null) {
+		if (beanFactory == null) {
 			return BeanUtils.instantiateClass(target);
 		}
 
-		if(beanFactory instanceof AutowireCapableBeanFactory) {
-			return (PropertyValueConverter<?, ?>) ((AutowireCapableBeanFactory)beanFactory).createBean(target, AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
+		if (beanFactory instanceof AutowireCapableBeanFactory) {
+			return (PropertyValueConverter<?, ?>) ((AutowireCapableBeanFactory) beanFactory).createBean(target,
+					AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
 		}
 
 		return beanFactory.getBean(target);
@@ -377,8 +398,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@SuppressWarnings("unchecked")
 	private static Class<? extends Annotation> loadIdentityType() {
 
-		return (Class<? extends Annotation>) ReflectionUtils.loadIfPresent(
-				"org.jmolecules.ddd.annotation.Identity",
+		return (Class<? extends Annotation>) ReflectionUtils.loadIfPresent("org.jmolecules.ddd.annotation.Identity",
 				AbstractPersistentProperty.class.getClassLoader());
 	}
 }
