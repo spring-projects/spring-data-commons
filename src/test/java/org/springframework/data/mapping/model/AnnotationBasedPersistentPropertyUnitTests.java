@@ -36,6 +36,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -44,6 +45,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.convert.PropertyConverter;
+import org.springframework.data.convert.PropertyValueConverter;
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -529,4 +533,49 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	}
 
 	interface JMoleculesAggregate extends AggregateRoot<JMoleculesAggregate, Identifier> {}
+
+	static class WithPropertyConverter {
+
+		@PropertyConverter(MyPropertyConverter.class)
+		String value;
+
+		@PropertyConverter(MyPropertyConverterThatRequiresComponents.class)
+		String value2;
+	}
+
+	static class MyPropertyConverter implements PropertyValueConverter<Object,Object, ValueConversionContext> {
+
+		@Override
+		public Object nativeToDomain(Object value, ValueConversionContext context) {
+			return null;
+		}
+
+		@Override
+		public Object domainToNative(Object value, ValueConversionContext context) {
+			return null;
+		}
+	}
+
+	static class MyPropertyConverterThatRequiresComponents implements PropertyValueConverter<Object,Object, ValueConversionContext> {
+
+		private final SomeDependency someDependency;
+
+		public MyPropertyConverterThatRequiresComponents(@Autowired SomeDependency someDependency) {
+			this.someDependency = someDependency;
+		}
+
+		@Override
+		public Object nativeToDomain(Object value, ValueConversionContext context) {
+			return null;
+		}
+
+		@Override
+		public Object domainToNative(Object value, ValueConversionContext context) {
+			return null;
+		}
+	}
+
+	static class SomeDependency {
+
+	}
 }
