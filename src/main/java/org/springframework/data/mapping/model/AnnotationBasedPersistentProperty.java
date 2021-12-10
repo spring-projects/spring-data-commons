@@ -23,8 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -33,6 +36,8 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.convert.PropertyConverter;
+import org.springframework.data.convert.PropertyValueConverter;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -306,6 +311,35 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Override
 	public TypeInformation<?> getAssociationTargetTypeInformation() {
 		return associationTargetType.getNullable();
+	}
+
+	@Nullable
+	@Override
+	public Class<? extends PropertyValueConverter<?, ?>> getValueConverterType() {
+
+		return doFindAnnotation(PropertyConverter.class) //
+				.map(PropertyConverter::value) //
+				.orElse(null);
+	}
+
+	protected PropertyValueConverter<?,?> resolveConverter(@Nullable BeanFactory beanFactory) {
+
+		// TODO: caching
+
+		if(!hasValueConverter()) {
+			return null;
+		}
+
+		Class<? extends PropertyValueConverter<?, ?>> target = getValueConverterType();
+		if(beanFactory == null) {
+			return BeanUtils.instantiateClass(target);
+		}
+
+		if(beanFactory instanceof AutowireCapableBeanFactory) {
+			return (PropertyValueConverter<?, ?>) ((AutowireCapableBeanFactory)beanFactory).createBean(target, AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
+		}
+
+		return beanFactory.getBean(target);
 	}
 
 	/*
