@@ -36,6 +36,7 @@ import org.jmolecules.ddd.types.Identifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.convert.PropertyValueConverter;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -43,6 +44,7 @@ import org.springframework.data.mapping.Person;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -233,8 +235,7 @@ public class AbstractPersistentPropertyUnitTests {
 
 		assertThat(property.isAssociation()).isTrue();
 		assertThat(property.getAssociationTargetType()).isEqualTo(JMoleculesAggregate.class);
-		assertThat(property.getPersistentEntityTypeInformation())
-				.extracting(it -> it.getType())
+		assertThat(property.getPersistentEntityTypeInformation()).extracting(it -> it.getType())
 				.containsExactly((Class) JMoleculesAggregate.class);
 	}
 
@@ -385,6 +386,7 @@ public class AbstractPersistentPropertyUnitTests {
 		public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 			return null;
 		}
+
 	}
 
 	static class Sample {

@@ -33,6 +33,9 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.convert.PropertyConverter;
+import org.springframework.data.convert.PropertyValueConverter;
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -132,8 +135,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 								+ "multiple times on accessor methods of property %s in class %s!",
 						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
 
-				annotationCache.put(annotationType,
-						Optional.of(mergedAnnotation));
+				annotationCache.put(annotationType, Optional.of(mergedAnnotation));
 			}
 		});
 
@@ -148,8 +150,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 						"Ambiguous mapping! Annotation %s configured " + "on field %s and one of its accessor methods in class %s!",
 						annotationType.getSimpleName(), it.getName(), getOwner().getType().getSimpleName());
 
-				annotationCache.put(annotationType,
-						Optional.of(mergedAnnotation));
+				annotationCache.put(annotationType, Optional.of(mergedAnnotation));
 			}
 		});
 	}
@@ -284,6 +285,15 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return associationTargetType.getNullable();
 	}
 
+	@Nullable
+	@Override
+	public Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext>> getValueConverterType() {
+
+		return doFindAnnotation(PropertyConverter.class) //
+				.map(PropertyConverter::value) //
+				.orElse(null);
+	}
+
 	@Override
 	public String toString() {
 
@@ -315,8 +325,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@SuppressWarnings("unchecked")
 	private static Class<? extends Annotation> loadIdentityType() {
 
-		return (Class<? extends Annotation>) ReflectionUtils.loadIfPresent(
-				"org.jmolecules.ddd.annotation.Identity",
+		return (Class<? extends Annotation>) ReflectionUtils.loadIfPresent("org.jmolecules.ddd.annotation.Identity",
 				AbstractPersistentProperty.class.getClassLoader());
 	}
 }

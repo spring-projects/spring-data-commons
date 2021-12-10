@@ -23,6 +23,9 @@ import java.util.Map;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.convert.PropertyConverter;
+import org.springframework.data.convert.PropertyValueConverter;
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -421,5 +424,15 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		Assert.notNull(owner, "Owner must not be null!");
 
 		return getOwner().getPropertyAccessor(owner);
+	}
+
+	@Nullable
+	default Class<? extends PropertyValueConverter<?,?, ? extends ValueConversionContext>> getValueConverterType() {
+		PropertyConverter annotation = findAnnotation(PropertyConverter.class);
+		return annotation == null ? null : annotation.value();
+	}
+
+	default boolean hasValueConverter() {
+		return isAnnotationPresent(PropertyConverter.class);
 	}
 }
