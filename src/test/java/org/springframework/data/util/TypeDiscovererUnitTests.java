@@ -38,6 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link TypeDiscoverer}.
  *
  * @author Oliver Gierke
+ * @author Jürgen Diez
  */
 @ExtendWith(MockitoExtension.class)
 public class TypeDiscovererUnitTests {
@@ -177,6 +178,38 @@ public class TypeDiscovererUnitTests {
 		assertThat(type.isSubTypeOf(Collection.class)).isTrue();
 		assertThat(type.isSubTypeOf(Set.class)).isFalse();
 		assertThat(type.isSubTypeOf(String.class)).isFalse();
+	}
+
+	@Test
+	void considerVavrMapToBeAMap() {
+
+		TypeInformation<io.vavr.collection.Map> type = from(io.vavr.collection.Map.class);
+
+		assertThat(type.isMap()).isTrue();
+	}
+
+	@Test
+	void considerVavrSetToBeCollectionLike() {
+
+		TypeInformation<io.vavr.collection.Set> type = from(io.vavr.collection.Set.class);
+
+		assertThat(type.isCollectionLike()).isTrue();
+	}
+
+	@Test
+	void considerVavrSeqToBeCollectionLike() {
+
+		TypeInformation<io.vavr.collection.Seq> type = from(io.vavr.collection.Seq.class);
+
+		assertThat(type.isCollectionLike()).isTrue();
+	}
+
+	@Test
+	void considerVavrListToBeCollectionLike() {
+
+		TypeInformation<io.vavr.collection.List> type = from(io.vavr.collection.List.class);
+
+		assertThat(type.isCollectionLike()).isTrue();
 	}
 
 	class Person {
