@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 the original author or authors.
+ * Copyright 2014-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.data.util.VavrCollectionConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
@@ -99,7 +100,7 @@ public abstract class QueryExecutionConverters {
 
 		if (VAVR_PRESENT) {
 
-			WRAPPER_TYPES.add(VavrCollections.ToJavaConverter.INSTANCE.getWrapperType());
+			WRAPPER_TYPES.add(VavrTraversableUnwrapper.INSTANCE.getWrapperType());
 			UNWRAPPERS.add(VavrTraversableUnwrapper.INSTANCE);
 
 			// Try support
@@ -196,7 +197,7 @@ public abstract class QueryExecutionConverters {
 		NullableWrapperConverters.registerConvertersIn(conversionService);
 
 		if (VAVR_PRESENT) {
-			conversionService.addConverter(VavrCollections.FromJavaConverter.INSTANCE);
+			conversionService.addConverter(VavrCollectionConverters.FromJavaConverter.INSTANCE);
 		}
 
 		conversionService.addConverter(new NullableWrapperToCompletableFutureConverter());
@@ -408,23 +409,29 @@ public abstract class QueryExecutionConverters {
 
 		INSTANCE;
 
+		private static final TypeDescriptor OBJECT_DESCRIPTOR = TypeDescriptor.valueOf(Object.class);
+
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
 		@Nullable
 		@Override
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("null")
 		public Object convert(Object source) {
 
 			if (source instanceof io.vavr.collection.Traversable) {
-				return VavrCollections.ToJavaConverter.INSTANCE.convert(source);
+				return VavrCollectionConverters.ToJavaConverter.INSTANCE //
+						.convert(source, TypeDescriptor.forObject(source), OBJECT_DESCRIPTOR);
 			}
 
 			return source;
 		}
-	}
 
+		public WrapperType getWrapperType() {
+			return WrapperType.multiValue(io.vavr.collection.Traversable.class);
+		}
+	}
 
 	private static class IterableToStreamableConverter implements ConditionalGenericConverter {
 

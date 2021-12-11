@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 the original author or authors.
+ * Copyright 2011-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,7 @@
 package org.springframework.data.convert;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -33,7 +24,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.Converter;
@@ -46,6 +36,7 @@ import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.Streamable;
+import org.springframework.data.util.VavrCollectionConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -178,6 +169,7 @@ public class CustomConversions {
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
 		converters.forEach(it -> registerConverterIn(it, conversionService));
+		VavrCollectionConverters.getConvertersToRegister().forEach(it -> registerConverterIn(it, conversionService));
 	}
 
 	/**

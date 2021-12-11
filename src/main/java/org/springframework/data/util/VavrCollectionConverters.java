@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,50 +13,91 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.util;
+package org.springframework.data.util;
 
 import io.vavr.collection.LinkedHashMap;
 import io.vavr.collection.LinkedHashSet;
 import io.vavr.collection.Traversable;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.repository.util.QueryExecutionConverters.WrapperType;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ClassUtils;
 
 /**
  * Converter implementations to map from and to Vavr collections.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
- * @since 2.0
+ * @since 2.7
  */
-class VavrCollections {
+public class VavrCollectionConverters {
 
-	public enum ToJavaConverter implements Converter<Object, Object> {
+	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Option",
+			NullableWrapperConverters.class.getClassLoader());
+
+	public static Collection<Object> getConvertersToRegister() {
+
+		if (!VAVR_PRESENT) {
+			return Collections.emptyList();
+		}
+
+		return Arrays.asList(ToJavaConverter.INSTANCE, FromJavaConverter.INSTANCE);
+	}
+
+	public enum ToJavaConverter implements ConditionalGenericConverter {
 
 		INSTANCE;
 
-		public WrapperType getWrapperType() {
-			return WrapperType.multiValue(io.vavr.collection.Traversable.class);
+		private static final TypeDescriptor TRAVERSAL_TYPE = TypeDescriptor.valueOf(Traversable.class);
+		private static final Set<Class<?>> COLLECTIONS_AND_MAP = new HashSet<>(
+				Arrays.asList(Collection.class, List.class, Set.class, Map.class));
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
+		 */
+		@NonNull
+		@Override
+		public Set<ConvertiblePair> getConvertibleTypes() {
+
+			return COLLECTIONS_AND_MAP.stream()
+					.map(it -> new ConvertiblePair(Traversable.class, it))
+					.collect(Collectors.toSet());
 		}
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 		 */
-		@NonNull
 		@Override
-		public Object convert(Object source) {
+		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+			return sourceType.isAssignableTo(TRAVERSAL_TYPE)
+					&& COLLECTIONS_AND_MAP.contains(targetType.getType());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+		 */
+		@Nullable
+		@Override
+		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+			if (source == null) {
+				return null;
+			}
 
 			if (source instanceof io.vavr.collection.Seq) {
 				return ((io.vavr.collection.Seq<?>) source).asJava();
