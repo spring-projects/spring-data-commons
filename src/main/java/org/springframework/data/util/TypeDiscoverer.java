@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 the original author or authors.
+ * Copyright 2011-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -347,21 +338,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		return rawType.isArray() //
 				|| Iterable.class.equals(rawType) //
-				|| Streamable.class.isAssignableFrom(rawType)
+				|| Streamable.class.isAssignableFrom(rawType) //
 				|| isCollection();
-	}
-
-	private boolean isCollection() {
-
-		Class<S> type = getType();
-
-		for (Class<?> collectionType : COLLECTION_TYPES) {
-			if (collectionType.isAssignableFrom(type)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	@Nullable
@@ -386,7 +364,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getTypeArgument(Iterable.class, 0);
 		}
 
-		if(isNullableWrapper()) {
+		if (isNullableWrapper()) {
 			return getTypeArgument(rawType, 0);
 		}
 
@@ -539,6 +517,24 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Override
 	public int hashCode() {
 		return hashCode;
+	}
+
+	/**
+	 * Returns whether the current type is considered a collection.
+	 *
+	 * @return
+	 */
+	private boolean isCollection() {
+
+		var type = getType();
+
+		for (Class<?> collectionType : COLLECTION_TYPES) {
+			if (collectionType.isAssignableFrom(type)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

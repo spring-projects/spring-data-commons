@@ -179,34 +179,34 @@ public class TypeDiscovererUnitTests {
 		assertThat(type.isSubTypeOf(String.class)).isFalse();
 	}
 
-	@Test
+	@Test // #2511
 	void considerVavrMapToBeAMap() {
 
-		TypeInformation<io.vavr.collection.Map> type = from(io.vavr.collection.Map.class);
+		var type = from(io.vavr.collection.Map.class);
 
 		assertThat(type.isMap()).isTrue();
 	}
 
-	@Test
+	@Test // #2511
 	void considerVavrSetToBeCollectionLike() {
 
-		TypeInformation<io.vavr.collection.Set> type = from(io.vavr.collection.Set.class);
+		var type = from(io.vavr.collection.Set.class);
 
 		assertThat(type.isCollectionLike()).isTrue();
 	}
 
-	@Test
+	@Test // #2511
 	void considerVavrSeqToBeCollectionLike() {
 
-		TypeInformation<io.vavr.collection.Seq> type = from(io.vavr.collection.Seq.class);
+		var type = from(io.vavr.collection.Seq.class);
 
 		assertThat(type.isCollectionLike()).isTrue();
 	}
 
-	@Test
+	@Test // #2511
 	void considerVavrListToBeCollectionLike() {
 
-		TypeInformation<io.vavr.collection.List> type = from(io.vavr.collection.List.class);
+		var type = from(io.vavr.collection.List.class);
 
 		assertThat(type.isCollectionLike()).isTrue();
 	}
