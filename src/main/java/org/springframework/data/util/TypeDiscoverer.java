@@ -50,10 +50,12 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Jürgen Diez
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private static final Class<?>[] MAP_TYPES;
+	private static final Class<?>[] COLLECTION_TYPES;
 
 	static {
 
@@ -67,6 +69,19 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		} catch (ClassNotFoundException o_O) {}
 
 		MAP_TYPES = mapTypes.toArray(new Class[0]);
+
+		Set<Class<?>> collectionTypes = new HashSet<>();
+		collectionTypes.add(Collection.class);
+
+		try {
+			collectionTypes.add(ClassUtils.forName("io.vavr.collection.Seq", classLoader));
+		} catch (ClassNotFoundException o_O) {}
+
+		try {
+			collectionTypes.add(ClassUtils.forName("io.vavr.collection.Set", classLoader));
+		} catch (ClassNotFoundException o_O) {}
+
+		COLLECTION_TYPES = collectionTypes.toArray(new Class[0]);
 	}
 
 	private final Type type;
@@ -332,8 +347,21 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		return rawType.isArray() //
 				|| Iterable.class.equals(rawType) //
-				|| Collection.class.isAssignableFrom(rawType) //
-				|| Streamable.class.isAssignableFrom(rawType);
+				|| Streamable.class.isAssignableFrom(rawType)
+				|| isCollection();
+	}
+
+	private boolean isCollection() {
+
+		Class<S> type = getType();
+
+		for (Class<?> collectionType : COLLECTION_TYPES) {
+			if (collectionType.isAssignableFrom(type)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Nullable
