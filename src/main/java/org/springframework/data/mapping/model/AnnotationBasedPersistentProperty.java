@@ -100,22 +100,6 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 				.orElseGet(() -> super.getAssociationTargetTypeInformation());
 	});
 
-	private final Lazy<PropertyValueConverter<?, ?>> propertyValueConverter = Lazy.of(() -> {
-
-		PersistentEntity<?, ?> owner = getOwner();
-		if (owner instanceof BasicPersistentEntity) {
-
-			BeanResolver beanResolver = ((BasicPersistentEntity) owner).getEvaluationContext(null).getBeanResolver();
-			if (beanResolver != null) {
-				Field beanFactory = org.springframework.util.ReflectionUtils.findField(BeanFactoryResolver.class, "beanFactory");
-				org.springframework.util.ReflectionUtils.makeAccessible(beanFactory);
-				BeanFactory field = (BeanFactory) org.springframework.util.ReflectionUtils.getField(beanFactory, beanResolver);
-				return resolveConverter(field);
-			}
-		}
-		return resolveConverter(null);
-	});
-
 	/**
 	 * Creates a new {@link AnnotationBasedPersistentProperty}.
 	 *
@@ -337,30 +321,6 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return doFindAnnotation(PropertyConverter.class) //
 				.map(PropertyConverter::value) //
 				.orElse(null);
-	}
-
-	public PropertyValueConverter<?, ?> getValueConverter() {
-		return propertyValueConverter.get();
-	}
-
-	protected PropertyValueConverter<?, ?> resolveConverter(@Nullable BeanFactory beanFactory) {
-
-		// TODO: caching
-		if (!hasValueConverter()) {
-			return null;
-		}
-
-		Class<? extends PropertyValueConverter<?, ?>> target = getValueConverterType();
-		if (beanFactory == null) {
-			return BeanUtils.instantiateClass(target);
-		}
-
-		if (beanFactory instanceof AutowireCapableBeanFactory) {
-			return (PropertyValueConverter<?, ?>) ((AutowireCapableBeanFactory) beanFactory).createBean(target,
-					AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
-		}
-
-		return beanFactory.getBean(target);
 	}
 
 	/*

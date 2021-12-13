@@ -442,9 +442,6 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		return annotation == null ? null : annotation.value();
 	}
 
-	@Nullable
-	PropertyValueConverter<?, ?> getValueConverter();
-
 	default boolean hasValueConverter() {
 		return isAnnotationPresent(PropertyConverter.class);
 	}

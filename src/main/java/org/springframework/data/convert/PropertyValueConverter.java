@@ -15,25 +15,51 @@
  */
 package org.springframework.data.convert;
 
+import org.springframework.lang.Nullable;
+
 /**
+ * {@link PropertyValueConverter} provides a symmetric way of converting certain properties from domain to store
+ * specific values.
+ * <p>
+ * A {@link PropertyValueConverter} is, other than a {@link ReadingConverter} or {@link WritingConverter}, only applied
+ * to special annotated fields which allows a fine grained conversion of certain values within a specific context.
+ *
  * @author Christoph Strobl
+ * @param <A> domain specific type
+ * @param <B> store native type
  * @since 2.7
  */
-public interface PropertyValueConverter<S,T> {
+public interface PropertyValueConverter<A, B> {
 
-	T read(S value);
+	/**
+	 * Convert the given store specific value into it's domain value representation.
+	 *
+	 * @param nativeValue can be {@literal null}.
+	 * @return the converted value. Can be {@literal null}.
+	 */
+	@Nullable
+	A /*read*/nativeToDomain(@Nullable B nativeValue);
 
-	S write(T value);
+	/**
+	 * Convert the given domain specific value into it's native store representation.
+	 *
+	 * @param domainValue can be {@literal null}.
+	 * @return the converted value. Can be {@literal null}.
+	 */
+	@Nullable
+	B /*write*/domainToNative(@Nullable A domainValue);
 
-	class ObjectToObjectPropertyValueConverter implements PropertyValueConverter<Object, Object> {
+	enum ObjectToObjectPropertyValueConverter implements PropertyValueConverter<Object, Object> {
+
+		INSTANCE;
 
 		@Override
-		public Object read(Object value) {
+		public Object nativeToDomain(Object value) {
 			return value;
 		}
 
 		@Override
-		public Object write(Object value) {
+		public Object domainToNative(Object value) {
 			return value;
 		}
 	}

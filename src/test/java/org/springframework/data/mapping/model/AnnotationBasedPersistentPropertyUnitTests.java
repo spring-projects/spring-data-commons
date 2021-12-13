@@ -342,22 +342,6 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThat(property.isIdProperty()).isTrue();
 	}
 
-	@Test // GH-1484
-	void xxx() {
-
-		GenericApplicationContext applicationContext = new GenericApplicationContext();
-		applicationContext.refresh();
-//		applicationContext.registerBean();
-
-		context.setApplicationContext(applicationContext);
-
-		SamplePersistentProperty property = getProperty(WithPropertyConverter.class, "value");
-		PropertyValueConverter<?, ?> valueConverter = property.getValueConverter();
-
-		assertThat(valueConverter).isInstanceOf(MyPropertyConverter.class);
-	}
-
-
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -562,12 +546,12 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	static class MyPropertyConverter implements PropertyValueConverter<Object,Object> {
 
 		@Override
-		public Object read(Object value) {
+		public Object nativeToDomain(Object value) {
 			return null;
 		}
 
 		@Override
-		public Object write(Object value) {
+		public Object domainToNative(Object value) {
 			return null;
 		}
 	}
@@ -581,12 +565,12 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		}
 
 		@Override
-		public Object read(Object value) {
+		public Object nativeToDomain(Object value) {
 			return null;
 		}
 
 		@Override
-		public Object write(Object value) {
+		public Object domainToNative(Object value) {
 			return null;
 		}
 	}

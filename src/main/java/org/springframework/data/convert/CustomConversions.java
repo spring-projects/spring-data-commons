@@ -98,6 +98,8 @@ public class CustomConversions {
 	private final Function<ConvertiblePair, Class<?>> getRawWriteTarget = convertiblePair -> getCustomTarget(
 			convertiblePair.getSourceType(), null, writingPairs);
 
+	private final PropertyValueConverterFactory propertyValueConverterFactory;
+
 	/**
 	 * @param converterConfiguration the {@link ConverterConfiguration} to apply.
 	 * @since 2.3
@@ -120,6 +122,11 @@ public class CustomConversions {
 		this.converters = Collections.unmodifiableList(registeredConverters);
 		this.simpleTypeHolder = new SimpleTypeHolder(customSimpleTypes,
 				converterConfiguration.getStoreConversions().getStoreTypeHolder());
+		if(converterConfiguration.getPropertyConverterFactory() != null) {
+			this.propertyValueConverterFactory = converterConfiguration.getPropertyConverterFactory();
+		} else {
+			this.propertyValueConverterFactory = new CachingPropertyValueConverterFactory(new SimplePropertyConverterFactory());
+		}
 	}
 
 	/**
@@ -438,6 +445,10 @@ public class CustomConversions {
 		}
 
 		return null;
+	}
+
+	public PropertyValueConverterFactory getPropertyValueConverterFactory() {
+		return propertyValueConverterFactory;
 	}
 
 	private static boolean hasAssignableSourceType(ConvertiblePair pair, Class<?> sourceType) {
@@ -877,6 +888,7 @@ public class CustomConversions {
 		private final StoreConversions storeConversions;
 		private final List<?> userConverters;
 		private final Predicate<ConvertiblePair> converterRegistrationFilter;
+		private final PropertyValueConverterFactory propertyConverterFactory;
 
 		/**
 		 * Create a new ConverterConfiguration holding the given {@link StoreConversions} and user defined converters.
@@ -902,9 +914,16 @@ public class CustomConversions {
 		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters,
 				Predicate<ConvertiblePair> converterRegistrationFilter) {
 
+			this(storeConversions, userConverters, converterRegistrationFilter, null);
+		}
+
+		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters,
+				Predicate<ConvertiblePair> converterRegistrationFilter, @Nullable PropertyValueConverterFactory propertyConverterFactory) {
+
 			this.storeConversions = storeConversions;
 			this.userConverters = new ArrayList<>(userConverters);
 			this.converterRegistrationFilter = converterRegistrationFilter;
+			this.propertyConverterFactory = propertyConverterFactory;
 		}
 
 		/**
@@ -926,6 +945,11 @@ public class CustomConversions {
 		 */
 		boolean shouldRegister(ConvertiblePair candidate) {
 			return this.converterRegistrationFilter.test(candidate);
+		}
+
+		@Nullable
+		public PropertyValueConverterFactory getPropertyConverterFactory() {
+			return propertyConverterFactory;
 		}
 	}
 }
