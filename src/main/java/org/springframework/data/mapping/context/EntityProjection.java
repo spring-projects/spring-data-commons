@@ -15,6 +15,7 @@
  */
 package org.springframework.data.mapping.context;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
@@ -34,6 +36,8 @@ import org.springframework.lang.Nullable;
  *
  * @param <M> the mapped type acting as view onto the domain type.
  * @param <D> the domain type.
+ * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.7
  */
 public class EntityProjection<M, D> implements Streamable<EntityProjection.PropertyProjection<?, ?>> {
@@ -42,61 +46,63 @@ public class EntityProjection<M, D> implements Streamable<EntityProjection.Prope
 	private final TypeInformation<D> domainType;
 	private final List<PropertyProjection<?, ?>> properties;
 	private final boolean projection;
-	private final boolean closedProjection;
+	private final ProjectionType projectionType;
 
 	EntityProjection(TypeInformation<M> mappedType, TypeInformation<D> domainType,
-			List<PropertyProjection<?, ?>> properties, boolean projection, boolean closedProjection) {
+			List<PropertyProjection<?, ?>> properties, boolean projection, ProjectionType projectionType) {
 		this.mappedType = mappedType;
 		this.domainType = domainType;
-		this.properties = properties;
+		this.properties = new ArrayList<>(properties);
 		this.projection = projection;
-		this.closedProjection = closedProjection;
+		this.projectionType = projectionType;
 	}
 
 	/**
 	 * Create a projecting variant of a mapped type.
 	 *
-	 * @param mappedType
-	 * @param domainType
-	 * @param properties
-	 * @return
+	 * @param mappedType the target projection type. Must not be {@literal null}.
+	 * @param domainType the source domain type. Must not be {@literal null}.
+	 * @param properties properties to include.
+	 * @param projectionType must not be {@literal null}.
+	 * @return new instance of {@link EntityProjection}.
 	 */
 	public static <M, D> EntityProjection<M, D> projecting(TypeInformation<M> mappedType, TypeInformation<D> domainType,
-			List<PropertyProjection<?, ?>> properties, boolean closedProjection) {
-		return new EntityProjection<>(mappedType, domainType, properties, true, closedProjection);
+			List<PropertyProjection<?, ?>> properties, ProjectionType projectionType) {
+		return new EntityProjection<>(mappedType, domainType, properties, true, projectionType);
 	}
 
 	/**
 	 * Create a non-projecting variant of a mapped type.
 	 *
-	 * @param mappedType
-	 * @param domainType
-	 * @param properties
-	 * @return
+	 * @param mappedType the target projection type. Must not be {@literal null}.
+	 * @param domainType the source domain type. Must not be {@literal null}.
+	 * @param properties properties to include.
+	 * @return new instance of {@link EntityProjection}.
 	 */
 	public static <M, D> EntityProjection<M, D> nonProjecting(TypeInformation<M> mappedType,
 			TypeInformation<D> domainType, List<PropertyProjection<?, ?>> properties) {
-		return new EntityProjection<>(mappedType, domainType, properties, false, false);
+		return new EntityProjection<>(mappedType, domainType, properties, false, ProjectionType.CLOSED);
 	}
 
 	/**
 	 * Create a non-projecting variant of a {@code type}.
 	 *
-	 * @param type
-	 * @return
+	 * @param type must not be {@literal null}.
+	 * @return new instance of {@link EntityProjection}.
 	 */
 	public static <T> EntityProjection<T, T> nonProjecting(Class<T> type) {
 		ClassTypeInformation<T> typeInformation = ClassTypeInformation.from(type);
-		return new EntityProjection<>(typeInformation, typeInformation, Collections.emptyList(), false, false);
+		return new EntityProjection<>(typeInformation, typeInformation, Collections.emptyList(), false,
+				ProjectionType.CLOSED);
 	}
 
 	/**
 	 * Performs the given action for each element of the {@link Streamable} recursively until all elements of the graph
-	 * have been processed or the action throws an exception. Unless otherwise specified by the implementing class,
-	 * actions are performed in the order of iteration (if an iteration order is specified). Exceptions thrown by the
-	 * action are relayed to the caller.
+	 * have been processed or the action throws an {@link Exception}. Unless otherwise specified by the implementing
+	 * class, actions are performed in the order of iteration (if an iteration order is specified). Exceptions thrown by
+	 * the action are relayed to the caller.
 	 *
-	 * @param action
+	 * @param action must not be {@literal null}.
 	 */
 	public void forEachRecursive(Consumer<? super PropertyProjection<?, ?>> action) {
 
@@ -128,6 +134,7 @@ public class EntityProjection<M, D> implements Streamable<EntityProjection.Prope
 	/**
 	 * @return the actual mapped type used by this type view. Should be used for collection-like and map-like properties
 	 *         to determine the actual view type.
+	 * @throws IllegalStateException if the actual type cannot be resolved.
 	 */
 	public TypeInformation<?> getActualMappedType() {
 		return mappedType.getRequiredActualType();
@@ -143,6 +150,7 @@ public class EntityProjection<M, D> implements Streamable<EntityProjection.Prope
 	/**
 	 * @return the actual domain type represented by this type view. Should be used for collection-like and map-like
 	 *         properties to determine the actual domain type.
+	 * @throws IllegalStateException if the actual type cannot be resolved.
 	 */
 	public TypeInformation<?> getActualDomainType() {
 		return domainType.getRequiredActualType();
@@ -159,7 +167,8 @@ public class EntityProjection<M, D> implements Streamable<EntityProjection.Prope
 	 * @return {@code true} if the {@link #getMappedType()} is a closed projection.
 	 */
 	public boolean isClosedProjection() {
-		return isProjection() && closedProjection;
+		return isProjection()
+				&& (ProjectionType.CLOSED.equals(projectionType) || ProjectionType.DTO.equals(projectionType));
 	}
 
 	List<PropertyProjection<?, ?>> getProperties() {
@@ -207,36 +216,38 @@ public class EntityProjection<M, D> implements Streamable<EntityProjection.Prope
 		private final PropertyPath propertyPath;
 
 		PropertyProjection(PropertyPath propertyPath, TypeInformation<M> mappedType, TypeInformation<D> domainType,
-				List<PropertyProjection<?, ?>> properties, boolean projecting, boolean closedProjection) {
-			super(mappedType, domainType, properties, projecting, closedProjection);
+				List<PropertyProjection<?, ?>> properties, boolean projecting, ProjectionType projectionType) {
+			super(mappedType, domainType, properties, projecting, projectionType);
 			this.propertyPath = propertyPath;
 		}
 
 		/**
 		 * Create a projecting variant of a mapped type.
 		 *
-		 * @param propertyPath
-		 * @param mappedType
-		 * @param domainType
-		 * @param properties
-		 * @return
+		 * @param propertyPath the {@link PropertyPath path} to the actual property.
+		 * @param mappedType the target projection type. Must not be {@literal null}.
+		 * @param domainType the source domain type. Must not be {@literal null}.
+		 * @param properties properties to include.
+		 * @param projectionType must not be {@literal null}.
+		 * @return new instance of {@link PropertyProjection}.
 		 */
 		public static <M, D> PropertyProjection<M, D> projecting(PropertyPath propertyPath, TypeInformation<M> mappedType,
-				TypeInformation<D> domainType, List<PropertyProjection<?, ?>> properties, boolean closedProjection) {
-			return new PropertyProjection<>(propertyPath, mappedType, domainType, properties, true, closedProjection);
+				TypeInformation<D> domainType, List<PropertyProjection<?, ?>> properties, ProjectionType projectionType) {
+			return new PropertyProjection<>(propertyPath, mappedType, domainType, properties, true, projectionType);
 		}
 
 		/**
 		 * Create a non-projecting variant of a mapped type.
 		 *
-		 * @param propertyPath
-		 * @param mappedType
-		 * @param domainType
+		 * @param propertyPath the {@link PropertyPath path} to the actual property.
+		 * @param mappedType the target projection type. Must not be {@literal null}.
+		 * @param domainType the source domain type. Must not be {@literal null}.
 		 * @return
 		 */
 		public static <M, D> PropertyProjection<M, D> nonProjecting(PropertyPath propertyPath,
 				TypeInformation<M> mappedType, TypeInformation<D> domainType) {
-			return new PropertyProjection<>(propertyPath, mappedType, domainType, Collections.emptyList(), false, false);
+			return new PropertyProjection<>(propertyPath, mappedType, domainType, Collections.emptyList(), false,
+					ProjectionType.OPEN);
 		}
 
 		/**
@@ -264,39 +275,79 @@ public class EntityProjection<M, D> implements Streamable<EntityProjection.Prope
 	public static class ContainerPropertyProjection<M, D> extends PropertyProjection<M, D> {
 
 		ContainerPropertyProjection(PropertyPath propertyPath, TypeInformation<M> mappedType, TypeInformation<D> domainType,
-				List<PropertyProjection<?, ?>> properties, boolean projecting, boolean closedProjection) {
-			super(propertyPath, mappedType, domainType, properties, projecting, closedProjection);
+				List<PropertyProjection<?, ?>> properties, boolean projecting, ProjectionType projectionType) {
+			super(propertyPath, mappedType, domainType, properties, projecting, projectionType);
 		}
 
 		/**
 		 * Create a projecting variant of a mapped type.
 		 *
-		 * @param propertyPath
-		 * @param mappedType
-		 * @param domainType
-		 * @param properties
-		 * @return
+		 * @param propertyPath the {@link PropertyPath path} to the actual property.
+		 * @param mappedType the target projection type. Must not be {@literal null}.
+		 * @param domainType the source domain type. Must not be {@literal null}.
+		 * @param properties properties to include.
+		 * @param projectionType must not be {@literal null}.
+		 * @return new instance of {@link ContainerPropertyProjection}.
 		 */
 		public static <M, D> ContainerPropertyProjection<M, D> projecting(PropertyPath propertyPath,
 				TypeInformation<M> mappedType, TypeInformation<D> domainType, List<PropertyProjection<?, ?>> properties,
-				boolean closedProjection) {
-			return new ContainerPropertyProjection<>(propertyPath, mappedType, domainType, properties, true,
-					closedProjection);
+				ProjectionType projectionType) {
+			return new ContainerPropertyProjection<>(propertyPath, mappedType, domainType, properties, true, projectionType);
 		}
 
 		/**
 		 * Create a non-projecting variant of a mapped type.
 		 *
-		 * @param propertyPath
-		 * @param mappedType
-		 * @param domainType
-		 * @return
+		 * @param propertyPath the {@link PropertyPath path} to the actual property.
+		 * @param mappedType the target projection type. Must not be {@literal null}.
+		 * @param domainType the source domain type. Must not be {@literal null}.
+		 * @return new instance of {@link ContainerPropertyProjection}.
 		 */
 		public static <M, D> ContainerPropertyProjection<M, D> nonProjecting(PropertyPath propertyPath,
 				TypeInformation<M> mappedType, TypeInformation<D> domainType) {
 			return new ContainerPropertyProjection<>(propertyPath, mappedType, domainType, Collections.emptyList(), false,
-					false);
+					ProjectionType.OPEN);
 		}
 
+	}
+
+	/**
+	 * Projection type.
+	 *
+	 * @since 2.7
+	 */
+	public enum ProjectionType {
+
+		/**
+		 * A DTO projection defines a value type that hold properties for the fields that are supposed to be retrieved.
+		 */
+		DTO,
+
+		/**
+		 * An open projection has accessor methods in the interface that can be used to compute new values by using the
+		 * {@link org.springframework.beans.factory.annotation.Value} annotation.
+		 */
+		OPEN,
+
+		/**
+		 * A closed projection only contains accessor methods that all match properties of the target aggregate.
+		 */
+		CLOSED;
+
+		/**
+		 * Obtain the {@link ProjectionType} from a given {@link ProjectionInformation}.
+		 *
+		 * @param information must not be {@literal null}.
+		 * @return the {@link ProjectionType} according to {@link ProjectionInformation#getType() type} and
+		 *         {@link ProjectionInformation#isClosed()}.
+		 */
+		public static ProjectionType from(ProjectionInformation information) {
+
+			if (!information.getType().isInterface()) {
+				return DTO;
+			}
+
+			return information.isClosed() ? CLOSED : OPEN;
+		}
 	}
 }

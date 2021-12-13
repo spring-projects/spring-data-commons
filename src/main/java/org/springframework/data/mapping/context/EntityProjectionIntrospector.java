@@ -25,6 +25,7 @@ import java.util.Set;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.context.EntityProjection.ProjectionType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.data.util.ClassTypeInformation;
@@ -38,6 +39,7 @@ import org.springframework.util.Assert;
  *
  * @author Gerrit Meier
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.7
  */
 public class EntityProjectionIntrospector {
@@ -48,6 +50,7 @@ public class EntityProjectionIntrospector {
 
 	private EntityProjectionIntrospector(ProjectionFactory projectionFactory, ProjectionPredicate projectionPredicate,
 			MappingContext<?, ?> mappingContext) {
+
 		this.projectionFactory = projectionFactory;
 		this.projectionPredicate = projectionPredicate;
 		this.mappingContext = mappingContext;
@@ -102,14 +105,14 @@ public class EntityProjectionIntrospector {
 
 		if (!projectionInformation.isClosed()) {
 			return EntityProjection.projecting(returnedTypeInformation, domainTypeInformation, Collections.emptyList(),
-					false);
+					ProjectionType.OPEN);
 		}
 
 		PersistentEntity<?, ?> persistentEntity = mappingContext.getRequiredPersistentEntity(domainType);
 		List<EntityProjection.PropertyProjection<?, ?>> propertyDescriptors = getProperties(null, projectionInformation,
 				returnedTypeInformation, persistentEntity, null);
 
-		return EntityProjection.projecting(returnedTypeInformation, domainTypeInformation, propertyDescriptors, true);
+		return EntityProjection.projecting(returnedTypeInformation, domainTypeInformation, propertyDescriptors, ProjectionType.CLOSED);
 	}
 
 	private List<EntityProjection.PropertyProjection<?, ?>> getProperties(@Nullable PropertyPath propertyPath,
@@ -138,7 +141,7 @@ public class EntityProjectionIntrospector {
 					? PropertyPath.from(persistentProperty.getName(), persistentEntity.getTypeInformation())
 					: propertyPath.nested(persistentProperty.getName());
 
-			TypeInformation<?> unwrappedReturnedType = unwrapContainerType(property.getRequiredActualType());
+			TypeInformation<?> unwrappedReturnedType = unwrapContainerType(actualType);
 			TypeInformation<?> unwrappedDomainType = unwrapContainerType(
 					persistentProperty.getTypeInformation().getRequiredActualType());
 
@@ -155,10 +158,10 @@ public class EntityProjectionIntrospector {
 
 				if (container) {
 					propertyDescriptors.add(EntityProjection.ContainerPropertyProjection.projecting(nestedPropertyPath, property,
-							persistentProperty.getTypeInformation(), nestedPropertyDescriptors, projectionInformation.isClosed()));
+							persistentProperty.getTypeInformation(), nestedPropertyDescriptors, ProjectionType.from(projectionInformation)));
 				} else {
 					propertyDescriptors.add(EntityProjection.PropertyProjection.projecting(nestedPropertyPath, property,
-							persistentProperty.getTypeInformation(), nestedPropertyDescriptors, projectionInformation.isClosed()));
+							persistentProperty.getTypeInformation(), nestedPropertyDescriptors, ProjectionType.from(projectionInformation)));
 				}
 
 			} else {
@@ -216,7 +219,7 @@ public class EntityProjectionIntrospector {
 		 * Evaluates this predicate on the given arguments.
 		 *
 		 * @param target the target type.
-		 * @param target the underlying type.
+		 * @param underlyingType the underlying type.
 		 * @return {@code true} if the input argument matches the predicate, otherwise {@code false}.
 		 */
 		boolean test(Class<?> target, Class<?> underlyingType);

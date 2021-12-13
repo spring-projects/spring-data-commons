@@ -34,6 +34,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
  * Unit tests for {@link EntityProjectionIntrospector}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class EntityProjectionIntrospectorUnitTests {
 
@@ -62,6 +63,7 @@ class EntityProjectionIntrospectorUnitTests {
 		EntityProjection<?, ?> descriptor = discoverer.introspect(DomainClassProjection.class, DomainClass.class);
 
 		assertThat(descriptor.isProjection()).isTrue();
+		assertThat(descriptor.isClosedProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
 		descriptor.forEachRecursive(it -> paths.add(it.getPropertyPath()));
@@ -75,6 +77,7 @@ class EntityProjectionIntrospectorUnitTests {
 		EntityProjection<?, ?> descriptor = discoverer.introspect(DomainClassDto.class, DomainClass.class);
 
 		assertThat(descriptor.isProjection()).isTrue();
+		assertThat(descriptor.isClosedProjection()).isTrue();
 
 		List<PropertyPath> paths = new ArrayList<>();
 		descriptor.forEachRecursive(it -> paths.add(it.getPropertyPath()));
@@ -103,6 +106,7 @@ class EntityProjectionIntrospectorUnitTests {
 		EntityProjection<?, ?> descriptor = discoverer.introspect(OpenProjection.class, DomainClass.class);
 
 		assertThat(descriptor.isProjection()).isTrue();
+		assertThat(descriptor.isClosedProjection()).isFalse();
 
 		List<PropertyPath> paths = new ArrayList<>();
 		descriptor.forEachRecursive(it -> paths.add(it.getPropertyPath()));
