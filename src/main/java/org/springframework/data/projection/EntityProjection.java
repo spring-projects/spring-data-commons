@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping.context;
+package org.springframework.data.projection;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;

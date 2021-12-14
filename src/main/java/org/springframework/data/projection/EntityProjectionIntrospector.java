@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping.context;
+package org.springframework.data.projection;
 
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
@@ -25,9 +25,8 @@ import java.util.Set;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.context.EntityProjection.ProjectionType;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.ProjectionInformation;
+import org.springframework.data.projection.EntityProjection.ProjectionType;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -88,7 +87,7 @@ public class EntityProjectionIntrospector {
 	 * @param mappedType must not be {@literal null}.
 	 * @param domainType must not be {@literal null}.
 	 * @return the introspection result.
-	 * @see org.springframework.data.mapping.context.EntityProjection.ContainerPropertyProjection
+	 * @see EntityProjection.ContainerPropertyProjection
 	 */
 	public <M, D> EntityProjection<M, D> introspect(Class<M> mappedType, Class<D> domainType) {
 

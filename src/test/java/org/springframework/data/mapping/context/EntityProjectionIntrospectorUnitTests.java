@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.projection.EntityProjection;
+import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 
 /**
