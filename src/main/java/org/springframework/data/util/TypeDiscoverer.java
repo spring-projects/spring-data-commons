@@ -45,7 +45,7 @@ import org.springframework.util.ReflectionUtils;
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
-	private static final Class<?>[] MAP_TYPES;
+	protected static final Class<?>[] MAP_TYPES;
 	private static final Class<?>[] COLLECTION_TYPES;
 
 	static {
@@ -328,7 +328,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	@Nullable
 	protected TypeInformation<?> doGetMapValueType() {
-		return isMap() ? getTypeArgument(getBaseType(MAP_TYPES), 1)
+		return isMap() ? getTypeArgument(getMapBaseType(), 1)
 				: getTypeArguments().stream().skip(1).findFirst().orElse(null);
 	}
 
@@ -357,7 +357,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		if (isMap()) {
-			return getTypeArgument(getBaseType(MAP_TYPES), 0);
+			return getTypeArgument(getMapBaseType(), 0);
 		}
 
 		if (Iterable.class.isAssignableFrom(rawType)) {
@@ -467,6 +467,27 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return getSuperTypeInformation(bound) instanceof ParameterizedTypeInformation //
 				? ClassTypeInformation.OBJECT //
 				: null;
+	}
+
+	protected boolean isMapBaseType() {
+		return isBaseType(MAP_TYPES);
+	}
+
+	private boolean isBaseType(Class<?>[] candidates) {
+
+		Class<S> type = getType();
+
+		for (Class<?> candidate: candidates) {
+			if (candidate.equals(type)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	protected Class<?> getMapBaseType() {
+		return getBaseType(MAP_TYPES);
 	}
 
 	private Class<?> getBaseType(Class<?>[] candidates) {

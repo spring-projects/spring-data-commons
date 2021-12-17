@@ -187,6 +187,15 @@ public class TypeDiscovererUnitTests {
 		assertThat(type.isMap()).isTrue();
 	}
 
+	@Test // #2517
+	void returnsComponentAndValueTypesForVavrMapExtensions() {
+
+		var discoverer = new TypeDiscoverer<>(CustomVavrMap.class, EMPTY_MAP);
+
+		assertThat(discoverer.getMapValueType().getType()).isEqualTo(Locale.class);
+		assertThat(discoverer.getComponentType().getType()).isEqualTo(String.class);
+	}
+
 	@Test // #2511
 	void considerVavrSetToBeCollectionLike() {
 
@@ -260,4 +269,6 @@ public class TypeDiscovererUnitTests {
 			return Collections.emptyIterator();
 		}
 	}
+
+	interface CustomVavrMap extends io.vavr.collection.Map<String, Locale> {}
 }
