@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Jürgen Diez
  */
 class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
@@ -67,7 +68,7 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	@Nullable
 	protected TypeInformation<?> doGetMapValueType() {
 
-		if (Map.class.isAssignableFrom(getType())) {
+		if (isMap()) {
 
 			Type[] arguments = type.getActualTypeArguments();
 
@@ -157,13 +158,13 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	@Nullable
 	protected TypeInformation<?> doGetComponentType() {
 
-		boolean isCustomMapImplementation = isMap() && !getType().equals(Map.class);
+		boolean isCustomMapImplementation = isMap() && !isMapBaseType();
 
 		if (isCustomMapImplementation) {
-			return getRequiredSuperTypeInformation(Map.class).getComponentType();
+			return getRequiredSuperTypeInformation(getMapBaseType()).getComponentType();
 		}
 
-		return createInfo(type.getActualTypeArguments()[0]);
+		return createInfo(this.type.getActualTypeArguments()[0]);
 	}
 
 	/*

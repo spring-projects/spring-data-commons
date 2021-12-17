@@ -38,6 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link TypeDiscoverer}.
  *
  * @author Oliver Gierke
+ * @author Jürgen Diez
  */
 @ExtendWith(MockitoExtension.class)
 public class TypeDiscovererUnitTests {
@@ -179,6 +180,23 @@ public class TypeDiscovererUnitTests {
 		assertThat(type.isSubTypeOf(String.class)).isFalse();
 	}
 
+	@Test
+	void considerVavrMapToBeAMap() {
+
+		TypeInformation<io.vavr.collection.Map> type = from(io.vavr.collection.Map.class);
+
+		assertThat(type.isMap()).isTrue();
+	}
+
+	@Test
+	void returnsComponentAndValueTypesForVavrMapExtensions() {
+
+		TypeInformation<?> discoverer = new TypeDiscoverer<>(CustomVavrMap.class, EMPTY_MAP);
+
+		assertThat(discoverer.getMapValueType().getType()).isEqualTo(Locale.class);
+		assertThat(discoverer.getComponentType().getType()).isEqualTo(String.class);
+	}
+
 	class Person {
 
 		Addresses addresses;
@@ -227,5 +245,8 @@ public class TypeDiscovererUnitTests {
 		public Iterator<String> iterator() {
 			return Collections.emptyIterator();
 		}
+	}
+
+	interface CustomVavrMap extends io.vavr.collection.Map<String, Locale> {
 	}
 }

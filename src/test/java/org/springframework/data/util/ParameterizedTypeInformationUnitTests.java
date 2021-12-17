@@ -40,6 +40,7 @@ import org.mockito.quality.Strictness;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Jürgen Diez
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -76,19 +77,36 @@ class ParameterizedTypeInformationUnitTests {
 	}
 
 	@Test // DATACMNS-88
-	void resolvesMapValueTypeCorrectly() {
+	void resolvesMapTypesCorrectly() {
 
 		TypeInformation<Foo> type = ClassTypeInformation.from(Foo.class);
 		TypeInformation<?> propertyType = type.getProperty("param");
 		TypeInformation<?> value = propertyType.getProperty("value");
 
+		assertThat(propertyType.getComponentType().getType()).isEqualTo(Locale.class);
 		assertThat(value.getType()).isEqualTo(String.class);
 		assertThat(propertyType.getMapValueType().getType()).isEqualTo(String.class);
 
 		propertyType = type.getProperty("param2");
 		value = propertyType.getProperty("value");
 
+		assertThat(propertyType.getComponentType().getType()).isEqualTo(String.class);
 		assertThat(value.getType()).isEqualTo(String.class);
+		assertThat(propertyType.getMapValueType().getType()).isEqualTo(Locale.class);
+	}
+
+	@Test
+	void resolvesVavrMapTypesCorrectly() {
+
+		TypeInformation<VavrFoo> type = ClassTypeInformation.from(VavrFoo.class);
+		TypeInformation<?> propertyType = type.getProperty("param");
+
+		assertThat(propertyType.getComponentType().getType()).isEqualTo(Locale.class);
+		assertThat(propertyType.getMapValueType().getType()).isEqualTo(String.class);
+
+		propertyType = type.getProperty("param2");
+
+		assertThat(propertyType.getComponentType().getType()).isEqualTo(String.class);
 		assertThat(propertyType.getMapValueType().getType()).isEqualTo(Locale.class);
 	}
 
@@ -168,6 +186,11 @@ class ParameterizedTypeInformationUnitTests {
 	class Foo {
 		Localized<String> param;
 		Localized2<String> param2;
+	}
+
+	class VavrFoo {
+		io.vavr.collection.HashMap<Locale, String> param;
+		io.vavr.collection.HashMap<String, Locale> param2;
 	}
 
 	class Bar {
