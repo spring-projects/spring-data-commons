@@ -36,12 +36,12 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 		this.metadata = metadata;
 	}
 
-	public Class<?> getIdType() {
-		return metadata.getIdType();
+	public TypeInformation<?> getIdTypeInformation() {
+		return metadata.getIdTypeInformation();
 	}
 
-	public Class<?> getDomainType() {
-		return metadata.getDomainType();
+	public TypeInformation<?> getDomainTypeInformation() {
+		return metadata.getDomainTypeInformation();
 	}
 
 	public Class<?> getRepositoryInterface() {

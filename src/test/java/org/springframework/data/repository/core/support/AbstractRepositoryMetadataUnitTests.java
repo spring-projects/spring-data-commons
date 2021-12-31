@@ -37,20 +37,21 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Fabian Buch
+ * @author Alessandro Nistico
  */
 class AbstractRepositoryMetadataUnitTests {
 
 	@Test // DATACMNS-98
 	void discoversSimpleReturnTypeCorrectly() throws Exception {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
 		Method method = UserRepository.class.getMethod("findSingle");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	@Test // DATACMNS-98
 	void resolvesTypeParameterReturnType() throws Exception {
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(ConcreteRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		Method method = ConcreteRepository.class.getMethod("intermediateMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
@@ -58,7 +59,7 @@ class AbstractRepositoryMetadataUnitTests {
 	@Test // DATACMNS-98
 	void determinesReturnTypeFromPageable() throws Exception {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("findByFirstname", Pageable.class, String.class);
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
@@ -66,20 +67,20 @@ class AbstractRepositoryMetadataUnitTests {
 	@Test // DATACMNS-453
 	void nonPageableRepository() {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
 		assertThat(metadata.isPagingRepository()).isFalse();
 	}
 
 	@Test // DATACMNS-453
 	void pageableRepository() {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(PagedRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PagedRepository.class);
 		assertThat(metadata.isPagingRepository()).isTrue();
 	}
 
 	@Test // DATACMNS-98
 	void determinesReturnTypeFromGenericType() throws Exception {
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("someMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(GenericType.class);
 	}
@@ -87,7 +88,7 @@ class AbstractRepositoryMetadataUnitTests {
 	@Test // DATACMNS-98
 	void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtendingRepository.class);
 		Method method = ExtendingRepository.class.getMethod("anotherMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(Map.class);
 	}
@@ -141,23 +142,6 @@ class AbstractRepositoryMetadataUnitTests {
 
 	class GenericType<T> {
 
-	}
-
-	class DummyRepositoryMetadata extends AbstractRepositoryMetadata {
-
-		DummyRepositoryMetadata(Class<?> repositoryInterface) {
-			super(repositoryInterface);
-		}
-
-		@SuppressWarnings("unchecked")
-		public Class<? extends Serializable> getIdType() {
-			return (Class<? extends Serializable>) ResolvableType//
-					.forClass(Repository.class, getRepositoryInterface()).getGeneric(1).resolve();
-		}
-
-		public Class<?> getDomainType() {
-			return ResolvableType.forClass(Repository.class, getRepositoryInterface()).getGeneric(0).resolve();
-		}
 	}
 
 	// DATACMNS-1299

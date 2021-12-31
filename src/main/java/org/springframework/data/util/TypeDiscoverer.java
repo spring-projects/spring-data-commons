@@ -44,6 +44,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Jürgen Diez
+ * @author Alessandro Nistico
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
@@ -298,6 +299,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public Class<S> getType() {
 		return resolvedType.get();
+	}
+	
+	@Override
+	public Type getGenericType() {
+		return type;
+	}
+
+	@Override
+	public TypeInformation<?> getGenericTypeInformation() {
+		return createInfo(type);
 	}
 
 	/*

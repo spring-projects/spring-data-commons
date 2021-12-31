@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
@@ -29,6 +30,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -42,6 +44,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Alessandro Nistico
  */
 public class DomainClassConverter<T extends ConversionService & ConverterRegistry>
 		implements ConditionalGenericConverter, ApplicationContextAware {
@@ -117,6 +120,12 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			return repositories;
 		});
 	}
+	
+	
+	private static TypeDescriptor getIdTypeDescriptor(RepositoryInformation information) {
+		TypeInformation<?> idType = information.getIdTypeInformation();
+		return new TypeDescriptor(ResolvableType.forType(idType.getGenericType()), null, idType.getType().getAnnotations());
+	}
 
 	/**
 	 * Converter to create domain types from any source that can be converted into the domain types identifier type.
@@ -172,8 +181,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			Class<?> domainType = targetType.getType();
 			RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(domainType);
 			RepositoryInformation information = repositories.getRequiredRepositoryInformation(domainType);
+			TypeDescriptor idTypeDescriptor = getIdTypeDescriptor(information);
 
-			Object id = conversionService.convert(source, information.getIdType());
+			Object id = conversionService.convert(source, sourceType, idTypeDescriptor);
 
 			return id == null ? null : invoker.invokeFindById(id).orElse(null);
 		}
@@ -199,10 +209,10 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 			return repositoryInformation.map(it -> {
 
-				Class<?> rawIdType = it.getIdType();
+				TypeDescriptor idTypeDescriptor = getIdTypeDescriptor(it);
 
-				return sourceType.equals(TypeDescriptor.valueOf(rawIdType))
-						|| conversionService.canConvert(sourceType.getType(), rawIdType);
+				return sourceType.equals(idTypeDescriptor)
+						|| conversionService.canConvert(sourceType, idTypeDescriptor);
 			}).orElseThrow(
 					() -> new IllegalStateException(String.format("Couldn't find RepositoryInformation for %s!", domainType)));
 		}
@@ -254,8 +264,8 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			Class<?> domainType = sourceType.getType();
 
 			EntityInformation<Object, ?> entityInformation = repositories.getEntityInformationFor(domainType);
-
-			return conversionService.convert(entityInformation.getId(source), targetType.getType());
+			Object id = entityInformation.getId(source);
+			return conversionService.convert(id, TypeDescriptor.forObject(id), targetType);
 		}
 
 		/*
@@ -279,10 +289,10 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 			return information.map(it -> {
 
-				Class<?> rawIdType = it.getIdType();
+				TypeDescriptor idTypeDescriptor = getIdTypeDescriptor(it);
 
-				return targetType.equals(TypeDescriptor.valueOf(rawIdType))
-						|| conversionService.canConvert(rawIdType, targetType.getType());
+				return targetType.equals(idTypeDescriptor)
+						|| conversionService.canConvert(idTypeDescriptor, targetType);
 
 			}).orElseThrow(
 					() -> new IllegalStateException(String.format("Couldn't find RepositoryInformation for %s!", domainType)));

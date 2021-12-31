@@ -45,6 +45,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Alessandro Nistico
  * @since 2.0
  */
 interface MethodLookups {
@@ -120,8 +121,8 @@ interface MethodLookups {
 
 			Assert.notNull(repositoryMetadata, "Repository metadata must not be null!");
 
-			this.entityType = ResolvableType.forClass(repositoryMetadata.getDomainType());
-			this.idType = ResolvableType.forClass(repositoryMetadata.getIdType());
+			this.entityType = ResolvableType.forType(repositoryMetadata.getDomainTypeInformation().getGenericType());
+			this.idType = ResolvableType.forType(repositoryMetadata.getIdTypeInformation().getGenericType());
 			this.repositoryInterface = repositoryMetadata.getRepositoryInterface();
 		}
 
