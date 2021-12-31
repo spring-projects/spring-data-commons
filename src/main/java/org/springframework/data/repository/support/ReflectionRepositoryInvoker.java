@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -30,6 +31,7 @@ import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -41,6 +43,7 @@ import org.springframework.util.StringUtils;
  * Base {@link RepositoryInvoker} using reflection to invoke methods on Spring Data Repositories.
  *
  * @author Oliver Gierke
+ * @author Alessandro Nistico
  * @since 1.10
  */
 class ReflectionRepositoryInvoker implements RepositoryInvoker {
@@ -50,7 +53,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	private final Object repository;
 	private final CrudMethods methods;
-	private final Class<?> idType;
+	private final TypeDescriptor idTypeDescriptor;
 	private final ConversionService conversionService;
 
 	/**
@@ -70,7 +73,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 		this.repository = repository;
 		this.methods = metadata.getCrudMethods();
-		this.idType = metadata.getIdType();
+		TypeInformation<?> idType = metadata.getIdTypeInformation();
+		this.idTypeDescriptor = new TypeDescriptor(ResolvableType.forType(idType.getGenericType()), null, idType.getType().getAnnotations());
 		this.conversionService = conversionService;
 	}
 
@@ -245,16 +249,17 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	protected Object convertId(Object id) {
 
 		Assert.notNull(id, "Id must not be null!");
+        TypeDescriptor idDescriptor = TypeDescriptor.forObject(id);
 
-		if (idType.isInstance(id)) {
+		if (idDescriptor.isAssignableTo(idTypeDescriptor)) {
 			return id;
 		}
 
-		Object result = conversionService.convert(id, idType);
+		Object result = conversionService.convert(id, idDescriptor, idTypeDescriptor);
 
 		if (result == null) {
 			throw new IllegalStateException(
-					String.format("Identifier conversion of %s to %s unexpectedly returned null!", id, idType));
+					String.format("Identifier conversion of %s to %s unexpectedly returned null!", id, idTypeDescriptor.getType()));
 		}
 
 		return result;

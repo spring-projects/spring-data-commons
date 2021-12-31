@@ -48,6 +48,8 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
 import org.springframework.data.repository.core.support.DummyRepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -56,6 +58,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Jan Zeppenfeld
+ * @author Alessandro Nistico
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -290,7 +293,7 @@ class RepositoriesUnitTests {
 
 	static class CustomRepositoryMetadata extends DefaultRepositoryMetadata {
 
-		private final Class<?> domainType;
+		private final TypeInformation<?> domainType;
 
 		/**
 		 * @param repositoryInterface
@@ -302,14 +305,14 @@ class RepositoriesUnitTests {
 			var domainType = super.getDomainType().getName().concat("Entity");
 
 			try {
-				this.domainType = ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader());
+				this.domainType = ClassTypeInformation.from(ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader()));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		}
 
 		@Override
-		public Class<?> getDomainType() {
+		public TypeInformation<?> getDomainTypeInformation() {
 			return this.domainType;
 		}
 

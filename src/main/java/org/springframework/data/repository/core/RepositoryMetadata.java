@@ -27,29 +27,48 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Alessandro Nistico
  */
 public interface RepositoryMetadata {
 
 	/**
-	 * Returns the id class the given class is declared for.
+	 * Returns the id {@link TypeInformation} the given class is declared for.
 	 *
-	 * @return the id class of the entity managed by the repository.
+	 * @return the {@link TypeInformation} class of the entity managed by the repository.
 	 */
-	Class<?> getIdType();
+	TypeInformation<?> getIdTypeInformation();
 
 	/**
-	 * Returns the domain class the repository is declared for.
+	 * Returns the domain {@link TypeInformation} the repository is declared for.
 	 *
 	 * @return the domain class the repository is handling.
 	 */
-	Class<?> getDomainType();
-
+	TypeInformation<?> getDomainTypeInformation();
+	
 	/**
 	 * Returns the repository interface.
 	 *
 	 * @return
 	 */
 	Class<?> getRepositoryInterface();
+	
+	/**
+	 * Returns the raw id class the given class is declared for.
+	 *
+	 * @return the raw id class of the entity managed by the repository.
+	 */
+	default Class<?> getIdType() {
+		return getIdTypeInformation().getType();
+	}
+	
+	/**
+	 * Returns the raw domain class the repository is declared for.
+	 *
+	 * @return the raw domain class the repository is handling.
+	 */
+	default Class<?> getDomainType() {
+		return getDomainTypeInformation().getType();
+	}
 
 	/**
 	 * Returns the type {@link Method} return type as it is declared in the repository. Considers suspended methods and

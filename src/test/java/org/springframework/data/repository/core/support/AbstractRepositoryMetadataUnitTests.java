@@ -18,16 +18,14 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-
-import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.User;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -38,58 +36,59 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Fabian Buch
+ * @author Alessandro Nistico
  */
 class AbstractRepositoryMetadataUnitTests {
 
 	@Test // DATACMNS-98
 	void discoversSimpleReturnTypeCorrectly() throws Exception {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
-		var method = UserRepository.class.getMethod("findSingle");
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
+		Method method = UserRepository.class.getMethod("findSingle");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	@Test // DATACMNS-98
 	void resolvesTypeParameterReturnType() throws Exception {
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(ConcreteRepository.class);
-		var method = ConcreteRepository.class.getMethod("intermediateMethod");
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
+		Method method = ConcreteRepository.class.getMethod("intermediateMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	@Test // DATACMNS-98
 	void determinesReturnTypeFromPageable() throws Exception {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
-		var method = ExtendingRepository.class.getMethod("findByFirstname", Pageable.class, String.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtendingRepository.class);
+		Method method = ExtendingRepository.class.getMethod("findByFirstname", Pageable.class, String.class);
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
 	}
 
 	@Test // DATACMNS-453
 	void nonPageableRepository() {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(UserRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
 		assertThat(metadata.isPagingRepository()).isFalse();
 	}
 
 	@Test // DATACMNS-453
 	void pageableRepository() {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(PagedRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PagedRepository.class);
 		assertThat(metadata.isPagingRepository()).isTrue();
 	}
 
 	@Test // DATACMNS-98
 	void determinesReturnTypeFromGenericType() throws Exception {
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
-		var method = ExtendingRepository.class.getMethod("someMethod");
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtendingRepository.class);
+		Method method = ExtendingRepository.class.getMethod("someMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(GenericType.class);
 	}
 
 	@Test // DATACMNS-98
 	void handlesGenericTypeInReturnedCollectionCorrectly() throws SecurityException, NoSuchMethodException {
 
-		RepositoryMetadata metadata = new DummyRepositoryMetadata(ExtendingRepository.class);
-		var method = ExtendingRepository.class.getMethod("anotherMethod");
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtendingRepository.class);
+		Method method = ExtendingRepository.class.getMethod("anotherMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(Map.class);
 	}
 
@@ -144,23 +143,6 @@ class AbstractRepositoryMetadataUnitTests {
 
 	}
 
-	class DummyRepositoryMetadata extends AbstractRepositoryMetadata {
-
-		DummyRepositoryMetadata(Class<?> repositoryInterface) {
-			super(repositoryInterface);
-		}
-
-		@SuppressWarnings("unchecked")
-		public Class<? extends Serializable> getIdType() {
-			return (Class<? extends Serializable>) ResolvableType//
-					.forClass(Repository.class, getRepositoryInterface()).getGeneric(1).resolve();
-		}
-
-		public Class<?> getDomainType() {
-			return ResolvableType.forClass(Repository.class, getRepositoryInterface()).getGeneric(0).resolve();
-		}
-	}
-
 	// DATACMNS-1299
 
 	class Element {}
@@ -171,7 +153,6 @@ class AbstractRepositoryMetadataUnitTests {
 		Container someMethod();
 	}
 
-	interface CompletePageableAndSortingRepository extends PagingAndSortingRepository<Container, Long> {
-	}
+	interface CompletePageableAndSortingRepository extends PagingAndSortingRepository<Container, Long> {}
 
 }

@@ -43,6 +43,7 @@ import org.springframework.util.ClassUtils;
  * @author Thomas Darimont
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Alessandro Nistico
  */
 class DefaultRepositoryInformation implements RepositoryInformation {
 
@@ -76,13 +77,13 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	}
 
 	@Override
-	public Class<?> getDomainType() {
-		return metadata.getDomainType();
+	public TypeInformation<?> getDomainTypeInformation() {
+		return metadata.getDomainTypeInformation();
 	}
 
 	@Override
-	public Class<?> getIdType() {
-		return metadata.getIdType();
+	public TypeInformation<?> getIdTypeInformation() {
+		return metadata.getIdTypeInformation();
 	}
 
 	@Override

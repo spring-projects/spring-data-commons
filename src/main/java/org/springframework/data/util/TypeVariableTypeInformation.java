@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
  * {@link TypeVariable} is being used in.
  *
  * @author Oliver Gierke
+ * @author Alessandro Nistico
  */
 class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
@@ -48,6 +49,11 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 		Assert.notNull(variable, "TypeVariable must not be null!");
 
 		this.variable = variable;
+	}
+	
+	@Override
+	public TypeInformation<?> getGenericTypeInformation() {
+		return createInfo(getTypeVariableMap().getOrDefault(variable, Object.class));
 	}
 
 	@Override

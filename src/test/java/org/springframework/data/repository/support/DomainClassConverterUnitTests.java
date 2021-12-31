@@ -50,6 +50,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Alessandro Nistico
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -85,7 +86,7 @@ class DomainClassConverterUnitTests {
 
 		converter.setApplicationContext(initContextWithRepo());
 
-		when(service.canConvert(String.class, Long.class)).thenReturn(true);
+		when(service.canConvert(STRING_TYPE, LONG_TYPE)).thenReturn(true);
 
 		assertMatches(true);
 	}
@@ -116,7 +117,7 @@ class DomainClassConverterUnitTests {
 		var context = initContextWithRepo();
 		converter.setApplicationContext(context);
 
-		doReturn(1L).when(service).convert(any(), eq(Long.class));
+		doReturn(1L).when(service).convert(any(), eq(STRING_TYPE), eq(LONG_TYPE));
 
 		converter.convert("1", STRING_TYPE, USER_TYPE);
 
@@ -133,7 +134,7 @@ class DomainClassConverterUnitTests {
 		var context = new GenericApplicationContext(parent);
 		context.refresh();
 
-		when(service.canConvert(String.class, Long.class)).thenReturn(true);
+		when(service.canConvert(STRING_TYPE, LONG_TYPE)).thenReturn(true);
 
 		converter.setApplicationContext(context);
 		assertThat(converter.matches(STRING_TYPE, USER_TYPE)).isTrue();
@@ -169,7 +170,7 @@ class DomainClassConverterUnitTests {
 
 		converter.setApplicationContext(initContextWithRepo());
 
-		when(service.canConvert(Long.class, String.class)).thenReturn(true);
+		when(service.canConvert(LONG_TYPE, STRING_TYPE)).thenReturn(true);
 		assertThat(converter.matches(USER_TYPE, STRING_TYPE)).isTrue();
 	}
 
