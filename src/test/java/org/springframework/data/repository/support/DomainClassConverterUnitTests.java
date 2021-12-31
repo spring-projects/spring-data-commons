@@ -15,9 +15,13 @@
  */
 package org.springframework.data.repository.support;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -85,7 +89,7 @@ class DomainClassConverterUnitTests {
 
 		converter.setApplicationContext(initContextWithRepo());
 
-		when(service.canConvert(String.class, Long.class)).thenReturn(true);
+		when(service.canConvert(STRING_TYPE, LONG_TYPE)).thenReturn(true);
 
 		assertMatches(true);
 	}
@@ -116,7 +120,7 @@ class DomainClassConverterUnitTests {
 		ApplicationContext context = initContextWithRepo();
 		converter.setApplicationContext(context);
 
-		doReturn(1L).when(service).convert(any(), eq(Long.class));
+		doReturn(1L).when(service).convert(any(), eq(STRING_TYPE), eq(LONG_TYPE));
 
 		converter.convert("1", STRING_TYPE, USER_TYPE);
 
@@ -133,7 +137,7 @@ class DomainClassConverterUnitTests {
 		GenericApplicationContext context = new GenericApplicationContext(parent);
 		context.refresh();
 
-		when(service.canConvert(String.class, Long.class)).thenReturn(true);
+		when(service.canConvert(STRING_TYPE, LONG_TYPE)).thenReturn(true);
 
 		converter.setApplicationContext(context);
 		assertThat(converter.matches(STRING_TYPE, USER_TYPE)).isTrue();
@@ -169,7 +173,7 @@ class DomainClassConverterUnitTests {
 
 		converter.setApplicationContext(initContextWithRepo());
 
-		when(service.canConvert(Long.class, String.class)).thenReturn(true);
+		when(service.canConvert(LONG_TYPE, STRING_TYPE)).thenReturn(true);
 		assertThat(converter.matches(USER_TYPE, STRING_TYPE)).isTrue();
 	}
 
@@ -179,7 +183,7 @@ class DomainClassConverterUnitTests {
 		converter.setApplicationContext(initContextWithRepo());
 		assertMatches(false);
 
-		@SuppressWarnings("rawtypes")
+		@SuppressWarnings({ "unchecked" })
 		Optional<ToIdConverter> toIdConverter = (Optional<ToIdConverter>) ReflectionTestUtils.getField(converter,
 				"toIdConverter");
 

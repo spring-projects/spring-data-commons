@@ -35,14 +35,14 @@ public interface RepositoryMetadata {
 	 *
 	 * @return the id class of the entity managed by the repository.
 	 */
-	Class<?> getIdType();
+	TypeInformation<?> getIdType();
 
 	/**
 	 * Returns the domain class the repository is declared for.
 	 *
 	 * @return the domain class the repository is handling.
 	 */
-	Class<?> getDomainType();
+	TypeInformation<?> getDomainType();
 
 	/**
 	 * Returns the repository interface.

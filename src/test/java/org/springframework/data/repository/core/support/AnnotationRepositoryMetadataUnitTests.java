@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link DefaultRepositoryMetadata}.
@@ -33,8 +34,8 @@ class AnnotationRepositoryMetadataUnitTests {
 
 		RepositoryMetadata metadata = new AnnotationRepositoryMetadata(AnnotatedRepository.class);
 
-		assertThat(metadata.getDomainType()).isEqualTo(User.class);
-		assertThat(metadata.getIdType()).isEqualTo(Integer.class);
+		assertThat(metadata.getDomainType()).isEqualTo(ClassTypeInformation.from(User.class));
+		assertThat(metadata.getIdType()).isEqualTo(ClassTypeInformation.from(Integer.class));
 	}
 
 	@Test // DATACMNS-37, DATACMNS-1375

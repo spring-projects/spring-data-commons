@@ -37,6 +37,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
+import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Integration test for {@link DomainClassConverter}.
@@ -64,8 +65,8 @@ class DomainClassConverterIntegrationTests {
 		beanFactory.registerBeanDefinition("postProcessor", new RootBeanDefinition(PredictingProcessor.class));
 		beanFactory.registerBeanDefinition("repoFactory", new RootBeanDefinition(RepositoryFactoryBeanSupport.class));
 
-		doReturn(Person.class).when(information).getDomainType();
-		doReturn(Serializable.class).when(information).getIdType();
+		doReturn(ClassTypeInformation.from(Person.class)).when(information).getDomainType();
+		doReturn(ClassTypeInformation.from(Serializable.class)).when(information).getIdType();
 		doReturn(PersonRepository.class).when(factory).getObjectType();
 		doReturn(information).when(factory).getRepositoryInformation();
 

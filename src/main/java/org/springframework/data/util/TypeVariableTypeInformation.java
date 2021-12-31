@@ -49,6 +49,11 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
 		this.variable = variable;
 	}
+	
+	@Override
+	public TypeInformation<?> getGenericTypeInformation() {
+		return createInfo(getTypeVariableMap().getOrDefault(variable, Object.class));
+	}
 
 	/*
 	 * (non-Javadoc)

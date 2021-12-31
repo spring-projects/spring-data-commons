@@ -80,7 +80,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
 	 */
 	@Override
-	public Class<?> getDomainType() {
+	public TypeInformation<?> getDomainType() {
 		return metadata.getDomainType();
 	}
 
@@ -89,7 +89,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
 	 */
 	@Override
-	public Class<?> getIdType() {
+	public TypeInformation<?> getIdType() {
 		return metadata.getIdType();
 	}
 

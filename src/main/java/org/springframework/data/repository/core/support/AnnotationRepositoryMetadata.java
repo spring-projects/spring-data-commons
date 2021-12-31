@@ -18,6 +18,8 @@ package org.springframework.data.repository.core.support;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
@@ -33,8 +35,8 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	private static final String NO_ANNOTATION_FOUND = String.format("Interface %%s must be annotated with @%s!",
 			RepositoryDefinition.class.getName());
 
-	private final Class<?> idType;
-	private final Class<?> domainType;
+	private final TypeInformation<?> idType;
+	private final TypeInformation<?> domainType;
 
 	/**
 	 * Creates a new {@link AnnotationRepositoryMetadata} instance looking up repository types from a
@@ -58,7 +60,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getIdType()
 	 */
 	@Override
-	public Class<?> getIdType() {
+	public TypeInformation<?> getIdType() {
 		return this.idType;
 	}
 
@@ -67,11 +69,11 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getDomainType()
 	 */
 	@Override
-	public Class<?> getDomainType() {
+	public TypeInformation<?> getDomainType() {
 		return this.domainType;
 	}
 
-	private Class<?> resolveIdType(Class<?> repositoryInterface) {
+	private TypeInformation<?> resolveIdType(Class<?> repositoryInterface) {
 
 		RepositoryDefinition annotation = AnnotationUtils.findAnnotation(repositoryInterface, RepositoryDefinition.class);
 
@@ -79,10 +81,10 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 			throw new IllegalArgumentException(String.format("Could not resolve id type of %s!", repositoryInterface));
 		}
 
-		return annotation.idClass();
+		return ClassTypeInformation.from(annotation.idClass());
 	}
 
-	private Class<?> resolveDomainType(Class<?> repositoryInterface) {
+	private TypeInformation<?> resolveDomainType(Class<?> repositoryInterface) {
 
 		RepositoryDefinition annotation = AnnotationUtils.findAnnotation(repositoryInterface, RepositoryDefinition.class);
 
@@ -90,6 +92,6 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s!", repositoryInterface));
 		}
 
-		return annotation.domainClass();
+		return ClassTypeInformation.from(annotation.domainClass());
 	}
 }

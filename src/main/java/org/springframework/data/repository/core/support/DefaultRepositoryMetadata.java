@@ -36,8 +36,8 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 	private static final String MUST_BE_A_REPOSITORY = String.format("Given type must be assignable to %s!",
 			Repository.class);
 
-	private final Class<?> idType;
-	private final Class<?> domainType;
+	private final TypeInformation<?> idType;
+	private final TypeInformation<?> domainType;
 
 	/**
 	 * Creates a new {@link DefaultRepositoryMetadata} for the given repository interface.
@@ -49,31 +49,32 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 		super(repositoryInterface);
 		Assert.isTrue(Repository.class.isAssignableFrom(repositoryInterface), MUST_BE_A_REPOSITORY);
 
-		List<TypeInformation<?>> arguments = ClassTypeInformation.from(repositoryInterface) //
+		List<TypeInformation<?>> arguments = ClassTypeInformation.from(repositoryInterface)
 				.getRequiredSuperTypeInformation(Repository.class)//
 				.getTypeArguments();
-
+		
 		this.domainType = resolveTypeParameter(arguments, 0,
 				() -> String.format("Could not resolve domain type of %s!", repositoryInterface));
+		
 		this.idType = resolveTypeParameter(arguments, 1,
 				() -> String.format("Could not resolve id type of %s!", repositoryInterface));
 	}
 
-	private static Class<?> resolveTypeParameter(List<TypeInformation<?>> arguments, int index,
+	private static TypeInformation<?> resolveTypeParameter(List<TypeInformation<?>> arguments, int index,
 			Supplier<String> exceptionMessage) {
 
 		if (arguments.size() <= index || arguments.get(index) == null) {
 			throw new IllegalArgumentException(exceptionMessage.get());
 		}
 
-		return arguments.get(index).getType();
+		return arguments.get(index).getGenericTypeInformation();
 	}
 
-	public Class<?> getIdType() {
+	public TypeInformation<?> getIdType() {
 		return this.idType;
 	}
 
-	public Class<?> getDomainType() {
+	public TypeInformation<?> getDomainType() {
 		return this.domainType;
 	}
 }

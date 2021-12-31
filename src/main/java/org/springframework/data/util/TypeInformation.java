@@ -17,6 +17,7 @@ package org.springframework.data.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.List;
 
 import org.springframework.lang.Nullable;
@@ -148,6 +149,15 @@ public interface TypeInformation<S> {
 	 * @return
 	 */
 	Class<S> getType();
+	
+	/**
+	 * Returns the type of the property. With all resolvable generics applied
+	 *
+	 * @return
+	 */
+	default Type getGenericType() {
+		return getType();
+	}
 
 	/**
 	 * Returns the user type of the property if proxied.
@@ -169,6 +179,8 @@ public interface TypeInformation<S> {
 	 * @return
 	 */
 	ClassTypeInformation<?> getRawTypeInformation();
+
+	TypeInformation<?> getGenericTypeInformation();
 
 	/**
 	 * Transparently returns the {@link java.util.Map} value type if the type is a {@link java.util.Map}, returns the

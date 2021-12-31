@@ -48,6 +48,8 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
 import org.springframework.data.repository.core.support.DummyRepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -272,7 +274,7 @@ class RepositoriesUnitTests {
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public EntityInformation<T, S> getEntityInformation() {
-			return new DummyEntityInformation(repositoryMetadata.getDomainType());
+			return new DummyEntityInformation(repositoryMetadata.getDomainType().getType());
 		}
 
 		public RepositoryInformation getRepositoryInformation() {
@@ -290,7 +292,7 @@ class RepositoriesUnitTests {
 
 	static class CustomRepositoryMetadata extends DefaultRepositoryMetadata {
 
-		private final Class<?> domainType;
+		private final TypeInformation<?> domainType;
 
 		/**
 		 * @param repositoryInterface
@@ -299,10 +301,10 @@ class RepositoriesUnitTests {
 
 			super(repositoryInterface);
 
-			String domainType = super.getDomainType().getName().concat("Entity");
+			String domainType = super.getDomainType().getType().getName().concat("Entity");
 
 			try {
-				this.domainType = ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader());
+				this.domainType = ClassTypeInformation.from(ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader()));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -313,7 +315,7 @@ class RepositoriesUnitTests {
 		 * @see org.springframework.data.repository.core.support.DefaultRepositoryMetadata#getDomainType()
 		 */
 		@Override
-		public Class<?> getDomainType() {
+		public TypeInformation<?> getDomainType() {
 			return this.domainType;
 		}
 
@@ -323,7 +325,7 @@ class RepositoriesUnitTests {
 		 */
 		@Override
 		public Set<Class<?>> getAlternativeDomainTypes() {
-			return Collections.singleton(super.getDomainType());
+			return Collections.singleton(super.getDomainType().getType());
 		}
 	}
 

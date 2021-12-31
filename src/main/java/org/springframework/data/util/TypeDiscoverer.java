@@ -293,6 +293,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public Class<S> getType() {
 		return resolvedType.get();
 	}
+	
+	@Override
+	public Type getGenericType() {
+		return type;
+	}
+
+	@Override
+	public TypeInformation<?> getGenericTypeInformation() {
+		return createInfo(type);
+	}
 
 	/*
 	 * (non-Javadoc)

@@ -120,8 +120,8 @@ interface MethodLookups {
 
 			Assert.notNull(repositoryMetadata, "Repository metadata must not be null!");
 
-			this.entityType = ResolvableType.forClass(repositoryMetadata.getDomainType());
-			this.idType = ResolvableType.forClass(repositoryMetadata.getIdType());
+			this.entityType = ResolvableType.forType(repositoryMetadata.getDomainType().getGenericType());
+			this.idType = ResolvableType.forType(repositoryMetadata.getIdType().getGenericType());
 			this.repositoryInterface = repositoryMetadata.getRepositoryInterface();
 		}
 

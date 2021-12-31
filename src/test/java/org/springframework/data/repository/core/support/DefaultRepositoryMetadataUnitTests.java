@@ -29,6 +29,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ClassUtils;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link DefaultRepositoryMetadata}.
@@ -62,38 +64,43 @@ class DefaultRepositoryMetadataUnitTests {
 	void looksUpDomainClassCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
-		assertThat(metadata.getDomainType()).isEqualTo(User.class);
+		assertThat(metadata.getDomainType()).isEqualTo(ClassTypeInformation.from(User.class));
 
 		metadata = new DefaultRepositoryMetadata(SomeDao.class);
-		assertThat(metadata.getDomainType()).isEqualTo(User.class);
+		assertThat(metadata.getDomainType()).isEqualTo(ClassTypeInformation.from(User.class));
 	}
 
 	@Test
 	void findsDomainClassOnExtensionOfDaoInterface() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtensionOfUserCustomExtendedDao.class);
-		assertThat(metadata.getDomainType()).isEqualTo(User.class);
+		assertThat(metadata.getDomainType()).isEqualTo(ClassTypeInformation.from(User.class));
 	}
 
 	@Test
 	void detectsParameterizedEntitiesCorrectly() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericEntityRepository.class);
-		assertThat(metadata.getDomainType()).isEqualTo(GenericEntity.class);
+		TypeInformation<?> domainType = metadata.getDomainType();
+		assertThat(domainType.getType()).isEqualTo(GenericEntity.class);
+		assertThat(domainType.getTypeArguments())
+			.hasSize(1)
+			.map(TypeInformation::getType)
+			.element(0).isEqualTo(String.class);
 	}
 
 	@Test
 	void looksUpIdClassCorrectly() throws Exception {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(UserRepository.class);
-		assertThat(metadata.getIdType()).isEqualTo(Integer.class);
+		assertThat(metadata.getIdType()).isEqualTo(ClassTypeInformation.from(Integer.class));
 	}
 
 	@Test // DATACMNS-442
 	void detectsIdTypeOnIntermediateRepository() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
-		assertThat(metadata.getIdType()).isEqualTo(Long.class);
+		assertThat(metadata.getIdType()).isEqualTo(ClassTypeInformation.from(Long.class));
 	}
 
 	@Test // DATACMNS-483
@@ -119,8 +126,8 @@ class DefaultRepositoryMetadataUnitTests {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(IdTypeFixingRepository.class);
 
-		assertThat(metadata.getDomainType()).isEqualTo(Object.class);
-		assertThat(metadata.getIdType()).isEqualTo(Long.class);
+		assertThat(metadata.getDomainType()).isEqualTo(ClassTypeInformation.from(Object.class));
+		assertThat(metadata.getIdType()).isEqualTo(ClassTypeInformation.from(Long.class));
 	}
 
 	@SuppressWarnings("unused")

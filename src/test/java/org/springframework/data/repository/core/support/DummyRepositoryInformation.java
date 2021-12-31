@@ -36,11 +36,11 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 		this.metadata = metadata;
 	}
 
-	public Class<?> getIdType() {
+	public TypeInformation<?> getIdType() {
 		return metadata.getIdType();
 	}
 
-	public Class<?> getDomainType() {
+	public TypeInformation<?> getDomainType() {
 		return metadata.getDomainType();
 	}
 
@@ -54,7 +54,7 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 	}
 
 	public Class<?> getReturnedDomainClass(Method method) {
-		return getDomainType();
+		return getDomainType().getType();
 	}
 
 	public Class<?> getRepositoryBaseClass() {
