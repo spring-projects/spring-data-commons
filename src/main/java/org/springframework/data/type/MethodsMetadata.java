@@ -17,8 +17,10 @@ package org.springframework.data.type;
 
 import java.util.Set;
 
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.MethodMetadata;
+import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.data.type.classreading.MethodsMetadataReader;
 
 /**
@@ -30,7 +32,10 @@ import org.springframework.data.type.classreading.MethodsMetadataReader;
  * @see MethodMetadata
  * @see ClassMetadata
  * @see MethodsMetadataReader#getMethodsMetadata()
+ * @deprecated since 3.0, use {@link MetadataReader} directly to obtain {@link AnnotationMetadata#getDeclaredMethods()
+ *             declared methods} directly.
  */
+@Deprecated
 public interface MethodsMetadata extends ClassMetadata {
 
 	/**

@@ -16,9 +16,15 @@
 package org.springframework.data.type.classreading;
 
 import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.ClassMetadata;
+import org.springframework.core.type.MethodMetadata;
+import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.data.type.MethodsMetadata;
 import org.springframework.lang.Nullable;
@@ -29,7 +35,9 @@ import org.springframework.lang.Nullable;
  *
  * @author Mark Paluch
  * @since 2.1
+ * @deprecated since 3.0. Use {@link SimpleMetadataReaderFactory} directly.
  */
+@Deprecated
 public class MethodsMetadataReaderFactory extends SimpleMetadataReaderFactory {
 
 	/**
@@ -61,7 +69,7 @@ public class MethodsMetadataReaderFactory extends SimpleMetadataReaderFactory {
 	 */
 	@Override
 	public MethodsMetadataReader getMetadataReader(String className) throws IOException {
-		return (MethodsMetadataReader) super.getMetadataReader(className);
+		return new MetadataReaderWrapper(super.getMetadataReader(className));
 	}
 
 	/*
@@ -70,6 +78,201 @@ public class MethodsMetadataReaderFactory extends SimpleMetadataReaderFactory {
 	 */
 	@Override
 	public MethodsMetadataReader getMetadataReader(Resource resource) throws IOException {
-		return new DefaultMethodsMetadataReader(resource, getResourceLoader().getClassLoader());
+		return new MetadataReaderWrapper(super.getMetadataReader(resource));
+	}
+
+	private static class MetadataReaderWrapper implements MethodsMetadataReader {
+
+		private final MetadataReader delegate;
+
+		MetadataReaderWrapper(MetadataReader delegate) {
+			this.delegate = delegate;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.type.classreading.MethodsMetadataReader#getMethodsMetadata()
+		 */
+		@Override
+		public MethodsMetadata getMethodsMetadata() {
+			return new MethodsMetadataWrapper(getAnnotationMetadata(), getClassMetadata());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.classreading.MetadataReader#getResource()
+		 */
+		@Override
+		public Resource getResource() {
+			return delegate.getResource();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.classreading.MetadataReader#getClassMetadata()
+		 */
+		@Override
+		public ClassMetadata getClassMetadata() {
+			return delegate.getClassMetadata();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.classreading.MetadataReader#getAnnotationMetadata()
+		 */
+		@Override
+		public AnnotationMetadata getAnnotationMetadata() {
+			return delegate.getAnnotationMetadata();
+		}
+
+	}
+
+	private static class MethodsMetadataWrapper implements MethodsMetadata, ClassMetadata {
+
+		private final AnnotationMetadata annotationMetadata;
+		private final ClassMetadata classMetadata;
+
+		MethodsMetadataWrapper(AnnotationMetadata annotationMetadata, ClassMetadata classMetadata) {
+			this.annotationMetadata = annotationMetadata;
+			this.classMetadata = classMetadata;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.type.MethodsMetadata#getMethods()
+		 */
+		@Override
+		public Set<MethodMetadata> getMethods() {
+			return annotationMetadata.getDeclaredMethods();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.type.MethodsMetadata#getMethods(java.lang.String)
+		 */
+		@Override
+		public Set<MethodMetadata> getMethods(String name) {
+			return annotationMetadata.getDeclaredMethods().stream().filter(it -> it.getMethodName().equals(name))
+					.collect(Collectors.toSet());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#getClassName()
+		 */
+		@Override
+		public String getClassName() {
+			return classMetadata.getClassName();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#isInterface()
+		 */
+		@Override
+		public boolean isInterface() {
+			return classMetadata.isInterface();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#isAnnotation()
+		 */
+		@Override
+		public boolean isAnnotation() {
+			return classMetadata.isAnnotation();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#isAbstract()
+		 */
+		@Override
+		public boolean isAbstract() {
+			return classMetadata.isAbstract();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#isConcrete()
+		 */
+		@Override
+		public boolean isConcrete() {
+			return classMetadata.isConcrete();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#isFinal()
+		 */
+		@Override
+		public boolean isFinal() {
+			return classMetadata.isFinal();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#isIndependent()
+		 */
+		@Override
+		public boolean isIndependent() {
+			return classMetadata.isIndependent();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#hasEnclosingClass()
+		 */
+		@Override
+		public boolean hasEnclosingClass() {
+			return classMetadata.hasEnclosingClass();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#getEnclosingClassName()
+		 */
+		@Override
+		@Nullable
+		public String getEnclosingClassName() {
+			return classMetadata.getEnclosingClassName();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#hasSuperClass()
+		 */
+		@Override
+		public boolean hasSuperClass() {
+			return classMetadata.hasSuperClass();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#getSuperClassName()
+		 */
+		@Override
+		@Nullable
+		public String getSuperClassName() {
+			return classMetadata.getSuperClassName();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#getInterfaceNames()
+		 */
+		@Override
+		public String[] getInterfaceNames() {
+			return classMetadata.getInterfaceNames();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.core.type.ClassMetadata#getMemberClassNames()
+		 */
+		@Override
+		public String[] getMemberClassNames() {
+			return classMetadata.getMemberClassNames();
+		}
 	}
 }

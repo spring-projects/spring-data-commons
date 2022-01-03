@@ -31,9 +31,9 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.log.LogMessage;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.MethodMetadata;
-import org.springframework.data.type.MethodsMetadata;
-import org.springframework.data.type.classreading.MethodsMetadataReaderFactory;
+import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -133,7 +133,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		private static final Log logger = LogFactory.getLog(PropertyDescriptorSource.class);
 
 		private final Class<?> type;
-		private final Optional<MethodsMetadata> metadata;
+		private final Optional<AnnotationMetadata> metadata;
 
 		/**
 		 * Creates a new {@link PropertyDescriptorSource} for the given type.
@@ -179,15 +179,15 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		}
 
 		/**
-		 * Returns a {@link Stream} of {@link PropertyDescriptor} ordered following the given {@link MethodsMetadata} only
-		 * returning methods seen by the given {@link MethodsMetadata}.
+		 * Returns a {@link Stream} of {@link PropertyDescriptor} ordered following the given {@link AnnotationMetadata}
+		 * only returning methods seen by the given {@link AnnotationMetadata}.
 		 *
 		 * @param source must not be {@literal null}.
 		 * @param metadata must not be {@literal null}.
 		 * @return
 		 */
 		private static Stream<PropertyDescriptor> filterAndOrder(Stream<PropertyDescriptor> source,
-				MethodsMetadata metadata) {
+				AnnotationMetadata metadata) {
 
 			var orderedMethods = getMethodOrder(metadata);
 
@@ -201,12 +201,12 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		}
 
 		/**
-		 * Returns a {@link Stream} of interfaces using the given {@link MethodsMetadata} as primary source for ordering.
+		 * Returns a {@link Stream} of interfaces using the given {@link AnnotationMetadata} as primary source for ordering.
 		 *
 		 * @param metadata must not be {@literal null}.
 		 * @return
 		 */
-		private Stream<Class<?>> fromMetadata(MethodsMetadata metadata) {
+		private Stream<Class<?>> fromMetadata(AnnotationMetadata metadata) {
 			return Arrays.stream(metadata.getInterfaceNames()).map(it -> findType(it, type.getInterfaces()));
 		}
 
@@ -220,20 +220,20 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		}
 
 		/**
-		 * Attempts to obtain {@link MethodsMetadata} from {@link Class}. Returns {@link Optional} containing
-		 * {@link MethodsMetadata} if metadata was read successfully, {@link Optional#empty()} otherwise.
+		 * Attempts to obtain {@link AnnotationMetadata} from {@link Class}. Returns {@link Optional} containing
+		 * {@link AnnotationMetadata} if metadata was read successfully, {@link Optional#empty()} otherwise.
 		 *
 		 * @param type must not be {@literal null}.
-		 * @return the optional {@link MethodsMetadata}.
+		 * @return the optional {@link AnnotationMetadata}.
 		 */
-		private static Optional<MethodsMetadata> getMetadata(Class<?> type) {
+		private static Optional<AnnotationMetadata> getMetadata(Class<?> type) {
 
 			try {
 
-				var factory = new MethodsMetadataReaderFactory(type.getClassLoader());
+				var factory = new SimpleMetadataReaderFactory(type.getClassLoader());
 				var metadataReader = factory.getMetadataReader(ClassUtils.getQualifiedName(type));
 
-				return Optional.of(metadataReader.getMethodsMetadata());
+				return Optional.of(metadataReader.getAnnotationMetadata());
 
 			} catch (IOException e) {
 
@@ -259,18 +259,18 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		}
 
 		/**
-		 * Returns a {@link Map} containing method name to its positional index according to {@link MethodsMetadata}.
+		 * Returns a {@link Map} containing method name to its positional index according to {@link AnnotationMetadata}.
 		 *
 		 * @param metadata
 		 * @return
 		 */
-		private static Map<String, Integer> getMethodOrder(MethodsMetadata metadata) {
+		private static Map<String, Integer> getMethodOrder(AnnotationMetadata metadata) {
 
-			var methods = metadata.getMethods() //
+			var methods = metadata.getDeclaredMethods() //
 					.stream() //
 					.map(MethodMetadata::getMethodName) //
 					.distinct() //
-					.collect(Collectors.toList());
+					.toList();
 
 			return IntStream.range(0, methods.size()) //
 					.boxed() //

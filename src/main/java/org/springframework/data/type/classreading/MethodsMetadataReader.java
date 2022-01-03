@@ -15,6 +15,7 @@
  */
 package org.springframework.data.type.classreading;
 
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.data.type.MethodsMetadata;
 
@@ -24,7 +25,10 @@ import org.springframework.data.type.MethodsMetadata;
  *
  * @author Mark Paluch
  * @since 2.1
+ * @deprecated since 3.0, use {@link MetadataReader} to obtain {@link AnnotationMetadata#getDeclaredMethods() declared
+ *             methods} directly.
  */
+@Deprecated
 public interface MethodsMetadataReader extends MetadataReader {
 
 	/**
