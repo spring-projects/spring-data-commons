@@ -34,7 +34,7 @@ class CloseableIteratorUnitTests {
 	@Test // DATACMNS-1637
 	void shouldCreateStream() {
 
-		var iterator = new CloseableIteratorImpl<String>(Arrays.asList("1", "2", "3").iterator());
+		var iterator = new CloseableIteratorImpl<>(Arrays.asList("1", "2", "3").iterator());
 
 		var collection = iterator.stream().map(it -> "hello " + it).collect(Collectors.toList());
 
@@ -45,9 +45,9 @@ class CloseableIteratorUnitTests {
 	@Test // GH-2519
 	void shouldCount() {
 
-		CloseableIteratorImpl<String> iterator = new CloseableIteratorImpl<>(Arrays.asList("1", "2", "3").iterator());
+		var iterator = new CloseableIteratorImpl<>(Arrays.asList("1", "2", "3").iterator());
 
-		long count = iterator.stream().count();
+		var count = iterator.stream().count();
 
 		assertThat(count).isEqualTo(3);
 	}
@@ -55,17 +55,27 @@ class CloseableIteratorUnitTests {
 	@Test // GH-2519
 	void shouldCountLargeStream() {
 
-		CloseableIteratorImpl<Integer> iterator = new CloseableIteratorImpl<>(IntStream.range(0, 2048).boxed().iterator());
+		var iterator = new CloseableIteratorImpl<>(IntStream.range(0, 2048).boxed().iterator());
 
-		long count = iterator.stream().count();
+		var count = iterator.stream().count();
 
 		assertThat(count).isEqualTo(2048);
+	}
+
+	@Test // GH-2519
+	void shouldApplyToList() {
+
+		var iterator = new CloseableIteratorImpl<>(Arrays.asList("1", "2", "3").iterator());
+
+		var list = iterator.stream().toList();
+
+		assertThat(list).isEqualTo(Arrays.asList("1", "2", "3"));
 	}
 
 	@Test // DATACMNS-1637
 	void closeStreamShouldCloseIterator() {
 
-		var iterator = new CloseableIteratorImpl<String>(Arrays.asList("1", "2", "3").iterator());
+		var iterator = new CloseableIteratorImpl<>(Arrays.asList("1", "2", "3").iterator());
 
 		try (var stream = iterator.stream()) {
 			assertThat(stream.findFirst()).hasValue("1");
