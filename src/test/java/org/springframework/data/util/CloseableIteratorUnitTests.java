@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 the original author or authors.
+ * Copyright 2020-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,26 @@ class CloseableIteratorUnitTests {
 
 		assertThat(collection).contains("hello 1", "hello 2", "hello 3");
 		assertThat(iterator.closed).isFalse();
+	}
+
+	@Test // GH-2519
+	void shouldCount() {
+
+		CloseableIteratorImpl<String> iterator = new CloseableIteratorImpl<>(Arrays.asList("1", "2", "3").iterator());
+
+		long count = iterator.stream().count();
+
+		assertThat(count).isEqualTo(3);
+	}
+
+	@Test // GH-2519
+	void shouldCountLargeStream() {
+
+		CloseableIteratorImpl<Integer> iterator = new CloseableIteratorImpl<>(IntStream.range(0, 2048).boxed().iterator());
+
+		long count = iterator.stream().count();
+
+		assertThat(count).isEqualTo(2048);
 	}
 
 	@Test // DATACMNS-1637
