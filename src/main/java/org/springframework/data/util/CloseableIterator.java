@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.springframework.data.util;
 import java.io.Closeable;
 import java.util.Iterator;
 import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -49,12 +48,14 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
 	 * The default implementation should be overridden by subclasses that can return a more efficient spliterator. To
 	 * preserve expected laziness behavior for the {@link #stream()} method, spliterators should either have the
 	 * characteristic of {@code IMMUTABLE} or {@code CONCURRENT}, or be late-binding.
+	 * <p>
+	 * The default implementation does not report a size.
 	 *
 	 * @return a {@link Spliterator} over the elements in this {@link Iterator}.
 	 * @since 2.4
 	 */
 	default Spliterator<T> spliterator() {
-		return Spliterators.spliterator(this, 0, 0);
+		return new IteratorSpliterator<>(this);
 	}
 
 	/**
