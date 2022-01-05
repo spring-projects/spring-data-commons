@@ -50,10 +50,10 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 		super(repositoryInterface);
 		Assert.isTrue(Repository.class.isAssignableFrom(repositoryInterface), MUST_BE_A_REPOSITORY);
 
-		List<TypeInformation<?>> arguments = ClassTypeInformation.from(repositoryInterface)
+		List<TypeInformation<?>> arguments = ClassTypeInformation.from(repositoryInterface)//
 				.getRequiredSuperTypeInformation(Repository.class)//
 				.getTypeArguments();
-		
+
 		this.domainType = resolveTypeParameter(arguments, 0,
 				() -> String.format("Could not resolve domain type of %s!", repositoryInterface));
 		
