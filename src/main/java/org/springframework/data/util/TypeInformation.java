@@ -151,7 +151,7 @@ public interface TypeInformation<S> {
 	Class<S> getType();
 	
 	/**
-	 * Returns the type of the property. With all resolvable generics applied
+	 * Returns the type of the property with all resolvable generics applied
 	 *
 	 * @return
 	 */
@@ -180,6 +180,11 @@ public interface TypeInformation<S> {
 	 */
 	ClassTypeInformation<?> getRawTypeInformation();
 
+	/**
+	 * Returns a {@link TypeInformation} to represent the {@link TypeInformation} of the type of the current instance with all the generics parameters resolved.
+	 *
+	 * @return
+	 */
 	TypeInformation<?> getGenericTypeInformation();
 
 	/**

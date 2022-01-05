@@ -65,8 +65,9 @@ class DomainClassConverterIntegrationTests {
 		beanFactory.registerBeanDefinition("postProcessor", new RootBeanDefinition(PredictingProcessor.class));
 		beanFactory.registerBeanDefinition("repoFactory", new RootBeanDefinition(RepositoryFactoryBeanSupport.class));
 
-		doReturn(ClassTypeInformation.from(Person.class)).when(information).getDomainType();
-		doReturn(ClassTypeInformation.from(Serializable.class)).when(information).getIdType();
+		doReturn(ClassTypeInformation.from(Person.class)).when(information).getDomainTypeInformation();
+		doReturn(ClassTypeInformation.from(Serializable.class)).when(information).getIdTypeInformation();
+		doCallRealMethod().when(information).getDomainType();
 		doReturn(PersonRepository.class).when(factory).getObjectType();
 		doReturn(information).when(factory).getRepositoryInformation();
 

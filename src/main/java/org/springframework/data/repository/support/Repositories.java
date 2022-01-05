@@ -103,7 +103,7 @@ public class Repositories implements Iterable<Class<?>> {
 		RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.get().getBean(name,
 				RepositoryFactoryInformation.class);
 		RepositoryInformation information = repositoryFactoryInformation.getRepositoryInformation();
-		Class<?> domainType = ClassUtils.getUserClass(information.getDomainType().getType());
+		Class<?> domainType = ClassUtils.getUserClass(information.getDomainType());
 
 		Set<Class<?>> alternativeDomainTypes = information.getAlternativeDomainTypes();
 

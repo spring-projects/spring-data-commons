@@ -85,7 +85,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	private static Optional<Method> selectMostSuitableSaveMethod(RepositoryMetadata metadata) {
 
-		return asList(metadata.getDomainType().getType(), Object.class).stream()//
+		return asList(metadata.getDomainType(), Object.class).stream()//
 				.flatMap(it -> toStream(findMethod(metadata.getRepositoryInterface(), SAVE, it)))//
 				.flatMap(it -> toStream(getMostSpecificMethod(it, metadata.getRepositoryInterface())))//
 				.findFirst();
@@ -106,8 +106,8 @@ public class DefaultCrudMethods implements CrudMethods {
 	private static Optional<Method> selectMostSuitableDeleteMethod(RepositoryMetadata metadata) {
 
 		Stream<Pair<String, Class<?>>> source = Stream.of(//
-				Pair.of(DELETE, metadata.getDomainType().getType()), //
-				Pair.of(DELETE_BY_ID, metadata.getIdType().getType()), //
+				Pair.of(DELETE, metadata.getDomainType()), //
+				Pair.of(DELETE_BY_ID, metadata.getIdType()), //
 				Pair.of(DELETE, Object.class), //
 				Pair.of(DELETE_BY_ID, Object.class), //
 				Pair.of(DELETE, Iterable.class));
@@ -158,7 +158,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	private static Optional<Method> selectMostSuitableFindOneMethod(RepositoryMetadata metadata) {
 
-		return asList(metadata.getIdType().getType(), Object.class).stream()//
+		return asList(metadata.getIdType(), Object.class).stream()//
 				.flatMap(it -> toStream(findMethod(metadata.getRepositoryInterface(), FIND_ONE, it)))//
 				.flatMap(it -> toStream(getMostSpecificMethod(it, metadata.getRepositoryInterface())))//
 				.findFirst();

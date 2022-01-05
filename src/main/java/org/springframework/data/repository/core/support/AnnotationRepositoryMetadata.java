@@ -60,7 +60,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getIdType()
 	 */
 	@Override
-	public TypeInformation<?> getIdType() {
+	public TypeInformation<?> getIdTypeInformation() {
 		return this.idType;
 	}
 
@@ -69,7 +69,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getDomainType()
 	 */
 	@Override
-	public TypeInformation<?> getDomainType() {
+	public TypeInformation<?> getDomainTypeInformation() {
 		return this.domainType;
 	}
 

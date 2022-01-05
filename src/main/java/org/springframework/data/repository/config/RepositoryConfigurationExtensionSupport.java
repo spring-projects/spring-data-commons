@@ -322,7 +322,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 			}
 		}
 
-		Class<?> domainType = metadata.getDomainType().getType();
+		Class<?> domainType = metadata.getDomainType();
 
 		for (Class<? extends Annotation> annotationType : annotations) {
 			if (AnnotationUtils.findAnnotation(domainType, annotationType) != null) {

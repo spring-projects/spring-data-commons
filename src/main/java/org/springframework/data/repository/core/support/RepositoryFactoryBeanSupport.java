@@ -228,7 +228,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
-		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainType().getType());
+		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainType());
 	}
 
 	/*

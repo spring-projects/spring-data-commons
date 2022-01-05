@@ -274,7 +274,7 @@ class RepositoriesUnitTests {
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public EntityInformation<T, S> getEntityInformation() {
-			return new DummyEntityInformation(repositoryMetadata.getDomainType().getType());
+			return new DummyEntityInformation(repositoryMetadata.getDomainType());
 		}
 
 		public RepositoryInformation getRepositoryInformation() {
@@ -301,7 +301,7 @@ class RepositoriesUnitTests {
 
 			super(repositoryInterface);
 
-			String domainType = super.getDomainType().getType().getName().concat("Entity");
+			String domainType = super.getDomainTypeInformation().getType().getName().concat("Entity");
 
 			try {
 				this.domainType = ClassTypeInformation.from(ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader()));
@@ -315,7 +315,7 @@ class RepositoriesUnitTests {
 		 * @see org.springframework.data.repository.core.support.DefaultRepositoryMetadata#getDomainType()
 		 */
 		@Override
-		public TypeInformation<?> getDomainType() {
+		public TypeInformation<?> getDomainTypeInformation() {
 			return this.domainType;
 		}
 
@@ -325,7 +325,7 @@ class RepositoriesUnitTests {
 		 */
 		@Override
 		public Set<Class<?>> getAlternativeDomainTypes() {
-			return Collections.singleton(super.getDomainType().getType());
+			return Collections.singleton(super.getDomainType());
 		}
 	}
 

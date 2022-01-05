@@ -104,7 +104,7 @@ public class QueryMethod {
 
 		this.domainClass = Lazy.of(() -> {
 
-			Class<?> repositoryDomainClass = metadata.getDomainType().getType();
+			Class<?> repositoryDomainClass = metadata.getDomainType();
 			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
 
 			return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)

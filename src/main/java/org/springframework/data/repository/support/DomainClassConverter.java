@@ -122,7 +122,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	
 	
 	private static TypeDescriptor getIdTypeDescriptor(RepositoryInformation information) {
-		TypeInformation<?> idType = information.getIdType();
+		TypeInformation<?> idType = information.getIdTypeInformation();
 		return new TypeDescriptor(ResolvableType.forType(idType.getGenericType()), null, idType.getType().getAnnotations());
 	}
 

@@ -70,11 +70,11 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 		return arguments.get(index).getGenericTypeInformation();
 	}
 
-	public TypeInformation<?> getIdType() {
+	public TypeInformation<?> getIdTypeInformation() {
 		return this.idType;
 	}
 
-	public TypeInformation<?> getDomainType() {
+	public TypeInformation<?> getDomainTypeInformation() {
 		return this.domainType;
 	}
 }

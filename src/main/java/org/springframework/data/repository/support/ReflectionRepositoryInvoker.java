@@ -72,7 +72,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 		this.repository = repository;
 		this.methods = metadata.getCrudMethods();
-		TypeInformation<?> idType = metadata.getIdType();
+		TypeInformation<?> idType = metadata.getIdTypeInformation();
 		this.idTypeDescriptor = new TypeDescriptor(ResolvableType.forType(idType.getGenericType()), null, idType.getType().getAnnotations());
 		this.conversionService = conversionService;
 	}

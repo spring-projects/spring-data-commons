@@ -65,7 +65,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	@Override
 	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 
-		EventPublishingMethod method = EventPublishingMethod.of(repositoryInformation.getDomainType().getType());
+		EventPublishingMethod method = EventPublishingMethod.of(repositoryInformation.getDomainType());
 
 		if (method == null) {
 			return;
