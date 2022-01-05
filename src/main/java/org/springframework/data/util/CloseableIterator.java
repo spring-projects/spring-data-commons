@@ -33,10 +33,6 @@ import java.util.stream.StreamSupport;
  */
 public interface CloseableIterator<T> extends Iterator<T>, Closeable {
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.io.Closeable#close()
-	 */
 	@Override
 	void close();
 

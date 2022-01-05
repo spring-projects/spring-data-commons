@@ -74,10 +74,6 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper, BeanC
 		return Alias.of(type.getType().getName());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader;

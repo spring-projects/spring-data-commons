@@ -31,10 +31,6 @@ public class CamelCaseAbbreviatingFieldNamingStrategy extends CamelCaseSplitting
 		super("");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.mapping.CamelCaseSplittingFieldNamingStrategy#preparePart(java.lang.String)
-	 */
 	@Override
 	protected String preparePart(String part) {
 		return part.substring(0, 1);

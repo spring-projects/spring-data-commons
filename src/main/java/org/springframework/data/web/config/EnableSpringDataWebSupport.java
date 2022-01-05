@@ -85,19 +85,11 @@ public @interface EnableSpringDataWebSupport {
 
 		private Optional<ClassLoader> resourceLoader = Optional.empty();
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
-		 */
 		@Override
 		public void setResourceLoader(ResourceLoader resourceLoader) {
 			this.resourceLoader = Optional.of(resourceLoader).map(ResourceLoader::getClassLoader);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.annotation.ImportSelector#selectImports(org.springframework.core.type.AnnotationMetadata)
-		 */
 		@Override
 		public String[] selectImports(AnnotationMetadata importingClassMetadata) {
 
@@ -129,10 +121,6 @@ public @interface EnableSpringDataWebSupport {
 	 */
 	static class QuerydslActivator implements ImportSelector {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.annotation.ImportSelector#selectImports(org.springframework.core.type.AnnotationMetadata)
-		 */
 		@Override
 		public String[] selectImports(AnnotationMetadata importingClassMetadata) {
 			return QuerydslUtils.QUERY_DSL_PRESENT ? new String[] { QuerydslWebConfiguration.class.getName() }

@@ -23,10 +23,6 @@ class Sink<T> implements Consumer<T> {
 		return value;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.function.Consumer#accept(java.lang.Object)
-	 */
 	@Override
 	public void accept(@Nullable T t) {
 		this.value = t;

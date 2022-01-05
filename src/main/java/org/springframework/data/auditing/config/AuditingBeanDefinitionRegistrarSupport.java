@@ -50,10 +50,6 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	private static final String MODIFY_ON_CREATE = "modifyOnCreation";
 	private static final String SET_DATES = "dateTimeForNow";
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry)
-	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
 

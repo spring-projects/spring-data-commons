@@ -139,20 +139,12 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.namedQueries = namedQueries == null ? PropertiesBasedNamedQueries.EMPTY : namedQueries;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader == null ? org.springframework.util.ClassUtils.getDefaultClassLoader() : classLoader;
 		this.projectionFactory = createProjectionFactory();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
@@ -623,10 +615,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 					: new DefaultRepositoryInvocationMulticaster(methodInvocationListeners);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-		 */
 		@Nullable
 		@Override
 		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
@@ -657,9 +645,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		 */
 		private final List<QueryMethod> queryMethods = new ArrayList<>();
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.QueryCreationListener#onCreation(org.springframework.data.repository.query.RepositoryQuery)
-		 */
 		@Override
 		public void onCreation(RepositoryQuery query) {
 			this.queryMethods.add(query.getQueryMethod());
@@ -706,10 +691,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			return this.compositionHash;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -724,10 +705,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			return ObjectUtils.nullSafeEquals(repositoryInterfaceName, that.repositoryInterfaceName);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(repositoryInterfaceName);
@@ -735,10 +712,6 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			return result;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return "RepositoryFactorySupport.RepositoryInformationCacheKey(repositoryInterfaceName="

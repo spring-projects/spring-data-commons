@@ -60,10 +60,6 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 		return new TemplateVariables(new TemplateVariable(sortParameter, type, description));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
-	 */
 	@Override
 	public void enhance(UriComponentsBuilder builder, @Nullable MethodParameter parameter, @Nullable Object value) {
 

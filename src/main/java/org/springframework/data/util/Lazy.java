@@ -231,10 +231,6 @@ public class Lazy<T> implements Supplier<T> {
 		return value;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object o) {
 
@@ -257,10 +253,6 @@ public class Lazy<T> implements Supplier<T> {
 		return ObjectUtils.nullSafeEquals(value, lazy.value);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 

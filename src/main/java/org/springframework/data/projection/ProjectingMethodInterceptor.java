@@ -61,10 +61,6 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 		this.conversionService = conversionService;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-	 */
 	@Nullable
 	@Override
 	public Object invoke(@SuppressWarnings("null") @NonNull MethodInvocation invocation) throws Throwable {

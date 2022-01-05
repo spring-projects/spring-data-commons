@@ -121,19 +121,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				instantiators);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-	 */
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
@@ -178,10 +170,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		this.simpleTypeHolder = simpleTypes;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntities()
-	 */
 	@Override
 	public Collection<E> getPersistentEntities() {
 
@@ -198,19 +186,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(java.lang.Class)
-	 */
 	@Nullable
 	public E getPersistentEntity(Class<?> type) {
 		return getPersistentEntity(ClassTypeInformation.from(type));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.MappingContext#hasPersistentEntityFor(java.lang.Class)
-	 */
 	@Override
 	public boolean hasPersistentEntityFor(Class<?> type) {
 
@@ -221,10 +201,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		return entity == null ? false : entity.isPresent();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.MappingContext#getPersistentEntity(org.springframework.data.util.TypeInformation)
-	 */
 	@Nullable
 	@Override
 	public E getPersistentEntity(TypeInformation<?> type) {
@@ -264,10 +240,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		return addPersistentEntity(type).orElse(null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentEntity(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Nullable
 	@Override
 	public E getPersistentEntity(P persistentProperty) {
@@ -282,28 +254,16 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		return getPersistentEntity(typeInfo.getRequiredActualType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.Class, java.lang.String)
-	 */
 	@Override
 	public PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath) {
 		return persistentPropertyPathFactory.from(propertyPath);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.MappingContext#getPersistentPropertyPath(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type) {
 		return persistentPropertyPathFactory.from(type, propertyPath);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.MappingContext#findPersistentPropertyPath(java.lang.Class, java.util.function.Predicate)
-	 */
 	@Override
 	public <T> PersistentPropertyPaths<T, P> findPersistentPropertyPaths(Class<T> type, Predicate<? super P> predicate) {
 
@@ -439,10 +399,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentEntityAware#getManagedTypes()
-	 */
 	@Override
 	public Collection<TypeInformation<?>> getManagedTypes() {
 
@@ -475,10 +431,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	protected abstract P createPersistentProperty(Property property, E owner, SimpleTypeHolder simpleTypeHolder);
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() {
 		initialize();
@@ -536,10 +488,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			this.remainingDescriptors = remainingDescriptors;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.util.ReflectionUtils.FieldCallback#doWith(java.lang.reflect.Field)
-		 */
 		public void doWith(Field field) {
 
 			var fieldName = field.getName();
@@ -706,10 +654,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			UNMAPPED_PROPERTIES = Streamable.of(matches);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.util.ReflectionUtils.FieldFilter#matches(java.lang.reflect.Field)
-		 */
 		public boolean matches(Field field) {
 
 			if (Modifier.isStatic(field.getModifiers())) {

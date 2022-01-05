@@ -65,19 +65,11 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		this.properties = new PropertyDescriptorSource(type).getDescriptors();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.ProjectionInformation#getType()
-	 */
 	@Override
 	public Class<?> getType() {
 		return projectionType;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.ProjectionInformation#getInputProperties()
-	 */
 	public List<PropertyDescriptor> getInputProperties() {
 
 		return properties.stream()//
@@ -86,10 +78,6 @@ class DefaultProjectionInformation implements ProjectionInformation {
 				.collect(Collectors.toList());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.ProjectionInformation#isDynamic()
-	 */
 	@Override
 	public boolean isClosed() {
 		return this.properties.equals(getInputProperties());

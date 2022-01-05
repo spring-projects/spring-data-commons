@@ -177,19 +177,11 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.lazyInit = lazy;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 
@@ -213,28 +205,16 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		return Optional.of(new ExtensionAwareQueryMethodEvaluationContextProvider(beanFactory));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-	 */
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
 		this.publisher = publisher;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getEntityInformation()
-	 */
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
 		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getRepositoryInformation()
-	 */
 	public RepositoryInformation getRepositoryInformation() {
 
 		var fragments = customImplementation.map(RepositoryFragments::just)//
@@ -243,54 +223,30 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		return factory.getRepositoryInformation(repositoryMetadata, fragments);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getPersistentEntity()
-	 */
 	public PersistentEntity<?, ?> getPersistentEntity() {
 
 		return mappingContext.orElseThrow(() -> new IllegalStateException("No MappingContext available!"))
 				.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryInformation#getQueryMethods()
-	 */
 	public List<QueryMethod> getQueryMethods() {
 		return factory.getQueryMethods();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
 	@NonNull
 	public T getObject() {
 		return this.repository.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
 	@NonNull
 	public Class<? extends T> getObjectType() {
 		return repositoryInterface;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
 	public boolean isSingleton() {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	public void afterPropertiesSet() {
 
 		this.factory = createRepositoryFactory();

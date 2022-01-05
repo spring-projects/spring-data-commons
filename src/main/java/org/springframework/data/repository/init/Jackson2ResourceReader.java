@@ -75,10 +75,6 @@ public class Jackson2ResourceReader implements ResourceReader {
 		this.typeKey = typeKey == null ? DEFAULT_TYPE_KEY : typeKey;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.init.ResourceReader#readFrom(org.springframework.core.io.Resource, java.lang.ClassLoader)
-	 */
 	public Object readFrom(Resource resource, @Nullable ClassLoader classLoader) throws Exception {
 
 		Assert.notNull(resource, "Resource must not be null!");

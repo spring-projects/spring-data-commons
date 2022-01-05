@@ -249,10 +249,6 @@ public class QueryMethod {
 		return method;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return method.toString();

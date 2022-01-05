@@ -67,19 +67,11 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 		this.considerInterfaces = considerInterfaces;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
-	 */
 	@Override
 	public void setResourceLoader(ResourceLoader resourceLoader) {
 		this.resourceLoader = resourceLoader;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.EnvironmentAware#setEnvironment(org.springframework.core.env.Environment)
-	 */
 	@Override
 	public void setEnvironment(Environment environment) {
 		this.environment = environment;
@@ -147,10 +139,6 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 			this.considerInterfaces = considerInterfaces;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider#isCandidateComponent(org.springframework.beans.factory.annotation.AnnotatedBeanDefinition)
-		 */
 		@Override
 		protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 			return super.isCandidateComponent(beanDefinition)

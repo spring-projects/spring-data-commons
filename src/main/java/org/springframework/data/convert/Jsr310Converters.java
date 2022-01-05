@@ -283,10 +283,6 @@ public abstract class Jsr310Converters {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@NonNull
 		@Override
 		public LocalDate convert(String source) {
@@ -299,10 +295,6 @@ public abstract class Jsr310Converters {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@NonNull
 		@Override
 		public LocalDateTime convert(String source) {
@@ -315,10 +307,6 @@ public abstract class Jsr310Converters {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@NonNull
 		@Override
 		public Instant convert(String source) {

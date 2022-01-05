@@ -65,10 +65,6 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 				PagedResourcesAssemblerArgumentResolver.class));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#pageableResolver()
-	 */
 	@Override
 	@Bean
 	public HateoasPageableHandlerMethodArgumentResolver pageableResolver() {
@@ -79,10 +75,6 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 		return pageableResolver;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.web.config.SpringDataWebConfiguration#sortResolver()
-	 */
 	@Bean
 	@Override
 	public HateoasSortHandlerMethodArgumentResolver sortResolver() {
@@ -102,10 +94,6 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 		return new PagedResourcesAssemblerArgumentResolver(pageableResolver.get());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport#addArgumentResolvers(java.util.List)
-	 */
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 

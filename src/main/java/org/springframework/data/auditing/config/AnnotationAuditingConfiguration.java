@@ -55,37 +55,21 @@ public class AnnotationAuditingConfiguration implements AuditingConfiguration {
 		this.attributes = new AnnotationAttributes(attributesSource);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.auditing.config.AuditingConfiguration#getAuditorAwareRef()
-	 */
 	@Override
 	public String getAuditorAwareRef() {
 		return attributes.getString("auditorAwareRef");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.auditing.config.AuditingConfiguration#isSetDates()
-	 */
 	@Override
 	public boolean isSetDates() {
 		return attributes.getBoolean("setDates");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.auditing.config.AuditingConfiguration#getDateTimeProviderRef()
-	 */
 	@Override
 	public String getDateTimeProviderRef() {
 		return attributes.getString("dateTimeProviderRef");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.auditing.config.AuditingConfiguration#isModifyOnCreate()
-	 */
 	@Override
 	public boolean isModifyOnCreate() {
 		return attributes.getBoolean("modifyOnCreate");

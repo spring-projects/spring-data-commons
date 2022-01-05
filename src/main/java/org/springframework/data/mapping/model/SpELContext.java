@@ -86,18 +86,10 @@ public class SpELContext {
 		this.factory = factory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.SpELContext#getParser()
-	 */
 	public ExpressionParser getParser() {
 		return this.parser;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.SpELContext#getEvaluationContext(java.lang.Object)
-	 */
 	public EvaluationContext getEvaluationContext(Object source) {
 
 		var evaluationContext = new StandardEvaluationContext(source);

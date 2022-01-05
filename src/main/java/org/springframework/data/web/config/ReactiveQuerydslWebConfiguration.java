@@ -67,10 +67,6 @@ public class ReactiveQuerydslWebConfiguration implements WebFluxConfigurer {
 		return new QuerydslBindingsFactory(resolver.getIfUnique(() -> SimpleEntityPathResolver.INSTANCE));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.reactive.config.WebFluxConfigurer#configureArgumentResolvers(org.springframework.web.reactive.result.method.annotation.ArgumentResolverConfigurer)
-	 */
 	@Override
 	public void configureArgumentResolvers(ArgumentResolverConfigurer configurer) {
 		configurer.addCustomResolver(

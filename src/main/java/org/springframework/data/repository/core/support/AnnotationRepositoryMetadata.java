@@ -53,19 +53,11 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 		this.domainType = resolveDomainType(repositoryInterface);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getIdType()
-	 */
 	@Override
 	public Class<?> getIdType() {
 		return this.idType;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getDomainType()
-	 */
 	@Override
 	public Class<?> getDomainType() {
 		return this.domainType;

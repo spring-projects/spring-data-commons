@@ -49,19 +49,11 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 
 	private @Nullable BeanFactory beanFactory;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.ProxyProjectionFactory#createProjectionInformation(java.lang.Class)
-	 */
 	@Override
 	protected ProjectionInformation createProjectionInformation(Class<?> projectionType) {
 		return new SpelAwareProjectionInformation(projectionType);
@@ -107,10 +99,6 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 			super(projectionType);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.projection.DefaultProjectionInformation#isInputProperty(java.beans.PropertyDescriptor)
-		 */
 		@Override
 		protected boolean isInputProperty(PropertyDescriptor descriptor) {
 

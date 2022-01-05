@@ -127,37 +127,21 @@ public class QPageRequest extends AbstractPageRequest {
 		return QPageRequest.of(0, pageSize);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Pageable#getSort()
-	 */
 	@Override
 	public Sort getSort() {
 		return sort;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.AbstractPageRequest#next()
-	 */
 	@Override
 	public Pageable next() {
 		return QPageRequest.of(getPageNumber() + 1, getPageSize(), sort);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.AbstractPageRequest#previous()
-	 */
 	@Override
 	public Pageable previous() {
 		return QPageRequest.of(getPageNumber() - 1, getPageSize(), sort);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.AbstractPageRequest#first()
-	 */
 	@Override
 	public Pageable first() {
 		return QPageRequest.of(0, getPageSize(), sort);

@@ -43,10 +43,6 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 		this.parent = parent;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.PreferredConstructor.Parameter)
-	 */
 	@Nullable
 	@SuppressWarnings("unchecked")
 	public <T> T getParameterValue(Parameter<T, P> parameter) {

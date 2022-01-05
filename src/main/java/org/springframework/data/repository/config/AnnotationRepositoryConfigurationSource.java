@@ -127,10 +127,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		this.hasExplicitFilters = hasExplicitFilters(attributes);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBasePackages()
-	 */
 	public Streamable<String> getBasePackages() {
 
 		var value = attributes.getStringArray("value");
@@ -155,70 +151,38 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return Streamable.of(packages);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getQueryLookupStrategyKey()
-	 */
 	public Optional<Object> getQueryLookupStrategyKey() {
 		return Optional.ofNullable(attributes.get(QUERY_LOOKUP_STRATEGY));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getNamedQueryLocation()
-	 */
 	public Optional<String> getNamedQueryLocation() {
 		return getNullDefaultedAttribute(NAMED_QUERIES_LOCATION);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryImplementationPostfix()
-	 */
 	public Optional<String> getRepositoryImplementationPostfix() {
 		return getNullDefaultedAttribute(REPOSITORY_IMPLEMENTATION_POSTFIX);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getSource()
-	 */
 	@NonNull
 	public Object getSource() {
 		return configMetadata;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getIncludeFilters()
-	 */
 	@Override
 	protected Iterable<TypeFilter> getIncludeFilters() {
 		return parseFilters("includeFilters");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getExcludeFilters()
-	 */
 	@Override
 	public Streamable<TypeFilter> getExcludeFilters() {
 		return parseFilters("excludeFilters");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryFactoryBeanClassName()
-	 */
 	@Override
 	public Optional<String> getRepositoryFactoryBeanClassName() {
 		return Optional.of(attributes.getClass(REPOSITORY_FACTORY_BEAN_CLASS).getName());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryBaseClassName()
-	 */
 	@Override
 	public Optional<String> getRepositoryBaseClassName() {
 
@@ -249,28 +213,16 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return enableAnnotationMetadata;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#shouldConsiderNestedRepositories()
-	 */
 	@Override
 	public boolean shouldConsiderNestedRepositories() {
 		return attributes.containsKey(CONSIDER_NESTED_REPOSITORIES) && attributes.getBoolean(CONSIDER_NESTED_REPOSITORIES);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String)
-	 */
 	@Override
 	public Optional<String> getAttribute(String name) {
 		return getAttribute(name, String.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> Optional<T> getAttribute(String name, Class<T> type) {
 
@@ -295,19 +247,11 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return Optional.ofNullable(type.cast(result));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#usesExplicitFilters()
-	 */
 	@Override
 	public boolean usesExplicitFilters() {
 		return hasExplicitFilters;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBootstrapMode()
-	 */
 	@Override
 	public BootstrapMode getBootstrapMode() {
 
@@ -318,10 +262,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getResourceDescription()
-	 */
 	@Override
 	public String getResourceDescription() {
 

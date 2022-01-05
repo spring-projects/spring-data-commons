@@ -53,114 +53,62 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		this.extension = extension;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getBeanId()
-	 */
 	public String getBeanId() {
 		return StringUtils.uncapitalize(ClassUtils.getShortName(getRepositoryBaseClassName().orElseThrow(
 				() -> new IllegalStateException("Can't create bean identifier without a repository base class defined!"))));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getQueryLookupStrategyKey()
-	 */
 	public Object getQueryLookupStrategyKey() {
 		return configurationSource.getQueryLookupStrategyKey().orElse(DEFAULT_QUERY_LOOKUP_STRATEGY);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getBasePackages()
-	 */
 	public Streamable<String> getBasePackages() {
 		return configurationSource.getBasePackages();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationBasePackages()
-	 */
 	@Override
 	public Streamable<String> getImplementationBasePackages() {
 		return Streamable.of(ClassUtils.getPackageName(getRepositoryInterface()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryInterface()
-	 */
 	public String getRepositoryInterface() {
 		return ConfigurationUtils.getRequiredBeanClassName(definition);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getConfigSource()
-	 */
 	public RepositoryConfigurationSource getConfigSource() {
 		return configurationSource;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getNamedQueryLocation()
-	 */
 	public Optional<String> getNamedQueriesLocation() {
 		return configurationSource.getNamedQueryLocation();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationClassName()
-	 */
 	public String getImplementationClassName() {
 		return ClassUtils.getShortName(getRepositoryInterface()).concat(
 				configurationSource.getRepositoryImplementationPostfix().orElse(DEFAULT_REPOSITORY_IMPLEMENTATION_POSTFIX));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationBeanName()
-	 */
 	public String getImplementationBeanName() {
 		return configurationSource.generateBeanName(definition)
 				+ configurationSource.getRepositoryImplementationPostfix().orElse("Impl");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getSource()
-	 */
 	@Nullable
 	@Override
 	public Object getSource() {
 		return configurationSource.getSource();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getConfigurationSource()
-	 */
 	@Override
 	public T getConfigurationSource() {
 		return configurationSource;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryBaseClassName()
-	 */
 	@Override
 	public Optional<String> getRepositoryBaseClassName() {
 		return configurationSource.getRepositoryBaseClassName();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getRepositoryFactoryBeanClassName()
-	 */
 	@Override
 	public String getRepositoryFactoryBeanClassName() {
 
@@ -168,37 +116,21 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 				.orElseGet(extension::getRepositoryFactoryBeanClassName);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#isLazyInit()
-	 */
 	@Override
 	public boolean isLazyInit() {
 		return definition.isLazyInit() || !configurationSource.getBootstrapMode().equals(BootstrapMode.DEFAULT);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#isPrimary()
-	 */
 	@Override
 	public boolean isPrimary() {
 		return definition.isPrimary();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getExcludeFilters()
-	 */
 	@Override
 	public Streamable<TypeFilter> getExcludeFilters() {
 		return configurationSource.getExcludeFilters();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#toImplementationDetectionConfiguration(org.springframework.core.type.classreading.MetadataReaderFactory)
-	 */
 	@Override
 	public ImplementationDetectionConfiguration toImplementationDetectionConfiguration(MetadataReaderFactory factory) {
 
@@ -207,10 +139,6 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return configurationSource.toImplementationDetectionConfiguration(factory);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#toLookupConfiguration(org.springframework.core.type.classreading.MetadataReaderFactory)
-	 */
 	@Override
 	public ImplementationLookupConfiguration toLookupConfiguration(MetadataReaderFactory factory) {
 
@@ -219,10 +147,6 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 		return toImplementationDetectionConfiguration(factory).forRepositoryConfiguration(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getResourceDescription()
-	 */
 	@Override
 	@org.springframework.lang.NonNull
 	public String getResourceDescription() {

@@ -48,10 +48,6 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 		this.annotationType = annotationType;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.util.ReflectionUtils.FieldCallback#doWith(java.lang.reflect.Field)
-	 */
 	public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 
 		if (this.field != null) {

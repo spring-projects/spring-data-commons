@@ -170,28 +170,16 @@ public class CdiRepositoryContext {
 			this.metadataReaderFactory = metadataReaderFactory;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getImplementationPostfix()
-		 */
 		@Override
 		public String getImplementationPostfix() {
 			return configuration.getRepositoryImplementationPostfix();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getBasePackages()
-		 */
 		@Override
 		public Streamable<String> getBasePackages() {
 			return Streamable.empty();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.CustomRepositoryImplementationDetector.ImplementationDetectionConfiguration#getExcludeFilters()
-		 */
 		@Override
 		public Streamable<TypeFilter> getExcludeFilters() {
 			return Streamable.empty();

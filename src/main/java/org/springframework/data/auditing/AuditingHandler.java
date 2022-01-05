@@ -94,10 +94,6 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 				.orElse(Auditor.none());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	public void afterPropertiesSet() {
 
 		if (!auditorAware.isPresent()) {

@@ -66,10 +66,6 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		this.enableDefaultTransactions = enableDefaultTransaction;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryProxyPostProcessor#postProcess(org.springframework.aop.framework.ProxyFactory, org.springframework.data.repository.core.RepositoryInformation)
-	 */
 	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 
 		var transactionInterceptor = new TransactionInterceptor();
@@ -116,10 +112,6 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 			this.repositoryInformation = repositoryInformation;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.transaction.interceptor.AbstractFallbackTransactionAttributeSource#computeTransactionAttribute(java.lang.reflect.Method, java.lang.Class)
-		 */
 		@Override
 		@Nullable
 		protected TransactionAttribute computeTransactionAttribute(Method method, @Nullable Class<?> targetClass) {

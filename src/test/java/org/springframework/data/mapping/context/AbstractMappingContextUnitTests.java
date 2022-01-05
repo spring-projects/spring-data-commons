@@ -432,10 +432,6 @@ class AbstractMappingContextUnitTests {
 			return new TypeRejectingMappingContext(exception, Arrays.asList(types));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.context.SampleMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation)
-		 */
 		@Override
 		protected <S> BasicPersistentEntity<Object, SamplePersistentProperty> createPersistentEntity(
 				TypeInformation<S> typeInformation) {

@@ -42,10 +42,6 @@ import com.querydsl.core.types.dsl.SimpleExpression;
  */
 class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>, Object> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.web.querydsl.QueryDslPredicateBuilder#buildPredicate(org.springframework.data.mapping.PropertyPath, java.lang.Object)
-	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Optional<Predicate> bind(Path<?> path, Collection<? extends Object> value) {

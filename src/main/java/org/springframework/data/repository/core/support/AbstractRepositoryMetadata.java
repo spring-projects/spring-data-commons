@@ -78,10 +78,6 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 				: new AnnotationRepositoryMetadata(repositoryInterface);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnType(java.lang.reflect.Method)
-	 */
 	@Override
 	public TypeInformation<?> getReturnType(Method method) {
 
@@ -100,10 +96,6 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		return returnType;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
-	 */
 	public Class<?> getReturnedDomainClass(Method method) {
 
 		var returnType = getReturnType(method);
@@ -112,27 +104,15 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 				.getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getRepositoryInterface()
-	 */
 	public Class<?> getRepositoryInterface() {
 		return this.repositoryInterface;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getCrudMethods()
-	 */
 	@Override
 	public CrudMethods getCrudMethods() {
 		return this.crudMethods.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#isPagingRepository()
-	 */
 	@Override
 	public boolean isPagingRepository() {
 
@@ -141,19 +121,11 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 				.orElse(false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getAlternativeDomainTypes()
-	 */
 	@Override
 	public Set<Class<?>> getAlternativeDomainTypes() {
 		return Collections.emptySet();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#isReactiveRepository()
-	 */
 	@Override
 	public boolean isReactiveRepository() {
 		return ReactiveWrappers.usesReactiveType(repositoryInterface);

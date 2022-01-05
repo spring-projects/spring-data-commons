@@ -83,52 +83,28 @@ class MultiTransactionStatus implements TransactionStatus {
 		transactionManager.rollback(getTransactionStatus(transactionManager));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.transaction.TransactionStatus#isRollbackOnly()
-	 */
 	public boolean isRollbackOnly() {
 		return getMainTransactionStatus().isRollbackOnly();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.transaction.TransactionStatus#isCompleted()
-	 */
 	public boolean isCompleted() {
 		return getMainTransactionStatus().isCompleted();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.transaction.TransactionStatus#isNewTransaction()
-	 */
 	public boolean isNewTransaction() {
 		return getMainTransactionStatus().isNewTransaction();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.transaction.TransactionStatus#hasSavepoint()
-	 */
 	public boolean hasSavepoint() {
 		return getMainTransactionStatus().hasSavepoint();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.transaction.TransactionStatus#setRollbackOnly()
-	 */
 	public void setRollbackOnly() {
 		for (var ts : transactionStatuses.values()) {
 			ts.setRollbackOnly();
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.transaction.SavepointManager#createSavepoint()
-	 */
 	public Object createSavepoint() throws TransactionException {
 
 		var savePoints = new SavePoints();
@@ -139,27 +115,15 @@ class MultiTransactionStatus implements TransactionStatus {
 		return savePoints;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.transaction.SavepointManager#rollbackToSavepoint(java.lang.Object)
-	 */
 	public void rollbackToSavepoint(Object savepoint) throws TransactionException {
 		var savePoints = (SavePoints) savepoint;
 		savePoints.rollback();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.transaction.SavepointManager#releaseSavepoint(java.lang.Object)
-	 */
 	public void releaseSavepoint(Object savepoint) throws TransactionException {
 		((SavePoints) savepoint).release();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.transaction.TransactionStatus#flush()
-	 */
 	public void flush() {
 		for (var transactionStatus : transactionStatuses.values()) {
 			transactionStatus.flush();

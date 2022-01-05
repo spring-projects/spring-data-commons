@@ -63,47 +63,27 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 		this.repository = repository;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Sort)
-	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Sort sort) {
 		return customFindAllMethod ? super.invokeFindAll(sort) : repository.findAll();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Pageable)
-	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Pageable pageable) {
 		return customFindAllMethod ? super.invokeFindAll(pageable) : repository.findAll();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.ReflectionRepositoryInvoker#invokeFindById(java.lang.Object)
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> Optional<T> invokeFindById(Object id) {
 		return customFindOneMethod ? super.invokeFindById(id) : (Optional<T>) repository.findById(convertId(id));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.ReflectionRepositoryInvoker#invokeSave(java.lang.Object)
-	 */
 	@Override
 	public <T> T invokeSave(T entity) {
 		return customSaveMethod ? super.invokeSave(entity) : repository.save(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.ReflectionRepositoryInvoker#invokeDeleteById(java.lang.Object)
-	 */
 	@Override
 	public void invokeDeleteById(Object id) {
 

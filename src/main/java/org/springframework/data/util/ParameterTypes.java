@@ -182,10 +182,6 @@ public class ParameterTypes {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 
@@ -278,10 +274,6 @@ public class ParameterTypes {
 		return types.get(types.size() - 1);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object o) {
 
@@ -296,10 +288,6 @@ public class ParameterTypes {
 		return ObjectUtils.nullSafeEquals(types, that.types);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return ObjectUtils.nullSafeHashCode(types);
@@ -325,19 +313,11 @@ public class ParameterTypes {
 			return new ParentParameterTypes(types, tail);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.ParameterTypes#getParent()
-		 */
 		@Override
 		protected Optional<ParameterTypes> getParent() {
 			return super.getParent(tail);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.ParameterTypes#withLastVarArgs()
-		 */
 		@Override
 		protected Optional<ParameterTypes> withLastVarArgs() {
 
@@ -346,10 +326,6 @@ public class ParameterTypes {
 					: super.withLastVarArgs();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(@Nullable Object o) {
 
@@ -368,10 +344,6 @@ public class ParameterTypes {
 			return ObjectUtils.nullSafeEquals(tail, that.tail);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 

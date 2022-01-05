@@ -42,20 +42,12 @@ class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 		this.type = type;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#getType()
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public Class<S> getType() {
 		return (Class<S>) Array.newInstance(resolveType(type.getGenericComponentType()), 0).getClass();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
-	 */
 	@Override
 	@NonNull
 	protected TypeInformation<?> doGetComponentType() {
@@ -64,10 +56,6 @@ class GenericArrayTypeInformation<S> extends ParentTypeAwareTypeInformation<S> {
 		return createInfo(componentType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return type.toString();

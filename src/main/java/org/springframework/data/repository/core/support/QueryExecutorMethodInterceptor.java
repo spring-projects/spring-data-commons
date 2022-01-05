@@ -121,10 +121,6 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-	 */
 	@Override
 	@Nullable
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {

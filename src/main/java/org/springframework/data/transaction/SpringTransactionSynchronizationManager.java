@@ -28,26 +28,14 @@ enum SpringTransactionSynchronizationManager implements SynchronizationManager {
 
 	INSTANCE;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.transaction.SynchronizationManager#initSynchronization()
-	 */
 	public void initSynchronization() {
 		TransactionSynchronizationManager.initSynchronization();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.transaction.SynchronizationManager#isSynchronizationActive()
-	 */
 	public boolean isSynchronizationActive() {
 		return TransactionSynchronizationManager.isSynchronizationActive();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.transaction.SynchronizationManager#clearSynchronization()
-	 */
 	public void clearSynchronization() {
 		TransactionSynchronizationManager.clear();
 	}

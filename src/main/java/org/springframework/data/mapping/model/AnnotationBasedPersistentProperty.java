@@ -199,18 +199,10 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return isTransient.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#isIdProperty()
-	 */
 	public boolean isIdProperty() {
 		return isId.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#isVersionProperty()
-	 */
 	public boolean isVersionProperty() {
 		return isVersion.get();
 	}
@@ -223,10 +215,6 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return isReference.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#isWritable()
-	 */
 	@Override
 	public boolean isWritable() {
 		return isWritable.get();
@@ -266,10 +254,6 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentProperty#findPropertyOrOwnerAnnotation(java.lang.Class)
-	 */
 	@Nullable
 	@Override
 	public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
@@ -289,29 +273,17 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return doFindAnnotation(annotationType).isPresent();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#usePropertyAccess()
-	 */
 	@Override
 	public boolean usePropertyAccess() {
 		return usePropertyAccess.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getAssociationTargetTypeInformation()
-	 */
 	@Nullable
 	@Override
 	public TypeInformation<?> getAssociationTargetTypeInformation() {
 		return associationTargetType.getNullable();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#toString()
-	 */
 	@Override
 	public String toString() {
 

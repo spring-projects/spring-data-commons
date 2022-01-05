@@ -65,10 +65,6 @@ public class ProxyUtilsUnitTests {
 
 	static class SampleProxyDetector implements ProxyDetector {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.ProxyUtils.ProxyDetector#getUserType(java.lang.Class)
-		 */
 		@Override
 		public Class<?> getUserType(Class<?> type) {
 			return AnotherSample.class.isAssignableFrom(type) ? UserType.class : type;

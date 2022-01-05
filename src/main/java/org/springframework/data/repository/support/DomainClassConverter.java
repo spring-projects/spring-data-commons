@@ -63,30 +63,18 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		this.conversionService.addConverter(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-	 */
 	@NonNull
 	@Override
 	public Set<ConvertiblePair> getConvertibleTypes() {
 		return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-	 */
 	@Nullable
 	@Override
 	public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 		return getConverter(targetType).map(it -> it.convert(source, sourceType, targetType)).orElse(null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-	 */
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 		return getConverter(targetType).map(it -> it.matches(sourceType, targetType)).orElse(false);
@@ -100,10 +88,6 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		return repositories.get().hasRepositoryFor(targetType.getType()) ? toEntityConverter : toIdConverter;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
 	public void setApplicationContext(ApplicationContext context) {
 
 		this.repositories = Lazy.of(() -> {
@@ -142,20 +126,12 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			this.conversionService = conversionService;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-		 */
 		@NonNull
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-		 */
 		@Nullable
 		@Override
 		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
@@ -177,10 +153,6 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			return id == null ? null : invoker.invokeFindById(id).orElse(null);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-		 */
 		@Override
 		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -224,20 +196,12 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			this.conversionService = conversionService;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-		 */
 		@NonNull
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-		 */
 		@Nullable
 		@Override
 		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
@@ -257,10 +221,6 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			return conversionService.convert(entityInformation.getId(source), targetType.getType());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-		 */
 		@Override
 		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 

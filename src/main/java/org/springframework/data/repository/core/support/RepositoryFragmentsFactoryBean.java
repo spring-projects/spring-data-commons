@@ -55,19 +55,11 @@ public class RepositoryFragmentsFactoryBean<T>
 		this.fragmentBeanNames = fragmentBeanNames;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void afterPropertiesSet() {
@@ -79,20 +71,12 @@ public class RepositoryFragmentsFactoryBean<T>
 		this.repositoryFragments = RepositoryFragments.from(fragments);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
 	@NonNull
 	@Override
 	public RepositoryFragments getObject() throws Exception {
 		return this.repositoryFragments;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
 	@NonNull
 	@Override
 	public Class<?> getObjectType() {

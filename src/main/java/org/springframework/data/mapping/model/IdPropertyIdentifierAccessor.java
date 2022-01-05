@@ -54,10 +54,6 @@ public class IdPropertyIdentifierAccessor extends TargetAwareIdentifierAccessor 
 		this.accessor = entity.getPropertyAccessor(target);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.keyvalue.core.IdentifierAccessor#getIdentifier()
-	 */
 	@Nullable
 	public Object getIdentifier() {
 		return accessor.getProperty(idProperty);

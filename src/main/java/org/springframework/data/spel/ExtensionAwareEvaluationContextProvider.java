@@ -100,19 +100,11 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		this.extensions = extensions;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(Object)
-	 */
 	@Override
 	public StandardEvaluationContext getEvaluationContext(Object rootObject) {
 		return doGetEvaluationContext(rootObject, getExtensions(Predicates.isTrue()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(Object, ExpressionDependencies)
-	 */
 	@Override
 	public StandardEvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
 		return doGetEvaluationContext(rootObject, getExtensions(it -> dependencies.stream().anyMatch(it::provides)));
@@ -226,10 +218,6 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			Collections.reverse(this.adapters);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider.ReadOnlyPropertyAccessor#canRead(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
-		 */
 		@Override
 		public boolean canRead(EvaluationContext context, @Nullable Object target, String name) {
 
@@ -244,10 +232,6 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			return adapters.stream().anyMatch(it -> it.getProperties().containsKey(name));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.expression.PropertyAccessor#read(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
-		 */
 		@Override
 		public TypedValue read(EvaluationContext context, @Nullable Object target, String name) {
 
@@ -265,10 +249,6 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 					.findFirst().orElse(TypedValue.NULL);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.expression.MethodResolver#resolve(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String, java.util.List)
-		 */
 		@Nullable
 		@Override
 		public MethodExecutor resolve(EvaluationContext context, @Nullable Object target, final String name,
@@ -283,28 +263,16 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 					.findFirst().orElse(null);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.expression.PropertyAccessor#canWrite(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
-		 */
 		@Override
 		public boolean canWrite(EvaluationContext context, @Nullable Object target, String name) {
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.expression.PropertyAccessor#write(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String, java.lang.Object)
-		 */
 		@Override
 		public void write(EvaluationContext context, @Nullable Object target, String name, @Nullable Object newValue) {
 			// noop
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.expression.PropertyAccessor#getSpecificTargetClasses()
-		 */
 		@Nullable
 		@Override
 		public Class<?>[] getSpecificTargetClasses() {
@@ -363,10 +331,6 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			this.function = function;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.expression.MethodExecutor#execute(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.Object[])
-		 */
 		@Override
 		public TypedValue execute(EvaluationContext context, Object target, Object... arguments) throws AccessException {
 

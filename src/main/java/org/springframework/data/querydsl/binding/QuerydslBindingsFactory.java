@@ -68,10 +68,6 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		this.defaultCustomizer = NoOpCustomizer.INSTANCE;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 

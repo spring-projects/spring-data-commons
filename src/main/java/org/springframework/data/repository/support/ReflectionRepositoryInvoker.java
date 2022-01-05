@@ -74,46 +74,26 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		this.conversionService = conversionService;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasFindAllMethod()
-	 */
 	@Override
 	public boolean hasFindAllMethod() {
 		return methods.hasFindAllMethod();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeSortedFindAll(java.util.Optional)
-	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Sort sort) {
 		return invokeFindAllReflectively(sort);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokePagedFindAll(java.util.Optional)
-	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Pageable pageable) {
 		return invokeFindAllReflectively(pageable);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasSaveMethod()
-	 */
 	@Override
 	public boolean hasSaveMethod() {
 		return methods.hasSaveMethod();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeSave(java.lang.Object)
-	 */
 	@Override
 	public <T> T invokeSave(T object) {
 
@@ -123,19 +103,11 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return invokeForNonNullResult(method, object);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasFindOneMethod()
-	 */
 	@Override
 	public boolean hasFindOneMethod() {
 		return methods.hasFindOneMethod();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindById(java.lang.Object)
-	 */
 	@Override
 	public <T> Optional<T> invokeFindById(Object id) {
 
@@ -145,19 +117,11 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return returnAsOptional(invoke(method, convertId(id)));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasDeleteMethod()
-	 */
 	@Override
 	public boolean hasDeleteMethod() {
 		return methods.hasDelete();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeDeleteById(java.lang.Object)
-	 */
 	@Override
 	public void invokeDeleteById(Object id) {
 
@@ -173,10 +137,6 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, java.util.Map, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
-	 */
 	@Override
 	public Optional<Object> invokeQueryMethod(Method method, MultiValueMap<String, ?> parameters, Pageable pageable,
 			Sort sort) {

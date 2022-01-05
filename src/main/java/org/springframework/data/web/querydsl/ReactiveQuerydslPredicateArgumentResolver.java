@@ -42,10 +42,6 @@ public class ReactiveQuerydslPredicateArgumentResolver extends QuerydslPredicate
 		super(factory, conversionService);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver(org.springframework.core.MethodParameter, org.springframework.web.reactive.BindingContext, org.springframework.web.server.ServerWebExchange)
-	 */
 	@Override
 	@Nullable
 	public Object resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,

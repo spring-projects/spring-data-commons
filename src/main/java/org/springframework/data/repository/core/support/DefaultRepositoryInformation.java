@@ -75,37 +75,21 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 				.withMethodLookup(composition.getMethodLookup());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryMetadata#getDomainClass()
-	 */
 	@Override
 	public Class<?> getDomainType() {
 		return metadata.getDomainType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryMetadata#getIdClass()
-	 */
 	@Override
 	public Class<?> getIdType() {
 		return metadata.getIdType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInformation#getRepositoryBaseClass()
-	 */
 	@Override
 	public Class<?> getRepositoryBaseClass() {
 		return this.repositoryBaseClass;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInformation#getTargetClassMethod(java.lang.reflect.Method)
-	 */
 	@Override
 	public Method getTargetClassMethod(Method method) {
 
@@ -132,10 +116,6 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 		return value;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInformation#getQueryMethods()
-	 */
 	@Override
 	public Streamable<Method> getQueryMethods() {
 
@@ -175,28 +155,16 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 		return AnnotationUtils.findAnnotation(method, QueryAnnotation.class) != null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInformation#isCustomMethod(java.lang.reflect.Method)
-	 */
 	@Override
 	public boolean isCustomMethod(Method method) {
 		return composition.getMethod(method) != null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryInformation#isQueryMethod(java.lang.reflect.Method)
-	 */
 	@Override
 	public boolean isQueryMethod(Method method) {
 		return getQueryMethods().stream().anyMatch(it -> it.equals(method));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryInformation#isBaseClassMethod(java.lang.reflect.Method)
-	 */
 	@Override
 	public boolean isBaseClassMethod(Method method) {
 
@@ -204,10 +172,6 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 		return baseComposition.getMethod(method) != null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInformation#hasCustomMethod()
-	 */
 	@Override
 	public boolean hasCustomMethod() {
 
@@ -227,64 +191,36 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getRepositoryInterface()
-	 */
 	@Override
 	public Class<?> getRepositoryInterface() {
 		return metadata.getRepositoryInterface();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
-	 */
 	@Override
 	public Class<?> getReturnedDomainClass(Method method) {
 		return metadata.getReturnedDomainClass(method);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnType(java.lang.reflect.Method)
-	 */
 	@Override
 	public TypeInformation<?> getReturnType(Method method) {
 		return metadata.getReturnType(method);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getCrudMethods()
-	 */
 	@Override
 	public CrudMethods getCrudMethods() {
 		return metadata.getCrudMethods();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#isPagingRepository()
-	 */
 	@Override
 	public boolean isPagingRepository() {
 		return metadata.isPagingRepository();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getAlternativeDomainTypes()
-	 */
 	@Override
 	public Set<Class<?>> getAlternativeDomainTypes() {
 		return metadata.getAlternativeDomainTypes();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#isReactiveRepository()
-	 */
 	@Override
 	public boolean isReactiveRepository() {
 		return metadata.isReactiveRepository();

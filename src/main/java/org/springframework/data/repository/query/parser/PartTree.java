@@ -95,10 +95,6 @@ public class PartTree implements Streamable<OrPart> {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	public Iterator<OrPart> iterator() {
 		return predicate.iterator();
 	}
@@ -199,10 +195,6 @@ public class PartTree implements Streamable<OrPart> {
 		return predicate.iterator().hasNext();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 
@@ -253,10 +245,6 @@ public class PartTree implements Streamable<OrPart> {
 			return children.iterator();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return StringUtils.collectionToDelimitedString(children, " and ");
@@ -402,10 +390,6 @@ public class PartTree implements Streamable<OrPart> {
 			return orderBySource;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Iterable#iterator()
-		 */
 		@Override
 		public Iterator<OrPart> iterator() {
 			return nodes.iterator();

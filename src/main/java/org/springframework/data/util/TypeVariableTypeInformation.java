@@ -50,10 +50,6 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 		this.variable = variable;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -68,10 +64,6 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 		return getType().equals(that.getType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 
@@ -82,10 +74,6 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return variable.getName();

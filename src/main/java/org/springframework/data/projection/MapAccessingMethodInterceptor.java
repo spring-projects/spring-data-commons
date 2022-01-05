@@ -41,10 +41,6 @@ class MapAccessingMethodInterceptor implements MethodInterceptor {
 		this.map = map;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-	 */
 	@Nullable
 	@Override
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {

@@ -63,28 +63,16 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		this.conversionService = conversionService;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.proxyFactory.setBeanFactory(beanFactory);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.proxyFactory.setBeanClassLoader(classLoader);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
-	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 
@@ -114,10 +102,6 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		return !IGNORED_PACKAGES.stream().anyMatch(it -> packageName.startsWith(it));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.annotation.ModelAttributeMethodProcessor#createAttribute(java.lang.String, org.springframework.core.MethodParameter, org.springframework.web.bind.support.WebDataBinderFactory, org.springframework.web.context.request.NativeWebRequest)
-	 */
 	@Override
 	protected Object createAttribute(String attributeName, MethodParameter parameter, WebDataBinderFactory binderFactory,
 			NativeWebRequest request) throws Exception {
@@ -128,10 +112,6 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		return proxyFactory.createProjection(parameter.getParameterType(), binder.getTarget());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.annotation.ModelAttributeMethodProcessor#bindRequestParameters(org.springframework.web.bind.WebDataBinder, org.springframework.web.context.request.NativeWebRequest)
-	 */
 	@Override
 	protected void bindRequestParameters(WebDataBinder binder, NativeWebRequest request) {}
 }

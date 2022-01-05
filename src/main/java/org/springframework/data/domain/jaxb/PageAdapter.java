@@ -32,10 +32,6 @@ import org.springframework.lang.Nullable;
  */
 public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
-	 */
 	@Nullable
 	@Override
 	public PageDto marshal(@Nullable Page<Object> source) {
@@ -51,10 +47,6 @@ public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 		return dto;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
-	 */
 	@Nullable
 	@Override
 	public Page<Object> unmarshal(@Nullable PageDto v) {

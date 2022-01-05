@@ -34,10 +34,6 @@ import org.springframework.web.server.ServerWebExchange;
 public class ReactiveSortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolverSupport
 		implements SyncHandlerMethodArgumentResolver {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
-	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return Sort.class.equals(parameter.getParameterType());

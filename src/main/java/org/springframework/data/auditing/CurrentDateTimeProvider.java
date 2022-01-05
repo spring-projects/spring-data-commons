@@ -30,10 +30,6 @@ public enum CurrentDateTimeProvider implements DateTimeProvider {
 
 	INSTANCE;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.auditing.DateTimeProvider#getNow()
-	 */
 	@Override
 	public Optional<TemporalAccessor> getNow() {
 		return Optional.of(LocalDateTime.now());

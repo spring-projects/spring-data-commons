@@ -37,10 +37,6 @@ public abstract class AbstractEntityInformation<T, ID> implements EntityInformat
 		this.domainClass = domainClass;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityInformation#isNew(java.lang.Object)
-	 */
 	public boolean isNew(T entity) {
 
 		var id = getId(entity);
@@ -57,10 +53,6 @@ public abstract class AbstractEntityInformation<T, ID> implements EntityInformat
 		throw new IllegalArgumentException(String.format("Unsupported primitive id type %s!", idType));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
-	 */
 	public Class<T> getJavaType() {
 		return this.domainClass;
 	}

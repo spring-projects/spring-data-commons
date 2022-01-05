@@ -38,10 +38,6 @@ public class DummyRepositoryFactoryBean<T extends Repository<S, ID>, S, ID exten
 		setMappingContext(new SampleMappingContext());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#createRepositoryFactory()
-	 */
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
 		return new DummyRepositoryFactory(repository);

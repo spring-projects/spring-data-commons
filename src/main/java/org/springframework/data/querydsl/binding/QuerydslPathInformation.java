@@ -44,28 +44,16 @@ class QuerydslPathInformation implements PathInformation {
 		return new QuerydslPathInformation(path);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getRootParentType()
-	 */
 	@Override
 	public Class<?> getRootParentType() {
 		return path.getRoot().getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafType()
-	 */
 	@Override
 	public Class<?> getLeafType() {
 		return path.getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafParentType()
-	 */
 	@Override
 	public Class<?> getLeafParentType() {
 
@@ -78,46 +66,26 @@ class QuerydslPathInformation implements PathInformation {
 		return parent.getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafProperty()
-	 */
 	@Override
 	public String getLeafProperty() {
 		return path.getMetadata().getElement().toString();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafPropertyDescriptor()
-	 */
 	@Nullable
 	@Override
 	public PropertyDescriptor getLeafPropertyDescriptor() {
 		return BeanUtils.getPropertyDescriptor(getLeafParentType(), getLeafProperty());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#toDotPath()
-	 */
 	@Override
 	public String toDotPath() {
 		return QuerydslUtils.toDotPath(path);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#reifyPath(org.springframework.data.querydsl.EntityPathResolver)
-	 */
 	public Path<?> reifyPath(EntityPathResolver resolver) {
 		return path;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -133,10 +101,6 @@ class QuerydslPathInformation implements PathInformation {
 				&& ObjectUtils.nullSafeEquals(toDotPath(), that.toDotPath());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		var result = ObjectUtils.nullSafeHashCode(getRootParentType());
@@ -144,10 +108,6 @@ class QuerydslPathInformation implements PathInformation {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "QuerydslPathInformation(path=" + this.path + ")";

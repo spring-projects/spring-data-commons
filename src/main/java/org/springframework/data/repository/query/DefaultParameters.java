@@ -40,19 +40,11 @@ public final class DefaultParameters extends Parameters<DefaultParameters, Param
 		super(parameters);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.Parameters#createParameter(org.springframework.core.MethodParameter)
-	 */
 	@Override
 	protected Parameter createParameter(MethodParameter parameter) {
 		return new Parameter(parameter);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.Parameters#createFrom(java.util.List)
-	 */
 	@Override
 	protected DefaultParameters createFrom(List<Parameter> parameters) {
 		return new DefaultParameters(parameters);

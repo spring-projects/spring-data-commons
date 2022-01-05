@@ -42,10 +42,6 @@ public class SpELExpressionParameterValueProvider<P extends PersistentProperty<P
 		this.delegate = delegate;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.PreferredConstructor.Parameter)
-	 */
 	@Nullable
 	public <T> T getParameterValue(Parameter<T, P> parameter) {
 

@@ -59,39 +59,23 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 		this.delegate = delegate;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getBean()
-	 */
 	@Override
 	public T getBean() {
 		return delegate.getBean();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#getProperty(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Nullable
 	@Override
 	public Object getProperty(PersistentProperty<?> property) {
 		return delegate.getProperty(property);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentPropertyPathAccessor#getProperty(org.springframework.data.mapping.PersistentPropertyPath)
-	 */
 	@Nullable
 	@Override
 	public Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path) {
 		return getProperty(path, DEFAULT_GET_OPTIONS);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentPropertyPathAccessor#getProperty(org.springframework.data.mapping.PersistentPropertyPath, org.springframework.data.mapping.PersistentPropertyPathAccessor.Options)
-	 */
 	@Nullable
 	@Override
 	public Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, GetOptions options) {
@@ -118,28 +102,16 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 		return current;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentProperty, java.lang.Object)
-	 */
 	@Override
 	public void setProperty(PersistentProperty<?> property, @Nullable Object value) {
 		delegate.setProperty(property, value);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.PersistentPropertyPathAccessor#setProperty(org.springframework.data.mapping.PersistentPropertyPath, java.lang.Object)
-	 */
 	@Override
 	public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value) {
 		setProperty(path, value, AccessOptions.defaultSetOptions());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.ConvertingPropertyAccessor#setProperty(org.springframework.data.mapping.PersistentPropertyPath, java.lang.Object)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value,

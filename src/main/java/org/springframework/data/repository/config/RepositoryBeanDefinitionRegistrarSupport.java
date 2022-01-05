@@ -41,19 +41,11 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 	private @SuppressWarnings("null") @NonNull ResourceLoader resourceLoader;
 	private @SuppressWarnings("null") @NonNull Environment environment;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
-	 */
 	@Override
 	public void setResourceLoader(ResourceLoader resourceLoader) {
 		this.resourceLoader = resourceLoader;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.EnvironmentAware#setEnvironment(org.springframework.core.env.Environment)
-	 */
 	@Override
 	public void setEnvironment(Environment environment) {
 		this.environment = environment;
@@ -77,10 +69,6 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 		registerBeanDefinitions(metadata, registry, ConfigurationClassPostProcessor.IMPORT_BEAN_NAME_GENERATOR);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry, org.springframework.beans.factory.support.BeanNameGenerator)
-	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry,
 			BeanNameGenerator generator) {

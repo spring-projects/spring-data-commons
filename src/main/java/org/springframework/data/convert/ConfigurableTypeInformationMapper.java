@@ -66,18 +66,10 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.TypeInformationMapper#createAliasFor(org.springframework.data.util.TypeInformation)
-	 */
 	public Alias createAliasFor(TypeInformation<?> type) {
 		return typeToAlias.getOrDefault(type, Alias.NONE);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.TypeInformationMapper#resolveTypeFrom(org.springframework.data.mapping.Alias)
-	 */
 	@Nullable
 	@Override
 	public TypeInformation<?> resolveTypeFrom(Alias alias) {

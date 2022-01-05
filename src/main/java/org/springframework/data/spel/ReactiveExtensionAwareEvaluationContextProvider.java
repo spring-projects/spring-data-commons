@@ -70,38 +70,22 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 		evaluationContextProvider = new ExtensionAwareEvaluationContextProvider(extensions);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(Object)
-	 */
 	@Override
 	public EvaluationContext getEvaluationContext(Object rootObject) {
 		return evaluationContextProvider.getEvaluationContext(rootObject);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.spel.EvaluationContextProvider#getEvaluationContext(java.lang.Object, org.springframework.data.spel.ExpressionDependencies)
-	 */
 	@Override
 	public EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
 		return evaluationContextProvider.getEvaluationContext(rootObject, dependencies);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.spel.ReactiveEvaluationContextProvider#getEvaluationContextLater(java.lang.Object)
-	 */
 	@Override
 	public Mono<StandardEvaluationContext> getEvaluationContextLater(Object rootObject) {
 		return getExtensions(Predicates.isTrue()) //
 				.map(it -> evaluationContextProvider.doGetEvaluationContext(rootObject, it));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.spel.ReactiveEvaluationContextProvider#getEvaluationContextLater(java.lang.Object, org.springframework.data.spel.ExpressionDependencies)
-	 */
 	@Override
 	public Mono<StandardEvaluationContext> getEvaluationContextLater(Object rootObject,
 			ExpressionDependencies dependencies) {

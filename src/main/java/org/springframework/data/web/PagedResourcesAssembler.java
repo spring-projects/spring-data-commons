@@ -86,10 +86,6 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 		this.forceFirstAndLastRels = forceFirstAndLastRels;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.RepresentationModelAssembler#toModel(java.lang.Object)
-	 */
 	@Override
 	public PagedModel<EntityModel<T>> toModel(Page<T> entity) {
 		return toModel(entity, EntityModel::of);

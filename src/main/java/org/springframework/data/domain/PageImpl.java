@@ -61,55 +61,31 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		this(content, Pageable.unpaged(), null == content ? 0 : content.size());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#getTotalPages()
-	 */
 	@Override
 	public int getTotalPages() {
 		return getSize() == 0 ? 1 : (int) Math.ceil((double) total / (double) getSize());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Page#getTotalElements()
-	 */
 	@Override
 	public long getTotalElements() {
 		return total;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#hasNext()
-	 */
 	@Override
 	public boolean hasNext() {
 		return getNumber() + 1 < getTotalPages();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#isLast()
-	 */
 	@Override
 	public boolean isLast() {
 		return !hasNext();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#transform(org.springframework.core.convert.converter.Converter)
-	 */
 	@Override
 	public <U> Page<U> map(Function<? super T, ? extends U> converter) {
 		return new PageImpl<>(getConvertedContent(converter), getPageable(), total);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 
@@ -123,10 +99,6 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		return String.format("Page %s of %d containing %s instances", getNumber() + 1, getTotalPages(), contentType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -141,10 +113,6 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 		return this.total == that.total && super.equals(obj);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 

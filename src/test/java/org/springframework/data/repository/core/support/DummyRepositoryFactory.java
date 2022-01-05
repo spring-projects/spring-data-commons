@@ -75,48 +75,28 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 		setBeanFactory(beanFactory);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
 		return mock(EntityInformation.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryMetadata)
-	 */
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 		return repository;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
-	 */
 	@Override
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 		return repository.getClass();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key, org.springframework.data.repository.query.EvaluationContextProvider)
-	 */
 	@Override
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		return Optional.of(strategy);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryFragments(org.springframework.data.repository.core.RepositoryMetadata)
-	 */
 	@Override
 	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
 

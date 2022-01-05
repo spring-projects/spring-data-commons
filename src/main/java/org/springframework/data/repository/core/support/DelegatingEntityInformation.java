@@ -32,38 +32,22 @@ public class DelegatingEntityInformation<T, ID> implements EntityInformation<T, 
 		this.delegate = delegate;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
-	 */
 	@Override
 	public Class<T> getJavaType() {
 		return delegate.getJavaType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityInformation#isNew(java.lang.Object)
-	 */
 	@Override
 	public boolean isNew(T entity) {
 		return delegate.isNew(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
-	 */
 	@Nullable
 	@Override
 	public ID getId(T entity) {
 		return delegate.getId(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
-	 */
 	@Override
 	public Class<ID> getIdType() {
 		return delegate.getIdType();

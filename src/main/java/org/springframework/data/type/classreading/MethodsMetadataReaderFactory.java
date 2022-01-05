@@ -63,19 +63,11 @@ public class MethodsMetadataReaderFactory extends SimpleMetadataReaderFactory {
 		super(classLoader);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.type.classreading.SimpleMetadataReaderFactory#getMetadataReader(java.lang.String)
-	 */
 	@Override
 	public MethodsMetadataReader getMetadataReader(String className) throws IOException {
 		return new MetadataReaderWrapper(super.getMetadataReader(className));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.type.classreading.SimpleMetadataReaderFactory#getMetadataReader(org.springframework.core.io.Resource)
-	 */
 	@Override
 	public MethodsMetadataReader getMetadataReader(Resource resource) throws IOException {
 		return new MetadataReaderWrapper(super.getMetadataReader(resource));
@@ -89,37 +81,21 @@ public class MethodsMetadataReaderFactory extends SimpleMetadataReaderFactory {
 			this.delegate = delegate;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.type.classreading.MethodsMetadataReader#getMethodsMetadata()
-		 */
 		@Override
 		public MethodsMetadata getMethodsMetadata() {
 			return new MethodsMetadataWrapper(getAnnotationMetadata(), getClassMetadata());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.classreading.MetadataReader#getResource()
-		 */
 		@Override
 		public Resource getResource() {
 			return delegate.getResource();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.classreading.MetadataReader#getClassMetadata()
-		 */
 		@Override
 		public ClassMetadata getClassMetadata() {
 			return delegate.getClassMetadata();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.classreading.MetadataReader#getAnnotationMetadata()
-		 */
 		@Override
 		public AnnotationMetadata getAnnotationMetadata() {
 			return delegate.getAnnotationMetadata();
@@ -137,139 +113,79 @@ public class MethodsMetadataReaderFactory extends SimpleMetadataReaderFactory {
 			this.classMetadata = classMetadata;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.type.MethodsMetadata#getMethods()
-		 */
 		@Override
 		public Set<MethodMetadata> getMethods() {
 			return annotationMetadata.getDeclaredMethods();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.type.MethodsMetadata#getMethods(java.lang.String)
-		 */
 		@Override
 		public Set<MethodMetadata> getMethods(String name) {
 			return annotationMetadata.getDeclaredMethods().stream().filter(it -> it.getMethodName().equals(name))
 					.collect(Collectors.toSet());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#getClassName()
-		 */
 		@Override
 		public String getClassName() {
 			return classMetadata.getClassName();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#isInterface()
-		 */
 		@Override
 		public boolean isInterface() {
 			return classMetadata.isInterface();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#isAnnotation()
-		 */
 		@Override
 		public boolean isAnnotation() {
 			return classMetadata.isAnnotation();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#isAbstract()
-		 */
 		@Override
 		public boolean isAbstract() {
 			return classMetadata.isAbstract();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#isConcrete()
-		 */
 		@Override
 		public boolean isConcrete() {
 			return classMetadata.isConcrete();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#isFinal()
-		 */
 		@Override
 		public boolean isFinal() {
 			return classMetadata.isFinal();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#isIndependent()
-		 */
 		@Override
 		public boolean isIndependent() {
 			return classMetadata.isIndependent();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#hasEnclosingClass()
-		 */
 		@Override
 		public boolean hasEnclosingClass() {
 			return classMetadata.hasEnclosingClass();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#getEnclosingClassName()
-		 */
 		@Override
 		@Nullable
 		public String getEnclosingClassName() {
 			return classMetadata.getEnclosingClassName();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#hasSuperClass()
-		 */
 		@Override
 		public boolean hasSuperClass() {
 			return classMetadata.hasSuperClass();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#getSuperClassName()
-		 */
 		@Override
 		@Nullable
 		public String getSuperClassName() {
 			return classMetadata.getSuperClassName();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#getInterfaceNames()
-		 */
 		@Override
 		public String[] getInterfaceNames() {
 			return classMetadata.getInterfaceNames();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.type.ClassMetadata#getMemberClassNames()
-		 */
 		@Override
 		public String[] getMemberClassNames() {
 			return classMetadata.getMemberClassNames();

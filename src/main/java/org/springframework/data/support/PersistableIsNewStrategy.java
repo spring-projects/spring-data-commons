@@ -27,10 +27,6 @@ public enum PersistableIsNewStrategy implements IsNewStrategy {
 
 	INSTANCE;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.support.IsNewStrategy#isNew(java.lang.Object)
-	 */
 	@Override
 	public boolean isNew(Object entity) {
 

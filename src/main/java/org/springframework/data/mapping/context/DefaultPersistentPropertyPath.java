@@ -91,37 +91,21 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return new DefaultPersistentPropertyPath<>(properties);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toDotPath()
-	 */
 	@Nullable
 	public String toDotPath() {
 		return toPath(DEFAULT_DELIMITER, DEFAULT_CONVERTER);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toDotPath(org.springframework.core.convert.converter.Converter)
-	 */
 	@Nullable
 	public String toDotPath(Converter<? super P, String> converter) {
 		return toPath(DEFAULT_DELIMITER, converter);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toPath(java.lang.String)
-	 */
 	@Nullable
 	public String toPath(String delimiter) {
 		return toPath(delimiter, DEFAULT_CONVERTER);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#toPath(java.lang.String, org.springframework.core.convert.converter.Converter)
-	 */
 	@Nullable
 	public String toPath(String delimiter, Converter<? super P, String> converter) {
 
@@ -136,28 +120,16 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return result.isEmpty() ? null : result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getLeafProperty()
-	 */
 	@Nullable
 	public P getLeafProperty() {
 		return properties.isEmpty() ? null : properties.get(properties.size() - 1);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getBaseProperty()
-	 */
 	@Nullable
 	public P getBaseProperty() {
 		return properties.isEmpty() ? null : properties.get(0);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#isBasePathOf(org.springframework.data.mapping.context.PersistentPropertyPath)
-	 */
 	public boolean isBasePathOf(PersistentPropertyPath<P> path) {
 
 		Assert.notNull(path, "PersistentPropertyPath must not be null!");
@@ -180,10 +152,6 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getExtensionForBaseOf(org.springframework.data.mapping.context.PersistentPropertyPath)
-	 */
 	public PersistentPropertyPath<P> getExtensionForBaseOf(PersistentPropertyPath<P> base) {
 
 		if (!base.isBasePathOf(this)) {
@@ -204,10 +172,6 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return new DefaultPersistentPropertyPath<>(result);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getParentPath()
-	 */
 	public PersistentPropertyPath<P> getParentPath() {
 
 		var size = properties.size();
@@ -215,18 +179,10 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return size == 0 ? this : new DefaultPersistentPropertyPath<>(properties.subList(0, size - 1));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.PersistentPropertyPath#getLength()
-	 */
 	public int getLength() {
 		return properties.size();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	public Iterator<P> iterator() {
 		return properties.iterator();
 	}
@@ -245,10 +201,6 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 						.anyMatch(property -> type.equals(property.getTypeInformation().getActualType()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -263,19 +215,11 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return ObjectUtils.nullSafeEquals(properties, that.properties);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return ObjectUtils.nullSafeHashCode(properties);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	@Nullable
 	public String toString() {

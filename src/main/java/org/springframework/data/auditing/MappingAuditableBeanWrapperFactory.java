@@ -70,10 +70,6 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		this.metadataCache = new ConcurrentReferenceHashMap<>();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.auditing.AuditableBeanWrapperFactory#getBeanWrapperFor(java.lang.Object)
-	 */
 	@Override
 	public <T> Optional<AuditableBeanWrapper<T>> getBeanWrapperFor(T source) {
 
@@ -195,37 +191,21 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			this.metadata = metadata;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedBy(java.lang.Object)
-		 */
 		@Override
 		public Object setCreatedBy(Object value) {
 			return setProperty(metadata.createdByPaths, value);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setCreatedDate(java.util.Optional)
-		 */
 		@Override
 		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
 			return setDateProperty(metadata.createdDatePaths, value);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedBy(java.util.Optional)
-		 */
 		@Override
 		public Object setLastModifiedBy(Object value) {
 			return setProperty(metadata.lastModifiedByPaths, value);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getLastModifiedDate()
-		 */
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
 
@@ -235,19 +215,11 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return getAsTemporalAccessor(firstValue, TemporalAccessor.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#setLastModifiedDate(java.util.Optional)
-		 */
 		@Override
 		public TemporalAccessor setLastModifiedDate(TemporalAccessor value) {
 			return setDateProperty(metadata.lastModifiedDatePaths, value);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.AuditableBeanWrapper#getBean()
-		 */
 		@Override
 		public T getBean() {
 			return accessor.getBean();

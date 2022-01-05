@@ -80,10 +80,6 @@ public class Point implements Serializable {
 		return y;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 
@@ -98,10 +94,6 @@ public class Point implements Serializable {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -124,10 +116,6 @@ public class Point implements Serializable {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return String.format(Locale.ENGLISH, "Point [x=%f, y=%f]", x, y);

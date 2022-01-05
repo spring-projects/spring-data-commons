@@ -127,37 +127,21 @@ public interface RepositoryFragment<T> {
 			this.interfaceOrImplementation = interfaceOrImplementation;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.RepositoryFragment#getSignatureContributor()
-		 */
 		@Override
 		public Class<?> getSignatureContributor() {
 			return interfaceOrImplementation;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.RepositoryFragment#withImplementation(java.lang.Object)
-		 */
 		@Override
 		public RepositoryFragment<T> withImplementation(T implementation) {
 			return new ImplementedRepositoryFragment<>(Optional.of(interfaceOrImplementation), implementation);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return String.format("StructuralRepositoryFragment %s", ClassUtils.getShortName(interfaceOrImplementation));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -172,10 +156,6 @@ public interface RepositoryFragment<T> {
 			return ObjectUtils.nullSafeEquals(interfaceOrImplementation, that.interfaceOrImplementation);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			return ObjectUtils.nullSafeHashCode(interfaceOrImplementation);
@@ -211,37 +191,21 @@ public interface RepositoryFragment<T> {
 			this.optionalImplementation = Optional.of(implementation);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.RepositoryFragment#getSignatureContributor()
-		 */
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Class<?> getSignatureContributor() {
 			return interfaceClass.orElse((Class) implementation.getClass());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.RepositoryFragment#getImplementation()
-		 */
 		@Override
 		public Optional<T> getImplementation() {
 			return optionalImplementation;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.RepositoryFragment#withImplementation(java.lang.Object)
-		 */
 		@Override
 		public RepositoryFragment<T> withImplementation(T implementation) {
 			return new ImplementedRepositoryFragment<>(interfaceClass, implementation);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 
@@ -250,10 +214,6 @@ public interface RepositoryFragment<T> {
 					ClassUtils.getShortName(implementation.getClass()));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -276,10 +236,6 @@ public interface RepositoryFragment<T> {
 			return ObjectUtils.nullSafeEquals(optionalImplementation, that.optionalImplementation);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(interfaceClass);

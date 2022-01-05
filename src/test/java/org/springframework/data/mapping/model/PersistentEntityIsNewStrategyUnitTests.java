@@ -151,19 +151,11 @@ class PersistentEntityIsNewStrategyUnitTests {
 
 		boolean isNew;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.domain.Persistable#isNew()
-		 */
 		@Override
 		public boolean isNew() {
 			return isNew;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.domain.Persistable#getId()
-		 */
 		@Override
 		public Long getId() {
 			return null;

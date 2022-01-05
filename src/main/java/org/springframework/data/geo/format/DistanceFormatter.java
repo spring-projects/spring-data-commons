@@ -57,29 +57,17 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 		SUPPORTED_METRICS = Collections.unmodifiableMap(metrics);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-	 */
 	@Nullable
 	@Override
 	public final Distance convert(String source) {
 		return source == null ? null : doConvert(source.trim().toLowerCase(Locale.US));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.format.Printer#print(java.lang.Object, java.util.Locale)
-	 */
 	@Override
 	public String print(Distance distance, Locale locale) {
 		return distance == null ? null : String.format("%s%s", distance.getValue(), distance.getUnit().toLowerCase(locale));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.format.Parser#parse(java.lang.String, java.util.Locale)
-	 */
 	@Override
 	public Distance parse(String text, Locale locale) throws ParseException {
 		return doConvert(text.trim().toLowerCase(locale));

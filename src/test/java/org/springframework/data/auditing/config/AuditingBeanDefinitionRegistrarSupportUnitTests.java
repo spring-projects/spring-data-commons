@@ -109,10 +109,6 @@ class AuditingBeanDefinitionRegistrarSupportUnitTests {
 			};
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.auditing.config.AuditingBeanDefinitionRegistrarSupport#getAuditingHandlerBeanName()
-		 */
 		@Override
 		protected String getAuditingHandlerBeanName() {
 			return "auditingHandler";

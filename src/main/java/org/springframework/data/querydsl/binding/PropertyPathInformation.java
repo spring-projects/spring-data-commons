@@ -64,65 +64,37 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 		return new PropertyPathInformation(path);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getRootParentType()
-	 */
 	@Override
 	public Class<?> getRootParentType() {
 		return path.getOwningType().getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafType()
-	 */
 	@Override
 	public Class<?> getLeafType() {
 		return path.getLeafProperty().getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafParentType()
-	 */
 	@Override
 	public Class<?> getLeafParentType() {
 		return path.getLeafProperty().getOwningType().getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafProperty()
-	 */
 	@Override
 	public String getLeafProperty() {
 		return path.getLeafProperty().getSegment();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#getLeafPropertyDescriptor()
-	 */
 	@Nullable
 	@Override
 	public PropertyDescriptor getLeafPropertyDescriptor() {
 		return BeanUtils.getPropertyDescriptor(getLeafParentType(), getLeafProperty());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#toDotPath()
-	 */
 	@Override
 	public String toDotPath() {
 		return path.toDotPath();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.PathInformation#reifyPath(org.springframework.data.querydsl.EntityPathResolver)
-	 */
 	@Override
 	public Path<?> reifyPath(EntityPathResolver resolver) {
 		return reifyPath(resolver, path, null);
@@ -147,10 +119,6 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 		return (Path<?>) value;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -166,10 +134,6 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 				&& ObjectUtils.nullSafeEquals(toDotPath(), that.toDotPath());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		var result = ObjectUtils.nullSafeHashCode(getRootParentType());
@@ -177,10 +141,6 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "PropertyPathInformation(path=" + this.path + ")";

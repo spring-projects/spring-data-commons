@@ -827,10 +827,6 @@ public class CustomConversions {
 			return this.storeConverters;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -849,10 +845,6 @@ public class CustomConversions {
 			return ObjectUtils.nullSafeEquals(storeConverters, that.storeConverters);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(storeTypeHolder);
@@ -860,10 +852,6 @@ public class CustomConversions {
 			return result;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return "StoreConversions{" + "storeTypeHolder=" + storeTypeHolder + ", storeConverters=" + storeConverters + '}';

@@ -85,19 +85,11 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		this.excludeFilters = parser.parseTypeFilters(element, Type.EXCLUDE);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getSource()
-	 */
 	@Nullable
 	public Object getSource() {
 		return context.extractSource(element);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBasePackages()
-	 */
 	public Streamable<String> getBasePackages() {
 
 		var attribute = element.getAttribute(BASE_PACKAGE);
@@ -105,18 +97,10 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return Streamable.of(StringUtils.delimitedListToStringArray(attribute, ",", " "));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getQueryLookupStrategyKey()
-	 */
 	public Optional<Object> getQueryLookupStrategyKey() {
 		return getNullDefaultedAttribute(element, QUERY_LOOKUP_STRATEGY).map(Key::create);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getNamedQueryLocation()
-	 */
 	public Optional<String> getNamedQueryLocation() {
 		return getNullDefaultedAttribute(element, NAMED_QUERIES_LOCATION);
 	}
@@ -130,52 +114,29 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return element;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getExcludeFilters()
-	 */
 	@Override
 	public Streamable<TypeFilter> getExcludeFilters() {
 		return Streamable.of(excludeFilters);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getIncludeFilters()
-	 */
 	@Override
 	protected Iterable<TypeFilter> getIncludeFilters() {
 		return includeFilters;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryImplementationPostfix()
-	 */
 	public Optional<String> getRepositoryImplementationPostfix() {
 		return getNullDefaultedAttribute(element, REPOSITORY_IMPL_POSTFIX);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryFactoryBeanName()
-	 */
 	public Optional<String> getRepositoryFactoryBeanName() {
 		return getNullDefaultedAttribute(element, REPOSITORY_FACTORY_BEAN_CLASS_NAME);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryBaseClassName()
-	 */
 	@Override
 	public Optional<String> getRepositoryBaseClassName() {
 		return getNullDefaultedAttribute(element, REPOSITORY_BASE_CLASS_NAME);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getRepositoryFactoryBeanClassName()
-	 */
 	@Override
 	public Optional<String> getRepositoryFactoryBeanClassName() {
 		return getNullDefaultedAttribute(element, REPOSITORY_FACTORY_BEAN_CLASS_NAME);
@@ -187,19 +148,11 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#isConsideringNestedRepositoriesEnabled()
-	 */
 	@Override
 	public boolean shouldConsiderNestedRepositories() {
 		return getNullDefaultedAttribute(element, CONSIDER_NESTED_REPOSITORIES).map(Boolean::parseBoolean).orElse(false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String)
-	 */
 	@Override
 	public Optional<String> getAttribute(String name) {
 
@@ -209,10 +162,6 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getAttribute(java.lang.String, java.lang.Class)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Optional<T> getAttribute(String name, Class<T> type) {
@@ -222,19 +171,11 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return (Optional<T>) getAttribute(name);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#usesExplicitFilters()
-	 */
 	@Override
 	public boolean usesExplicitFilters() {
 		return !(this.includeFilters.isEmpty() && this.excludeFilters.isEmpty());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getBootstrapMode()
-	 */
 	@Override
 	public BootstrapMode getBootstrapMode() {
 
@@ -245,10 +186,6 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 				: BootstrapMode.DEFAULT;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationSource#getResourceDescription()
-	 */
 	@Override
 	@NonNull
 	public String getResourceDescription() {

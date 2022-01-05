@@ -330,19 +330,11 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 
 		private final String key, value;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.query.spi.EvaluationContextExtension#getExtensionId()
-		 */
 		@Override
 		public String getExtensionId() {
 			return key;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.query.EvaluationContextExtensionAdapter#getProperties()
-		 */
 		@Override
 		public Map<String, Object> getProperties() {
 
@@ -353,10 +345,6 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 			return properties;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.query.spi.EvaluationContextExtensionSupport#getFunctions()
-		 */
 		@Override
 		public Map<String, Function> getFunctions() {
 

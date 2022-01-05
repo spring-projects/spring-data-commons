@@ -48,10 +48,6 @@ class MethodParameterAwarePagedResourcesAssembler<T> extends PagedResourcesAssem
 		this.parameter = parameter;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.web.PagedResourcesAssembler#getMethodParameter()
-	 */
 	@NonNull
 	@Override
 	protected MethodParameter getMethodParameter() {

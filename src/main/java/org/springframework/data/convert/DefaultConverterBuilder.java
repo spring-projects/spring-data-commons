@@ -48,48 +48,28 @@ record DefaultConverterBuilder<S, T> (ConvertiblePair convertiblePair,
 		Optional<Function<? super S, ? extends T>> writing, Optional<Function<? super T, ? extends S>> reading)
 		implements ConverterAware, ReadingConverterBuilder<T, S>, WritingConverterBuilder<S, T> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.WritingConverterBuilder#andReading(java.util.function.Function)
-	 */
 	@Override
 	public ConverterAware andReading(Function<? super T, ? extends S> function) {
 		return withReading(Optional.of(function));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.ReadingConverterBuilder#andWriting(java.util.function.Function)
-	 */
 	@Override
 	public ConverterAware andWriting(Function<? super S, ? extends T> function) {
 		return withWriting(Optional.of(function));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.ReadingConverterBuilder#getRequiredReadingConverter()
-	 */
 	@Override
 	public GenericConverter getReadingConverter() {
 		return getOptionalReadingConverter()
 				.orElseThrow(() -> new IllegalStateException("No reading converter specified!"));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.WritingConverterBuilder#getRequiredWritingConverter()
-	 */
 	@Override
 	public GenericConverter getWritingConverter() {
 		return getOptionalWritingConverter()
 				.orElseThrow(() -> new IllegalStateException("No writing converter specified!"));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.ConverterBuilder#getConverters()
-	 */
 	@Override
 	public Set<GenericConverter> getConverters() {
 
@@ -130,10 +110,6 @@ record DefaultConverterBuilder<S, T> (ConvertiblePair convertiblePair,
 			this.function = function;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-		 */
 		@Nullable
 		@Override
 		@SuppressWarnings("unchecked")
@@ -141,20 +117,11 @@ record DefaultConverterBuilder<S, T> (ConvertiblePair convertiblePair,
 			return function.apply((S) source);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-		 */
-
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(convertiblePair);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -173,10 +140,6 @@ record DefaultConverterBuilder<S, T> (ConvertiblePair convertiblePair,
 			return ObjectUtils.nullSafeEquals(function, that.function);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(convertiblePair);

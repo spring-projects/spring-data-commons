@@ -295,10 +295,6 @@ class PagedResourcesAssemblerUnitTests {
 
 	static class PersonResourceAssembler implements RepresentationModelAssembler<Person, PersonResource> {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.hateoas.server.RepresentationModelAssembler#toModel(java.lang.Object)
-		 */
 		@Override
 		public PersonResource toModel(Person entity) {
 			var resource = new PersonResource();
@@ -313,10 +309,6 @@ class PagedResourcesAssemblerUnitTests {
 			super(resolver, baseUri);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.web.PagedResourcesAssembler#createPagedModel(java.util.List, org.springframework.hateoas.PagedModel.PageMetadata, org.springframework.data.domain.Page)
-		 */
 		@Override
 		protected <R extends RepresentationModel<?>, S> PagedModel<R> createPagedModel(List<R> resources,
 				PageMetadata metadata, Page<S> page) {

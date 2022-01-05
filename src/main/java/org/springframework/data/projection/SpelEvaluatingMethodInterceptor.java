@@ -124,10 +124,6 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 		return Collections.unmodifiableMap(expressions);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-	 */
 	@Nullable
 	@Override
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
@@ -168,10 +164,6 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 			return this.args;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -190,10 +182,6 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 			return ObjectUtils.nullSafeEquals(args, that.args);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(target);
@@ -201,10 +189,6 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 			return result;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return "SpelEvaluatingMethodInterceptor.TargetWrapper(target=" + this.getTarget() + ", args="

@@ -34,10 +34,6 @@ import org.springframework.lang.Nullable;
  */
 class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
-	 */
 	@Nullable
 	@Override
 	public PageRequestDto marshal(@Nullable Pageable request) {
@@ -56,10 +52,6 @@ class PageableAdapter extends XmlAdapter<PageRequestDto, Pageable> {
 		return dto;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see jakarta.xml.bind.annotation.adapters.XmlAdapter#unmarshal(java.lang.Object)
-	 */
 	@NonNull
 	@Override
 	public Pageable unmarshal(@Nullable PageRequestDto v) {

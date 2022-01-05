@@ -31,10 +31,6 @@ import org.springframework.data.domain.Sort.Direction;
  */
 class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.AbstractPageRequestUnitTests#newPageRequest(int, int)
-	 */
 	@Override
 	public AbstractPageRequest newPageRequest(int page, int size) {
 		return PageRequest.of(page, size);

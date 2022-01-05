@@ -38,19 +38,11 @@ public class PersistentEntitiesFactoryBean implements FactoryBean<PersistentEnti
 		this.context = context;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
 	@Override
 	public PersistentEntities getObject() {
 		return PersistentEntities.of(context);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
 	@Override
 	public Class<?> getObjectType() {
 		return PersistentEntities.class;

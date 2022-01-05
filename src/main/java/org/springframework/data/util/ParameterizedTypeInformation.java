@@ -59,10 +59,6 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		this.resolved = Lazy.of(() -> isResolvedCompletely());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#doGetMapValueType()
-	 */
 	@Override
 	@Nullable
 	protected TypeInformation<?> doGetMapValueType() {
@@ -95,10 +91,6 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return result.orElseGet(super::doGetMapValueType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#getTypeParameters()
-	 */
 	@Override
 	public List<TypeInformation<?>> getTypeArguments() {
 
@@ -111,10 +103,6 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#isAssignableFrom(org.springframework.data.util.TypeInformation)
-	 */
 	@Override
 	public boolean isAssignableFrom(TypeInformation<?> target) {
 
@@ -149,10 +137,6 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#doGetComponentType()
-	 */
 	@Override
 	@Nullable
 	protected TypeInformation<?> doGetComponentType() {
@@ -166,10 +150,6 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return createInfo(type.getActualTypeArguments()[0]);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#specialize(org.springframework.data.util.ClassTypeInformation)
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public TypeInformation<? extends T> specialize(ClassTypeInformation<?> type) {
@@ -189,10 +169,6 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 				: super.specialize(type);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -211,19 +187,11 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 		return super.equals(obj);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.ParentTypeAwareTypeInformation#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return isResolved() ? this.type.hashCode() : super.hashCode();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 

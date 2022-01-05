@@ -290,10 +290,6 @@ class QuerydslBindingsUnitTests {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.querydsl.binding.SingleValueBinding#bind(com.querydsl.core.types.Path, java.lang.Object)
-		 */
 		@Override
 		public Predicate bind(StringPath path, String value) {
 			return path.contains(value);

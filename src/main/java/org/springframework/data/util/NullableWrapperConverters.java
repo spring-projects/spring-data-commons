@@ -243,10 +243,6 @@ public abstract class NullableWrapperConverters {
 			this.wrapperTypes = wrapperTypes;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-		 */
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 
@@ -255,10 +251,6 @@ public abstract class NullableWrapperConverters {
 					.stream().collect(StreamUtils.toUnmodifiableSet());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-		 */
 		@Nullable
 		@Override
 		public final Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
@@ -295,10 +287,6 @@ public abstract class NullableWrapperConverters {
 			super(java.util.Optional.empty());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
-		 */
 		@Override
 		protected Object wrap(Object source) {
 			return java.util.Optional.of(source);
@@ -322,10 +310,6 @@ public abstract class NullableWrapperConverters {
 			super(Optional.absent(), Collections.singleton(Optional.class));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
-		 */
 		@Override
 		protected Object wrap(Object source) {
 			return Optional.of(source);
@@ -350,10 +334,6 @@ public abstract class NullableWrapperConverters {
 			super(Option.empty(), Collections.singleton(Option.class));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
-		 */
 		@Override
 		protected Object wrap(Object source) {
 			return Option.apply(source);
@@ -381,10 +361,6 @@ public abstract class NullableWrapperConverters {
 			return WrapperType.singleValue(io.vavr.control.Option.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
-		 */
 		@Override
 		protected Object wrap(Object source) {
 			return io.vavr.control.Option.of(source);
@@ -400,10 +376,6 @@ public abstract class NullableWrapperConverters {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@Nullable
 		@Override
 		public Object convert(Object source) {
@@ -420,10 +392,6 @@ public abstract class NullableWrapperConverters {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@Nullable
 		@Override
 		public Object convert(Object source) {
@@ -444,10 +412,6 @@ public abstract class NullableWrapperConverters {
 
 		private final Function0<Object> alternative = new AbstractFunction0<Object>() {
 
-			/*
-			 * (non-Javadoc)
-			 * @see scala.Function0#apply()
-			 */
 			@Nullable
 			@Override
 			public Option<Object> apply() {
@@ -455,10 +419,6 @@ public abstract class NullableWrapperConverters {
 			}
 		};
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@Nullable
 		@Override
 		public Object convert(Object source) {
@@ -476,10 +436,6 @@ public abstract class NullableWrapperConverters {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@Nullable
 		@Override
 		@SuppressWarnings("unchecked")
@@ -508,10 +464,6 @@ public abstract class NullableWrapperConverters {
 			return cardinality;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -530,10 +482,6 @@ public abstract class NullableWrapperConverters {
 			return cardinality == that.cardinality;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(type);
@@ -541,10 +489,6 @@ public abstract class NullableWrapperConverters {
 			return result;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return "WrapperType(type=" + this.getType() + ", cardinality=" + this.getCardinality() + ")";

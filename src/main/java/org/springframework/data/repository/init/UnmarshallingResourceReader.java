@@ -39,10 +39,6 @@ public class UnmarshallingResourceReader implements ResourceReader {
 		this.unmarshaller = unmarshaller;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.init.ResourceReader#readFrom(org.springframework.core.io.Resource, java.lang.ClassLoader)
-	 */
 	public Object readFrom(Resource resource, @Nullable ClassLoader classLoader) throws IOException {
 
 		Assert.notNull(resource, "Resource must not be null!");

@@ -64,10 +64,6 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 		this.averageDistance = results.getAverageDistance();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.PageImpl#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -82,10 +78,6 @@ public class GeoPage<T> extends PageImpl<GeoResult<T>> {
 		return super.equals(obj) && ObjectUtils.nullSafeEquals(this.averageDistance, that.averageDistance);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.PageImpl#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return super.hashCode() + ObjectUtils.nullSafeHashCode(this.averageDistance);

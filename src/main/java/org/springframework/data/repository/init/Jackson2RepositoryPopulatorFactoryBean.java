@@ -40,10 +40,6 @@ public class Jackson2RepositoryPopulatorFactoryBean extends AbstractRepositoryPo
 		this.mapper = mapper;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.init.AbstractRepositoryPopulatorFactoryBean#getResourceReader()
-	 */
 	@Override
 	protected ResourceReader getResourceReader() {
 		return new Jackson2ResourceReader(mapper);

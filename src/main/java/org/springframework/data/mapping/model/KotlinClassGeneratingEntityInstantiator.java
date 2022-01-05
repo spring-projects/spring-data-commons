@@ -42,10 +42,6 @@ import org.springframework.lang.Nullable;
  */
 class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInstantiator {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator#doCreateEntityInstantiator(org.springframework.data.mapping.PersistentEntity)
-	 */
 	@Override
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
 
@@ -190,10 +186,6 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 			this.synthetic = constructor.getConstructor();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.model.EntityInstantiator#createInstance(org.springframework.data.mapping.PersistentEntity, org.springframework.data.mapping.model.ParameterValueProvider)
-		 */
 		@Override
 		@SuppressWarnings("unchecked")
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,

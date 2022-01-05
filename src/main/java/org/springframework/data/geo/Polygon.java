@@ -92,18 +92,10 @@ public class Polygon implements Iterable<Point>, Shape {
 		return this.points;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	public Iterator<Point> iterator() {
 		return this.points.iterator();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -118,19 +110,11 @@ public class Polygon implements Iterable<Point>, Shape {
 		return ObjectUtils.nullSafeEquals(points, that.points);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return ObjectUtils.nullSafeHashCode(points);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return String.format("Polygon: [%s]", StringUtils.collectionToCommaDelimitedString(points));

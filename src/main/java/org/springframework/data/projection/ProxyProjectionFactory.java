@@ -72,10 +72,6 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		this.factories.add(PropertyAccessingMethodInvokerFactory.INSTANCE);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader;
@@ -95,10 +91,6 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		this.factories.add(0, factory);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.projection.ProjectionFactory#createProjection(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T createProjection(Class<T> projectionType, Object source) {
@@ -123,10 +115,6 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		return (T) factory.getProxy(classLoader == null ? ClassUtils.getDefaultClassLoader() : classLoader);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.ProjectionFactory#createProjection(java.lang.Class)
-	 */
 	@Override
 	public <T> T createProjection(Class<T> projectionType) {
 
@@ -135,10 +123,6 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		return createProjection(projectionType, new HashMap<String, Object>());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.ProjectionFactory#getProjectionInformation(java.lang.Class)
-	 */
 	@Override
 	public final ProjectionInformation getProjectionInformation(Class<?> projectionType) {
 
@@ -236,10 +220,6 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 			this.targetType = targetType;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-		 */
 		@Nullable
 		@Override
 		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
@@ -263,20 +243,12 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.projection.MethodInterceptorFactory#createMethodInterceptor(java.lang.Object, java.lang.Class)
-		 */
 		@Override
 		@SuppressWarnings("unchecked")
 		public MethodInterceptor createMethodInterceptor(Object source, Class<?> targetType) {
 			return new MapAccessingMethodInterceptor((Map<String, Object>) source);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.projection.MethodInterceptorFactory#supports(java.lang.Object, java.lang.Class)
-		 */
 		@Override
 		public boolean supports(Object source, Class<?> targetType) {
 			return Map.class.isInstance(source);
@@ -292,19 +264,11 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.projection.MethodInterceptorFactory#createMethodInterceptor(java.lang.Object, java.lang.Class)
-		 */
 		@Override
 		public MethodInterceptor createMethodInterceptor(Object source, Class<?> targetType) {
 			return new PropertyAccessingMethodInterceptor(source);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.projection.MethodInterceptorFactory#supports(java.lang.Object, java.lang.Class)
-		 */
 		@Override
 		public boolean supports(Object source, Class<?> targetType) {
 			return true;

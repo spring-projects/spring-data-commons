@@ -134,10 +134,6 @@ public final class Alias {
 		return isPresent() && type.isInstance(value) ? (T) value : null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return isPresent() ? value.toString() : "NONE";
@@ -147,10 +143,6 @@ public final class Alias {
 		return this.value;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -165,10 +157,6 @@ public final class Alias {
 		return ObjectUtils.nullSafeEquals(value, alias.value);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return ObjectUtils.nullSafeHashCode(value);

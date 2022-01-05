@@ -213,10 +213,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return PropertyPath.from(lookup, owningType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	public Iterator<PropertyPath> iterator() {
 
 		return new Iterator<PropertyPath>() {
@@ -246,10 +242,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		};
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -284,10 +276,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return ObjectUtils.nullSafeEquals(next, that.next);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		var result = ObjectUtils.nullSafeHashCode(owningType);
@@ -473,10 +461,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		throw exception;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
@@ -504,10 +488,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			return this.path;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -526,10 +506,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			return ObjectUtils.nullSafeEquals(path, key.path);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(type);
@@ -537,10 +513,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			return result;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return "PropertyPath.Key(type=" + this.getType() + ", path=" + this.getPath() + ")";

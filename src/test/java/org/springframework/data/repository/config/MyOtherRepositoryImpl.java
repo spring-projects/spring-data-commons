@@ -17,10 +17,6 @@ package org.springframework.data.repository.config;
 
 public class MyOtherRepositoryImpl implements MyOtherRepositoryExtensions {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.MyOtherRepositoryExtensions#getImplementationId()
-	 */
 	@Override
 	public String getImplementationId() {
 		return getClass().getName();

@@ -82,38 +82,22 @@ public class ProjectingArgumentResolverRegistrar {
 			this.resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, false);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-		 */
 		@Override
 		public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 			this.resolver.setBeanFactory(beanFactory);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-		 */
 		@Override
 		public void setBeanClassLoader(ClassLoader classLoader) {
 			this.resolver.setBeanClassLoader(classLoader);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessBeforeInitialization(java.lang.Object, java.lang.String)
-		 */
 		@Nullable
 		@Override
 		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 			return bean;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization(java.lang.Object, java.lang.String)
-		 */
 		@Nullable
 		@Override
 		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {

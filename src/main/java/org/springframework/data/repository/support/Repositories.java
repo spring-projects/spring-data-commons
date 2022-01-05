@@ -272,10 +272,6 @@ public class Repositories implements Iterable<Class<?>> {
 		return getRepositoryFactoryInfoFor(domainClass).getQueryMethods();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	public Iterator<Class<?>> iterator() {
 		return repositoryFactoryInfos.keySet().iterator();
 	}

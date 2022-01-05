@@ -101,10 +101,6 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	 */
 	protected abstract RepositoryFactorySupport doCreateRepositoryFactory();
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-	 */
 	public void setBeanFactory(BeanFactory beanFactory) {
 
 		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);

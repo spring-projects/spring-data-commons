@@ -158,10 +158,6 @@ public final class Distance implements Serializable, Comparable<Distance> {
 		return this.metric.equals(metric) ? this : new Distance(getNormalizedValue() * metric.getMultiplier(), metric);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
 	@Override
 	public int compareTo(@Nullable Distance that) {
 
@@ -174,10 +170,6 @@ public final class Distance implements Serializable, Comparable<Distance> {
 		return difference == 0 ? 0 : difference > 0 ? 1 : -1;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 
@@ -199,10 +191,6 @@ public final class Distance implements Serializable, Comparable<Distance> {
 		return this.metric;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -220,10 +208,6 @@ public final class Distance implements Serializable, Comparable<Distance> {
 		return ObjectUtils.nullSafeEquals(metric, distance.metric);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		int result;

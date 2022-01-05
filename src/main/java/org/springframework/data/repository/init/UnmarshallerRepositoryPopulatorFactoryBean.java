@@ -39,9 +39,6 @@ public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractReposito
 		this.unmarshaller = unmarshaller;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.init.AbstractRepositoryPopulatorFactoryBean#getResourceReader()
-	 */
 	@Override
 	protected ResourceReader getResourceReader() {
 
@@ -54,10 +51,6 @@ public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractReposito
 		return new UnmarshallingResourceReader(unmarshaller);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 

@@ -86,10 +86,6 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 		return new PersistentEntityIsNewStrategy(entity, false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.support.IsNewStrategy#isNew(java.lang.Object)
-	 */
 	@Override
 	public boolean isNew(Object entity) {
 

@@ -104,10 +104,6 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 		return annotation != null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.util.ReflectionUtils.MethodCallback#doWith(java.lang.reflect.Method)
-	 */
 	@Override
 	public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 

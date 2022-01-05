@@ -70,10 +70,6 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		this.predicateBuilder = new QuerydslPredicateBuilder(conversionService, factory.getEntityPathResolver());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
-	 */
 	public boolean supportsParameter(MethodParameter parameter) {
 
 		var type = ResolvableType.forMethodParameter(parameter);

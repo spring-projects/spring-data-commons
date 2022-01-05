@@ -95,10 +95,6 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		this.context = JsonPath.using(configuration);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.MethodInterceptorFactory#createMethodInterceptor(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public MethodInterceptor createMethodInterceptor(Object source, Class<?> targetType) {
 
@@ -108,10 +104,6 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		return new InputMessageProjecting(context);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.projection.MethodInterceptorFactory#supports(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public boolean supports(Object source, Class<?> targetType) {
 
@@ -148,10 +140,6 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 			this.context = context;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-		 */
 		@Nullable
 		@Override
 		public Object invoke(MethodInvocation invocation) throws Throwable {
@@ -223,10 +211,6 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 				this.type = type;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see com.jayway.jsonpath.TypeRef#getType()
-			 */
 			@Override
 			public Type getType() {
 				return type.getType();

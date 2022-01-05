@@ -50,10 +50,6 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 		this.repositories = repositories;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.EventObject#getSource()
-	 */
 	@Override
 	public RepositoryPopulator getSource() {
 		return (RepositoryPopulator) super.getSource();
@@ -68,10 +64,6 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 		return repositories;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -87,10 +79,6 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 		return this.source.equals(that.source) && this.repositories.equals(that.repositories);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 

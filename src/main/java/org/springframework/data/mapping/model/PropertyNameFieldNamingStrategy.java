@@ -27,10 +27,6 @@ public enum PropertyNameFieldNamingStrategy implements FieldNamingStrategy {
 
 	INSTANCE;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.FieldNamingStrategy#getFieldName(org.springframework.data.mapping.PersistentProperty)
-	 */
 	public String getFieldName(PersistentProperty<?> property) {
 		return property.getName();
 	}

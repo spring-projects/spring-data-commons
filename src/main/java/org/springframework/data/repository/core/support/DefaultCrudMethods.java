@@ -181,73 +181,41 @@ public class DefaultCrudMethods implements CrudMethods {
 				.findFirst();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.CrudMethods#getSaveMethod()
-	 */
 	@Override
 	public Optional<Method> getSaveMethod() {
 		return saveMethod;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.CrudMethods#hasSaveMethod()
-	 */
 	@Override
 	public boolean hasSaveMethod() {
 		return saveMethod.isPresent();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.CrudMethods#getFindAllMethod()
-	 */
 	@Override
 	public Optional<Method> getFindAllMethod() {
 		return findAllMethod;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.CrudMethods#hasFindAllMethod()
-	 */
 	@Override
 	public boolean hasFindAllMethod() {
 		return findAllMethod.isPresent();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.CrudMethods#getFindOneMethod()
-	 */
 	@Override
 	public Optional<Method> getFindOneMethod() {
 		return findOneMethod;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.CrudMethods#hasFindOneMethod()
-	 */
 	@Override
 	public boolean hasFindOneMethod() {
 		return findOneMethod.isPresent();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.CrudMethods#hasDelete()
-	 */
 	@Override
 	public boolean hasDelete() {
 		return this.deleteMethod.isPresent();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.CrudMethods#getDeleteMethod()
-	 */
 	@Override
 	public Optional<Method> getDeleteMethod() {
 		return this.deleteMethod;

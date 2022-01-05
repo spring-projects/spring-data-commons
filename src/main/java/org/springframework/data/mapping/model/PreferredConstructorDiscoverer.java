@@ -98,10 +98,6 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 		 */
 		DEFAULT {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.mapping.model.PreferredConstructorDiscoverers#discover(org.springframework.data.util.TypeInformation, org.springframework.data.mapping.PersistentEntity)
-			 */
 			@Nullable
 			@Override
 			<T, P extends PersistentProperty<P>> PreferredConstructor<T, P> discover(TypeInformation<T> type,
@@ -143,10 +139,6 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 		 */
 		KOTLIN {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.mapping.model.PreferredConstructorDiscoverers#discover(org.springframework.data.util.TypeInformation, org.springframework.data.mapping.PersistentEntity)
-			 */
 			@Nullable
 			@Override
 			<T, P extends PersistentProperty<P>> PreferredConstructor<T, P> discover(TypeInformation<T> type,

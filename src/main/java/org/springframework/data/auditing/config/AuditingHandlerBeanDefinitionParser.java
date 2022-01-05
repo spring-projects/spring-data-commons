@@ -69,29 +69,17 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 		return resolvedBeanName;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)
-	 */
 	@NonNull
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return AuditingHandler.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#shouldGenerateId()
-	 */
 	@Override
 	protected boolean shouldGenerateId() {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#doParse(org.w3c.dom.Element, org.springframework.beans.factory.support.BeanDefinitionBuilder)
-	 */
 	@Override
 	protected void doParse(Element element, BeanDefinitionBuilder builder) {
 
@@ -110,10 +98,6 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 		ParsingUtils.setPropertyValue(builder, element, "modify-on-creation", "modifyOnCreation");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
-	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext) {
 

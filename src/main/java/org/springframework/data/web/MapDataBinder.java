@@ -69,10 +69,6 @@ class MapDataBinder extends WebDataBinder {
 		this.conversionService = conversionService;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.validation.DataBinder#getTarget()
-	 */
 	@NonNull
 	@Override
 	@SuppressWarnings("unchecked")
@@ -87,10 +83,6 @@ class MapDataBinder extends WebDataBinder {
 		return (Map<String, Object>) target;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.validation.DataBinder#getPropertyAccessor()
-	 */
 	@Override
 	protected ConfigurablePropertyAccessor getPropertyAccessor() {
 		return new MapPropertyAccessor(type, getTarget(), conversionService);
@@ -119,19 +111,11 @@ class MapDataBinder extends WebDataBinder {
 			this.conversionService = conversionService;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.beans.PropertyAccessor#isReadableProperty(java.lang.String)
-		 */
 		@Override
 		public boolean isReadableProperty(String propertyName) {
 			throw new UnsupportedOperationException();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.beans.PropertyAccessor#isWritableProperty(java.lang.String)
-		 */
 		@Override
 		public boolean isWritableProperty(String propertyName) {
 
@@ -142,30 +126,18 @@ class MapDataBinder extends WebDataBinder {
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.beans.PropertyAccessor#getPropertyTypeDescriptor(java.lang.String)
-		 */
 		@Nullable
 		@Override
 		public TypeDescriptor getPropertyTypeDescriptor(String propertyName) throws BeansException {
 			throw new UnsupportedOperationException();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.beans.AbstractPropertyAccessor#getPropertyValue(java.lang.String)
-		 */
 		@Nullable
 		@Override
 		public Object getPropertyValue(String propertyName) throws BeansException {
 			throw new UnsupportedOperationException();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.beans.AbstractPropertyAccessor#setPropertyValue(java.lang.String, java.lang.Object)
-		 */
 		@Override
 		public void setPropertyValue(String propertyName, @Nullable Object value) throws BeansException {
 
@@ -257,19 +229,11 @@ class MapDataBinder extends WebDataBinder {
 				this.conversionService = conversionService;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.context.expression.MapAccessor#canRead(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
-			 */
 			@Override
 			public boolean canRead(EvaluationContext context, @Nullable Object target, String name) throws AccessException {
 				return true;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.context.expression.MapAccessor#read(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
-			 */
 			@Override
 			@SuppressWarnings("unchecked")
 			public TypedValue read(EvaluationContext context, @Nullable Object target, String name) throws AccessException {

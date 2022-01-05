@@ -33,18 +33,10 @@ public class DummyEntityInformation<T> extends AbstractEntityInformation<T, Seri
 		super(domainClass);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
-	 */
 	public Serializable getId(Object entity) {
 		return entity == null ? null : entity.toString();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
-	 */
 	public Class<Serializable> getIdType() {
 		return Serializable.class;
 	}

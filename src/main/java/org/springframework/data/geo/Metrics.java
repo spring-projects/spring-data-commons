@@ -41,18 +41,10 @@ public enum Metrics implements Metric {
 		this.abbreviation = abbreviation;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.geo.Metric#getMultiplier()
-	 */
 	public double getMultiplier() {
 		return multiplier;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.geo.Metric#getAbbreviation()
-	 */
 	@Override
 	public String getAbbreviation() {
 		return abbreviation;

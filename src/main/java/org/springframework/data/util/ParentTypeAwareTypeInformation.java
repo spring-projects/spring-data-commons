@@ -47,10 +47,6 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 		this.parent = parent;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#createInfo(java.lang.reflect.Type)
-	 */
 	@Override
 	protected TypeInformation<?> createInfo(Type fieldType) {
 
@@ -61,10 +57,6 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 		return super.createInfo(fieldType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -84,10 +76,6 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 		return this.parent == null ? that.parent == null : this.parent.equals(that.parent);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 

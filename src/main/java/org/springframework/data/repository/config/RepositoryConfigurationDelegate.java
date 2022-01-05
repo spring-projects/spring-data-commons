@@ -308,10 +308,6 @@ public class RepositoryConfigurationDelegate {
 			return new LazyRepositoryInjectionPointResolver(map);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver#isLazy(org.springframework.beans.factory.config.DependencyDescriptor)
-		 */
 		@Override
 		protected boolean isLazy(DependencyDescriptor descriptor) {
 

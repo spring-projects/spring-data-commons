@@ -161,19 +161,11 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 		return new ExpressionDependencies(new ArrayList<>(dependencySet));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<ExpressionDependency> iterator() {
 		return this.dependencies.iterator();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -185,10 +177,6 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 		return ObjectUtils.nullSafeEquals(dependencies, that.dependencies);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return ObjectUtils.nullSafeHashCode(dependencies);
@@ -263,10 +251,6 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 			return symbol;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -284,10 +268,6 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 			return ObjectUtils.nullSafeEquals(symbol, that.symbol);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(type);
@@ -296,10 +276,6 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 			return result;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return "ExpressionDependency{" + "type=" + type + ", symbol='" + symbol + '\'' + ", nestLevel=" + nestLevel + '}';

@@ -126,10 +126,6 @@ class OrderBySource {
 		return Sort.by(this.orders);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "Order By " + StringUtils.collectionToDelimitedString(orders, ", ");

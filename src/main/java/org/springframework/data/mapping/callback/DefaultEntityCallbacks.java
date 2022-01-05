@@ -59,10 +59,6 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 		this.callbackDiscoverer = new EntityCallbackDiscoverer(beanFactory);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.callback.EntityCallbacks#callback(java.lang.Class, java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public <T> T callback(Class<? extends EntityCallback> callbackType, T entity, Object... args) {
 
@@ -91,10 +87,6 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 		return value;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.callback.EntityCallbacks#addEntityCallback(org.springframework.data.mapping.callback.EntityCallback)
-	 */
 	@Override
 	public void addEntityCallback(EntityCallback<?> callback) {
 		this.callbackDiscoverer.addEntityCallback(callback);

@@ -54,108 +54,56 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 		this.pageable = pageable;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#getNumber()
-	 */
 	public int getNumber() {
 		return pageable.isPaged() ? pageable.getPageNumber() : 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#getSize()
-	 */
 	public int getSize() {
 		return pageable.isPaged() ? pageable.getPageSize() : content.size();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#getNumberOfElements()
-	 */
 	public int getNumberOfElements() {
 		return content.size();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#hasPrevious()
-	 */
 	public boolean hasPrevious() {
 		return getNumber() > 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#isFirst()
-	 */
 	public boolean isFirst() {
 		return !hasPrevious();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#isLast()
-	 */
 	public boolean isLast() {
 		return !hasNext();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#nextPageable()
-	 */
 	public Pageable nextPageable() {
 		return hasNext() ? pageable.next() : Pageable.unpaged();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#previousPageable()
-	 */
 	public Pageable previousPageable() {
 		return hasPrevious() ? pageable.previousOrFirst() : Pageable.unpaged();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#hasContent()
-	 */
 	public boolean hasContent() {
 		return !content.isEmpty();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#getContent()
-	 */
 	public List<T> getContent() {
 		return Collections.unmodifiableList(content);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#getPageable()
-	 */
 	@Override
 	public Pageable getPageable() {
 		return pageable;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#getSort()
-	 */
 	@Override
 	public Sort getSort() {
 		return pageable.getSort();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	public Iterator<T> iterator() {
 		return content.iterator();
 	}
@@ -173,10 +121,6 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 		return this.stream().map(converter::apply).collect(Collectors.toList());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -194,10 +138,6 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 		return contentEqual && pageableEqual;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 

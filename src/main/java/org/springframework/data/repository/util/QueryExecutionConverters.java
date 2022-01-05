@@ -305,11 +305,6 @@ public abstract class QueryExecutionConverters {
 			this.wrapperTypes = wrapperTypes;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-		 */
-
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 
@@ -318,10 +313,6 @@ public abstract class QueryExecutionConverters {
 					.stream().collect(StreamUtils.toUnmodifiableSet());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-		 */
 		@Nullable
 		@Override
 		public final Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
@@ -360,10 +351,6 @@ public abstract class QueryExecutionConverters {
 			super(new AsyncResult<>(null), Arrays.asList(Future.class, ListenableFuture.class));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
-		 */
 		@Override
 		protected Object wrap(Object source) {
 			return new AsyncResult<>(source);
@@ -384,10 +371,6 @@ public abstract class QueryExecutionConverters {
 			super(CompletableFuture.completedFuture(null));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.util.QueryExecutionConverters.AbstractWrapperTypeConverter#wrap(java.lang.Object)
-		 */
 		@Override
 		protected Object wrap(Object source) {
 			return source instanceof CompletableFuture ? source : CompletableFuture.completedFuture(source);
@@ -408,10 +391,6 @@ public abstract class QueryExecutionConverters {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@Nullable
 		@Override
 		@SuppressWarnings("unchecked")
@@ -435,19 +414,11 @@ public abstract class QueryExecutionConverters {
 
 		IterableToStreamableConverter() {}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-		 */
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(new ConvertiblePair(Iterable.class, Object.class));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-		 */
 		@Override
 		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -468,10 +439,6 @@ public abstract class QueryExecutionConverters {
 			});
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-		 */
 		@SuppressWarnings("unchecked")
 		@Nullable
 		@Override
@@ -502,10 +469,6 @@ public abstract class QueryExecutionConverters {
 			return cardinality;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -524,10 +487,6 @@ public abstract class QueryExecutionConverters {
 			return cardinality == that.cardinality;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(type);
@@ -535,10 +494,6 @@ public abstract class QueryExecutionConverters {
 			return result;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return "QueryExecutionConverters.WrapperType(type=" + this.getType() + ", cardinality=" + this.getCardinality()

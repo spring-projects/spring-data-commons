@@ -50,10 +50,6 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 		this.extension = extension;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.BeanDefinitionParser#parse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)
-	 */
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parser) {
 

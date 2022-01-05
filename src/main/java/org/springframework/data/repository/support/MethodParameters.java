@@ -153,10 +153,6 @@ class MethodParameters {
 					orElseGet(super::getParameterName));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.MethodParameter#getParameterName()
-		 */
 		@Nullable
 		@Override
 		public String getParameterName() {

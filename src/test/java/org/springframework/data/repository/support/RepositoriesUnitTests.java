@@ -308,19 +308,11 @@ class RepositoriesUnitTests {
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.DefaultRepositoryMetadata#getDomainType()
-		 */
 		@Override
 		public Class<?> getDomainType() {
 			return this.domainType;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.AbstractRepositoryMetadata#getAlternativeDomainTypes()
-		 */
 		@Override
 		public Set<Class<?>> getAlternativeDomainTypes() {
 			return Collections.singleton(super.getDomainType());

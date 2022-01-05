@@ -58,10 +58,6 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		this.publisher = publisher;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryProxyPostProcessor#postProcess(org.springframework.aop.framework.ProxyFactory, org.springframework.data.repository.core.RepositoryInformation)
-	 */
 	@Override
 	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 
@@ -97,10 +93,6 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			return new EventPublishingMethodInterceptor(eventMethod, publisher);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-		 */
 		@Override
 		@Nullable
 		public Object invoke(MethodInvocation invocation) throws Throwable {

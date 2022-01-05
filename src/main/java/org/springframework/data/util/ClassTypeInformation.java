@@ -132,46 +132,26 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		return map;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#getType()
-	 */
 	@Override
 	public Class<S> getType() {
 		return type;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#getRawTypeInformation()
-	 */
 	@Override
 	public ClassTypeInformation<?> getRawTypeInformation() {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#isAssignableFrom(org.springframework.data.util.TypeInformation)
-	 */
 	@Override
 	public boolean isAssignableFrom(TypeInformation<?> target) {
 		return getType().isAssignableFrom(target.getType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.util.TypeDiscoverer#specialize(org.springframework.data.util.ClassTypeInformation)
-	 */
 	@Override
 	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
 		return (TypeInformation<? extends S>) type;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return type.getName();

@@ -166,10 +166,6 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 		return Streamable.of(target);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<PersistentEntity<?, ? extends PersistentProperty<?>>> iterator() {
 

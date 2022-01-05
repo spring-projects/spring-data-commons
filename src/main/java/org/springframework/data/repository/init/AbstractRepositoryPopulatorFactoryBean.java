@@ -53,28 +53,16 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 		this.resources = resources.clone();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		this.context = applicationContext;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#getObjectType()
-	 */
 	@NonNull
 	@Override
 	public Class<?> getObjectType() {
 		return ResourceReaderRepositoryPopulator.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#createInstance()
-	 */
 	@Override
 	protected ResourceReaderRepositoryPopulator createInstance() {
 
@@ -90,10 +78,6 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 		return initializer;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-	 */
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
 		var populator = this.populator;
@@ -111,10 +95,6 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 
 	protected abstract ResourceReader getResourceReader();
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.config.AbstractFactoryBean#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 

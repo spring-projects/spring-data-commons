@@ -60,10 +60,6 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 		this.callbackDiscoverer = new EntityCallbackDiscoverer(beanFactory);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.callback.ReactiveEntityCallbacks#callback(java.lang.Class, java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public <T> Mono<T> callback(Class<? extends EntityCallback> callbackType, T entity, Object... args) {
 
@@ -94,10 +90,6 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 		return deferredCallbackChain;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.callback.EntityCallbacks#addEntityCallback(org.springframework.data.mapping.callback.EntityCallback)
-	 */
 	@Override
 	public void addEntityCallback(EntityCallback<?> callback) {
 		this.callbackDiscoverer.addEntityCallback(callback);

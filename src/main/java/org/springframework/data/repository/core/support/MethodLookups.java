@@ -124,10 +124,6 @@ interface MethodLookups {
 			this.repositoryInterface = repositoryMetadata.getRepositoryInterface();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.MethodLookup#getLookups()
-		 */
 		@Override
 		public List<MethodPredicate> getLookups() {
 
@@ -233,10 +229,6 @@ interface MethodLookups {
 			this.repositoryMetadata = repositoryMetadata;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.core.support.MethodLookups.RepositoryAwareMethodLookup#getLookups()
-		 */
 		@Override
 		public List<MethodPredicate> getLookups() {
 
@@ -438,10 +430,6 @@ interface MethodLookups {
 				return this.base;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#equals(java.lang.Object)
-			 */
 			@Override
 			public boolean equals(Object o) {
 
@@ -460,10 +448,6 @@ interface MethodLookups {
 				return ObjectUtils.nullSafeEquals(base, that.base);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#hashCode()
-			 */
 			@Override
 			public int hashCode() {
 				var result = ObjectUtils.nullSafeHashCode(declared);
@@ -471,10 +455,6 @@ interface MethodLookups {
 				return result;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#toString()
-			 */
 			@Override
 			public String toString() {
 				return "MethodLookups.ReactiveTypeInteropMethodLookup.ParameterOverrideCriteria(declared=" + this.getDeclared()

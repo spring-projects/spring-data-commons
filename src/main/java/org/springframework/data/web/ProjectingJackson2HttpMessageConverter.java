@@ -91,28 +91,16 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		return projectionFactory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		projectionFactory.setBeanClassLoader(classLoader);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		projectionFactory.setBeanFactory(beanFactory);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canRead(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
-	 */
 	@Override
 	public boolean canRead(Type type, @Nullable Class<?> contextClass, @Nullable MediaType mediaType) {
 
@@ -134,19 +122,11 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
-	 */
 	@Override
 	public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#read(java.lang.reflect.Type, java.lang.Class, org.springframework.http.HttpInputMessage)
-	 */
 	@Override
 	public Object read(Type type, @Nullable Class<?> contextClass, HttpInputMessage inputMessage)
 			throws IOException, HttpMessageNotReadableException {

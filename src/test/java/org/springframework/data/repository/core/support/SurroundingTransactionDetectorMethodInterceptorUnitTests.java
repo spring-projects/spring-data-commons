@@ -55,10 +55,6 @@ class SurroundingTransactionDetectorMethodInterceptorUnitTests {
 			this.transactionActive = expectTransactionActive;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.aopalliance.intercept.Joinpoint#proceed()
-		 */
 		public Object proceed() throws Throwable {
 
 			assertThat(INSTANCE.isSurroundingTransactionActive()).isEqualTo(transactionActive);

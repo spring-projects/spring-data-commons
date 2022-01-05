@@ -46,10 +46,6 @@ class TypedExample<T> implements Example<T> {
 		return this.matcher;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -68,10 +64,6 @@ class TypedExample<T> implements Example<T> {
 		return ObjectUtils.nullSafeEquals(matcher, that.matcher);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		var result = ObjectUtils.nullSafeHashCode(probe);
@@ -79,10 +71,6 @@ class TypedExample<T> implements Example<T> {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "TypedExample{" + "probe=" + probe + ", matcher=" + matcher + '}';

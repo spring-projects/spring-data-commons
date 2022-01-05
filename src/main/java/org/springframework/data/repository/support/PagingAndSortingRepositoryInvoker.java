@@ -55,19 +55,11 @@ class PagingAndSortingRepositoryInvoker extends CrudRepositoryInvoker {
 		this.customFindAll = isRedeclaredMethod(crudMethods.getFindAllMethod());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.CrudRepositoryInvoker#invokeSortedFindAll(java.util.Optional)
-	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Sort sort) {
 		return customFindAll ? invokeFindAllReflectively(sort) : repository.findAll(sort);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.CrudRepositoryInvoker#invokePagedFindAll(java.util.Optional)
-	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Pageable pageable) {
 		return customFindAll ? invokeFindAllReflectively(pageable) : repository.findAll(pageable);

@@ -59,28 +59,16 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	private boolean noMultiStoreSupport = false;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getModuleName()
-	 */
 	@Override
 	public String getModuleName() {
 		return StringUtils.capitalize(getModulePrefix());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryConfigurations(org.springframework.data.repository.config.RepositoryConfigurationSource, org.springframework.core.io.ResourceLoader)
-	 */
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader) {
 		return getRepositoryConfigurations(configSource, loader, false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryConfigurations(org.springframework.data.repository.config.RepositoryConfigurationSource, org.springframework.core.io.ResourceLoader, boolean)
-	 */
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader, boolean strictMatchesOnly) {
 
@@ -113,18 +101,10 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getDefaultNamedQueryLocation()
-	 */
 	public String getDefaultNamedQueryLocation() {
 		return String.format("classpath*:META-INF/%s-named-queries.properties", getModulePrefix());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#registerBeansForRoot(org.springframework.beans.factory.support.BeanDefinitionRegistry, org.springframework.data.repository.config.RepositoryConfigurationSource)
-	 */
 	public void registerBeansForRoot(BeanDefinitionRegistry registry,
 			RepositoryConfigurationSource configurationSource) {}
 
@@ -135,22 +115,10 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 */
 	protected abstract String getModulePrefix();
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.RepositoryConfigurationSource)
-	 */
 	public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource)
-	 */
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.XmlRepositoryConfigurationSource)
-	 */
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {}
 
 	/**

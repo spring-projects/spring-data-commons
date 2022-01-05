@@ -323,10 +323,6 @@ public class RepositoryComposition {
 				}));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -341,10 +337,6 @@ public class RepositoryComposition {
 		return ObjectUtils.nullSafeEquals(fragments, that.fragments);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return ObjectUtils.nullSafeHashCode(fragments);
@@ -464,10 +456,6 @@ public class RepositoryComposition {
 			return from(Stream.concat(left, right).collect(Collectors.toList()));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Iterable#iterator()
-		 */
 		@Override
 		public Iterator<RepositoryFragment<?>> iterator() {
 			return fragments.iterator();
@@ -563,19 +551,11 @@ public class RepositoryComposition {
 			return fragments.size();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return fragments.toString();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -598,10 +578,6 @@ public class RepositoryComposition {
 			return ObjectUtils.nullSafeEquals(fragments, that.fragments);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(fragmentCache);

@@ -50,10 +50,6 @@ class VavrCollections {
 			return WrapperType.multiValue(io.vavr.collection.Traversable.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@NonNull
 		@Override
 		public Object convert(Object source) {
@@ -78,20 +74,12 @@ class VavrCollections {
 
 		INSTANCE {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-			 */
 			@NonNull
 			@Override
 			public java.util.Set<ConvertiblePair> getConvertibleTypes() {
 				return CONVERTIBLE_PAIRS;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-			 */
 			@Override
 			public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -109,10 +97,6 @@ class VavrCollections {
 				return true;
 			}
 
-			/*
-			* (non-Javadoc)
-			* @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-			*/
 			@Nullable
 			@Override
 			public Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {

@@ -159,19 +159,11 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 			setResourceLoader(new DefaultResourceLoader());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getAnnotation()
-		 */
 		@Override
 		protected Class<? extends Annotation> getAnnotation() {
 			return EnableRepositories.class;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getExtension()
-		 */
 		@Override
 		protected RepositoryConfigurationExtension getExtension() {
 			return new DummyConfigurationExtension();

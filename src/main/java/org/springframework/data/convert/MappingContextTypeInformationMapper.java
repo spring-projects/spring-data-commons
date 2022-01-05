@@ -57,10 +57,6 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.TypeInformationMapper#createAliasFor(org.springframework.data.util.TypeInformation)
-	 */
 	public Alias createAliasFor(TypeInformation<?> type) {
 
 		return typeMap.computeIfAbsent(type.getRawTypeInformation(), key -> {
@@ -111,10 +107,6 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 		return alias;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.TypeInformationMapper#resolveTypeFrom(java.util.Optional)
-	 */
 	@Nullable
 	@Override
 	public TypeInformation<?> resolveTypeFrom(Alias alias) {

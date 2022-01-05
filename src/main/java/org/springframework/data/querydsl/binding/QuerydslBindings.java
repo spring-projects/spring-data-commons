@@ -476,10 +476,6 @@ public class QuerydslBindings {
 			registerBinding(PathAndBinding.withPath(path));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.querydsl.binding.QuerydslBindings.PathBinder#registerBinding(org.springframework.data.querydsl.binding.QuerydslBindings.PathAndBinding)
-		 */
 		@Override
 		protected void registerBinding(PathAndBinding<P, T> binding) {
 
@@ -575,10 +571,6 @@ public class QuerydslBindings {
 			return this.binding;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -593,10 +585,6 @@ public class QuerydslBindings {
 			return ObjectUtils.nullSafeEquals(binding, that.binding);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			var result = ObjectUtils.nullSafeHashCode(path);
@@ -604,10 +592,6 @@ public class QuerydslBindings {
 			return result;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return "QuerydslBindings.PathAndBinding(path=" + this.getPath() + ", binding=" + this.getBinding() + ")";

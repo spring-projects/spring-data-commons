@@ -59,10 +59,6 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 
 			private static final long serialVersionUID = -1324345769124477493L;
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.xmlbeam.config.DefaultXMLFactoriesConfig#createDocumentBuilderFactory()
-			 */
 			@Override
 			public DocumentBuilderFactory createDocumentBuilderFactory() {
 
@@ -90,10 +86,6 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 		this.projectionFactory = projector;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.AbstractHttpMessageConverter#supports(java.lang.Class)
-	 */
 	@Override
 	protected boolean supports(Class<?> type) {
 
@@ -111,19 +103,11 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
-	 */
 	@Override
 	public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.AbstractHttpMessageConverter#readInternal(java.lang.Class, org.springframework.http.HttpInputMessage)
-	 */
 	@Override
 	protected Object readInternal(Class<? extends Object> clazz, HttpInputMessage inputMessage)
 			throws IOException, HttpMessageNotReadableException {
@@ -144,10 +128,6 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.AbstractHttpMessageConverter#writeInternal(java.lang.Object, org.springframework.http.HttpOutputMessage)
-	 */
 	@Override
 	protected void writeInternal(Object t, HttpOutputMessage outputMessage)
 			throws IOException, HttpMessageNotWritableException {}

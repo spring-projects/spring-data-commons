@@ -92,10 +92,6 @@ public class PropertyReferenceException extends RuntimeException {
 		return propertyMatches.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Throwable#getMessage()
-	 */
 	@Override
 	public String getMessage() {
 

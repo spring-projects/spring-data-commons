@@ -86,10 +86,6 @@ public final class Pair<S, T> {
 		return Collectors.toMap(Pair::getFirst, Pair::getSecond);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object o) {
 
@@ -108,10 +104,6 @@ public final class Pair<S, T> {
 		return ObjectUtils.nullSafeEquals(second, pair.second);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		var result = ObjectUtils.nullSafeHashCode(first);
@@ -119,10 +111,6 @@ public final class Pair<S, T> {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return String.format("%s->%s", this.first, this.second);

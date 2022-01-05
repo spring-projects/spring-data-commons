@@ -42,10 +42,6 @@ public class DefaultSpELExpressionEvaluator implements SpELExpressionEvaluator {
 		this.factory = factory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.SpELExpressionEvaluator#evaluate(java.lang.String)
-	 */
 	@Nullable
 	@SuppressWarnings("unchecked")
 	public <T> T evaluate(String expression) {

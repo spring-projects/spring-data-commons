@@ -45,10 +45,6 @@ public class CamelCaseSplittingFieldNamingStrategy implements FieldNamingStrateg
 		this.delimiter = delimiter;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.FieldNamingStrategy#getFieldName(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Override
 	public String getFieldName(PersistentProperty<?> property) {
 
