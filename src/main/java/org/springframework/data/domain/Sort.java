@@ -454,7 +454,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		private Order(@Nullable Direction direction, String property, boolean ignoreCase, NullHandling nullHandling) {
 
 			if (!StringUtils.hasText(property)) {
-				throw new IllegalArgumentException("Property must not null or empty!");
+				throw new IllegalArgumentException("Property must not be null or empty!");
 			}
 
 			this.direction = direction == null ? DEFAULT_DIRECTION : direction;
