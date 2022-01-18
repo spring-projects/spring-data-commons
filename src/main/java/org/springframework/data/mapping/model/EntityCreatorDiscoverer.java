@@ -26,8 +26,7 @@ import java.util.Set;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.data.annotation.Factory;
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.EntityCreatorAnnotation;
 import org.springframework.data.mapping.EntityCreator;
 import org.springframework.data.mapping.FactoryMethod;
 import org.springframework.data.mapping.MappingException;
@@ -59,15 +58,13 @@ class EntityCreatorDiscoverer {
 	@Nullable
 	public static <T, P extends PersistentProperty<P>> EntityCreator<P> discover(PersistentEntity<T, P> entity) {
 
-		var hasAccessibleConstructors = false;
-
 		var declaredConstructors = entity.getType().getDeclaredConstructors();
 		var declaredMethods = entity.getType().getDeclaredMethods();
 
-		var hasAnnotatedFactoryMethod = findAnnotation(Factory.class, declaredMethods);
-		var hasAnnotatedConstructor = findAnnotation(PersistenceConstructor.class, declaredConstructors);
+		var hasAnnotatedFactoryMethod = findAnnotation(EntityCreatorAnnotation.class, declaredMethods);
+		var hasAnnotatedConstructor = findAnnotation(EntityCreatorAnnotation.class, declaredConstructors);
 
-		if (hasAccessibleConstructors && hasAnnotatedFactoryMethod) {
+		if (hasAnnotatedConstructor && hasAnnotatedFactoryMethod) {
 			throw new MappingException(
 					"Invalid usage of @Factory and @PersistenceConstructor on %s. Only one annotation type permitted to indicate how entity instances should be created."
 							.formatted(entity.getType().getName()));
@@ -87,6 +84,7 @@ class EntityCreatorDiscoverer {
 
 	private static <T, P extends PersistentProperty<P>> List<Method> discoverFactoryMethods(PersistentEntity<T, P> entity,
 			Method[] declaredMethods, boolean hasAnnotatedFactoryMethod) {
+
 		List<Method> candidates = new ArrayList<>();
 
 		for (var method : declaredMethods) {
@@ -98,16 +96,18 @@ class EntityCreatorDiscoverer {
 			}
 
 			if (hasAnnotatedFactoryMethod) {
-				if (method.isAnnotationPresent(Factory.class)) {
+				if (findAnnotation(EntityCreatorAnnotation.class, method)) {
 					candidates.add(method);
 				}
 			} else if (WELL_KNOWN_FACTORY_NAMES.contains(method.getName())) {
 				candidates.add(method);
 			}
 		}
+
 		return candidates;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static <T, P extends PersistentProperty<P>> FactoryMethod<Object, P> getFactoryMethod(
 			PersistentEntity<T, P> entity, Method method) {
 
@@ -131,7 +131,7 @@ class EntityCreatorDiscoverer {
 
 	private static void validateMethod(Method method) {
 
-		if (MergedAnnotations.from(method).isPresent(Factory.class)) {
+		if (MergedAnnotations.from(method).isPresent(EntityCreatorAnnotation.class)) {
 
 			if (!Modifier.isStatic(method.getModifiers())) {
 				throw new MappingException(
@@ -142,8 +142,17 @@ class EntityCreatorDiscoverer {
 
 	private static <T> boolean isFactoryMethod(Method method, Class<T> type) {
 
-		if (Modifier.isStatic(method.getModifiers()) && method.getReturnType().equals(type)
-				&& method.getParameterCount() > 0) {
+		// private methods not supported
+		if (Modifier.isPrivate(method.getModifiers())) {
+			return false;
+		}
+
+		// synthetic methods not supported
+		if (method.isSynthetic()) {
+			return false;
+		}
+
+		if (Modifier.isStatic(method.getModifiers()) && method.getReturnType().equals(type)) {
 			return true;
 		}
 

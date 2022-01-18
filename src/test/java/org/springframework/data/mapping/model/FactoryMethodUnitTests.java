@@ -23,6 +23,8 @@ import org.springframework.data.mapping.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
+ * Unit tests for {@link org.springframework.data.mapping.FactoryMethod}.
+ *
  * @author Mark Paluch
  */
 class FactoryMethodUnitTests {
@@ -30,11 +32,12 @@ class FactoryMethodUnitTests {
 	private static EntityInstantiators instantiators = new EntityInstantiators();
 
 	@Test
-	void name() {
+	void shouldCreateInstanceThroughFactoryMethod() {
+
 		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(FactoryPerson.class));
 		var creator = EntityCreatorDiscoverer.discover(entity);
 
-		FactoryPerson result = instantiators.getInstantiatorFor(entity).createInstance(entity,
+		var result = instantiators.getInstantiatorFor(entity).createInstance(entity,
 				new ParameterValueProvider() {
 
 					@Override

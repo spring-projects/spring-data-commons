@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
  * Annotation to declare a {@code static} method as factory method for class instantiation.
  *
  * @author Mark Paluch
+ * @since 3.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })

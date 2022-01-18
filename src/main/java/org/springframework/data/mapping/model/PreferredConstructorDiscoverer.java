@@ -24,13 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.inject.Qualifier;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.EntityCreatorAnnotation;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -114,7 +111,7 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 						continue;
 					}
 
-					if (AnnotationUtils.findAnnotation(candidate, PersistenceConstructor.class) != null) {
+					if (AnnotationUtils.findAnnotation(candidate, EntityCreatorAnnotation.class) != null) {
 						return buildPreferredConstructor(candidate, type, entity);
 					}
 
@@ -148,7 +145,10 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 
 				return Arrays.stream(rawOwningType.getDeclaredConstructors()) //
 						.filter(it -> !it.isSynthetic()) // Synthetic constructors should not be considered
-						.filter(it -> AnnotationUtils.findAnnotation(it, PersistenceConstructor.class) != null) // Explicitly defined constructor trumps
+						.filter(it -> AnnotationUtils.findAnnotation(it, EntityCreatorAnnotation.class) != null) // Explicitly
+																																																			// defined
+																																																			// constructor
+																																																			// trumps
 																																								// all
 						.map(it -> buildPreferredConstructor(it, type, entity)) //
 						.findFirst() //

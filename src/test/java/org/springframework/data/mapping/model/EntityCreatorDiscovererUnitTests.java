@@ -27,6 +27,8 @@ import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
+ * Unit tests for {@link EntityCreatorDiscoverer}.
+ *
  * @author Mark Paluch
  */
 class EntityCreatorDiscovererUnitTests {
