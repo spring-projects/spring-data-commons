@@ -152,11 +152,7 @@ class EntityCreatorDiscoverer {
 			return false;
 		}
 
-		if (Modifier.isStatic(method.getModifiers()) && method.getReturnType().equals(type)) {
-			return true;
-		}
-
-		return false;
+		return Modifier.isStatic(method.getModifiers()) && method.getReturnType().equals(type);
 	}
 
 	private static boolean findAnnotation(Class<? extends Annotation> annotationType, AnnotatedElement... elements) {

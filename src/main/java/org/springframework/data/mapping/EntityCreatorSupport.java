@@ -15,7 +15,6 @@
  */
 package org.springframework.data.mapping;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.util.Assert;
 
 /**
- * Value object to encapsulate the factory method to be used when mapping persistent data to objects.
+ * Value object to encapsulate the entity creation mechanism through a {@link Executable} to be used when mapping
+ * persistent data to objects.
  *
  * @author Mark Paluch
  * @since 3.0
@@ -37,23 +37,23 @@ class EntityCreatorSupport<T, P extends PersistentProperty<P>> implements Entity
 	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new ConcurrentHashMap<>();
 
 	/**
-	 * Creates a new {@link EntityCreatorSupport} from the given {@link Constructor} and {@link Parameter}s.
+	 * Creates a new {@link EntityCreatorSupport} from the given {@link Executable} and {@link Parameter}s.
 	 *
-	 * @param factoryMethod must not be {@literal null}.
+	 * @param executable must not be {@literal null}.
 	 * @param parameters must not be {@literal null}.
 	 */
 	@SafeVarargs
-	public EntityCreatorSupport(Executable factoryMethod, Parameter<Object, P>... parameters) {
+	public EntityCreatorSupport(Executable executable, Parameter<Object, P>... parameters) {
 
-		Assert.notNull(factoryMethod, "Factory method must not be null!");
+		Assert.notNull(executable, "Executable must not be null!");
 		Assert.notNull(parameters, "Parameters must not be null!");
 
-		this.executable = factoryMethod;
+		this.executable = executable;
 		this.parameters = Arrays.asList(parameters);
 	}
 
 	/**
-	 * Returns the underlying {@link Constructor}.
+	 * Returns the underlying {@link Executable} that can be invoked reflectively.
 	 *
 	 * @return
 	 */
@@ -62,7 +62,7 @@ class EntityCreatorSupport<T, P extends PersistentProperty<P>> implements Entity
 	}
 
 	/**
-	 * Returns the {@link Parameter}s of the constructor.
+	 * Returns the {@link Parameter}s of the executable.
 	 *
 	 * @return
 	 */
@@ -71,7 +71,7 @@ class EntityCreatorSupport<T, P extends PersistentProperty<P>> implements Entity
 	}
 
 	/**
-	 * Returns whether the factory method has {@link Parameter}s.
+	 * Returns whether the entity creator takes {@link Parameter}s.
 	 *
 	 * @return
 	 */
@@ -85,7 +85,7 @@ class EntityCreatorSupport<T, P extends PersistentProperty<P>> implements Entity
 	}
 
 	/**
-	 * Returns whether the given {@link PersistentProperty} is referenced in a constructor argument of the
+	 * Returns whether the given {@link PersistentProperty} is referenced in a creator argument of the
 	 * {@link PersistentEntity} backing this {@link EntityCreatorSupport}.
 	 * <p>
 	 * Results of this call are cached and reused on the next invocation. Calling this method for a
@@ -93,7 +93,7 @@ class EntityCreatorSupport<T, P extends PersistentProperty<P>> implements Entity
 	 * and return the same result after adding {@link PersistentProperty} to its entity.
 	 *
 	 * @param property must not be {@literal null}.
-	 * @return {@literal true} if the {@link PersistentProperty} is used in the constructor.
+	 * @return {@literal true} if the {@link PersistentProperty} is used in the creator.
 	 */
 	@Override
 	public boolean isCreatorParameter(PersistentProperty<?> property) {
@@ -106,13 +106,7 @@ class EntityCreatorSupport<T, P extends PersistentProperty<P>> implements Entity
 			return cached;
 		}
 
-		var result = false;
-		for (Parameter<?, P> parameter : parameters) {
-			if (parameter.maps(property)) {
-				result = true;
-				break;
-			}
-		}
+		var result = doGetIsCreatorParameter(property);
 
 		isPropertyParameterCache.put(property, result);
 
@@ -122,5 +116,16 @@ class EntityCreatorSupport<T, P extends PersistentProperty<P>> implements Entity
 	@Override
 	public String toString() {
 		return executable.toString();
+	}
+
+	private boolean doGetIsCreatorParameter(PersistentProperty<?> property) {
+
+		for (Parameter<?, P> parameter : parameters) {
+			if (parameter.maps(property)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
