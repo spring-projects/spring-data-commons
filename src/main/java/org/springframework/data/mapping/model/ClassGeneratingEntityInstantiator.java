@@ -386,7 +386,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		private static final String INIT = "<init>";
 		private static final String TAG = "_Instantiator_";
-		private static final String JAVA_LANG_OBJECT = "java/lang/Object";
+		private static final String JAVA_LANG_OBJECT = Type.getInternalName(Object.class);
 		private static final String CREATE_METHOD_NAME = "newInstance";
 
 		private static final String[] IMPLEMENTED_INTERFACES = new String[] {
@@ -480,7 +480,8 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 			var entityTypeResourcePath = Type.getInternalName(entity.getType());
 
-			var mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, CREATE_METHOD_NAME, "([Ljava/lang/Object;)Ljava/lang/Object;",
+			var mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, CREATE_METHOD_NAME,
+					"([" + BytecodeUtil.referenceName(Object.class) + ")" + BytecodeUtil.referenceName(Object.class),
 					null, null);
 			mv.visitCode();
 			mv.visitTypeInsn(NEW, entityTypeResourcePath);
@@ -574,8 +575,8 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 			// Assert.notNull(property)
 			mv.visitLdcInsn(String.format("Parameter %s must not be null!", parameterName));
-			mv.visitMethodInsn(INVOKESTATIC, "org/springframework/util/Assert", "notNull",
-					String.format("(%s%s)V", String.format("L%s;", JAVA_LANG_OBJECT), "Ljava/lang/String;"), false);
+			mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(Assert.class), "notNull", String.format("(%s%s)V",
+					BytecodeUtil.referenceName(JAVA_LANG_OBJECT), BytecodeUtil.referenceName(String.class)), false);
 		}
 
 		/**
@@ -591,52 +592,52 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 			switch (ch) {
 				case 'Z':
-					if (!stackDescriptor.equals("Ljava/lang/Boolean")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Boolean");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Boolean.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Boolean.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Boolean.class), "booleanValue", "()Z", false);
 					break;
 				case 'B':
-					if (!stackDescriptor.equals("Ljava/lang/Byte")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Byte");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Byte.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Byte.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Byte.class), "byteValue", "()B", false);
 					break;
 				case 'C':
-					if (!stackDescriptor.equals("Ljava/lang/Character")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Character");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Character.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Character.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Character.class), "charValue", "()C", false);
 					break;
 				case 'D':
-					if (!stackDescriptor.equals("Ljava/lang/Double")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Double");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Double.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Double.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Double.class), "doubleValue", "()D", false);
 					break;
 				case 'F':
-					if (!stackDescriptor.equals("Ljava/lang/Float")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Float");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Float.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Float.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Float.class), "floatValue", "()F", false);
 					break;
 				case 'I':
-					if (!stackDescriptor.equals("Ljava/lang/Integer")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Integer");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Integer.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Integer.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Integer.class), "intValue", "()I", false);
 					break;
 				case 'J':
-					if (!stackDescriptor.equals("Ljava/lang/Long")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Long");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Long.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Long.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Long.class), "longValue", "()J", false);
 					break;
 				case 'S':
-					if (!stackDescriptor.equals("Ljava/lang/Short")) {
-						mv.visitTypeInsn(CHECKCAST, "java/lang/Short");
+					if (!stackDescriptor.equals(BytecodeUtil.referenceName(Short.class))) {
+						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(Short.class));
 					}
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Short", "shortValue", "()S", false);
+					mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Short.class), "shortValue", "()S", false);
 					break;
 				default:
 					throw new IllegalArgumentException("Unboxing should not be attempted for descriptor '" + ch + "'");
