@@ -83,8 +83,19 @@ public final class PreferredConstructor<T, P extends PersistentProperty<P>> exte
 		return MergedAnnotations.from(getExecutable()).isPresent(PersistenceConstructor.class);
 	}
 
+	/**
+	 * @param property
+	 * @return
+	 * @deprecated since 3.0, use {@link #isCreatorParameter(PersistentProperty)} instead.
+	 */
+	@Deprecated
 	public boolean isConstructorParameter(PersistentProperty<?> property) {
 		return isCreatorParameter(property);
+	}
+
+	@Override
+	public boolean isParentParameter(Parameter<?, P> parameter) {
+		return isEnclosingClassParameter(parameter);
 	}
 
 	/**

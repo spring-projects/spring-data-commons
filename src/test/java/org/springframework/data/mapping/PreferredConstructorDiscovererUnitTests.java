@@ -99,7 +99,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 		assertThat(PreferredConstructorDiscoverer.discover(entity)).satisfies(constructor -> {
 
 			Parameter<?, P> parameter = constructor.getParameters().iterator().next();
-			assertThat(constructor.isEnclosingClassParameter(parameter)).isTrue();
+			assertThat(constructor.isParentParameter(parameter)).isTrue();
 		});
 	}
 

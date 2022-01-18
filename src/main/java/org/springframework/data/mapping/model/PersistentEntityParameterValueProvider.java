@@ -19,7 +19,6 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.lang.Nullable;
 
 /**
@@ -50,12 +49,8 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 
 		var creator = entity.getEntityCreator();
 
-		if (creator instanceof PreferredConstructor) {
-
-			PreferredConstructor<T, P> constructor = (PreferredConstructor<T, P>) creator;
-			if (constructor.isEnclosingClassParameter(parameter)) {
+		if (creator.isParentParameter(parameter)) {
 				return (T) parent;
-			}
 		}
 
 		var name = parameter.getName();

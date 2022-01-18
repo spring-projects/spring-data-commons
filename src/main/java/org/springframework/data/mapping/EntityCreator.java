@@ -34,6 +34,17 @@ public interface EntityCreator<P extends PersistentProperty<P>> {
 	boolean isCreatorParameter(PersistentProperty<?> property);
 
 	/**
+	 * Returns whether the given {@link Parameter} is one referring to parent value (such as an enclosing class or a
+	 * receiver parameter).
+	 *
+	 * @param parameter
+	 * @return
+	 */
+	default boolean isParentParameter(Parameter<?, P> parameter) {
+		return false;
+	}
+
+	/**
 	 * @return the number of parameters.
 	 */
 	int getParameterCount();
