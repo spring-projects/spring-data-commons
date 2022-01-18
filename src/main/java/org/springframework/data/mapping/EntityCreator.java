@@ -21,13 +21,32 @@ import java.util.List;
  * Mechanism to create an entity instance.
  *
  * @author Mark Paluch
+ * @since 3.0
  */
-public interface EntityCreator<T, P extends PersistentProperty<P>> {
+public interface EntityCreator<P extends PersistentProperty<P>> {
 
-	// TODO: Rename to isCreatorParameter
-	boolean isConstructorParameter(PersistentProperty<?> property);
+	/**
+	 * Check whether the given {@link PersistentProperty} is being used as creator parameter.
+	 *
+	 * @param property
+	 * @return
+	 */
+	boolean isCreatorParameter(PersistentProperty<?> property);
 
+	/**
+	 * @return the number of parameters.
+	 */
 	int getParameterCount();
 
+	/**
+	 * @return the parameters used by this creator.
+	 */
 	List<Parameter<Object, P>> getParameters();
+
+	/**
+	 * @return whether the creator accepts {@link Parameter}s.
+	 */
+	default boolean hasParameters() {
+		return getParameterCount() != 0;
+	}
 }

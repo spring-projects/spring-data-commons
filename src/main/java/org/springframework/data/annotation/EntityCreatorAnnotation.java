@@ -21,12 +21,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare a {@code static} method as factory method for class instantiation.
+ * Marker annotation to declare a constructor or factory method annotation as factory/preferred constructor annotation.
  *
  * @author Mark Paluch
+ * @since 3.0
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-@EntityCreatorAnnotation
-public @interface Factory {
+@Target({ ElementType.ANNOTATION_TYPE })
+public @interface EntityCreatorAnnotation {
 }

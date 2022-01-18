@@ -92,7 +92,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 	void createsInnerClassInstanceCorrectly() {
 
 		var entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
-		assertThat(entity.getPersistenceConstructor()).satisfies(it -> {
+		assertThat(entity.getEntityCreator()).satisfies(it -> {
 
 			var parameter = it.getParameters().iterator().next();
 

@@ -83,7 +83,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
 		doReturn(Foo.class).when(entity).getType();
-		doReturn(constructor).when(entity).getPersistenceConstructor();
+		doReturn(constructor).when(entity).getEntityCreator();
 
 		assertThat(instance.createInstance(entity, provider)).isInstanceOf(Foo.class);
 
@@ -105,7 +105,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	void createsInnerClassInstanceCorrectly() {
 
 		var entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
-		assertThat(entity.getPersistenceConstructor()).satisfies(constructor -> {
+		assertThat(entity.getEntityCreator()).satisfies(constructor -> {
 
 			var parameter = constructor.getParameters().iterator().next();
 
@@ -194,7 +194,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjCtorDefault.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjCtorDefault.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2)
 				.forEach(i -> assertThat(this.instance.createInstance(entity, provider)).isInstanceOf(ObjCtorDefault.class));
@@ -205,7 +205,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjCtorNoArgs.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjCtorNoArgs.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2).forEach(i -> {
 
@@ -224,7 +224,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjCtor1ParamString.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjCtor1ParamString.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 		doReturn("FOO").when(provider).getParameterValue(any());
 
 		IntStream.range(0, 2).forEach(i -> {
@@ -242,7 +242,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjCtor2ParamStringString.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjCtor2ParamStringString.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2).forEach(i -> {
 
@@ -262,7 +262,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjectCtor1ParamInt.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjectCtor1ParamInt.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2).forEach(i -> {
 
@@ -280,7 +280,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjectCtor1ParamInt.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjectCtor1ParamInt.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		assertThatThrownBy(() -> this.instance.createInstance(entity, provider)) //
 				.hasCauseInstanceOf(IllegalArgumentException.class);
@@ -292,7 +292,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(ObjectCtor7ParamsString5IntsString.class).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(ObjectCtor7ParamsString5IntsString.class))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 
 		IntStream.range(0, 2).forEach(i -> {
 
@@ -412,7 +412,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn(type).when(entity).getType();
 		doReturn(PreferredConstructorDiscoverer.discover(type))//
-				.when(entity).getPersistenceConstructor();
+				.when(entity).getEntityCreator();
 	}
 
 	static class Foo {

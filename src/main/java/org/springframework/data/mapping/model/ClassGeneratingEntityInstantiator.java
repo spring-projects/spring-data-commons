@@ -33,6 +33,7 @@ import org.springframework.asm.Type;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.NativeDetector;
+import org.springframework.data.mapping.EntityCreator;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -141,7 +142,8 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
-		return new EntityInstantiatorAdapter(createObjectInstantiator(entity, entity.getPersistenceConstructor()));
+		return new EntityInstantiatorAdapter(
+				createObjectInstantiator(entity, (PreferredConstructor<?, ?>) entity.getEntityCreator()));
 	}
 
 	/**
@@ -169,9 +171,17 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return true;
 		}
 
-		var persistenceConstructor = entity.getPersistenceConstructor();
-		if (persistenceConstructor == null || Modifier.isPrivate(persistenceConstructor.getConstructor().getModifiers())) {
+		var entityCreator = entity.getEntityCreator();
+
+		if (entityCreator == null) {
 			return true;
+		}
+
+		if (entityCreator instanceof PreferredConstructor<?, ?> persistenceConstructor) {
+
+			if (Modifier.isPrivate(persistenceConstructor.getConstructor().getModifiers())) {
+				return true;
+			}
 		}
 
 		if (!ClassUtils.isPresent(ObjectInstantiator.class.getName(), type.getClassLoader())) {
@@ -236,7 +246,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			var params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+			var params = extractInvocationArguments(entity.getEntityCreator(), provider);
 
 			try {
 				return (T) instantiator.newInstance(params);
@@ -254,13 +264,13 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	static <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-			@Nullable PreferredConstructor<? extends T, P> constructor, ParameterValueProvider<P> provider) {
+			@Nullable EntityCreator<P> constructor, ParameterValueProvider<P> provider) {
 
 		if (constructor == null || !constructor.hasParameters()) {
 			return allocateArguments(0);
 		}
 
-		var params = allocateArguments(constructor.getConstructor().getParameterCount());
+		var params = allocateArguments(constructor.getParameterCount());
 
 		var index = 0;
 		for (Parameter<?, P> parameter : constructor.getParameters()) {
@@ -303,7 +313,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			var params = extractInvocationArguments(entity.getPersistenceConstructor(), provider);
+			var params = extractInvocationArguments(entity.getEntityCreator(), provider);
 
 			throw new MappingInstantiationException(entity, Arrays.asList(params),
 					new BeanInstantiationException(typeToCreate, "Class is abstract"));

@@ -63,7 +63,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)!";
 
-	private final @Nullable EntityCreator<T, P> constructor;
+	private final @Nullable EntityCreator<P> constructor;
 	private final TypeInformation<T> information;
 	private final List<P> properties;
 	private final List<P> persistentPropertiesCache;
@@ -133,12 +133,12 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	}
 
 	@Override
-	public EntityCreator<T, P> getEntityCreator() {
+	public EntityCreator<P> getEntityCreator() {
 		return constructor;
 	}
 
 	public boolean isConstructorArgument(PersistentProperty<?> property) {
-		return constructor != null && constructor.isConstructorParameter(property);
+		return constructor != null && constructor.isCreatorParameter(property);
 	}
 
 	public boolean isIdProperty(PersistentProperty<?> property) {

@@ -65,7 +65,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @since 3.0
 	 */
 	@Nullable
-	EntityCreator<T, P> getEntityCreator();
+	EntityCreator<P> getEntityCreator();
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referred to by a constructor argument of the

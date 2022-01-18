@@ -17,7 +17,6 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -35,25 +34,38 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.lang.Nullable;
 
 /**
+ * Discoverer for factory methods and persistence constructors.
+ *
  * @author Mark Paluch
+ * @since 3.0
  */
 class EntityCreatorDiscoverer {
 
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
-	private static final Set<String> WELL_KNOWN_FACTORY_NAMES = Set.of("of", "create");
+	private static final Set<String> WELL_KNOWN_FACTORY_NAMES = Set.of("of", "create", "from", "just");
 
-	public static <T, P extends PersistentProperty<P>> EntityCreator<T, P> discover(PersistentEntity<T, P> entity) {
+	/**
+	 * Discover an entity creator
+	 *
+	 * @param entity
+	 * @param <T>
+	 * @param <P>
+	 * @return
+	 */
+	@Nullable
+	public static <T, P extends PersistentProperty<P>> EntityCreator<P> discover(PersistentEntity<T, P> entity) {
 
-		boolean hasAccessibleConstructors = false;
+		var hasAccessibleConstructors = false;
 
-		Constructor<?>[] declaredConstructors = entity.getType().getDeclaredConstructors();
-		Method[] declaredMethods = entity.getType().getDeclaredMethods();
+		var declaredConstructors = entity.getType().getDeclaredConstructors();
+		var declaredMethods = entity.getType().getDeclaredMethods();
 
-		boolean hasAnnotatedFactoryMethod = findAnnotation(Factory.class, declaredMethods);
-		boolean hasAnnotatedConstructor = findAnnotation(PersistenceConstructor.class, declaredConstructors);
+		var hasAnnotatedFactoryMethod = findAnnotation(Factory.class, declaredMethods);
+		var hasAnnotatedConstructor = findAnnotation(PersistenceConstructor.class, declaredConstructors);
 
 		if (hasAccessibleConstructors && hasAnnotatedFactoryMethod) {
 			throw new MappingException(
@@ -65,7 +77,7 @@ class EntityCreatorDiscoverer {
 
 			List<Method> candidates = new ArrayList<>();
 
-			for (Method method : declaredMethods) {
+			for (var method : declaredMethods) {
 
 				validateMethod(method);
 
@@ -84,12 +96,12 @@ class EntityCreatorDiscoverer {
 
 			if (candidates.size() == 1) {
 
-				Method method = candidates.get(0);
+				var method = candidates.get(0);
 				Parameter<Object, P>[] parameters = new Parameter[method.getParameterCount()];
 				var parameterAnnotations = method.getParameterAnnotations();
 				var types = entity.getTypeInformation().getParameterTypes(method);
 
-				String[] parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(method);
+				var parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(method);
 
 				for (var i = 0; i < parameters.length; i++) {
 
