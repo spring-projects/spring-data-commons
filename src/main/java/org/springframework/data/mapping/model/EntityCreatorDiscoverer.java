@@ -75,48 +75,58 @@ class EntityCreatorDiscoverer {
 
 		if (!hasAnnotatedConstructor) {
 
-			List<Method> candidates = new ArrayList<>();
-
-			for (var method : declaredMethods) {
-
-				validateMethod(method);
-
-				if (!isFactoryMethod(method, entity.getType())) {
-					continue;
-				}
-
-				if (hasAnnotatedFactoryMethod) {
-					if (method.isAnnotationPresent(Factory.class)) {
-						candidates.add(method);
-					}
-				} else if (WELL_KNOWN_FACTORY_NAMES.contains(method.getName())) {
-					candidates.add(method);
-				}
-			}
+			var candidates = discoverFactoryMethods(entity, declaredMethods, hasAnnotatedFactoryMethod);
 
 			if (candidates.size() == 1) {
-
-				var method = candidates.get(0);
-				Parameter<Object, P>[] parameters = new Parameter[method.getParameterCount()];
-				var parameterAnnotations = method.getParameterAnnotations();
-				var types = entity.getTypeInformation().getParameterTypes(method);
-
-				var parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(method);
-
-				for (var i = 0; i < parameters.length; i++) {
-
-					var name = parameterNames == null || parameterNames.length <= i ? null : parameterNames[i];
-					var type = types.get(i);
-					var annotations = parameterAnnotations[i];
-
-					parameters[i] = new Parameter(name, type, annotations, entity);
-				}
-
-				return new FactoryMethod<>(method, parameters);
+				return getFactoryMethod(entity, candidates.get(0));
 			}
 		}
 
 		return PreferredConstructorDiscoverer.discover(entity);
+	}
+
+	private static <T, P extends PersistentProperty<P>> List<Method> discoverFactoryMethods(PersistentEntity<T, P> entity,
+			Method[] declaredMethods, boolean hasAnnotatedFactoryMethod) {
+		List<Method> candidates = new ArrayList<>();
+
+		for (var method : declaredMethods) {
+
+			validateMethod(method);
+
+			if (!isFactoryMethod(method, entity.getType())) {
+				continue;
+			}
+
+			if (hasAnnotatedFactoryMethod) {
+				if (method.isAnnotationPresent(Factory.class)) {
+					candidates.add(method);
+				}
+			} else if (WELL_KNOWN_FACTORY_NAMES.contains(method.getName())) {
+				candidates.add(method);
+			}
+		}
+		return candidates;
+	}
+
+	private static <T, P extends PersistentProperty<P>> FactoryMethod<Object, P> getFactoryMethod(
+			PersistentEntity<T, P> entity, Method method) {
+
+		Parameter<Object, P>[] parameters = new Parameter[method.getParameterCount()];
+		var parameterAnnotations = method.getParameterAnnotations();
+		var types = entity.getTypeInformation().getParameterTypes(method);
+
+		var parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(method);
+
+		for (var i = 0; i < parameters.length; i++) {
+
+			var name = parameterNames == null || parameterNames.length <= i ? null : parameterNames[i];
+			var type = types.get(i);
+			var annotations = parameterAnnotations[i];
+
+			parameters[i] = new Parameter(name, type, annotations, entity);
+		}
+
+		return new FactoryMethod<>(method, parameters);
 	}
 
 	private static void validateMethod(Method method) {

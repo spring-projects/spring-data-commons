@@ -56,7 +56,7 @@ import org.springframework.util.ReflectionUtils;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
-	ClassGeneratingEntityInstantiator instance = new ClassGeneratingEntityInstantiator();
+	ClassGeneratingEntityInstantiator instance = new ClassGeneratingEntityInstantiator(false);
 
 	@Mock PersistentEntity<?, P> entity;
 	@Mock ParameterValueProvider<P> provider;
@@ -187,6 +187,37 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 		assertThat(reference.sample).isNotNull();
 		assertThat(reference.sample.id).isEqualTo(2L);
 		assertThat(reference.sample.name).isEqualTo("FOO");
+	}
+
+	@Test // DATACMNS-1175
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	void createsInstancesWithFactoryMethodCorrectly() {
+
+		PersistentEntity<WithFactoryMethod, P> entity = new BasicPersistentEntity<>(from(WithFactoryMethod.class));
+
+		doReturn(2L, "FOO").when(provider).getParameterValue(any(Parameter.class));
+
+		var provider = new ParameterValueProvider<P>() {
+
+			@Override
+			public <T> T getParameterValue(Parameter<T, P> parameter) {
+
+				if (parameter.getName().equals("id")) {
+					return (T) Long.valueOf(1);
+				}
+
+				if (parameter.getName().equals("name")) {
+					return (T) "Walter";
+				}
+
+				throw new UnsupportedOperationException(parameter.getName());
+			}
+		};
+
+		var result = this.instance.createInstance(entity, provider);
+
+		assertThat(result.id).isEqualTo(1L);
+		assertThat(result.name).isEqualTo("Hello Walter");
 	}
 
 	@Test // DATACMNS-578, DATACMNS-1126
@@ -426,6 +457,22 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		class Inner {
 
+		}
+	}
+
+	static class WithFactoryMethod {
+
+		final Long id;
+		final String name;
+
+		private WithFactoryMethod(Long id, String name) {
+
+			this.id = id;
+			this.name = name;
+		}
+
+		public static WithFactoryMethod create(Long id, String name) {
+			return new WithFactoryMethod(id, "Hello " + name);
 		}
 	}
 

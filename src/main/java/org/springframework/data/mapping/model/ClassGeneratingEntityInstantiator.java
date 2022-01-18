@@ -34,19 +34,21 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.NativeDetector;
 import org.springframework.data.mapping.EntityCreator;
+import org.springframework.data.mapping.FactoryMethod;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
  * An {@link EntityInstantiator} that can generate byte code to speed-up dynamic object instantiation. Uses the
  * {@link PersistentEntity}'s {@link PreferredConstructor} to instantiate an instance of the entity by dynamically
  * generating factory methods with appropriate constructor invocations via ASM. If we cannot generate byte code for a
- * type, we gracefully fall-back to the {@link ReflectionEntityInstantiator}.
+ * type, we gracefully fallback to the {@link ReflectionEntityInstantiator}.
  *
  * @author Thomas Darimont
  * @author Oliver Gierke
@@ -65,11 +67,21 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	private volatile Map<TypeInformation<?>, EntityInstantiator> entityInstantiators = new HashMap<>(32);
 
+	private final boolean fallbackToReflectionOnError;
+
 	/**
 	 * Creates a new {@link ClassGeneratingEntityInstantiator}.
 	 */
 	public ClassGeneratingEntityInstantiator() {
+		this(true);
+	}
+
+	/**
+	 * Creates a new {@link ClassGeneratingEntityInstantiator}.
+	 */
+	ClassGeneratingEntityInstantiator(boolean fallbackToReflectionOnError) {
 		this.generator = new ObjectInstantiatorClassGenerator();
+		this.fallbackToReflectionOnError = fallbackToReflectionOnError;
 	}
 
 	@Override
@@ -123,18 +135,22 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return MappingInstantiationExceptionEntityInstantiator.create(entity.getType());
 		}
 
-		try {
-			return doCreateEntityInstantiator(entity);
-		} catch (Throwable ex) {
+		if (fallbackToReflectionOnError) {
+			try {
+				return doCreateEntityInstantiator(entity);
+			} catch (Throwable ex) {
 
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(
-						String.format("Cannot create entity instantiator for %s. Falling back to ReflectionEntityInstantiator.",
-								entity.getName()),
-						ex);
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug(
+							String.format("Cannot create entity instantiator for %s. Falling back to ReflectionEntityInstantiator.",
+									entity.getName()),
+							ex);
+				}
+				return ReflectionEntityInstantiator.INSTANCE;
 			}
-			return ReflectionEntityInstantiator.INSTANCE;
 		}
+
+		return doCreateEntityInstantiator(entity);
 	}
 
 	/**
@@ -143,7 +159,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 */
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
 		return new EntityInstantiatorAdapter(
-				createObjectInstantiator(entity, (PreferredConstructor<?, ?>) entity.getEntityCreator()));
+				createObjectInstantiator(entity, entity.getEntityCreator()));
 	}
 
 	/**
@@ -184,6 +200,13 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			}
 		}
 
+		if (entityCreator instanceof FactoryMethod<?, ?> factoryMethod) {
+
+			if (Modifier.isPrivate(factoryMethod.getFactoryMethod().getModifiers())) {
+				return true;
+			}
+		}
+
 		if (!ClassUtils.isPresent(ObjectInstantiator.class.getName(), type.getClassLoader())) {
 			return true;
 		}
@@ -204,7 +227,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	/**
 	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link PersistentEntity} and
-	 * {@link PreferredConstructor}. There will always be exactly one {@link ObjectInstantiator} instance per
+	 * {@link EntityCreator}. There will always be exactly one {@link ObjectInstantiator} instance per
 	 * {@link PersistentEntity}.
 	 *
 	 * @param entity
@@ -212,7 +235,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity,
-			@Nullable PreferredConstructor<?, ?> constructor) {
+			@Nullable EntityCreator<?> constructor) {
 
 		try {
 			return (ObjectInstantiator) this.generator.generateCustomInstantiatorClass(entity, constructor).newInstance();
@@ -377,7 +400,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @return
 		 */
 		public Class<?> generateCustomInstantiatorClass(PersistentEntity<?, ?> entity,
-				@Nullable PreferredConstructor<?, ?> constructor) {
+				@Nullable EntityCreator<?> constructor) {
 
 			var className = generateClassName(entity);
 			var type = entity.getType();
@@ -414,11 +437,11 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 *
 		 * @param internalClassName
 		 * @param entity
-		 * @param constructor
+		 * @param entityCreator
 		 * @return
 		 */
 		public byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity,
-				@Nullable PreferredConstructor<?, ?> constructor) {
+				@Nullable EntityCreator<?> entityCreator) {
 
 			var cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
@@ -427,7 +450,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 			visitDefaultConstructor(cw);
 
-			visitCreateMethod(cw, entity, constructor);
+			visitCreateMethod(cw, entity, entityCreator);
 
 			cw.visitEnd();
 
@@ -450,49 +473,78 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 *
 		 * @param cw
 		 * @param entity
-		 * @param constructor
+		 * @param entityCreator
 		 */
 		private void visitCreateMethod(ClassWriter cw, PersistentEntity<?, ?> entity,
-				@Nullable PreferredConstructor<?, ?> constructor) {
+				@Nullable EntityCreator<?> entityCreator) {
 
 			var entityTypeResourcePath = Type.getInternalName(entity.getType());
 
-			var mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, CREATE_METHOD_NAME,
-					"([Ljava/lang/Object;)Ljava/lang/Object;", null, null);
+			var mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, CREATE_METHOD_NAME, "([Ljava/lang/Object;)Ljava/lang/Object;",
+					null, null);
 			mv.visitCode();
 			mv.visitTypeInsn(NEW, entityTypeResourcePath);
 			mv.visitInsn(DUP);
 
-			if (constructor != null) {
+			if (entityCreator instanceof PreferredConstructor<?, ?> constructor) {
+				visitConstructorCreation(constructor, mv, entityTypeResourcePath);
+			}
 
-				var ctor = constructor.getConstructor();
-				var parameterTypes = ctor.getParameterTypes();
-				List<? extends Parameter<Object, ?>> parameters = constructor.getParameters();
+			if (entityCreator instanceof FactoryMethod<?, ?> factoryMethod) {
+				visitFactoryMethodCreation(factoryMethod, mv, entityTypeResourcePath);
+			}
 
-				for (var i = 0; i < parameterTypes.length; i++) {
+			mv.visitInsn(ARETURN);
+			mv.visitMaxs(0, 0); // (0, 0) = computed via ClassWriter.COMPUTE_MAXS
+			mv.visitEnd();
+		}
 
-					mv.visitVarInsn(ALOAD, 1);
+		private static void visitConstructorCreation(PreferredConstructor<?, ?> constructor, MethodVisitor mv,
+				String entityTypeResourcePath) {
 
-					visitArrayIndex(mv, i);
+			var ctor = constructor.getConstructor();
+			var parameterTypes = ctor.getParameterTypes();
+			List<? extends Parameter<Object, ?>> parameters = constructor.getParameters();
 
-					mv.visitInsn(AALOAD);
+			visitParameterTypes(mv, parameterTypes, parameters);
 
-					if (parameterTypes[i].isPrimitive()) {
+			mv.visitMethodInsn(INVOKESPECIAL, entityTypeResourcePath, INIT, Type.getConstructorDescriptor(ctor), false);
+		}
 
-						mv.visitInsn(DUP);
-						var parameterName = parameters.size() > i ? parameters.get(i).getName() : null;
+		private static void visitFactoryMethodCreation(FactoryMethod<?, ?> factoryMethod, MethodVisitor mv,
+				String entityTypeResourcePath) {
 
-						insertAssertNotNull(mv, parameterName == null ? String.format("at index %d", i) : parameterName);
-						insertUnboxInsns(mv, Type.getType(parameterTypes[i]).toString().charAt(0), "");
-					} else {
-						mv.visitTypeInsn(CHECKCAST, Type.getInternalName(parameterTypes[i]));
-					}
+			var method = factoryMethod.getFactoryMethod();
+			var parameterTypes = method.getParameterTypes();
+			List<? extends Parameter<Object, ?>> parameters = factoryMethod.getParameters();
+
+			visitParameterTypes(mv, parameterTypes, parameters);
+
+			mv.visitMethodInsn(INVOKESTATIC, entityTypeResourcePath, method.getName(), Type.getMethodDescriptor(method),
+					false);
+		}
+
+		private static void visitParameterTypes(MethodVisitor mv, Class<?>[] parameterTypes,
+				List<? extends Parameter<Object, ?>> parameters) {
+
+			for (var i = 0; i < parameterTypes.length; i++) {
+
+				mv.visitVarInsn(ALOAD, 1);
+
+				visitArrayIndex(mv, i);
+
+				mv.visitInsn(AALOAD);
+
+				if (parameterTypes[i].isPrimitive()) {
+
+					mv.visitInsn(DUP);
+					var parameterName = parameters.size() > i ? parameters.get(i).getName() : null;
+
+					insertAssertNotNull(mv, parameterName == null ? String.format("at index %d", i) : parameterName);
+					insertUnboxInsns(mv, Type.getType(parameterTypes[i]).toString().charAt(0), "");
+				} else {
+					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(parameterTypes[i]));
 				}
-
-				mv.visitMethodInsn(INVOKESPECIAL, entityTypeResourcePath, INIT, Type.getConstructorDescriptor(ctor), false);
-				mv.visitInsn(ARETURN);
-				mv.visitMaxs(0, 0); // (0, 0) = computed via ClassWriter.COMPUTE_MAXS
-				mv.visitEnd();
 			}
 		}
 
