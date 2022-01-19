@@ -45,6 +45,7 @@ import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter;
 import org.springframework.data.convert.ThreeTenBackPortConverters.LocalDateTimeToJavaTimeInstantConverter;
 import org.springframework.data.geo.Point;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.threeten.bp.LocalDateTime;
 
@@ -301,6 +302,25 @@ class CustomConversionsUnitTests {
 
 		assertThat(conversionService.canConvert(io.vavr.collection.List.class, List.class)).isTrue();
 		assertThat(conversionService.canConvert(List.class, io.vavr.collection.List.class)).isTrue();
+	}
+
+	@Test // GH-1484
+	void allowsToRegisterPropertyConversions() {
+
+		PropertyValueConversions propertyValueConversions = mock(PropertyValueConversions.class);
+		when(propertyValueConversions.getValueConverter(any())).thenReturn(mock(PropertyValueConverter.class));
+
+		CustomConversions conversions = new CustomConversions(new ConverterConfiguration(StoreConversions.NONE,
+				Collections.emptyList(), (it) -> true, propertyValueConversions));
+		assertThat(conversions.getPropertyValueConverter(mock(PersistentProperty.class))).isNotNull();
+	}
+
+	@Test // GH-1484
+	void doesNotFailIfPropertiesConversionIsNull() {
+
+		CustomConversions conversions = new CustomConversions(new ConverterConfiguration(StoreConversions.NONE,
+				Collections.emptyList(), (it) -> true, null));
+		assertThat(conversions.getPropertyValueConverter(mock(PersistentProperty.class))).isNull();
 	}
 
 	private static Class<?> createProxyTypeFor(Class<?> type) {

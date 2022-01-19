@@ -33,6 +33,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.Streamable;
@@ -98,7 +99,7 @@ public class CustomConversions {
 	private final Function<ConvertiblePair, Class<?>> getRawWriteTarget = convertiblePair -> getCustomTarget(
 			convertiblePair.getSourceType(), null, writingPairs);
 
-	private final PropertyValueConverterFactory propertyValueConverterFactory;
+	private PropertyValueConversions propertyValueConversions;
 
 	/**
 	 * @param converterConfiguration the {@link ConverterConfiguration} to apply.
@@ -122,11 +123,7 @@ public class CustomConversions {
 		this.converters = Collections.unmodifiableList(registeredConverters);
 		this.simpleTypeHolder = new SimpleTypeHolder(customSimpleTypes,
 				converterConfiguration.getStoreConversions().getStoreTypeHolder());
-		if(converterConfiguration.getPropertyConverterFactory() != null) {
-			this.propertyValueConverterFactory = converterConfiguration.getPropertyConverterFactory();
-		} else {
-			this.propertyValueConverterFactory = new CachingPropertyValueConverterFactory(new SimplePropertyConverterFactory());
-		}
+		this.propertyValueConversions = converterConfiguration.getPropertyValueConversions();
 	}
 
 	/**
@@ -177,6 +174,36 @@ public class CustomConversions {
 
 		converters.forEach(it -> registerConverterIn(it, conversionService));
 		VavrCollectionConverters.getConvertersToRegister().forEach(it -> registerConverterIn(it, conversionService));
+	}
+
+	/**
+	 * Delegate check if a {@link PropertyValueConverter} for the given {@literal property} is present via
+	 * {@link PropertyValueConversions}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return {@literal true} if a specific {@link PropertyValueConverter} is available.
+	 * @see PropertyValueConversions#hasValueConverter(PersistentProperty)
+	 * @since ?
+	 */
+	public boolean hasPropertyValueConverter(PersistentProperty<?> property) {
+		return propertyValueConversions != null ? propertyValueConversions.hasValueConverter(property) : false;
+	}
+
+	/**
+	 * Delegate to obtain the {@link PropertyValueConverter} for the given {@literal property} from
+	 * {@link PropertyValueConversions}.
+	 *
+	 * @param property must not be {@literal null}. param <A> domain specific type
+	 * @param <B> store native type
+	 * @param <C> conversion context type
+	 * @return the suitable {@link PropertyValueConverter} or {@literal null} if none available.
+	 * @see PropertyValueConversions#getValueConverter(PersistentProperty)
+	 * @since ?
+	 */
+	@Nullable
+	public <A, B, C extends PropertyValueConverter.ValueConversionContext> PropertyValueConverter<A, B, C> getPropertyValueConverter(
+			PersistentProperty<?> property) {
+		return propertyValueConversions != null ? propertyValueConversions.getValueConverter(property) : null;
 	}
 
 	/**
@@ -445,10 +472,6 @@ public class CustomConversions {
 		}
 
 		return null;
-	}
-
-	public PropertyValueConverterFactory getPropertyValueConverterFactory() {
-		return propertyValueConverterFactory;
 	}
 
 	private static boolean hasAssignableSourceType(ConvertiblePair pair, Class<?> sourceType) {
@@ -888,7 +911,7 @@ public class CustomConversions {
 		private final StoreConversions storeConversions;
 		private final List<?> userConverters;
 		private final Predicate<ConvertiblePair> converterRegistrationFilter;
-		private final PropertyValueConverterFactory propertyConverterFactory;
+		private final PropertyValueConversions propertyValueConversions;
 
 		/**
 		 * Create a new ConverterConfiguration holding the given {@link StoreConversions} and user defined converters.
@@ -914,16 +937,16 @@ public class CustomConversions {
 		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters,
 				Predicate<ConvertiblePair> converterRegistrationFilter) {
 
-			this(storeConversions, userConverters, converterRegistrationFilter, null);
+			this(storeConversions, userConverters, converterRegistrationFilter, new SimplePropertyValueConversions());
 		}
 
 		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters,
-				Predicate<ConvertiblePair> converterRegistrationFilter, @Nullable PropertyValueConverterFactory propertyConverterFactory) {
+				Predicate<ConvertiblePair> converterRegistrationFilter, @Nullable PropertyValueConversions propertyValueConversions) {
 
 			this.storeConversions = storeConversions;
 			this.userConverters = new ArrayList<>(userConverters);
 			this.converterRegistrationFilter = converterRegistrationFilter;
-			this.propertyConverterFactory = propertyConverterFactory;
+			this.propertyValueConversions = propertyValueConversions;
 		}
 
 		/**
@@ -947,9 +970,13 @@ public class CustomConversions {
 			return this.converterRegistrationFilter.test(candidate);
 		}
 
+		/**
+		 * @return the configured {@link PropertyValueConversions} if set, {@literal null} otherwise.
+		 * @since ?
+		 */
 		@Nullable
-		public PropertyValueConverterFactory getPropertyConverterFactory() {
-			return propertyConverterFactory;
+		public PropertyValueConversions getPropertyValueConversions() {
+			return this.propertyValueConversions;
 		}
 	}
 }

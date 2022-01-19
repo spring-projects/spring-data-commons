@@ -15,6 +15,7 @@
  */
 package org.springframework.data.convert;
 
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
@@ -29,38 +30,56 @@ import org.springframework.lang.Nullable;
  * @param <B> store native type
  * @since 2.7
  */
-public interface PropertyValueConverter<A, B> {
+public interface PropertyValueConverter<A, B, C extends PropertyValueConverter.ValueConversionContext> {
 
 	/**
-	 * Convert the given store specific value into it's domain value representation.
+	 * Convert the given store specific value into it's domain value representation. Typically a {@literal read}
+	 * operation.
 	 *
 	 * @param nativeValue can be {@literal null}.
+	 * @param context never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
-	A /*read*/nativeToDomain(@Nullable B nativeValue);
+	A /*read*/ nativeToDomain(@Nullable B nativeValue, C context);
 
 	/**
-	 * Convert the given domain specific value into it's native store representation.
+	 * Convert the given domain specific value into it's native store representation. Typically a {@literal write}
+	 * operation.
 	 *
 	 * @param domainValue can be {@literal null}.
+	 * @param context never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
-	B /*write*/domainToNative(@Nullable A domainValue);
+	B /*write*/ domainToNative(@Nullable A domainValue, C context);
 
-	enum ObjectToObjectPropertyValueConverter implements PropertyValueConverter<Object, Object> {
+	/**
+	 * @author Christoph Strobl
+	 */
+	interface ValueConversionContext {
+
+		PersistentProperty<?> getProperty();
+	}
+
+	/**
+	 * NoOp {@link PropertyValueConverter} implementation.
+	 *
+	 * @author Christoph Strobl
+	 */
+	enum ObjectToObjectPropertyValueConverter implements PropertyValueConverter<Object, Object, ValueConversionContext> {
 
 		INSTANCE;
 
 		@Override
-		public Object nativeToDomain(Object value) {
+		public Object nativeToDomain(Object value, ValueConversionContext context) {
 			return value;
 		}
 
 		@Override
-		public Object domainToNative(Object value) {
+		public Object domainToNative(Object value, ValueConversionContext context) {
 			return value;
 		}
 	}
+
 }

@@ -17,19 +17,14 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -40,6 +35,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.convert.PropertyConverter;
 import org.springframework.data.convert.PropertyValueConverter;
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -50,7 +46,6 @@ import org.springframework.data.util.Optionals;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.expression.BeanResolver;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -316,7 +311,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	@Nullable
 	@Override
-	public Class<? extends PropertyValueConverter<?, ?>> getValueConverterType() {
+	public Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext>> getValueConverterType() {
 
 		return doFindAnnotation(PropertyConverter.class) //
 				.map(PropertyConverter::value) //

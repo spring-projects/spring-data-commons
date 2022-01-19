@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,18 @@ import org.springframework.data.convert.PropertyValueConverter.ObjectToObjectPro
  * Consult the store specific documentation for details and support notes.
  *
  * @author Christoph Strobl
- * @since 2.7
+ * @since ?
  */
 @Target(FIELD)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PropertyConverter {
 
-	Class<? extends PropertyValueConverter<?,?>> value() default ObjectToObjectPropertyValueConverter.class;
+	/**
+	 * The {@link PropertyValueConverter} type handling the value conversion of the annotated property.
+	 *
+	 * @return the configured {@link PropertyValueConverter}. {@link ObjectToObjectPropertyValueConverter} by default.
+	 */
+	Class<? extends PropertyValueConverter<?, ?, ? extends PropertyValueConverter.ValueConversionContext>> value() default ObjectToObjectPropertyValueConverter.class;
 
 }

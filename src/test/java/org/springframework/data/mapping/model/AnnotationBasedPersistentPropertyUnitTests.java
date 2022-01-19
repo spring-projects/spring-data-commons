@@ -37,7 +37,6 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -48,6 +47,7 @@ import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.convert.PropertyConverter;
 import org.springframework.data.convert.PropertyValueConverter;
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -543,20 +543,20 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		String value2;
 	}
 
-	static class MyPropertyConverter implements PropertyValueConverter<Object,Object> {
+	static class MyPropertyConverter implements PropertyValueConverter<Object,Object, ValueConversionContext> {
 
 		@Override
-		public Object nativeToDomain(Object value) {
+		public Object nativeToDomain(Object value, ValueConversionContext context) {
 			return null;
 		}
 
 		@Override
-		public Object domainToNative(Object value) {
+		public Object domainToNative(Object value, ValueConversionContext context) {
 			return null;
 		}
 	}
 
-	static class MyPropertyConverterThatRequiresComponents implements PropertyValueConverter<Object,Object> {
+	static class MyPropertyConverterThatRequiresComponents implements PropertyValueConverter<Object,Object, ValueConversionContext> {
 
 		private final SomeDependency someDependency;
 
@@ -565,12 +565,12 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		}
 
 		@Override
-		public Object nativeToDomain(Object value) {
+		public Object nativeToDomain(Object value, ValueConversionContext context) {
 			return null;
 		}
 
 		@Override
-		public Object domainToNative(Object value) {
+		public Object domainToNative(Object value, ValueConversionContext context) {
 			return null;
 		}
 	}
