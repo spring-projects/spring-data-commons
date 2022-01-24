@@ -23,7 +23,7 @@ For detailed information on the specific features of your module, see the chapte
 The central interface in the Spring Data repository abstraction is `Repository`.
 It takes the domain class to manage as well as the ID type of the domain class as type arguments.
 This interface acts primarily as a marker interface to capture the types to work with and to help you to discover interfaces that extend this one.
-The https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/CrudRepository.html[`CrudRepository`] interface provides sophisticated CRUD functionality for the entity class that is being managed.
+The https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/CrudRepository.html[`CrudRepository`] and https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/ListCrudRepository.html[`ListCrudRepository`] interfaces provide sophisticated CRUD functionality for the entity class that is being managed.
 
 [[repositories.repository]]
 .`CrudRepository` Interface
@@ -54,6 +54,8 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 <5> Deletes the given entity.
 <6> Indicates whether an entity with the given ID exists.
 ====
+
+`ListCrudRepository` offers equivalent methods, but they return `List` where the `CrudRepository` methods return an `Iterable`.
 
 NOTE: We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`.
 Those interfaces extend `CrudRepository` and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces such as `CrudRepository`.
