@@ -80,4 +80,13 @@ Coroutines repositories are built on reactive repositories to expose the non-blo
 Methods on a Coroutines repository can be backed either by a query method or a custom implementation.
 Invoking a custom implementation method propagates the Coroutines invocation to the actual implementation method if the custom method is `suspend`-able without requiring the implementation method to return a reactive type such as `Mono` or `Flux`.
 
+Note that depending on the method declaration the coroutine context may or may not be available.
+To retain access to the context, either declare your method using `suspend` or return a type that enables context propagation such as `Flow`.
+
+* `suspend fun findOne(id: String): User`: Retrieve the data once and synchronously by suspending.
+* `fun findByFirstname(firstname: String): Flow<User>`: Retrieve a stream of data.
+The `Flow` is created eagerly while data is fetched upon `Flow` interaction (`Flow.collect(…)`).
+* `fun getUser(): User`: Retrieve data once *blocking the thread* and without context propagation.
+This should be avoided.
+
 NOTE: Coroutines repositories are only discovered when the repository extends the `CoroutineCrudRepository` interface.
