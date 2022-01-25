@@ -188,28 +188,28 @@ class PropertyPathUnitTests {
 		assertThat(iterator.hasNext()).isFalse();
 	}
 
-	@Test // DATACMNS-139
+	@Test // DATACMNS-139, GH-2395
 	void rejectsInvalidPropertyWithLeadingUnderscore() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
 				.isThrownBy(() -> PropertyPath.from("_id", Foo.class))//
-				.withMessageContaining("property _id");
+				.withMessageContaining("property '_id'");
 	}
 
-	@Test // DATACMNS-139
+	@Test // DATACMNS-139, GH-2395
 	void rejectsNestedInvalidPropertyWithLeadingUnderscore() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
 				.isThrownBy(() -> PropertyPath.from("_foo_id", Sample2.class))//
-				.withMessageContaining("property id");
+				.withMessageContaining("property 'id'");
 	}
 
-	@Test // DATACMNS-139
+	@Test // DATACMNS-139, GH-2395
 	void rejectsNestedInvalidPropertyExplictlySplitWithLeadingUnderscore() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
 				.isThrownBy(() -> PropertyPath.from("_foo__id", Sample2.class))//
-				.withMessageContaining("property _id");
+				.withMessageContaining("property '_id'");
 	}
 
 	@Test // DATACMNS 158

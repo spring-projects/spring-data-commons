@@ -453,7 +453,7 @@ class RepositoryFactorySupportUnitTests {
 				.hasMessageContaining("does not support Reactive Query by Example");
 	}
 
-	@Test // GH-2341
+	@Test // GH-2341, GH-2395
 	void derivedQueryMethodCannotBeImplemented() {
 
 		DummyRepositoryFactory factory = new DummyRepositoryFactory(backingRepo) {
@@ -469,7 +469,7 @@ class RepositoryFactorySupportUnitTests {
 
 		assertThatThrownBy(() -> factory.getRepository(WithQueryMethodUsingInvalidProperty.class))
 				.isInstanceOf(QueryCreationException.class).hasMessageContaining("findAllByName")
-				.hasMessageContaining("No property name found for type Object");
+				.hasMessageContaining("No property 'name' found for type 'Object'");
 	}
 
 	private ConvertingRepository prepareConvertingRepository(final Object expectedValue) {
