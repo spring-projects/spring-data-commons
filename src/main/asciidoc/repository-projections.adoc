@@ -304,7 +304,7 @@ This way, the method can be used to obtain the aggregates as is or with a projec
 
 .Using a repository with dynamic projections
 ====
-[source, java, subs="+attributes"]
+[source,java,subs="+attributes"]
 ----
 void someMethod(PersonRepository people) {
 
@@ -316,3 +316,7 @@ void someMethod(PersonRepository people) {
 }
 ----
 ====
+
+NOTE: Query parameters of type `Class` are inspected whether they qualify as dynamic projection parameter.
+If the actual return type of the query equals the generic parameter type of the `Class` parameter, then the matching `Class` parameter is not available for usage within the query or SpEL expressions.
+If you want to use a `Class` parameter as query argument then make sure to use a different generic parameter, for example `Class<?>`.
