@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -201,7 +201,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		}
 
 		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				@Nullable EntityCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
+				@Nullable InstanceCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
 
 			if (entityCreator == null) {
 				throw new IllegalArgumentException("EntityCreator must not be null!");

@@ -17,9 +17,9 @@ This means we need two fundamental steps:
 Spring Data automatically tries to detect a persistent entity's constructor to be used to materialize objects of that type.
 The resolution algorithm works as follows:
 
-1. If there is a single static factory method annotated with `@FactoryMethod` then it is used.
+1. If there is a single static factory method annotated with `@PersistenceCreator` then it is used.
 2. If there is a single constructor, it is used.
-3. If there are multiple constructors and exactly one is annotated with `@PersistenceConstructor`, it is used.
+3. If there are multiple constructors and exactly one is annotated with `@PersistenceCreator`, it is used.
 4. If there's a no-argument constructor, it is used.
 Other constructors will be ignored.
 
@@ -205,9 +205,9 @@ Even if the intent is that the calculation should be preferred, it's important t
 <4> The `comment` property is mutable is populated by setting its field directly.
 <5> The `remarks` properties are mutable and populated by setting the `comment` field directly or by invoking the setter method for
 <6> The class exposes a factory method and a constructor for object creation.
-The core idea here is to use factory methods instead of additional constructors to avoid the need for constructor disambiguation through `@PersistenceConstructor`.
+The core idea here is to use factory methods instead of additional constructors to avoid the need for constructor disambiguation through `@PersistenceCreator`.
 Instead, defaulting of properties is handled within the factory method.
-If you want Spring Data to use the factory method for object instantiation, annotate it with `@FactoryMethod`.
+If you want Spring Data to use the factory method for object instantiation, annotate it with `@PersistenceCreator`.
 
 [[mapping.general-recommendations]]
 == General recommendations
@@ -217,7 +217,7 @@ Also, this avoids your domain objects to be littered with setter methods that al
 If you need those, prefer to make them package protected so that they can only be invoked by a limited amount of co-located types.
 Constructor-only materialization is up to 30% faster than properties population.
 * _Provide an all-args constructor_ -- Even if you cannot or don't want to model your entities as immutable values, there's still value in providing a constructor that takes all properties of the entity as arguments, including the mutable ones, as this allows the object mapping to skip the property population for optimal performance.
-* _Use factory methods instead of overloaded constructors to avoid ``@PersistenceConstructor``_ -- With an all-argument constructor needed for optimal performance, we usually want to expose more application use case specific constructors that omit things like auto-generated identifiers etc.
+* _Use factory methods instead of overloaded constructors to avoid ``@PersistenceCreator``_ -- With an all-argument constructor needed for optimal performance, we usually want to expose more application use case specific constructors that omit things like auto-generated identifiers etc.
 It's an established pattern to rather use static factory methods to expose these variants of the all-args constructor.
 * _Make sure you adhere to the constraints that allow the generated instantiator and property accessor classes to be used_ --
 * _For identifiers to be generated, still use a final field in combination with an all-arguments persistence constructor (preferred) or a `with…` method_ --
@@ -307,14 +307,14 @@ data class Person(val id: String, val name: String)
 ----
 ====
 
-The class above compiles to a typical class with an explicit constructor.We can customize this class by adding another constructor and annotate it with `@PersistenceConstructor` to indicate a constructor preference:
+The class above compiles to a typical class with an explicit constructor.We can customize this class by adding another constructor and annotate it with `@PersistenceCreator` to indicate a constructor preference:
 
 ====
 [source,kotlin]
 ----
 data class Person(var id: String, val name: String) {
 
-    @PersistenceConstructor
+    @PersistenceCreator
     constructor(id: String) : this(id, "unknown")
 }
 ----

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2021-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ package org.springframework.data.mapping;
 import java.util.List;
 
 /**
- * Metadata describing a mechanism to create an entity instance.
+ * Metadata describing a mechanism to create instances of persistent types.
  *
  * @author Mark Paluch
+ * @author Oliver Drotbohm
  * @since 3.0
  */
-public interface EntityCreatorMetadata<P extends PersistentProperty<P>> {
+public interface InstanceCreatorMetadata<P extends PersistentProperty<P>> {
 
 	/**
 	 * Check whether the given {@link PersistentProperty} is being used as creator parameter.

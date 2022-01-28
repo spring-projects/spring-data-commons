@@ -28,22 +28,23 @@ import org.springframework.util.Assert;
  * persistent data to objects.
  *
  * @author Mark Paluch
+ * @author Oliver Drotbohm
  * @since 3.0
  */
-class EntityCreatorMetadataSupport<T, P extends PersistentProperty<P>> implements EntityCreatorMetadata<P> {
+class InstanceCreatorMetadataSupport<T, P extends PersistentProperty<P>> implements InstanceCreatorMetadata<P> {
 
 	private final Executable executable;
 	private final List<Parameter<Object, P>> parameters;
 	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new ConcurrentHashMap<>();
 
 	/**
-	 * Creates a new {@link EntityCreatorMetadataSupport} from the given {@link Executable} and {@link Parameter}s.
+	 * Creates a new {@link InstanceCreatorMetadataSupport} from the given {@link Executable} and {@link Parameter}s.
 	 *
 	 * @param executable must not be {@literal null}.
 	 * @param parameters must not be {@literal null}.
 	 */
 	@SafeVarargs
-	public EntityCreatorMetadataSupport(Executable executable, Parameter<Object, P>... parameters) {
+	public InstanceCreatorMetadataSupport(Executable executable, Parameter<Object, P>... parameters) {
 
 		Assert.notNull(executable, "Executable must not be null!");
 		Assert.notNull(parameters, "Parameters must not be null!");
@@ -72,7 +73,7 @@ class EntityCreatorMetadataSupport<T, P extends PersistentProperty<P>> implement
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referenced in a creator argument of the
-	 * {@link PersistentEntity} backing this {@link EntityCreatorMetadataSupport}.
+	 * {@link PersistentEntity} backing this {@link InstanceCreatorMetadataSupport}.
 	 * <p>
 	 * Results of this call are cached and reused on the next invocation. Calling this method for a
 	 * {@link PersistentProperty} that was not yet added to its owning {@link PersistentEntity} will capture that state

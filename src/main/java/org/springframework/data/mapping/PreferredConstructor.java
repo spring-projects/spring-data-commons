@@ -35,7 +35,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Myeonghyeon Lee
  * @author Xeno Amess
  */
-public final class PreferredConstructor<T, P extends PersistentProperty<P>> extends EntityCreatorMetadataSupport<T, P> {
+public final class PreferredConstructor<T, P extends PersistentProperty<P>> extends InstanceCreatorMetadataSupport<T, P> {
 
 	private final List<Parameter<Object, P>> parameters;
 
