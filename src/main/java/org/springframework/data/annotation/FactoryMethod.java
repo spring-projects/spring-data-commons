@@ -29,5 +29,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 @EntityCreatorAnnotation
-public @interface Factory {
+public @interface FactoryMethod {
 }

@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.annotation.FactoryMethod;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -35,7 +36,6 @@ class FactoryMethodUnitTests {
 	void shouldCreateInstanceThroughFactoryMethod() {
 
 		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(FactoryPerson.class));
-		var creator = EntityCreatorDiscoverer.discover(entity);
 
 		var result = instantiators.getInstantiatorFor(entity).createInstance(entity,
 				new ParameterValueProvider() {
@@ -67,6 +67,7 @@ class FactoryMethodUnitTests {
 			this.lastname = lastname;
 		}
 
+		@FactoryMethod
 		public static FactoryPerson of(String firstname, String lastname) {
 			return new FactoryPerson(firstname, "Mr. " + lastname);
 		}

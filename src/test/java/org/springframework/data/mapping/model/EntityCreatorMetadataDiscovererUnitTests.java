@@ -19,44 +19,34 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import org.springframework.data.annotation.Factory;
-import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.mapping.FactoryMethod;
+import org.springframework.data.annotation.FactoryMethod;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
- * Unit tests for {@link EntityCreatorDiscoverer}.
+ * Unit tests for {@link EntityCreatorMetadataDiscoverer}.
  *
  * @author Mark Paluch
  */
-class EntityCreatorDiscovererUnitTests {
-
-	@Test
-	void shouldDiscoverSimpleCreator() {
-
-		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(FactoryPerson.class));
-		var creator = EntityCreatorDiscoverer.discover(entity);
-
-		assertThat(creator).isInstanceOf(FactoryMethod.class);
-	}
+class EntityCreatorMetadataDiscovererUnitTests {
 
 	@Test
 	void shouldDiscoverAnnotatedFactoryMethod() {
 
 		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(FactoryMethodsPerson.class));
-		var creator = EntityCreatorDiscoverer.discover(entity);
+		var creator = EntityCreatorMetadataDiscoverer.discover(entity);
 
-		assertThat(creator).isInstanceOf(FactoryMethod.class);
-		assertThat(((FactoryMethod<?, ?>) creator).getFactoryMethod().getParameterCount()).isEqualTo(2);
+		assertThat(creator).isInstanceOf(org.springframework.data.mapping.FactoryMethod.class);
+		assertThat(((org.springframework.data.mapping.FactoryMethod<?, ?>) creator).getFactoryMethod().getParameterCount())
+				.isEqualTo(2);
 	}
 
 	@Test
 	void shouldDiscoverAnnotatedConstructor() {
 
 		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(ConstructorPerson.class));
-		var creator = EntityCreatorDiscoverer.discover(entity);
+		var creator = EntityCreatorMetadataDiscoverer.discover(entity);
 
 		assertThat(creator).isInstanceOf(PreferredConstructor.class);
 	}
@@ -65,7 +55,7 @@ class EntityCreatorDiscovererUnitTests {
 	void shouldDiscoverDefaultConstructor() {
 
 		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(Person.class));
-		var creator = EntityCreatorDiscoverer.discover(entity);
+		var creator = EntityCreatorMetadataDiscoverer.discover(entity);
 
 		assertThat(creator).isInstanceOf(PreferredConstructor.class);
 	}
@@ -89,25 +79,11 @@ class EntityCreatorDiscovererUnitTests {
 
 	static class NonStaticFactoryMethod {
 
-		@Factory
-		public FactoryPerson of(String firstname, String lastname) {
-			return new FactoryPerson(firstname, lastname);
+		@FactoryMethod
+		public ConstructorPerson of(String firstname, String lastname) {
+			return new ConstructorPerson(firstname, lastname);
 		}
 
-	}
-
-	static class FactoryPerson {
-
-		private final String firstname, lastname;
-
-		private FactoryPerson(String firstname, String lastname) {
-			this.firstname = firstname;
-			this.lastname = lastname;
-		}
-
-		public static FactoryPerson of(String firstname, String lastname) {
-			return new FactoryPerson(firstname, lastname);
-		}
 	}
 
 	static class FactoryMethodsPerson {
@@ -123,7 +99,7 @@ class EntityCreatorDiscovererUnitTests {
 			return new FactoryMethodsPerson(firstname, "unknown");
 		}
 
-		@Factory
+		@FactoryMethod
 		public static FactoryMethodsPerson of(String firstname, String lastname) {
 			return new FactoryMethodsPerson(firstname, lastname);
 		}
@@ -133,7 +109,6 @@ class EntityCreatorDiscovererUnitTests {
 
 		private final String firstname, lastname;
 
-		@PersistenceConstructor
 		private ConstructorPerson(String firstname, String lastname) {
 			this.firstname = firstname;
 			this.lastname = lastname;

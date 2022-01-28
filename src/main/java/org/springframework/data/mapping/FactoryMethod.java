@@ -26,7 +26,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Mark Paluch
  * @since 3.0
  */
-public final class FactoryMethod<T, P extends PersistentProperty<P>> extends EntityCreatorSupport<T, P> {
+public final class FactoryMethod<T, P extends PersistentProperty<P>> extends EntityCreatorMetadataSupport<T, P> {
 
 	/**
 	 * Creates a new {@link FactoryMethod} from the given {@link Constructor} and {@link Parameter}s.

@@ -33,7 +33,7 @@ import org.springframework.asm.Type;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.NativeDetector;
-import org.springframework.data.mapping.EntityCreator;
+import org.springframework.data.mapping.EntityCreatorMetadata;
 import org.springframework.data.mapping.FactoryMethod;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
@@ -227,7 +227,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	/**
 	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link PersistentEntity} and
-	 * {@link EntityCreator}. There will always be exactly one {@link ObjectInstantiator} instance per
+	 * {@link EntityCreatorMetadata}. There will always be exactly one {@link ObjectInstantiator} instance per
 	 * {@link PersistentEntity}.
 	 *
 	 * @param entity
@@ -235,7 +235,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity,
-			@Nullable EntityCreator<?> constructor) {
+			@Nullable EntityCreatorMetadata<?> constructor) {
 
 		try {
 			return (ObjectInstantiator) this.generator.generateCustomInstantiatorClass(entity, constructor).newInstance();
@@ -287,7 +287,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	static <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-			@Nullable EntityCreator<P> constructor, ParameterValueProvider<P> provider) {
+			@Nullable EntityCreatorMetadata<P> constructor, ParameterValueProvider<P> provider) {
 
 		if (constructor == null || !constructor.hasParameters()) {
 			return allocateArguments(0);
@@ -400,7 +400,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @return
 		 */
 		public Class<?> generateCustomInstantiatorClass(PersistentEntity<?, ?> entity,
-				@Nullable EntityCreator<?> constructor) {
+				@Nullable EntityCreatorMetadata<?> constructor) {
 
 			var className = generateClassName(entity);
 			var type = entity.getType();
@@ -441,7 +441,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @return
 		 */
 		public byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity,
-				@Nullable EntityCreator<?> entityCreator) {
+				@Nullable EntityCreatorMetadata<?> entityCreator) {
 
 			var cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
@@ -476,7 +476,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @param entityCreator
 		 */
 		private void visitCreateMethod(ClassWriter cw, PersistentEntity<?, ?> entity,
-				@Nullable EntityCreator<?> entityCreator) {
+				@Nullable EntityCreatorMetadata<?> entityCreator) {
 
 			var entityTypeResourcePath = Type.getInternalName(entity.getType());
 

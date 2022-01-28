@@ -21,13 +21,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.annotation.EntityCreatorAnnotation;
-import org.springframework.data.mapping.EntityCreator;
+import org.springframework.data.mapping.EntityCreatorMetadata;
 import org.springframework.data.mapping.FactoryMethod;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
@@ -41,11 +40,9 @@ import org.springframework.lang.Nullable;
  * @author Mark Paluch
  * @since 3.0
  */
-class EntityCreatorDiscoverer {
+class EntityCreatorMetadataDiscoverer {
 
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
-
-	private static final Set<String> WELL_KNOWN_FACTORY_NAMES = Set.of("of", "create", "from", "just");
 
 	/**
 	 * Discover an entity creator
@@ -56,7 +53,7 @@ class EntityCreatorDiscoverer {
 	 * @return
 	 */
 	@Nullable
-	public static <T, P extends PersistentProperty<P>> EntityCreator<P> discover(PersistentEntity<T, P> entity) {
+	public static <T, P extends PersistentProperty<P>> EntityCreatorMetadata<P> discover(PersistentEntity<T, P> entity) {
 
 		var declaredConstructors = entity.getType().getDeclaredConstructors();
 		var declaredMethods = entity.getType().getDeclaredMethods();
@@ -70,9 +67,9 @@ class EntityCreatorDiscoverer {
 							.formatted(entity.getType().getName()));
 		}
 
-		if (!hasAnnotatedConstructor) {
+		if (hasAnnotatedFactoryMethod) {
 
-			var candidates = discoverFactoryMethods(entity, declaredMethods, hasAnnotatedFactoryMethod);
+			var candidates = discoverFactoryMethods(entity, declaredMethods);
 
 			if (candidates.size() == 1) {
 				return getFactoryMethod(entity, candidates.get(0));
@@ -83,7 +80,7 @@ class EntityCreatorDiscoverer {
 	}
 
 	private static <T, P extends PersistentProperty<P>> List<Method> discoverFactoryMethods(PersistentEntity<T, P> entity,
-			Method[] declaredMethods, boolean hasAnnotatedFactoryMethod) {
+			Method[] declaredMethods) {
 
 		List<Method> candidates = new ArrayList<>();
 
@@ -95,11 +92,7 @@ class EntityCreatorDiscoverer {
 				continue;
 			}
 
-			if (hasAnnotatedFactoryMethod) {
-				if (findAnnotation(EntityCreatorAnnotation.class, method)) {
-					candidates.add(method);
-				}
-			} else if (WELL_KNOWN_FACTORY_NAMES.contains(method.getName())) {
+			if (findAnnotation(EntityCreatorAnnotation.class, method)) {
 				candidates.add(method);
 			}
 		}
@@ -152,7 +145,7 @@ class EntityCreatorDiscoverer {
 			return false;
 		}
 
-		return Modifier.isStatic(method.getModifiers()) && method.getReturnType().equals(type);
+		return Modifier.isStatic(method.getModifiers()) && method.getReturnType().isAssignableFrom(type);
 	}
 
 	private static boolean findAnnotation(Class<? extends Annotation> annotationType, AnnotatedElement... elements) {

@@ -18,12 +18,12 @@ package org.springframework.data.mapping;
 import java.util.List;
 
 /**
- * Mechanism to create an entity instance.
+ * Metadata describing a mechanism to create an entity instance.
  *
  * @author Mark Paluch
  * @since 3.0
  */
-public interface EntityCreator<P extends PersistentProperty<P>> {
+public interface EntityCreatorMetadata<P extends PersistentProperty<P>> {
 
 	/**
 	 * Check whether the given {@link PersistentProperty} is being used as creator parameter.
@@ -47,7 +47,9 @@ public interface EntityCreator<P extends PersistentProperty<P>> {
 	/**
 	 * @return the number of parameters.
 	 */
-	int getParameterCount();
+	default int getParameterCount() {
+		return getParameters().size();
+	}
 
 	/**
 	 * @return the parameters used by this creator.
@@ -58,6 +60,6 @@ public interface EntityCreator<P extends PersistentProperty<P>> {
 	 * @return whether the creator accepts {@link Parameter}s.
 	 */
 	default boolean hasParameters() {
-		return getParameterCount() != 0;
+		return !getParameters().isEmpty();
 	}
 }

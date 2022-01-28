@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.mapping.EntityCreator;
+import org.springframework.data.mapping.EntityCreatorMetadata;
 import org.springframework.data.mapping.FactoryMethod;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -44,7 +44,7 @@ public class MappingInstantiationException extends RuntimeException {
 	private static final String TEXT_TEMPLATE = "Failed to instantiate %s using constructor %s with arguments %s";
 
 	private final Class<?> entityType;
-	private final EntityCreator<?> entityCreator;
+	private final EntityCreatorMetadata<?> entityCreator;
 	private final List<Object> constructorArguments;
 
 	/**
@@ -84,7 +84,7 @@ public class MappingInstantiationException extends RuntimeException {
 
 		return entity.map(it -> {
 
-			Optional<? extends EntityCreator<?>> constructor = Optional.ofNullable(it.getEntityCreator());
+			Optional<? extends EntityCreatorMetadata<?>> constructor = Optional.ofNullable(it.getEntityCreator());
 			List<String> toStringArgs = new ArrayList<>(arguments.size());
 
 			for (var o : arguments) {
@@ -98,7 +98,7 @@ public class MappingInstantiationException extends RuntimeException {
 		}).orElse(defaultMessage);
 	}
 
-	private static String toString(EntityCreator<?> creator) {
+	private static String toString(EntityCreatorMetadata<?> creator) {
 
 		if (creator instanceof PreferredConstructor<?, ?> c) {
 			return toString(c);
@@ -170,7 +170,7 @@ public class MappingInstantiationException extends RuntimeException {
 	 * @return the entity creator
 	 * @since 3.0
 	 */
-	public Optional<EntityCreator<?>> getEntityCreator() {
+	public Optional<EntityCreatorMetadata<?>> getEntityCreator() {
 		return Optional.ofNullable(entityCreator);
 	}
 

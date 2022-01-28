@@ -33,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import org.springframework.data.annotation.FactoryMethod;
 import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
@@ -471,6 +472,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 			this.name = name;
 		}
 
+		@FactoryMethod
 		public static WithFactoryMethod create(Long id, String name) {
 			return new WithFactoryMethod(id, "Hello " + name);
 		}

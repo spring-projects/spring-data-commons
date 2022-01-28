@@ -56,7 +56,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	PreferredConstructor<T, P> getPersistenceConstructor();
 
 	/**
-	 * Returns the {@link EntityCreator} to be used to instantiate objects of this {@link PersistentEntity}.
+	 * Returns the {@link EntityCreatorMetadata} to be used to instantiate objects of this {@link PersistentEntity}.
 	 *
 	 * @return {@literal null} in case no suitable creation mechanism for automatic construction can be found. This
 	 *         usually indicates that the instantiation of the object of that persistent entity is done through either a
@@ -65,7 +65,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @since 3.0
 	 */
 	@Nullable
-	EntityCreator<P> getEntityCreator();
+	EntityCreatorMetadata<P> getEntityCreator();
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referred to by a constructor argument of the
@@ -74,8 +74,22 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @param property can be {@literal null}.
 	 * @return true if the given {@link PersistentProperty} is referred to by a constructor argument or {@literal false}
 	 *         if not or {@literal null}.
+	 * @deprecated since 3.0, use {@link #isCreatorArgument(PersistentProperty)} instead.
 	 */
-	boolean isConstructorArgument(PersistentProperty<?> property);
+	@Deprecated
+	default boolean isConstructorArgument(PersistentProperty<?> property) {
+		return isCreatorArgument(property);
+	}
+
+	/**
+	 * Returns whether the given {@link PersistentProperty} is referred to by a creator argument of the
+	 * {@link PersistentEntity}.
+	 *
+	 * @param property can be {@literal null}.
+	 * @return true if the given {@link PersistentProperty} is referred to by a creator argument or {@literal false} if
+	 *         not or {@literal null}.
+	 */
+	boolean isCreatorArgument(PersistentProperty<?> property);
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is the id property of the entity.

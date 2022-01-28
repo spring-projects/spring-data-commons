@@ -63,7 +63,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)!";
 
-	private final @Nullable EntityCreator<P> constructor;
+	private final @Nullable EntityCreatorMetadata<P> creator;
 	private final TypeInformation<T> information;
 	private final List<P> properties;
 	private final List<P> persistentPropertiesCache;
@@ -109,7 +109,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.properties = new ArrayList<>();
 		this.persistentPropertiesCache = new ArrayList<>();
 		this.comparator = comparator;
-		this.constructor = EntityCreatorDiscoverer.discover(this);
+		this.creator = EntityCreatorMetadataDiscoverer.discover(this);
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
 		this.propertyCache = new HashMap<>(16, 1f);
@@ -124,21 +124,23 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		this.isImmutable = Lazy.of(() -> isAnnotationPresent(Immutable.class));
 		this.requiresPropertyPopulation = Lazy.of(() -> !isImmutable() && properties.stream() //
-				.anyMatch(it -> !(isConstructorArgument(it) || it.isTransient())));
+				.anyMatch(it -> !(isCreatorArgument(it) || it.isTransient())));
 	}
 
 	@Nullable
+	@Override
 	public PreferredConstructor<T, P> getPersistenceConstructor() {
-		return constructor instanceof PreferredConstructor ? (PreferredConstructor<T, P>) constructor : null;
+		return creator instanceof PreferredConstructor ? (PreferredConstructor<T, P>) creator : null;
 	}
 
 	@Override
-	public EntityCreator<P> getEntityCreator() {
-		return constructor;
+	public EntityCreatorMetadata<P> getEntityCreator() {
+		return creator;
 	}
 
-	public boolean isConstructorArgument(PersistentProperty<?> property) {
-		return constructor != null && constructor.isCreatorParameter(property);
+	@Override
+	public boolean isCreatorArgument(PersistentProperty<?> property) {
+		return creator != null && creator.isCreatorParameter(property);
 	}
 
 	public boolean isIdProperty(PersistentProperty<?> property) {

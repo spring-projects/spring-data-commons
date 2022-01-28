@@ -30,20 +30,20 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 3.0
  */
-class EntityCreatorSupport<T, P extends PersistentProperty<P>> implements EntityCreator<P> {
+class EntityCreatorMetadataSupport<T, P extends PersistentProperty<P>> implements EntityCreatorMetadata<P> {
 
 	private final Executable executable;
 	private final List<Parameter<Object, P>> parameters;
 	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new ConcurrentHashMap<>();
 
 	/**
-	 * Creates a new {@link EntityCreatorSupport} from the given {@link Executable} and {@link Parameter}s.
+	 * Creates a new {@link EntityCreatorMetadataSupport} from the given {@link Executable} and {@link Parameter}s.
 	 *
 	 * @param executable must not be {@literal null}.
 	 * @param parameters must not be {@literal null}.
 	 */
 	@SafeVarargs
-	public EntityCreatorSupport(Executable executable, Parameter<Object, P>... parameters) {
+	public EntityCreatorMetadataSupport(Executable executable, Parameter<Object, P>... parameters) {
 
 		Assert.notNull(executable, "Executable must not be null!");
 		Assert.notNull(parameters, "Parameters must not be null!");
@@ -71,22 +71,8 @@ class EntityCreatorSupport<T, P extends PersistentProperty<P>> implements Entity
 	}
 
 	/**
-	 * Returns whether the entity creator takes {@link Parameter}s.
-	 *
-	 * @return
-	 */
-	public boolean hasParameters() {
-		return !parameters.isEmpty();
-	}
-
-	@Override
-	public int getParameterCount() {
-		return parameters.size();
-	}
-
-	/**
 	 * Returns whether the given {@link PersistentProperty} is referenced in a creator argument of the
-	 * {@link PersistentEntity} backing this {@link EntityCreatorSupport}.
+	 * {@link PersistentEntity} backing this {@link EntityCreatorMetadataSupport}.
 	 * <p>
 	 * Results of this call are cached and reused on the next invocation. Calling this method for a
 	 * {@link PersistentProperty} that was not yet added to its owning {@link PersistentEntity} will capture that state
