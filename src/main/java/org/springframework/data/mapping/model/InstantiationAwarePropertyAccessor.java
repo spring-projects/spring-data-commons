@@ -81,7 +81,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 			return;
 		}
 
-		var creator = owner.getEntityCreator();
+		var creator = owner.getInstanceCreatorMetadata();
 
 		if (creator == null) {
 			throw new IllegalStateException(String.format(NO_SETTER_OR_CONSTRUCTOR, property.getName(), owner.getType()));

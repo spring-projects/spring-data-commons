@@ -46,7 +46,7 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		var creator = entity.getEntityCreator();
+		var creator = entity.getInstanceCreatorMetadata();
 
 		if (creator == null) {
 			return instantiateClass(entity);
@@ -59,7 +59,7 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 			params[i++] = provider.getParameterValue(parameter);
 		}
 
-		if (creator instanceof FactoryMethod method) {
+		if (creator instanceof FactoryMethod<?, ?> method) {
 
 			try {
 				var t = (T) ReflectionUtils.invokeMethod(method.getFactoryMethod(), null, params);
@@ -80,6 +80,7 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T instantiateClass(
 			E entity) {
 

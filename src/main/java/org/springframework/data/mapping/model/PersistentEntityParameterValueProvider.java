@@ -47,10 +47,10 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	@SuppressWarnings("unchecked")
 	public <T> T getParameterValue(Parameter<T, P> parameter) {
 
-		var creator = entity.getEntityCreator();
+		var creator = entity.getInstanceCreatorMetadata();
 
-		if (creator.isParentParameter(parameter)) {
-				return (T) parent;
+		if (creator != null && creator.isParentParameter(parameter)) {
+			return (T) parent;
 		}
 
 		var name = parameter.getName();

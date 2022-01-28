@@ -17,16 +17,7 @@ package org.springframework.data.mapping.model;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -63,7 +54,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)!";
 
-	private final @Nullable EntityCreatorMetadata<P> creator;
+	private final @Nullable InstanceCreatorMetadata<P> creator;
 	private final TypeInformation<T> information;
 	private final List<P> properties;
 	private final List<P> persistentPropertiesCache;
@@ -109,7 +100,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.properties = new ArrayList<>();
 		this.persistentPropertiesCache = new ArrayList<>();
 		this.comparator = comparator;
-		this.creator = EntityCreatorMetadataDiscoverer.discover(this);
+		this.creator = InstanceCreatorMetadataDiscoverer.discover(this);
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
 		this.propertyCache = new HashMap<>(16, 1f);
@@ -129,12 +120,14 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	@Nullable
 	@Override
+	@SuppressWarnings("unchecked")
 	public PreferredConstructor<T, P> getPersistenceConstructor() {
 		return creator instanceof PreferredConstructor ? (PreferredConstructor<T, P>) creator : null;
 	}
 
+	@Nullable
 	@Override
-	public EntityCreatorMetadata<P> getEntityCreator() {
+	public InstanceCreatorMetadata<P> getInstanceCreatorMetadata() {
 		return creator;
 	}
 

@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -46,7 +46,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 	@Override
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
 
-		var creator = entity.getEntityCreator();
+		var creator = entity.getInstanceCreatorMetadata();
 
 		if (KotlinReflectionUtils.isSupportedKotlinClass(entity.getType())
 				&& creator instanceof PreferredConstructor<?, ?> constructor) {
@@ -80,9 +80,9 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		DefaultingKotlinConstructorResolver(PersistentEntity<?, ?> entity) {
 
 			var hit = resolveDefaultConstructor(entity);
-			var creator = entity.getEntityCreator();
+			var creator = entity.getInstanceCreatorMetadata();
 
-			if (hit != null && creator instanceof PreferredConstructor<?, ?> persistenceConstructor) {
+			if ((hit != null) && creator instanceof PreferredConstructor<?, ?> persistenceConstructor) {
 				this.defaultConstructor = new PreferredConstructor<>(hit,
 						persistenceConstructor.getParameters().toArray(new Parameter[0]));
 			} else {
@@ -93,7 +93,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		@Nullable
 		private static Constructor<?> resolveDefaultConstructor(PersistentEntity<?, ?> entity) {
 
-			if (!(entity.getEntityCreator()instanceof PreferredConstructor<?, ?> persistenceConstructor)) {
+			if (!(entity.getInstanceCreatorMetadata() instanceof PreferredConstructor<?, ?> persistenceConstructor)) {
 				return null;
 			}
 
@@ -112,7 +112,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 				var syntheticParameters = KotlinDefaultMask.getMaskCount(constructor.getParameterCount())
 						+ /* DefaultConstructorMarker */ 1;
 
-				if (constructor.getParameterCount() + syntheticParameters != candidate.getParameterCount()) {
+				if ((constructor.getParameterCount() + syntheticParameters) != candidate.getParameterCount()) {
 					continue;
 				}
 
@@ -191,7 +191,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			var params = extractInvocationArguments(entity.getEntityCreator(), provider);
+			var params = extractInvocationArguments(entity.getInstanceCreatorMetadata(), provider);
 
 			try {
 				return (T) instantiator.newInstance(params);
@@ -201,7 +201,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		}
 
 		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				@Nullable EntityCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
+				@Nullable InstanceCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
 
 			if (entityCreator == null) {
 				throw new IllegalArgumentException("EntityCreator must not be null!");
@@ -227,7 +227,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 				var parameter = parameters.get(index);
 				var type = parameter.getType().getType();
 
-				if (it.isOptional() && params[index] == null) {
+				if (it.isOptional() && (params[index] == null)) {
 					if (type.isPrimitive()) {
 
 						// apply primitive defaulting to prevent NPE on primitive downcast

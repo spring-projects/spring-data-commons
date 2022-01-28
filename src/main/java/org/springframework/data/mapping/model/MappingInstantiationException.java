@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.mapping.EntityCreatorMetadata;
 import org.springframework.data.mapping.FactoryMethod;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.util.KotlinReflectionUtils;
@@ -44,7 +44,7 @@ public class MappingInstantiationException extends RuntimeException {
 	private static final String TEXT_TEMPLATE = "Failed to instantiate %s using constructor %s with arguments %s";
 
 	private final Class<?> entityType;
-	private final EntityCreatorMetadata<?> entityCreator;
+	private final InstanceCreatorMetadata<?> entityCreator;
 	private final List<Object> constructorArguments;
 
 	/**
@@ -75,7 +75,7 @@ public class MappingInstantiationException extends RuntimeException {
 		super(buildExceptionMessage(entity, arguments, message), cause);
 
 		this.entityType = entity.map(PersistentEntity::getType).orElse(null);
-		this.entityCreator = entity.map(PersistentEntity::getEntityCreator).orElse(null);
+		this.entityCreator = entity.map(PersistentEntity::getInstanceCreatorMetadata).orElse(null);
 		this.constructorArguments = arguments;
 	}
 
@@ -84,7 +84,7 @@ public class MappingInstantiationException extends RuntimeException {
 
 		return entity.map(it -> {
 
-			Optional<? extends EntityCreatorMetadata<?>> constructor = Optional.ofNullable(it.getEntityCreator());
+			Optional<? extends InstanceCreatorMetadata<?>> constructor = Optional.ofNullable(it.getInstanceCreatorMetadata());
 			List<String> toStringArgs = new ArrayList<>(arguments.size());
 
 			for (var o : arguments) {
@@ -98,7 +98,7 @@ public class MappingInstantiationException extends RuntimeException {
 		}).orElse(defaultMessage);
 	}
 
-	private static String toString(EntityCreatorMetadata<?> creator) {
+	private static String toString(InstanceCreatorMetadata<?> creator) {
 
 		if (creator instanceof PreferredConstructor<?, ?> c) {
 			return toString(c);
@@ -170,7 +170,7 @@ public class MappingInstantiationException extends RuntimeException {
 	 * @return the entity creator
 	 * @since 3.0
 	 */
-	public Optional<EntityCreatorMetadata<?>> getEntityCreator() {
+	public Optional<InstanceCreatorMetadata<?>> getEntityCreator() {
 		return Optional.ofNullable(entityCreator);
 	}
 
