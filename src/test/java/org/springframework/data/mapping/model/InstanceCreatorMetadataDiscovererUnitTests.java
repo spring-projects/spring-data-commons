@@ -18,26 +18,26 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.annotation.FactoryMethod;
-import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
- * Unit tests for {@link EntityCreatorMetadataDiscoverer}.
+ * Unit tests for {@link InstanceCreatorMetadataDiscoverer}.
  *
  * @author Mark Paluch
  */
-class EntityCreatorMetadataDiscovererUnitTests {
+class InstanceCreatorMetadataDiscovererUnitTests {
 
 	@Test
 	void shouldDiscoverAnnotatedFactoryMethod() {
 
 		PersistentEntity<FactoryMethodsPerson, ?> entity = new BasicPersistentEntity<>(
 				ClassTypeInformation.from(FactoryMethodsPerson.class));
-		EntityCreatorMetadata<?> creator = EntityCreatorMetadataDiscoverer.discover(entity);
+		InstanceCreatorMetadata<?> creator = InstanceCreatorMetadataDiscoverer.discover(entity);
 
 		assertThat(creator).isInstanceOf(org.springframework.data.mapping.FactoryMethod.class);
 		assertThat(((org.springframework.data.mapping.FactoryMethod<?, ?>) creator).getFactoryMethod().getParameterCount())
@@ -49,7 +49,7 @@ class EntityCreatorMetadataDiscovererUnitTests {
 
 		PersistentEntity<ConstructorPerson, ?> entity = new BasicPersistentEntity<>(
 				ClassTypeInformation.from(ConstructorPerson.class));
-		EntityCreatorMetadata<?> creator = EntityCreatorMetadataDiscoverer.discover(entity);
+		InstanceCreatorMetadata<?> creator = InstanceCreatorMetadataDiscoverer.discover(entity);
 
 		assertThat(creator).isInstanceOf(PreferredConstructor.class);
 	}
@@ -58,7 +58,7 @@ class EntityCreatorMetadataDiscovererUnitTests {
 	void shouldDiscoverDefaultConstructor() {
 
 		PersistentEntity<Person, ?> entity = new BasicPersistentEntity<>(ClassTypeInformation.from(Person.class));
-		EntityCreatorMetadata<?> creator = EntityCreatorMetadataDiscoverer.discover(entity);
+		InstanceCreatorMetadata<?> creator = InstanceCreatorMetadataDiscoverer.discover(entity);
 
 		assertThat(creator).isInstanceOf(PreferredConstructor.class);
 	}
@@ -82,7 +82,7 @@ class EntityCreatorMetadataDiscovererUnitTests {
 
 	static class NonStaticFactoryMethod {
 
-		@FactoryMethod
+		@PersistenceCreator
 		public ConstructorPerson of(String firstname, String lastname) {
 			return new ConstructorPerson(firstname, lastname);
 		}
@@ -102,7 +102,7 @@ class EntityCreatorMetadataDiscovererUnitTests {
 			return new FactoryMethodsPerson(firstname, "unknown");
 		}
 
-		@FactoryMethod
+		@PersistenceCreator
 		public static FactoryMethodsPerson of(String firstname, String lastname) {
 			return new FactoryMethodsPerson(firstname, lastname);
 		}

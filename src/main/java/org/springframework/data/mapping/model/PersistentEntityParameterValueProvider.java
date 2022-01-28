@@ -15,7 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
-import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
@@ -52,7 +52,7 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	@SuppressWarnings("unchecked")
 	public <T> T getParameterValue(Parameter<T, P> parameter) {
 
-		EntityCreatorMetadata<P> creator = entity.getEntityCreator();
+		InstanceCreatorMetadata<P> creator = entity.getInstanceCreatorMetadata();
 
 		if (creator != null && creator.isParentParameter(parameter)) {
 			return (T) parent;

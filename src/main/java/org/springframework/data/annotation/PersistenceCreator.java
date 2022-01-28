@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 the original author or authors.
+ * Copyright 2011-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare a {@code static} method as factory method for class instantiation.
+ * Marker annotation to declare a constructor or factory method annotation as factory/preferred constructor annotation.
  *
  * @author Mark Paluch
- * @since 3.0
+ * @author Oliver Drotbohm
+ * @since 2.7
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-@EntityCreatorAnnotation
-public @interface FactoryMethod {
-}
+@Target({ ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+public @interface PersistenceCreator {}

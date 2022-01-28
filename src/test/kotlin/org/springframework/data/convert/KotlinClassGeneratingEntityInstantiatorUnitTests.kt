@@ -45,7 +45,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		val constructor = PreferredConstructorDiscoverer.discover<Contact, SamplePersistentProperty>(Contact::class.java)
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "White")
-		every { entity.entityCreator } returns constructor
+		every { entity.instanceCreatorMetadata } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
@@ -67,7 +67,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 				null, null, null, null, null, null, null, null, null, null, /* 20-29 */
 				null, "Walter", null, "Junior", null)
 
-		every { entity.entityCreator } returns constructor
+		every { entity.instanceCreatorMetadata } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
@@ -88,7 +88,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		val constructor = PreferredConstructorDiscoverer.discover<WithBoolean, SamplePersistentProperty>(WithBoolean::class.java)
 
 		every { provider.getParameterValue<Boolean>(any()) } returns null
-		every { entity.entityCreator } returns constructor
+		every { entity.instanceCreatorMetadata } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
@@ -112,7 +112,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		every { provider.getParameterValue<Double>(any()) } returns null
 		every { provider.getParameterValue<Char>(any()) } returns null
 		every { provider.getParameterValue<Boolean>(any()) } returns null
-		every { entity.entityCreator } returns constructor
+		every { entity.instanceCreatorMetadata } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
@@ -135,7 +135,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		val constructor = PreferredConstructorDiscoverer.discover<CustomUser, SamplePersistentProperty>(CustomUser::class.java)
 
 		every { provider.getParameterValue<String>(any()) } returns "Walter"
-		every { entity.entityCreator } returns constructor
+		every { entity.instanceCreatorMetadata } returns constructor
 		every { entity.type } returns constructor.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 

@@ -22,8 +22,8 @@ import java.util.Collections;
 
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.mapping.EntityCreatorMetadata;
 import org.springframework.data.mapping.FactoryMethod;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -47,7 +47,7 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		EntityCreatorMetadata<P> creator = entity.getEntityCreator();
+		InstanceCreatorMetadata<P> creator = entity.getInstanceCreatorMetadata();
 
 		if (creator == null) {
 			return instantiateClass(entity);

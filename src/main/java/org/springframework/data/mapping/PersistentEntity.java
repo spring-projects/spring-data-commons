@@ -49,23 +49,23 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 *         indicates that the instantiation of the object of that persistent entity is done through either a customer
 	 *         {@link org.springframework.data.mapping.model.EntityInstantiator} or handled by custom conversion
 	 *         mechanisms entirely.
-	 * @deprecated since 3.0, use {@link #getEntityCreator()}.
+	 * @deprecated since 2.7, use {@link #getInstanceCreatorMetadata()}.
 	 */
 	@Nullable
 	@Deprecated
 	PreferredConstructor<T, P> getPersistenceConstructor();
 
 	/**
-	 * Returns the {@link EntityCreatorMetadata} to be used to instantiate objects of this {@link PersistentEntity}.
+	 * Returns the {@link InstanceCreatorMetadata} to be used to instantiate objects of this {@link PersistentEntity}.
 	 *
 	 * @return {@literal null} in case no suitable creation mechanism for automatic construction can be found. This
 	 *         usually indicates that the instantiation of the object of that persistent entity is done through either a
 	 *         customer {@link org.springframework.data.mapping.model.EntityInstantiator} or handled by custom conversion
 	 *         mechanisms entirely.
-	 * @since 3.0
+	 * @since 2.7
 	 */
 	@Nullable
-	EntityCreatorMetadata<P> getEntityCreator();
+	InstanceCreatorMetadata<P> getInstanceCreatorMetadata();
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referred to by a constructor argument of the

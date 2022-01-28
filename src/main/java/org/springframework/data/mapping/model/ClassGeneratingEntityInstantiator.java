@@ -34,8 +34,8 @@ import org.springframework.asm.Type;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.NativeDetector;
-import org.springframework.data.mapping.EntityCreatorMetadata;
 import org.springframework.data.mapping.FactoryMethod;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -164,7 +164,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 */
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
 		return new EntityInstantiatorAdapter(
-				createObjectInstantiator(entity, entity.getEntityCreator()));
+				createObjectInstantiator(entity, entity.getInstanceCreatorMetadata()));
 	}
 
 	/**
@@ -192,7 +192,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			return true;
 		}
 
-		EntityCreatorMetadata<?> entityCreator = entity.getEntityCreator();
+		InstanceCreatorMetadata<?> entityCreator = entity.getInstanceCreatorMetadata();
 
 		if (entityCreator == null) {
 			return true;
@@ -236,7 +236,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 	/**
 	 * Creates a dynamically generated {@link ObjectInstantiator} for the given {@link PersistentEntity} and
-	 * {@link EntityCreatorMetadata}. There will always be exactly one {@link ObjectInstantiator} instance per
+	 * {@link InstanceCreatorMetadata}. There will always be exactly one {@link ObjectInstantiator} instance per
 	 * {@link PersistentEntity}.
 	 *
 	 * @param entity
@@ -244,7 +244,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	ObjectInstantiator createObjectInstantiator(PersistentEntity<?, ?> entity,
-			@Nullable EntityCreatorMetadata<?> constructor) {
+			@Nullable InstanceCreatorMetadata<?> constructor) {
 
 		try {
 			return (ObjectInstantiator) this.generator.generateCustomInstantiatorClass(entity, constructor).newInstance();
@@ -282,7 +282,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			Object[] params = extractInvocationArguments(entity.getEntityCreator(), provider);
+			Object[] params = extractInvocationArguments(entity.getInstanceCreatorMetadata(), provider);
 
 			try {
 				return (T) instantiator.newInstance(params);
@@ -300,7 +300,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	static <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-			@Nullable EntityCreatorMetadata<P> constructor, ParameterValueProvider<P> provider) {
+			@Nullable InstanceCreatorMetadata<P> constructor, ParameterValueProvider<P> provider) {
 
 		if (constructor == null || !constructor.hasParameters()) {
 			return allocateArguments(0);
@@ -353,7 +353,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			Object[] params = extractInvocationArguments(entity.getEntityCreator(), provider);
+			Object[] params = extractInvocationArguments(entity.getInstanceCreatorMetadata(), provider);
 
 			throw new MappingInstantiationException(entity, Arrays.asList(params),
 					new BeanInstantiationException(typeToCreate, "Class is abstract"));
@@ -417,7 +417,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @return
 		 */
 		public Class<?> generateCustomInstantiatorClass(PersistentEntity<?, ?> entity,
-				@Nullable EntityCreatorMetadata<?> constructor) {
+				@Nullable InstanceCreatorMetadata<?> constructor) {
 
 			String className = generateClassName(entity);
 			Class<?> type = entity.getType();
@@ -458,7 +458,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @return
 		 */
 		public byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity,
-				@Nullable EntityCreatorMetadata<?> entityCreator) {
+				@Nullable InstanceCreatorMetadata<?> entityCreator) {
 
 			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
@@ -493,7 +493,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @param entityCreator
 		 */
 		private void visitCreateMethod(ClassWriter cw, PersistentEntity<?, ?> entity,
-				@Nullable EntityCreatorMetadata<?> entityCreator) {
+				@Nullable InstanceCreatorMetadata<?> entityCreator) {
 
 			String entityTypeResourcePath = Type.getInternalName(entity.getType());
 

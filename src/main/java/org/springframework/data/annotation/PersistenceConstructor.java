@@ -25,9 +25,11 @@ import java.lang.annotation.Target;
  *
  * @author Jon Brisbin
  * @author Mark Paluch
+ * @author Oliver Drotbohm
+ * @deprecated in favor of {@link PersistenceCreator} since 3.0, to be removed in 3.1
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.CONSTRUCTOR, ElementType.ANNOTATION_TYPE })
-@EntityCreatorAnnotation
-public @interface PersistenceConstructor {
-}
+@PersistenceCreator
+@Deprecated
+public @interface PersistenceConstructor {}

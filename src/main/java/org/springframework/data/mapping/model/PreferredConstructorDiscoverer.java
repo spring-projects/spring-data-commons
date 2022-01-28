@@ -29,7 +29,7 @@ import java.util.List;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.data.annotation.EntityCreatorAnnotation;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -117,7 +117,7 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 						continue;
 					}
 
-					if (AnnotationUtils.findAnnotation(candidate, EntityCreatorAnnotation.class) != null) {
+					if (AnnotationUtils.findAnnotation(candidate, PersistenceCreator.class) != null) {
 						return buildPreferredConstructor(candidate, type, entity);
 					}
 
@@ -155,11 +155,8 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 
 				return Arrays.stream(rawOwningType.getDeclaredConstructors()) //
 						.filter(it -> !it.isSynthetic()) // Synthetic constructors should not be considered
-						.filter(it -> AnnotationUtils.findAnnotation(it, EntityCreatorAnnotation.class) != null) // Explicitly
-																																																			// defined
-																																																			// constructor
-																																																			// trumps
-																																								// all
+						// Explicitly defined creator trumps all
+						.filter(it -> AnnotationUtils.findAnnotation(it, PersistenceCreator.class) != null)
 						.map(it -> buildPreferredConstructor(it, type, entity)) //
 						.findFirst() //
 						.orElseGet(() -> {

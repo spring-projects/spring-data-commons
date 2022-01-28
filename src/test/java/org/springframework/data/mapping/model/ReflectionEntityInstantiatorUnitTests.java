@@ -69,7 +69,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
 		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
-		doReturn(constructor).when(entity).getEntityCreator();
+		doReturn(constructor).when(entity).getInstanceCreatorMetadata();
 
 		Object instance = INSTANCE.createInstance(entity, provider);
 
@@ -92,7 +92,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 	void createsInnerClassInstanceCorrectly() {
 
 		BasicPersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
-		assertThat(entity.getEntityCreator()).satisfies(it -> {
+		assertThat(entity.getInstanceCreatorMetadata()).satisfies(it -> {
 
 			Parameter<Object, P> parameter = it.getParameters().iterator().next();
 

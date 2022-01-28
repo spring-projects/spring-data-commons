@@ -26,9 +26,9 @@ import java.util.List;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.data.annotation.EntityCreatorAnnotation;
-import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mapping.FactoryMethod;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
@@ -40,9 +40,9 @@ import org.springframework.lang.Nullable;
  * Discoverer for factory methods and persistence constructors.
  *
  * @author Mark Paluch
- * @since 3.0
+ * @since 2.7
  */
-class EntityCreatorMetadataDiscoverer {
+class InstanceCreatorMetadataDiscoverer {
 
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
@@ -55,13 +55,14 @@ class EntityCreatorMetadataDiscoverer {
 	 * @return
 	 */
 	@Nullable
-	public static <T, P extends PersistentProperty<P>> EntityCreatorMetadata<P> discover(PersistentEntity<T, P> entity) {
+	public static <T, P extends PersistentProperty<P>> InstanceCreatorMetadata<P> discover(
+			PersistentEntity<T, P> entity) {
 
 		Constructor<?>[] declaredConstructors = entity.getType().getDeclaredConstructors();
 		Method[] declaredMethods = entity.getType().getDeclaredMethods();
 
-		boolean hasAnnotatedFactoryMethod = findAnnotation(EntityCreatorAnnotation.class, declaredMethods);
-		boolean hasAnnotatedConstructor = findAnnotation(EntityCreatorAnnotation.class, declaredConstructors);
+		boolean hasAnnotatedFactoryMethod = findAnnotation(PersistenceCreator.class, declaredMethods);
+		boolean hasAnnotatedConstructor = findAnnotation(PersistenceCreator.class, declaredConstructors);
 
 		if (hasAnnotatedConstructor && hasAnnotatedFactoryMethod) {
 			throw new MappingException(
@@ -95,7 +96,7 @@ class EntityCreatorMetadataDiscoverer {
 				continue;
 			}
 
-			if (findAnnotation(EntityCreatorAnnotation.class, method)) {
+			if (findAnnotation(PersistenceCreator.class, method)) {
 				candidates.add(method);
 			}
 		}
@@ -127,11 +128,11 @@ class EntityCreatorMetadataDiscoverer {
 
 	private static void validateMethod(Method method) {
 
-		if (MergedAnnotations.from(method).isPresent(EntityCreatorAnnotation.class)) {
+		if (MergedAnnotations.from(method).isPresent(PersistenceCreator.class)) {
 
 			if (!Modifier.isStatic(method.getModifiers())) {
 				throw new MappingException(
-						String.format("@Factory can only be used on static methods. Offending method: %s", method));
+						String.format("@ PersistenceCreator can only be used on static methods. Offending method: %s", method));
 			}
 		}
 	}

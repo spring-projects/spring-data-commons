@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -107,7 +107,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 			return;
 		}
 
-		EntityCreatorMetadata<?> creator = owner.getEntityCreator();
+		InstanceCreatorMetadata<?> creator = owner.getInstanceCreatorMetadata();
 
 		if (creator == null) {
 			throw new IllegalStateException(String.format(NO_SETTER_OR_CONSTRUCTOR, property.getName(), owner.getType()));

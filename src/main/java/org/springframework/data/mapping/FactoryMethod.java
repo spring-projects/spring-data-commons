@@ -24,9 +24,9 @@ import org.springframework.util.ReflectionUtils;
  * Value object to encapsulate the factory method to be used when mapping persistent data to objects.
  *
  * @author Mark Paluch
- * @since 3.0
+ * @since 2.7
  */
-public final class FactoryMethod<T, P extends PersistentProperty<P>> extends EntityCreatorMetadataSupport<T, P> {
+public final class FactoryMethod<T, P extends PersistentProperty<P>> extends InstanceCreatorMetadataSupport<T, P> {
 
 	/**
 	 * Creates a new {@link FactoryMethod} from the given {@link Constructor} and {@link Parameter}s.
@@ -49,5 +49,4 @@ public final class FactoryMethod<T, P extends PersistentProperty<P>> extends Ent
 	public Method getFactoryMethod() {
 		return (Method) getExecutable();
 	}
-
 }

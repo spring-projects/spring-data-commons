@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.springframework.data.mapping.EntityCreatorMetadata;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -50,7 +50,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 	@Override
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
 
-		EntityCreatorMetadata<?> creator = entity.getEntityCreator();
+		InstanceCreatorMetadata<?> creator = entity.getInstanceCreatorMetadata();
 
 		if (KotlinReflectionUtils.isSupportedKotlinClass(entity.getType())
 				&& creator instanceof PreferredConstructor) {
@@ -84,7 +84,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		DefaultingKotlinConstructorResolver(PersistentEntity<?, ?> entity) {
 
 			Constructor<?> hit = resolveDefaultConstructor(entity);
-			EntityCreatorMetadata<?> creator = entity.getEntityCreator();
+			InstanceCreatorMetadata<?> creator = entity.getInstanceCreatorMetadata();
 
 			if (hit != null && creator instanceof PreferredConstructor) {
 
@@ -100,13 +100,13 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		@Nullable
 		private static Constructor<?> resolveDefaultConstructor(PersistentEntity<?, ?> entity) {
 
-			EntityCreatorMetadata<?> creator = entity.getEntityCreator();
+			InstanceCreatorMetadata<?> creator = entity.getInstanceCreatorMetadata();
 
 			if (!(creator instanceof PreferredConstructor)) {
 				return null;
 			}
 
-			PreferredConstructor<?, ?> persistenceConstructor = (PreferredConstructor<?, ?>) entity.getEntityCreator();
+			PreferredConstructor<?, ?> persistenceConstructor = (PreferredConstructor<?, ?>) entity.getInstanceCreatorMetadata();
 
 			Constructor<?> hit = null;
 			Constructor<?> constructor = persistenceConstructor.getConstructor();
@@ -206,7 +206,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			Object[] params = extractInvocationArguments(entity.getEntityCreator(), provider);
+			Object[] params = extractInvocationArguments(entity.getInstanceCreatorMetadata(), provider);
 
 			try {
 				return (T) instantiator.newInstance(params);
@@ -216,7 +216,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		}
 
 		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				@Nullable EntityCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
+				@Nullable InstanceCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
 
 			if (entityCreator == null) {
 				throw new IllegalArgumentException("EntityCreator must not be null!");

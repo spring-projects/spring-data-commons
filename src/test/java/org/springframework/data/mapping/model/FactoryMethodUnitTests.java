@@ -18,7 +18,7 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.annotation.FactoryMethod;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.ClassTypeInformation;
@@ -68,7 +68,7 @@ class FactoryMethodUnitTests {
 			this.lastname = lastname;
 		}
 
-		@FactoryMethod
+		@PersistenceCreator
 		public static FactoryPerson of(String firstname, String lastname) {
 			return new FactoryPerson(firstname, "Mr. " + lastname);
 		}
