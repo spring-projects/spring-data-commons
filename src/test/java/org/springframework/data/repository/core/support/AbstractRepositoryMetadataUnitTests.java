@@ -27,6 +27,7 @@ import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.User;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -95,7 +96,7 @@ class AbstractRepositoryMetadataUnitTests {
 	@Test // DATACMNS-471
 	void detectsArrayReturnTypeCorrectly() throws Exception {
 
-		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PagedRepository.class);
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CompletePageableAndSortingRepository.class);
 		var method = PagedRepository.class.getMethod("returnsArray");
 
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
@@ -169,4 +170,8 @@ class AbstractRepositoryMetadataUnitTests {
 	interface ContainerRepository extends Repository<Container, Long> {
 		Container someMethod();
 	}
+
+	interface CompletePageableAndSortingRepository extends PagingAndSortingRepository<Container, Long> {
+	}
+
 }

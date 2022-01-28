@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
@@ -29,6 +30,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
  * avoid reflection overhead introduced by the superclass.
  *
  * @author Oliver Gierke
+ * @author Jens Schauder
  * @since 1.10
  */
 class PagingAndSortingRepositoryInvoker extends CrudRepositoryInvoker {
@@ -47,7 +49,7 @@ class PagingAndSortingRepositoryInvoker extends CrudRepositoryInvoker {
 	public PagingAndSortingRepositoryInvoker(PagingAndSortingRepository<Object, Object> repository,
 			RepositoryMetadata metadata, ConversionService conversionService) {
 
-		super(repository, metadata, conversionService);
+		super((CrudRepository<Object, Object>) repository, metadata, conversionService);
 
 		var crudMethods = metadata.getCrudMethods();
 

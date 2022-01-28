@@ -66,7 +66,7 @@ class ReactiveRepositoryInformationUnitTests {
 	@Test // DATACMNS-836
 	void discoversMethodAssignableArguments() throws Exception {
 
-		var reference = extractTargetMethodFromRepository(ReactiveSortingRepository.class, "saveAll", Publisher.class);
+		var reference = extractTargetMethodFromRepository(ReactiveCrudRepository.class, "saveAll", Publisher.class);
 
 		assertThat(reference.getDeclaringClass()).isEqualTo(ReactiveCrudRepository.class);
 		assertThat(reference.getName()).isEqualTo("saveAll");

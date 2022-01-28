@@ -93,7 +93,6 @@ class DefaultRepositoryInvokerFactoryIntegrationTests {
 		var invoker = factory.getInvokerFor(User.class);
 
 		assertThat(invoker)//
-				.isInstanceOf(CrudRepositoryInvoker.class)//
-				.isNotInstanceOf(PagingAndSortingRepositoryInvoker.class);
+				.isInstanceOf(CrudRepositoryInvoker.class);
 	}
 }

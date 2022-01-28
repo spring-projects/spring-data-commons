@@ -18,25 +18,30 @@ package org.springframework.data.repository.kotlin
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.NoRepositoryBean
+import org.springframework.data.repository.Repository
 
 /**
- * Extension of [CoroutineCrudRepository] to provide additional methods to retrieve entities using the sorting
+ * Repository interface that provides methods to retrieve entities using the sorting
  * abstraction.
  *
+ * In many cases this should be combined with [CoroutineCrudRepository] or similar or manually added methods to provide CRUD functionality.
+ *
  * @author Mark Paluch
+ * @author Jens Schauder
  * @since 2.3
  * @see Flow
  * @see Sort
+ * @see CoroutineCrudRepository
  */
 @NoRepositoryBean
-interface CoroutineSortingRepository<T, ID> : CoroutineCrudRepository<T, ID> {
+interface CoroutineSortingRepository<T, ID> : Repository<T, ID> {
 
-	/**
-	 * Returns all entities sorted by the given options.
-	 *
-	 * @param sort must not be null.
-	 * @return all entities sorted by the given options.
-	 * @throws IllegalArgumentException in case the given [Sort] is null.
-	 */
-	fun findAll(sort: Sort): Flow<T>
+    /**
+     * Returns all entities sorted by the given options.
+     *
+     * @param sort must not be null.
+     * @return all entities sorted by the given options.
+     * @throws IllegalArgumentException in case the given [Sort] is null.
+     */
+    fun findAll(sort: Sort): Flow<T>
 }

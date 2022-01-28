@@ -197,7 +197,7 @@ class DefaultCrudMethodsUnitTests {
 
 	interface DomainCrudRepository extends CrudRepository<Domain, Long> {}
 
-	interface DomainPagingAndSortingRepository extends PagingAndSortingRepository<Domain, Long> {}
+	interface DomainPagingAndSortingRepository extends PagingAndSortingRepository<Domain, Long>, CrudRepository<Domain, Long> {}
 
 	interface RepositoryWithCustomSave extends Repository<Domain, Serializable> {
 

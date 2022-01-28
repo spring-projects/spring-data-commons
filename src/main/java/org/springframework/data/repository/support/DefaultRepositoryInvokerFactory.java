@@ -35,6 +35,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @since 1.10
  */
 public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory {
@@ -93,7 +94,7 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 	@SuppressWarnings("unchecked")
 	protected RepositoryInvoker createInvoker(RepositoryInformation information, Object repository) {
 
-		if (repository instanceof PagingAndSortingRepository) {
+		if (repository instanceof PagingAndSortingRepository && repository instanceof CrudRepository) {
 			return new PagingAndSortingRepositoryInvoker((PagingAndSortingRepository<Object, Object>) repository, information,
 					conversionService);
 		} else if (repository instanceof CrudRepository) {

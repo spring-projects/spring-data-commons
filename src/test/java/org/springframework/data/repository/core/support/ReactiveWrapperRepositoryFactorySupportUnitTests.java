@@ -20,6 +20,7 @@ import static org.mockito.Mockito.*;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
@@ -47,7 +48,7 @@ class ReactiveWrapperRepositoryFactorySupportUnitTests {
 
 	DummyRepositoryFactory factory;
 
-	@Mock ReactiveSortingRepository<Object, Serializable> backingRepo;
+	@Mock ReactiveCrudRepository<Object, Serializable> backingRepo;
 	@Mock ObjectRepositoryCustom customImplementation;
 
 	@BeforeEach
