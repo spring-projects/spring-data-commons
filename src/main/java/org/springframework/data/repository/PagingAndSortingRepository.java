@@ -20,16 +20,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
- * Extension of {@link CrudRepository} to provide additional methods to retrieve entities using the pagination and
- * sorting abstraction.
+ * Repository fragment to provide methods to retrieve entities using the pagination and sorting abstraction. In many
+ * cases this will be combined with {@link CrudRepository} or similar or with manually added methods to provide CRUD
+ * functionality.
  *
  * @author Oliver Gierke
+ * @author Jens Schauder
  * @see Sort
  * @see Pageable
  * @see Page
+ * @see CrudRepository
  */
 @NoRepositoryBean
-public interface PagingAndSortingRepository<T, ID> extends CrudRepository<T, ID> {
+public interface PagingAndSortingRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.

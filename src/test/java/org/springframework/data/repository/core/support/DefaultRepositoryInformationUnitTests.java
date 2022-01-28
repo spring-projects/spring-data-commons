@@ -111,27 +111,11 @@ class DefaultRepositoryInformationUnitTests {
 		assertThat(information.hasCustomMethod()).isFalse();
 	}
 
-	@Test
-	void discoversIntermediateMethodsAsBackingMethods() throws NoSuchMethodException, SecurityException {
-
-		var metadata = new DefaultRepositoryMetadata(CustomRepository.class);
-		var information = new DefaultRepositoryInformation(metadata,
-				PagingAndSortingRepository.class, RepositoryComposition.empty());
-
-		var method = CustomRepository.class.getMethod("findAll", Pageable.class);
-		assertThat(information.isBaseClassMethod(method)).isTrue();
-
-		method = getMethodFrom(CustomRepository.class, "existsById");
-
-		assertThat(information.isBaseClassMethod(method)).isTrue();
-		assertThat(information.getQueryMethods()).isEmpty();
-	}
-
 	@Test // DATACMNS-151
 	void doesNotConsiderManuallyDefinedSaveMethodAQueryMethod() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(CustomRepository.class);
-		RepositoryInformation information = new DefaultRepositoryInformation(metadata, PagingAndSortingRepository.class,
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, CompletePageableAndSortingRepository.class,
 				RepositoryComposition.empty());
 
 		assertThat(information.getQueryMethods()).isEmpty();
@@ -427,4 +411,8 @@ class DefaultRepositoryInformationUnitTests {
 			return entity;
 		}
 	}
+
+	interface CompletePageableAndSortingRepository<T, ID> extends CrudRepository<T, ID>, PagingAndSortingRepository<T, ID> {
+	}
+
 }

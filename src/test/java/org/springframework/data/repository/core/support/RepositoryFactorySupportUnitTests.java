@@ -51,6 +51,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
@@ -90,7 +91,7 @@ class RepositoryFactorySupportUnitTests {
 
 	DummyRepositoryFactory factory;
 
-	@Mock PagingAndSortingRepository<Object, Object> backingRepo;
+	@Mock CrudRepository<Object, Object> backingRepo;
 	@Mock ObjectRepositoryCustom customImplementation;
 
 	@Mock MyQueryCreationListener listener;
@@ -167,12 +168,11 @@ class RepositoryFactorySupportUnitTests {
 	void createsRepositoryInstanceWithCustomIntermediateRepository() {
 
 		var repository = factory.getRepository(CustomRepository.class);
-		Pageable pageable = PageRequest.of(0, 10);
 
-		when(backingRepo.findAll(pageable)).thenReturn(new PageImpl<>(Collections.emptyList()));
-		repository.findAll(pageable);
+		when(backingRepo.findAll()).thenReturn(new PageImpl<>(Collections.emptyList()));
+		repository.findAll();
 
-		verify(backingRepo, times(1)).findAll(pageable);
+		verify(backingRepo, times(1)).findAll();
 	}
 
 	@Test

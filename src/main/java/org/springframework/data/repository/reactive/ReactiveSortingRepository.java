@@ -20,20 +20,24 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.data.repository.Repository;
 
 /**
- * Extension of {@link ReactiveCrudRepository} to provide additional methods to retrieve entities using the sorting
- * abstraction.
+ * Repository fragment to provide methods to retrieve entities using the sorting abstraction. In many cases it
+ * should be combined with {@link ReactiveCrudRepository} or a similar repository interface in order to add CRUD
+ * functionality.
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @since 2.0
  * @see Sort
  * @see Mono
  * @see Flux
+ * @see ReactiveCrudRepository
  */
 @NoRepositoryBean
-public interface ReactiveSortingRepository<T, ID> extends ReactiveCrudRepository<T, ID> {
+public interface ReactiveSortingRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.

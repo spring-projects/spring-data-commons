@@ -153,7 +153,7 @@ class CrudRepositoryInvokerUnitTests {
 
 	static class Person {}
 
-	interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
+	interface PersonRepository extends PagingAndSortingRepository<Person, Long>, CrudRepository<Person, Long> {
 
 		Page<Person> findByFirstName(@Param("firstName") String firstName, Pageable pageable);
 

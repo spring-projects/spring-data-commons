@@ -19,18 +19,21 @@ import io.reactivex.rxjava3.core.Flowable;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.data.repository.Repository;
 
 /**
- * Extension of {@link RxJava3CrudRepository} to provide additional methods to retrieve entities using the sorting
- * abstraction.
- *
+ * Repository fragment to provide methods to retrieve entities using the sorting abstraction. In many cases this
+ * should be combined with {@link RxJava3CrudRepository} or a similar interface to provide CRUD functionality.
+ * 
  * @author Mark Paluch
+ * @author Jens Schauder
  * @since 2.4
  * @see Sort
  * @see Flowable
+ * @see RxJava3CrudRepository
  */
 @NoRepositoryBean
-public interface RxJava3SortingRepository<T, ID> extends RxJava3CrudRepository<T, ID> {
+public interface RxJava3SortingRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.
