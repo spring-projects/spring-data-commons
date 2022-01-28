@@ -1,3 +1,9 @@
+def p = [:]
+node {
+    checkout scm
+    p = readProperties interpolate: true, file: 'ci/pipeline.properties'
+}
+
 pipeline {
 	agent none
 
@@ -12,7 +18,7 @@ pipeline {
 	}
 
 	stages {
-		stage("test: baseline (jdk8)") {
+		stage("test: baseline (main)") {
 			when {
 				anyOf {
 					branch '2.5.x'
@@ -29,7 +35,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('adoptopenjdk/openjdk8:latest').inside('-v $HOME:/tmp/jenkins-home') {
+						docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list verify -Dsort -U -B'
 						}
 					}
@@ -45,7 +51,7 @@ pipeline {
 				}
 			}
 			parallel {
-				stage("test: baseline (jdk11)") {
+				stage("test: baseline (next)") {
 					agent {
 						label 'data'
 					}
@@ -56,7 +62,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('adoptopenjdk/openjdk11:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image(p['docker.java.next.image']).inside(p['docker.java.inside.basic']) {
 									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pjava11 clean dependency:list verify -Dsort -U -B'
 								}
 							}
@@ -75,7 +81,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('adoptopenjdk/openjdk15:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image(p['docker.java.15.image']).inside(p['docker.java.inside.basic']) {
 									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pjava11 clean dependency:list verify -Dsort -U -B'
 								}
 							}
@@ -104,7 +110,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('adoptopenjdk/openjdk8:latest').inside('-v $HOME:/tmp/jenkins-home') {
+						docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
 									'-Dartifactory.server=https://repo.spring.io ' +
 									"-Dartifactory.username=${ARTIFACTORY_USR} " +
