@@ -139,7 +139,7 @@ pipeline {
 
 			steps {
 				script {
-					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
 						docker.image('adoptopenjdk/openjdk8:latest').inside('-v $HOME:/tmp/jenkins-home') {
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,distribute ' +
 									'-Dartifactory.server=https://repo.spring.io ' +
