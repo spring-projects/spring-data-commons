@@ -22,6 +22,7 @@ import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
@@ -43,7 +44,7 @@ import org.springframework.util.Assert;
  */
 public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, ApplicationEventPublisherAware {
 
- 	private static final Log logger = LogFactory.getLog(ResourceReaderRepositoryPopulator.class);
+	private static final Log logger = LogFactory.getLog(ResourceReaderRepositoryPopulator.class);
 
 	private final ResourceReader reader;
 	private final @Nullable ClassLoader classLoader;
@@ -51,6 +52,9 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 	private @Nullable ApplicationEventPublisher publisher;
 	private Collection<Resource> resources = Collections.emptySet();
+
+	@Autowired(required = false)
+	private @Nullable RepositoryPopulatorPersistCallback persistCallback;
 
 	/**
 	 * Creates a new {@link ResourceReaderRepositoryPopulator} using the given {@link ResourceReader}.
@@ -105,7 +109,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
 		this.publisher = publisher;
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.init.RepositoryPopulator#initialize()
@@ -125,13 +129,13 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 			if (result instanceof Collection) {
 				for (Object element : (Collection<?>) result) {
 					if (element != null) {
-						persist(element, invokerFactory);
+						persist(element, invokerFactory, repositories);
 					} else {
 						logger.info("Skipping null element found in unmarshal result!");
 					}
 				}
 			} else {
-				persist(result, invokerFactory);
+				persist(result, invokerFactory, repositories);
 			}
 		}
 
@@ -160,10 +164,15 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * @param object must not be {@literal null}.
 	 * @param invokerFactory must not be {@literal null}.
 	 */
-	private void persist(Object object, RepositoryInvokerFactory invokerFactory) {
+	private void persist(Object object, RepositoryInvokerFactory invokerFactory, Repositories repositories) {
 
 		RepositoryInvoker invoker = invokerFactory.getInvokerFor(object.getClass());
 		logger.debug(String.format("Persisting %s using repository %s", object, invoker));
-		invoker.invokeSave(object);
+		Object result = invoker.invokeSave(object);
+
+		if (persistCallback != null) {
+			persistCallback.afterPersist(repositories, object, result);
+		}
+
 	}
 }

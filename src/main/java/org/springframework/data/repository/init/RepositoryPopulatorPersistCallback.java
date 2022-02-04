@@ -15,11 +15,25 @@
  */
 package org.springframework.data.repository.init;
 
-/**
- * @author Oliver Gierke
- */
-public class Person {
+import org.springframework.data.repository.support.Repositories;
 
-	String firstname;
-	String lastname;
+/**
+ * Provide callback functionality when an entity is persisted in {@link RepositoryPopulator}
+ *
+ * @author Rocco Lagrotteria
+ * @since 2.7
+ */
+@FunctionalInterface
+public interface RepositoryPopulatorPersistCallback {
+
+	  /**
+	   * Possibly called by {@link RepositoryPopulator} after an entity is persisted
+	   * 
+	   * 
+	   * @param repositories The current wrapped repository instances
+	   * @param entity The entity passed to a repository to being saved
+	   * @param outcome The result of the save operation
+	   */
+		void afterPersist(Repositories repositories, Object entity, Object outcome);
+
 }

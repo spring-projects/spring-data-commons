@@ -79,6 +79,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 	protected ResourceReaderRepositoryPopulator createInstance() {
 
 		ResourceReaderRepositoryPopulator initializer = new ResourceReaderRepositoryPopulator(getResourceReader());
+		context.getAutowireCapableBeanFactory().autowireBean(initializer);
 		initializer.setResources(resources);
 
 		if (context != null) {
