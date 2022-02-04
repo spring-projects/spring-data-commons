@@ -31,7 +31,7 @@ pipeline {
 			}
 			options { timeout(time: 30, unit: 'MINUTES') }
 			environment {
-				ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
+				ARTIFACTORY = credentials("${p['artifactory.credentials']}")
 			}
 			steps {
 				script {
@@ -59,7 +59,7 @@ pipeline {
 					}
 					options { timeout(time: 30, unit: 'MINUTES') }
 					environment {
-						ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
+						ARTIFACTORY = credentials("${p['artifactory.credentials']}")
 					}
 					steps {
 						script {
@@ -78,7 +78,7 @@ pipeline {
 					}
 					options { timeout(time: 30, unit: 'MINUTES') }
 					environment {
-						ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
+						ARTIFACTORY = credentials("${p['artifactory.credentials']}")
 					}
 					steps {
 						script {
@@ -107,7 +107,7 @@ pipeline {
 			options { timeout(time: 20, unit: 'MINUTES') }
 
 			environment {
-				ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
+				ARTIFACTORY = credentials("${p['artifactory.credentials']}")
 			}
 
 			steps {
