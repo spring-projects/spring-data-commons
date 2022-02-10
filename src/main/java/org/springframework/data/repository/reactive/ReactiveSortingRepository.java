@@ -23,7 +23,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 
 /**
- * Repository interface that provides methods to retrieve entities using the sorting abstraction. In many cases it
+ * Repository fragment to provide methods to retrieve entities using the sorting abstraction. In many cases it
  * should be combined with {@link ReactiveCrudRepository} or a similar repository interface in order to add CRUD
  * functionality.
  *

@@ -20,7 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
- * Repository interface to provide methods to retrieve entities using the pagination and sorting abstraction. In many
+ * Repository fragment to provide methods to retrieve entities using the pagination and sorting abstraction. In many
  * cases this will be combined with {@link CrudRepository} or similar or with manually added methods to provide CRUD
  * functionality.
  *

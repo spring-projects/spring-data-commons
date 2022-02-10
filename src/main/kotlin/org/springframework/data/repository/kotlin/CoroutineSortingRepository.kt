@@ -21,7 +21,7 @@ import org.springframework.data.repository.NoRepositoryBean
 import org.springframework.data.repository.Repository
 
 /**
- * Repository interface that provides methods to retrieve entities using the sorting
+ * Repository fragment to provide methods to retrieve entities using the sorting
  * abstraction.
  *
  * In many cases this should be combined with [CoroutineCrudRepository] or similar or manually added methods to provide CRUD functionality.
@@ -36,12 +36,12 @@ import org.springframework.data.repository.Repository
 @NoRepositoryBean
 interface CoroutineSortingRepository<T, ID> : Repository<T, ID> {
 
-    /**
-     * Returns all entities sorted by the given options.
-     *
-     * @param sort must not be null.
-     * @return all entities sorted by the given options.
-     * @throws IllegalArgumentException in case the given [Sort] is null.
-     */
-    fun findAll(sort: Sort): Flow<T>
+	/**
+	 * Returns all entities sorted by the given options.
+	 *
+	 * @param sort must not be null.
+	 * @return all entities sorted by the given options.
+	 * @throws IllegalArgumentException in case the given [Sort] is null.
+	 */
+	fun findAll(sort: Sort): Flow<T>
 }
