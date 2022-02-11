@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021 the original author or authors.
+ * Copyright 2016-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.ReactiveAdapter;
@@ -30,6 +31,7 @@ import org.springframework.data.util.ProxyUtils;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Utility class to expose details about reactive wrapper types. This class exposes whether a reactive wrapper is
@@ -89,6 +91,11 @@ public abstract class ReactiveWrappers {
 	private static final boolean MUTINY_PRESENT = ClassUtils.isPresent("io.smallrye.mutiny.Multi",
 			ReactiveWrappers.class.getClassLoader());
 
+	private static final Map<Class<?>, Boolean> IS_REACTIVE_TYPE = new ConcurrentReferenceHashMap<>();
+
+	private static final boolean IS_REACTIVE_AVAILABLE = Arrays.stream(ReactiveLibrary.values())
+			.anyMatch(ReactiveWrappers::isAvailable);
+
 	private ReactiveWrappers() {}
 
 	/**
@@ -120,7 +127,7 @@ public abstract class ReactiveWrappers {
 	 * @return {@literal true} if reactive support is available.
 	 */
 	public static boolean isAvailable() {
-		return Arrays.stream(ReactiveLibrary.values()).anyMatch(ReactiveWrappers::isAvailable);
+		return IS_REACTIVE_AVAILABLE;
 	}
 
 	/**
@@ -158,7 +165,7 @@ public abstract class ReactiveWrappers {
 	 * @return {@literal true} if the {@code type} is a supported reactive wrapper type.
 	 */
 	public static boolean supports(Class<?> type) {
-		return isAvailable() && isWrapper(ProxyUtils.getUserClass(type));
+		return isAvailable() && IS_REACTIVE_TYPE.computeIfAbsent(type, key -> isWrapper(ProxyUtils.getUserClass(key)));
 	}
 
 	/**
