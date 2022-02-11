@@ -16,36 +16,21 @@
 package org.springframework.data.querydsl;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.FluentQuery;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 
 /**
- * Interface to allow execution of QueryDsl {@link Predicate} instances.This identical to *
- * {@link QuerydslPredicateExecutor} but returns {@link List} instead of {@link Iterable} where applicable.
+ * Interface to allow execution of QueryDsl {@link Predicate} instances. This an extension to
+ * {@link QuerydslPredicateExecutor} returning {@link List} instead of {@link Iterable} where applicable.
  *
  * @author Jens Schauder
  * @since 3.0
  * @see QuerydslPredicateExecutor
  */
-public interface ListQuerydslPredicateExecutor<T> {
-
-	/**
-	 * Returns a single entity matching the given {@link Predicate} or {@link Optional#empty()} if none was found.
-	 *
-	 * @param predicate must not be {@literal null}.
-	 * @return a single entity matching the given {@link Predicate} or {@link Optional#empty()} if none was found.
-	 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if the predicate yields more than one
-	 *           result.
-	 */
-	Optional<T> findOne(Predicate predicate);
+public interface ListQuerydslPredicateExecutor<T> extends QuerydslPredicateExecutor<T> {
 
 	/**
 	 * Returns all entities matching the given {@link Predicate}. In case no match could be found an empty {@link List} is
@@ -54,6 +39,7 @@ public interface ListQuerydslPredicateExecutor<T> {
 	 * @param predicate must not be {@literal null}.
 	 * @return all entities matching the given {@link Predicate}.
 	 */
+	@Override
 	List<T> findAll(Predicate predicate);
 
 	/**
@@ -65,6 +51,7 @@ public interface ListQuerydslPredicateExecutor<T> {
 	 *          {@literal null}.
 	 * @return all entities matching the given {@link Predicate}.
 	 */
+	@Override
 	List<T> findAll(Predicate predicate, Sort sort);
 
 	/**
@@ -75,6 +62,7 @@ public interface ListQuerydslPredicateExecutor<T> {
 	 * @param orders the {@link OrderSpecifier}s to sort the results by, must not be {@literal null}.
 	 * @return all entities matching the given {@link Predicate} applying the given {@link OrderSpecifier}s.
 	 */
+	@Override
 	List<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
 
 	/**
@@ -83,41 +71,7 @@ public interface ListQuerydslPredicateExecutor<T> {
 	 * @param orders the {@link OrderSpecifier}s to sort the results by, must not be {@literal null}.
 	 * @return all entities ordered by the given {@link OrderSpecifier}s.
 	 */
+	@Override
 	List<T> findAll(OrderSpecifier<?>... orders);
 
-	/**
-	 * Returns a {@link Page} of entities matching the given {@link Predicate}. In case no match could be found, an empty
-	 * {@link Page} is returned.
-	 *
-	 * @param predicate must not be {@literal null}.
-	 * @param pageable may be {@link Pageable#unpaged()}, must not be {@literal null}.
-	 * @return a {@link Page} of entities matching the given {@link Predicate}.
-	 */
-	Page<T> findAll(Predicate predicate, Pageable pageable);
-
-	/**
-	 * Returns the number of instances matching the given {@link Predicate}.
-	 *
-	 * @param predicate the {@link Predicate} to count instances for, must not be {@literal null}.
-	 * @return the number of instances matching the {@link Predicate}.
-	 */
-	long count(Predicate predicate);
-
-	/**
-	 * Checks whether the data store contains elements that match the given {@link Predicate}.
-	 *
-	 * @param predicate the {@link Predicate} to use for the existence check, must not be {@literal null}.
-	 * @return {@literal true} if the data store contains elements that match the given {@link Predicate}.
-	 */
-	boolean exists(Predicate predicate);
-
-	/**
-	 * Returns entities matching the given {@link Predicate} applying the {@link Function queryFunction} that defines the
-	 * query and its result type.
-	 *
-	 * @param predicate must not be {@literal null}.
-	 * @param queryFunction the query function defining projection, sorting, and the result type
-	 * @return all entities matching the given {@link Predicate}.
-	 */
-	<S extends T, R> R findBy(Predicate predicate, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
 }

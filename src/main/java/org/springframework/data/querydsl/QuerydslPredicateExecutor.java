@@ -33,6 +33,7 @@ import com.querydsl.core.types.Predicate;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @see ListQuerydslPredicateExecutor
  */
 public interface QuerydslPredicateExecutor<T> {
 

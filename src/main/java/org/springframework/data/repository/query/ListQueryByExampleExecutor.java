@@ -16,33 +16,20 @@
 package org.springframework.data.repository.query;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
- * Interface to allow execution of Query by Example {@link Example} instances. This identical to
- * {@link QueryByExampleExecutor} but returns {@link List} instead of {@link Iterable} where applicable.
+ * Interface to allow execution of Query by Example {@link Example} instances. This an extension to
+ * {@link QueryByExampleExecutor} returning {@link List} instead of {@link Iterable} where applicable.
  *
  * @param <T> the type of entity for which this executor acts on.
  * @author Jens Schauder
  * @since 3.0
  * @see QueryByExampleExecutor
  */
-public interface ListQueryByExampleExecutor<T> {
-
-	/**
-	 * Returns a single entity matching the given {@link Example} or {@link Optional#empty()} if none was found.
-	 *
-	 * @param example must not be {@literal null}.
-	 * @return a single entity matching the given {@link Example} or {@link Optional#empty()} if none was found.
-	 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if the Example yields more than one result.
-	 */
-	<S extends T> Optional<S> findOne(Example<S> example);
+public interface ListQueryByExampleExecutor<T> extends QueryByExampleExecutor<T> {
 
 	/**
 	 * Returns all entities matching the given {@link Example}. In case no match could be found an empty {@link List} is
@@ -51,6 +38,7 @@ public interface ListQueryByExampleExecutor<T> {
 	 * @param example must not be {@literal null}.
 	 * @return all entities matching the given {@link Example}.
 	 */
+	@Override
 	<S extends T> List<S> findAll(Example<S> example);
 
 	/**
@@ -61,41 +49,7 @@ public interface ListQueryByExampleExecutor<T> {
 	 * @param sort the {@link Sort} specification to sort the results by, must not be {@literal null}.
 	 * @return all entities matching the given {@link Example}.
 	 */
+	@Override
 	<S extends T> List<S> findAll(Example<S> example, Sort sort);
 
-	/**
-	 * Returns a {@link Page} of entities matching the given {@link Example}. In case no match could be found, an empty
-	 * {@link Page} is returned.
-	 *
-	 * @param example must not be {@literal null}.
-	 * @param pageable can be {@literal null}.
-	 * @return a {@link Page} of entities matching the given {@link Example}.
-	 */
-	<S extends T> Page<S> findAll(Example<S> example, Pageable pageable);
-
-	/**
-	 * Returns the number of instances matching the given {@link Example}.
-	 *
-	 * @param example the {@link Example} to count instances for. Must not be {@literal null}.
-	 * @return the number of instances matching the {@link Example}.
-	 */
-	<S extends T> long count(Example<S> example);
-
-	/**
-	 * Checks whether the data store contains elements that match the given {@link Example}.
-	 *
-	 * @param example the {@link Example} to use for the existence check. Must not be {@literal null}.
-	 * @return {@literal true} if the data store contains elements that match the given {@link Example}.
-	 */
-	<S extends T> boolean exists(Example<S> example);
-
-	/**
-	 * Returns entities matching the given {@link Example} applying the {@link Function queryFunction} that defines the
-	 * query and its result type.
-	 *
-	 * @param example must not be {@literal null}.
-	 * @param queryFunction the query function defining projection, sorting, and the result type
-	 * @return all entities matching the given {@link Example}.
-	 */
-	<S extends T, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
 }

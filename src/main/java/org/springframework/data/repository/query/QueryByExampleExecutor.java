@@ -30,6 +30,7 @@ import org.springframework.data.domain.Sort;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @since 1.12
+ * @see ListQueryByExampleExecutor
  */
 public interface QueryByExampleExecutor<T> {
 
