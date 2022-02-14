@@ -116,7 +116,7 @@ public class ConvertingPropertyAccessor<T> extends SimplePersistentPropertyPathA
 
 		return (S) (source == null //
 				? null //
-				: ClassUtils.resolvePrimitiveIfNecessary(type).isAssignableFrom(source.getClass()) //
+				: ClassUtils.isAssignable(type, source.getClass())
 						? source //
 						: conversionService.convert(source, type));
 	}
