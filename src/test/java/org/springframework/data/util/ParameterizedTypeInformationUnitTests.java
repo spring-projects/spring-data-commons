@@ -95,11 +95,11 @@ class ParameterizedTypeInformationUnitTests {
 		assertThat(propertyType.getMapValueType().getType()).isEqualTo(Locale.class);
 	}
 
-	@Test
+	@Test // #2517
 	void resolvesVavrMapTypesCorrectly() {
 
-		TypeInformation<VavrFoo> type = ClassTypeInformation.from(VavrFoo.class);
-		TypeInformation<?> propertyType = type.getProperty("param");
+		var type = ClassTypeInformation.from(VavrFoo.class);
+		var propertyType = type.getProperty("param");
 
 		assertThat(propertyType.getComponentType().getType()).isEqualTo(Locale.class);
 		assertThat(propertyType.getMapValueType().getType()).isEqualTo(String.class);

@@ -142,13 +142,9 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	@Nullable
 	protected TypeInformation<?> doGetComponentType() {
 
-		var isCustomMapImplementation = isMap() && !isMapBaseType();
-
-		if (isCustomMapImplementation) {
-			return getRequiredSuperTypeInformation(getMapBaseType()).getComponentType();
-		}
-
-		return createInfo(this.type.getActualTypeArguments()[0]);
+		return isMap() && !isMapBaseType()
+				? getRequiredSuperTypeInformation(getMapBaseType()).getComponentType()
+				: createInfo(this.type.getActualTypeArguments()[0]);
 	}
 
 	@Override
