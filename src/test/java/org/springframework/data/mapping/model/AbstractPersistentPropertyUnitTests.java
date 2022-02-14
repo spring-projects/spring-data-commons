@@ -238,6 +238,14 @@ public class AbstractPersistentPropertyUnitTests {
 				.containsExactly((Class) JMoleculesAggregate.class);
 	}
 
+	@Test // #2549
+	void considersVavrMaps() {
+
+		SamplePersistentProperty property = getProperty(VavrWrapper.class, "vavrMap");
+
+		assertThat(property.isMap()).isTrue();
+	}
+
 	private <T> BasicPersistentEntity<T, SamplePersistentProperty> getEntity(Class<T> type) {
 		return new BasicPersistentEntity<>(ClassTypeInformation.from(type));
 	}
@@ -398,5 +406,9 @@ public class AbstractPersistentPropertyUnitTests {
 
 	interface JMoleculesAggregate extends AggregateRoot<JMoleculesAggregate, Identifier> {
 
+	}
+
+	class VavrWrapper {
+		io.vavr.collection.Map<String, String> vavrMap;
 	}
 }

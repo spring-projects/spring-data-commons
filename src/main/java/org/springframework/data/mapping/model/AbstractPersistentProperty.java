@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -229,7 +228,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	@Override
 	public boolean isMap() {
-		return Map.class.isAssignableFrom(getType());
+		return information.isMap();
 	}
 
 	@Override
