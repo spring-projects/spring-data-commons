@@ -16,16 +16,23 @@
 package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Value;
 
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
@@ -122,15 +129,45 @@ public class ConvertingPropertyAccessorUnitTests {
 		var context = new SampleMappingContext();
 
 		var accessor = context.getPersistentEntity(Order.class).getPropertyAccessor(order);
-		var convertingAccessor = new ConvertingPropertyAccessor<Order>(accessor,
-				new DefaultConversionService());
+		var convertingAccessor = new ConvertingPropertyAccessor<Order>(accessor, new DefaultConversionService());
 
-		var path = context.getPersistentPropertyPath("customer.firstname",
-				Order.class);
+		var path = context.getPersistentPropertyPath("customer.firstname", Order.class);
 
 		convertingAccessor.setProperty(path, 2);
 
 		assertThat(convertingAccessor.getBean().getCustomer().getFirstname()).isEqualTo("2");
+	}
+
+	@TestFactory // #2546
+	Stream<DynamicTest> doesNotInvokeConversionForMatchingPrimitives() {
+
+		IntegerWrapper wrapper = new IntegerWrapper();
+		wrapper.primitive = 42;
+		wrapper.boxed = 42;
+
+		SampleMappingContext context = new SampleMappingContext();
+		PersistentEntity<Object, SamplePersistentProperty> entity = context
+				.getRequiredPersistentEntity(IntegerWrapper.class);
+
+		SamplePersistentProperty primitiveProperty = entity.getRequiredPersistentProperty("primitive");
+		SamplePersistentProperty boxedProperty = entity.getRequiredPersistentProperty("boxed");
+
+		PersistentPropertyAccessor<IntegerWrapper> accessor = entity.getPropertyAccessor(wrapper);
+		ConversionService conversionService = mock(ConversionService.class);
+
+		ConvertingPropertyAccessor<IntegerWrapper> convertingAccessor = new ConvertingPropertyAccessor<>(accessor,
+				conversionService);
+
+		Stream<PrimitiveFixture> fixtures = Stream.of(PrimitiveFixture.$(boxedProperty, int.class),
+				PrimitiveFixture.$(boxedProperty, Integer.class), PrimitiveFixture.$(primitiveProperty, int.class),
+				PrimitiveFixture.$(primitiveProperty, Integer.class));
+
+		return DynamicTest.stream(fixtures, it -> {
+
+			convertingAccessor.getProperty(it.property, it.type);
+
+			verify(conversionService, never()).convert(any(), eq(it.type));
+		});
 	}
 
 	private static ConvertingPropertyAccessor getAccessor(Object entity, ConversionService conversionService) {
@@ -142,8 +179,7 @@ public class ConvertingPropertyAccessorUnitTests {
 	private static SamplePersistentProperty getIdProperty() {
 
 		var mappingContext = new SampleMappingContext();
-		var entity = mappingContext
-				.getRequiredPersistentEntity(Entity.class);
+		var entity = mappingContext.getRequiredPersistentEntity(Entity.class);
 		return entity.getPersistentProperty("id");
 	}
 
@@ -160,5 +196,27 @@ public class ConvertingPropertyAccessorUnitTests {
 	@AllArgsConstructor
 	static class Customer {
 		String firstname;
+	}
+
+	static class IntegerWrapper {
+		int primitive;
+		Integer boxed;
+	}
+
+	@Value(staticConstructor = "$")
+	static class PrimitiveFixture implements Named<PrimitiveFixture> {
+
+		PersistentProperty<?> property;
+		Class<?> type;
+
+		@Override
+		public String getName() {
+			return String.format("Accessing %s as %s does not cause conversion.", property, type);
+		}
+
+		@Override
+		public PrimitiveFixture getPayload() {
+			return this;
+		}
 	}
 }
