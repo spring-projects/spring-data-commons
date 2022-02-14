@@ -534,41 +534,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	protected boolean isMapBaseType() {
-		return isBaseType(MAP_TYPES);
-	}
-
-	private boolean isBaseType(Class<?>[] candidates) {
-
-		Class<S> type = getType();
-
-		for (Class<?> candidate: candidates) {
-			if (candidate.equals(type)) {
-				return true;
-			}
-		}
-
-		return false;
+		return isOneOf(MAP_TYPES);
 	}
 
 	protected Class<?> getMapBaseType() {
-		return getBaseType(MAP_TYPES);
-	}
-
-	private Class<?> getBaseType(Class<?>[] candidates) {
-
-		Class<S> type = getType();
-
-		for (Class<?> candidate : candidates) {
-			if (candidate.isAssignableFrom(type)) {
-				return candidate;
-			}
-		}
-
-		throw new IllegalArgumentException(String.format("Type %s not contained in candidates %s!", type, candidates));
-	}
-
-	private boolean isNullableWrapper() {
-		return NullableWrapperConverters.supports(getType());
+		return getSuperTypeWithin(MAP_TYPES);
 	}
 
 	/*
@@ -628,6 +598,52 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns whether the current's raw type is one of the given ones.
+	 *
+	 * @param candidates must not be {@literal null}.
+	 * @return
+	 */
+	private boolean isOneOf(Class<?>[] candidates) {
+
+		Assert.notNull(candidates, "Candidates must not be null!");
+
+		Class<S> type = getType();
+
+		for (Class<?> candidate : candidates) {
+			if (candidate.equals(type)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the super type of the current raw type from the given candidates.
+	 *
+	 * @param candidates must not be {@literal null}.
+	 * @return
+	 */
+	private Class<?> getSuperTypeWithin(Class<?>[] candidates) {
+
+		Assert.notNull(candidates, "Candidates must not be null!");
+
+		Class<S> type = getType();
+
+		for (Class<?> candidate : candidates) {
+			if (candidate.isAssignableFrom(type)) {
+				return candidate;
+			}
+		}
+
+		throw new IllegalArgumentException(String.format("Type %s not contained in candidates %s!", type, candidates));
+	}
+
+	private boolean isNullableWrapper() {
+		return NullableWrapperConverters.supports(getType());
 	}
 
 	/**
