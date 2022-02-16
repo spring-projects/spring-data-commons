@@ -67,9 +67,9 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 	 * {@link PageableDefault} (the latter only supported in legacy mode) can be found at the method parameter to be
 	 * resolved.
 	 * <p>
-	 * If you set this to {@literal Optional#empty()}, be aware that you controller methods will get {@literal null}
+	 * If you set this to {@literal Optional#empty()}, be aware that your controller methods will get {@literal null}
 	 * handed into them in case no {@link Pageable} data can be found in the request. Note, that doing so will require you
-	 * supply bot the page <em>and</em> the size parameter with the requests as there will be no default for any of the
+	 * to supply both the page <em>and</em> the size parameter with the requests as there will be no default for any of the
 	 * parameters available.
 	 *
 	 * @param fallbackPageable the {@link Pageable} to be used as general fallback.
