@@ -543,7 +543,8 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		String value2;
 	}
 
-	static class MyPropertyConverter implements PropertyValueConverter<Object,Object, ValueConversionContext> {
+	static class MyPropertyConverter
+			implements PropertyValueConverter<Object, Object, ValueConversionContext<SamplePersistentProperty>> {
 
 		@Override
 		public Object nativeToDomain(Object value, ValueConversionContext context) {
@@ -556,7 +557,8 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		}
 	}
 
-	static class MyPropertyConverterThatRequiresComponents implements PropertyValueConverter<Object,Object, ValueConversionContext> {
+	static class MyPropertyConverterThatRequiresComponents
+			implements PropertyValueConverter<Object, Object, ValueConversionContext<SamplePersistentProperty>> {
 
 		private final SomeDependency someDependency;
 

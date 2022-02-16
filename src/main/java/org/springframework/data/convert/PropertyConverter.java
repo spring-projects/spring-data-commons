@@ -42,6 +42,6 @@ public @interface PropertyConverter {
 	 *
 	 * @return the configured {@link PropertyValueConverter}. {@link ObjectToObjectPropertyValueConverter} by default.
 	 */
-	Class<? extends PropertyValueConverter<?, ?, ? extends PropertyValueConverter.ValueConversionContext>> value() default ObjectToObjectPropertyValueConverter.class;
+	Class<? extends PropertyValueConverter> value() default ObjectToObjectPropertyValueConverter.class;
 
 }

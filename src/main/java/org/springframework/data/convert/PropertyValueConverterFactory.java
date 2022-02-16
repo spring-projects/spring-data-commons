@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.convert.PropertyValueConverterFactories.BeanFactoryAwarePropertyValueConverterFactory;
 import org.springframework.data.convert.PropertyValueConverterFactories.CachingPropertyValueConverterFactory;
 import org.springframework.data.convert.PropertyValueConverterFactories.CompositePropertyValueConverterFactory;
@@ -49,7 +50,8 @@ public interface PropertyValueConverterFactory {
 	 * @return can be {@literal null}.
 	 */
 	@Nullable
-	default <A, B, C extends PropertyValueConverter.ValueConversionContext> PropertyValueConverter<A, B, C> getConverter(
+	@SuppressWarnings("unchecked")
+	default <A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getConverter(
 			PersistentProperty<?> property) {
 
 		if (!property.hasValueConverter()) {
@@ -59,7 +61,7 @@ public interface PropertyValueConverterFactory {
 	}
 
 	@Nullable
-	<S, T, C extends PropertyValueConverter.ValueConversionContext> PropertyValueConverter<S, T, C> getConverter(
+	<S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 			Class<? extends PropertyValueConverter<S, T, C>> converterType);
 
 	/**

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
@@ -47,7 +48,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	}
 
 	@Override
-	public <A, B, C extends PropertyValueConverter.ValueConversionContext> PropertyValueConverter<A, B, C> getValueConverter(
+	public <A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getValueConverter(
 			PersistentProperty<?> property) {
 
 		if (!initialized.get()) {
@@ -68,7 +69,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 				factoryList.add(PropertyValueConverterFactory.simple());
 			}
 
-			if (converterRegistrar != null && !converterRegistrar.isEmpty()) {
+			if ((converterRegistrar != null) && !converterRegistrar.isEmpty()) {
 				factoryList.add(PropertyValueConverterFactory.configuredInstance(converterRegistrar));
 			}
 

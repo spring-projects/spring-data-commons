@@ -15,7 +15,10 @@
  */
 package org.springframework.data.convert;
 
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
 /**
@@ -30,7 +33,7 @@ import org.springframework.lang.Nullable;
  * @param <B> store native type
  * @since 2.7
  */
-public interface PropertyValueConverter<A, B, C extends PropertyValueConverter.ValueConversionContext> {
+public interface PropertyValueConverter<A, B, C extends ValueConversionContext<? extends PersistentProperty<?>>> {
 
 	/**
 	 * Convert the given store specific value into it's domain value representation. Typically a {@literal read}
@@ -56,10 +59,86 @@ public interface PropertyValueConverter<A, B, C extends PropertyValueConverter.V
 
 	/**
 	 * @author Christoph Strobl
+	 * @author Oliver Drotbohm
 	 */
-	interface ValueConversionContext {
+	interface ValueConversionContext<P extends PersistentProperty<P>> {
 
-		PersistentProperty<?> getProperty();
+		/**
+		 * Return the {@link PersistentProperty} to be handled.
+		 *
+		 * @return will never be {@literal null}.
+		 */
+		P getProperty();
+
+		/**
+		 * Write to whatever type is considered best for the given source.
+		 *
+		 * @param value
+		 * @return
+		 */
+		@Nullable
+		default Object write(@Nullable Object value) {
+			return null;
+		}
+
+		/**
+		 * Write as the given type.
+		 *
+		 * @param value can be {@literal null}.
+		 * @param target must not be {@literal null}.
+		 * @return can be {@literal null}.
+		 */
+		@Nullable
+		default <T> T write(@Nullable Object value, Class<T> target) {
+			return write(value, ClassTypeInformation.from(target));
+		}
+
+		/**
+		 * Write as the given type.
+		 *
+		 * @param value can be {@literal null}.
+		 * @param target must not be {@literal null}.
+		 * @return can be {@literal null}.
+		 */
+		@Nullable
+		default <T> T write(@Nullable Object value, TypeInformation<T> target) {
+			return null;
+		}
+
+		/**
+		 * Reads the value into the type of the current property.
+		 *
+		 * @param value can be {@literal null}.
+		 * @return can be {@literal null}.
+		 */
+		@Nullable
+		default Object read(@Nullable Object value) {
+			return read(value, getProperty().getTypeInformation());
+		}
+
+		/**
+		 * Reads the value as the given type.
+		 *
+		 * @param value can be {@literal null}.
+		 * @param target must not be {@literal null}.
+		 * @return can be {@literal null}.
+		 */
+		@Nullable
+		default <T> T read(@Nullable Object value, Class<T> target) {
+			return null;
+		}
+
+		/**
+		 * Reads the value as the given type.
+		 *
+		 * @param value can be {@literal null}.
+		 * @param target must not be {@literal null}.
+		 * @return can be {@literal null}.
+		 */
+		@Nullable
+		default <T> T read(@Nullable Object value, TypeInformation<T> target) {
+			return null;
+		}
 	}
 
 	/**
@@ -67,7 +146,8 @@ public interface PropertyValueConverter<A, B, C extends PropertyValueConverter.V
 	 *
 	 * @author Christoph Strobl
 	 */
-	enum ObjectToObjectPropertyValueConverter implements PropertyValueConverter<Object, Object, ValueConversionContext> {
+	@SuppressWarnings({ "rawtypes", "null" })
+	enum ObjectToObjectPropertyValueConverter implements PropertyValueConverter {
 
 		INSTANCE;
 
@@ -81,5 +161,4 @@ public interface PropertyValueConverter<A, B, C extends PropertyValueConverter.V
 			return value;
 		}
 	}
-
 }

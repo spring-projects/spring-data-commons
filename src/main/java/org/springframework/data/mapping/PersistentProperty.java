@@ -438,9 +438,12 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	}
 
 	@Nullable
-	default Class<? extends PropertyValueConverter<?,?, ? extends ValueConversionContext>> getValueConverterType() {
+	default Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> getValueConverterType() {
+
 		PropertyConverter annotation = findAnnotation(PropertyConverter.class);
-		return annotation == null ? null : annotation.value();
+
+		return annotation == null ? null
+				: (Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>) annotation.value();
 	}
 
 	default boolean hasValueConverter() {
