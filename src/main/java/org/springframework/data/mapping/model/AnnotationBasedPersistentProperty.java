@@ -311,10 +311,12 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 
 	@Nullable
 	@Override
-	public Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext>> getValueConverterType() {
+	@SuppressWarnings("unchecked")
+	public Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> getValueConverterType() {
 
 		return doFindAnnotation(PropertyConverter.class) //
 				.map(PropertyConverter::value) //
+				.map(Class.class::cast) //
 				.orElse(null);
 	}
 

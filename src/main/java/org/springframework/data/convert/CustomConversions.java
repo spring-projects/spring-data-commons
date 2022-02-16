@@ -33,6 +33,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Predicates;
@@ -201,7 +202,7 @@ public class CustomConversions {
 	 * @since ?
 	 */
 	@Nullable
-	public <A, B, C extends PropertyValueConverter.ValueConversionContext> PropertyValueConverter<A, B, C> getPropertyValueConverter(
+	public <A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getPropertyValueConverter(
 			PersistentProperty<?> property) {
 		return propertyValueConversions != null ? propertyValueConversions.getValueConverter(property) : null;
 	}
