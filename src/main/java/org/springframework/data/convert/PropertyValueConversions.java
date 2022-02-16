@@ -15,6 +15,7 @@
  */
 package org.springframework.data.convert;
 
+import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
@@ -23,7 +24,7 @@ import org.springframework.lang.Nullable;
  * applied to a specific property. Other than {@link org.springframework.core.convert.converter.Converter converters}
  * registered in {@link CustomConversions} the property based variants accept and allow returning {@literal null} values
  * and provide access to a store specific {@link PropertyValueConverter.ValueConversionContext conversion context}.
- * 
+ *
  * @author Christoph Strobl
  * @since ?
  * @currentBook The Desert Prince - Peter V. Brett
@@ -49,6 +50,6 @@ public interface PropertyValueConversions {
 	 * @return the suitable {@link PropertyValueConverter} or {@literal null} if none available.
 	 */
 	@Nullable
-	<A, B, C extends PropertyValueConverter.ValueConversionContext> PropertyValueConverter<A, B, C> getValueConverter(
+	<A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getValueConverter(
 			PersistentProperty<?> property);
 }

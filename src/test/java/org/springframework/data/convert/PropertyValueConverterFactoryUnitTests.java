@@ -26,6 +26,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
@@ -114,14 +115,14 @@ public class PropertyValueConverterFactoryUnitTests {
 		PropertyValueConverterFactory factory = PropertyValueConverterFactory.chained(new PropertyValueConverterFactory() {
 			@Nullable
 			@Override
-			public <S, T, C extends ValueConversionContext> PropertyValueConverter<S, T, C> getConverter(
+			public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 					Class<? extends PropertyValueConverter<S, T, C>> converterType) {
 				return null;
 			}
 		}, new PropertyValueConverterFactory() {
 			@Nullable
 			@Override
-			public <S, T, C extends ValueConversionContext> PropertyValueConverter<S, T, C> getConverter(
+			public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 					Class<? extends PropertyValueConverter<S, T, C>> converterType) {
 				return expected;
 			}
@@ -136,14 +137,14 @@ public class PropertyValueConverterFactoryUnitTests {
 		PropertyValueConverterFactory factory = PropertyValueConverterFactory.chained(new PropertyValueConverterFactory() {
 			@Nullable
 			@Override
-			public <S, T, C extends ValueConversionContext> PropertyValueConverter<S, T, C> getConverter(
+			public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 					Class<? extends PropertyValueConverter<S, T, C>> converterType) {
 				return null;
 			}
 		}, new PropertyValueConverterFactory() {
 			@Nullable
 			@Override
-			public <S, T, C extends ValueConversionContext> PropertyValueConverter<S, T, C> getConverter(
+			public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 					Class<? extends PropertyValueConverter<S, T, C>> converterType) {
 				throw new RuntimeException("can't touch this!");
 			}
@@ -176,22 +177,23 @@ public class PropertyValueConverterFactoryUnitTests {
 				.isSameAs(factory.getConverter(ConverterWithDefaultCtor.class)); // TODO: is this a valid assumption?
 	}
 
-	static class ConverterWithDefaultCtor implements PropertyValueConverter<String, UUID, ValueConversionContext> {
+	static class ConverterWithDefaultCtor
+			implements PropertyValueConverter<String, UUID, ValueConversionContext<SamplePersistentProperty>> {
 
 		@Nullable
 		@Override
-		public String nativeToDomain(@Nullable UUID nativeValue, ValueConversionContext context) {
+		public String nativeToDomain(@Nullable UUID nativeValue, ValueConversionContext<SamplePersistentProperty> context) {
 			return nativeValue.toString();
 		}
 
 		@Nullable
 		@Override
-		public UUID domainToNative(@Nullable String domainValue, ValueConversionContext context) {
+		public UUID domainToNative(@Nullable String domainValue, ValueConversionContext<SamplePersistentProperty> context) {
 			return UUID.fromString(domainValue);
 		}
 	}
 
-	enum ConverterEnum implements PropertyValueConverter<String, UUID, ValueConversionContext> {
+	enum ConverterEnum implements PropertyValueConverter<String, UUID, ValueConversionContext<SamplePersistentProperty>> {
 
 		INSTANCE;
 
@@ -208,7 +210,8 @@ public class PropertyValueConverterFactoryUnitTests {
 		}
 	}
 
-	static class ConverterWithDependency implements PropertyValueConverter<String, UUID, ValueConversionContext> {
+	static class ConverterWithDependency
+			implements PropertyValueConverter<String, UUID, ValueConversionContext<SamplePersistentProperty>> {
 
 		private final SomeDependency someDependency;
 
@@ -218,7 +221,7 @@ public class PropertyValueConverterFactoryUnitTests {
 
 		@Nullable
 		@Override
-		public String nativeToDomain(@Nullable UUID nativeValue, ValueConversionContext context) {
+		public String nativeToDomain(@Nullable UUID nativeValue, ValueConversionContext<SamplePersistentProperty> context) {
 
 			assertThat(someDependency).isNotNull();
 			return nativeValue.toString();
@@ -226,7 +229,7 @@ public class PropertyValueConverterFactoryUnitTests {
 
 		@Nullable
 		@Override
-		public UUID domainToNative(@Nullable String domainValue, ValueConversionContext context) {
+		public UUID domainToNative(@Nullable String domainValue, ValueConversionContext<SamplePersistentProperty> context) {
 
 			assertThat(someDependency).isNotNull();
 			return UUID.fromString(domainValue);
