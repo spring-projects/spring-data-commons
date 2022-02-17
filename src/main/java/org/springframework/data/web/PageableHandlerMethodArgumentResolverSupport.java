@@ -63,14 +63,11 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 	private boolean oneIndexedParameters = false;
 
 	/**
-	 * Configures the {@link Pageable} to be used as fallback in case no {@link PageableDefault} or
-	 * {@link PageableDefault} (the latter only supported in legacy mode) can be found at the method parameter to be
-	 * resolved.
+	 * Configures the {@link Pageable} to be used as fallback in case no {@link PageableDefault} can be found at the
+	 * method parameter to be resolved.
 	 * <p>
-	 * If you set this to {@literal Optional#empty()}, be aware that you controller methods will get {@literal null}
-	 * handed into them in case no {@link Pageable} data can be found in the request. Note, that doing so will require you
-	 * supply bot the page <em>and</em> the size parameter with the requests as there will be no default for any of the
-	 * parameters available.
+	 * If you set this to {@literal Pageable#unpaged()}, be aware that your controller methods will get an {@code unpaged}
+	 * instance handed into them in case no {@link Pageable} data can be found in the request.
 	 *
 	 * @param fallbackPageable the {@link Pageable} to be used as general fallback.
 	 */
@@ -254,7 +251,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 
 	private static Pageable getDefaultPageRequestFrom(MethodParameter parameter, PageableDefault defaults) {
 
-		Integer defaultPageNumber = defaults.page();
+		int defaultPageNumber = defaults.page();
 		Integer defaultPageSize = getSpecificPropertyOrDefaultFromValue(defaults, "size");
 
 		if (defaultPageSize < 1) {
