@@ -36,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -45,9 +44,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.convert.PropertyConverter;
 import org.springframework.data.convert.PropertyValueConverter;
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
+import org.springframework.data.convert.ValueConversionContext;
+import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -342,6 +341,15 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThat(property.isIdProperty()).isTrue();
 	}
 
+	@Test // GH-1484
+	void detectsValueConverter() {
+
+		SamplePersistentProperty property = getProperty(WithPropertyConverter.class, "value");
+
+		assertThat(property.hasValueConverter()).isTrue();
+		assertThat(property.getValueConverterType()).isEqualTo(MyPropertyConverter.class);
+	}
+
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -536,48 +544,21 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 	static class WithPropertyConverter {
 
-		@PropertyConverter(MyPropertyConverter.class)
+		@ValueConverter(MyPropertyConverter.class)
 		String value;
-
-		@PropertyConverter(MyPropertyConverterThatRequiresComponents.class)
-		String value2;
 	}
 
 	static class MyPropertyConverter
 			implements PropertyValueConverter<Object, Object, ValueConversionContext<SamplePersistentProperty>> {
 
 		@Override
-		public Object nativeToDomain(Object value, ValueConversionContext context) {
+		public Object read(Object value, ValueConversionContext context) {
 			return null;
 		}
 
 		@Override
-		public Object domainToNative(Object value, ValueConversionContext context) {
+		public Object write(Object value, ValueConversionContext context) {
 			return null;
 		}
-	}
-
-	static class MyPropertyConverterThatRequiresComponents
-			implements PropertyValueConverter<Object, Object, ValueConversionContext<SamplePersistentProperty>> {
-
-		private final SomeDependency someDependency;
-
-		public MyPropertyConverterThatRequiresComponents(@Autowired SomeDependency someDependency) {
-			this.someDependency = someDependency;
-		}
-
-		@Override
-		public Object nativeToDomain(Object value, ValueConversionContext context) {
-			return null;
-		}
-
-		@Override
-		public Object domainToNative(Object value, ValueConversionContext context) {
-			return null;
-		}
-	}
-
-	static class SomeDependency {
-
 	}
 }

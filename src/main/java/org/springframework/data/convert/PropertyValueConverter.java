@@ -15,10 +15,9 @@
  */
 package org.springframework.data.convert;
 
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
+import java.util.function.BiFunction;
+
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
 /**
@@ -29,8 +28,9 @@ import org.springframework.lang.Nullable;
  * to special annotated fields which allows a fine grained conversion of certain values within a specific context.
  *
  * @author Christoph Strobl
- * @param <A> domain specific type
- * @param <B> store native type
+ * @param <A> domain specific type.
+ * @param <B> store native type.
+ * @param <C> the store specific {@link ValueConversionContext conversion context}.
  * @since 2.7
  */
 public interface PropertyValueConverter<A, B, C extends ValueConversionContext<? extends PersistentProperty<?>>> {
@@ -39,107 +39,23 @@ public interface PropertyValueConverter<A, B, C extends ValueConversionContext<?
 	 * Convert the given store specific value into it's domain value representation. Typically a {@literal read}
 	 * operation.
 	 *
-	 * @param nativeValue can be {@literal null}.
+	 * @param value can be {@literal null}.
 	 * @param context never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
-	A /*read*/ nativeToDomain(@Nullable B nativeValue, C context);
+	A read(@Nullable B value, C context);
 
 	/**
 	 * Convert the given domain specific value into it's native store representation. Typically a {@literal write}
 	 * operation.
 	 *
-	 * @param domainValue can be {@literal null}.
+	 * @param value can be {@literal null}.
 	 * @param context never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
-	B /*write*/ domainToNative(@Nullable A domainValue, C context);
-
-	/**
-	 * @author Christoph Strobl
-	 * @author Oliver Drotbohm
-	 */
-	interface ValueConversionContext<P extends PersistentProperty<P>> {
-
-		/**
-		 * Return the {@link PersistentProperty} to be handled.
-		 *
-		 * @return will never be {@literal null}.
-		 */
-		P getProperty();
-
-		/**
-		 * Write to whatever type is considered best for the given source.
-		 *
-		 * @param value
-		 * @return
-		 */
-		@Nullable
-		default Object write(@Nullable Object value) {
-			return null;
-		}
-
-		/**
-		 * Write as the given type.
-		 *
-		 * @param value can be {@literal null}.
-		 * @param target must not be {@literal null}.
-		 * @return can be {@literal null}.
-		 */
-		@Nullable
-		default <T> T write(@Nullable Object value, Class<T> target) {
-			return write(value, ClassTypeInformation.from(target));
-		}
-
-		/**
-		 * Write as the given type.
-		 *
-		 * @param value can be {@literal null}.
-		 * @param target must not be {@literal null}.
-		 * @return can be {@literal null}.
-		 */
-		@Nullable
-		default <T> T write(@Nullable Object value, TypeInformation<T> target) {
-			return null;
-		}
-
-		/**
-		 * Reads the value into the type of the current property.
-		 *
-		 * @param value can be {@literal null}.
-		 * @return can be {@literal null}.
-		 */
-		@Nullable
-		default Object read(@Nullable Object value) {
-			return read(value, getProperty().getTypeInformation());
-		}
-
-		/**
-		 * Reads the value as the given type.
-		 *
-		 * @param value can be {@literal null}.
-		 * @param target must not be {@literal null}.
-		 * @return can be {@literal null}.
-		 */
-		@Nullable
-		default <T> T read(@Nullable Object value, Class<T> target) {
-			return null;
-		}
-
-		/**
-		 * Reads the value as the given type.
-		 *
-		 * @param value can be {@literal null}.
-		 * @param target must not be {@literal null}.
-		 * @return can be {@literal null}.
-		 */
-		@Nullable
-		default <T> T read(@Nullable Object value, TypeInformation<T> target) {
-			return null;
-		}
-	}
+	B write(@Nullable A value, C context);
 
 	/**
 	 * NoOp {@link PropertyValueConverter} implementation.
@@ -152,13 +68,42 @@ public interface PropertyValueConverter<A, B, C extends ValueConversionContext<?
 		INSTANCE;
 
 		@Override
-		public Object nativeToDomain(Object value, ValueConversionContext context) {
+		public Object read(Object value, ValueConversionContext context) {
 			return value;
 		}
 
 		@Override
-		public Object domainToNative(Object value, ValueConversionContext context) {
+		public Object write(Object value, ValueConversionContext context) {
 			return value;
+		}
+	}
+
+	/**
+	 * A {@link PropertyValueConverter} that delegates conversion to the given {@link BiFunction}s.
+	 *
+	 * @author Oliver Drotbohm
+	 */
+	class FunctionPropertyValueConverter<A, B, P extends PersistentProperty<P>>
+			implements PropertyValueConverter<A, B, ValueConversionContext<P>> {
+
+		private final BiFunction<A, ValueConversionContext<P>, B> writer;
+		private final BiFunction<B, ValueConversionContext<P>, A> reader;
+
+		public FunctionPropertyValueConverter(BiFunction<A, ValueConversionContext<P>, B> writer,
+				BiFunction<B, ValueConversionContext<P>, A> reader) {
+
+			this.writer = writer;
+			this.reader = reader;
+		}
+
+		@Override
+		public B write(A value, ValueConversionContext<P> context) {
+			return writer.apply(value, context);
+		}
+
+		@Override
+		public A read(B value, ValueConversionContext<P> context) {
+			return reader.apply(value, context);
 		}
 	}
 }

@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.data.convert.PropertyConverter;
 import org.springframework.data.convert.PropertyValueConverter;
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
+import org.springframework.data.convert.ValueConversionContext;
+import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -36,6 +36,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Jens Schauder
+ * @author Christoph Strobl
  */
 public interface PersistentProperty<P extends PersistentProperty<P>> {
 
@@ -68,9 +69,9 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	TypeInformation<?> getTypeInformation();
 
 	/**
-	 * Returns the detected {@link TypeInformation TypeInformations} if the property references a {@link PersistentEntity}.
-	 * Will return an {@literal empty} {@link Iterable} in case it refers to a simple type. Will return the {@link Collection}'s
-	 * component types or the {@link Map}'s value type transparently.
+	 * Returns the detected {@link TypeInformation TypeInformations} if the property references a
+	 * {@link PersistentEntity}. Will return an {@literal empty} {@link Iterable} in case it refers to a simple type. Will
+	 * return the {@link Collection}'s component types or the {@link Map}'s value type transparently.
 	 *
 	 * @return never {@literal null}.
 	 * @since 2.6
@@ -426,16 +427,32 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		return getOwner().getPropertyAccessor(owner);
 	}
 
+	/**
+	 * Obtain the the {@link PropertyValueConverter converter type} to be used for read-/writing the properties value. By
+	 * default looks for the {@link ValueConverter} annotation and extracts its {@link ValueConverter#value() value}
+	 * attribute.
+	 * <p>
+	 * Store implementations may override the default and provide a more specific type.
+	 *
+	 * @return {@literal null} if none defined. Check {@link #hasValueConverter()} to check if the annotation is present
+	 *         at all.
+	 * @since 2.7
+	 */
 	@Nullable
-	default Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> getValueConverterType() {
+	default Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> getValueConverterType() {
 
-		PropertyConverter annotation = findAnnotation(PropertyConverter.class);
+		ValueConverter annotation = findAnnotation(ValueConverter.class);
 
 		return annotation == null ? null
-				: (Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>) annotation.value();
+				: (Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>>) annotation
+						.value();
 	}
 
+	/**
+	 * @return by default return {@literal true} if {@link ValueConverter} annotation is present.
+	 * @since 2.7
+	 */
 	default boolean hasValueConverter() {
-		return isAnnotationPresent(PropertyConverter.class);
+		return isAnnotationPresent(ValueConverter.class);
 	}
 }

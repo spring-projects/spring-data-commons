@@ -19,10 +19,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.convert.PropertyValueConverterFactories.BeanFactoryAwarePropertyValueConverterFactory;
 import org.springframework.data.convert.PropertyValueConverterFactories.CachingPropertyValueConverterFactory;
-import org.springframework.data.convert.PropertyValueConverterFactories.CompositePropertyValueConverterFactory;
+import org.springframework.data.convert.PropertyValueConverterFactories.ChainedPropertyValueConverterFactory;
 import org.springframework.data.convert.PropertyValueConverterFactories.ConfiguredInstanceServingValueConverterFactory;
 import org.springframework.data.convert.PropertyValueConverterFactories.SimplePropertyConverterFactory;
 import org.springframework.data.mapping.PersistentProperty;
@@ -37,7 +36,7 @@ import org.springframework.util.Assert;
  * {@link #caching(PropertyValueConverterFactory) cached}.
  *
  * @author Christoph Strobl
- * @since ?
+ * @since 2.7
  */
 public interface PropertyValueConverterFactory {
 
@@ -45,8 +44,9 @@ public interface PropertyValueConverterFactory {
 	 * Get the {@link PropertyValueConverter} applicable for the given {@link PersistentProperty}.
 	 *
 	 * @param property must not be {@literal null}.
-	 * @param <A> domain specific type
-	 * @param <B> store native type
+	 * @param <A> domain specific type.
+	 * @param <B> store native type.
+	 * @param <C> value conversion context to use.
 	 * @return can be {@literal null}.
 	 */
 	@Nullable
@@ -57,12 +57,22 @@ public interface PropertyValueConverterFactory {
 		if (!property.hasValueConverter()) {
 			return null;
 		}
+
 		return getConverter((Class<PropertyValueConverter<A, B, C>>) property.getValueConverterType());
 	}
 
+	/**
+	 * Get the converter by its type.
+	 *
+	 * @param converterType must not be {@literal null}.
+	 * @param <A> domain specific type.
+	 * @param <B> store native type.
+	 * @param <C> value conversion context to use.
+	 * @return
+	 */
 	@Nullable
-	<S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
-			Class<? extends PropertyValueConverter<S, T, C>> converterType);
+	<A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getConverter(
+			Class<? extends PropertyValueConverter<A, B, C>> converterType);
 
 	/**
 	 * Obtain a simple {@link PropertyValueConverterFactory} capable of instantiating {@link PropertyValueConverter}
@@ -93,7 +103,7 @@ public interface PropertyValueConverterFactory {
 	 * @param registrar must not be {@literal null}.
 	 * @return new instance of {@link PropertyValueConverterFactory}.
 	 */
-	static PropertyValueConverterFactory configuredInstance(PropertyValueConverterRegistrar registrar) {
+	static PropertyValueConverterFactory configuredInstance(ValueConverterRegistry<?> registrar) {
 		return new ConfiguredInstanceServingValueConverterFactory(registrar);
 	}
 
@@ -123,15 +133,15 @@ public interface PropertyValueConverterFactory {
 			return factoryList.iterator().next();
 		}
 
-		return new CompositePropertyValueConverterFactory(factoryList);
+		return new ChainedPropertyValueConverterFactory(factoryList);
 	}
 
 	/**
 	 * Obtain a {@link PropertyValueConverterFactory} that will cache {@link PropertyValueConverter} instances per
 	 * {@link PersistentProperty}.
 	 *
-	 * @param factory
-	 * @return
+	 * @param factory must not be {@literal null}.
+	 * @return new instance of {@link PropertyValueConverterFactory}.
 	 */
 	static PropertyValueConverterFactory caching(PropertyValueConverterFactory factory) {
 		return new CachingPropertyValueConverterFactory(factory);
