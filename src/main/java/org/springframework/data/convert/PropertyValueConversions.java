@@ -15,18 +15,19 @@
  */
 package org.springframework.data.convert;
 
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
+import java.util.function.Consumer;
+
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
  * {@link PropertyValueConversions} provides access to {@link PropertyValueConverter converters} that may only be
  * applied to a specific property. Other than {@link org.springframework.core.convert.converter.Converter converters}
- * registered in {@link CustomConversions} the property based variants accept and allow returning {@literal null} values
- * and provide access to a store specific {@link PropertyValueConverter.ValueConversionContext conversion context}.
+ * registered in {@link CustomConversions}, the property based variants accept and allow returning {@literal null}
+ * values and provide access to a store specific {@link ValueConversionContext conversion context}.
  *
  * @author Christoph Strobl
- * @since ?
+ * @since 2.7
  * @currentBook The Desert Prince - Peter V. Brett
  */
 public interface PropertyValueConversions {
@@ -38,7 +39,7 @@ public interface PropertyValueConversions {
 	 * @return {@literal true} if a specific {@link PropertyValueConverter} is available.
 	 */
 	default boolean hasValueConverter(PersistentProperty<?> property) {
-		return getValueConverter(property) != null;
+		return getValueConverter((PersistentProperty) property) != null;
 	}
 
 	/**
@@ -50,6 +51,20 @@ public interface PropertyValueConversions {
 	 * @return the suitable {@link PropertyValueConverter} or {@literal null} if none available.
 	 */
 	@Nullable
-	<A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getValueConverter(
-			PersistentProperty<?> property);
+	<A, B, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<A, B, D> getValueConverter(
+			C property);
+
+	/**
+	 * Helper that allows to create {@link PropertyValueConversions} instance with the configured
+	 * {@link PropertyValueConverter converters} provided via the given callback.
+	 */
+	static <P extends PersistentProperty<P>> PropertyValueConversions simple(
+			Consumer<PropertyValueConverterRegistrar<P>> config) {
+
+		SimplePropertyValueConversions conversions = new SimplePropertyValueConversions();
+		PropertyValueConverterRegistrar registrar = new PropertyValueConverterRegistrar();
+		config.accept(registrar);
+		conversions.setValueConverterRegistry(registrar.buildRegistry());
+		return conversions;
+	}
 }

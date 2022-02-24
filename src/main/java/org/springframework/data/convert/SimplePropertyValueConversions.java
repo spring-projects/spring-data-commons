@@ -20,36 +20,69 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
+import org.springframework.data.convert.PropertyValueConverterFactories.ChainedPropertyValueConverterFactory;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
+ * {@link PropertyValueConversions} implementation that allows to pick a {@link PropertyValueConverterFactory} serving
+ * {@link PropertyValueConverter converters}. Activating {@link #setConverterCacheEnabled(boolean) cahing} allows to
+ * reuse converters. Providing a {@link SimplePropertyValueConverterRegistry} adds path configured converter instances.
+ * <p>
+ * Should be {@link #afterPropertiesSet() initialized}. If not, {@link #init()} will be called of fist attempt of
+ * {@link PropertyValueConverter converter} retrieval.
+ *
  * @author Christoph Strobl
- * @since ?
+ * @since 2.7
  */
 public class SimplePropertyValueConversions implements PropertyValueConversions, InitializingBean {
 
 	private @Nullable PropertyValueConverterFactory converterFactory;
-	private @Nullable PropertyValueConverterRegistrar converterRegistrar;
+	private @Nullable ValueConverterRegistry<?> valueConverterRegistry;
 	private boolean converterCacheEnabled = true;
 	private AtomicBoolean initialized = new AtomicBoolean(false);
 
+	/**
+	 * Set the {@link PropertyValueConverterFactory factory} responsible for creating the actual
+	 * {@link PropertyValueConverter converter}.
+	 * 
+	 * @param converterFactory must not be {@literal null}.
+	 */
 	public void setConverterFactory(PropertyValueConverterFactory converterFactory) {
 		this.converterFactory = converterFactory;
 	}
 
-	public void setConverterRegistrar(PropertyValueConverterRegistrar converterRegistrar) {
-		this.converterRegistrar = converterRegistrar;
+	@Nullable
+	PropertyValueConverterFactory getConverterFactory() {
+		return converterFactory;
 	}
 
+	/**
+	 * Set the {@link ValueConverterRegistry converter registry} for path configured converters. This is short for adding
+	 * a
+	 * {@link org.springframework.data.convert.PropertyValueConverterFactories.ConfiguredInstanceServingValueConverterFactory}
+	 * at the end of a {@link ChainedPropertyValueConverterFactory}.
+	 * 
+	 * @param valueConverterRegistry must not be {@literal null}.
+	 */
+	public void setValueConverterRegistry(ValueConverterRegistry<?> valueConverterRegistry) {
+		this.valueConverterRegistry = valueConverterRegistry;
+	}
+
+	/**
+	 * Dis-/Enable caching. Enabled by default.
+	 *
+	 * @param converterCacheEnabled set to {@literal true} to enable caching of {@link PropertyValueConverter converter}
+	 *          instances.
+	 */
 	public void setConverterCacheEnabled(boolean converterCacheEnabled) {
 		this.converterCacheEnabled = converterCacheEnabled;
 	}
 
+	@Nullable
 	@Override
-	public <A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getValueConverter(
-			PersistentProperty<?> property) {
+	public <A, B, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<A, B, D> getValueConverter(
+			C property) {
 
 		if (!initialized.get()) {
 			init();
@@ -58,9 +91,13 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 		return this.converterFactory.getConverter(property);
 	}
 
+	/**
+	 * May be called just once to initialize the underlying factory with its values.
+	 */
 	public void init() {
 
 		if (initialized.compareAndSet(false, true)) {
+
 			List<PropertyValueConverterFactory> factoryList = new ArrayList<>(3);
 
 			if (converterFactory != null) {
@@ -69,8 +106,8 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 				factoryList.add(PropertyValueConverterFactory.simple());
 			}
 
-			if ((converterRegistrar != null) && !converterRegistrar.isEmpty()) {
-				factoryList.add(PropertyValueConverterFactory.configuredInstance(converterRegistrar));
+			if ((valueConverterRegistry != null) && !valueConverterRegistry.isEmpty()) {
+				factoryList.add(PropertyValueConverterFactory.configuredInstance(valueConverterRegistry));
 			}
 
 			PropertyValueConverterFactory targetFactory = factoryList.size() > 1
@@ -84,7 +121,6 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-
 		init();
 	}
 }

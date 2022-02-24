@@ -15,7 +15,9 @@
  */
 package org.springframework.data.convert;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +28,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -34,28 +35,31 @@ import org.springframework.util.Assert;
 /**
  * {@link PropertyValueConverterFactories} provides a collection of predefined {@link PropertyValueConverterFactory}
  * implementations. Depending on the applications need {@link PropertyValueConverterFactory factories} can be
- * {@link CompositePropertyValueConverterFactory chained} and the created {@link PropertyValueConverter converter}
+ * {@link ChainedPropertyValueConverterFactory chained} and the created {@link PropertyValueConverter converter}
  * {@link CachingPropertyValueConverterFactory cached}.
  *
  * @author Christoph Strobl
- * @since ?
+ * @since 2.7
  */
 final class PropertyValueConverterFactories {
 
 	/**
+	 * {@link PropertyValueConverterFactory} implementation that returns the first no null {@link PropertyValueConverter}
+	 * by asking given {@link PropertyValueConverterFactory factories} one by one.
+	 *
 	 * @author Christoph Strobl
-	 * @since ?
+	 * @since 2.7
 	 */
-	static class CompositePropertyValueConverterFactory implements PropertyValueConverterFactory {
+	static class ChainedPropertyValueConverterFactory implements PropertyValueConverterFactory {
 
 		private List<PropertyValueConverterFactory> delegates;
 
-		CompositePropertyValueConverterFactory(PropertyValueConverterFactory... delegates) {
+		ChainedPropertyValueConverterFactory(PropertyValueConverterFactory... delegates) {
 			this(Arrays.asList(delegates));
 		}
 
-		CompositePropertyValueConverterFactory(List<PropertyValueConverterFactory> delegates) {
-			this.delegates = delegates;
+		ChainedPropertyValueConverterFactory(List<PropertyValueConverterFactory> delegates) {
+			this.delegates = Collections.unmodifiableList(delegates);
 		}
 
 		@Nullable
@@ -72,13 +76,18 @@ final class PropertyValueConverterFactories {
 			return delegates.stream().filter(it -> it.getConverter(converterType) != null).findFirst()
 					.map(it -> it.getConverter(converterType)).orElse(null);
 		}
+
+		public List<PropertyValueConverterFactory> converterFactories() {
+			return delegates;
+		}
 	}
 
 	/**
-	 * Trivial implementation of {@link PropertyValueConverter}.
+	 * Trivial implementation of {@link PropertyValueConverterFactory} capable of instantiating a
+	 * {@link PropertyValueConverter} via default constructor or in case of {@link Enum} returning the first value.
 	 *
 	 * @author Christoph Strobl
-	 * @since ?
+	 * @since 2.7
 	 */
 	static class SimplePropertyConverterFactory implements PropertyValueConverterFactory {
 
@@ -100,13 +109,13 @@ final class PropertyValueConverterFactories {
 	 * {@link PropertyValueConverter}. This allows the {@link PropertyValueConverter} to make use of DI.
 	 *
 	 * @author Christoph Strobl
-	 * @since ?
+	 * @since 2.7
 	 */
 	static class BeanFactoryAwarePropertyValueConverterFactory implements PropertyValueConverterFactory {
 
 		private final BeanFactory beanFactory;
 
-		public BeanFactoryAwarePropertyValueConverterFactory(BeanFactory beanFactory) {
+		BeanFactoryAwarePropertyValueConverterFactory(BeanFactory beanFactory) {
 			this.beanFactory = beanFactory;
 		}
 
@@ -131,24 +140,27 @@ final class PropertyValueConverterFactories {
 	}
 
 	/**
+	 * {@link PropertyValueConverterFactory} implementation that serves {@link PropertyValueConverter} from a given
+	 * {@link ValueConverterRegistry registry}.
+	 * 
 	 * @author Christoph Strobl
-	 * @since ?
+	 * @since 2.7
 	 */
 	static class ConfiguredInstanceServingValueConverterFactory implements PropertyValueConverterFactory {
 
-		private final PropertyValueConverterRegistrar conversionsRegistrar;
+		private final ValueConverterRegistry<?> converterRegistry;
 
-		public ConfiguredInstanceServingValueConverterFactory(PropertyValueConverterRegistrar conversionsRegistrar) {
+		ConfiguredInstanceServingValueConverterFactory(ValueConverterRegistry<?> converterRegistry) {
 
-			Assert.notNull(conversionsRegistrar, "ConversionsRegistrar must not be null!");
-			this.conversionsRegistrar = conversionsRegistrar;
+			Assert.notNull(converterRegistry, "ConversionsRegistrar must not be null!");
+			this.converterRegistry = converterRegistry;
 		}
 
 		@Nullable
 		@Override
 		public <A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getConverter(
 				PersistentProperty<?> property) {
-			return (PropertyValueConverter<A, B, C>) conversionsRegistrar.getConverter(property.getOwner().getType(),
+			return (PropertyValueConverter<A, B, C>) converterRegistry.getConverter(property.getOwner().getType(),
 					property.getName());
 		}
 
@@ -160,17 +172,18 @@ final class PropertyValueConverterFactories {
 	}
 
 	/**
-	 * TODO: This would be easier if we'd get rid of {@link PropertyValueConverterFactory#getConverter(Class)}.
-	 *
+	 * {@link PropertyValueConverterFactory} implementation that caches converters provided by an underlying
+	 * {@link PropertyValueConverterFactory factory}.
+	 * 
 	 * @author Christoph Strobl
-	 * @since ?
+	 * @since 2.7
 	 */
 	static class CachingPropertyValueConverterFactory implements PropertyValueConverterFactory {
 
 		private final PropertyValueConverterFactory delegate;
 		private final Cache cache = new Cache();
 
-		public CachingPropertyValueConverterFactory(PropertyValueConverterFactory delegate) {
+		CachingPropertyValueConverterFactory(PropertyValueConverterFactory delegate) {
 
 			Assert.notNull(delegate, "Delegate must not be null!");
 			this.delegate = delegate;
@@ -183,9 +196,7 @@ final class PropertyValueConverterFactories {
 
 			PropertyValueConverter converter = cache.get(property);
 
-			return converter != null
-					? converter
-					: cache.cache(property, delegate.getConverter(property));
+			return converter != null ? converter : cache.cache(property, delegate.getConverter(property));
 		}
 
 		@Override
@@ -194,9 +205,7 @@ final class PropertyValueConverterFactories {
 
 			PropertyValueConverter converter = cache.get(converterType);
 
-			return converter != null
-					? converter
-					: cache.cache(converterType, delegate.getConverter(converterType));
+			return converter != null ? converter : cache.cache(converterType, delegate.getConverter(converterType));
 		}
 
 		static class Cache {

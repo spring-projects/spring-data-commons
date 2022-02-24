@@ -33,9 +33,9 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
-import org.springframework.data.convert.PropertyConverter;
+import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.convert.PropertyValueConverter;
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
+import org.springframework.data.convert.ValueConversionContext;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -312,10 +312,10 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Nullable
 	@Override
 	@SuppressWarnings("unchecked")
-	public Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> getValueConverterType() {
+	public Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> getValueConverterType() {
 
-		return doFindAnnotation(PropertyConverter.class) //
-				.map(PropertyConverter::value) //
+		return doFindAnnotation(ValueConverter.class) //
+				.map(ValueConverter::value) //
 				.map(Class.class::cast) //
 				.orElse(null);
 	}

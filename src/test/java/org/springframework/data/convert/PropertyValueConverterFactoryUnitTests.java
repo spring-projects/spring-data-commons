@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.lang.Nullable;
@@ -108,7 +107,7 @@ public class PropertyValueConverterFactoryUnitTests {
 	}
 
 	@Test // GH-1484
-	void compositeConverterFactoryIteratesFactories() {
+	void chainedConverterFactoryIteratesFactories() {
 
 		PropertyValueConverter expected = mock(PropertyValueConverter.class);
 
@@ -132,7 +131,7 @@ public class PropertyValueConverterFactoryUnitTests {
 	}
 
 	@Test // GH-1484
-	void compositeConverterFactoryFailsOnException() {
+	void chainedConverterFactoryFailsOnException() {
 
 		PropertyValueConverterFactory factory = PropertyValueConverterFactory.chained(new PropertyValueConverterFactory() {
 			@Nullable
@@ -182,14 +181,14 @@ public class PropertyValueConverterFactoryUnitTests {
 
 		@Nullable
 		@Override
-		public String nativeToDomain(@Nullable UUID nativeValue, ValueConversionContext<SamplePersistentProperty> context) {
-			return nativeValue.toString();
+		public String read(@Nullable UUID value, ValueConversionContext<SamplePersistentProperty> context) {
+			return value.toString();
 		}
 
 		@Nullable
 		@Override
-		public UUID domainToNative(@Nullable String domainValue, ValueConversionContext<SamplePersistentProperty> context) {
-			return UUID.fromString(domainValue);
+		public UUID write(@Nullable String value, ValueConversionContext<SamplePersistentProperty> context) {
+			return UUID.fromString(value);
 		}
 	}
 
@@ -199,14 +198,14 @@ public class PropertyValueConverterFactoryUnitTests {
 
 		@Nullable
 		@Override
-		public String nativeToDomain(@Nullable UUID nativeValue, ValueConversionContext context) {
-			return nativeValue.toString();
+		public String read(@Nullable UUID value, ValueConversionContext context) {
+			return value.toString();
 		}
 
 		@Nullable
 		@Override
-		public UUID domainToNative(@Nullable String domainValue, ValueConversionContext context) {
-			return UUID.fromString(domainValue);
+		public UUID write(@Nullable String value, ValueConversionContext context) {
+			return UUID.fromString(value);
 		}
 	}
 
@@ -221,22 +220,44 @@ public class PropertyValueConverterFactoryUnitTests {
 
 		@Nullable
 		@Override
-		public String nativeToDomain(@Nullable UUID nativeValue, ValueConversionContext<SamplePersistentProperty> context) {
+		public String read(@Nullable UUID value, ValueConversionContext<SamplePersistentProperty> context) {
 
 			assertThat(someDependency).isNotNull();
-			return nativeValue.toString();
+			return value.toString();
 		}
 
 		@Nullable
 		@Override
-		public UUID domainToNative(@Nullable String domainValue, ValueConversionContext<SamplePersistentProperty> context) {
+		public UUID write(@Nullable String value, ValueConversionContext<SamplePersistentProperty> context) {
 
 			assertThat(someDependency).isNotNull();
-			return UUID.fromString(domainValue);
+			return UUID.fromString(value);
 		}
 	}
 
 	static class SomeDependency {
+
+	}
+
+	static class Person {
+		String name;
+		Address address;
+
+		public String getName() {
+			return name;
+		}
+
+		public Address getAddress() {
+			return address;
+		}
+	}
+
+	static class Address {
+		String street;
+		ZipCode zipCode;
+	}
+
+	static class ZipCode {
 
 	}
 }
