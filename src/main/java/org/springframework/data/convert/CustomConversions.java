@@ -16,7 +16,16 @@
 package org.springframework.data.convert;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -33,7 +42,6 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
-import org.springframework.data.convert.PropertyValueConverter.ValueConversionContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Predicates;
@@ -100,7 +108,7 @@ public class CustomConversions {
 	private final Function<ConvertiblePair, Class<?>> getRawWriteTarget = convertiblePair -> getCustomTarget(
 			convertiblePair.getSourceType(), null, writingPairs);
 
-	private PropertyValueConversions propertyValueConversions;
+	private @Nullable PropertyValueConversions propertyValueConversions;
 
 	/**
 	 * @param converterConfiguration the {@link ConverterConfiguration} to apply.
@@ -184,7 +192,7 @@ public class CustomConversions {
 	 * @param property must not be {@literal null}.
 	 * @return {@literal true} if a specific {@link PropertyValueConverter} is available.
 	 * @see PropertyValueConversions#hasValueConverter(PersistentProperty)
-	 * @since ?
+	 * @since 2.7
 	 */
 	public boolean hasPropertyValueConverter(PersistentProperty<?> property) {
 		return propertyValueConversions != null ? propertyValueConversions.hasValueConverter(property) : false;
@@ -199,11 +207,11 @@ public class CustomConversions {
 	 * @param <C> conversion context type
 	 * @return the suitable {@link PropertyValueConverter} or {@literal null} if none available.
 	 * @see PropertyValueConversions#getValueConverter(PersistentProperty)
-	 * @since ?
+	 * @since 2.7
 	 */
 	@Nullable
-	public <A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getPropertyValueConverter(
-			PersistentProperty<?> property) {
+	public <A, B, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<A, B, D> getPropertyValueConverter(
+			C property) {
 		return propertyValueConversions != null ? propertyValueConversions.getValueConverter(property) : null;
 	}
 
@@ -328,8 +336,8 @@ public class CustomConversions {
 						registrationIntent.getSourceType(), registrationIntent.getTargetType(),
 						registrationIntent.isReading() ? "reading" : "writing"));
 			} else {
-				logger.debug(String.format(SKIP_CONVERTER, registrationIntent.getSourceType(), registrationIntent.getTargetType(),
-						registrationIntent.isReading() ? "reading" : "writing",
+				logger.debug(String.format(SKIP_CONVERTER, registrationIntent.getSourceType(),
+						registrationIntent.getTargetType(), registrationIntent.isReading() ? "reading" : "writing",
 						registrationIntent.isReading() ? registrationIntent.getSourceType() : registrationIntent.getTargetType()));
 			}
 		}
@@ -941,8 +949,22 @@ public class CustomConversions {
 			this(storeConversions, userConverters, converterRegistrationFilter, new SimplePropertyValueConversions());
 		}
 
+		/**
+		 * Create a new ConverterConfiguration holding the given {@link StoreConversions} and user defined converters as
+		 * well as a {@link Collection} of {@link ConvertiblePair} for which to skip the registration of default converters.
+		 * <br />
+		 * This allows store implementations to modify default converter registration based on specific needs and
+		 * configurations. User defined converters will are never subject of filtering.
+		 *
+		 * @param storeConversions must not be {@literal null}.
+		 * @param userConverters must not be {@literal null} use {@link Collections#emptyList()} instead.
+		 * @param converterRegistrationFilter must not be {@literal null}.
+		 * @param propertyValueConversions can be {@literal null}.
+		 * @since 2.7
+		 */
 		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters,
-				Predicate<ConvertiblePair> converterRegistrationFilter, @Nullable PropertyValueConversions propertyValueConversions) {
+				Predicate<ConvertiblePair> converterRegistrationFilter,
+				@Nullable PropertyValueConversions propertyValueConversions) {
 
 			this.storeConversions = storeConversions;
 			this.userConverters = new ArrayList<>(userConverters);
@@ -973,7 +995,7 @@ public class CustomConversions {
 
 		/**
 		 * @return the configured {@link PropertyValueConversions} if set, {@literal null} otherwise.
-		 * @since ?
+		 * @since 2.7
 		 */
 		@Nullable
 		public PropertyValueConversions getPropertyValueConversions() {
