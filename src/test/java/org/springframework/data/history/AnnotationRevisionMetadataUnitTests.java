@@ -33,6 +33,7 @@ import org.springframework.data.annotation.Reference;
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 class AnnotationRevisionMetadataUnitTests {
 
@@ -79,6 +80,21 @@ class AnnotationRevisionMetadataUnitTests {
 
 		softly.assertThat(metadata.getRevisionInstant()).hasValue(expectedInstant);
 		softly.assertThat(metadata.getRequiredRevisionInstant()).isEqualTo(expectedInstant);
+
+		softly.assertAll();
+	}
+
+	@Test // GH-2569
+	void exposesRevisionMetadataUsingMethodAccessors() {
+
+		SampleWithMethodAnnotations sample = new SampleWithMethodAnnotations();
+		sample.revisionNumber = 1L;
+		sample.revisionDate = Instant.now();
+
+		RevisionMetadata<Long> metadata = getMetadata(sample);
+
+		softly.assertThat(metadata.getRevisionNumber()).hasValue(1L);
+		softly.assertThat(metadata.getRevisionInstant()).hasValue(sample.revisionDate);
 
 		softly.assertAll();
 	}
@@ -147,6 +163,22 @@ class AnnotationRevisionMetadataUnitTests {
 
 		@Autowired Long revisionNumber;
 		@Reference LocalDateTime revisionDate;
+	}
+
+	static class SampleWithMethodAnnotations {
+
+		Long revisionNumber;
+		Instant revisionDate;
+
+		@Autowired
+		public Long getRevisionNumber() {
+			return revisionNumber;
+		}
+
+		@Reference
+		public Instant getRevisionDate() {
+			return revisionDate;
+		}
 	}
 
 	static class SampleWithInstant {

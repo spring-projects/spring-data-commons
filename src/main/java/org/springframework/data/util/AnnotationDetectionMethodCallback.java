@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
@@ -28,6 +29,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class AnnotationDetectionMethodCallback<A extends Annotation> implements MethodCallback {
 
@@ -121,6 +123,8 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 			}
 
 			this.annotation = foundAnnotation;
+
+			ReflectionUtils.makeAccessible(method);
 			this.foundMethod = method;
 		}
 	}
