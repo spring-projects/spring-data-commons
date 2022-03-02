@@ -100,7 +100,6 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 		return (T) entity;
 	}
 
-	@SuppressWarnings("unchecked")
 	private static <T> Lazy<Optional<T>> detectAnnotation(Object entity, Class<? extends Annotation> annotationType) {
 
 		return Lazy.of(() -> {
@@ -109,7 +108,7 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 					annotationType);
 			ReflectionUtils.doWithMethods(entity.getClass(), methodCallback);
 			if (methodCallback.getMethod() != null) {
-				return Optional.ofNullable((T) ReflectionUtils.invokeMethod(methodCallback.getRequiredMethod(), entity));
+				return Optional.ofNullable(methodCallback.invoke(entity));
 			}
 
 			AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(annotationType);

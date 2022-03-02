@@ -123,9 +123,29 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 			}
 
 			this.annotation = foundAnnotation;
-
-			ReflectionUtils.makeAccessible(method);
 			this.foundMethod = method;
 		}
+	}
+
+	/**
+	 * Invokes the method using reflection.
+	 *
+	 * @param target can be {@literal null} for static method invocations.
+	 * @param args method arguments.
+	 * @return
+	 * @since 2.7
+	 */
+	@Nullable
+	@SuppressWarnings("unchecked")
+	public <T> T invoke(@Nullable Object target, Object... args) {
+
+		Method method = this.foundMethod;
+
+		if (method == null) {
+			return null;
+		}
+
+		ReflectionUtils.makeAccessible(method);
+		return (T) ReflectionUtils.invokeMethod(method, target, args);
 	}
 }

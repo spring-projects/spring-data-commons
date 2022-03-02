@@ -30,6 +30,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class AnnotationDetectionFieldCallback implements FieldCallback {
 
@@ -55,8 +56,6 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 		}
 
 		if (AnnotatedElementUtils.findMergedAnnotation(field, annotationType) != null) {
-
-			ReflectionUtils.makeAccessible(field);
 			this.field = field;
 		}
 	}
@@ -129,6 +128,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 			return null;
 		}
 
+		ReflectionUtils.makeAccessible(field);
 		return (T) ReflectionUtils.getField(field, source);
 	}
 }
