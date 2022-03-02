@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.data.util.AnnotationDetectionFieldCallback;
+import org.springframework.data.util.AnnotationDetectionMethodCallback;
 import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -34,6 +35,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Mark Paluch
  */
 public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implements RevisionMetadata<N> {
 
@@ -114,9 +116,17 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 		return (T) entity;
 	}
 
+	@SuppressWarnings("unchecked")
 	private static <T> Lazy<Optional<T>> detectAnnotation(Object entity, Class<? extends Annotation> annotationType) {
 
 		return Lazy.of(() -> {
+
+			AnnotationDetectionMethodCallback<? extends Annotation> methodCallback = new AnnotationDetectionMethodCallback<>(
+					annotationType);
+			ReflectionUtils.doWithMethods(entity.getClass(), methodCallback);
+			if (methodCallback.getMethod() != null) {
+				return Optional.ofNullable((T) ReflectionUtils.invokeMethod(methodCallback.getRequiredMethod(), entity));
+			}
 
 			AnnotationDetectionFieldCallback callback = new AnnotationDetectionFieldCallback(annotationType);
 			ReflectionUtils.doWithFields(entity.getClass(), callback);
