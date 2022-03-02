@@ -20,7 +20,8 @@ import org.springframework.util.Assert;
 
 /**
  * Base class for implementations of {@link EntityInformation}. Considers an entity to be new whenever
- * {@link #getId(Object)} returns {@literal null}.
+ * {@link #getId(Object)} returns {@literal null} or the identifier is a {@link Class#isPrimitive() Java primitive} and
+ * {@link #getId(Object)} returns zero.
  *
  * @author Oliver Gierke
  * @author Nick Williams
