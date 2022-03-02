@@ -210,17 +210,34 @@ The sections that follow explain each step in detail:
 
 To define a repository interface, you first need to define a domain class-specific repository interface.
 The interface must extend `Repository` and be typed to the domain class and an ID type.
-If you want to expose CRUD methods for that domain type, extend `CrudRepository` instead of `Repository`.
+If you want to expose CRUD methods for that domain type, you may extend `CrudRepository`, or one of its variants instead of `Repository`.
 
 [[repositories.definition-tuning]]
 === Fine-tuning Repository Definition
 
-Typically, your repository interface extends `Repository`, `CrudRepository`, or `PagingAndSortingRepository`.
-Alternatively, if you do not want to extend Spring Data interfaces, you can also annotate your repository interface with `@RepositoryDefinition`.
-Extending `CrudRepository` exposes a complete set of methods to manipulate your entities.
-If you prefer to be selective about the methods being exposed, copy the methods you want to expose from `CrudRepository` into your domain repository.
+There are a few variants how you can get started with your repository interface.
 
-NOTE: Doing so lets you define your own abstractions on top of the provided Spring Data Repositories functionality.
+The typical approach is to extend `CrudRepository`, which gives you methods for CRUD functionality.
+CRUD stands for Create, Read, Update, Delete.
+
+If you are using a reactive store you might choose `ReactiveCrudRepository`, or `RxJava3CrudRepository` depending on which reactive framework you are using.
+
+If you are using Kotlin you might pick `CoroutineCrudRepository` which utilizes Kotlin's coroutines.
+
+Alternatively you can extend `PagingAndSortingRepository`, `ReactiveSortingRepository`, `RxJava3SortingRepository`, or `CoroutineSortingRepository` if you need methods that allow to specify a `Sort` abstraction or in the first case a `Pageable` abstraction.
+These interfaces currently extend the respective CRUD repository of the underlying technology, but will stop to do so with version 3.0.x.
+Therefore, we considere it good practice to explicitly inherit from these CRUD repositories explicitely.
+
+If you do not want to extend Spring Data interfaces, you can also annotate your repository interface with `@RepositoryDefinition`.
+Extending one of the CRUD repository interfaces exposes a complete set of methods to manipulate your entities.
+If you prefer to be selective about the methods being exposed, copy the methods you want to expose from the CRUD repository into your domain repository.
+When doing so, you may change the return type of methods.
+Spring Data will honor the return type if possible.
+For example, for methods returning multiple entities you may choose `Iterable<T>`, `List<T>`, `Collection<T>` or a VAVR list.
+
+If many repositories in your application should have the same set of methods you can define your own base interface to inherit from.
+Such an interface must be annotated with `@NoRepositoryBean`.
+This prevents Spring Data to try to create an instance of it directly and failing because it can't determine the entity for that repository, since it still contains a generic type variable.
 
 The following example shows how to selectively expose CRUD methods (`findById` and `save`, in this case):
 
