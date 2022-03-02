@@ -15,7 +15,6 @@
  */
 package org.springframework.data.convert;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -23,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanFactory;
@@ -194,43 +194,45 @@ final class PropertyValueConverterFactories {
 		public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 				PersistentProperty<?> property) {
 
-			PropertyValueConverter converter = cache.get(property);
+			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> converter = cache.get(property);
 
-			return converter != null ? converter : cache.cache(property, delegate.getConverter(property));
+			return converter != null ? (PropertyValueConverter) converter.orElse(null)
+					: cache.cache(property, delegate.getConverter(property));
 		}
 
 		@Override
 		public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 				Class<? extends PropertyValueConverter<S, T, C>> converterType) {
 
-			PropertyValueConverter converter = cache.get(converterType);
+			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> converter = cache.get(converterType);
 
-			return converter != null ? converter : cache.cache(converterType, delegate.getConverter(converterType));
+			return converter != null ? (PropertyValueConverter) converter.orElse(null)
+					: cache.cache(converterType, delegate.getConverter(converterType));
 		}
 
 		static class Cache {
 
-			Map<PersistentProperty<?>, PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> perPropertyCache = new HashMap<>();
-			Map<Class<?>, PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> typeCache = new HashMap<>();
+			Map<PersistentProperty<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> perPropertyCache = new HashMap<>();
+			Map<Class<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> typeCache = new HashMap<>();
 
-			PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>> get(PersistentProperty<?> property) {
+			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> get(PersistentProperty<?> property) {
 				return perPropertyCache.get(property);
 			}
 
-			PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>> get(Class<?> type) {
+			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> get(Class<?> type) {
 				return typeCache.get(type);
 			}
 
 			<S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> cache(PersistentProperty<?> property,
-					PropertyValueConverter<S, T, C> converter) {
-				perPropertyCache.putIfAbsent(property, converter);
+					@Nullable PropertyValueConverter<S, T, C> converter) {
+				perPropertyCache.putIfAbsent(property, Optional.ofNullable(converter));
 				cache(property.getValueConverterType(), converter);
 				return converter;
 			}
 
 			<S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> cache(Class<?> type,
-					PropertyValueConverter<S, T, C> converter) {
-				typeCache.putIfAbsent(type, converter);
+					@Nullable PropertyValueConverter<S, T, C> converter) {
+				typeCache.putIfAbsent(type, Optional.ofNullable(converter));
 				return converter;
 			}
 		}

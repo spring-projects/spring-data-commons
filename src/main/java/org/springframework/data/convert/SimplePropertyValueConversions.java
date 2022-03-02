@@ -53,7 +53,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	}
 
 	@Nullable
-	PropertyValueConverterFactory getConverterFactory() {
+	public PropertyValueConverterFactory getConverterFactory() {
 		return converterFactory;
 	}
 
@@ -67,6 +67,16 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	 */
 	public void setValueConverterRegistry(ValueConverterRegistry<?> valueConverterRegistry) {
 		this.valueConverterRegistry = valueConverterRegistry;
+	}
+
+	/**
+	 * Get the {@link ValueConverterRegistry} used for path configured converters.
+	 *
+	 * @return can be {@literal null}.
+	 */
+	@Nullable
+	public ValueConverterRegistry<?> getValueConverterRegistry() {
+		return valueConverterRegistry;
 	}
 
 	/**

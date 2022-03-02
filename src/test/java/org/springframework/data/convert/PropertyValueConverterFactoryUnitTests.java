@@ -21,9 +21,11 @@ import static org.mockito.Mockito.*;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.lang.Nullable;
@@ -160,6 +162,27 @@ public class PropertyValueConverterFactoryUnitTests {
 				.caching(PropertyValueConverterFactory.simple());
 		assertThat(factory.getConverter(ConverterWithDefaultCtor.class))
 				.isSameAs(factory.getConverter(ConverterWithDefaultCtor.class));
+	}
+
+	@Test // GH-1484
+	void cachingConverterFactoryAlsoCachesAbsenceOfConverter() {
+
+		PropertyValueConverterFactory source = Mockito.spy(PropertyValueConverterFactory.simple());
+		PropertyValueConverterFactory factory = PropertyValueConverterFactory.caching(source);
+
+		PersistentEntity entity = mock(PersistentEntity.class);
+		PersistentProperty property = mock(PersistentProperty.class);
+		when(property.getOwner()).thenReturn(entity);
+		when(entity.getType()).thenReturn(Person.class);
+		when(property.getName()).thenReturn("firstname");
+
+		// fill the cache
+		assertThat(factory.getConverter(property)).isNull();
+		verify(source).getConverter(any(PersistentProperty.class));
+
+		// now get the cached null value
+		assertThat(factory.getConverter(property)).isNull();
+		verify(source).getConverter(any(PersistentProperty.class));
 	}
 
 	@Test // GH-1484
