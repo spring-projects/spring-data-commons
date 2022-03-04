@@ -23,9 +23,12 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
+ * Unit tests for {@link ValueConverterRegistry}.
+ *
  * @author Christoph Strobl
  */
-public class PropertyValueConverterRegistrarUnitTests {
+@SuppressWarnings({ "rawtypes", "unchecked" })
+class PropertyValueConverterRegistrarUnitTests {
 
 	@Test // GH-1484
 	void buildsRegistryCorrectly() {

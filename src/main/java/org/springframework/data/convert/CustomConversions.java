@@ -55,7 +55,7 @@ import org.springframework.util.ObjectUtils;
  * Value object to capture custom conversion. That is essentially a {@link List} of converters and some additional logic
  * around them. The converters build up two sets of types which store-specific basic types can be converted into and
  * from. These types will be considered simple ones (which means they neither need deeper inspection nor nested
- * conversion. Thus the {@link CustomConversions} also act as factory for {@link SimpleTypeHolder} .
+ * conversion. Thus, the {@link CustomConversions} also act as factory for {@link SimpleTypeHolder} .
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
@@ -195,22 +195,23 @@ public class CustomConversions {
 	 * @since 2.7
 	 */
 	public boolean hasPropertyValueConverter(PersistentProperty<?> property) {
-		return propertyValueConversions != null ? propertyValueConversions.hasValueConverter(property) : false;
+		return propertyValueConversions != null && propertyValueConversions.hasValueConverter(property);
 	}
 
 	/**
 	 * Delegate to obtain the {@link PropertyValueConverter} for the given {@literal property} from
 	 * {@link PropertyValueConversions}.
 	 *
-	 * @param property must not be {@literal null}. param <A> domain specific type
-	 * @param <B> store native type
+	 * @param property must not be {@literal null}.
+	 * @param <DV> domain-specific type
+	 * @param <SV> store-native type
 	 * @param <C> conversion context type
 	 * @return the suitable {@link PropertyValueConverter} or {@literal null} if none available.
 	 * @see PropertyValueConversions#getValueConverter(PersistentProperty)
 	 * @since 2.7
 	 */
 	@Nullable
-	public <A, B, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<A, B, D> getPropertyValueConverter(
+	public <DV, SV, C extends PersistentProperty<C>, VCC extends ValueConversionContext<C>> PropertyValueConverter<DV, SV, VCC> getPropertyValueConverter(
 			C property) {
 		return propertyValueConversions != null ? propertyValueConversions.getValueConverter(property) : null;
 	}

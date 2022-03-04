@@ -24,6 +24,8 @@ import org.springframework.data.convert.PropertyValueConverterFactories.CachingP
 import org.springframework.data.convert.PropertyValueConverterFactories.ChainedPropertyValueConverterFactory;
 
 /**
+ * Unit tests for {@link SimplePropertyValueConversions}.
+ *
  * @author Christoph Strobl
  */
 class SimplePropertyValueConversionsUnitTests {

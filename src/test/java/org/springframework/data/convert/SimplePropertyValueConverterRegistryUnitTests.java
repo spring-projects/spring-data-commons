@@ -22,8 +22,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.mapping.Person;
 
 /**
+ * Unit tests for {@link SimplePropertyValueConverterRegistry}.
+ *
  * @author Christoph Strobl
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 class SimplePropertyValueConverterRegistryUnitTests {
 
 	@Test // GH-1484

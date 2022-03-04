@@ -18,15 +18,14 @@ package org.springframework.data.convert;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
@@ -120,29 +119,26 @@ final class PropertyValueConverterFactories {
 		}
 
 		@Override
-		public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
-				Class<? extends PropertyValueConverter<S, T, C>> converterType) {
+		public <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
+				Class<? extends PropertyValueConverter<DV, SV, C>> converterType) {
 
-			Assert.state(beanFactory != null, "BeanFactory must not be null. Did you forget to set it!");
 			Assert.notNull(converterType, "ConverterType must not be null!");
 
-			try {
-				return beanFactory.getBean(converterType);
-			} catch (NoSuchBeanDefinitionException exception) {
+			PropertyValueConverter<DV, SV, C> converter = beanFactory.getBeanProvider(converterType).getIfAvailable();
 
-				if (beanFactory instanceof AutowireCapableBeanFactory) {
-					return (PropertyValueConverter<S, T, C>) ((AutowireCapableBeanFactory) beanFactory).createBean(converterType,
-							AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
-				}
+			if (converter == null && beanFactory instanceof AutowireCapableBeanFactory) {
+				return (PropertyValueConverter<DV, SV, C>) ((AutowireCapableBeanFactory) beanFactory).createBean(converterType,
+						AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
 			}
-			return null;
+
+			return converter;
 		}
 	}
 
 	/**
 	 * {@link PropertyValueConverterFactory} implementation that serves {@link PropertyValueConverter} from a given
 	 * {@link ValueConverterRegistry registry}.
-	 * 
+	 *
 	 * @author Christoph Strobl
 	 * @since 2.7
 	 */
@@ -158,9 +154,9 @@ final class PropertyValueConverterFactories {
 
 		@Nullable
 		@Override
-		public <A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getConverter(
+		public <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
 				PersistentProperty<?> property) {
-			return (PropertyValueConverter<A, B, C>) converterRegistry.getConverter(property.getOwner().getType(),
+			return (PropertyValueConverter<DV, SV, C>) converterRegistry.getConverter(property.getOwner().getType(),
 					property.getName());
 		}
 
@@ -174,7 +170,7 @@ final class PropertyValueConverterFactories {
 	/**
 	 * {@link PropertyValueConverterFactory} implementation that caches converters provided by an underlying
 	 * {@link PropertyValueConverterFactory factory}.
-	 * 
+	 *
 	 * @author Christoph Strobl
 	 * @since 2.7
 	 */
@@ -191,7 +187,7 @@ final class PropertyValueConverterFactories {
 
 		@Nullable
 		@Override
-		public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
+		public <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
 				PersistentProperty<?> property) {
 
 			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> converter = cache.get(property);
@@ -201,8 +197,8 @@ final class PropertyValueConverterFactories {
 		}
 
 		@Override
-		public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
-				Class<? extends PropertyValueConverter<S, T, C>> converterType) {
+		public <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
+				Class<? extends PropertyValueConverter<DV, SV, C>> converterType) {
 
 			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> converter = cache.get(converterType);
 
@@ -212,8 +208,8 @@ final class PropertyValueConverterFactories {
 
 		static class Cache {
 
-			Map<PersistentProperty<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> perPropertyCache = new HashMap<>();
-			Map<Class<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> typeCache = new HashMap<>();
+			Map<PersistentProperty<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> perPropertyCache = new ConcurrentHashMap<>();
+			Map<Class<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> typeCache = new ConcurrentHashMap<>();
 
 			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> get(PersistentProperty<?> property) {
 				return perPropertyCache.get(property);
@@ -226,7 +222,12 @@ final class PropertyValueConverterFactories {
 			<S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> cache(PersistentProperty<?> property,
 					@Nullable PropertyValueConverter<S, T, C> converter) {
 				perPropertyCache.putIfAbsent(property, Optional.ofNullable(converter));
-				cache(property.getValueConverterType(), converter);
+
+				Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> valueConverterType = property
+						.getValueConverterType();
+				if (valueConverterType != null) {
+					cache(valueConverterType, converter);
+				}
 				return converter;
 			}
 

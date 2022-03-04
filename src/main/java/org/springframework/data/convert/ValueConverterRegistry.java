@@ -19,8 +19,8 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
- * A registry of property specific {@link PropertyValueConverter value convertes} that may be used to convert only
- * specific properties/values of an object.
+ * A registry of property-specific {@link PropertyValueConverter value converters} to convert only specific
+ * properties/values of an object.
  *
  * @author Christoph Strobl
  * @since 2.7
@@ -42,12 +42,12 @@ public interface ValueConverterRegistry<P extends PersistentProperty<P>> {
 	 *
 	 * @param type the target type. Must not be {@literal null}.
 	 * @param path the property name. Must not be {@literal null}.
-	 * @param <S>
-	 * @param <T>
+	 * @param <DV>
+	 * @param <SV>
 	 * @return {@literal null} if no converter present for the given type/path combination.
 	 */
 	@Nullable
-	<S, T> PropertyValueConverter<S, T, ? extends ValueConversionContext<P>> getConverter(Class<?> type, String path);
+	<DV, SV> PropertyValueConverter<DV, SV, ? extends ValueConversionContext<P>> getConverter(Class<?> type, String path);
 
 	/**
 	 * Check if a converter is registered for the given type, path combination.
@@ -61,7 +61,7 @@ public interface ValueConverterRegistry<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Check if there a converters registered.
+	 * Check if converters are registered.
 	 */
 	boolean isEmpty();
 
