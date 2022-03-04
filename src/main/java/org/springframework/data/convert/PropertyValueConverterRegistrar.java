@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  * that can be used with {@link PropertyValueConversions}.
  * <p>
  * It is possible to register type safe converters via {@link #registerConverter(Class, Function)}
- * 
+ *
  * <pre class="code">
  * registrar.registerConverter(Person.class, Person::getName) //
  * 		.writing(StringConverter::encrypt) //
@@ -58,7 +58,7 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 		String propertyName = MethodInvocationRecorder.forProxyOf(type).record(property).getPropertyPath()
 				.orElseThrow(() -> new IllegalArgumentException("Cannot obtain property name!"));
 
-		return new WritingConverterRegistrationBuilder<T, S, P>(type, propertyName, this);
+		return new WritingConverterRegistrationBuilder<>(type, propertyName, this);
 	}
 
 	/**
@@ -71,8 +71,8 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	 * @return will never be {@literal null}.
 	 */
 	public <T, S> WritingConverterRegistrationBuilder<T, S, P> registerConverter(Class<T> type, String propertyName,
-			Class<S> propertyType) {
-		return new WritingConverterRegistrationBuilder<T, S, P>(type, propertyName, this);
+			@SuppressWarnings("unused") Class<S> propertyType) {
+		return new WritingConverterRegistrationBuilder<>(type, propertyName, this);
 	}
 
 	/**
@@ -83,7 +83,7 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	 * @param converter the converter to apply.
 	 * @return this.
 	 */
-	public PropertyValueConverterRegistrar registerConverter(Class<?> type, String path,
+	public PropertyValueConverterRegistrar<P> registerConverter(Class<?> type, String path,
 			PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>> converter) {
 
 		registry.registerConverter(type, path,
@@ -120,22 +120,22 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	 *
 	 * @author Oliver Drotbohm
 	 */
-	static class WritingConverterRegistrationBuilder<T, S, P extends PersistentProperty<P>> {
+	public static class WritingConverterRegistrationBuilder<T, S, P extends PersistentProperty<P>> {
 
-		private final Consumer<PropertyValueConverter> registration;
-		private final PropertyValueConverterRegistrar config;
+		private final Consumer<PropertyValueConverter<T, S, ValueConversionContext<P>>> registration;
+		private final PropertyValueConverterRegistrar<P> config;
 
-		public WritingConverterRegistrationBuilder(Class<T> type, String property, PropertyValueConverterRegistrar config) {
+		WritingConverterRegistrationBuilder(Class<T> type, String property, PropertyValueConverterRegistrar<P> config) {
 
 			this.config = config;
 			this.registration = (converter) -> config.registerConverter(type, property, converter);
 		}
 
-		<R> ReadingConverterRegistrationBuilder<T, S, S, P> writingAsIs() {
+		public ReadingConverterRegistrationBuilder<T, S, S, P> writingAsIs() {
 			return writing((source, context) -> source);
 		}
 
-		<R> ReadingConverterRegistrationBuilder<T, S, R, P> writing(Function<S, R> writer) {
+		public <R> ReadingConverterRegistrationBuilder<T, S, R, P> writing(Function<S, R> writer) {
 			return writing((source, context) -> writer.apply(source));
 		}
 
@@ -146,7 +146,8 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 		 * @param writer the property conversion to extract a value written to the database
 		 * @return will never be {@literal null}.
 		 */
-		<R> ReadingConverterRegistrationBuilder<T, S, R, P> writing(BiFunction<S, ValueConversionContext<P>, R> writer) {
+		public <R> ReadingConverterRegistrationBuilder<T, S, R, P> writing(
+				BiFunction<S, ValueConversionContext<P>, R> writer) {
 			return new ReadingConverterRegistrationBuilder<>(this, writer);
 		}
 	}
@@ -156,22 +157,22 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	 *
 	 * @author Oliver Drotbohm
 	 */
-	static class ReadingConverterRegistrationBuilder<T, S, R, P extends PersistentProperty<P>> {
+	public static class ReadingConverterRegistrationBuilder<T, S, R, P extends PersistentProperty<P>> {
 
-		private WritingConverterRegistrationBuilder<T, S, P> origin;
-		private BiFunction<S, ValueConversionContext<P>, R> writer;
+		private final WritingConverterRegistrationBuilder<T, S, P> origin;
+		private final BiFunction<S, ValueConversionContext<P>, R> writer;
 
-		public ReadingConverterRegistrationBuilder(WritingConverterRegistrationBuilder<T, S, P> origin,
+		ReadingConverterRegistrationBuilder(WritingConverterRegistrationBuilder<T, S, P> origin,
 				BiFunction<S, ValueConversionContext<P>, R> writer) {
 			this.origin = origin;
 			this.writer = writer;
 		}
 
-		PropertyValueConverterRegistrar<P> readingAsIs() {
+		public PropertyValueConverterRegistrar<P> readingAsIs() {
 			return reading((source, context) -> (S) source);
 		}
 
-		PropertyValueConverterRegistrar<P> reading(Function<R, S> reader) {
+		public PropertyValueConverterRegistrar<P> reading(Function<R, S> reader) {
 			return reading((source, context) -> reader.apply(source));
 		}
 
@@ -181,7 +182,7 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 		 * @param reader must not be {@literal null}.
 		 * @return
 		 */
-		PropertyValueConverterRegistrar<P> reading(BiFunction<R, ValueConversionContext<P>, S> reader) {
+		public PropertyValueConverterRegistrar<P> reading(BiFunction<R, ValueConversionContext<P>, S> reader) {
 
 			origin.registration.accept(new FunctionPropertyValueConverter(writer, reader));
 

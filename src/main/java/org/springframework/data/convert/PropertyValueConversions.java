@@ -18,7 +18,6 @@ package org.springframework.data.convert;
 import java.util.function.Consumer;
 
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 
 /**
  * {@link PropertyValueConversions} provides access to {@link PropertyValueConverter converters} that may only be
@@ -38,26 +37,25 @@ public interface PropertyValueConversions {
 	 * @param property must not be {@literal null}.
 	 * @return {@literal true} if a specific {@link PropertyValueConverter} is available.
 	 */
-	default boolean hasValueConverter(PersistentProperty<?> property) {
-		return getValueConverter((PersistentProperty) property) != null;
-	}
+	boolean hasValueConverter(PersistentProperty<?> property);
 
 	/**
-	 * Get the {@link PropertyValueConverter} for the given {@literal property} if present.
+	 * Get the {@link PropertyValueConverter} for the given {@literal property}.
 	 *
-	 * @param property must not be {@literal null}. param <A> domain specific type
-	 * @param <B> store native type
+	 * @param property must not be {@literal null}.
+	 * @param <DV> domain-specific type
+	 * @param <SV> store-native type
 	 * @param <C> conversion context type
-	 * @return the suitable {@link PropertyValueConverter} or {@literal null} if none available.
+	 * @return the suitable {@link PropertyValueConverter}.
 	 */
-	@Nullable
-	<A, B, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<A, B, D> getValueConverter(
+	<DV, SV, C extends PersistentProperty<C>, VCC extends ValueConversionContext<C>> PropertyValueConverter<DV, SV, VCC> getValueConverter(
 			C property);
 
 	/**
 	 * Helper that allows to create {@link PropertyValueConversions} instance with the configured
 	 * {@link PropertyValueConverter converters} provided via the given callback.
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	static <P extends PersistentProperty<P>> PropertyValueConversions simple(
 			Consumer<PropertyValueConverterRegistrar<P>> config) {
 

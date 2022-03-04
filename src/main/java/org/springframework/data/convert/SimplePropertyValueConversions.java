@@ -40,12 +40,12 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	private @Nullable PropertyValueConverterFactory converterFactory;
 	private @Nullable ValueConverterRegistry<?> valueConverterRegistry;
 	private boolean converterCacheEnabled = true;
-	private AtomicBoolean initialized = new AtomicBoolean(false);
+	private final AtomicBoolean initialized = new AtomicBoolean(false);
 
 	/**
 	 * Set the {@link PropertyValueConverterFactory factory} responsible for creating the actual
 	 * {@link PropertyValueConverter converter}.
-	 * 
+	 *
 	 * @param converterFactory must not be {@literal null}.
 	 */
 	public void setConverterFactory(PropertyValueConverterFactory converterFactory) {
@@ -62,7 +62,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	 * a
 	 * {@link org.springframework.data.convert.PropertyValueConverterFactories.ConfiguredInstanceServingValueConverterFactory}
 	 * at the end of a {@link ChainedPropertyValueConverterFactory}.
-	 * 
+	 *
 	 * @param valueConverterRegistry must not be {@literal null}.
 	 */
 	public void setValueConverterRegistry(ValueConverterRegistry<?> valueConverterRegistry) {
@@ -89,9 +89,19 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 		this.converterCacheEnabled = converterCacheEnabled;
 	}
 
+	@Override
+	public boolean hasValueConverter(PersistentProperty<?> property) {
+
+		if (!initialized.get()) {
+			init();
+		}
+
+		return this.converterFactory.getConverter(property) != null;
+	}
+
 	@Nullable
 	@Override
-	public <A, B, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<A, B, D> getValueConverter(
+	public <DV, SV, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<DV, SV, D> getValueConverter(
 			C property) {
 
 		if (!initialized.get()) {

@@ -428,28 +428,30 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Obtain the the {@link PropertyValueConverter converter type} to be used for read-/writing the properties value. By
-	 * default looks for the {@link ValueConverter} annotation and extracts its {@link ValueConverter#value() value}
-	 * attribute.
+	 * Obtain the {@link PropertyValueConverter converter type} to be used for reading and writing property values. Uses
+	 * the {@link ValueConverter} annotation and extracts its {@link ValueConverter#value() value} attribute.
 	 * <p>
-	 * Store implementations may override the default and provide a more specific type.
+	 * Store implementations may override the default and resort to a more specific annotation type.
 	 *
 	 * @return {@literal null} if none defined. Check {@link #hasValueConverter()} to check if the annotation is present
 	 *         at all.
 	 * @since 2.7
 	 */
 	@Nullable
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	default Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> getValueConverterType() {
 
 		ValueConverter annotation = findAnnotation(ValueConverter.class);
 
-		return annotation == null ? null
-				: (Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>>) annotation
-						.value();
+		return annotation == null ? null : (Class) annotation.value();
 	}
 
 	/**
-	 * @return by default return {@literal true} if {@link ValueConverter} annotation is present.
+	 * Return whether a value converter is configured. Uses {@link ValueConverter} as annotation type.
+	 * <p>
+	 * Store implementations may override the default and resort to a more specific annotation type.
+	 *
+	 * @return {@literal true} if a value converter is configured.
 	 * @since 2.7
 	 */
 	default boolean hasValueConverter() {

@@ -21,22 +21,22 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
- * {@link PropertyValueConverter} provides a symmetric way of converting certain properties from domain to store
- * specific values.
+ * {@link PropertyValueConverter} provides a symmetric way of converting certain properties from domain to
+ * store-specific values.
  * <p>
  * A {@link PropertyValueConverter} is, other than a {@link ReadingConverter} or {@link WritingConverter}, only applied
- * to special annotated fields which allows a fine grained conversion of certain values within a specific context.
+ * to special annotated fields which allows a fine-grained conversion of certain values within a specific context.
  *
  * @author Christoph Strobl
- * @param <A> domain specific type.
- * @param <B> store native type.
+ * @param <DV> domain-specific type.
+ * @param <SV> store-native type.
  * @param <C> the store specific {@link ValueConversionContext conversion context}.
  * @since 2.7
  */
-public interface PropertyValueConverter<A, B, C extends ValueConversionContext<? extends PersistentProperty<?>>> {
+public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext<? extends PersistentProperty<?>>> {
 
 	/**
-	 * Convert the given store specific value into it's domain value representation. Typically a {@literal read}
+	 * Convert the given store specific value into it's domain value representation. Typically, a {@literal read}
 	 * operation.
 	 *
 	 * @param value can be {@literal null}.
@@ -44,10 +44,10 @@ public interface PropertyValueConverter<A, B, C extends ValueConversionContext<?
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
-	A read(@Nullable B value, C context);
+	DV read(@Nullable SV value, C context);
 
 	/**
-	 * Convert the given domain specific value into it's native store representation. Typically a {@literal write}
+	 * Convert the given domain-specific value into it's native store representation. Typically, a {@literal write}
 	 * operation.
 	 *
 	 * @param value can be {@literal null}.
@@ -55,10 +55,10 @@ public interface PropertyValueConverter<A, B, C extends ValueConversionContext<?
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
-	B write(@Nullable A value, C context);
+	SV write(@Nullable DV value, C context);
 
 	/**
-	 * NoOp {@link PropertyValueConverter} implementation.
+	 * No-op {@link PropertyValueConverter} implementation.
 	 *
 	 * @author Christoph Strobl
 	 */
@@ -67,13 +67,15 @@ public interface PropertyValueConverter<A, B, C extends ValueConversionContext<?
 
 		INSTANCE;
 
+		@Nullable
 		@Override
-		public Object read(Object value, ValueConversionContext context) {
+		public Object read(@Nullable Object value, ValueConversionContext context) {
 			return value;
 		}
 
+		@Nullable
 		@Override
-		public Object write(Object value, ValueConversionContext context) {
+		public Object write(@Nullable Object value, ValueConversionContext context) {
 			return value;
 		}
 	}
@@ -83,26 +85,28 @@ public interface PropertyValueConverter<A, B, C extends ValueConversionContext<?
 	 *
 	 * @author Oliver Drotbohm
 	 */
-	class FunctionPropertyValueConverter<A, B, P extends PersistentProperty<P>>
-			implements PropertyValueConverter<A, B, ValueConversionContext<P>> {
+	class FunctionPropertyValueConverter<DV, SV, P extends PersistentProperty<P>>
+			implements PropertyValueConverter<DV, SV, ValueConversionContext<P>> {
 
-		private final BiFunction<A, ValueConversionContext<P>, B> writer;
-		private final BiFunction<B, ValueConversionContext<P>, A> reader;
+		private final BiFunction<DV, ValueConversionContext<P>, SV> writer;
+		private final BiFunction<SV, ValueConversionContext<P>, DV> reader;
 
-		public FunctionPropertyValueConverter(BiFunction<A, ValueConversionContext<P>, B> writer,
-				BiFunction<B, ValueConversionContext<P>, A> reader) {
+		public FunctionPropertyValueConverter(BiFunction<DV, ValueConversionContext<P>, SV> writer,
+				BiFunction<SV, ValueConversionContext<P>, DV> reader) {
 
 			this.writer = writer;
 			this.reader = reader;
 		}
 
+		@Nullable
 		@Override
-		public B write(A value, ValueConversionContext<P> context) {
+		public SV write(@Nullable DV value, ValueConversionContext<P> context) {
 			return writer.apply(value, context);
 		}
 
+		@Nullable
 		@Override
-		public A read(B value, ValueConversionContext<P> context) {
+		public DV read(@Nullable SV value, ValueConversionContext<P> context) {
 			return reader.apply(value, context);
 		}
 	}

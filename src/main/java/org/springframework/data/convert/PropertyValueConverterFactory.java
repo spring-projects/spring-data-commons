@@ -44,35 +44,35 @@ public interface PropertyValueConverterFactory {
 	 * Get the {@link PropertyValueConverter} applicable for the given {@link PersistentProperty}.
 	 *
 	 * @param property must not be {@literal null}.
-	 * @param <A> domain specific type.
-	 * @param <B> store native type.
+	 * @param <DV> domain-specific type.
+	 * @param <SV> store-native type.
 	 * @param <C> value conversion context to use.
 	 * @return can be {@literal null}.
 	 */
-	@Nullable
 	@SuppressWarnings("unchecked")
-	default <A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getConverter(
+	@Nullable
+	default <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
 			PersistentProperty<?> property) {
 
 		if (!property.hasValueConverter()) {
 			return null;
 		}
 
-		return getConverter((Class<PropertyValueConverter<A, B, C>>) property.getValueConverterType());
+		return getConverter((Class<PropertyValueConverter<DV, SV, C>>) property.getValueConverterType());
 	}
 
 	/**
 	 * Get the converter by its type.
 	 *
 	 * @param converterType must not be {@literal null}.
-	 * @param <A> domain specific type.
-	 * @param <B> store native type.
+	 * @param <DV> domain-specific type.
+	 * @param <SV> store-native type.
 	 * @param <C> value conversion context to use.
-	 * @return
+	 * @return can be {@literal null}.
 	 */
 	@Nullable
-	<A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getConverter(
-			Class<? extends PropertyValueConverter<A, B, C>> converterType);
+	<DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
+			Class<? extends PropertyValueConverter<DV, SV, C>> converterType);
 
 	/**
 	 * Obtain a simple {@link PropertyValueConverterFactory} capable of instantiating {@link PropertyValueConverter}

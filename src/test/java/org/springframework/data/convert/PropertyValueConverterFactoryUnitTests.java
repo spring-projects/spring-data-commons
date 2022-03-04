@@ -31,6 +31,8 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
+ * Unit tests for {@link PropertyValueConverterFactory}.
+ *
  * @author Christoph Strobl
  */
 public class PropertyValueConverterFactoryUnitTests {

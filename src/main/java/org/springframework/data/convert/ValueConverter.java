@@ -26,13 +26,13 @@ import org.springframework.data.convert.PropertyValueConverter.ObjectToObjectPro
 
 /**
  * Annotation to define usage of a {@link PropertyValueConverter} to read/write the property. <br />
- * May be used as meta annotation utilizing {@link org.springframework.core.annotation.AliasFor}.
+ * Can be used as meta annotation utilizing {@link org.springframework.core.annotation.AliasFor}.
  * <p>
  * The target {@link PropertyValueConverter} is typically provided via a {@link PropertyValueConverterFactory converter
  * factory}.
  * <p>
- * Consult the store specific documentation for details and support notes.
- * 
+ * Consult the store-specific documentation for details and support notes.
+ *
  * @author Christoph Strobl
  * @since 2.7
  * @see PropertyValueConverter
