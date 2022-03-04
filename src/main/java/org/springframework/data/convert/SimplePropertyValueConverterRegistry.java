@@ -24,7 +24,7 @@ import org.springframework.util.ObjectUtils;
 /**
  * A registry of property specific {@link PropertyValueConverter value convertes} that may be used to convert only
  * specific properties/values of an object.
- * 
+ *
  * @author Christoph Strobl
  * @since 2.7
  */
@@ -83,7 +83,7 @@ public class SimplePropertyValueConverterRegistry<P extends PersistentProperty<P
 
 	/**
 	 * Obtain the underlying (mutable) map of converters.
-	 * 
+	 *
 	 * @return never {@literal null}.
 	 */
 	Map<Key, PropertyValueConverter<?, ?, ? extends ValueConversionContext<P>>> getConverterRegistrationMap() {
@@ -92,8 +92,8 @@ public class SimplePropertyValueConverterRegistry<P extends PersistentProperty<P
 
 	static class Key {
 
-		Class<?> type;
-		String path;
+		final Class<?> type;
+		final String path;
 
 		public Key(Class<?> type, String path) {
 			this.type = type;

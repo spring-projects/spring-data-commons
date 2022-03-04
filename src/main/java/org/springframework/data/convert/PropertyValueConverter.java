@@ -21,11 +21,11 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
- * {@link PropertyValueConverter} provides a symmetric way of converting certain properties from domain to store
- * specific values.
+ * {@link PropertyValueConverter} provides a symmetric way of converting certain properties from domain to
+ * store-specific values.
  * <p>
  * A {@link PropertyValueConverter} is, other than a {@link ReadingConverter} or {@link WritingConverter}, only applied
- * to special annotated fields which allows a fine grained conversion of certain values within a specific context.
+ * to special annotated fields which allows a fine-grained conversion of certain values within a specific context.
  *
  * @author Christoph Strobl
  * @param <A> domain specific type.
@@ -36,7 +36,7 @@ import org.springframework.lang.Nullable;
 public interface PropertyValueConverter<A, B, C extends ValueConversionContext<? extends PersistentProperty<?>>> {
 
 	/**
-	 * Convert the given store specific value into it's domain value representation. Typically a {@literal read}
+	 * Convert the given store specific value into it's domain value representation. Typically, a {@literal read}
 	 * operation.
 	 *
 	 * @param value can be {@literal null}.
@@ -47,7 +47,7 @@ public interface PropertyValueConverter<A, B, C extends ValueConversionContext<?
 	A read(@Nullable B value, C context);
 
 	/**
-	 * Convert the given domain specific value into it's native store representation. Typically a {@literal write}
+	 * Convert the given domain specific value into it's native store representation. Typically, a {@literal write}
 	 * operation.
 	 *
 	 * @param value can be {@literal null}.
@@ -67,13 +67,15 @@ public interface PropertyValueConverter<A, B, C extends ValueConversionContext<?
 
 		INSTANCE;
 
+		@Nullable
 		@Override
-		public Object read(Object value, ValueConversionContext context) {
+		public Object read(@Nullable Object value, ValueConversionContext context) {
 			return value;
 		}
 
+		@Nullable
 		@Override
-		public Object write(Object value, ValueConversionContext context) {
+		public Object write(@Nullable Object value, ValueConversionContext context) {
 			return value;
 		}
 	}
@@ -96,13 +98,15 @@ public interface PropertyValueConverter<A, B, C extends ValueConversionContext<?
 			this.reader = reader;
 		}
 
+		@Nullable
 		@Override
-		public B write(A value, ValueConversionContext<P> context) {
+		public B write(@Nullable A value, ValueConversionContext<P> context) {
 			return writer.apply(value, context);
 		}
 
+		@Nullable
 		@Override
-		public A read(B value, ValueConversionContext<P> context) {
+		public A read(@Nullable B value, ValueConversionContext<P> context) {
 			return reader.apply(value, context);
 		}
 	}

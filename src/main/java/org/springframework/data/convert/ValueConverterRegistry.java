@@ -19,8 +19,8 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
- * A registry of property specific {@link PropertyValueConverter value convertes} that may be used to convert only
- * specific properties/values of an object.
+ * A registry of property-specific {@link PropertyValueConverter value converters} to convert only specific
+ * properties/values of an object.
  *
  * @author Christoph Strobl
  * @since 2.7
@@ -61,7 +61,7 @@ public interface ValueConverterRegistry<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Check if there a converters registered.
+	 * Check if converters are registered.
 	 */
 	boolean isEmpty();
 

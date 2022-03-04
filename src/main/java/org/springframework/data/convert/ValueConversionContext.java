@@ -21,8 +21,8 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
 /**
- * The {@link ValueConversionContext} provides access to the store specific {@link PersistentProperty} and allows to
- * call the store default conversion via the {@literal read}/{@literal write} methods.
+ * The {@link ValueConversionContext} provides access to the store-specific {@link PersistentProperty} and allows to
+ * call the store-default conversion through the {@literal read}/{@literal write} methods.
  * <p>
  * Store implementations should provide their own flavor of {@link ValueConversionContext} enhancing the existing API,
  * implementing delegates for {@link #read(Object, TypeInformation)}, {@link #write(Object, TypeInformation)}.
@@ -71,6 +71,11 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 */
 	@Nullable
 	default <T> T write(@Nullable Object value, TypeInformation<T> target) {
+
+		if (value == null || target.getType().isInstance(value)) {
+			return target.getType().cast(value);
+		}
+
 		throw new IllegalStateException(String.format(
 				"%s does not provide write function that allows value conversion to target type (%s).", getClass(), target));
 	}
@@ -107,6 +112,11 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 */
 	@Nullable
 	default <T> T read(@Nullable Object value, TypeInformation<T> target) {
+
+		if (value == null || target.getType().isInstance(value)) {
+			return target.getType().cast(value);
+		}
+
 		throw new IllegalStateException(String.format(
 				"%s does not provide write function that allows value conversion to target type (%s).", getClass(), target));
 	}
