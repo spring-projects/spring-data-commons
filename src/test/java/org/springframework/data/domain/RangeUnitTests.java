@@ -36,7 +36,7 @@ class RangeUnitTests {
 				.isThrownBy(() -> Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L)).contains(null));
 	}
 
-	@Test // DATACMNS-651
+	@Test // DATACMNS-651, GH-2571
 	void excludesLowerBoundIfConfigured() {
 
 		var range = Range.from(Bound.exclusive(10L)).to(Bound.inclusive(20L));
@@ -46,9 +46,15 @@ class RangeUnitTests {
 		assertThat(range.contains(15L)).isTrue();
 		assertThat(range.contains(5L)).isFalse();
 		assertThat(range.contains(25L)).isFalse();
+
+		assertThat(range.contains(10L, Long::compareTo)).isFalse();
+		assertThat(range.contains(20L, Long::compareTo)).isTrue();
+		assertThat(range.contains(15L, Long::compareTo)).isTrue();
+		assertThat(range.contains(5L, Long::compareTo)).isFalse();
+		assertThat(range.contains(25L, Long::compareTo)).isFalse();
 	}
 
-	@Test // DATACMNS-651
+	@Test // DATACMNS-651, GH-2571
 	void excludesUpperBoundIfConfigured() {
 
 		var range = Range.of(Bound.inclusive(10L), Bound.exclusive(20L));
@@ -58,9 +64,15 @@ class RangeUnitTests {
 		assertThat(range.contains(15L)).isTrue();
 		assertThat(range.contains(5L)).isFalse();
 		assertThat(range.contains(25L)).isFalse();
+
+		assertThat(range.contains(10L, Long::compareTo)).isTrue();
+		assertThat(range.contains(20L, Long::compareTo)).isFalse();
+		assertThat(range.contains(15L, Long::compareTo)).isTrue();
+		assertThat(range.contains(5L, Long::compareTo)).isFalse();
+		assertThat(range.contains(25L, Long::compareTo)).isFalse();
 	}
 
-	@Test // DATACMNS-651, DATACMNS-1050
+	@Test // DATACMNS-651, DATACMNS-1050, GH-2571
 	void handlesOpenUpperBoundCorrectly() {
 
 		var range = Range.of(Bound.inclusive(10L), Bound.unbounded());
@@ -70,12 +82,19 @@ class RangeUnitTests {
 		assertThat(range.contains(15L)).isTrue();
 		assertThat(range.contains(5L)).isFalse();
 		assertThat(range.contains(25L)).isTrue();
+
+		assertThat(range.contains(10L, Long::compareTo)).isTrue();
+		assertThat(range.contains(20L, Long::compareTo)).isTrue();
+		assertThat(range.contains(15L, Long::compareTo)).isTrue();
+		assertThat(range.contains(5L, Long::compareTo)).isFalse();
+		assertThat(range.contains(25L, Long::compareTo)).isTrue();
+
 		assertThat(range.getLowerBound().isBounded()).isTrue();
 		assertThat(range.getUpperBound().isBounded()).isFalse();
 		assertThat(range.toString()).isEqualTo("[10-unbounded");
 	}
 
-	@Test // DATACMNS-651, DATACMNS-1050
+	@Test // DATACMNS-651, DATACMNS-1050, GH-2571
 	void handlesOpenLowerBoundCorrectly() {
 
 		var range = Range.of(Bound.unbounded(), Bound.inclusive(20L));
@@ -85,9 +104,16 @@ class RangeUnitTests {
 		assertThat(range.contains(15L)).isTrue();
 		assertThat(range.contains(5L)).isTrue();
 		assertThat(range.contains(25L)).isFalse();
+
+		assertThat(range.contains(10L, Long::compareTo)).isTrue();
+		assertThat(range.contains(20L, Long::compareTo)).isTrue();
+		assertThat(range.contains(15L, Long::compareTo)).isTrue();
+		assertThat(range.contains(5L, Long::compareTo)).isTrue();
+		assertThat(range.contains(25L, Long::compareTo)).isFalse();
 		assertThat(range.getLowerBound().isBounded()).isFalse();
 		assertThat(range.getUpperBound().isBounded()).isTrue();
 	}
+
 
 	@Test // DATACMNS-1050
 	void createsInclusiveBoundaryCorrectly() {
@@ -107,7 +133,7 @@ class RangeUnitTests {
 		assertThat(bound.getValue()).contains(10d);
 	}
 
-	@Test // DATACMNS-1050
+	@Test // DATACMNS-1050, GH-2571
 	void createsRangeFromBoundariesCorrectly() {
 
 		var lower = Bound.inclusive(10L);
@@ -119,9 +145,14 @@ class RangeUnitTests {
 		assertThat(range.contains(10L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();
 		assertThat(range.contains(21L)).isFalse();
+
+		assertThat(range.contains(9L, Long::compareTo)).isFalse();
+		assertThat(range.contains(10L, Long::compareTo)).isTrue();
+		assertThat(range.contains(20L, Long::compareTo)).isTrue();
+		assertThat(range.contains(21L, Long::compareTo)).isFalse();
 	}
 
-	@Test // DATACMNS-1050
+	@Test // DATACMNS-1050, GH-2571
 	void shouldExclusiveBuildRangeLowerFirst() {
 
 		var range = Range.from(Bound.exclusive(10L)).to(Bound.exclusive(20L));
@@ -132,10 +163,17 @@ class RangeUnitTests {
 		assertThat(range.contains(19L)).isTrue();
 		assertThat(range.contains(20L)).isFalse();
 		assertThat(range.contains(21L)).isFalse();
+
+		assertThat(range.contains(9L, Long::compareTo)).isFalse();
+		assertThat(range.contains(10L, Long::compareTo)).isFalse();
+		assertThat(range.contains(11L, Long::compareTo)).isTrue();
+		assertThat(range.contains(19L, Long::compareTo)).isTrue();
+		assertThat(range.contains(20L, Long::compareTo)).isFalse();
+		assertThat(range.contains(21L, Long::compareTo)).isFalse();
 		assertThat(range.toString()).isEqualTo("(10-20)");
 	}
 
-	@Test // DATACMNS-1050
+	@Test // DATACMNS-1050, GH-2571
 	void shouldBuildRange() {
 
 		var range = Range.from(Bound.inclusive(10L)).to(Bound.inclusive(20L));
@@ -146,53 +184,73 @@ class RangeUnitTests {
 		assertThat(range.contains(19L)).isTrue();
 		assertThat(range.contains(20L)).isTrue();
 		assertThat(range.contains(21L)).isFalse();
+
+		assertThat(range.contains(9L, Long::compareTo)).isFalse();
+		assertThat(range.contains(10L, Long::compareTo)).isTrue();
+		assertThat(range.contains(11L, Long::compareTo)).isTrue();
+		assertThat(range.contains(19L, Long::compareTo)).isTrue();
+		assertThat(range.contains(20L, Long::compareTo)).isTrue();
+		assertThat(range.contains(21L, Long::compareTo)).isFalse();
 		assertThat(range.toString()).isEqualTo("[10-20]");
 	}
 
-	@Test // DATACMNS-1050
+	@Test // DATACMNS-1050, GH-2571
 	void createsUnboundedRange() {
 
 		Range<Long> range = Range.unbounded();
 
 		assertThat(range.contains(10L)).isTrue();
+		assertThat(range.contains(10L, Long::compareTo)).isTrue();
 		assertThat(range.getLowerBound().getValue()).isEmpty();
 		assertThat(range.getUpperBound().getValue()).isEmpty();
 	}
 
-	@Test // DATACMNS-1499
+	@Test // DATACMNS-1499, GH-2571
 	void createsOpenRange() {
 
 		var range = Range.open(5L, 10L);
 
 		assertThat(range.contains(5L)).isFalse();
 		assertThat(range.contains(10L)).isFalse();
+
+		assertThat(range.contains(5L, Long::compareTo)).isFalse();
+		assertThat(range.contains(10L, Long::compareTo)).isFalse();
 	}
 
-	@Test // DATACMNS-1499
+	@Test // DATACMNS-1499, GH-2571
 	void createsClosedRange() {
 
 		var range = Range.closed(5L, 10L);
 
 		assertThat(range.contains(5L)).isTrue();
 		assertThat(range.contains(10L)).isTrue();
+
+		assertThat(range.contains(5L, Long::compareTo)).isTrue();
+		assertThat(range.contains(10L, Long::compareTo)).isTrue();
 	}
 
-	@Test // DATACMNS-1499
+	@Test // DATACMNS-1499, GH-2571
 	void createsLeftOpenRange() {
 
 		var range = Range.leftOpen(5L, 10L);
 
 		assertThat(range.contains(5L)).isFalse();
 		assertThat(range.contains(10L)).isTrue();
+
+		assertThat(range.contains(5L, Long::compareTo)).isFalse();
+		assertThat(range.contains(10L, Long::compareTo)).isTrue();
 	}
 
-	@Test // DATACMNS-1499
+	@Test // DATACMNS-1499, GH-2571
 	void createsRightOpenRange() {
 
 		var range = Range.rightOpen(5L, 10L);
 
 		assertThat(range.contains(5L)).isTrue();
 		assertThat(range.contains(10L)).isFalse();
+
+		assertThat(range.contains(5L, Long::compareTo)).isTrue();
+		assertThat(range.contains(10L, Long::compareTo)).isFalse();
 	}
 
 	@Test // DATACMNS-1499
