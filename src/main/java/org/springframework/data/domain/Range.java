@@ -185,21 +185,14 @@ public final class Range<T> {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked" })
-	public <V extends Comparable<V>> boolean contains(V value) {
+	public boolean contains(Comparable<T> value) {
 
-		Assert.notNull(value, "Reference value must not be null!");
+		return contains((T) value, (o1, o2) -> {
 
-		boolean greaterThanLowerBound = lowerBound.getValue() //
-				.map(it -> lowerBound.isInclusive() ? ((Comparable<V>) it).compareTo(value) <= 0
-						: ((Comparable<V>) it).compareTo(value) < 0) //
-				.orElse(true);
-
-		boolean lessThanUpperBound = upperBound.getValue() //
-				.map(it -> upperBound.isInclusive() ? ((Comparable<V>) it).compareTo(value) >= 0
-						: ((Comparable<V>) it).compareTo(value) > 0) //
-				.orElse(true);
-
-		return greaterThanLowerBound && lessThanUpperBound;
+			Assert.isInstanceOf(Comparable.class, o1,
+					"Range value must be an instance of Comparable to use contains(Comparable<T>)");
+			return ((Comparable<T>) o1).compareTo(o2);
+		});
 	}
 
 	/**
