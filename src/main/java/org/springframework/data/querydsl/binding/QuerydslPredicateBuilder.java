@@ -30,9 +30,11 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Path;
@@ -79,8 +81,7 @@ public class QuerydslPredicateBuilder {
 	 * @param bindings the {@link QuerydslBindings} for the predicate.
 	 * @return the {@link Predicate}.
 	 */
-	public Predicate getPredicate(TypeInformation<?> type, MultiValueMap<String, String> values,
-			QuerydslBindings bindings) {
+	public Predicate getPredicate(TypeInformation<?> type, MultiValueMap<String, ?> values, QuerydslBindings bindings) {
 
 		Assert.notNull(bindings, "Context must not be null!");
 
@@ -92,7 +93,7 @@ public class QuerydslPredicateBuilder {
 
 		for (var entry : values.entrySet()) {
 
-			if (isSingleElementCollectionWithoutText(entry.getValue())) {
+			if (isSingleElementCollectionWithEmptyItem(entry.getValue())) {
 				continue;
 			}
 
@@ -163,31 +164,42 @@ public class QuerydslPredicateBuilder {
 
 	/**
 	 * Converts the given source values into a collection of elements that are of the given {@link PropertyPath}'s type.
-	 * Considers a single element list with an empty {@link String} an empty collection because this basically indicates
-	 * the property having been submitted but no value provided.
+	 * Considers a single element list with an empty object an empty collection because this basically indicates the
+	 * property having been submitted but no value provided.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
-	private Collection<Object> convertToPropertyPathSpecificType(List<String> source, PathInformation path) {
+	private Collection<Object> convertToPropertyPathSpecificType(List<?> source, PathInformation path) {
 
 		var targetType = path.getLeafType();
 
-		if (source.isEmpty() || isSingleElementCollectionWithoutText(source)) {
+		if (source.isEmpty() || isSingleElementCollectionWithEmptyItem(source)) {
 			return Collections.emptyList();
 		}
 
 		Collection<Object> target = new ArrayList<>(source.size());
 
 		for (var value : source) {
-
-			target.add(conversionService.canConvert(String.class, targetType)
-					? conversionService.convert(value, TypeDescriptor.forObject(value), getTargetTypeDescriptor(path))
-					: value);
+			target.add(getValue(path, targetType, value));
 		}
 
 		return target;
+	}
+
+	@Nullable
+	private Object getValue(PathInformation path, Class<?> targetType, Object value) {
+
+		if (ClassUtils.isAssignableValue(targetType, value)) {
+			return value;
+		}
+
+		if (conversionService.canConvert(value.getClass(), targetType)) {
+			return conversionService.convert(value, TypeDescriptor.forObject(value), getTargetTypeDescriptor(path));
+		}
+
+		return value;
 	}
 
 	/**
@@ -211,21 +223,21 @@ public class QuerydslPredicateBuilder {
 						.nested(new Property(owningType, descriptor.getReadMethod(), descriptor.getWriteMethod(), leafProperty), 0);
 
 		if (result == null) {
-			throw new IllegalStateException(String.format("Could not obtain TypeDesciptor for PathInformation %s!", path));
+			throw new IllegalStateException(String.format("Could not obtain TypeDescriptor for PathInformation %s!", path));
 		}
 
 		return result;
 	}
 
 	/**
-	 * Returns whether the given collection has exactly one element that doesn't contain any text. This is basically an
-	 * indicator that a request parameter has been submitted but no value for it.
+	 * Returns whether the given collection has exactly one element that is empty (i.e. doesn't contain text). This is
+	 * basically an indicator that a request parameter has been submitted but no value for it.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
-	private static boolean isSingleElementCollectionWithoutText(List<String> source) {
-		return source.size() == 1 && !StringUtils.hasLength(source.get(0));
+	private static boolean isSingleElementCollectionWithEmptyItem(List<?> source) {
+		return source.size() == 1 && ObjectUtils.isEmpty(source.get(0));
 	}
 
 	/**
