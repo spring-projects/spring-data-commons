@@ -29,6 +29,7 @@ import org.springframework.data.domain.Sort;
  * @param <T>
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Diego Krupitza
  * @since 1.12
  * @see ListQueryByExampleExecutor
  */
@@ -68,7 +69,7 @@ public interface QueryByExampleExecutor<T> {
 	 * {@link Page} is returned.
 	 *
 	 * @param example must not be {@literal null}.
-	 * @param pageable can be {@literal null}.
+	 * @param pageable must not be {@literal null}.
 	 * @return a {@link Page} of entities matching the given {@link Example}.
 	 */
 	<S extends T> Page<S> findAll(Example<S> example, Pageable pageable);

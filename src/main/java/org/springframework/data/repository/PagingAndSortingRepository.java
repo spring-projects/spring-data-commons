@@ -45,7 +45,7 @@ public interface PagingAndSortingRepository<T, ID> extends Repository<T, ID> {
 	/**
 	 * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
 	 *
-	 * @param pageable
+	 * @param pageable must not be {@literal null}.
 	 * @return a page of entities
 	 */
 	Page<T> findAll(Pageable pageable);
