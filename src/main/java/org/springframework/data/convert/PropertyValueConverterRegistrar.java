@@ -103,8 +103,6 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	/**
 	 * Register collected {@link PropertyValueConverter converters} within the given {@link ValueConverterRegistry
 	 * registry}.
-	 *
-	 * @return new instance of {@link SimplePropertyValueConverterRegistry}.
 	 */
 	public void registerConvertersIn(ValueConverterRegistry<P> target) {
 
