@@ -42,7 +42,8 @@ public interface ReactiveSortingRepository<T, ID> extends Repository<T, ID> {
 	/**
 	 * Returns all entities sorted by the given options.
 	 *
-	 * @param sort must not be {@literal null}.
+	 * @param sort the {@link Sort} specification to sort the results by, can be {@link Sort#unsorted()}, must not be
+	 *          {@literal null}.
 	 * @return all entities sorted by the given options.
 	 * @throws IllegalArgumentException in case the given {@link Sort} is {@literal null}.
 	 */

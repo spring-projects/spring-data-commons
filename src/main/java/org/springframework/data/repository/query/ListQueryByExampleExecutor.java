@@ -46,7 +46,8 @@ public interface ListQueryByExampleExecutor<T> extends QueryByExampleExecutor<T>
 	 * found an empty {@link List} is returned.
 	 *
 	 * @param example must not be {@literal null}.
-	 * @param sort the {@link Sort} specification to sort the results by, must not be {@literal null}.
+	 * @param sort the {@link Sort} specification to sort the results by, may be {@link Sort#unsorted()}, must not be
+	 *          {@literal null}.
 	 * @return all entities matching the given {@link Example}.
 	 */
 	@Override

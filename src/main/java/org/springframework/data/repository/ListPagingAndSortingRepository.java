@@ -38,7 +38,8 @@ public interface ListPagingAndSortingRepository<T, ID> extends PagingAndSortingR
 	/**
 	 * Returns all entities sorted by the given options.
 	 *
-	 * @param sort
+	 * @param sort the {@link Sort} specification to sort the results by, can be {@link Sort#unsorted()}, must not be
+	 *          {@literal null}.
 	 * @return all entities sorted by the given options
 	 */
 	List<T> findAll(Sort sort);
