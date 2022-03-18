@@ -55,7 +55,8 @@ public interface ReactiveQueryByExampleExecutor<T> {
 	 * found {@link Flux#empty()} is returned.
 	 *
 	 * @param example must not be {@literal null}.
-	 * @param sort the {@link Sort} specification to sort the results by, must not be {@literal null}.
+	 * @param sort the {@link Sort} specification to sort the results by, may be {@link Sort#unsorted()}, must not be
+	 *          {@literal null}.
 	 * @return all entities matching the given {@link Example}.
 	 */
 	<S extends T> Flux<S> findAll(Example<S> example, Sort sort);

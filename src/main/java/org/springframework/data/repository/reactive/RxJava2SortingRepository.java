@@ -36,7 +36,8 @@ public interface RxJava2SortingRepository<T, ID> extends RxJava2CrudRepository<T
 	/**
 	 * Returns all entities sorted by the given options.
 	 *
-	 * @param sort must not be {@literal null}.
+	 * @param sort the {@link Sort} specification to sort the results by, may be {@link Sort#unsorted()}, must not be
+	 *          {@literal null}.
 	 * @return all entities sorted by the given options.
 	 */
 	Flowable<T> findAll(Sort sort);
