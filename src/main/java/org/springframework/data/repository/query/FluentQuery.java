@@ -41,7 +41,8 @@ public interface FluentQuery<T> {
 	/**
 	 * Define the sort order.
 	 *
-	 * @param sort must not be {@code null}.
+	 * @param sort the {@link Sort} specification to sort the results by, may be {@link Sort#unsorted()}, must not be
+	 *          {@literal null}.
 	 * @return a new instance of {@link FluentQuery}.
 	 * @throws IllegalArgumentException if resultType is {@code null}.
 	 */
@@ -146,8 +147,9 @@ public interface FluentQuery<T> {
 		/**
 		 * Get a page of matching elements for {@link Pageable}.
 		 *
-		 * @param pageable must not be {@code null}. The given {@link Pageable} will override any previously specified
-		 *          {@link Sort sort} if the {@link Sort} object is not {@link Sort#isUnsorted()}.
+		 * @param pageable the pageable to request a paged result, can be {@link Pageable#unpaged()}, must not be
+		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort} if
+		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}.
 		 * @return
 		 */
 		Page<T> page(Pageable pageable);
@@ -221,8 +223,9 @@ public interface FluentQuery<T> {
 		/**
 		 * Get a page of matching elements for {@link Pageable}.
 		 *
-		 * @param pageable must not be {@code null}. The given {@link Pageable} will override any previously specified
-		 *          {@link Sort sort} if the {@link Sort} object is not {@link Sort#isUnsorted()}.
+		 * @param pageable the pageable to request a paged result, can be {@link Pageable#unpaged()}, must not be
+		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort} if
+		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}.
 		 * @return
 		 */
 		Mono<Page<T>> page(Pageable pageable);
