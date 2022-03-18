@@ -57,7 +57,8 @@ public interface QueryByExampleExecutor<T> {
 	 * found an empty {@link Iterable} is returned.
 	 *
 	 * @param example must not be {@literal null}.
-	 * @param sort the {@link Sort} specification to sort the results by, must not be {@literal null}.
+	 * @param sort the {@link Sort} specification to sort the results by, may be {@link Sort#unsorted()}, must not be
+	 *          {@literal null}.
 	 * @return all entities matching the given {@link Example}.
 	 * @since 1.10
 	 */
@@ -68,7 +69,8 @@ public interface QueryByExampleExecutor<T> {
 	 * {@link Page} is returned.
 	 *
 	 * @param example must not be {@literal null}.
-	 * @param pageable must not be {@literal null}.
+	 * @param pageable the pageable to request a paged result, can be {@link Pageable#unpaged()}, must not be
+	 *          {@literal null}.
 	 * @return a {@link Page} of entities matching the given {@link Example}.
 	 */
 	<S extends T> Page<S> findAll(Example<S> example, Pageable pageable);
