@@ -117,7 +117,7 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 				throw new IllegalArgumentException(
 						String.format("Callback invocation on %s returned null value for %s", callback.getClass(), entity));
 
-			} catch (ClassCastException ex) {
+			} catch (IllegalArgumentException | ClassCastException ex) {
 
 				String msg = ex.getMessage();
 				if (msg == null || EntityCallbackInvoker.matchesClassCastMessage(msg, entity.getClass())) {
