@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.data.mapping.Person;
 import org.springframework.data.mapping.PersonDocument;
+import org.springframework.data.mapping.PersonNoId;
 import org.springframework.data.mapping.callback.CapturingEntityCallback.FirstCallback;
 import org.springframework.data.mapping.callback.CapturingEntityCallback.SecondCallback;
 import org.springframework.data.mapping.callback.CapturingEntityCallback.ThirdCallback;
@@ -95,9 +96,8 @@ class DefaultEntityCallbacksUnitTests {
 		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new InvalidEntityCallback() {});
 
-		assertThatIllegalStateException()
-				.isThrownBy(() -> callbacks.callback(InvalidEntityCallback.class, new PersonDocument(null, "Walter", null),
-						"agr0", Float.POSITIVE_INFINITY));
+		assertThatIllegalStateException().isThrownBy(() -> callbacks.callback(InvalidEntityCallback.class,
+				new PersonDocument(null, "Walter", null), "agr0", Float.POSITIVE_INFINITY));
 	}
 
 	@Test // DATACMNS-1467
@@ -126,8 +126,7 @@ class DefaultEntityCallbacksUnitTests {
 		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new CapturingEntityCallback());
 
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, null));
+		assertThatIllegalArgumentException().isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, null));
 	}
 
 	@Test // DATACMNS-1467
@@ -144,18 +143,31 @@ class DefaultEntityCallbacksUnitTests {
 
 		PersonDocument initial = new PersonDocument(null, "Walter", null);
 
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, initial));
+		assertThatIllegalArgumentException().isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, initial));
 
 		assertThat(first.capturedValue()).isSameAs(initial);
 		assertThat(second.capturedValue()).isNotNull().isNotSameAs(initial);
 		assertThat(third.capturedValues()).isEmpty();
 	}
 
+	@Test // GH-2583
+	void skipsInvocationUsingJava18ReflectiveTypeRejection() {
+
+		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks();
+		callbacks.addEntityCallback(new Java18ClassCastStyle());
+
+		Person person = new PersonNoId(42, "Walter", "White");
+
+		Person afterCallback = callbacks.callback(BeforeConvertCallback.class, person);
+
+		assertThat(afterCallback).isSameAs(person);
+	}
+
 	@Test // DATACMNS-1467
 	void detectsMultipleCallbacksWithinOneClass() {
 
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MultipleCallbacksInOneClassConfig.class);
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(
+				MultipleCallbacksInOneClassConfig.class);
 
 		DefaultEntityCallbacks callbacks = new DefaultEntityCallbacks(ctx);
 
@@ -286,6 +298,15 @@ class DefaultEntityCallbacksUnitTests {
 			invocations.add("save");
 			return object;
 		}
+	}
+
+	static class Java18ClassCastStyle implements BeforeConvertCallback<Person> {
+
+		@Override
+		public Person onBeforeConvert(Person object) {
+			throw new IllegalArgumentException("argument type mismatch");
+		}
+
 	}
 
 }

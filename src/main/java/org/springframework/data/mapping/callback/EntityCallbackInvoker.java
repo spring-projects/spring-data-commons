@@ -35,21 +35,26 @@ interface EntityCallbackInvoker {
 	<T> Object invokeCallback(EntityCallback<T> callback, T entity,
 			BiFunction<EntityCallback<T>, T, Object> callbackInvokerFunction);
 
-	static boolean matchesClassCastMessage(String classCastMessage, Class<?> eventClass) {
+	static boolean matchesClassCastMessage(String exceptionMessage, Class<?> eventClass) {
 
 		// On Java 8, the message starts with the class name: "java.lang.String cannot be cast..."
-		if (classCastMessage.startsWith(eventClass.getName())) {
+		if (exceptionMessage.startsWith(eventClass.getName())) {
 			return true;
 		}
 
 		// On Java 11, the message starts with "class ..." a.k.a. Class.toString()
-		if (classCastMessage.startsWith(eventClass.toString())) {
+		if (exceptionMessage.startsWith(eventClass.toString())) {
 			return true;
 		}
 
 		// On Java 9, the message used to contain the module name: "java.base/java.lang.String cannot be cast..."
-		int moduleSeparatorIndex = classCastMessage.indexOf('/');
-		if (moduleSeparatorIndex != -1 && classCastMessage.startsWith(eventClass.getName(), moduleSeparatorIndex + 1)) {
+		int moduleSeparatorIndex = exceptionMessage.indexOf('/');
+		if (moduleSeparatorIndex != -1 && exceptionMessage.startsWith(eventClass.getName(), moduleSeparatorIndex + 1)) {
+			return true;
+		}
+
+		// On Java 18, the message is "IllegalArgumentException: argument type mismatch"
+		if (exceptionMessage.equals("argument type mismatch")) {
 			return true;
 		}
 
