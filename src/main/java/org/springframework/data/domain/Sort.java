@@ -259,7 +259,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	private Sort withDirection(Direction direction) {
 
-		return Sort.by(stream().map(it -> new Order(direction, it.getProperty())).collect(Collectors.toList()));
+		return Sort.by(stream().map(it -> it.with(direction)).collect(Collectors.toList()));
 	}
 
 	/**
