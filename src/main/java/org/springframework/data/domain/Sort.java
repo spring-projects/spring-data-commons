@@ -285,7 +285,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 *
 	 * @author Oliver Gierke
 	 */
-	public static enum Direction {
+	public enum Direction {
 
 		ASC, DESC;
 
@@ -447,7 +447,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 *
 		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
 		 * @param property must not be {@literal null} or empty.
-		 * @param ignoreCase true if sorting should be case insensitive. false if sorting should be case sensitive.
+		 * @param ignoreCase true if sorting should be case-insensitive. false if sorting should be case-sensitive.
 		 * @param nullHandling must not be {@literal null}.
 		 * @since 1.7
 		 */
@@ -501,7 +501,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Returns whether or not the sort will be case sensitive.
+		 * Returns whether the sort will be case-sensitive or case-insensitive.
 		 *
 		 * @return
 		 */
