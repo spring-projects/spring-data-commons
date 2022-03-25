@@ -497,7 +497,7 @@ public interface ExampleMatcher {
 		}
 
 		/**
-		 * Creates a {@link GenericPropertyMatcher} that matches string case sensitive.
+		 * Creates a {@link GenericPropertyMatcher} that matches string case-sensitive.
 		 *
 		 * @return
 		 */
