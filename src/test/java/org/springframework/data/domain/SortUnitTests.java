@@ -40,8 +40,6 @@ class SortUnitTests {
 
 	/**
 	 * Asserts that the class applies the default sort order if no order or {@code null} was provided.
-	 *
-	 * @throws Exception
 	 */
 	@Test
 	void appliesDefaultForOrder() {
@@ -50,8 +48,6 @@ class SortUnitTests {
 
 	/**
 	 * Asserts that the class rejects {@code null} as properties array.
-	 *
-	 * @throws Exception
 	 */
 	@Test
 	@SuppressWarnings("null")
@@ -61,8 +57,6 @@ class SortUnitTests {
 
 	/**
 	 * Asserts that the class rejects {@code null} values in the properties array.
-	 *
-	 * @throws Exception
 	 */
 	@Test
 	void preventsNullProperty() {
@@ -71,8 +65,6 @@ class SortUnitTests {
 
 	/**
 	 * Asserts that the class rejects empty strings in the properties array.
-	 *
-	 * @throws Exception
 	 */
 	@Test
 	void preventsEmptyProperty() {
@@ -81,8 +73,6 @@ class SortUnitTests {
 
 	/**
 	 * Asserts that the class rejects no properties given at all.
-	 *
-	 * @throws Exception
 	 */
 	@Test
 	void preventsNoProperties() {
