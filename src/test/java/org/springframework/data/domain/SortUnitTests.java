@@ -104,9 +104,12 @@ class SortUnitTests {
 		assertThat(sort).containsExactly(Order.by("foo"));
 	}
 
-	@Test // DATACMNS-281, DATACMNS-1021
+	@Test // DATACMNS-281, DATACMNS-1021, GH-2585
 	void configuresIgnoreCaseForOrder() {
+
 		assertThat(Order.asc("foo").ignoreCase().isIgnoreCase()).isTrue();
+		assertThat(Sort.by(Order.by("foo").ignoreCase()).descending().iterator().next().isIgnoreCase()).isTrue();
+		assertThat(Sort.by(Order.by("foo").ignoreCase()).ascending().iterator().next().isIgnoreCase()).isTrue();
 	}
 
 	@Test // DATACMNS-281, DATACMNS-1021
@@ -152,6 +155,15 @@ class SortUnitTests {
 	@Test // DATACMNS-491
 	void orderWithDefaultNullHandlingHint() {
 		assertThat(Order.by("foo").getNullHandling()).isEqualTo(NATIVE);
+	}
+
+	@Test // GH-2585
+	void retainsNullHandlingAfterChangingDirection() {
+
+		assertThat(Sort.by(Order.by("foo").with(NULLS_FIRST)).ascending().iterator().next().getNullHandling())
+				.isEqualTo(NULLS_FIRST);
+		assertThat(Sort.by(Order.by("foo").with(NULLS_FIRST)).descending().iterator().next().getNullHandling())
+				.isEqualTo(NULLS_FIRST);
 	}
 
 	@Test // DATACMNS-908
