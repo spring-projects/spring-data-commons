@@ -16,6 +16,8 @@
 package org.springframework.data.repository.core.support;
 
 import java.util.function.Function;
+import java.util.Collections;
+import java.util.Set;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.RepositoryDefinition;
@@ -78,5 +80,10 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 		}
 
 		return TypeInformation.of(extractor.apply(annotation));
+	}
+
+	@Override
+	public Set<RepositoryFragment<?>> getFragments() {
+		return Collections.emptySet();
 	}
 }

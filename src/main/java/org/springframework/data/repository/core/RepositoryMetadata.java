@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
 
+import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.util.TypeInformation;
 
@@ -126,4 +127,12 @@ public interface RepositoryMetadata {
 	 * @since 2.0
 	 */
 	boolean isReactiveRepository();
+
+	/**
+	 *
+	 * @return
+	 * @since 3.0
+	 *
+	 */
+	Set<RepositoryFragment<?>> getFragments();
 }

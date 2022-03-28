@@ -19,9 +19,12 @@ import java.util.Collection;
 import java.util.Locale;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.generator.AotContributingBeanPostProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.aot.AotContributingRepositoryBeanPostProcessor;
+import org.springframework.util.StringUtils;
 
 /**
  * SPI to implement store specific extension to the repository bean definition registration process.
@@ -50,7 +53,11 @@ public interface RepositoryConfigurationExtension {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	String getModuleName();
+	default String getModuleName() {
+		return StringUtils.capitalize(getModulePrefix());
+	}
+
+	String getModulePrefix();
 
 	/**
 	 * Returns all {@link RepositoryConfiguration}s obtained through the given {@link RepositoryConfigurationSource}.
@@ -79,6 +86,15 @@ public interface RepositoryConfigurationExtension {
 	 * @return will never be {@literal null}.
 	 */
 	String getRepositoryFactoryBeanClassName();
+
+	/**
+	 * @return the {@link AotContributingBeanPostProcessor} type responsible for contributing AOT/native configuration.
+	 *         Defaults to {@link AotContributingRepositoryBeanPostProcessor}. Must not be {@literal null}
+	 * @since 3.0
+	 */
+	default Class<? extends AotContributingBeanPostProcessor> getAotPostProcessor() {
+		return AotContributingRepositoryBeanPostProcessor.class;
+	}
 
 	/**
 	 * Callback to register additional bean definitions for a {@literal repositories} root node. This usually includes
