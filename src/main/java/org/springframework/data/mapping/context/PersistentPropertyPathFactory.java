@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentEntity;
@@ -180,26 +181,26 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 */
 	private PersistentPropertyPath<P> createPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
 
-		var trimmedPath = propertyPath.trim();
+		String trimmedPath = propertyPath.trim();
 
 		List<String> parts = trimmedPath.isEmpty() //
 				? Collections.emptyList() //
 				: Arrays.asList(trimmedPath.split("\\."));
 
 		DefaultPersistentPropertyPath<P> path = DefaultPersistentPropertyPath.empty();
-		var iterator = parts.iterator();
-		var current = context.getRequiredPersistentEntity(type);
+		Iterator<String> iterator = parts.iterator();
+		E current = context.getRequiredPersistentEntity(type);
 
 		while (iterator.hasNext()) {
 
-			var segment = iterator.next();
-			final var currentPath = path;
+			String segment = iterator.next();
+			final DefaultPersistentPropertyPath<P> currentPath = path;
 
-			var pair = getPair(path, iterator, segment, current);
+			Pair<DefaultPersistentPropertyPath<P>, E> pair = getPair(path, iterator, segment, current);
 
 			if (pair == null) {
 
-				var source = StringUtils.collectionToDelimitedString(parts, ".");
+				String source = StringUtils.collectionToDelimitedString(parts, ".");
 
 				throw new InvalidPersistentPropertyPath(source, type, segment, currentPath);
 			}
@@ -215,7 +216,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	private Pair<DefaultPersistentPropertyPath<P>, E> getPair(DefaultPersistentPropertyPath<P> path,
 			Iterator<String> iterator, String segment, E entity) {
 
-		var property = entity.getPersistentProperty(segment);
+		P property = entity.getPersistentProperty(segment);
 
 		if (property == null) {
 			return null;
@@ -227,13 +228,13 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	private <T> Collection<PersistentPropertyPath<P>> from(TypeInformation<T> type, Predicate<? super P> filter,
 			Predicate<P> traversalGuard, DefaultPersistentPropertyPath<P> basePath) {
 
-		var actualType = type.getActualType();
+		TypeInformation<?> actualType = type.getActualType();
 
 		if (actualType == null) {
 			return Collections.emptyList();
 		}
 
-		var entity = context.getRequiredPersistentEntity(actualType);
+		E entity = context.getRequiredPersistentEntity(actualType);
 		return from(entity, filter, traversalGuard, basePath);
 	}
 
@@ -242,16 +243,16 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 		Set<PersistentPropertyPath<P>> properties = new HashSet<>();
 
-		var propertyTester = (PropertyHandler<P>) persistentProperty -> {
+		PropertyHandler<P> propertyTester = (PropertyHandler<P>) persistentProperty -> {
 
-			var typeInformation = persistentProperty.getTypeInformation();
-			var actualPropertyType = typeInformation.getActualType();
+			TypeInformation<?> typeInformation = persistentProperty.getTypeInformation();
+			TypeInformation<?> actualPropertyType = typeInformation.getActualType();
 
 			if (basePath.containsPropertyOfType(actualPropertyType)) {
 				return;
 			}
 
-			var currentPath = basePath.append(persistentProperty);
+			DefaultPersistentPropertyPath<P> currentPath = basePath.append(persistentProperty);
 
 			if (filter.test(persistentProperty)) {
 				properties.add(currentPath);
@@ -264,7 +265,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 		entity.doWithProperties(propertyTester);
 
-		var handler = (AssociationHandler<P>) association -> propertyTester
+		AssociationHandler<P> handler = (AssociationHandler<P>) association -> propertyTester
 				.doWithPersistentProperty(association.getInverse());
 		entity.doWithAssociations(handler);
 
@@ -313,7 +314,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(type);
+			int result = ObjectUtils.nullSafeHashCode(type);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(path);
 			return result;
 		}
@@ -374,7 +375,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 				return false;
 			}
 
-			var dotPath = path.toDotPath();
+			String dotPath = path.toDotPath();
 
 			return stream().anyMatch(it -> dotPath.equals(it.toDotPath()));
 		}
@@ -389,7 +390,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 			Assert.notNull(predicate, "Predicate must not be null!");
 
-			var paths = this.stream() //
+			List<PersistentPropertyPath<P>> paths = this.stream() //
 					.filter(it -> !it.stream().anyMatch(predicate)) //
 					.collect(Collectors.toList());
 
@@ -418,10 +419,11 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			@SuppressWarnings("null")
 			public int compare(PersistentPropertyPath<?> left, PersistentPropertyPath<?> right) {
 
-				var mapper = (Function<PersistentProperty<?>, Integer>) it -> it.getName().length();
+				Function<PersistentProperty<?>, Integer> mapper = (Function<PersistentProperty<?>, Integer>) it -> it.getName()
+						.length();
 
-				var leftNames = left.stream().map(mapper);
-				var rightNames = right.stream().map(mapper);
+				Stream<Integer> leftNames = left.stream().map(mapper);
+				Stream<Integer> rightNames = right.stream().map(mapper);
 
 				return StreamUtils.zip(leftNames, rightNames, (l, r) -> l - r) //
 						.filter(it -> it != 0) //

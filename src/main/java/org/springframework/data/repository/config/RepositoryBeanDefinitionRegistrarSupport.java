@@ -82,13 +82,13 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 			return;
 		}
 
-		var configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
+		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				getAnnotation(), resourceLoader, environment, registry, generator);
 
-		var extension = getExtension();
+		RepositoryConfigurationExtension extension = getExtension();
 		RepositoryConfigurationUtils.exposeRegistration(extension, registry, configurationSource);
 
-		var delegate = new RepositoryConfigurationDelegate(configurationSource, resourceLoader,
+		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configurationSource, resourceLoader,
 				environment);
 
 		delegate.registerRepositoriesIn(registry, extension);

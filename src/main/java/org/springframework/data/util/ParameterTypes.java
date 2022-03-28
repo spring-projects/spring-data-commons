@@ -171,9 +171,9 @@ public class ParameterTypes {
 			return false;
 		}
 
-		var parameterTypes = method.getParameterTypes();
+		Class<?>[] parameterTypes = method.getParameterTypes();
 
-		for (var i = 0; i < parameterTypes.length; i++) {
+		for (int i = 0; i < parameterTypes.length; i++) {
 			if (parameterTypes[i] != types.get(i).getType()) {
 				return false;
 			}
@@ -204,7 +204,7 @@ public class ParameterTypes {
 
 	protected Optional<ParameterTypes> withLastVarArgs() {
 
-		var lastDescriptor = types.get(types.size() - 1);
+		TypeDescriptor lastDescriptor = types.get(types.size() - 1);
 
 		return lastDescriptor.isArray() //
 				? Optional.empty() //
@@ -214,7 +214,7 @@ public class ParameterTypes {
 	@SuppressWarnings("null")
 	private ParameterTypes withVarArgs(TypeDescriptor descriptor) {
 
-		var lastDescriptor = types.get(types.size() - 1);
+		TypeDescriptor lastDescriptor = types.get(types.size() - 1);
 
 		if (lastDescriptor.isArray() && lastDescriptor.getElementTypeDescriptor().equals(descriptor)) {
 			return this;
@@ -236,7 +236,7 @@ public class ParameterTypes {
 
 		withLastVarArgs().ifPresent(alternatives::add);
 
-		var objectVarArgs = withVarArgs(OBJECT_DESCRIPTOR);
+		ParameterTypes objectVarArgs = withVarArgs(OBJECT_DESCRIPTOR);
 
 		if (!alternatives.contains(objectVarArgs)) {
 			alternatives.add(objectVarArgs);
@@ -259,9 +259,9 @@ public class ParameterTypes {
 			return false;
 		}
 
-		var parameterTypes = method.getParameterTypes();
+		Class<?>[] parameterTypes = method.getParameterTypes();
 
-		for (var i = 0; i < parameterTypes.length; i++) {
+		for (int i = 0; i < parameterTypes.length; i++) {
 			if (!TypeUtils.isAssignable(parameterTypes[i], types.get(i).getType())) {
 				return false;
 			}
@@ -347,7 +347,7 @@ public class ParameterTypes {
 		@Override
 		public int hashCode() {
 
-			var result = super.hashCode();
+			int result = super.hashCode();
 
 			result = 31 * result + ObjectUtils.nullSafeHashCode(tail);
 

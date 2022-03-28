@@ -48,7 +48,7 @@ interface EntityCallbackInvoker {
 		}
 
 		// On Java 9, the message used to contain the module name: "java.base/java.lang.String cannot be cast..."
-		var moduleSeparatorIndex = exceptionMessage.indexOf('/');
+		int moduleSeparatorIndex = exceptionMessage.indexOf('/');
 		if (moduleSeparatorIndex != -1 && exceptionMessage.startsWith(eventClass.getName(), moduleSeparatorIndex + 1)) {
 			return true;
 		}

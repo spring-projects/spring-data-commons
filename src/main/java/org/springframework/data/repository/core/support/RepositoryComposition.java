@@ -70,15 +70,15 @@ public class RepositoryComposition {
 
 		if (ReactiveWrappers.isAvailable()) {
 
-			var parameterTypes = method.getParameterTypes();
+			Class<?>[] parameterTypes = method.getParameterTypes();
 
-			var converted = new Object[args.length];
-			for (var i = 0; i < args.length; i++) {
+			Object[] converted = new Object[args.length];
+			for (int i = 0; i < args.length; i++) {
 
-				var value = args[i];
-				var convertedArg = value;
+				Object value = args[i];
+				Object convertedArg = value;
 
-				var parameterType = parameterTypes.length > i ? parameterTypes[i] : null;
+				Class<?> parameterType = parameterTypes.length > i ? parameterTypes[i] : null;
 
 				if (value != null && parameterType != null) {
 					if (!parameterType.isAssignableFrom(value.getClass())
@@ -273,7 +273,7 @@ public class RepositoryComposition {
 	 */
 	Object invoke(RepositoryInvocationMulticaster listener, Method method, Object[] args) throws Throwable {
 
-		var methodToCall = getMethod(method);
+		Method methodToCall = getMethod(method);
 
 		if (methodToCall == null) {
 			throw new IllegalArgumentException(String.format("No fragment found for method %s", method));
@@ -316,7 +316,7 @@ public class RepositoryComposition {
 
 		fragments.stream().forEach(it -> it.getImplementation() //
 				.orElseThrow(() -> {
-					var repositoryInterface = metadata != null ? metadata.getRepositoryInterface() : Object.class;
+					Class<?> repositoryInterface = metadata != null ? metadata.getRepositoryInterface() : Object.class;
 					return new FragmentNotImplementedException(String.format("Fragment %s used in %s has no implementation.",
 							ClassUtils.getQualifiedName(it.getSignatureContributor()),
 							ClassUtils.getQualifiedName(repositoryInterface)), repositoryInterface, it);
@@ -496,14 +496,14 @@ public class RepositoryComposition {
 		Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster listener, Method invokedMethod,
 				Method methodToCall, Object[] args) throws Throwable {
 
-			var fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
-			var optional = fragment.getImplementation();
+			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
+			Optional<?> optional = fragment.getImplementation();
 
 			if (!optional.isPresent()) {
 				throw new IllegalArgumentException(String.format("No implementation found for method %s", methodToCall));
 			}
 
-			var repositoryMethodInvoker = invocationMetadataCache.get(invokedMethod);
+			RepositoryMethodInvoker repositoryMethodInvoker = invocationMetadataCache.get(invokedMethod);
 
 			if (repositoryMethodInvoker == null) {
 
@@ -527,9 +527,9 @@ public class RepositoryComposition {
 		private static Method findMethod(InvokedMethod invokedMethod, MethodLookup lookup,
 				Supplier<Stream<Method>> methodStreamSupplier) {
 
-			for (var methodPredicate : lookup.getLookups()) {
+			for (MethodLookup.MethodPredicate methodPredicate : lookup.getLookups()) {
 
-				var resolvedMethod = methodStreamSupplier.get()
+				Optional<Method> resolvedMethod = methodStreamSupplier.get()
 						.filter(it -> methodPredicate.test(invokedMethod, it)) //
 						.findFirst();
 
@@ -580,7 +580,7 @@ public class RepositoryComposition {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(fragmentCache);
+			int result = ObjectUtils.nullSafeHashCode(fragmentCache);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(invocationMetadataCache);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(fragments);
 			return result;

@@ -124,7 +124,7 @@ public interface ExampleMatcher {
 		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
 		Assert.notNull(matcherConfigurer, "MatcherConfigurer must not be empty!");
 
-		var genericPropertyMatcher = new GenericPropertyMatcher();
+		GenericPropertyMatcher genericPropertyMatcher = new GenericPropertyMatcher();
 		matcherConfigurer.configureMatcher(genericPropertyMatcher);
 
 		return withMatcher(propertyPath, genericPropertyMatcher);
@@ -463,7 +463,7 @@ public interface ExampleMatcher {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(stringMatcher);
+			int result = ObjectUtils.nullSafeHashCode(stringMatcher);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(ignoreCase);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(valueTransformer);
 			return result;
@@ -753,7 +753,7 @@ public interface ExampleMatcher {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(path);
+			int result = ObjectUtils.nullSafeHashCode(path);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(stringMatcher);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(ignoreCase);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(valueTransformer);

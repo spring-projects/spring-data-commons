@@ -112,7 +112,7 @@ public class DefaultCrudMethods implements CrudMethods {
 				Pair.of(DELETE_BY_ID, Object.class), //
 				Pair.of(DELETE, Iterable.class));
 
-		var repositoryInterface = metadata.getRepositoryInterface();
+		Class<?> repositoryInterface = metadata.getRepositoryInterface();
 
 		return source//
 				.flatMap(it -> toStream(findMethod(repositoryInterface, it.getFirst(), it.getSecond())))//
@@ -133,14 +133,16 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	private static Optional<Method> selectMostSuitableFindAllMethod(RepositoryMetadata metadata) {
 
-		var repositoryInterface = metadata.getRepositoryInterface();
+		Class<?> repositoryInterface = metadata.getRepositoryInterface();
 
-		var withPageableOrSort = (Supplier<Optional<Method>>) () -> Stream.of(Pageable.class, Sort.class)//
+		Supplier<Optional<Method>> withPageableOrSort = (Supplier<Optional<Method>>) () -> Stream
+				.of(Pageable.class, Sort.class)//
 				.flatMap(it -> toStream(findMethod(repositoryInterface, FIND_ALL, it)))//
 				.flatMap(it -> toStream(getMostSpecificMethod(it, repositoryInterface)))//
 				.findFirst();
 
-		var withoutParameter = (Supplier<Optional<Method>>) () -> findMethod(repositoryInterface, FIND_ALL)//
+		Supplier<Optional<Method>> withoutParameter = (Supplier<Optional<Method>>) () -> findMethod(repositoryInterface,
+				FIND_ALL)//
 				.flatMap(it -> getMostSpecificMethod(it, repositoryInterface));
 
 		return firstNonEmpty(withPageableOrSort, withoutParameter);

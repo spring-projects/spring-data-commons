@@ -45,7 +45,7 @@ public interface IdentifierAccessor {
 	 */
 	default Object getRequiredIdentifier() {
 
-		var identifier = getIdentifier();
+		Object identifier = getIdentifier();
 
 		if (identifier != null) {
 			return identifier;

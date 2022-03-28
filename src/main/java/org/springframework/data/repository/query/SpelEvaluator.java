@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.repository.query.SpelQueryContext.SpelExtractor;
 import org.springframework.data.spel.ExpressionDependencies;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -79,8 +81,8 @@ public class SpelEvaluator {
 	@Nullable
 	private Object getSpElValue(String expressionString, Object[] values) {
 
-		var expression = PARSER.parseExpression(expressionString);
-		var evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, values,
+		Expression expression = PARSER.parseExpression(expressionString);
+		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, values,
 				ExpressionDependencies.discover(expression));
 
 		return expression.getValue(evaluationContext);

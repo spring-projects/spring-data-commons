@@ -109,14 +109,14 @@ public class InvalidPersistentPropertyPath extends MappingException {
 			return "";
 		}
 
-		var dotPath = path.toDotPath();
+		String dotPath = path.toDotPath();
 
 		return dotPath == null ? "" : dotPath;
 	}
 
 	private static String createMessage(TypeInformation<?> type, String unresolvableSegment) {
 
-		var potentialMatches = detectPotentialMatches(unresolvableSegment, type.getType());
+		Set<String> potentialMatches = detectPotentialMatches(unresolvableSegment, type.getType());
 		Object match = StringUtils.collectionToCommaDelimitedString(potentialMatches);
 
 		return String.format(DEFAULT_MESSAGE, unresolvableSegment, type.getType(), match);

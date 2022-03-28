@@ -35,6 +35,7 @@ import org.springframework.util.Assert;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Parser to populate the given {@link ClassPathScanningCandidateComponentProvider} with {@link TypeFilter}s parsed from
@@ -85,13 +86,13 @@ public class TypeFilterParser {
 	 */
 	public Collection<TypeFilter> parseTypeFilters(Element element, Type type) {
 
-		var nodeList = element.getChildNodes();
+		NodeList nodeList = element.getChildNodes();
 		Collection<TypeFilter> filters = new HashSet<>();
 
-		for (var i = 0; i < nodeList.getLength(); i++) {
+		for (int i = 0; i < nodeList.getLength(); i++) {
 
-			var node = nodeList.item(i);
-			var childElement = type.getElement(node);
+			Node node = nodeList.item(i);
+			Element childElement = type.getElement(node);
 
 			if (childElement == null) {
 				continue;
@@ -116,12 +117,12 @@ public class TypeFilterParser {
 	 */
 	protected TypeFilter createTypeFilter(Element element, ClassLoader classLoader) {
 
-		var filterType = element.getAttribute(FILTER_TYPE_ATTRIBUTE);
-		var expression = element.getAttribute(FILTER_EXPRESSION_ATTRIBUTE);
+		String filterType = element.getAttribute(FILTER_TYPE_ATTRIBUTE);
+		String expression = element.getAttribute(FILTER_EXPRESSION_ATTRIBUTE);
 
 		try {
 
-			var filter = FilterType.fromString(filterType);
+			FilterType filter = FilterType.fromString(filterType);
 			return filter.getFilter(expression, classLoader);
 
 		} catch (ClassNotFoundException ex) {
@@ -171,7 +172,7 @@ public class TypeFilterParser {
 			@Override
 			public TypeFilter getFilter(String expression, ClassLoader classLoader) throws ClassNotFoundException {
 
-				var filterClass = classLoader.loadClass(expression);
+				Class<?> filterClass = classLoader.loadClass(expression);
 				if (!TypeFilter.class.isAssignableFrom(filterClass)) {
 					throw new IllegalArgumentException(
 							"Class is not assignable to [" + TypeFilter.class.getName() + "]: " + expression);
@@ -199,7 +200,7 @@ public class TypeFilterParser {
 		 */
 		static FilterType fromString(String typeString) {
 
-			for (var filter : FilterType.values()) {
+			for (FilterType filter : FilterType.values()) {
 				if (filter.name().equalsIgnoreCase(typeString)) {
 					return filter;
 				}
@@ -230,7 +231,7 @@ public class TypeFilterParser {
 		Element getElement(Node node) {
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				var localName = node.getLocalName();
+				String localName = node.getLocalName();
 				if (elementName.equals(localName)) {
 					return (Element) node;
 				}

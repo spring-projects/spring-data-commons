@@ -75,14 +75,14 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 			return false;
 		}
 
-		var that = (RepositoriesPopulatedEvent) obj;
+		RepositoriesPopulatedEvent that = (RepositoriesPopulatedEvent) obj;
 		return this.source.equals(that.source) && this.repositories.equals(that.repositories);
 	}
 
 	@Override
 	public int hashCode() {
 
-		var result = 17;
+		int result = 17;
 		result += 31 * source.hashCode();
 		result += 31 * repositories.hashCode();
 

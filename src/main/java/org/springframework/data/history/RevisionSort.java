@@ -76,7 +76,7 @@ public class RevisionSort extends Sort {
 
 		Assert.notNull(sort, "Sort must not be null!");
 
-		var order = sort.getOrderFor(PROPERTY);
+		Order order = sort.getOrderFor(PROPERTY);
 		return order == null ? Direction.ASC : order.getDirection();
 	}
 }

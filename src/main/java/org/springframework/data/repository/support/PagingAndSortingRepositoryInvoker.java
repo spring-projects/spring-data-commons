@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
 /**
@@ -51,7 +52,7 @@ class PagingAndSortingRepositoryInvoker extends CrudRepositoryInvoker {
 
 		super((CrudRepository<Object, Object>) repository, metadata, conversionService);
 
-		var crudMethods = metadata.getCrudMethods();
+		CrudMethods crudMethods = metadata.getCrudMethods();
 
 		this.repository = repository;
 		this.customFindAll = isRedeclaredMethod(crudMethods.getFindAllMethod());

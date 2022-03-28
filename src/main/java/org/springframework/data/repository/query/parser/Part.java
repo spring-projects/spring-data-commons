@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.data.mapping.PropertyPath;
@@ -70,7 +71,7 @@ public class Part {
 		Assert.hasText(source, "Part source must not be null or empty!");
 		Assert.notNull(clazz, "Type must not be null!");
 
-		var partToUse = detectAndSetIgnoreCase(source);
+		String partToUse = detectAndSetIgnoreCase(source);
 
 		if (alwaysIgnoreCase && ignoreCase != IgnoreCaseType.ALWAYS) {
 			this.ignoreCase = IgnoreCaseType.WHEN_POSSIBLE;
@@ -82,8 +83,8 @@ public class Part {
 
 	private String detectAndSetIgnoreCase(String part) {
 
-		var matcher = IGNORE_CASE.matcher(part);
-		var result = part;
+		Matcher matcher = IGNORE_CASE.matcher(part);
+		String result = part;
 
 		if (matcher.find()) {
 			ignoreCase = IgnoreCaseType.ALWAYS;
@@ -153,7 +154,7 @@ public class Part {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(propertyPath);
+		int result = ObjectUtils.nullSafeHashCode(propertyPath);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(type);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(ignoreCase);
 		return result;
@@ -197,7 +198,7 @@ public class Part {
 
 		static {
 			List<String> allKeywords = new ArrayList<>();
-			for (var type : ALL) {
+			for (Type type : ALL) {
 				allKeywords.addAll(type.keywords);
 			}
 			ALL_KEYWORDS = Collections.unmodifiableList(allKeywords);
@@ -233,7 +234,7 @@ public class Part {
 		 */
 		public static Part.Type fromProperty(String rawProperty) {
 
-			for (var type : ALL) {
+			for (Type type : ALL) {
 				if (type.supports(rawProperty)) {
 					return type;
 				}
@@ -260,7 +261,7 @@ public class Part {
 		 */
 		protected boolean supports(String property) {
 
-			for (var keyword : keywords) {
+			for (String keyword : keywords) {
 				if (property.endsWith(keyword)) {
 					return true;
 				}
@@ -287,9 +288,9 @@ public class Part {
 		 */
 		public String extractProperty(String part) {
 
-			var candidate = Introspector.decapitalize(part);
+			String candidate = Introspector.decapitalize(part);
 
-			for (var keyword : keywords) {
+			for (String keyword : keywords) {
 				if (candidate.endsWith(keyword)) {
 					return candidate.substring(0, candidate.length() - keyword.length());
 				}

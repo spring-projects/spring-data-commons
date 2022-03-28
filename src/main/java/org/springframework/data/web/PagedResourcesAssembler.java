@@ -41,6 +41,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * {@link RepresentationModelAssembler} to easily convert {@link Page} instances into {@link PagedModel}.
@@ -167,10 +168,10 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 		Assert.notNull(type, "Type must not be null!");
 		Assert.notNull(link, "Link must not be null!");
 
-		var metadata = asPageMetadata(page);
+		PageMetadata metadata = asPageMetadata(page);
 
-		var wrapper = wrappers.emptyCollectionOf(type);
-		var embedded = Collections.singletonList(wrapper);
+		EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(type);
+		List<EmbeddedWrapper> embedded = Collections.singletonList(wrapper);
 
 		return addPaginationLinks(PagedModel.of(embedded, metadata), page, link);
 	}
@@ -201,20 +202,20 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 
 		List<R> resources = new ArrayList<>(page.getNumberOfElements());
 
-		for (var element : page) {
+		for (S element : page) {
 			resources.add(assembler.toModel(element));
 		}
 
-		var resource = createPagedModel(resources, asPageMetadata(page), page);
+		PagedModel<R> resource = createPagedModel(resources, asPageMetadata(page), page);
 
 		return addPaginationLinks(resource, page, link);
 	}
 
 	private <R> PagedModel<R> addPaginationLinks(PagedModel<R> resources, Page<?> page, Optional<Link> link) {
 
-		var base = getUriTemplate(link);
+		UriTemplate base = getUriTemplate(link);
 
-		var isNavigable = page.hasPrevious() || page.hasNext();
+		boolean isNavigable = page.hasPrevious() || page.hasNext();
 
 		if (isNavigable || forceFirstAndLastRels) {
 			resources.add(createLink(base, PageRequest.of(0, page.getSize(), page.getSort()), IanaLinkRelations.FIRST));
@@ -224,7 +225,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 			resources.add(createLink(base, page.previousPageable(), IanaLinkRelations.PREV));
 		}
 
-		var selfLink = link.map(Link::withSelfRel)//
+		Link selfLink = link.map(Link::withSelfRel)//
 				.orElseGet(() -> createLink(base, page.getPageable(), IanaLinkRelations.SELF));
 
 		resources.add(selfLink);
@@ -235,7 +236,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 
 		if (isNavigable || forceFirstAndLastRels) {
 
-			var lastIndex = page.getTotalPages() == 0 ? 0 : page.getTotalPages() - 1;
+			int lastIndex = page.getTotalPages() == 0 ? 0 : page.getTotalPages() - 1;
 
 			resources
 					.add(createLink(base, PageRequest.of(lastIndex, page.getSize(), page.getSort()), IanaLinkRelations.LAST));
@@ -265,7 +266,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	 */
 	private Link createLink(UriTemplate base, Pageable pageable, LinkRelation relation) {
 
-		var builder = fromUri(base.expand());
+		UriComponentsBuilder builder = fromUri(base.expand());
 		pageableResolver.enhance(builder, getMethodParameter(), pageable);
 
 		return Link.of(UriTemplate.of(builder.build().toString()), relation);
@@ -293,7 +294,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 
 		Assert.notNull(page, "Page must not be null!");
 
-		var number = pageableResolver.isOneIndexedParameters() ? page.getNumber() + 1 : page.getNumber();
+		int number = pageableResolver.isOneIndexedParameters() ? page.getNumber() + 1 : page.getNumber();
 
 		return new PageMetadata(page.getSize(), number, page.getTotalElements(), page.getTotalPages());
 	}

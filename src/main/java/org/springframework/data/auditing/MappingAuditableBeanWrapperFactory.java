@@ -81,7 +81,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 			return entities.mapOnContext(it.getClass(), (context, entity) -> {
 
-				var metadata = metadataCache.computeIfAbsent(it.getClass(),
+				MappingAuditingMetadata metadata = metadataCache.computeIfAbsent(it.getClass(),
 						key -> new MappingAuditingMetadata(context, it.getClass()));
 
 				return Optional.<AuditableBeanWrapper<T>> ofNullable(metadata.isAuditable() //
@@ -209,7 +209,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
 
-			var firstValue = metadata.lastModifiedDatePaths.getFirst() //
+			Optional<Object> firstValue = metadata.lastModifiedDatePaths.getFirst() //
 					.map(accessor::getProperty);
 
 			return getAsTemporalAccessor(firstValue, TemporalAccessor.class);
@@ -238,7 +238,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 			property.forEach(it -> {
 
-				var type = it.getRequiredLeafProperty().getType();
+				Class<?> type = it.getRequiredLeafProperty().getType();
 
 				this.accessor.setProperty(it, getDateValueToSet(value, type, accessor.getBean()), OPTIONS);
 			});

@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -93,20 +94,20 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 			provider.setEnvironment(environment);
 		}
 
-		for (var annotationType : annotationTypess) {
+		for (Class<? extends Annotation> annotationType : annotationTypess) {
 			provider.addIncludeFilter(new AnnotationTypeFilter(annotationType, true, considerInterfaces));
 		}
 
 		Set<Class<?>> types = new HashSet<>();
 
-		var loader = resourceLoader;
-		var classLoader = loader == null ? null : loader.getClassLoader();
+		ResourceLoader loader = resourceLoader;
+		ClassLoader classLoader = loader == null ? null : loader.getClassLoader();
 
-		for (var basePackage : basePackages) {
+		for (String basePackage : basePackages) {
 
-			for (var definition : provider.findCandidateComponents(basePackage)) {
+			for (BeanDefinition definition : provider.findCandidateComponents(basePackage)) {
 
-				var beanClassName = definition.getBeanClassName();
+				String beanClassName = definition.getBeanClassName();
 
 				if (beanClassName == null) {
 					throw new IllegalStateException(

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.querydsl.binding;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -124,9 +125,9 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		Assert.notNull(customizer, "Customizer must not be null!");
 		Assert.notNull(domainType, "Domain type must not be null!");
 
-		var path = verifyEntityPathPresent(domainType);
+		EntityPath<?> path = verifyEntityPathPresent(domainType);
 
-		var bindings = new QuerydslBindings();
+		QuerydslBindings bindings = new QuerydslBindings();
 		defaultCustomizer.customize(bindings, path);
 		findCustomizerForDomainType(customizer, domainType.getType()).customize(bindings, path);
 
@@ -166,11 +167,11 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	private QuerydslBinderCustomizer<EntityPath<?>> getDefaultQuerydslBinderCustomizer(
 			AutowireCapableBeanFactory beanFactory) {
 
-		var customizers = beanFactory
+		List<QuerydslBinderCustomizerDefaults> customizers = beanFactory
 				.getBeanProvider(QuerydslBinderCustomizerDefaults.class).stream().collect(Collectors.toList());
 
 		return (bindings, root) -> {
-			for (var querydslBinderCustomizerDefaults : customizers) {
+			for (QuerydslBinderCustomizerDefaults querydslBinderCustomizerDefaults : customizers) {
 				querydslBinderCustomizerDefaults.customize(bindings, root);
 			}
 		};

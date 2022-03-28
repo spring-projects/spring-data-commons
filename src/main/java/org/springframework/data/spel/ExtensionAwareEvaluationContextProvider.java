@@ -112,13 +112,13 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 
 	StandardEvaluationContext doGetEvaluationContext(Object rootObject,
 			Collection<? extends EvaluationContextExtension> extensions) {
-		var context = new StandardEvaluationContext();
+		StandardEvaluationContext context = new StandardEvaluationContext();
 
 		if (beanFactory != null) {
 			context.setBeanResolver(new BeanFactoryResolver(beanFactory));
 		}
 
-		var accessor = new ExtensionAwarePropertyAccessor(extensions);
+		ExtensionAwarePropertyAccessor accessor = new ExtensionAwarePropertyAccessor(extensions);
 
 		context.addPropertyAccessor(accessor);
 		context.addPropertyAccessor(new ReflectivePropertyAccessor());
@@ -302,7 +302,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 */
 		private TypedValue lookupPropertyFrom(EvaluationContextExtensionAdapter extension, String name) {
 
-			var value = extension.getProperties().get(name);
+			Object value = extension.getProperties().get(name);
 
 			if (!(value instanceof Function function)) {
 				return new TypedValue(value);
@@ -371,9 +371,11 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			Assert.notNull(extension, "Extension must not be null!");
 			Assert.notNull(information, "Extension information must not be null!");
 
-			var target = Optional.ofNullable(extension.getRootObject());
-			var extensionTypeInformation = information.getExtensionTypeInformation();
-			var rootObjectInformation = information.getRootObjectInformation(target);
+			Optional<Object> target = Optional.ofNullable(extension.getRootObject());
+			EvaluationContextExtensionInformation.ExtensionTypeInformation extensionTypeInformation = information
+					.getExtensionTypeInformation();
+			EvaluationContextExtensionInformation.RootObjectInformation rootObjectInformation = information
+					.getRootObjectInformation(target);
 
 			functions.addAll(extension.getFunctions());
 			functions.addAll(rootObjectInformation.getFunctions(target));

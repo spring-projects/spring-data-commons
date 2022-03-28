@@ -97,7 +97,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	@Override
 	public <T> T invokeSave(T object) {
 
-		var method = methods.getSaveMethod()//
+		Method method = methods.getSaveMethod()//
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a save-method declared!"));
 
 		return invokeForNonNullResult(method, object);
@@ -111,7 +111,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	@Override
 	public <T> Optional<T> invokeFindById(Object id) {
 
-		var method = methods.getFindOneMethod()//
+		Method method = methods.getFindOneMethod()//
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-one-method declared!"));
 
 		return returnAsOptional(invoke(method, convertId(id)));
@@ -127,7 +127,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 		Assert.notNull(id, "Identifier must not be null!");
 
-		var method = methods.getDeleteMethod()
+		Method method = methods.getDeleteMethod()
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a delete-method declared!"));
 
 		if (method.getName().endsWith("ById")) {
@@ -154,19 +154,19 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	private Object[] prepareParameters(Method method, MultiValueMap<String, ?> rawParameters, Pageable pageable,
 			Sort sort) {
 
-		var parameters = new MethodParameters(method, Optional.of(PARAM_ANNOTATION)).getParameters();
+		List<MethodParameter> parameters = new MethodParameters(method, Optional.of(PARAM_ANNOTATION)).getParameters();
 
 		if (parameters.isEmpty()) {
 			return new Object[0];
 		}
 
-		var result = new Object[parameters.size()];
-		var sortToUse = pageable.getSortOr(sort);
+		Object[] result = new Object[parameters.size()];
+		Sort sortToUse = pageable.getSortOr(sort);
 
-		for (var i = 0; i < result.length; i++) {
+		for (int i = 0; i < result.length; i++) {
 
-			var param = parameters.get(i);
-			var targetType = param.getParameterType();
+			MethodParameter param = parameters.get(i);
+			Class<?> targetType = param.getParameterType();
 
 			if (Pageable.class.isAssignableFrom(targetType)) {
 				result[i] = pageable;
@@ -174,13 +174,13 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 				result[i] = sortToUse;
 			} else {
 
-				var parameterName = param.getParameterName();
+				String parameterName = param.getParameterName();
 
 				if (!StringUtils.hasText(parameterName)) {
 					throw new IllegalArgumentException(String.format(NAME_NOT_FOUND, ClassUtils.getQualifiedMethodName(method)));
 				}
 
-				var value = unwrapSingleElement(rawParameters.get(parameterName));
+				Object value = unwrapSingleElement(rawParameters.get(parameterName));
 
 				result[i] = targetType.isInstance(value) ? value : convert(value, param);
 			}
@@ -250,7 +250,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 			return id;
 		}
 
-		var result = conversionService.convert(id, idType);
+		Object result = conversionService.convert(id, idType);
 
 		if (result == null) {
 			throw new IllegalStateException(
@@ -262,14 +262,14 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	protected Iterable<Object> invokeFindAllReflectively(Pageable pageable) {
 
-		var method = methods.getFindAllMethod()
+		Method method = methods.getFindAllMethod()
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
 
 		if (method.getParameterCount() == 0) {
 			return invokeForNonNullResult(method);
 		}
 
-		var types = method.getParameterTypes();
+		Class<?>[] types = method.getParameterTypes();
 
 		if (Pageable.class.isAssignableFrom(types[0])) {
 			return invokeForNonNullResult(method, pageable);
@@ -280,7 +280,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	protected Iterable<Object> invokeFindAllReflectively(Sort sort) {
 
-		var method = methods.getFindAllMethod()
+		Method method = methods.getFindAllMethod()
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
 
 		if (method.getParameterCount() == 0) {

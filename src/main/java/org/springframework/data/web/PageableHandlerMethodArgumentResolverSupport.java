@@ -17,6 +17,7 @@ package org.springframework.data.web;
 
 import static org.springframework.data.web.SpringDataAnnotationUtils.*;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -191,10 +192,10 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 			@Nullable String pageSizeString) {
 		assertPageableUniqueness(methodParameter);
 
-		var defaultOrFallback = getDefaultFromAnnotationOrFallback(methodParameter).toOptional();
+		Optional<Pageable> defaultOrFallback = getDefaultFromAnnotationOrFallback(methodParameter).toOptional();
 
-		var page = parseAndApplyBoundaries(pageString, Integer.MAX_VALUE, true);
-		var pageSize = parseAndApplyBoundaries(pageSizeString, maxPageSize, false);
+		Optional<Integer> page = parseAndApplyBoundaries(pageString, Integer.MAX_VALUE, true);
+		Optional<Integer> pageSize = parseAndApplyBoundaries(pageSizeString, maxPageSize, false);
 
 		if (!(page.isPresent() && pageSize.isPresent()) && !defaultOrFallback.isPresent()) {
 			return Pageable.unpaged();
@@ -223,9 +224,9 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 	 */
 	protected String getParameterNameToUse(String source, @Nullable MethodParameter parameter) {
 
-		var builder = new StringBuilder(prefix);
+		StringBuilder builder = new StringBuilder(prefix);
 
-		var value = SpringDataAnnotationUtils.getQualifier(parameter);
+		String value = SpringDataAnnotationUtils.getQualifier(parameter);
 
 		if (StringUtils.hasLength(value)) {
 			builder.append(value);
@@ -237,7 +238,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 
 	private Pageable getDefaultFromAnnotationOrFallback(MethodParameter methodParameter) {
 
-		var defaults = methodParameter.getParameterAnnotation(PageableDefault.class);
+		PageableDefault defaults = methodParameter.getParameterAnnotation(PageableDefault.class);
 
 		if (defaults != null) {
 			return getDefaultPageRequestFrom(methodParameter, defaults);
@@ -252,7 +253,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 		Integer defaultPageSize = getSpecificPropertyOrDefaultFromValue(defaults, "size");
 
 		if (defaultPageSize < 1) {
-			var annotatedMethod = parameter.getMethod();
+			Method annotatedMethod = parameter.getMethod();
 			throw new IllegalStateException(String.format(INVALID_DEFAULT_PAGE_SIZE, annotatedMethod));
 		}
 
@@ -279,7 +280,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 		}
 
 		try {
-			var parsed = Integer.parseInt(parameter) - (oneIndexedParameters && shiftIndex ? 1 : 0);
+			int parsed = Integer.parseInt(parameter) - (oneIndexedParameters && shiftIndex ? 1 : 0);
 			return Optional.of(parsed < 0 ? 0 : parsed > upper ? upper : parsed);
 		} catch (NumberFormatException e) {
 			return Optional.of(0);

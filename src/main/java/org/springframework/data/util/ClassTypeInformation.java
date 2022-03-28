@@ -111,17 +111,17 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 			visited.add(type);
 		}
 
-		var source = GenericTypeResolver.getTypeVariableMap(type);
+		Map<TypeVariable, Type> source = GenericTypeResolver.getTypeVariableMap(type);
 		Map<TypeVariable<?>, Type> map = new HashMap<>(source.size());
 
-		for (var entry : source.entrySet()) {
+		for (Map.Entry<TypeVariable, Type> entry : source.entrySet()) {
 
-			var value = entry.getValue();
+			Type value = entry.getValue();
 			map.put(entry.getKey(), entry.getValue());
 
 			if (value instanceof Class) {
 
-				for (var nestedEntry : getTypeVariableMap((Class<?>) value, visited).entrySet()) {
+				for (Map.Entry<TypeVariable<?>, Type> nestedEntry : getTypeVariableMap((Class<?>) value, visited).entrySet()) {
 					if (!map.containsKey(nestedEntry.getKey())) {
 						map.put(nestedEntry.getKey(), nestedEntry.getValue());
 					}

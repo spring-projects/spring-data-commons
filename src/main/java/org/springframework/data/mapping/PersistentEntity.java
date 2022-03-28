@@ -125,7 +125,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 */
 	default P getRequiredIdProperty() {
 
-		var property = getIdProperty();
+		P property = getIdProperty();
 
 		if (property != null) {
 			return property;
@@ -153,7 +153,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 */
 	default P getRequiredVersionProperty() {
 
-		var property = getVersionProperty();
+		P property = getVersionProperty();
 
 		if (property != null) {
 			return property;
@@ -180,7 +180,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 */
 	default P getRequiredPersistentProperty(String name) {
 
-		var property = getPersistentProperty(name);
+		P property = getPersistentProperty(name);
 
 		if (property != null) {
 			return property;
@@ -199,7 +199,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	@Nullable
 	default P getPersistentProperty(Class<? extends Annotation> annotationType) {
 
-		var it = getPersistentProperties(annotationType).iterator();
+		Iterator<P> it = getPersistentProperties(annotationType).iterator();
 		return it.hasNext() ? it.next() : null;
 	}
 
@@ -305,7 +305,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 */
 	default <A extends Annotation> A getRequiredAnnotation(Class<A> annotationType) throws IllegalStateException {
 
-		var annotation = findAnnotation(annotationType);
+		A annotation = findAnnotation(annotationType);
 
 		if (annotation != null) {
 			return annotation;

@@ -103,14 +103,14 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 
 		Assert.notNull(definition, "BeanDefinition must not be null!");
 
-		var beanClassName = definition.getBeanClassName();
+		String beanClassName = definition.getBeanClassName();
 
 		if (beanClassName == null || isExcluded(beanClassName, getExcludeFilters())) {
 			return false;
 		}
 
-		var beanPackage = ClassUtils.getPackageName(beanClassName);
-		var localName = getLocalName(beanClassName);
+		String beanPackage = ClassUtils.getPackageName(beanClassName);
+		String localName = getLocalName(beanClassName);
 
 		return localName.equals(getImplementationClassName()) //
 				&& getBasePackages().stream().anyMatch(beanPackage::startsWith);
@@ -118,7 +118,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 
 	private String getLocalName(String className) {
 
-		var shortName = ClassUtils.getShortName(className);
+		String shortName = ClassUtils.getShortName(className);
 		return shortName.substring(shortName.lastIndexOf('.') + 1);
 	}
 
@@ -126,7 +126,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 
 		try {
 
-			var reader = getMetadataReaderFactory().getMetadataReader(beanClassName);
+			MetadataReader reader = getMetadataReaderFactory().getMetadataReader(beanClassName);
 			return filters.stream().anyMatch(it -> matches(it, reader));
 		} catch (IOException o_O) {
 			return true;

@@ -83,9 +83,9 @@ public class Point implements Serializable {
 	@Override
 	public int hashCode() {
 
-		var result = 1;
+		int result = 1;
 
-		var temp = Double.doubleToLongBits(x);
+		long temp = Double.doubleToLongBits(x);
 		result = 31 * result + (int) (temp ^ temp >>> 32);
 
 		temp = Double.doubleToLongBits(y);

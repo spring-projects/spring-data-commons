@@ -92,7 +92,7 @@ public class SpELContext {
 
 	public EvaluationContext getEvaluationContext(Object source) {
 
-		var evaluationContext = new StandardEvaluationContext(source);
+		StandardEvaluationContext evaluationContext = new StandardEvaluationContext(source);
 		evaluationContext.addPropertyAccessor(accessor);
 
 		if (factory != null) {

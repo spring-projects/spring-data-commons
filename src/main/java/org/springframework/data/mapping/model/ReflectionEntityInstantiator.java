@@ -23,6 +23,7 @@ import java.util.Collections;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mapping.FactoryMethod;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -46,15 +47,15 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
-		var creator = entity.getInstanceCreatorMetadata();
+		InstanceCreatorMetadata<P> creator = entity.getInstanceCreatorMetadata();
 
 		if (creator == null) {
 			return instantiateClass(entity);
 		}
-		var parameterCount = creator.getParameterCount();
+		int parameterCount = creator.getParameterCount();
 
-		var params = parameterCount == 0 ? EMPTY_ARGS : new Object[parameterCount];
-		var i = 0;
+		Object[] params = parameterCount == 0 ? EMPTY_ARGS : new Object[parameterCount];
+		int i = 0;
 		for (Parameter<?, P> parameter : creator.getParameters()) {
 			params[i++] = provider.getParameterValue(parameter);
 		}
@@ -62,7 +63,7 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 		if (creator instanceof FactoryMethod<?, ?> method) {
 
 			try {
-				var t = (T) ReflectionUtils.invokeMethod(method.getFactoryMethod(), null, params);
+				T t = (T) ReflectionUtils.invokeMethod(method.getFactoryMethod(), null, params);
 
 				if (t == null) {
 					throw new IllegalStateException("Method %s returned null!".formatted(method.getFactoryMethod()));
@@ -87,8 +88,8 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 		try {
 			Class<?> clazz = entity.getType();
 			if (clazz.isArray()) {
-				var ctype = clazz;
-				var dims = 0;
+				Class<?> ctype = clazz;
+				int dims = 0;
 				while (ctype.isArray()) {
 					ctype = ctype.getComponentType();
 					dims++;

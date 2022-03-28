@@ -57,7 +57,7 @@ class QuerydslPathInformation implements PathInformation {
 	@Override
 	public Class<?> getLeafParentType() {
 
-		var parent = path.getMetadata().getParent();
+		Path<?> parent = path.getMetadata().getParent();
 
 		if (parent == null) {
 			throw new IllegalStateException(String.format("Could not obtain metadata for parent node of %s!", path));
@@ -103,7 +103,7 @@ class QuerydslPathInformation implements PathInformation {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(getRootParentType());
+		int result = ObjectUtils.nullSafeHashCode(getRootParentType());
 		result = 31 * result + ObjectUtils.nullSafeHashCode(toDotPath());
 		return result;
 	}

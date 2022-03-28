@@ -192,13 +192,13 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	@Nullable
 	public PersistentEntity<?, ?> getEntityUltimatelyReferredToBy(PersistentProperty<?> property) {
 
-		var propertyType = property.getTypeInformation().getActualType();
+		TypeInformation<?> propertyType = property.getTypeInformation().getActualType();
 
 		if (propertyType == null || !property.isAssociation()) {
 			return null;
 		}
 
-		var associationTargetType = property.getAssociationTargetType();
+		Class<?> associationTargetType = property.getAssociationTargetType();
 
 		return associationTargetType == null //
 				? getEntityIdentifiedBy(propertyType) //
@@ -216,7 +216,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
-		var entity = getEntityUltimatelyReferredToBy(property);
+		PersistentEntity<?, ? extends PersistentProperty<?>> entity = getEntityUltimatelyReferredToBy(property);
 
 		return entity == null //
 				? property.getTypeInformation().getRequiredActualType() //
@@ -240,10 +240,10 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 			for (PersistentEntity<?, ? extends PersistentProperty<?>> persistentProperties : context
 					.getPersistentEntities()) {
 
-				var idProperty = persistentProperties.getIdProperty();
+				PersistentProperty<? extends PersistentProperty<?>> idProperty = persistentProperties.getIdProperty();
 
 				if (idProperty != null && type.equals(idProperty.getTypeInformation().getActualType())) {
-					var owner = idProperty.getOwner();
+					PersistentEntity<?, ? extends PersistentProperty<?>> owner = idProperty.getOwner();
 					entities.add(owner);
 				}
 			}
@@ -251,7 +251,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 		if (entities.size() > 1) {
 
-			var message = "Found multiple entities identified by " + type.getType() + ": ";
+			String message = "Found multiple entities identified by " + type.getType() + ": ";
 			message += entities.stream().map(it -> it.getType().getName()).collect(Collectors.joining(", "));
 			message += "! Introduce dedicated unique identifier types or explicitly define the target type in @Reference!";
 

@@ -102,7 +102,7 @@ public class CustomRepositoryImplementationDetector {
 
 		Assert.notNull(lookup, "ImplementationLookupConfiguration must not be null!");
 
-		var definitions = implementationCandidates.getOptional()
+		Set<BeanDefinition> definitions = implementationCandidates.getOptional()
 				.orElseGet(() -> findCandidateBeanDefinitions(lookup)).stream() //
 				.filter(lookup::matches) //
 				.collect(StreamUtils.toUnmodifiableSet());
@@ -116,9 +116,9 @@ public class CustomRepositoryImplementationDetector {
 
 	private Set<BeanDefinition> findCandidateBeanDefinitions(ImplementationDetectionConfiguration config) {
 
-		var postfix = config.getImplementationPostfix();
+		String postfix = config.getImplementationPostfix();
 
-		var provider = new ClassPathScanningCandidateComponentProvider(false,
+		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false,
 				environment);
 		provider.setResourceLoader(resourceLoader);
 		provider.setResourcePattern(String.format(CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN, postfix));
@@ -135,7 +135,7 @@ public class CustomRepositoryImplementationDetector {
 	private static Optional<BeanDefinition> throwAmbiguousCustomImplementationException(
 			Collection<BeanDefinition> definitions) {
 
-		var implementationNames = definitions.stream()//
+		String implementationNames = definitions.stream()//
 				.map(BeanDefinition::getBeanClassName)//
 				.collect(Collectors.joining(", "));
 

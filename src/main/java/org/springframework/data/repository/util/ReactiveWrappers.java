@@ -19,11 +19,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.core.ReactiveAdapter;
+import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.ReactiveTypeDescriptor;
 import org.springframework.data.util.ProxyUtils;
 import org.springframework.data.util.ReflectionUtils;
@@ -212,13 +212,13 @@ public abstract class ReactiveWrappers {
 
 		Assert.notNull(type, "Wrapper type must not be null!");
 
-		var adapterRegistry = ReactiveWrapperConverters.RegistryHolder.REACTIVE_ADAPTER_REGISTRY;
+		ReactiveAdapterRegistry adapterRegistry = ReactiveWrapperConverters.RegistryHolder.REACTIVE_ADAPTER_REGISTRY;
 
 		if (adapterRegistry == null) {
 			return Optional.empty();
 		}
 
-		var adapter = adapterRegistry.getAdapter(type);
+		ReactiveAdapter adapter = adapterRegistry.getAdapter(type);
 		if (adapter != null && adapter.getDescriptor().isDeferred()) {
 			return Optional.of(adapter.getDescriptor());
 		}

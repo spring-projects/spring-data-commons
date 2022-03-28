@@ -77,10 +77,10 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 		Set<RepositoryConfiguration<T>> result = new HashSet<>();
 
-		for (var candidate : configSource.getCandidates(loader)) {
+		for (BeanDefinition candidate : configSource.getCandidates(loader)) {
 
-			var configuration = getRepositoryConfiguration(candidate, configSource);
-			var repositoryInterface = loadRepositoryInterface(configuration,
+			RepositoryConfiguration<T> configuration = getRepositoryConfiguration(candidate, configSource);
+			Class<?> repositoryInterface = loadRepositoryInterface(configuration,
 					getConfigurationInspectionClassLoader(loader));
 
 			if (repositoryInterface == null) {
@@ -88,9 +88,9 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 				continue;
 			}
 
-			var metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
+			RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
 
-			var qualifiedForImplementation = !strictMatchesOnly || configSource.usesExplicitFilters()
+			boolean qualifiedForImplementation = !strictMatchesOnly || configSource.usesExplicitFilters()
 					|| isStrictRepositoryCandidate(metadata);
 
 			if (qualifiedForImplementation && useRepositoryConfiguration(metadata)) {
@@ -172,7 +172,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 		bean.setSource(source);
 
-		var beanName = generateBeanName(bean, registry);
+		String beanName = generateBeanName(bean, registry);
 		registry.registerBeanDefinition(beanName, bean);
 
 		return beanName;
@@ -195,7 +195,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 			return;
 		}
 
-		var bean = supplier.get();
+		AbstractBeanDefinition bean = supplier.get();
 
 		bean.setSource(source);
 		registry.registerBeanDefinition(beanName, bean);
@@ -218,7 +218,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 			return;
 		}
 
-		var definition = supplier.get();
+		AbstractBeanDefinition definition = supplier.get();
 		definition.setSource(source);
 		definition.setLazyInit(true);
 
@@ -235,7 +235,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 */
 	public static boolean hasBean(Class<?> type, BeanDefinitionRegistry registry) {
 
-		var name = String.format("%s%s0", type.getName(), GENERATED_BEAN_NAME_SEPARATOR);
+		String name = String.format("%s%s0", type.getName(), GENERATED_BEAN_NAME_SEPARATOR);
 		return registry.containsBeanDefinition(name);
 	}
 
@@ -270,9 +270,9 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 			return false;
 		}
 
-		var types = getIdentifyingTypes();
-		var annotations = getIdentifyingAnnotations();
-		var moduleName = getModuleName();
+		Collection<Class<?>> types = getIdentifyingTypes();
+		Collection<Class<? extends Annotation>> annotations = getIdentifyingAnnotations();
+		String moduleName = getModuleName();
 
 		if (types.isEmpty() && annotations.isEmpty()) {
 			if (!noMultiStoreSupport) {
@@ -282,23 +282,23 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 			}
 		}
 
-		var repositoryInterface = metadata.getRepositoryInterface();
+		Class<?> repositoryInterface = metadata.getRepositoryInterface();
 
-		for (var type : types) {
+		for (Class<?> type : types) {
 			if (type.isAssignableFrom(repositoryInterface)) {
 				return true;
 			}
 		}
 
-		var domainType = metadata.getDomainType();
+		Class<?> domainType = metadata.getDomainType();
 
-		for (var annotationType : annotations) {
+		for (Class<? extends Annotation> annotationType : annotations) {
 			if (AnnotationUtils.findAnnotation(domainType, annotationType) != null) {
 				return true;
 			}
 		}
 
-		var message = String.format(MULTI_STORE_DROPPED, moduleName, repositoryInterface, moduleName);
+		String message = String.format(MULTI_STORE_DROPPED, moduleName, repositoryInterface, moduleName);
 
 		if (!annotations.isEmpty()) {
 			message = message.concat(" consider annotating your entities with one of these annotations: ") //
@@ -352,7 +352,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration,
 			@Nullable ClassLoader classLoader) {
 
-		var repositoryInterface = configuration.getRepositoryInterface();
+		String repositoryInterface = configuration.getRepositoryInterface();
 
 		try {
 			return org.springframework.util.ClassUtils.forName(repositoryInterface, classLoader);

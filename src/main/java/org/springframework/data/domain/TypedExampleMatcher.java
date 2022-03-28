@@ -89,8 +89,8 @@ class TypedExampleMatcher implements ExampleMatcher {
 		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
 		Assert.notNull(genericPropertyMatcher, "GenericPropertyMatcher must not be empty!");
 
-		var propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
-		var propertySpecifier = new PropertySpecifier(propertyPath);
+		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
+		PropertySpecifier propertySpecifier = new PropertySpecifier(propertyPath);
 
 		if (genericPropertyMatcher.ignoreCase != null) {
 			propertySpecifier = propertySpecifier.withIgnoreCase(genericPropertyMatcher.ignoreCase);
@@ -114,8 +114,8 @@ class TypedExampleMatcher implements ExampleMatcher {
 		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
 		Assert.notNull(propertyValueTransformer, "PropertyValueTransformer must not be empty!");
 
-		var propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
-		var propertySpecifier = getOrCreatePropertySpecifier(propertyPath, propertySpecifiers);
+		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
+		PropertySpecifier propertySpecifier = getOrCreatePropertySpecifier(propertyPath, propertySpecifiers);
 
 		propertySpecifiers.add(propertySpecifier.withValueTransformer(propertyValueTransformer));
 
@@ -129,10 +129,10 @@ class TypedExampleMatcher implements ExampleMatcher {
 		Assert.notEmpty(propertyPaths, "PropertyPaths must not be empty!");
 		Assert.noNullElements(propertyPaths, "PropertyPaths must not contain null elements!");
 
-		var propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
+		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
 
-		for (var propertyPath : propertyPaths) {
-			var propertySpecifier = getOrCreatePropertySpecifier(propertyPath, propertySpecifiers);
+		for (String propertyPath : propertyPaths) {
+			PropertySpecifier propertySpecifier = getOrCreatePropertySpecifier(propertyPath, propertySpecifiers);
 			propertySpecifiers.add(propertySpecifier.withIgnoreCase(true));
 		}
 
@@ -230,7 +230,7 @@ class TypedExampleMatcher implements ExampleMatcher {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(nullHandler);
+		int result = ObjectUtils.nullSafeHashCode(nullHandler);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(defaultStringMatcher);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(propertySpecifiers);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(ignoredPaths);

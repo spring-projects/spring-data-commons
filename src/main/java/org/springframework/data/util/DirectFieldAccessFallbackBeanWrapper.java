@@ -17,6 +17,8 @@ package org.springframework.data.util;
 
 import static org.springframework.util.ReflectionUtils.*;
 
+import java.lang.reflect.Field;
+
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.NotReadablePropertyException;
 import org.springframework.beans.NotWritablePropertyException;
@@ -46,7 +48,7 @@ public class DirectFieldAccessFallbackBeanWrapper extends BeanWrapperImpl {
 			return super.getPropertyValue(propertyName);
 		} catch (NotReadablePropertyException e) {
 
-			var field = findField(getWrappedClass(), propertyName);
+			Field field = findField(getWrappedClass(), propertyName);
 
 			if (field == null) {
 				throw new NotReadablePropertyException(getWrappedClass(), propertyName,
@@ -65,7 +67,7 @@ public class DirectFieldAccessFallbackBeanWrapper extends BeanWrapperImpl {
 			super.setPropertyValue(propertyName, value);
 		} catch (NotWritablePropertyException e) {
 
-			var field = findField(getWrappedClass(), propertyName);
+			Field field = findField(getWrappedClass(), propertyName);
 
 			if (field == null) {
 				throw new NotWritablePropertyException(getWrappedClass(), propertyName,

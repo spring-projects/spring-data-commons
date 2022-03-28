@@ -28,6 +28,7 @@ import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.server.mvc.UriComponentsContributor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -75,24 +76,24 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 	 */
 	public TemplateVariables getPaginationTemplateVariables(MethodParameter parameter, UriComponents template) {
 
-		var pagePropertyName = getParameterNameToUse(getPageParameterName(), parameter);
-		var sizePropertyName = getParameterNameToUse(getSizeParameterName(), parameter);
+		String pagePropertyName = getParameterNameToUse(getPageParameterName(), parameter);
+		String sizePropertyName = getParameterNameToUse(getSizeParameterName(), parameter);
 
 		List<TemplateVariable> names = new ArrayList<>();
-		var queryParameters = template.getQueryParams();
-		var append = !queryParameters.isEmpty();
+		MultiValueMap<String, String> queryParameters = template.getQueryParams();
+		boolean append = !queryParameters.isEmpty();
 
-		for (var propertyName : Arrays.asList(pagePropertyName, sizePropertyName)) {
+		for (String propertyName : Arrays.asList(pagePropertyName, sizePropertyName)) {
 
 			if (!queryParameters.containsKey(propertyName)) {
 
-				var type = append ? REQUEST_PARAM_CONTINUED : REQUEST_PARAM;
-				var description = String.format("pagination.%s.description", propertyName);
+				TemplateVariable.VariableType type = append ? REQUEST_PARAM_CONTINUED : REQUEST_PARAM;
+				String description = String.format("pagination.%s.description", propertyName);
 				names.add(new TemplateVariable(propertyName, type, description));
 			}
 		}
 
-		var pagingVariables = new TemplateVariables(names);
+		TemplateVariables pagingVariables = new TemplateVariables(names);
 		return pagingVariables.concat(sortResolver.getSortTemplateVariables(parameter, template));
 	}
 
@@ -109,10 +110,10 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 			return;
 		}
 
-		var pagePropertyName = getParameterNameToUse(getPageParameterName(), parameter);
-		var sizePropertyName = getParameterNameToUse(getSizeParameterName(), parameter);
+		String pagePropertyName = getParameterNameToUse(getPageParameterName(), parameter);
+		String sizePropertyName = getParameterNameToUse(getSizeParameterName(), parameter);
 
-		var pageNumber = pageable.getPageNumber();
+		int pageNumber = pageable.getPageNumber();
 
 		builder.replaceQueryParam(pagePropertyName, isOneIndexedParameters() ? pageNumber + 1 : pageNumber);
 		builder.replaceQueryParam(sizePropertyName,

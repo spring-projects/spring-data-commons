@@ -71,7 +71,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	@Override
 	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
 
-		var evaluationContext = delegate.getEvaluationContext(parameterValues);
+		EvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues);
 
 		if (evaluationContext instanceof StandardEvaluationContext) {
 			((StandardEvaluationContext) evaluationContext).setVariables(
@@ -85,7 +85,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues,
 			ExpressionDependencies dependencies) {
 
-		var evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
+		EvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
 
 		if (evaluationContext instanceof StandardEvaluationContext) {
 			((StandardEvaluationContext) evaluationContext).setVariables(
@@ -99,7 +99,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	public <T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContextLater(T parameters,
 			Object[] parameterValues) {
 
-		var evaluationContext = delegate.getEvaluationContextLater(parameterValues);
+		Mono<StandardEvaluationContext> evaluationContext = delegate.getEvaluationContextLater(parameterValues);
 
 		return evaluationContext
 				.doOnNext(it -> it.setVariables(
@@ -111,7 +111,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	public <T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContextLater(T parameters,
 			Object[] parameterValues, ExpressionDependencies dependencies) {
 
-		var evaluationContext = delegate.getEvaluationContextLater(parameterValues,
+		Mono<StandardEvaluationContext> evaluationContext = delegate.getEvaluationContextLater(parameterValues,
 				dependencies);
 
 		return evaluationContext

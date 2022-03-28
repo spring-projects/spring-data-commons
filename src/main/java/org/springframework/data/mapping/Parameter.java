@@ -71,7 +71,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 				throw new IllegalStateException();
 			}
 
-			var owningType = entity.getType();
+			Class<T> owningType = entity.getType();
 			return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
 		});
 
@@ -179,7 +179,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 */
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(name);
+		int result = ObjectUtils.nullSafeHashCode(name);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(type);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(key);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(entity);
@@ -194,10 +194,10 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 */
 	boolean maps(PersistentProperty<?> property) {
 
-		var entity = this.entity;
-		var name = this.name;
+		PersistentEntity<T, P> entity = this.entity;
+		String name = this.name;
 
-		var referencedProperty = entity == null ? null : name == null ? null : entity.getPersistentProperty(name);
+		P referencedProperty = entity == null ? null : name == null ? null : entity.getPersistentProperty(name);
 
 		return property.equals(referencedProperty);
 	}

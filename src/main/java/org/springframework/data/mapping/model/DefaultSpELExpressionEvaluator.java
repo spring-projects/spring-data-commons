@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 
 import org.springframework.data.mapping.Parameter;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -46,7 +47,7 @@ public class DefaultSpELExpressionEvaluator implements SpELExpressionEvaluator {
 	@SuppressWarnings("unchecked")
 	public <T> T evaluate(String expression) {
 
-		var parseExpression = factory.getParser().parseExpression(expression);
+		Expression parseExpression = factory.getParser().parseExpression(expression);
 		return (T) parseExpression.getValue(factory.getEvaluationContext(source));
 	}
 }

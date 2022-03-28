@@ -68,12 +68,12 @@ public class Version implements Comparable<Version> {
 
 		Assert.hasText(version, "Version must not be null o empty!");
 
-		var parts = version.trim().split("\\.");
-		var intParts = new int[parts.length];
+		String[] parts = version.trim().split("\\.");
+		int[] intParts = new int[parts.length];
 
-		for (var i = 0; i < parts.length; i++) {
+		for (int i = 0; i < parts.length; i++) {
 
-			var input = i == parts.length - 1 ? parts[i].replaceAll("\\D.*", "") : parts[i];
+			String input = i == parts.length - 1 ? parts[i].replaceAll("\\D.*", "") : parts[i];
 
 			if (StringUtils.hasText(input)) {
 				try {
@@ -185,7 +185,7 @@ public class Version implements Comparable<Version> {
 	@Override
 	public int hashCode() {
 
-		var result = 17;
+		int result = 17;
 		result += 31 * major;
 		result += 31 * minor;
 		result += 31 * bugfix;

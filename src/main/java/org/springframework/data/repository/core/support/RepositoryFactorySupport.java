@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -273,29 +274,29 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
 		Assert.notNull(fragments, "RepositoryFragments must not be null!");
 
-		var applicationStartup = getStartup();
+		ApplicationStartup applicationStartup = getStartup();
 
-		var repositoryInit = onEvent(applicationStartup, "spring.data.repository.init", repositoryInterface);
+		StartupStep repositoryInit = onEvent(applicationStartup, "spring.data.repository.init", repositoryInterface);
 
 		repositoryBaseClass.ifPresent(it -> repositoryInit.tag("baseClass", it.getName()));
 
-		var repositoryMetadataStep = onEvent(applicationStartup, "spring.data.repository.metadata",
+		StartupStep repositoryMetadataStep = onEvent(applicationStartup, "spring.data.repository.metadata",
 				repositoryInterface);
-		var metadata = getRepositoryMetadata(repositoryInterface);
+		RepositoryMetadata metadata = getRepositoryMetadata(repositoryInterface);
 		repositoryMetadataStep.end();
 
-		var repositoryCompositionStep = onEvent(applicationStartup, "spring.data.repository.composition",
+		StartupStep repositoryCompositionStep = onEvent(applicationStartup, "spring.data.repository.composition",
 				repositoryInterface);
 		repositoryCompositionStep.tag("fragment.count", String.valueOf(fragments.size()));
 
-		var composition = getRepositoryComposition(metadata, fragments);
-		var information = getRepositoryInformation(metadata, composition);
+		RepositoryComposition composition = getRepositoryComposition(metadata, fragments);
+		RepositoryInformation information = getRepositoryInformation(metadata, composition);
 
 		repositoryCompositionStep.tag("fragments", () -> {
 
-			var fragmentsTag = new StringBuilder();
+			StringBuilder fragmentsTag = new StringBuilder();
 
-			for (var fragment : composition.getFragments()) {
+			for (RepositoryFragment<?> fragment : composition.getFragments()) {
 
 				if (fragmentsTag.length() > 0) {
 					fragmentsTag.append(";");
@@ -310,19 +311,19 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		repositoryCompositionStep.end();
 
-		var repositoryTargetStep = onEvent(applicationStartup, "spring.data.repository.target",
+		StartupStep repositoryTargetStep = onEvent(applicationStartup, "spring.data.repository.target",
 				repositoryInterface);
-		var target = getTargetRepository(information);
+		Object target = getTargetRepository(information);
 
 		repositoryTargetStep.tag("target", target.getClass().getName());
 		repositoryTargetStep.end();
 
-		var compositionToUse = composition.append(RepositoryFragment.implemented(target));
+		RepositoryComposition compositionToUse = composition.append(RepositoryFragment.implemented(target));
 		validate(information, compositionToUse);
 
 		// Create proxy
-		var repositoryProxyStep = onEvent(applicationStartup, "spring.data.repository.proxy", repositoryInterface);
-		var result = new ProxyFactory();
+		StartupStep repositoryProxyStep = onEvent(applicationStartup, "spring.data.repository.proxy", repositoryInterface);
+		ProxyFactory result = new ProxyFactory();
 		result.setTarget(target);
 		result.setInterfaces(repositoryInterface, Repository.class, TransactionalProxy.class);
 
@@ -333,11 +334,11 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 
 		if (!postProcessors.isEmpty()) {
-			var repositoryPostprocessorsStep = onEvent(applicationStartup, "spring.data.repository.postprocessors",
+			StartupStep repositoryPostprocessorsStep = onEvent(applicationStartup, "spring.data.repository.postprocessors",
 					repositoryInterface);
 			postProcessors.forEach(processor -> {
 
-				var singlePostProcessor = onEvent(applicationStartup, "spring.data.repository.postprocessor",
+				StartupStep singlePostProcessor = onEvent(applicationStartup, "spring.data.repository.postprocessor",
 						repositoryInterface);
 				singlePostProcessor.tag("type", processor.getClass().getName());
 				processor.postProcess(result, information);
@@ -358,7 +359,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.addAdvice(
 				new ImplementationMethodExecutionInterceptor(information, compositionToUse, methodInvocationListeners));
 
-		var repository = (T) result.getProxy(classLoader);
+		T repository = (T) result.getProxy(classLoader);
 		repositoryProxyStep.end();
 		repositoryInit.end();
 
@@ -380,7 +381,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	protected ProjectionFactory getProjectionFactory(ClassLoader classLoader, BeanFactory beanFactory) {
 
-		var factory = new SpelAwareProxyProjectionFactory();
+		SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 		factory.setBeanClassLoader(classLoader);
 		factory.setBeanFactory(beanFactory);
 
@@ -422,8 +423,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		Assert.notNull(metadata, "RepositoryMetadata must not be null!");
 		Assert.notNull(fragments, "RepositoryFragments must not be null!");
 
-		var composition = getRepositoryComposition(metadata);
-		var repositoryAspects = getRepositoryFragments(metadata);
+		RepositoryComposition composition = getRepositoryComposition(metadata);
+		RepositoryFragments repositoryAspects = getRepositoryFragments(metadata);
 
 		return composition.append(fragments).append(repositoryAspects);
 	}
@@ -438,11 +439,11 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata,
 			RepositoryComposition composition) {
 
-		var cacheKey = new RepositoryInformationCacheKey(metadata, composition);
+		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, composition);
 
 		return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
 
-			var baseClass = repositoryBaseClass.orElse(getRepositoryBaseClass(metadata));
+			Class<?> baseClass = repositoryBaseClass.orElse(getRepositoryBaseClass(metadata));
 
 			return new DefaultRepositoryInformation(metadata, baseClass, composition);
 		});
@@ -530,7 +531,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	protected final <R> R getTargetRepositoryViaReflection(RepositoryInformation information,
 			Object... constructorArguments) {
 
-		var baseClass = information.getRepositoryBaseClass();
+		Class<?> baseClass = information.getRepositoryBaseClass();
 		return instantiateClass(baseClass, constructorArguments);
 	}
 
@@ -564,7 +565,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	@SuppressWarnings("unchecked")
 	protected final <R> R instantiateClass(Class<?> baseClass, Object... constructorArguments) {
 
-		var constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
+		Optional<Constructor<?>> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
 
 		return constructor.map(it -> (R) BeanUtils.instantiateClass(it, constructorArguments))
 				.orElseThrow(() -> new IllegalStateException(String.format(
@@ -577,7 +578,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		try {
 
-			var applicationStartup = beanFactory != null ? beanFactory.getBean(ApplicationStartup.class)
+			ApplicationStartup applicationStartup = beanFactory != null ? beanFactory.getBean(ApplicationStartup.class)
 					: ApplicationStartup.DEFAULT;
 
 			return applicationStartup != null ? applicationStartup : ApplicationStartup.DEFAULT;
@@ -588,7 +589,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 	private StartupStep onEvent(ApplicationStartup applicationStartup, String name, Class<?> repositoryInterface) {
 
-		var step = applicationStartup.start(name);
+		StartupStep step = applicationStartup.start(name);
 		return step.tag("repository", repositoryInterface.getName());
 	}
 
@@ -619,8 +620,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		@Override
 		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
-			var method = invocation.getMethod();
-			var arguments = invocation.getArguments();
+			Method method = invocation.getMethod();
+			Object[] arguments = invocation.getArguments();
 
 			try {
 				return composition.invoke(invocationMulticaster, method, arguments);
@@ -707,7 +708,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(repositoryInterfaceName);
+			int result = ObjectUtils.nullSafeHashCode(repositoryInterfaceName);
 			result = 31 * result + (int) (compositionHash ^ (compositionHash >>> 32));
 			return result;
 		}
@@ -764,7 +765,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		public static void validate(RepositoryComposition composition, Class<?> source,
 				RepositoryInformation repositoryInformation) {
 
-			var repositoryInterface = repositoryInformation.getRepositoryInterface();
+			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
 			if (repositoryInformation.hasCustomMethod()) {
 
 				if (composition.isEmpty()) {
@@ -778,9 +779,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 				composition.validateImplementation();
 			}
 
-			for (var entry : WELL_KNOWN_EXECUTORS.entrySet()) {
+			for (Map.Entry<Class<?>, String> entry : WELL_KNOWN_EXECUTORS.entrySet()) {
 
-				var executorInterface = entry.getKey();
+				Class<?> executorInterface = entry.getKey();
 				if (!executorInterface.isAssignableFrom(repositoryInterface)) {
 					continue;
 				}
@@ -798,7 +799,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		private static boolean containsFragmentImplementation(RepositoryComposition composition,
 				Class<?> executorInterface) {
 
-			for (var fragment : composition.getFragments()) {
+			for (RepositoryFragment<?> fragment : composition.getFragments()) {
 
 				if (fragment.getImplementation().filter(executorInterface::isInstance).isPresent()) {
 					return true;

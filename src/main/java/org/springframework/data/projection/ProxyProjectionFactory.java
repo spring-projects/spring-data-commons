@@ -103,7 +103,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 			return (T) source;
 		}
 
-		var factory = new ProxyFactory();
+		ProxyFactory factory = new ProxyFactory();
 		factory.setTarget(source);
 		factory.setOpaque(true);
 		factory.setInterfaces(projectionType, TargetAware.class);
@@ -162,7 +162,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	 */
 	private MethodInterceptor getMethodInterceptor(Object source, Class<?> projectionType) {
 
-		var propertyInvocationInterceptor = getFactoryFor(source, projectionType)
+		MethodInterceptor propertyInvocationInterceptor = getFactoryFor(source, projectionType)
 				.createMethodInterceptor(source, projectionType);
 
 		return new ProjectingMethodInterceptor(this,
@@ -178,7 +178,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	 */
 	private MethodInterceptorFactory getFactoryFor(Object source, Class<?> projectionType) {
 
-		for (var factory : factories) {
+		for (MethodInterceptorFactory factory : factories) {
 			if (factory.supports(source, projectionType)) {
 				return factory;
 			}

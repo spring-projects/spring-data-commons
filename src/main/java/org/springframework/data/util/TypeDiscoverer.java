@@ -17,13 +17,24 @@ package org.springframework.data.util;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -50,7 +61,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	static {
 
-		var classLoader = TypeDiscoverer.class.getClassLoader();
+		ClassLoader classLoader = TypeDiscoverer.class.getClassLoader();
 
 		Set<Class<?>> mapTypes = new HashSet<>();
 		mapTypes.add(Map.class);
@@ -147,7 +158,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		if (fieldType instanceof WildcardType wildcardType) {
 
-			var bounds = wildcardType.getLowerBounds();
+			Type[] bounds = wildcardType.getLowerBounds();
 
 			if (bounds.length > 0) {
 				return createInfo(bounds[0]);
@@ -183,7 +194,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.notNull(constructor, "Constructor must not be null!");
 
 		List<TypeInformation<?>> parameterTypes = new ArrayList<>(constructor.getParameterCount());
-		for (var parameter : constructor.getParameters()) {
+		for (Parameter parameter : constructor.getParameters()) {
 			parameterTypes.add(createInfo(parameter.getParameterizedType()));
 		}
 		return parameterTypes;
@@ -192,14 +203,14 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	public TypeInformation<?> getProperty(String fieldname) {
 
-		var separatorIndex = fieldname.indexOf('.');
+		int separatorIndex = fieldname.indexOf('.');
 
 		if (separatorIndex == -1) {
 			return fieldTypes.computeIfAbsent(fieldname, this::getPropertyInformation).orElse(null);
 		}
 
-		var head = fieldname.substring(0, separatorIndex);
-		var info = getProperty(head);
+		String head = fieldname.substring(0, separatorIndex);
+		TypeInformation<?> info = getProperty(head);
 
 		if (info == null) {
 			return null;
@@ -220,7 +231,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private Optional<TypeInformation<?>> getPropertyInformation(String fieldname) {
 
 		Class<?> rawType = getType();
-		var field = ReflectionUtils.findField(rawType, fieldname);
+		Field field = ReflectionUtils.findField(rawType, fieldname);
 
 		if (field != null) {
 			return Optional.of(createInfo(field.getGenericType()));
@@ -238,7 +249,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	private static Optional<PropertyDescriptor> findPropertyDescriptor(Class<?> type, String fieldname) {
 
-		var descriptor = BeanUtils.getPropertyDescriptor(type, fieldname);
+		PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(type, fieldname);
 
 		if (descriptor != null) {
 			return Optional.of(descriptor);
@@ -263,7 +274,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	private static Type getGenericType(PropertyDescriptor descriptor) {
 
-		var method = descriptor.getReadMethod();
+		Method method = descriptor.getReadMethod();
 
 		if (method != null) {
 			return method.getGenericReturnType();
@@ -275,7 +286,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return null;
 		}
 
-		var parameterTypes = method.getGenericParameterTypes();
+		Type[] parameterTypes = method.getGenericParameterTypes();
 		return parameterTypes.length == 0 ? null : parameterTypes[0];
 	}
 
@@ -310,9 +321,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	public boolean isMap() {
 
-		var type = getType();
+		Class<S> type = getType();
 
-		for (var mapType : MAP_TYPES) {
+		for (Class<?> mapType : MAP_TYPES) {
 			if (mapType.isAssignableFrom(type)) {
 				return true;
 			}
@@ -350,7 +361,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	protected TypeInformation<?> doGetComponentType() {
 
-		var rawType = getType();
+		Class<S> rawType = getType();
 
 		if (rawType.isArray()) {
 			return createInfo(rawType.getComponentType());
@@ -368,7 +379,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getTypeArgument(rawType, 0);
 		}
 
-		var arguments = getTypeArguments();
+		List<TypeInformation<?>> arguments = getTypeArguments();
 
 		return arguments.size() > 0 ? arguments.get(0) : null;
 	}
@@ -402,7 +413,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		List<Type> candidates = new ArrayList<>();
-		var genericSuperclass = rawType.getGenericSuperclass();
+		Type genericSuperclass = rawType.getGenericSuperclass();
 
 		if (genericSuperclass != null) {
 			candidates.add(genericSuperclass);
@@ -410,15 +421,15 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		candidates.addAll(Arrays.asList(rawType.getGenericInterfaces()));
 
-		for (var candidate : candidates) {
+		for (Type candidate : candidates) {
 
-			var candidateInfo = createInfo(candidate);
+			TypeInformation<?> candidateInfo = createInfo(candidate);
 
 			if (superType.equals(candidateInfo.getType())) {
 				return candidateInfo;
 			} else {
 
-				var nestedSuperType = candidateInfo.getSuperTypeInformation(superType);
+				TypeInformation<?> nestedSuperType = candidateInfo.getSuperTypeInformation(superType);
 
 				if (nestedSuperType != null) {
 					return nestedSuperType;
@@ -435,7 +446,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	public boolean isAssignableFrom(TypeInformation<?> target) {
 
-		var superTypeInformation = target.getSuperTypeInformation(getType());
+		TypeInformation<?> superTypeInformation = target.getSuperTypeInformation(getType());
 
 		return superTypeInformation == null ? false : superTypeInformation.equals(this);
 	}
@@ -448,7 +459,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.isTrue(getType().isAssignableFrom(type.getType()),
 				() -> String.format("%s must be assignable from %s", getType(), type.getType()));
 
-		var typeArguments = getTypeArguments();
+		List<TypeInformation<?>> typeArguments = getTypeArguments();
 
 		return (TypeInformation<? extends S>) (typeArguments.isEmpty() //
 				? type //
@@ -458,7 +469,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	private TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
 
-		var arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
+		Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(getType(), bound);
 
 		if (arguments != null) {
 			return createInfo(arguments[index]);
@@ -492,7 +503,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return false;
 		}
 
-		var that = (TypeDiscoverer<?>) obj;
+		TypeDiscoverer<?> that = (TypeDiscoverer<?>) obj;
 
 		if (!this.type.equals(that.type)) {
 			return false;
@@ -517,7 +528,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	private boolean isCollection() {
 
-		var type = getType();
+		Class<S> type = getType();
 
 		for (Class<?> collectionType : COLLECTION_TYPES) {
 			if (collectionType.isAssignableFrom(type)) {
@@ -538,7 +549,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Assert.notNull(candidates, "Candidates must not be null!");
 
-		var type = getType();
+		Class<S> type = getType();
 
 		for (Class<?> candidate : candidates) {
 			if (candidate.equals(type)) {
@@ -559,7 +570,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Assert.notNull(candidates, "Candidates must not be null!");
 
-		var type = getType();
+		Class<S> type = getType();
 
 		for (Class<?> candidate : candidates) {
 			if (candidate.isAssignableFrom(type)) {
@@ -604,9 +615,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		@Override
 		public Type[] getActualTypeArguments() {
 
-			var result = new Type[typeParameters.size()];
+			Type[] result = new Type[typeParameters.size()];
 
-			for (var i = 0; i < typeParameters.size(); i++) {
+			for (int i = 0; i < typeParameters.size(); i++) {
 				result[i] = typeParameters.get(i).getType();
 			}
 
@@ -633,7 +644,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(typeInformation);
+			int result = ObjectUtils.nullSafeHashCode(typeInformation);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(typeParameters);
 			return result;
 		}

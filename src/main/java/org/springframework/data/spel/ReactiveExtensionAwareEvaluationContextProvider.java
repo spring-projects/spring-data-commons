@@ -98,13 +98,13 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 	private Mono<List<EvaluationContextExtension>> getExtensions(
 			Predicate<EvaluationContextExtensionInformation> extensionFilter) {
 
-		var extensions = evaluationContextProvider.getExtensions();
+		Collection<? extends ExtensionIdAware> extensions = evaluationContextProvider.getExtensions();
 
 		return Flux.fromIterable(extensions).concatMap(it -> {
 
 			if (it instanceof EvaluationContextExtension extension) {
 
-				var information = evaluationContextProvider.getOrCreateInformation(extension);
+				EvaluationContextExtensionInformation information = evaluationContextProvider.getOrCreateInformation(extension);
 
 				if (extensionFilter.test(information)) {
 					return Mono.just(extension);
@@ -115,13 +115,13 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 
 			if (it instanceof ReactiveEvaluationContextExtension extension) {
 
-				var actualType = getExtensionType(it);
+				ResolvableType actualType = getExtensionType(it);
 
 				if (actualType.equals(ResolvableType.NONE) || actualType.isAssignableFrom(GENERIC_EXTENSION_TYPE)) {
 					return extension.getExtension();
 				}
 
-				var information = evaluationContextProvider
+				EvaluationContextExtensionInformation information = evaluationContextProvider
 						.getOrCreateInformation((Class) actualType.getRawClass());
 
 				if (extensionFilter.test(information)) {

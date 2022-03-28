@@ -15,6 +15,8 @@
  */
 package org.springframework.data.util;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
@@ -61,7 +63,7 @@ public abstract class BeanLookup {
 	@Nullable
 	private static <T> T lookupBean(Class<T> type, ListableBeanFactory beanFactory) {
 
-		var names = beanFactory.getBeansOfType(type, false, false);
+		Map<String, T> names = beanFactory.getBeansOfType(type, false, false);
 
 		switch (names.size()) {
 

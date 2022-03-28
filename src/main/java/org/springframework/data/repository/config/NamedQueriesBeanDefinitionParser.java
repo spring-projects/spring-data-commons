@@ -19,6 +19,7 @@ import java.util.Properties;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -54,20 +55,20 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 	@NonNull
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
 
-		var properties = BeanDefinitionBuilder.rootBeanDefinition(PropertiesFactoryBean.class);
+		BeanDefinitionBuilder properties = BeanDefinitionBuilder.rootBeanDefinition(PropertiesFactoryBean.class);
 		properties.addPropertyValue("locations", getDefaultedLocation(element));
 
 		if (isDefaultLocation(element)) {
 			properties.addPropertyValue("ignoreResourceNotFound", true);
 		}
 
-		var propertiesDefinition = properties.getBeanDefinition();
+		AbstractBeanDefinition propertiesDefinition = properties.getBeanDefinition();
 		propertiesDefinition.setSource(parserContext.extractSource(element));
 
-		var namedQueries = BeanDefinitionBuilder.rootBeanDefinition(PropertiesBasedNamedQueries.class);
+		BeanDefinitionBuilder namedQueries = BeanDefinitionBuilder.rootBeanDefinition(PropertiesBasedNamedQueries.class);
 		namedQueries.addConstructorArgValue(propertiesDefinition);
 
-		var namedQueriesDefinition = namedQueries.getBeanDefinition();
+		AbstractBeanDefinition namedQueriesDefinition = namedQueries.getBeanDefinition();
 		namedQueriesDefinition.setSource(parserContext.extractSource(element));
 
 		return namedQueriesDefinition;
@@ -91,7 +92,7 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 	 */
 	private String getDefaultedLocation(Element element) {
 
-		var locations = element.getAttribute(ATTRIBUTE);
+		String locations = element.getAttribute(ATTRIBUTE);
 		return StringUtils.hasText(locations) ? locations : defaultLocation;
 	}
 }

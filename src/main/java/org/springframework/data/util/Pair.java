@@ -106,7 +106,7 @@ public final class Pair<S, T> {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(first);
+		int result = ObjectUtils.nullSafeHashCode(first);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(second);
 		return result;
 	}

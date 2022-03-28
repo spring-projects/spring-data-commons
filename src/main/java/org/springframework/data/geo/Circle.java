@@ -111,7 +111,7 @@ public class Circle implements Shape {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(center);
+		int result = ObjectUtils.nullSafeHashCode(center);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(radius);
 		return result;
 	}

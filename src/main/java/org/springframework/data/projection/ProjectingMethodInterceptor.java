@@ -66,11 +66,11 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	public Object invoke(@SuppressWarnings("null") @NonNull MethodInvocation invocation) throws Throwable {
 
 		TypeInformation<?> type = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod());
-		var resultType = type;
-		var typeToReturn = type;
+		TypeInformation<?> resultType = type;
+		TypeInformation<?> typeToReturn = type;
 
-		var result = delegate.invoke(invocation);
-		var applyWrapper = false;
+		Object result = delegate.invoke(invocation);
+		boolean applyWrapper = false;
 
 		if (NullableWrapperConverters.supports(type.getType())
 				&& (result == null || !NullableWrapperConverters.supports(result.getClass()))) {
@@ -94,7 +94,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 			return null;
 		}
 
-		var targetType = type.getType();
+		Class<?> targetType = type.getType();
 
 		if (type.isCollectionLike() && !ClassUtils.isPrimitiveArray(targetType)) {
 			return projectCollectionElements(asCollection(result), type);
@@ -123,9 +123,9 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	 */
 	private Object projectCollectionElements(Collection<?> sources, TypeInformation<?> type) {
 
-		var rawType = type.getType();
-		var componentType = type.getComponentType();
-		var result = CollectionFactory.createCollection(rawType.isArray() ? List.class : rawType,
+		Class<?> rawType = type.getType();
+		TypeInformation<?> componentType = type.getComponentType();
+		Collection<Object> result = CollectionFactory.createCollection(rawType.isArray() ? List.class : rawType,
 				componentType != null ? componentType.getType() : null, sources.size());
 
 		for (Object source : sources) {
@@ -149,7 +149,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	 */
 	private Map<Object, Object> projectMapValues(Map<?, ?> sources, TypeInformation<?> type) {
 
-		var result = CollectionFactory.createMap(type.getType(), sources.size());
+		Map<Object, Object> result = CollectionFactory.createMap(type.getType(), sources.size());
 
 		for (Entry<?, ?> source : sources.entrySet()) {
 			result.put(source.getKey(), getProjection(source.getValue(), type.getRequiredMapValueType().getType()));

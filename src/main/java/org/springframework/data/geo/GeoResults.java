@@ -120,7 +120,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(results);
+		int result = ObjectUtils.nullSafeHashCode(results);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(averageDistance);
 		return result;
 	}
@@ -140,7 +140,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 			return new Distance(0, metric);
 		}
 
-		var averageDistance = results.stream()//
+		double averageDistance = results.stream()//
 				.mapToDouble(it -> it.getDistance().getValue())//
 				.average().orElse(0);
 

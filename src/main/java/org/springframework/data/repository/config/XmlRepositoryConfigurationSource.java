@@ -80,7 +80,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		this.element = element;
 		this.context = context;
 
-		var parser = new TypeFilterParser(context.getReaderContext());
+		TypeFilterParser parser = new TypeFilterParser(context.getReaderContext());
 		this.includeFilters = parser.parseTypeFilters(element, Type.INCLUDE);
 		this.excludeFilters = parser.parseTypeFilters(element, Type.EXCLUDE);
 	}
@@ -92,7 +92,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 
 	public Streamable<String> getBasePackages() {
 
-		var attribute = element.getAttribute(BASE_PACKAGE);
+		String attribute = element.getAttribute(BASE_PACKAGE);
 
 		return Streamable.of(StringUtils.delimitedListToStringArray(attribute, ",", " "));
 	}
@@ -144,7 +144,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 
 	private Optional<String> getNullDefaultedAttribute(Element element, String attributeName) {
 
-		var attribute = element.getAttribute(attributeName);
+		String attribute = element.getAttribute(attributeName);
 		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
 
@@ -156,8 +156,8 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public Optional<String> getAttribute(String name) {
 
-		var xmlAttributeName = ParsingUtils.reconcatenateCamelCase(name, "-");
-		var attribute = element.getAttribute(xmlAttributeName);
+		String xmlAttributeName = ParsingUtils.reconcatenateCamelCase(name, "-");
+		String attribute = element.getAttribute(xmlAttributeName);
 
 		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
 	}
@@ -179,7 +179,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public BootstrapMode getBootstrapMode() {
 
-		var attribute = element.getAttribute(BOOTSTRAP_MODE);
+		String attribute = element.getAttribute(BOOTSTRAP_MODE);
 
 		return StringUtils.hasText(attribute) //
 				? BootstrapMode.valueOf(attribute.toUpperCase(Locale.US)) //
@@ -190,7 +190,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@NonNull
 	public String getResourceDescription() {
 
-		var source = getSource();
+		Object source = getSource();
 
 		return source == null ? "" : source.toString();
 	}

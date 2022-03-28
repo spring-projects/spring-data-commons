@@ -18,6 +18,7 @@ package org.springframework.data.repository.support;
 import static org.springframework.data.util.Optionals.*;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.convert.ConversionService;
@@ -83,8 +84,8 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 	 */
 	private RepositoryInvoker prepareInvokers(Class<?> domainType) {
 
-		var information = repositories.getRepositoryInformationFor(domainType);
-		var repository = repositories.getRepositoryFor(domainType);
+		Optional<RepositoryInformation> information = repositories.getRepositoryInformationFor(domainType);
+		Optional<Object> repository = repositories.getRepositoryFor(domainType);
 
 		return mapIfAllPresent(information, repository, this::createInvoker)//
 				.orElseThrow(

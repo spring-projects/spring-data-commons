@@ -77,15 +77,15 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	@Override
 	protected final RepositoryFactorySupport createRepositoryFactory() {
 
-		var factory = doCreateRepositoryFactory();
+		RepositoryFactorySupport factory = doCreateRepositoryFactory();
 
-		var exceptionPostProcessor = this.exceptionPostProcessor;
+		RepositoryProxyPostProcessor exceptionPostProcessor = this.exceptionPostProcessor;
 
 		if (exceptionPostProcessor != null) {
 			factory.addRepositoryProxyPostProcessor(exceptionPostProcessor);
 		}
 
-		var txPostProcessor = this.txPostProcessor;
+		RepositoryProxyPostProcessor txPostProcessor = this.txPostProcessor;
 
 		if (txPostProcessor != null) {
 			factory.addRepositoryProxyPostProcessor(txPostProcessor);
@@ -107,7 +107,7 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 
 		super.setBeanFactory(beanFactory);
 
-		var listableBeanFactory = (ListableBeanFactory) beanFactory;
+		ListableBeanFactory listableBeanFactory = (ListableBeanFactory) beanFactory;
 		this.txPostProcessor = new TransactionalRepositoryProxyPostProcessor(listableBeanFactory, transactionManagerName,
 				enableDefaultTransactions);
 		this.exceptionPostProcessor = new PersistenceExceptionTranslationRepositoryProxyPostProcessor(listableBeanFactory);

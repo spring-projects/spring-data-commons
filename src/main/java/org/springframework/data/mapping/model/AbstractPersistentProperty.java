@@ -210,7 +210,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	@Override
 	public Class<?> getAssociationTargetType() {
 
-		var result = getAssociationTargetTypeInformation();
+		TypeInformation<?> result = getAssociationTargetTypeInformation();
 
 		return result != null ? result.getType() : null;
 	}
@@ -253,7 +253,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 		if (isMap()) {
 
-			var mapValueType = information.getMapValueType();
+			TypeInformation<?> mapValueType = information.getMapValueType();
 
 			if (mapValueType != null) {
 				return mapValueType.getType();
@@ -278,7 +278,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	protected TypeInformation<?> getActualTypeInformation() {
 
-		var targetType = associationTargetType.getNullable();
+		TypeInformation<?> targetType = associationTargetType.getNullable();
 		return targetType == null ? information.getRequiredActualType() : targetType;
 	}
 
@@ -308,10 +308,10 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	private Set<TypeInformation<?>> detectEntityTypes(SimpleTypeHolder simpleTypes) {
 
-		var typeToStartWith = getAssociationTargetTypeInformation();
+		TypeInformation<?> typeToStartWith = getAssociationTargetTypeInformation();
 		typeToStartWith = typeToStartWith == null ? information : typeToStartWith;
 
-		var result = detectEntityTypes(typeToStartWith);
+		Set<TypeInformation<?>> result = detectEntityTypes(typeToStartWith);
 
 		return result.stream()
 				.filter(it -> !simpleTypes.isSimpleType(it.getType()))
@@ -331,7 +331,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 			result.addAll(detectEntityTypes(source.getComponentType()));
 		}
 
-		var actualType = source.getActualType();
+		TypeInformation<?> actualType = source.getActualType();
 
 		if (source.equals(actualType)) {
 			result.add(source);

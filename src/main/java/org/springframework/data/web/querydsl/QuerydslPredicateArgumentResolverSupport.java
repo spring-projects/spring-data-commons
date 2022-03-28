@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web.querydsl;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
@@ -23,6 +24,7 @@ import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
@@ -72,13 +74,13 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 
 	public boolean supportsParameter(MethodParameter parameter) {
 
-		var type = ResolvableType.forMethodParameter(parameter);
+		ResolvableType type = ResolvableType.forMethodParameter(parameter);
 
 		if (PREDICATE.isAssignableFrom(type) || OPTIONAL_OF_PREDICATE.isAssignableFrom(type)) {
 			return true;
 		}
 
-		var annotations = MergedAnnotations.from(parameter.getParameter());
+		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
 
 		if (annotations.isPresent(QuerydslPredicate.class)) {
 			throw new IllegalArgumentException(String.format("Parameter at position %s must be of type Predicate but was %s.",
@@ -90,15 +92,15 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 
 	Predicate getPredicate(MethodParameter parameter, MultiValueMap<String, String> queryParameters) {
 
-		var annotations = MergedAnnotations.from(parameter.getParameter());
-		var predicateAnnotation = annotations.get(QuerydslPredicate.class);
+		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
+		MergedAnnotation<QuerydslPredicate> predicateAnnotation = annotations.get(QuerydslPredicate.class);
 
-		var domainType = extractTypeInfo(parameter, predicateAnnotation).getRequiredActualType();
+		TypeInformation<?> domainType = extractTypeInfo(parameter, predicateAnnotation).getRequiredActualType();
 
 		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindingsAnnotation = predicateAnnotation.getValue("bindings") //
 				.map(CastUtils::cast);
 
-		var bindings = bindingsAnnotation //
+		QuerydslBindings bindings = bindingsAnnotation //
 				.map(it -> bindingsFactory.createBindingsFor(domainType, it)) //
 				.orElseGet(() -> bindingsFactory.createBindingsFor(domainType));
 
@@ -129,7 +131,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 	protected static TypeInformation<?> extractTypeInfo(MethodParameter parameter,
 			MergedAnnotation<QuerydslPredicate> predicateAnnotation) {
 
-		var annotation = predicateAnnotation.synthesize(MergedAnnotation::isPresent);
+		Optional<QuerydslPredicate> annotation = predicateAnnotation.synthesize(MergedAnnotation::isPresent);
 
 		return annotation.filter(it -> !Object.class.equals(it.root()))//
 				.<TypeInformation<?>> map(it -> ClassTypeInformation.from(it.root()))//
@@ -138,7 +140,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 
 	private static TypeInformation<?> detectDomainType(MethodParameter parameter) {
 
-		var method = parameter.getMethod();
+		Method method = parameter.getMethod();
 
 		if (method == null) {
 			throw new IllegalArgumentException("Method parameter is not backed by a method!");
@@ -153,7 +155,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 			return source;
 		}
 
-		var actualType = source.getActualType();
+		TypeInformation<?> actualType = source.getActualType();
 
 		if (actualType == null) {
 			throw new IllegalArgumentException(String.format("Could not determine domain type from %s!", source));

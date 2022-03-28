@@ -89,7 +89,7 @@ public class Box implements Shape {
 	@Override
 	public int hashCode() {
 
-		var result = 31;
+		int result = 31;
 
 		result += 17 * first.hashCode();
 		result += 17 * second.hashCode();

@@ -86,8 +86,8 @@ public class ExampleMatcherAccessor {
 			return matcher.getDefaultStringMatcher();
 		}
 
-		var specifier = getPropertySpecifier(path);
-		var stringMatcher = specifier.getStringMatcher();
+		PropertySpecifier specifier = getPropertySpecifier(path);
+		ExampleMatcher.StringMatcher stringMatcher = specifier.getStringMatcher();
 
 		return stringMatcher != null ? stringMatcher : matcher.getDefaultStringMatcher();
 	}
@@ -137,8 +137,8 @@ public class ExampleMatcherAccessor {
 			return matcher.isIgnoreCaseEnabled();
 		}
 
-		var specifier = getPropertySpecifier(path);
-		var ignoreCase = specifier.getIgnoreCase();
+		PropertySpecifier specifier = getPropertySpecifier(path);
+		Boolean ignoreCase = specifier.getIgnoreCase();
 
 		return ignoreCase != null ? ignoreCase : matcher.isIgnoreCaseEnabled();
 	}

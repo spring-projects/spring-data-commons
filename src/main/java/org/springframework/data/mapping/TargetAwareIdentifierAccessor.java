@@ -35,7 +35,7 @@ public abstract class TargetAwareIdentifierAccessor implements IdentifierAccesso
 	@Override
 	public Object getRequiredIdentifier() {
 
-		var identifier = getIdentifier();
+		Object identifier = getIdentifier();
 
 		if (identifier != null) {
 			return identifier;

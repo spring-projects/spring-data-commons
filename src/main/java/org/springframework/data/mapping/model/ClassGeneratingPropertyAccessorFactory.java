@@ -78,11 +78,11 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	@Override
 	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {
 
-		var constructor = constructorMap.get(entity);
+		Constructor<?> constructor = constructorMap.get(entity);
 
 		if (constructor == null) {
 
-			var accessorClass = potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
+			Class<PersistentPropertyAccessor<?>> accessorClass = potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
 					entity);
 			constructor = accessorClass.getConstructors()[0];
 
@@ -91,7 +91,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			this.constructorMap = constructorMap;
 		}
 
-		var args = argumentCache.get();
+		Object[] args = argumentCache.get();
 		args[0] = bean;
 
 		try {
@@ -131,7 +131,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 	private static boolean isTypeInjectable(PersistentEntity<?, ?> entity) {
 
-		var type = entity.getType();
+		Class<?> type = entity.getType();
 		return type.getClassLoader() != null
 				&& (type.getPackage() == null || !type.getPackage().getName().startsWith("java"))
 				&& ClassUtils.isPresent(PersistentPropertyAccessor.class.getName(), type.getClassLoader())
@@ -141,7 +141,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	private boolean hasUniquePropertyHashCodes(PersistentEntity<?, ?> entity) {
 
 		Set<Integer> hashCodes = new HashSet<>();
-		var propertyCount = new AtomicInteger();
+		AtomicInteger propertyCount = new AtomicInteger();
 
 		entity.doWithProperties((SimplePropertyHandler) property -> {
 
@@ -167,8 +167,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	private synchronized Class<PersistentPropertyAccessor<?>> potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
 			PersistentEntity<?, ?> entity) {
 
-		var map = this.propertyAccessorClasses;
-		var propertyAccessorClass = map.get(entity.getTypeInformation());
+		Map<TypeInformation<?>, Class<PersistentPropertyAccessor<?>>> map = this.propertyAccessorClasses;
+		Class<PersistentPropertyAccessor<?>> propertyAccessorClass = map.get(entity.getTypeInformation());
 
 		if (propertyAccessorClass != null) {
 			return propertyAccessorClass;
@@ -309,9 +309,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 */
 		static Class<?> generateCustomAccessorClass(PersistentEntity<?, ?> entity) {
 
-			var className = generateClassName(entity);
-			var type = entity.getType();
-			var classLoader = type.getClassLoader();
+			String className = generateClassName(entity);
+			Class<?> type = entity.getType();
+			ClassLoader classLoader = type.getClassLoader();
 
 			if (ClassUtils.isPresent(className, classLoader)) {
 
@@ -322,7 +322,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				}
 			}
 
-			var bytecode = generateBytecode(className.replace('.', '/'), entity);
+			byte[] bytecode = generateBytecode(className.replace('.', '/'), entity);
 
 			try {
 
@@ -338,10 +338,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 */
 		static byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity) {
 
-			var cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 			cw.visit(Opcodes.V1_6, ACC_PUBLIC + ACC_SUPER, internalClassName, null, JAVA_LANG_OBJECT, IMPLEMENTED_INTERFACES);
 
-			var persistentProperties = getPersistentProperties(entity);
+			List<PersistentProperty<?>> persistentProperties = getPersistentProperties(entity);
 
 			visitFields(entity, persistentProperties, cw);
 			visitDefaultConstructor(entity, internalClassName, cw);
@@ -388,7 +388,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			cw.visitField(ACC_PRIVATE, BEAN_FIELD, getAccessibleTypeReferenceName(entity), null, null).visitEnd();
 
-			for (var property : persistentProperties) {
+			for (PersistentProperty<?> property : persistentProperties) {
 
 				if (property.isImmutable()) {
 					if (generateMethodHandle(entity, property.getWither())) {
@@ -438,7 +438,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv = cw.visitMethod(ACC_PUBLIC, INIT, String.format("(%s)V", getAccessibleTypeReferenceName(entity)), null, null);
 
 			mv.visitCode();
-			var l0 = new Label();
+			Label l0 = new Label();
 			mv.visitLabel(l0);
 			mv.visitVarInsn(ALOAD, 0);
 			mv.visitMethodInsn(INVOKESPECIAL, JAVA_LANG_OBJECT, INIT, "()V", false);
@@ -456,7 +456,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitFieldInsn(PUTFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 
 			mv.visitInsn(RETURN);
-			var l3 = new Label();
+			Label l3 = new Label();
 			mv.visitLabel(l3);
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l3, 0);
 			mv.visitLocalVariable(BEAN_FIELD, getAccessibleTypeReferenceName(entity), null, l0, l3, 1);
@@ -485,10 +485,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitStaticInitializer(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, ClassWriter cw) {
 
-			var mv = cw.visitMethod(ACC_STATIC, CLINIT, "()V", null, null);
+			MethodVisitor mv = cw.visitMethod(ACC_STATIC, CLINIT, "()V", null, null);
 			mv.visitCode();
-			var l0 = new Label();
-			var l1 = new Label();
+			Label l0 = new Label();
+			Label l1 = new Label();
 			mv.visitLabel(l0);
 
 			// lookup = MethodHandles.lookup()
@@ -496,9 +496,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					String.format("()%s", referenceName(JAVA_LANG_INVOKE_METHOD_HANDLES_LOOKUP)), false);
 			mv.visitVarInsn(ASTORE, 0);
 
-			var entityClasses = getPropertyDeclaratingClasses(persistentProperties);
+			List<Class<?>> entityClasses = getPropertyDeclaratingClasses(persistentProperties);
 
-			for (var entityClass : entityClasses) {
+			for (Class<?> entityClass : entityClasses) {
 
 				mv.visitLdcInsn(entityClass.getName());
 				mv.visitMethodInsn(INVOKESTATIC, JAVA_LANG_CLASS, "forName",
@@ -506,7 +506,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				mv.visitVarInsn(ASTORE, classVariableIndex5(entityClasses, entityClass));
 			}
 
-			for (var property : persistentProperties) {
+			for (PersistentProperty<?> property : persistentProperties) {
 
 				if (property.usePropertyAccess()) {
 
@@ -539,9 +539,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitLocalVariable("getter", referenceName(JAVA_LANG_REFLECT_METHOD), null, l0, l1, 3);
 			mv.visitLocalVariable("wither", referenceName(JAVA_LANG_REFLECT_METHOD), null, l0, l1, 4);
 
-			for (var entityClass : entityClasses) {
+			for (Class<?> entityClass : entityClasses) {
 
-				var index = classVariableIndex5(entityClasses, entityClass);
+				int index = classVariableIndex5(entityClasses, entityClass);
 				mv.visitLocalVariable(String.format("class_%d", index), referenceName(JAVA_LANG_CLASS), null, l0, l1, index);
 			}
 
@@ -577,7 +577,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				List<Class<?>> entityClasses, String internalClassName) {
 
 			// getter = <entity>.class.getDeclaredMethod()
-			var getter = property.getGetter();
+			Method getter = property.getGetter();
 
 			if (getter != null) {
 
@@ -629,7 +629,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				mv.visitInsn(DUP);
 				mv.visitInsn(ICONST_0);
 
-				var parameterType = method.getParameterTypes()[0];
+				Class<?> parameterType = method.getParameterTypes()[0];
 
 				if (parameterType.isPrimitive()) {
 					mv.visitFieldInsn(GETSTATIC, Type.getInternalName(autoboxType(method.getParameterTypes()[0])), "TYPE",
@@ -672,7 +672,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			// field = <entity>.class.getDeclaredField()
 
-			var field = property.getField();
+			Field field = property.getField();
 			if (field != null) {
 
 				mv.visitVarInsn(ALOAD, classVariableIndex5(entityClasses, field.getDeclaringClass()));
@@ -710,10 +710,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitBeanGetter(PersistentEntity<?, ?> entity, String internalClassName, ClassWriter cw) {
 
 			// public Object getBean()
-			var mv = cw.visitMethod(ACC_PUBLIC, "getBean", String.format("()%s", referenceName(JAVA_LANG_OBJECT)),
+			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getBean", String.format("()%s", referenceName(JAVA_LANG_OBJECT)),
 					null, null);
 			mv.visitCode();
-			var l0 = new Label();
+			Label l0 = new Label();
 
 			// return this.bean
 			mv.visitLabel(l0);
@@ -723,7 +723,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			mv.visitInsn(ARETURN);
 
-			var l1 = new Label();
+			Label l1 = new Label();
 			mv.visitLabel(l1);
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l1, 0);
 			mv.visitMaxs(1, 1);
@@ -754,13 +754,13 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitGetProperty(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, ClassWriter cw) {
 
-			var mv = cw.visitMethod(ACC_PUBLIC, "getProperty",
+			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getProperty",
 					"(Lorg/springframework/data/mapping/PersistentProperty;)Ljava/lang/Object;",
 					"(Lorg/springframework/data/mapping/PersistentProperty<*>;)Ljava/lang/Object;", null);
 			mv.visitCode();
 
-			var l0 = new Label();
-			var l1 = new Label();
+			Label l0 = new Label();
+			Label l1 = new Label();
 			mv.visitLabel(l0);
 
 			// Assert.notNull(property)
@@ -793,21 +793,21 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitGetPropertySwitch(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, MethodVisitor mv) {
 
-			var propertyStackMap = createPropertyStackMap(persistentProperties);
+			Map<String, PropertyStackAddress> propertyStackMap = createPropertyStackMap(persistentProperties);
 
-			var hashes = new int[propertyStackMap.size()];
-			var switchJumpLabels = new Label[propertyStackMap.size()];
+			int[] hashes = new int[propertyStackMap.size()];
+			Label[] switchJumpLabels = new Label[propertyStackMap.size()];
 			List<PropertyStackAddress> stackmap = new ArrayList<>(propertyStackMap.values());
 			Collections.sort(stackmap);
 
-			for (var i = 0; i < stackmap.size(); i++) {
+			for (int i = 0; i < stackmap.size(); i++) {
 
-				var propertyStackAddress = stackmap.get(i);
+				PropertyStackAddress propertyStackAddress = stackmap.get(i);
 				hashes[i] = propertyStackAddress.hash;
 				switchJumpLabels[i] = propertyStackAddress.label;
 			}
 
-			var dfltLabel = new Label();
+			Label dfltLabel = new Label();
 
 			mv.visitVarInsn(ALOAD, 1);
 			mv.visitMethodInsn(INVOKEINTERFACE, PERSISTENT_PROPERTY, "getName",
@@ -815,7 +815,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_STRING, "hashCode", "()I", false);
 			mv.visitLookupSwitchInsn(dfltLabel, hashes, switchJumpLabels);
 
-			for (var property : persistentProperties) {
+			for (PersistentProperty<?> property : persistentProperties) {
 
 				mv.visitLabel(propertyStackMap.get(property.getName()).label);
 				mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
@@ -839,7 +839,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitGetProperty0(PersistentEntity<?, ?> entity, PersistentProperty<?> property,
 				MethodVisitor mv, String internalClassName) {
 
-			var getter = property.getGetter();
+			Method getter = property.getGetter();
 			if (property.usePropertyAccess() && getter != null) {
 
 				if (generateMethodHandle(entity, getter)) {
@@ -853,9 +853,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					// bean.get…
 					mv.visitVarInsn(ALOAD, 2);
 
-					var invokeOpCode = INVOKEVIRTUAL;
-					var declaringClass = getter.getDeclaringClass();
-					var interfaceDefinition = declaringClass.isInterface();
+					int invokeOpCode = INVOKEVIRTUAL;
+					Class<?> declaringClass = getter.getDeclaringClass();
+					boolean interfaceDefinition = declaringClass.isInterface();
 
 					if (interfaceDefinition) {
 						invokeOpCode = INVOKEINTERFACE;
@@ -867,7 +867,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				}
 			} else {
 
-				var field = property.getRequiredField();
+				Field field = property.getRequiredField();
 
 				if (generateMethodHandle(entity, field)) {
 					// $fieldGetter.invoke(bean)
@@ -917,12 +917,12 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitSetProperty(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, ClassWriter cw) {
 
-			var mv = cw.visitMethod(ACC_PUBLIC, "setProperty",
+			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "setProperty",
 					"(Lorg/springframework/data/mapping/PersistentProperty;Ljava/lang/Object;)V",
 					"(Lorg/springframework/data/mapping/PersistentProperty<*>;Ljava/lang/Object;)V", null);
 			mv.visitCode();
 
-			var l0 = new Label();
+			Label l0 = new Label();
 			mv.visitLabel(l0);
 
 			visitAssertNotNull(mv);
@@ -935,7 +935,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			visitSetPropertySwitch(entity, persistentProperties, internalClassName, mv);
 
-			var l1 = new Label();
+			Label l1 = new Label();
 			mv.visitLabel(l1);
 
 			visitThrowUnsupportedOperationException(mv, "No accessor to set property %s!");
@@ -957,20 +957,20 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitSetPropertySwitch(PersistentEntity<?, ?> entity,
 				List<PersistentProperty<?>> persistentProperties, String internalClassName, MethodVisitor mv) {
 
-			var propertyStackMap = createPropertyStackMap(persistentProperties);
+			Map<String, PropertyStackAddress> propertyStackMap = createPropertyStackMap(persistentProperties);
 
-			var hashes = new int[propertyStackMap.size()];
-			var switchJumpLabels = new Label[propertyStackMap.size()];
+			int[] hashes = new int[propertyStackMap.size()];
+			Label[] switchJumpLabels = new Label[propertyStackMap.size()];
 			List<PropertyStackAddress> stackmap = new ArrayList<>(propertyStackMap.values());
 			Collections.sort(stackmap);
 
-			for (var i = 0; i < stackmap.size(); i++) {
-				var propertyStackAddress = stackmap.get(i);
+			for (int i = 0; i < stackmap.size(); i++) {
+				PropertyStackAddress propertyStackAddress = stackmap.get(i);
 				hashes[i] = propertyStackAddress.hash;
 				switchJumpLabels[i] = propertyStackAddress.label;
 			}
 
-			var dfltLabel = new Label();
+			Label dfltLabel = new Label();
 
 			mv.visitVarInsn(ALOAD, 1);
 			mv.visitMethodInsn(INVOKEINTERFACE, PERSISTENT_PROPERTY, "getName",
@@ -978,7 +978,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_STRING, "hashCode", "()I", false);
 			mv.visitLookupSwitchInsn(dfltLabel, hashes, switchJumpLabels);
 
-			for (var property : persistentProperties) {
+			for (PersistentProperty<?> property : persistentProperties) {
 				mv.visitLabel(propertyStackMap.get(property.getName()).label);
 				mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
@@ -1001,8 +1001,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitSetProperty0(PersistentEntity<?, ?> entity, PersistentProperty<?> property,
 				MethodVisitor mv, String internalClassName) {
 
-			var setter = property.getSetter();
-			var wither = property.getWither();
+			Method setter = property.getSetter();
+			Method wither = property.getWither();
 
 			if (property.isImmutable()) {
 
@@ -1080,7 +1080,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitKotlinCopy(PersistentEntity<?, ?> entity, PersistentProperty<?> property, MethodVisitor mv,
 				String internalClassName) {
 
-			var kotlinCopyMethod = KotlinCopyMethod.findCopyMethod(entity.getType())
+			KotlinCopyMethod kotlinCopyMethod = KotlinCopyMethod.findCopyMethod(entity.getType())
 					.orElseThrow(() -> new IllegalStateException(
 							String.format("No usable .copy(…) method found in entity %s", entity.getType().getName())));
 
@@ -1096,17 +1096,17 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				visitInvokeMethodSingleArg(mv, kotlinCopyMethod.getPublicCopyMethod());
 			} else {
 
-				var copy = kotlinCopyMethod.getSyntheticCopyMethod();
-				var parameterTypes = copy.getParameterTypes();
+				Method copy = kotlinCopyMethod.getSyntheticCopyMethod();
+				Class<?>[] parameterTypes = copy.getParameterTypes();
 
 				// PersonWithId.copy$default..(bean, object, MASK, null)
 				mv.visitVarInsn(ALOAD, 3);
 
-				var copyByProperty = kotlinCopyMethod.forProperty(property)
+				KotlinCopyMethod.KotlinCopyByProperty copyByProperty = kotlinCopyMethod.forProperty(property)
 						.orElseThrow(() -> new IllegalStateException(
 								String.format("No usable .copy(…) method found for property %s", property)));
 
-				for (var i = 1; i < kotlinCopyMethod.getParameterCount(); i++) {
+				for (int i = 1; i < kotlinCopyMethod.getParameterCount(); i++) {
 
 					if (copyByProperty.getParameterPosition() == i) {
 
@@ -1125,7 +1125,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 				mv.visitInsn(Opcodes.ACONST_NULL);
 
-				var invokeOpCode = getInvokeOp(copy, false);
+				int invokeOpCode = getInvokeOp(copy, false);
 
 				mv.visitMethodInsn(invokeOpCode, Type.getInternalName(copy.getDeclaringClass()), copy.getName(),
 						getArgumentSignature(copy), false);
@@ -1185,7 +1185,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitSetField(PersistentEntity<?, ?> entity, PersistentProperty<?> property, MethodVisitor mv,
 				String internalClassName) {
 
-			var field = property.getField();
+			Field field = property.getField();
 			if (field != null) {
 				if (generateSetterMethodHandle(entity, field)) {
 					// $fieldSetter.invoke(bean, object)
@@ -1200,7 +1200,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					mv.visitVarInsn(ALOAD, 3);
 					mv.visitVarInsn(ALOAD, 2);
 
-					var fieldType = field.getType();
+					Class<?> fieldType = field.getType();
 
 					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(autoboxType(fieldType)));
 					autoboxIfNeeded(autoboxType(fieldType), fieldType, mv);
@@ -1220,10 +1220,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 */
 		private static String getArgumentSignature(Method method) {
 
-			var result = new StringBuilder("(");
+			StringBuilder result = new StringBuilder("(");
 			List<String> argumentTypes = new ArrayList<>();
 
-			for (var parameterType : method.getParameterTypes()) {
+			for (Class<?> parameterType : method.getParameterTypes()) {
 
 				result.append("%s");
 				argumentTypes.add(signatureTypeName(parameterType));
@@ -1319,7 +1319,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			if (isAccessible(entity)) {
 
 				if (Modifier.isProtected(member.getModifiers()) || isDefault(member.getModifiers())) {
-					var declaringPackage = member.getDeclaringClass().getPackage();
+					Package declaringPackage = member.getDeclaringClass().getPackage();
 
 					if (declaringPackage != null && !declaringPackage.equals(entity.getType().getPackage())) {
 						return true;
@@ -1348,15 +1348,15 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 	private static void visitInvokeMethodSingleArg(MethodVisitor mv, Method method) {
 
-		var parameterTypes = method.getParameterTypes();
-		var parameterType = parameterTypes[0];
-		var declaringClass = method.getDeclaringClass();
-		var interfaceDefinition = declaringClass.isInterface();
+		Class<?>[] parameterTypes = method.getParameterTypes();
+		Class<?> parameterType = parameterTypes[0];
+		Class<?> declaringClass = method.getDeclaringClass();
+		boolean interfaceDefinition = declaringClass.isInterface();
 
 		mv.visitTypeInsn(CHECKCAST, Type.getInternalName(autoboxType(parameterType)));
 		autoboxIfNeeded(autoboxType(parameterType), parameterType, mv);
 
-		var invokeOpCode = getInvokeOp(method, interfaceDefinition);
+		int invokeOpCode = getInvokeOp(method, interfaceDefinition);
 
 		mv.visitMethodInsn(invokeOpCode, Type.getInternalName(method.getDeclaringClass()), method.getName(),
 				String.format("(%s)%s", signatureTypeName(parameterType), signatureTypeName(method.getReturnType())),
@@ -1365,7 +1365,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 	private static int getInvokeOp(Method method, boolean interfaceDefinition) {
 
-		var invokeOpCode = Modifier.isStatic(method.getModifiers()) ? INVOKESTATIC : INVOKEVIRTUAL;
+		int invokeOpCode = Modifier.isStatic(method.getModifiers()) ? INVOKESTATIC : INVOKEVIRTUAL;
 
 		if (interfaceDefinition) {
 			invokeOpCode = INVOKEINTERFACE;
@@ -1378,7 +1378,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		Map<String, PropertyStackAddress> stackmap = new HashMap<>();
 
-		for (var property : persistentProperties) {
+		for (PersistentProperty<?> property : persistentProperties) {
 			stackmap.put(property.getName(), new PropertyStackAddress(new Label(), property.getName().hashCode()));
 		}
 		return stackmap;
@@ -1435,7 +1435,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 */
 	private static boolean hasKotlinCopyMethod(PersistentProperty<?> property) {
 
-		var type = property.getOwner().getType();
+		Class<?> type = property.getOwner().getType();
 
 		if (isAccessible(type) && KotlinDetector.isKotlinType(type)) {
 			return KotlinCopyMethod.findCopyMethod(type).filter(it -> it.supportsProperty(property)).isPresent();

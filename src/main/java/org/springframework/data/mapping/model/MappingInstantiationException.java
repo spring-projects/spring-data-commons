@@ -15,9 +15,11 @@
  */
 package org.springframework.data.mapping.model;
 
+import kotlin.reflect.KFunction;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -87,7 +89,7 @@ public class MappingInstantiationException extends RuntimeException {
 			Optional<? extends InstanceCreatorMetadata<?>> constructor = Optional.ofNullable(it.getInstanceCreatorMetadata());
 			List<String> toStringArgs = new ArrayList<>(arguments.size());
 
-			for (var o : arguments) {
+			for (Object o : arguments) {
 				toStringArgs.add(ObjectUtils.nullSafeToString(o));
 			}
 
@@ -113,11 +115,11 @@ public class MappingInstantiationException extends RuntimeException {
 
 	private static String toString(PreferredConstructor<?, ?> preferredConstructor) {
 
-		var constructor = preferredConstructor.getConstructor();
+		Constructor<?> constructor = preferredConstructor.getConstructor();
 
 		if (KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
 
-			var kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
+			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
 
 			if (kotlinFunction != null) {
 				return kotlinFunction.toString();
@@ -129,11 +131,11 @@ public class MappingInstantiationException extends RuntimeException {
 
 	private static String toString(FactoryMethod<?, ?> factoryMethod) {
 
-		var constructor = factoryMethod.getFactoryMethod();
+		Method constructor = factoryMethod.getFactoryMethod();
 
 		if (KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
 
-			var kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
+			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
 
 			if (kotlinFunction != null) {
 				return kotlinFunction.toString();

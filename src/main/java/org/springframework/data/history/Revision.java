@@ -140,7 +140,7 @@ public final class Revision<N extends Number & Comparable<N>, T> implements Comp
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(metadata);
+		int result = ObjectUtils.nullSafeHashCode(metadata);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(entity);
 		return result;
 	}

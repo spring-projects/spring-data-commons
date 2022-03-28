@@ -132,8 +132,8 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 			return false;
 		}
 
-		var contentEqual = this.content.equals(that.content);
-		var pageableEqual = this.pageable.equals(that.pageable);
+		boolean contentEqual = this.content.equals(that.content);
+		boolean pageableEqual = this.pageable.equals(that.pageable);
 
 		return contentEqual && pageableEqual;
 	}
@@ -141,7 +141,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 	@Override
 	public int hashCode() {
 
-		var result = 17;
+		int result = 17;
 
 		result += 31 * pageable.hashCode();
 		result += 31 * content.hashCode();

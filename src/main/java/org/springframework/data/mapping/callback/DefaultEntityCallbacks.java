@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -64,22 +65,22 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 
 		Assert.notNull(entity, "Entity must not be null!");
 
-		var entityType = (Class<T>) (entity != null ? ClassUtils.getUserClass(entity.getClass())
+		Class<T> entityType = (Class<T>) (entity != null ? ClassUtils.getUserClass(entity.getClass())
 				: callbackDiscoverer.resolveDeclaredEntityType(callbackType).getRawClass());
 
-		var callbackMethod = callbackMethodCache.computeIfAbsent(callbackType, it -> {
+		Method callbackMethod = callbackMethodCache.computeIfAbsent(callbackType, it -> {
 
-			var method = EntityCallbackDiscoverer.lookupCallbackMethod(it, entityType, args);
+			Method method = EntityCallbackDiscoverer.lookupCallbackMethod(it, entityType, args);
 			ReflectionUtils.makeAccessible(method);
 			return method;
 		});
 
-		var value = entity;
+		T value = entity;
 
-		for (var callback : callbackDiscoverer.getEntityCallbacks(entityType,
+		for (EntityCallback<T> callback : callbackDiscoverer.getEntityCallbacks(entityType,
 				ResolvableType.forClass(callbackType))) {
 
-			var callbackFunction = EntityCallbackDiscoverer
+			BiFunction<EntityCallback<T>, T, Object> callbackFunction = EntityCallbackDiscoverer
 					.computeCallbackInvokerFunction(callback, callbackMethod, args);
 			value = callbackInvoker.invokeCallback(callback, value, callbackFunction);
 		}
@@ -100,7 +101,7 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 
 			try {
 
-				var value = callbackInvokerFunction.apply(callback, entity);
+				Object value = callbackInvokerFunction.apply(callback, entity);
 
 				if (value != null) {
 					return (T) value;
@@ -111,12 +112,12 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 
 			} catch (IllegalArgumentException | ClassCastException ex) {
 
-				var msg = ex.getMessage();
+				String msg = ex.getMessage();
 				if (msg == null || EntityCallbackInvoker.matchesClassCastMessage(msg, entity.getClass())) {
 
 					// Possibly a lambda-defined listener which we could not resolve the generic event type for
 					// -> let's suppress the exception and just log a debug message.
-					var logger = LogFactory.getLog(getClass());
+					Log logger = LogFactory.getLog(getClass());
 					if (logger.isDebugEnabled()) {
 						logger.debug("Non-matching callback type for entity callback: " + callback, ex);
 					}

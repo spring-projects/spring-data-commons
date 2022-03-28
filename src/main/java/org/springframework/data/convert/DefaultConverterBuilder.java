@@ -142,7 +142,7 @@ record DefaultConverterBuilder<S, T> (ConvertiblePair convertiblePair,
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(convertiblePair);
+			int result = ObjectUtils.nullSafeHashCode(convertiblePair);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(function);
 			return result;
 		}

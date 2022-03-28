@@ -105,17 +105,17 @@ public abstract class AbstractQueryCreator<T, S> {
 	private S createCriteria(PartTree tree) {
 
 		S base = null;
-		var iterator = parameters.map(ParameterAccessor::iterator).orElse(Collections.emptyIterator());
+		Iterator<Object> iterator = parameters.map(ParameterAccessor::iterator).orElse(Collections.emptyIterator());
 
-		for (var node : tree) {
+		for (PartTree.OrPart node : tree) {
 
-			var parts = node.iterator();
+			Iterator<Part> parts = node.iterator();
 
 			if (!parts.hasNext()) {
 				throw new IllegalStateException(String.format("No part found in PartTree %s!", tree));
 			}
 
-			var criteria = create(parts.next(), iterator);
+			S criteria = create(parts.next(), iterator);
 
 			while (parts.hasNext()) {
 				criteria = and(parts.next(), criteria, iterator);

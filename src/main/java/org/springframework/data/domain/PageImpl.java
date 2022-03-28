@@ -89,8 +89,8 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	@Override
 	public String toString() {
 
-		var contentType = "UNKNOWN";
-		var content = getContent();
+		String contentType = "UNKNOWN";
+		List<T> content = getContent();
 
 		if (!content.isEmpty() && content.get(0) != null) {
 			contentType = content.get(0).getClass().getName();
@@ -116,7 +116,7 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	@Override
 	public int hashCode() {
 
-		var result = 17;
+		int result = 17;
 
 		result += 31 * (int) (total ^ total >>> 32);
 		result += 31 * super.hashCode();

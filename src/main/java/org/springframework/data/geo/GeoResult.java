@@ -71,7 +71,7 @@ public final class GeoResult<T> implements Serializable {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(content);
+		int result = ObjectUtils.nullSafeHashCode(content);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(distance);
 		return result;
 	}

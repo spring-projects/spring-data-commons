@@ -48,7 +48,7 @@ public class PropertiesBasedNamedQueries implements NamedQueries {
 
 		Assert.hasText(queryName, "Query name must not be null or empty!");
 
-		var query = properties.getProperty(queryName);
+		String query = properties.getProperty(queryName);
 
 		if (query == null) {
 			throw new IllegalArgumentException(String.format(NO_QUERY_FOUND, queryName));

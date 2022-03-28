@@ -193,9 +193,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		Assert.notNull(sort, "Sort must not be null!");
 
-		var these = new ArrayList<Order>(this.toList());
+		ArrayList<Order> these = new ArrayList<Order>(this.toList());
 
-		for (var order : sort) {
+		for (Order order : sort) {
 			these.add(order);
 		}
 
@@ -211,7 +211,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	@Nullable
 	public Order getOrderFor(String property) {
 
-		for (var order : this) {
+		for (Order order : this) {
 			if (order.getProperty().equals(property)) {
 				return order;
 			}
@@ -241,7 +241,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	@Override
 	public int hashCode() {
 
-		var result = 17;
+		int result = 17;
 		result = 31 * result + orders.hashCode();
 		return result;
 	}
@@ -585,7 +585,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		@Override
 		public int hashCode() {
 
-			var result = 17;
+			int result = 17;
 
 			result = 31 * result + direction.hashCode();
 			result = 31 * result + property.hashCode();
@@ -613,7 +613,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		@Override
 		public String toString() {
 
-			var result = String.format("%s: %s", property, direction);
+			String result = String.format("%s: %s", property, direction);
 
 			if (!NullHandling.NATIVE.equals(nullHandling)) {
 				result += ", " + nullHandling;

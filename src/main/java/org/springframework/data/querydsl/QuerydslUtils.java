@@ -19,6 +19,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.PathMetadata;
 import com.querydsl.core.types.PathType;
 
 /**
@@ -57,8 +58,8 @@ public abstract class QuerydslUtils {
 			return tail;
 		}
 
-		var metadata = path.getMetadata();
-		var parent = metadata.getParent();
+		PathMetadata metadata = path.getMetadata();
+		Path<?> parent = metadata.getParent();
 
 		if (parent == null) {
 			return tail;
@@ -68,7 +69,7 @@ public abstract class QuerydslUtils {
 			return toDotPath(parent, tail);
 		}
 
-		var element = metadata.getElement();
+		Object element = metadata.getElement();
 
 		if (element == null || !StringUtils.hasText(element.toString())) {
 			return toDotPath(parent, tail);

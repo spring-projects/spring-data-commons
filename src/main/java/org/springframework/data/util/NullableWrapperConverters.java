@@ -107,7 +107,7 @@ public abstract class NullableWrapperConverters {
 
 		return supportsCache.computeIfAbsent(type, key -> {
 
-			for (var candidate : WRAPPER_TYPES) {
+			for (WrapperType candidate : WRAPPER_TYPES) {
 				if (candidate.getType().isAssignableFrom(key)) {
 					return true;
 				}
@@ -127,7 +127,7 @@ public abstract class NullableWrapperConverters {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		for (var candidate : UNWRAPPER_TYPES) {
+		for (WrapperType candidate : UNWRAPPER_TYPES) {
 			if (candidate.getType().isAssignableFrom(type)) {
 				return true;
 			}
@@ -138,7 +138,7 @@ public abstract class NullableWrapperConverters {
 
 	public static boolean isSingleValue(Class<?> type) {
 
-		for (var candidate : WRAPPER_TYPES) {
+		for (WrapperType candidate : WRAPPER_TYPES) {
 			if (candidate.getType().isAssignableFrom(type)) {
 				return candidate.isSingleValue();
 			}
@@ -184,9 +184,9 @@ public abstract class NullableWrapperConverters {
 			return source;
 		}
 
-		for (var converter : UNWRAPPERS) {
+		for (Converter<Object, Object> converter : UNWRAPPERS) {
 
-			var result = converter.convert(source);
+			Object result = converter.convert(source);
 
 			if (result != source) {
 				return result;
@@ -206,9 +206,9 @@ public abstract class NullableWrapperConverters {
 
 		Assert.notNull(type, "type must not be null");
 
-		var rawType = type.getType();
+		Class<?> rawType = type.getType();
 
-		var needToUnwrap = supports(rawType) //
+		boolean needToUnwrap = supports(rawType) //
 				|| Stream.class.isAssignableFrom(rawType);
 
 		return needToUnwrap ? unwrapActualType(type.getRequiredComponentType()) : type;
@@ -259,8 +259,8 @@ public abstract class NullableWrapperConverters {
 				return null;
 			}
 
-			var wrapper = (NullableWrapper) source;
-			var value = wrapper.getValue();
+			NullableWrapper wrapper = (NullableWrapper) source;
+			Object value = wrapper.getValue();
 
 			return value == null ? nullValue : wrap(value);
 		}
@@ -484,7 +484,7 @@ public abstract class NullableWrapperConverters {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(type);
+			int result = ObjectUtils.nullSafeHashCode(type);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(cardinality);
 			return result;
 		}

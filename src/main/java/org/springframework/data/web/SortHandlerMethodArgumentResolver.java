@@ -49,7 +49,7 @@ public class SortHandlerMethodArgumentResolver extends SortHandlerMethodArgument
 	public Sort resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
-		var directionParameter = webRequest.getParameterValues(getSortParameter(parameter));
+		String[] directionParameter = webRequest.getParameterValues(getSortParameter(parameter));
 
 		// No parameter
 		if (directionParameter == null) {

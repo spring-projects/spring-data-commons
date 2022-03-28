@@ -16,6 +16,7 @@
 package org.springframework.data.projection;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -87,7 +88,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 
 		Assert.notNull(type, "Type must not be null!");
 
-		var callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
+		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
 		ReflectionUtils.doWithMethods(type, callback);
 
 		return callback.hasFoundAnnotation();
@@ -106,7 +107,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 				return false;
 			}
 
-			var readMethod = descriptor.getReadMethod();
+			Method readMethod = descriptor.getReadMethod();
 
 			if (readMethod == null) {
 				return false;

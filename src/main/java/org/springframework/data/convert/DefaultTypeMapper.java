@@ -96,8 +96,8 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 		this.typeCache = new ConcurrentHashMap<>();
 		this.getAlias = key -> {
 
-			for (var mapper : mappers) {
-				var typeInformation = mapper.resolveTypeFrom(key);
+			for (TypeInformationMapper mapper : mappers) {
+				TypeInformation<?> typeInformation = mapper.resolveTypeFrom(key);
 
 				if (typeInformation != null) {
 					return Optional.of(typeInformation);
@@ -126,7 +126,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	@Nullable
 	private TypeInformation<?> getFromCacheOrCreate(Alias alias) {
 
-		var typeInformation = typeCache.get(alias);
+		Optional<TypeInformation<?>> typeInformation = typeCache.get(alias);
 
 		if (typeInformation == null) {
 			typeInformation = typeCache.computeIfAbsent(alias, getAlias);
@@ -141,22 +141,22 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 		Assert.notNull(source, "Source must not be null!");
 		Assert.notNull(basicType, "Basic type must not be null!");
 
-		var documentsTargetType = getDefaultedTypeToBeUsed(source);
+		Class<?> documentsTargetType = getDefaultedTypeToBeUsed(source);
 
 		if (documentsTargetType == null) {
 			return basicType;
 		}
 
-		var rawType = basicType.getType();
+		Class<T> rawType = basicType.getType();
 
-		var isMoreConcreteCustomType = rawType == null
+		boolean isMoreConcreteCustomType = rawType == null
 				|| rawType.isAssignableFrom(documentsTargetType) && !rawType.equals(documentsTargetType);
 
 		if (!isMoreConcreteCustomType) {
 			return basicType;
 		}
 
-		var targetType = ClassTypeInformation.from(documentsTargetType);
+		ClassTypeInformation<?> targetType = ClassTypeInformation.from(documentsTargetType);
 
 		return (TypeInformation<? extends T>) basicType.specialize(targetType);
 	}
@@ -171,7 +171,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	@Nullable
 	private Class<?> getDefaultedTypeToBeUsed(S source) {
 
-		var documentsTargetTypeInformation = readType(source);
+		TypeInformation<?> documentsTargetTypeInformation = readType(source);
 		documentsTargetTypeInformation = documentsTargetTypeInformation == null ? getFallbackTypeFor(source)
 				: documentsTargetTypeInformation;
 		return documentsTargetTypeInformation == null ? null : documentsTargetTypeInformation.getType();
@@ -198,7 +198,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 
 		Assert.notNull(info, "TypeInformation must not be null!");
 
-		var alias = getAliasFor(info);
+		Alias alias = getAliasFor(info);
 		if (alias.isPresent()) {
 			accessor.writeTypeTo(sink, alias.getValue());
 		}
@@ -226,7 +226,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 
 		for (TypeInformationMapper mapper : mappers) {
 
-			var alias = mapper.createAliasFor(info);
+			Alias alias = mapper.createAliasFor(info);
 			if (alias.isPresent()) {
 				return alias;
 			}

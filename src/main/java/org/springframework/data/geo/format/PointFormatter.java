@@ -41,7 +41,7 @@ public enum PointFormatter implements Converter<String, Point>, Formatter<Point>
 	@Override
 	public Point convert(String source) {
 
-		var parts = source.split(",");
+		String[] parts = source.split(",");
 
 		if (parts.length != 2) {
 			throw new IllegalArgumentException(String.format(INVALID_FORMAT, source));
@@ -49,8 +49,8 @@ public enum PointFormatter implements Converter<String, Point>, Formatter<Point>
 
 		try {
 
-			var latitude = Double.parseDouble(parts[0]);
-			var longitude = Double.parseDouble(parts[1]);
+			double latitude = Double.parseDouble(parts[0]);
+			double longitude = Double.parseDouble(parts[1]);
 
 			return new Point(longitude, latitude);
 

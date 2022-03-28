@@ -53,7 +53,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		if (requiresUnwrapping(values)) {
 			this.values = new Object[values.length];
 
-			for (var i = 0; i < values.length; i++) {
+			for (int i = 0; i < values.length; i++) {
 				this.values[i] = QueryExecutionConverters.unwrap(values[i]);
 			}
 		} else {
@@ -63,7 +63,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 	private static boolean requiresUnwrapping(Object[] values) {
 
-		for (var value : values) {
+		for (Object value : values) {
 			if (value != null && (QueryExecutionConverters.supports(value.getClass())
 					|| ReactiveWrapperConverters.supports(value.getClass()))) {
 				return true;
@@ -98,7 +98,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 			return Pageable.unpaged();
 		}
 
-		var pageable = (Pageable) values[parameters.getPageableIndex()];
+		Pageable pageable = (Pageable) values[parameters.getPageableIndex()];
 
 		return pageable == null ? Pageable.unpaged() : pageable;
 	}
@@ -108,7 +108,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 
 		if (parameters.hasSortParameter()) {
 
-			var sort = (Sort) values[parameters.getSortIndex()];
+			Sort sort = (Sort) values[parameters.getSortIndex()];
 			return sort == null ? Sort.unsorted() : sort;
 		}
 

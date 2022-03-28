@@ -138,7 +138,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 					ExpressionDependency.forPropertyOrField(((PropertyOrFieldReference) node).getName()).nest(compoundPosition));
 		}
 
-		for (var i = 0; i < node.getChildCount(); i++) {
+		for (int i = 0; i < node.getChildCount(); i++) {
 			collectDependencies(node.getChild(i), node instanceof CompoundExpression ? i : 0, dependencies);
 		}
 	}
@@ -270,7 +270,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(type);
+			int result = ObjectUtils.nullSafeHashCode(type);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(symbol);
 			result = 31 * result + nestLevel;
 			return result;

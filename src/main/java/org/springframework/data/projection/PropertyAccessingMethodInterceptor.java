@@ -53,13 +53,13 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 	@Override
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
-		var method = invocation.getMethod();
+		Method method = invocation.getMethod();
 
 		if (ReflectionUtils.isObjectMethod(method)) {
 			return invocation.proceed();
 		}
 
-		var descriptor = BeanUtils.findPropertyForMethod(method);
+		PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method);
 
 		if (descriptor == null) {
 			throw new IllegalStateException("Invoked method is not a property accessor!");

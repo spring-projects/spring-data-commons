@@ -122,7 +122,7 @@ public class SimpleTypeHolder {
 
 	private void registerCachePositives(Map<Class<?>, Boolean> source) {
 
-		for (var entry : source.entrySet()) {
+		for (Map.Entry<Class<?>, Boolean> entry : source.entrySet()) {
 
 			if (!entry.getValue()) {
 				continue;
@@ -142,8 +142,8 @@ public class SimpleTypeHolder {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		var localSimpleTypes = this.simpleTypes;
-		var isSimpleType = localSimpleTypes.get(type);
+		Map<Class<?>, Boolean> localSimpleTypes = this.simpleTypes;
+		Boolean isSimpleType = localSimpleTypes.get(type);
 
 		if (Object.class.equals(type) || Enum.class.isAssignableFrom(type)) {
 			return true;
@@ -153,13 +153,13 @@ public class SimpleTypeHolder {
 			return isSimpleType;
 		}
 
-		var typeName = type.getName();
+		String typeName = type.getName();
 
 		if (typeName.startsWith("java.lang") || type.getName().startsWith("java.time") || typeName.equals("kotlin.Unit")) {
 			return true;
 		}
 
-		for (var simpleType : localSimpleTypes.keySet()) {
+		for (Class<?> simpleType : localSimpleTypes.keySet()) {
 
 			if (simpleType.isAssignableFrom(type)) {
 

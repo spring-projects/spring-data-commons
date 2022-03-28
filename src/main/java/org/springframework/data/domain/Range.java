@@ -231,7 +231,7 @@ public final class Range<T extends Comparable<T>> {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(lowerBound);
+		int result = ObjectUtils.nullSafeHashCode(lowerBound);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(upperBound);
 		return result;
 	}
@@ -426,7 +426,7 @@ public final class Range<T extends Comparable<T>> {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(value);
+			int result = ObjectUtils.nullSafeHashCode(value);
 			result = 31 * result + (inclusive ? 1 : 0);
 			return result;
 		}

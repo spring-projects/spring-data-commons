@@ -61,7 +61,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	@Override
 	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 
-		var method = EventPublishingMethod.of(repositoryInformation.getDomainType());
+		EventPublishingMethod method = EventPublishingMethod.of(repositoryInformation.getDomainType());
 
 		if (method == null) {
 			return;
@@ -97,13 +97,13 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		@Nullable
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
-			var result = invocation.proceed();
+			Object result = invocation.proceed();
 
 			if (!isEventPublishingMethod(invocation.getMethod())) {
 				return result;
 			}
 
-			var arguments = invocation.getArguments();
+			Object[] arguments = invocation.getArguments();
 
 			eventMethod.publishEventsFrom(arguments[0], publisher);
 
@@ -160,13 +160,13 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 			Assert.notNull(type, "Type must not be null!");
 
-			var eventPublishingMethod = cache.get(type);
+			EventPublishingMethod eventPublishingMethod = cache.get(type);
 
 			if (eventPublishingMethod != null) {
 				return eventPublishingMethod.orNull();
 			}
 
-			var result = from(type, getDetector(type, DomainEvents.class),
+			EventPublishingMethod result = from(type, getDetector(type, DomainEvents.class),
 					() -> getDetector(type, AfterDomainEventPublication.class));
 
 			cache.put(type, result);
@@ -186,13 +186,13 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return;
 			}
 
-			for (var aggregateRoot : asCollection(object)) {
+			for (Object aggregateRoot : asCollection(object)) {
 
 				if (!type.isInstance(aggregateRoot)) {
 					continue;
 				}
 
-				for (var event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
+				for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
 					publisher.publishEvent(event);
 				}
 
@@ -215,7 +215,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		private static <T extends Annotation> AnnotationDetectionMethodCallback<T> getDetector(Class<?> type,
 				Class<T> annotation) {
 
-			var callback = new AnnotationDetectionMethodCallback<T>(annotation);
+			AnnotationDetectionMethodCallback<T> callback = new AnnotationDetectionMethodCallback<T>(annotation);
 			ReflectionUtils.doWithMethods(type, callback);
 
 			return callback;
@@ -236,7 +236,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return EventPublishingMethod.NONE;
 			}
 
-			var eventMethod = publishing.getRequiredMethod();
+			Method eventMethod = publishing.getRequiredMethod();
 			ReflectionUtils.makeAccessible(eventMethod);
 
 			return new EventPublishingMethod(type, eventMethod, getClearingMethod(clearing.get()));
@@ -255,7 +255,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return null;
 			}
 
-			var method = clearing.getRequiredMethod();
+			Method method = clearing.getRequiredMethod();
 			ReflectionUtils.makeAccessible(method);
 
 			return method;

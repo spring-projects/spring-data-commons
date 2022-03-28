@@ -83,11 +83,11 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	@Override
 	protected void doParse(Element element, BeanDefinitionBuilder builder) {
 
-		final var persistentEntities = rootBeanDefinition(PersistentEntitiesFactoryBean.class);
+		final BeanDefinitionBuilder persistentEntities = rootBeanDefinition(PersistentEntitiesFactoryBean.class);
 		persistentEntities.addConstructorArgReference(mappingContextBeanName);
 		builder.addConstructorArgValue(persistentEntities.getBeanDefinition());
 
-		var auditorAwareRef = element.getAttribute(AUDITOR_AWARE_REF);
+		String auditorAwareRef = element.getAttribute(AUDITOR_AWARE_REF);
 
 		if (StringUtils.hasText(auditorAwareRef)) {
 			builder.addPropertyValue("auditorAware", createLazyInitTargetSourceBeanDefinition(auditorAwareRef));
@@ -107,10 +107,10 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 
 	private BeanDefinition createLazyInitTargetSourceBeanDefinition(String auditorAwareRef) {
 
-		var targetSourceBuilder = rootBeanDefinition(LazyInitTargetSource.class);
+		BeanDefinitionBuilder targetSourceBuilder = rootBeanDefinition(LazyInitTargetSource.class);
 		targetSourceBuilder.addPropertyValue("targetBeanName", auditorAwareRef);
 
-		var builder = rootBeanDefinition(ProxyFactoryBean.class);
+		BeanDefinitionBuilder builder = rootBeanDefinition(ProxyFactoryBean.class);
 		builder.addPropertyValue("targetSource", targetSourceBuilder.getBeanDefinition());
 
 		return builder.getBeanDefinition();

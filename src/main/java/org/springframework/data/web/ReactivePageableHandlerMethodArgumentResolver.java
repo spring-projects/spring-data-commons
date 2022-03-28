@@ -18,8 +18,10 @@ package org.springframework.data.web;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.BindingContext;
 import org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver;
 import org.springframework.web.server.ServerWebExchange;
@@ -68,13 +70,13 @@ public class ReactivePageableHandlerMethodArgumentResolver extends PageableHandl
 	public Pageable resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
 			ServerWebExchange exchange) {
 
-		var queryParams = exchange.getRequest().getQueryParams();
-		var page = queryParams.getFirst(getParameterNameToUse(getPageParameterName(), parameter));
-		var pageSize = queryParams.getFirst(getParameterNameToUse(getSizeParameterName(), parameter));
+		MultiValueMap<String, String> queryParams = exchange.getRequest().getQueryParams();
+		String page = queryParams.getFirst(getParameterNameToUse(getPageParameterName(), parameter));
+		String pageSize = queryParams.getFirst(getParameterNameToUse(getSizeParameterName(), parameter));
 
-		var sort = sortResolver.resolveArgumentValue(parameter, bindingContext, exchange);
+		Sort sort = sortResolver.resolveArgumentValue(parameter, bindingContext, exchange);
 
-		var pageable = getPageable(parameter, page, pageSize);
+		Pageable pageable = getPageable(parameter, page, pageSize);
 
 		return sort.isSorted() ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort) : pageable;
 	}

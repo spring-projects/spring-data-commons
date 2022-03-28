@@ -82,7 +82,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 	 */
 	private static Distance doConvert(String source) {
 
-		for (var metric : SUPPORTED_METRICS.entrySet()) {
+		for (Entry<String, Metric> metric : SUPPORTED_METRICS.entrySet()) {
 			if (source.endsWith(metric.getKey())) {
 				return fromString(source, metric);
 			}
@@ -105,7 +105,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 	 */
 	private static Distance fromString(String source, Entry<String, Metric> metric) {
 
-		var amountString = source.substring(0, source.indexOf(metric.getKey()));
+		String amountString = source.substring(0, source.indexOf(metric.getKey()));
 
 		try {
 			return new Distance(Double.parseDouble(amountString), metric.getValue());

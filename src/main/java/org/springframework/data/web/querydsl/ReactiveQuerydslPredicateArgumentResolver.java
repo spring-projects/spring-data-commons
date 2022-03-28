@@ -15,6 +15,9 @@
  */
 package org.springframework.data.web.querydsl;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
@@ -25,6 +28,8 @@ import org.springframework.web.reactive.BindingContext;
 import org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver;
 import org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver;
 import org.springframework.web.server.ServerWebExchange;
+
+import com.querydsl.core.types.Predicate;
 
 /**
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.querydsl.core.types.Predicate} into Spring
@@ -47,8 +52,8 @@ public class ReactiveQuerydslPredicateArgumentResolver extends QuerydslPredicate
 	public Object resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
 			ServerWebExchange exchange) {
 
-		var queryParameters = getQueryParameters(exchange);
-		var result = getPredicate(parameter, queryParameters);
+		MultiValueMap<String, String> queryParameters = getQueryParameters(exchange);
+		Predicate result = getPredicate(parameter, queryParameters);
 
 		return potentiallyConvertMethodParameterValue(parameter, result);
 	}
@@ -56,10 +61,10 @@ public class ReactiveQuerydslPredicateArgumentResolver extends QuerydslPredicate
 
 	private static MultiValueMap<String, String> getQueryParameters(ServerWebExchange exchange) {
 
-		var queryParams = exchange.getRequest().getQueryParams();
+		MultiValueMap<String, String> queryParams = exchange.getRequest().getQueryParams();
 		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>(queryParams.size());
 
-		for (var entry : queryParams.entrySet()) {
+		for (Map.Entry<String, List<String>> entry : queryParams.entrySet()) {
 			parameters.put(entry.getKey(), entry.getValue());
 		}
 

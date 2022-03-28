@@ -17,6 +17,7 @@ package org.springframework.data.mapping.model;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -26,12 +27,13 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.FactoryMethod;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
 /**
@@ -55,11 +57,11 @@ class InstanceCreatorMetadataDiscoverer {
 	@Nullable
 	public static <T, P extends PersistentProperty<P>> InstanceCreatorMetadata<P> discover(PersistentEntity<T, P> entity) {
 
-		var declaredConstructors = entity.getType().getDeclaredConstructors();
-		var declaredMethods = entity.getType().getDeclaredMethods();
+		Constructor<?>[] declaredConstructors = entity.getType().getDeclaredConstructors();
+		Method[] declaredMethods = entity.getType().getDeclaredMethods();
 
-		var hasAnnotatedFactoryMethod = findAnnotation(PersistenceCreator.class, declaredMethods);
-		var hasAnnotatedConstructor = findAnnotation(PersistenceCreator.class, declaredConstructors);
+		boolean hasAnnotatedFactoryMethod = findAnnotation(PersistenceCreator.class, declaredMethods);
+		boolean hasAnnotatedConstructor = findAnnotation(PersistenceCreator.class, declaredConstructors);
 
 		if (hasAnnotatedConstructor && hasAnnotatedFactoryMethod) {
 			throw new MappingException(
@@ -69,7 +71,7 @@ class InstanceCreatorMetadataDiscoverer {
 
 		if (hasAnnotatedFactoryMethod) {
 
-			var candidates = discoverFactoryMethods(entity, declaredMethods);
+			List<Method> candidates = discoverFactoryMethods(entity, declaredMethods);
 
 			if (candidates.size() == 1) {
 				return getFactoryMethod(entity, candidates.get(0));
@@ -84,7 +86,7 @@ class InstanceCreatorMetadataDiscoverer {
 
 		List<Method> candidates = new ArrayList<>();
 
-		for (var method : declaredMethods) {
+		for (Method method : declaredMethods) {
 
 			validateMethod(method);
 
@@ -105,16 +107,16 @@ class InstanceCreatorMetadataDiscoverer {
 			PersistentEntity<T, P> entity, Method method) {
 
 		Parameter<Object, P>[] parameters = new Parameter[method.getParameterCount()];
-		var parameterAnnotations = method.getParameterAnnotations();
-		var types = entity.getTypeInformation().getParameterTypes(method);
+		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+		List<TypeInformation<?>> types = entity.getTypeInformation().getParameterTypes(method);
 
-		var parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(method);
+		String[] parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(method);
 
-		for (var i = 0; i < parameters.length; i++) {
+		for (int i = 0; i < parameters.length; i++) {
 
-			var name = parameterNames == null || parameterNames.length <= i ? null : parameterNames[i];
-			var type = types.get(i);
-			var annotations = parameterAnnotations[i];
+			String name = parameterNames == null || parameterNames.length <= i ? null : parameterNames[i];
+			TypeInformation<?> type = types.get(i);
+			Annotation[] annotations = parameterAnnotations[i];
 
 			parameters[i] = new Parameter(name, type, annotations, entity);
 		}
@@ -150,7 +152,7 @@ class InstanceCreatorMetadataDiscoverer {
 
 	private static boolean findAnnotation(Class<? extends Annotation> annotationType, AnnotatedElement... elements) {
 
-		for (var element : elements) {
+		for (AnnotatedElement element : elements) {
 			if (MergedAnnotations.from(element).isPresent(annotationType)) {
 				return true;
 			}

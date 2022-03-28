@@ -15,6 +15,7 @@
  */
 package org.springframework.data.projection;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +77,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 		Assert.notNull(parser, "SpelExpressionParser must not be null!");
 		Assert.notNull(targetInterface, "Target interface must not be null!");
 
-		var evaluationContext = new StandardEvaluationContext();
+		StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
 
 		if (target instanceof Map) {
 			evaluationContext.addPropertyAccessor(new MapAccessor());
@@ -107,9 +108,9 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 
 		Map<Integer, Expression> expressions = new HashMap<>();
 
-		for (var method : targetInterface.getMethods()) {
+		for (Method method : targetInterface.getMethods()) {
 
-			var value = AnnotationUtils.findAnnotation(method, Value.class);
+			Value value = AnnotationUtils.findAnnotation(method, Value.class);
 			if (value == null) {
 				continue;
 			}
@@ -128,7 +129,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	@Override
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
-		var expression = expressions.get(invocation.getMethod().hashCode());
+		Expression expression = expressions.get(invocation.getMethod().hashCode());
 
 		if (expression == null) {
 			return delegate.invoke(invocation);
@@ -184,7 +185,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(target);
+			int result = ObjectUtils.nullSafeHashCode(target);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(args);
 			return result;
 		}

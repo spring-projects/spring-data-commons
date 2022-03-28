@@ -93,7 +93,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Bean
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
 
-		var pageableResolver = //
+		PageableHandlerMethodArgumentResolver pageableResolver = //
 				new PageableHandlerMethodArgumentResolver(sortResolver.get());
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
@@ -102,7 +102,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Bean
 	public SortHandlerMethodArgumentResolver sortResolver() {
 
-		var sortResolver = new SortHandlerMethodArgumentResolver();
+		SortHandlerMethodArgumentResolver sortResolver = new SortHandlerMethodArgumentResolver();
 		customizeSortResolver(sortResolver);
 		return sortResolver;
 	}
@@ -117,7 +117,8 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 			return;
 		}
 
-		var converter = new DomainClassConverter<FormattingConversionService>(conversionService);
+		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<FormattingConversionService>(
+				conversionService);
 		converter.setApplicationContext(context);
 	}
 
@@ -127,7 +128,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		argumentResolvers.add(sortResolver.get());
 		argumentResolvers.add(pageableResolver.get());
 
-		var resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
+		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
 		resolver.setBeanFactory(context);
 		forwardBeanClassLoader(resolver);
 
@@ -140,9 +141,9 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())
 				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
-			var mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
+			ObjectMapper mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
 
-			var converter = new ProjectingJackson2HttpMessageConverter(mapper);
+			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
 			converter.setBeanFactory(context);
 			forwardBeanClassLoader(converter);
 

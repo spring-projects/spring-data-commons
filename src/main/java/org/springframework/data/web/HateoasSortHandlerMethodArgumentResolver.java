@@ -23,6 +23,7 @@ import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.server.mvc.UriComponentsContributor;
 import org.springframework.lang.Nullable;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -47,16 +48,16 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 	 */
 	public TemplateVariables getSortTemplateVariables(MethodParameter parameter, UriComponents template) {
 
-		var sortParameter = getSortParameter(parameter);
-		var queryParameters = template.getQueryParams();
-		var append = !queryParameters.isEmpty();
+		String sortParameter = getSortParameter(parameter);
+		MultiValueMap<String, String> queryParameters = template.getQueryParams();
+		boolean append = !queryParameters.isEmpty();
 
 		if (queryParameters.containsKey(sortParameter)) {
 			return TemplateVariables.NONE;
 		}
 
-		var description = String.format("pagination.%s.description", sortParameter);
-		var type = append ? REQUEST_PARAM_CONTINUED : REQUEST_PARAM;
+		String description = String.format("pagination.%s.description", sortParameter);
+		TemplateVariable.VariableType type = append ? REQUEST_PARAM_CONTINUED : REQUEST_PARAM;
 		return new TemplateVariables(new TemplateVariable(sortParameter, type, description));
 	}
 
@@ -67,11 +68,11 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 			return;
 		}
 
-		var sortParameter = getSortParameter(parameter);
+		String sortParameter = getSortParameter(parameter);
 
 		builder.replaceQueryParam(sortParameter);
 
-		for (var expression : foldIntoExpressions(sort)) {
+		for (String expression : foldIntoExpressions(sort)) {
 			builder.queryParam(sortParameter, expression);
 		}
 	}

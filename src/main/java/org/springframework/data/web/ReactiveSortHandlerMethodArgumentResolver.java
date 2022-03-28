@@ -15,6 +15,8 @@
  */
 package org.springframework.data.web;
 
+import java.util.List;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.NonNull;
@@ -48,7 +50,7 @@ public class ReactiveSortHandlerMethodArgumentResolver extends SortHandlerMethod
 	public Sort resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
 			ServerWebExchange exchange) {
 
-		var directionParameter = exchange.getRequest().getQueryParams().get(getSortParameter(parameter));
+		List<String> directionParameter = exchange.getRequest().getQueryParams().get(getSortParameter(parameter));
 
 		// No parameter
 		if (directionParameter == null) {

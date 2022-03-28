@@ -67,7 +67,7 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 	@Override
 	public int hashCode() {
 
-		var result = 17;
+		int result = 17;
 
 		result += 31 * nullSafeHashCode(getType());
 

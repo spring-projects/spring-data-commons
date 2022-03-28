@@ -30,6 +30,7 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.data.repository.config.FragmentMetadata;
 import org.springframework.data.repository.config.ImplementationDetectionConfiguration;
+import org.springframework.data.repository.config.ImplementationLookupConfiguration;
 import org.springframework.data.repository.config.RepositoryFragmentConfiguration;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Streamable;
@@ -113,7 +114,7 @@ public class CdiRepositoryContext {
 	Stream<RepositoryFragmentConfiguration> getRepositoryFragments(CdiRepositoryConfiguration configuration,
 			Class<?> repositoryInterface) {
 
-		var config = new CdiImplementationDetectionConfiguration(configuration,
+		CdiImplementationDetectionConfiguration config = new CdiImplementationDetectionConfiguration(configuration,
 				metadataReaderFactory);
 
 		return metdata.getFragmentInterfaces(repositoryInterface.getName()) //
@@ -134,9 +135,9 @@ public class CdiRepositoryContext {
 
 		ImplementationDetectionConfiguration configuration = new CdiImplementationDetectionConfiguration(
 				cdiRepositoryConfiguration, metadataReaderFactory);
-		var lookup = configuration.forFragment(repositoryType.getName());
+		ImplementationLookupConfiguration lookup = configuration.forFragment(repositoryType.getName());
 
-		var beanDefinition = detector.detectCustomImplementation(lookup);
+		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(lookup);
 
 		return beanDefinition.map(this::loadBeanClass);
 	}
@@ -144,8 +145,8 @@ public class CdiRepositoryContext {
 	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(String fragmentInterfaceName,
 			CdiImplementationDetectionConfiguration config) {
 
-		var lookup = config.forFragment(fragmentInterfaceName);
-		var beanDefinition = detector.detectCustomImplementation(lookup);
+		ImplementationLookupConfiguration lookup = config.forFragment(fragmentInterfaceName);
+		Optional<AbstractBeanDefinition> beanDefinition = detector.detectCustomImplementation(lookup);
 
 		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterfaceName, bd));
 	}
@@ -153,7 +154,7 @@ public class CdiRepositoryContext {
 	@Nullable
 	private Class<?> loadBeanClass(AbstractBeanDefinition definition) {
 
-		var beanClassName = definition.getBeanClassName();
+		String beanClassName = definition.getBeanClassName();
 
 		return beanClassName == null ? null : loadClass(beanClassName);
 	}

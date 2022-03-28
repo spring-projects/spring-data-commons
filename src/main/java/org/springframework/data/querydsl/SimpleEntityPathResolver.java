@@ -64,11 +64,11 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	@SuppressWarnings("unchecked")
 	public <T> EntityPath<T> createPath(Class<T> domainClass) {
 
-		var pathClassName = getQueryClassName(domainClass);
+		String pathClassName = getQueryClassName(domainClass);
 
 		try {
 
-			var pathClass = ClassUtils.forName(pathClassName, domainClass.getClassLoader());
+			Class<?> pathClass = ClassUtils.forName(pathClassName, domainClass.getClassLoader());
 
 			return getStaticFieldOfType(pathClass)//
 					.map(it -> (EntityPath<T>) ReflectionUtils.getField(it, null))//
@@ -88,17 +88,17 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	 */
 	private Optional<Field> getStaticFieldOfType(Class<?> type) {
 
-		for (var field : type.getDeclaredFields()) {
+		for (Field field : type.getDeclaredFields()) {
 
-			var isStatic = Modifier.isStatic(field.getModifiers());
-			var hasSameType = type.equals(field.getType());
+			boolean isStatic = Modifier.isStatic(field.getModifiers());
+			boolean hasSameType = type.equals(field.getType());
 
 			if (isStatic && hasSameType) {
 				return Optional.of(field);
 			}
 		}
 
-		var superclass = type.getSuperclass();
+		Class<?> superclass = type.getSuperclass();
 		return Object.class.equals(superclass) ? Optional.empty() : getStaticFieldOfType(superclass);
 	}
 
@@ -110,8 +110,8 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	 */
 	private String getQueryClassName(Class<?> domainClass) {
 
-		var simpleClassName = ClassUtils.getShortName(domainClass);
-		var packageName = domainClass.getPackage().getName();
+		String simpleClassName = ClassUtils.getShortName(domainClass);
+		String packageName = domainClass.getPackage().getName();
 
 		return String.format("%s%s.Q%s%s", packageName, querySuffix, getClassBase(simpleClassName),
 				domainClass.getSimpleName());
@@ -125,7 +125,7 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	 */
 	private String getClassBase(String shortName) {
 
-		var parts = shortName.split("\\.");
+		String[] parts = shortName.split("\\.");
 
 		return parts.length < 2 ? "" : parts[0] + "_";
 	}

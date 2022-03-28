@@ -15,6 +15,7 @@
  */
 package org.springframework.data.querydsl.binding;
 
+import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,7 +86,7 @@ public class QuerydslPredicateBuilder {
 
 		Assert.notNull(bindings, "Context must not be null!");
 
-		var builder = new BooleanBuilder();
+		BooleanBuilder builder = new BooleanBuilder();
 
 		if (values.isEmpty()) {
 			return getPredicate(builder);
@@ -97,20 +98,20 @@ public class QuerydslPredicateBuilder {
 				continue;
 			}
 
-			var path = entry.getKey();
+			String path = entry.getKey();
 
 			if (!bindings.isPathAvailable(path, type)) {
 				continue;
 			}
 
-			var propertyPath = bindings.getPropertyPath(path, type);
+			PathInformation propertyPath = bindings.getPropertyPath(path, type);
 
 			if (propertyPath == null) {
 				continue;
 			}
 
-			var value = convertToPropertyPathSpecificType(entry.getValue(), propertyPath);
-			var predicate = invokeBinding(propertyPath, bindings, value);
+			Collection<Object> value = convertToPropertyPathSpecificType(entry.getValue(), propertyPath);
+			Optional<Predicate> predicate = invokeBinding(propertyPath, bindings, value);
 
 			predicate.ifPresent(builder::and);
 		}
@@ -141,7 +142,7 @@ public class QuerydslPredicateBuilder {
 	private Optional<Predicate> invokeBinding(PathInformation dotPath, QuerydslBindings bindings,
 			Collection<Object> values) {
 
-		var path = getPath(dotPath, bindings);
+		Path<?> path = getPath(dotPath, bindings);
 
 		return bindings.getBindingForPath(dotPath).orElse(defaultBinding).bind(path, values);
 	}
@@ -157,7 +158,7 @@ public class QuerydslPredicateBuilder {
 	 */
 	private Path<?> getPath(PathInformation path, QuerydslBindings bindings) {
 
-		var resolvedPath = bindings.getExistingPath(path);
+		Optional<Path<?>> resolvedPath = bindings.getExistingPath(path);
 
 		return resolvedPath.orElseGet(() -> paths.computeIfAbsent(path, it -> it.reifyPath(resolver)));
 	}
@@ -173,7 +174,7 @@ public class QuerydslPredicateBuilder {
 	 */
 	private Collection<Object> convertToPropertyPathSpecificType(List<?> source, PathInformation path) {
 
-		var targetType = path.getLeafType();
+		Class<?> targetType = path.getLeafType();
 
 		if (source.isEmpty() || isSingleElementCollectionWithEmptyItem(source)) {
 			return Collections.emptyList();
@@ -181,7 +182,7 @@ public class QuerydslPredicateBuilder {
 
 		Collection<Object> target = new ArrayList<>(source.size());
 
-		for (var value : source) {
+		for (Object value : source) {
 			target.add(getValue(path, targetType, value));
 		}
 
@@ -211,12 +212,12 @@ public class QuerydslPredicateBuilder {
 	 */
 	private static TypeDescriptor getTargetTypeDescriptor(PathInformation path) {
 
-		var descriptor = path.getLeafPropertyDescriptor();
+		PropertyDescriptor descriptor = path.getLeafPropertyDescriptor();
 
-		var owningType = path.getLeafParentType();
-		var leafProperty = path.getLeafProperty();
+		Class<?> owningType = path.getLeafParentType();
+		String leafProperty = path.getLeafProperty();
 
-		var result = descriptor == null //
+		TypeDescriptor result = descriptor == null //
 				? TypeDescriptor
 						.nested(org.springframework.data.util.ReflectionUtils.findRequiredField(owningType, leafProperty), 0)
 				: TypeDescriptor
@@ -248,7 +249,7 @@ public class QuerydslPredicateBuilder {
 	 */
 	private static Predicate getPredicate(BooleanBuilder builder) {
 
-		var predicate = builder.getValue();
+		Predicate predicate = builder.getValue();
 		return predicate == null ? new BooleanBuilder() : predicate;
 	}
 }

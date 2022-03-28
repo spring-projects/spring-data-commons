@@ -84,7 +84,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
-		var projectionFactory = new SpelAwareProxyProjectionFactory();
+		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 		projectionFactory.registerMethodInvokerFactory(new JsonProjectingMethodInterceptorFactory(
 				new JacksonJsonProvider(mapper), new JacksonMappingProvider(mapper)));
 
@@ -108,9 +108,9 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 			return false;
 		}
 
-		var owner = contextClass == null ? null : ResolvableType.forClass(contextClass);
-		var rawType = ResolvableType.forType(type, owner).resolve(Object.class);
-		var result = supportedTypesCache.get(rawType);
+		ResolvableType owner = contextClass == null ? null : ResolvableType.forClass(contextClass);
+		Class<?> rawType = ResolvableType.forType(type, owner).resolve(Object.class);
+		Boolean result = supportedTypesCache.get(rawType);
 
 		if (result != null) {
 			return result;

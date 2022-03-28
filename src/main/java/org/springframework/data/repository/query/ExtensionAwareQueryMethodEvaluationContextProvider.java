@@ -24,6 +24,7 @@ import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -70,7 +71,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	@Override
 	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
 
-		var evaluationContext = delegate.getEvaluationContext(parameterValues);
+		StandardEvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues);
 
 		evaluationContext.setVariables(collectVariables(parameters, parameterValues));
 
@@ -81,7 +82,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues,
 			ExpressionDependencies dependencies) {
 
-		var evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
+		StandardEvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
 
 		evaluationContext.setVariables(collectVariables(parameters, parameterValues));
 

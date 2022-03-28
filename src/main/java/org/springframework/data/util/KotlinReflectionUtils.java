@@ -17,9 +17,11 @@ package org.springframework.data.util;
 
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KCallable;
+import kotlin.reflect.KClass;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.KMutableProperty;
 import kotlin.reflect.KProperty;
+import kotlin.reflect.KType;
 import kotlin.reflect.jvm.KTypesJvm;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
@@ -76,7 +78,7 @@ public final class KotlinReflectionUtils {
 			return false;
 		}
 
-		var kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
 		return kotlinClass.isData();
 	}
 
@@ -90,7 +92,7 @@ public final class KotlinReflectionUtils {
 	@Nullable
 	public static KFunction<?> findKotlinFunction(Method method) {
 
-		var kotlinFunction = ReflectJvmMapping.getKotlinFunction(method);
+		KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(method);
 
 		// Fallback to own lookup because there's no public Kotlin API for that kind of lookup until
 		// https://youtrack.jetbrains.com/issue/KT-20768 gets resolved.
@@ -106,7 +108,7 @@ public final class KotlinReflectionUtils {
 	 */
 	public static boolean isSuspend(Method method) {
 
-		var invokedFunction = KotlinDetector.isKotlinType(method.getDeclaringClass()) ? findKotlinFunction(method)
+		KFunction<?> invokedFunction = KotlinDetector.isKotlinType(method.getDeclaringClass()) ? findKotlinFunction(method)
 				: null;
 
 		return invokedFunction != null && invokedFunction.isSuspend();
@@ -120,7 +122,7 @@ public final class KotlinReflectionUtils {
 	 */
 	public static Class<?> getReturnType(Method method) {
 
-		var kotlinFunction = KotlinReflectionUtils.findKotlinFunction(method);
+		KFunction<?> kotlinFunction = KotlinReflectionUtils.findKotlinFunction(method);
 
 		if (kotlinFunction == null) {
 			throw new IllegalArgumentException(String.format("Cannot resolve %s to a KFunction!", method));
@@ -138,13 +140,13 @@ public final class KotlinReflectionUtils {
 	 */
 	static boolean isNullable(MethodParameter parameter) {
 
-		var method = parameter.getMethod();
+		Method method = parameter.getMethod();
 
 		if (method == null) {
 			throw new IllegalStateException(String.format("Cannot obtain method from parameter %s!", parameter));
 		}
 
-		var kotlinFunction = findKotlinFunction(method);
+		KFunction<?> kotlinFunction = findKotlinFunction(method);
 
 		if (kotlinFunction == null) {
 			throw new IllegalArgumentException(String.format("Cannot resolve %s to a Kotlin function!", parameter));
@@ -158,7 +160,7 @@ public final class KotlinReflectionUtils {
 		// see https://github.com/spring-projects/spring-framework/issues/23991
 		if (kotlinFunction.getParameters().size() > parameter.getParameterIndex() + 1) {
 
-			var type = parameter.getParameterIndex() == -1 //
+			KType type = parameter.getParameterIndex() == -1 //
 					? kotlinFunction.getReturnType() //
 					: kotlinFunction.getParameters().get(parameter.getParameterIndex() + 1).getType();
 
@@ -170,7 +172,7 @@ public final class KotlinReflectionUtils {
 
 	private static boolean isLast(MethodParameter parameter) {
 
-		var method = parameter.getMethod();
+		Method method = parameter.getMethod();
 
 		return method != null && parameter.getParameterIndex() == method.getParameterCount() - 1;
 	}
@@ -183,7 +185,7 @@ public final class KotlinReflectionUtils {
 	 */
 	private static Optional<? extends KFunction<?>> findKFunction(Method method) {
 
-		var kotlinClass = JvmClassMappingKt.getKotlinClass(method.getDeclaringClass());
+		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(method.getDeclaringClass());
 
 		return kotlinClass.getMembers() //
 				.stream() //
@@ -213,7 +215,7 @@ public final class KotlinReflectionUtils {
 
 	private static boolean isSame(KFunction<?> function, Method method) {
 
-		var javaMethod = ReflectJvmMapping.getJavaMethod(function);
+		Method javaMethod = ReflectJvmMapping.getJavaMethod(function);
 		return javaMethod != null && javaMethod.equals(method);
 	}
 

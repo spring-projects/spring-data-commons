@@ -55,9 +55,9 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 	 */
 	public static boolean hasDefaultMethods(Class<?> interfaceClass) {
 
-		var methods = ReflectionUtils.getAllDeclaredMethods(interfaceClass);
+		Method[] methods = ReflectionUtils.getAllDeclaredMethods(interfaceClass);
 
-		for (var method : methods) {
+		for (Method method : methods) {
 			if (method.isDefault()) {
 				return true;
 			}
@@ -70,21 +70,21 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 	@Override
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
-		var method = invocation.getMethod();
+		Method method = invocation.getMethod();
 
 		if (!method.isDefault()) {
 			return invocation.proceed();
 		}
 
-		var arguments = invocation.getArguments();
-		var proxy = ((ProxyMethodInvocation) invocation).getProxy();
+		Object[] arguments = invocation.getArguments();
+		Object proxy = ((ProxyMethodInvocation) invocation).getProxy();
 
 		return getMethodHandle(method).bindTo(proxy).invokeWithArguments(arguments);
 	}
 
 	private MethodHandle getMethodHandle(Method method) throws Exception {
 
-		var handle = methodHandleCache.get(method);
+		MethodHandle handle = methodHandleCache.get(method);
 
 		if (handle == null) {
 
@@ -127,7 +127,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 
 			private Lookup getLookup(Class<?> declaringClass, Method privateLookupIn) {
 
-				var lookup = MethodHandles.lookup();
+				Lookup lookup = MethodHandles.lookup();
 
 				try {
 					return (Lookup) privateLookupIn.invoke(MethodHandles.class, declaringClass, lookup);
@@ -152,7 +152,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 					throw new IllegalStateException("Could not obtain MethodHandles.lookup constructor!");
 				}
 
-				var constructor = this.constructor.get();
+				Constructor<Lookup> constructor = this.constructor.get();
 
 				return constructor.newInstance(method.getDeclaringClass()).unreflectSpecial(method, method.getDeclaringClass());
 			}
@@ -184,7 +184,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 		private static MethodHandle doLookup(Method method, Lookup lookup)
 				throws NoSuchMethodException, IllegalAccessException {
 
-			var methodType = MethodType.methodType(method.getReturnType(), method.getParameterTypes());
+			MethodType methodType = MethodType.methodType(method.getReturnType(), method.getParameterTypes());
 
 			if (Modifier.isStatic(method.getModifiers())) {
 				return lookup.findStatic(method.getDeclaringClass(), method.getName(), methodType);
@@ -215,7 +215,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 		 */
 		public static MethodHandleLookup getMethodHandleLookup() {
 
-			for (var it : MethodHandleLookup.values()) {
+			for (MethodHandleLookup it : MethodHandleLookup.values()) {
 
 				if (it.isAvailable()) {
 					return it;
@@ -230,7 +230,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 
 			try {
 
-				var constructor = Lookup.class.getDeclaredConstructor(Class.class);
+				Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
 				ReflectionUtils.makeAccessible(constructor);
 
 				return constructor;

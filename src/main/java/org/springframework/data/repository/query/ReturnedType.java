@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
+import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -183,7 +184,7 @@ public abstract class ReturnedType {
 
 			List<String> properties = new ArrayList<>();
 
-			for (var descriptor : information.getInputProperties()) {
+			for (PropertyDescriptor descriptor : information.getInputProperties()) {
 				if (!properties.contains(descriptor.getName())) {
 					properties.add(descriptor.getName());
 				}
@@ -341,7 +342,7 @@ public abstract class ReturnedType {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(returnedType);
+			int result = ObjectUtils.nullSafeHashCode(returnedType);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(domainType);
 			result = 31 * result + projectionFactoryHashCode;
 			return result;

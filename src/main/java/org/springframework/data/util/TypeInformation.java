@@ -59,7 +59,7 @@ public interface TypeInformation<S> {
 	 */
 	default TypeInformation<?> getRequiredProperty(String property) {
 
-		var typeInformation = getProperty(property);
+		TypeInformation<?> typeInformation = getProperty(property);
 
 		if (typeInformation != null) {
 			return typeInformation;
@@ -97,7 +97,7 @@ public interface TypeInformation<S> {
 	 */
 	default TypeInformation<?> getRequiredComponentType() {
 
-		var componentType = getComponentType();
+		TypeInformation<?> componentType = getComponentType();
 
 		if (componentType != null) {
 			return componentType;
@@ -133,7 +133,7 @@ public interface TypeInformation<S> {
 	 */
 	default TypeInformation<?> getRequiredMapValueType() {
 
-		var mapValueType = getMapValueType();
+		TypeInformation<?> mapValueType = getMapValueType();
 
 		if (mapValueType != null) {
 			return mapValueType;
@@ -191,7 +191,7 @@ public interface TypeInformation<S> {
 	 */
 	default TypeInformation<?> getRequiredActualType() {
 
-		var result = getActualType();
+		TypeInformation<?> result = getActualType();
 
 		if (result == null) {
 			throw new IllegalStateException(
@@ -238,7 +238,7 @@ public interface TypeInformation<S> {
 	 */
 	default TypeInformation<?> getRequiredSuperTypeInformation(Class<?> superType) {
 
-		var result = getSuperTypeInformation(superType);
+		TypeInformation<?> result = getSuperTypeInformation(superType);
 
 		if (result == null) {
 			throw new IllegalArgumentException(String.format(

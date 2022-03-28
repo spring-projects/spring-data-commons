@@ -18,7 +18,9 @@ package org.springframework.data.repository.init;
 import static com.fasterxml.jackson.databind.DeserializationFeature.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.core.io.Resource;
@@ -79,16 +81,16 @@ public class Jackson2ResourceReader implements ResourceReader {
 
 		Assert.notNull(resource, "Resource must not be null!");
 
-		var stream = resource.getInputStream();
-		var node = mapper.readerFor(JsonNode.class).readTree(stream);
+		InputStream stream = resource.getInputStream();
+		JsonNode node = mapper.readerFor(JsonNode.class).readTree(stream);
 
 		if (node.isArray()) {
 
-			var elements = node.elements();
+			Iterator<JsonNode> elements = node.elements();
 			List<Object> result = new ArrayList<>();
 
 			while (elements.hasNext()) {
-				var element = elements.next();
+				JsonNode element = elements.next();
 				result.add(readSingle(element, classLoader));
 			}
 
@@ -107,14 +109,14 @@ public class Jackson2ResourceReader implements ResourceReader {
 	 */
 	private Object readSingle(JsonNode node, @Nullable ClassLoader classLoader) throws IOException {
 
-		var typeNode = node.findValue(typeKey);
+		JsonNode typeNode = node.findValue(typeKey);
 
 		if (typeNode == null) {
 			throw new IllegalArgumentException(String.format("Could not find type for type key '%s'!", typeKey));
 		}
 
-		var typeName = typeNode.asText();
-		var type = ClassUtils.resolveClassName(typeName, classLoader);
+		String typeName = typeNode.asText();
+		Class<?> type = ClassUtils.resolveClassName(typeName, classLoader);
 
 		return mapper.readerFor(type).readValue(node);
 	}

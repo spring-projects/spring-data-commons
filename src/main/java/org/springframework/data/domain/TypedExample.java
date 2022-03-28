@@ -66,7 +66,7 @@ class TypedExample<T> implements Example<T> {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(probe);
+		int result = ObjectUtils.nullSafeHashCode(probe);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(matcher);
 		return result;
 	}

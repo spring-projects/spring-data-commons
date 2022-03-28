@@ -80,7 +80,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 	 */
 	public Method getRequiredMethod() {
 
-		var method = this.foundMethod;
+		Method method = this.foundMethod;
 
 		if (method == null) {
 			throw new IllegalStateException(String.format("No method with annotation %s found!", annotationType));
@@ -113,7 +113,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 			return;
 		}
 
-		var foundAnnotation = AnnotatedElementUtils.findMergedAnnotation(method, annotationType);
+		A foundAnnotation = AnnotatedElementUtils.findMergedAnnotation(method, annotationType);
 
 		if (foundAnnotation != null) {
 

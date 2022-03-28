@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -61,7 +62,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 
 		return typeMap.computeIfAbsent(type.getRawTypeInformation(), key -> {
 
-			var entity = mappingContext.getPersistentEntity(key);
+			PersistentEntity<?, ? extends PersistentProperty<?>> entity = mappingContext.getPersistentEntity(key);
 
 			if (entity == null || entity.getTypeAlias() == null) {
 				return Alias.NONE;
@@ -81,7 +82,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 
 		// Reject second alias for same type
 
-		var existingAlias = typeMap.getOrDefault(key, Alias.NONE);
+		Alias existingAlias = typeMap.getOrDefault(key, Alias.NONE);
 
 		if (existingAlias.isPresentButDifferent(alias)) {
 
@@ -111,7 +112,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	@Override
 	public TypeInformation<?> resolveTypeFrom(Alias alias) {
 
-		for (var entry : typeMap.entrySet()) {
+		for (Map.Entry<ClassTypeInformation<?>, Alias> entry : typeMap.entrySet()) {
 			if (entry.getValue().hasSamePresentValueAs(alias)) {
 				return entry.getKey();
 			}

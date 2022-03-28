@@ -55,9 +55,9 @@ public abstract class ProxyUtils {
 
 		return USER_TYPES.computeIfAbsent(type, it -> {
 
-			var result = it;
+			Class<?> result = it;
 
-			for (var proxyDetector : DETECTORS) {
+			for (ProxyDetector proxyDetector : DETECTORS) {
 				result = proxyDetector.getUserType(result);
 			}
 

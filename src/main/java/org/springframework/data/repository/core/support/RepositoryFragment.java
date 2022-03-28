@@ -238,7 +238,7 @@ public interface RepositoryFragment<T> {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(interfaceClass);
+			int result = ObjectUtils.nullSafeHashCode(interfaceClass);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(implementation);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(optionalImplementation);
 			return result;

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.projection;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -45,13 +46,13 @@ class MapAccessingMethodInterceptor implements MethodInterceptor {
 	@Override
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
-		var method = invocation.getMethod();
+		Method method = invocation.getMethod();
 
 		if (ReflectionUtils.isObjectMethod(method)) {
 			return invocation.proceed();
 		}
 
-		var accessor = new Accessor(method);
+		Accessor accessor = new Accessor(method);
 
 		if (accessor.isGetter()) {
 			return map.get(accessor.getPropertyName());

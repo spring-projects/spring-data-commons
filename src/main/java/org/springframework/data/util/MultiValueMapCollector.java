@@ -62,7 +62,7 @@ class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueMap<K, V
 
 		return (map1, map2) -> {
 
-			for (var key : map2.keySet()) {
+			for (K key : map2.keySet()) {
 				map1.addAll(key, map2.get(key));
 			}
 

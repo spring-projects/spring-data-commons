@@ -80,7 +80,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		}
 
 		@SuppressWarnings("null")
-		var leafPropertyType = getLeafProperty().getActualType();
+		Class<?> leafPropertyType = getLeafProperty().getActualType();
 
 		Assert.isTrue(property.getOwner().getType().equals(leafPropertyType),
 				() -> String.format("Cannot append property %s to type %s!", property.getName(), leafPropertyType.getName()));
@@ -112,7 +112,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		Assert.hasText(delimiter, "Delimiter must not be null or empty!");
 		Assert.notNull(converter, "Converter must not be null!");
 
-		var result = properties.stream() //
+		String result = properties.stream() //
 				.map(converter::convert) //
 				.filter(StringUtils::hasText) //
 				.collect(Collectors.joining(delimiter));
@@ -134,15 +134,15 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 
 		Assert.notNull(path, "PersistentPropertyPath must not be null!");
 
-		var iterator = path.iterator();
+		Iterator<P> iterator = path.iterator();
 
-		for (var property : this) {
+		for (P property : this) {
 
 			if (!iterator.hasNext()) {
 				return false;
 			}
 
-			var reference = iterator.next();
+			P reference = iterator.next();
 
 			if (!property.equals(reference)) {
 				return false;
@@ -159,9 +159,9 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		}
 
 		List<P> result = new ArrayList<>();
-		var iterator = iterator();
+		Iterator<P> iterator = iterator();
 
-		for (var i = 0; i < base.getLength(); i++) {
+		for (int i = 0; i < base.getLength(); i++) {
 			iterator.next();
 		}
 
@@ -174,7 +174,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 
 	public PersistentPropertyPath<P> getParentPath() {
 
-		var size = properties.size();
+		int size = properties.size();
 
 		return size == 0 ? this : new DefaultPersistentPropertyPath<>(properties.subList(0, size - 1));
 	}

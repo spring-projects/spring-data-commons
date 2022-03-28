@@ -128,7 +128,7 @@ public final class RepositoryFragmentConfiguration {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(interfaceName);
+		int result = ObjectUtils.nullSafeHashCode(interfaceName);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(className);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(beanDefinition);
 		return result;

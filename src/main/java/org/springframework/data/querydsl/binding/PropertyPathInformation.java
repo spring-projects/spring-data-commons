@@ -16,6 +16,7 @@
 package org.springframework.data.querydsl.binding;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mapping.PropertyPath;
@@ -107,10 +108,10 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 			return reifyPath(resolver, path, (Path<?>) ((CollectionPathBase<?, ?, ?>) base).any());
 		}
 
-		var entityPath = base != null ? base : resolver.createPath(path.getOwningType().getType());
+		Path<?> entityPath = base != null ? base : resolver.createPath(path.getOwningType().getType());
 
-		var field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
-		var value = ReflectionUtils.getField(field, entityPath);
+		Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
+		Object value = ReflectionUtils.getField(field, entityPath);
 
 		if (path.hasNext()) {
 			return reifyPath(resolver, path.next(), (Path<?>) value);
@@ -136,7 +137,7 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 
 	@Override
 	public int hashCode() {
-		var result = ObjectUtils.nullSafeHashCode(getRootParentType());
+		int result = ObjectUtils.nullSafeHashCode(getRootParentType());
 		result = 31 * result + ObjectUtils.nullSafeHashCode(toDotPath());
 		return result;
 	}

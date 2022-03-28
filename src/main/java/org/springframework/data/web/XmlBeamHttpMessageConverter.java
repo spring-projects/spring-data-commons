@@ -62,7 +62,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 			@Override
 			public DocumentBuilderFactory createDocumentBuilderFactory() {
 
-				var factory = super.createDocumentBuilderFactory();
+				DocumentBuilderFactory factory = super.createDocumentBuilderFactory();
 
 				factory.setAttribute("http://apache.org/xml/features/disallow-doctype-decl", true);
 				factory.setAttribute("http://xml.org/sax/features/external-general-entities", false);
@@ -89,8 +89,8 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 	@Override
 	protected boolean supports(Class<?> type) {
 
-		var rawType = ResolvableType.forType(type).resolve(Object.class);
-		var result = supportedTypesCache.get(rawType);
+		Class<?> rawType = ResolvableType.forType(type).resolve(Object.class);
+		Boolean result = supportedTypesCache.get(rawType);
 
 		if (result != null) {
 			return result;
@@ -118,7 +118,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 
 		} catch (RuntimeException o_O) {
 
-			var cause = o_O.getCause();
+			Throwable cause = o_O.getCause();
 
 			if (SAXParseException.class.isInstance(cause)) {
 				throw new HttpMessageNotReadableException("Cannot read input message!", cause, inputMessage);

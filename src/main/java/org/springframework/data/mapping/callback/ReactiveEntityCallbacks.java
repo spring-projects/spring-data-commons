@@ -58,8 +58,8 @@ public interface ReactiveEntityCallbacks {
 	 */
 	static ReactiveEntityCallbacks create(EntityCallback<?>... callbacks) {
 
-		var entityCallbacks = create();
-		for (var callback : callbacks) {
+		ReactiveEntityCallbacks entityCallbacks = create();
+		for (EntityCallback<?> callback : callbacks) {
 			entityCallbacks.addEntityCallback(callback);
 		}
 		return entityCallbacks;

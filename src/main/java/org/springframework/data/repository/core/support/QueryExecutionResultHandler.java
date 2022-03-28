@@ -72,15 +72,15 @@ class QueryExecutionResultHandler {
 			return result;
 		}
 
-		var descriptor = getOrCreateReturnTypeDescriptor(method);
+		ReturnTypeDescriptor descriptor = getOrCreateReturnTypeDescriptor(method);
 
 		return postProcessInvocationResult(result, 0, descriptor);
 	}
 
 	private ReturnTypeDescriptor getOrCreateReturnTypeDescriptor(Method method) {
 
-		var descriptorCache = this.descriptorCache;
-		var descriptor = descriptorCache.get(method);
+		Map<Method, ReturnTypeDescriptor> descriptorCache = this.descriptorCache;
+		ReturnTypeDescriptor descriptor = descriptorCache.get(method);
 
 		if (descriptor == null) {
 
@@ -116,13 +116,13 @@ class QueryExecutionResultHandler {
 	@Nullable
 	Object postProcessInvocationResult(@Nullable Object result, int nestingLevel, ReturnTypeDescriptor descriptor) {
 
-		var returnTypeDescriptor = descriptor.getReturnTypeDescriptor(nestingLevel);
+		TypeDescriptor returnTypeDescriptor = descriptor.getReturnTypeDescriptor(nestingLevel);
 
 		if (returnTypeDescriptor == null) {
 			return result;
 		}
 
-		var expectedReturnType = returnTypeDescriptor.getType();
+		Class<?> expectedReturnType = returnTypeDescriptor.getType();
 
 		result = unwrapOptional(result);
 
@@ -138,7 +138,7 @@ class QueryExecutionResultHandler {
 
 			if (result != null) {
 
-				var source = TypeDescriptor.valueOf(result.getClass());
+				TypeDescriptor source = TypeDescriptor.valueOf(result.getClass());
 
 				if (conversionRequired(source, returnTypeDescriptor)) {
 					return conversionService.convert(result, returnTypeDescriptor);
@@ -154,15 +154,15 @@ class QueryExecutionResultHandler {
 
 			if (result instanceof Collection<?>) {
 
-				var elementDescriptor = descriptor.getReturnTypeDescriptor(nestingLevel + 1);
-				var requiresConversion = requiresConversion((Collection<?>) result, expectedReturnType, elementDescriptor);
+				TypeDescriptor elementDescriptor = descriptor.getReturnTypeDescriptor(nestingLevel + 1);
+				boolean requiresConversion = requiresConversion((Collection<?>) result, expectedReturnType, elementDescriptor);
 
 				if (!requiresConversion) {
 					return result;
 				}
 			}
 
-			var resultDescriptor = TypeDescriptor.forObject(result);
+			TypeDescriptor resultDescriptor = TypeDescriptor.forObject(result);
 			return conversionService.canConvert(resultDescriptor, returnTypeDescriptor)
 					? conversionService.convert(result, returnTypeDescriptor)
 					: result;
@@ -185,7 +185,7 @@ class QueryExecutionResultHandler {
 			return false;
 		}
 
-		var type = elementDescriptor.getType();
+		Class<?> type = elementDescriptor.getType();
 
 		for (Object o : collection) {
 

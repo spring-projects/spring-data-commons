@@ -264,8 +264,8 @@ public class Property {
 
 	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
 
-		var resultHolder = new AtomicReference<Method>();
-		var methodName = String.format("with%s", StringUtils.capitalize(propertyName));
+		AtomicReference<Method> resultHolder = new AtomicReference<Method>();
+		String methodName = String.format("with%s", StringUtils.capitalize(propertyName));
 
 		ReflectionUtils.doWithMethods(owner.getType(), it -> {
 
@@ -274,7 +274,7 @@ public class Property {
 			}
 		}, it -> isMethodWithSingleParameterOfType(it, methodName, rawType));
 
-		var method = resultHolder.get();
+		Method method = resultHolder.get();
 		return method != null ? Optional.of(method) : Optional.empty();
 	}
 

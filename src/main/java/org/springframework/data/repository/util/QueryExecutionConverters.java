@@ -125,7 +125,7 @@ public abstract class QueryExecutionConverters {
 
 		return supportsCache.computeIfAbsent(type, key -> {
 
-			for (var candidate : WRAPPER_TYPES) {
+			for (WrapperType candidate : WRAPPER_TYPES) {
 				if (candidate.getType().isAssignableFrom(key)) {
 					return true;
 				}
@@ -149,7 +149,7 @@ public abstract class QueryExecutionConverters {
 			return NullableWrapperConverters.supportsUnwrapping(type);
 		}
 
-		for (var candidate : UNWRAPPER_TYPES) {
+		for (WrapperType candidate : UNWRAPPER_TYPES) {
 			if (candidate.getType().isAssignableFrom(type)) {
 				return true;
 			}
@@ -164,7 +164,7 @@ public abstract class QueryExecutionConverters {
 			return NullableWrapperConverters.isSingleValue(type);
 		}
 
-		for (var candidate : WRAPPER_TYPES) {
+		for (WrapperType candidate : WRAPPER_TYPES) {
 			if (candidate.getType().isAssignableFrom(type)) {
 				return candidate.isSingleValue();
 			}
@@ -220,9 +220,9 @@ public abstract class QueryExecutionConverters {
 			return source;
 		}
 
-		for (var converter : UNWRAPPERS) {
+		for (Converter<Object, Object> converter : UNWRAPPERS) {
 
-			var result = converter.convert(source);
+			Object result = converter.convert(source);
 
 			if (result != source) {
 				return result;
@@ -242,9 +242,9 @@ public abstract class QueryExecutionConverters {
 
 		Assert.notNull(type, "type must not be null");
 
-		var rawType = type.getType();
+		Class<?> rawType = type.getType();
 
-		var needToUnwrap = type.isCollectionLike() //
+		boolean needToUnwrap = type.isCollectionLike() //
 				|| Slice.class.isAssignableFrom(rawType) //
 				|| GeoResults.class.isAssignableFrom(rawType) //
 				|| rawType.isArray() //
@@ -322,8 +322,8 @@ public abstract class QueryExecutionConverters {
 				return null;
 			}
 
-			var wrapper = (NullableWrapper) source;
-			var value = wrapper.getValue();
+			NullableWrapper wrapper = (NullableWrapper) source;
+			Object value = wrapper.getValue();
 
 			// TODO: Add Recursive conversion once we move to Spring 4
 			return value == null ? nullValue : wrap(value);
@@ -496,7 +496,7 @@ public abstract class QueryExecutionConverters {
 
 		@Override
 		public int hashCode() {
-			var result = ObjectUtils.nullSafeHashCode(type);
+			int result = ObjectUtils.nullSafeHashCode(type);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(cardinality);
 			return result;
 		}

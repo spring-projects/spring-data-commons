@@ -52,7 +52,7 @@ public interface StreamUtils {
 	 */
 	static <T> Stream<T> createStreamFromIterator(Iterator<T> iterator) {
 
-		var spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL);
+		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL);
 		return StreamSupport.stream(spliterator, false);
 	}
 
@@ -128,12 +128,12 @@ public interface StreamUtils {
 		Assert.notNull(right, "Right must not be null!");
 		Assert.notNull(combiner, "Combiner must not be null!");
 
-		var lefts = left.spliterator();
-		var rights = right.spliterator();
+		Spliterator<L> lefts = left.spliterator();
+		Spliterator<R> rights = right.spliterator();
 
-		var size = Long.min(lefts.estimateSize(), rights.estimateSize());
-		var characteristics = lefts.characteristics() & rights.characteristics();
-		var parallel = left.isParallel() || right.isParallel();
+		long size = Long.min(lefts.estimateSize(), rights.estimateSize());
+		int characteristics = lefts.characteristics() & rights.characteristics();
+		boolean parallel = left.isParallel() || right.isParallel();
 
 		return StreamSupport.stream(new AbstractSpliterator<T>(size, characteristics) {
 
@@ -141,16 +141,16 @@ public interface StreamUtils {
 			@SuppressWarnings("null")
 			public boolean tryAdvance(Consumer<? super T> action) {
 
-				var leftSink = new Sink<L>();
-				var rightSink = new Sink<R>();
+				Sink<L> leftSink = new Sink<L>();
+				Sink<R> rightSink = new Sink<R>();
 
-				var leftAdvance = lefts.tryAdvance(leftSink);
+				boolean leftAdvance = lefts.tryAdvance(leftSink);
 
 				if (!leftAdvance) {
 					return false;
 				}
 
-				var rightAdvance = rights.tryAdvance(rightSink);
+				boolean rightAdvance = rights.tryAdvance(rightSink);
 
 				if (!rightAdvance) {
 					return false;

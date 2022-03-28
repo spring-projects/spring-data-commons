@@ -16,9 +16,11 @@
 package org.springframework.data.convert;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.EntityInstantiator;
@@ -73,18 +75,19 @@ public class DtoInstantiatingConverter implements Converter<Object, Object> {
 			return source;
 		}
 
-		var sourceEntity = context.getRequiredPersistentEntity(source.getClass());
-		var sourceAccessor = sourceEntity.getPropertyAccessor(source);
-		var targetEntity = context.getRequiredPersistentEntity(targetType);
+		PersistentEntity<?, ? extends PersistentProperty<?>> sourceEntity = context
+				.getRequiredPersistentEntity(source.getClass());
+		PersistentPropertyAccessor<Object> sourceAccessor = sourceEntity.getPropertyAccessor(source);
+		PersistentEntity<?, ? extends PersistentProperty<?>> targetEntity = context.getRequiredPersistentEntity(targetType);
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		var dto = instantiator.createInstance(targetEntity, new ParameterValueProvider() {
+		Object dto = instantiator.createInstance(targetEntity, new ParameterValueProvider() {
 
 			@Override
 			@Nullable
 			public Object getParameterValue(Parameter parameter) {
 
-				var name = parameter.getName();
+				String name = parameter.getName();
 
 				if (name == null) {
 					throw new IllegalArgumentException(String.format("Parameter %s does not have a name", parameter));
@@ -94,8 +97,8 @@ public class DtoInstantiatingConverter implements Converter<Object, Object> {
 			}
 		});
 
-		var targetAccessor = targetEntity.getPropertyAccessor(dto);
-		var creator = targetEntity.getInstanceCreatorMetadata();
+		PersistentPropertyAccessor<Object> targetAccessor = targetEntity.getPropertyAccessor(dto);
+		InstanceCreatorMetadata<? extends PersistentProperty<?>> creator = targetEntity.getInstanceCreatorMetadata();
 
 		targetEntity.doWithProperties((SimplePropertyHandler) property -> {
 

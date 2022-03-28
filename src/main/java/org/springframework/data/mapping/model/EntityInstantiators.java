@@ -87,13 +87,13 @@ public class EntityInstantiators {
 	public EntityInstantiator getInstantiatorFor(PersistentEntity<?, ?> entity) {
 
 		Assert.notNull(entity, "Entity must not be null!");
-		var type = entity.getType();
+		Class<?> type = entity.getType();
 
 		if (!customInstantiators.containsKey(type)) {
 			return fallback;
 		}
 
-		var instantiator = customInstantiators.get(entity.getType());
+		EntityInstantiator instantiator = customInstantiators.get(entity.getType());
 		return instantiator == null ? fallback : instantiator;
 	}
 }

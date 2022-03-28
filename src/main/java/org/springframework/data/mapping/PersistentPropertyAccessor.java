@@ -61,26 +61,27 @@ public interface PersistentPropertyAccessor<T> {
 		Assert.notNull(path, "PersistentPropertyPath must not be null!");
 		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty!");
 
-		var parentPath = path.getParentPath();
-		var leafProperty = path.getRequiredLeafProperty();
-		var parentProperty = parentPath.isEmpty() ? null : parentPath.getLeafProperty();
+		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
+		PersistentProperty<? extends PersistentProperty<?>> leafProperty = path.getRequiredLeafProperty();
+		PersistentProperty<? extends PersistentProperty<?>> parentProperty = parentPath.isEmpty() ? null
+				: parentPath.getLeafProperty();
 
 		if (parentProperty != null && (parentProperty.isCollectionLike() || parentProperty.isMap())) {
 			throw new MappingException(
 					String.format("Cannot traverse collection or map intermediate %s", parentPath.toDotPath()));
 		}
 
-		var parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath);
+		Object parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath);
 
 		if (parent == null) {
 
-			var nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
+			String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
 
 			throw new MappingException(
 					String.format(nullIntermediateMessage, parentProperty, path.toDotPath(), getBean().getClass().getName()));
 		}
 
-		var accessor = parent == getBean() //
+		PersistentPropertyAccessor<?> accessor = parent == getBean() //
 				? this //
 				: leafProperty.getOwner().getPropertyAccessor(parent);
 
@@ -90,7 +91,7 @@ public interface PersistentPropertyAccessor<T> {
 			return;
 		}
 
-		var bean = accessor.getBean();
+		Object bean = accessor.getBean();
 
 		if (bean != parent) {
 			setProperty(parentPath, bean);
@@ -140,7 +141,7 @@ public interface PersistentPropertyAccessor<T> {
 	default Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, TraversalContext context) {
 
 		Object bean = getBean();
-		var current = bean;
+		Object current = bean;
 
 		if (path.isEmpty()) {
 			return bean;
@@ -150,14 +151,14 @@ public interface PersistentPropertyAccessor<T> {
 
 			if (current == null) {
 
-				var nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
+				String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
 
 				throw new MappingException(
 						String.format(nullIntermediateMessage, property, path.toDotPath(), bean.getClass().getName()));
 			}
 
-			var entity = property.getOwner();
-			var accessor = entity.getPropertyAccessor(current);
+			PersistentEntity<?, ? extends PersistentProperty<?>> entity = property.getOwner();
+			PersistentPropertyAccessor<Object> accessor = entity.getPropertyAccessor(current);
 
 			current = context.postProcess(property, accessor.getProperty(property));
 		}

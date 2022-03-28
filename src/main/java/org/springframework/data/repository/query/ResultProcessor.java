@@ -96,7 +96,7 @@ public class ResultProcessor {
 
 		Assert.notNull(accessor, "Parameter accessor must not be null!");
 
-		var projection = accessor.findDynamicProjection();
+		Class<?> projection = accessor.findDynamicProjection();
 
 		return projection == null //
 				? this //
@@ -141,7 +141,7 @@ public class ResultProcessor {
 
 		Assert.notNull(preparingConverter, "Preparing converter must not be null!");
 
-		var converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
+		ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
 
 		if (source instanceof Slice && (method.isPageQuery() || method.isSliceQuery())) {
 			return (T) ((Slice<?>) source).map(converter::convert);
@@ -149,7 +149,7 @@ public class ResultProcessor {
 
 		if (source instanceof Collection<?> collection && method.isCollectionQuery()) {
 
-			var target = createCollectionFor(collection);
+			Collection<Object> target = createCollectionFor(collection);
 
 			for (Object columns : collection) {
 				target.add(type.isInstance(columns) ? columns : converter.convert(columns));
@@ -171,7 +171,7 @@ public class ResultProcessor {
 
 	private ResultProcessor withType(Class<?> type) {
 
-		var returnedType = ReturnedType.of(type, method.getDomainClass(), factory);
+		ReturnedType returnedType = ReturnedType.of(type, method.getDomainClass(), factory);
 		return new ResultProcessor(method, converter.withType(returnedType), factory, returnedType);
 	}
 
@@ -222,7 +222,7 @@ public class ResultProcessor {
 					return source;
 				}
 
-				var intermediate = ChainingConverter.this.convert(source);
+				Object intermediate = ChainingConverter.this.convert(source);
 
 				return intermediate == null || targetType.isInstance(intermediate) ? intermediate
 						: converter.convert(intermediate);
@@ -291,7 +291,7 @@ public class ResultProcessor {
 		@Override
 		public Object convert(Object source) {
 
-			var targetType = type.getReturnedType();
+			Class<?> targetType = type.getReturnedType();
 
 			if (targetType.isInterface()) {
 				return factory.createProjection(targetType, getProjectionTarget(source));
@@ -315,7 +315,7 @@ public class ResultProcessor {
 
 		private static Map<String, Object> toMap(Collection<?> values, List<String> names) {
 
-			var i = 0;
+			int i = 0;
 			Map<String, Object> result = new HashMap<>(values.size());
 
 			for (Object element : values) {

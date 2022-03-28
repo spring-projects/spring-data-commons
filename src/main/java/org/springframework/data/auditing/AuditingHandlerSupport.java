@@ -129,7 +129,7 @@ public abstract class AuditingHandlerSupport {
 
 	private <T> T touch(Auditor<?> auditor, T target, boolean isNew) {
 
-		var wrapper = factory.getBeanWrapperFor(target);
+		Optional<AuditableBeanWrapper<T>> wrapper = factory.getBeanWrapperFor(target);
 
 		return wrapper.map(it -> {
 
@@ -185,7 +185,7 @@ public abstract class AuditingHandlerSupport {
 
 		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null!");
 
-		var now = dateTimeProvider.getNow();
+		Optional<TemporalAccessor> now = dateTimeProvider.getNow();
 
 		Assert.notNull(now, () -> String.format("Now must not be null! Returned by: %s!", dateTimeProvider.getClass()));
 

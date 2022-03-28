@@ -27,6 +27,7 @@ import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -92,7 +93,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 		this.repositories = Lazy.of(() -> {
 
-			var repositories = new Repositories(context);
+			Repositories repositories = new Repositories(context);
 
 			this.toEntityConverter = Optional.of(new ToEntityConverter(repositories, conversionService));
 			this.toIdConverter = Optional.of(new ToIdConverter(repositories, conversionService));
@@ -144,11 +145,11 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 				return source;
 			}
 
-			var domainType = targetType.getType();
-			var invoker = repositoryInvokerFactory.getInvokerFor(domainType);
-			var information = repositories.getRequiredRepositoryInformation(domainType);
+			Class<?> domainType = targetType.getType();
+			RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(domainType);
+			RepositoryInformation information = repositories.getRequiredRepositoryInformation(domainType);
 
-			var id = conversionService.convert(source, information.getIdType());
+			Object id = conversionService.convert(source, information.getIdType());
 
 			return id == null ? null : invoker.invokeFindById(id).orElse(null);
 		}
@@ -160,17 +161,17 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 				return false;
 			}
 
-			var domainType = targetType.getType();
+			Class<?> domainType = targetType.getType();
 
 			if (!repositories.hasRepositoryFor(domainType)) {
 				return false;
 			}
 
-			var repositoryInformation = repositories.getRepositoryInformationFor(domainType);
+			Optional<RepositoryInformation> repositoryInformation = repositories.getRepositoryInformationFor(domainType);
 
 			return repositoryInformation.map(it -> {
 
-				var rawIdType = it.getIdType();
+				Class<?> rawIdType = it.getIdType();
 
 				return sourceType.equals(TypeDescriptor.valueOf(rawIdType))
 						|| conversionService.canConvert(sourceType.getType(), rawIdType);
@@ -214,7 +215,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 				return source;
 			}
 
-			var domainType = sourceType.getType();
+			Class<?> domainType = sourceType.getType();
 
 			EntityInformation<Object, ?> entityInformation = repositories.getEntityInformationFor(domainType);
 
@@ -228,17 +229,17 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 				return false;
 			}
 
-			var domainType = sourceType.getType();
+			Class<?> domainType = sourceType.getType();
 
 			if (!repositories.hasRepositoryFor(domainType)) {
 				return false;
 			}
 
-			var information = repositories.getRepositoryInformationFor(domainType);
+			Optional<RepositoryInformation> information = repositories.getRepositoryInformationFor(domainType);
 
 			return information.map(it -> {
 
-				var rawIdType = it.getIdType();
+				Class<?> rawIdType = it.getIdType();
 
 				return targetType.equals(TypeDescriptor.valueOf(rawIdType))
 						|| conversionService.canConvert(rawIdType, targetType.getType());

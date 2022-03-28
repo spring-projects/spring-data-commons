@@ -87,13 +87,13 @@ class InstanceCreatorMetadataSupport<T, P extends PersistentProperty<P>> impleme
 
 		Assert.notNull(property, "Property must not be null!");
 
-		var cached = isPropertyParameterCache.get(property);
+		Boolean cached = isPropertyParameterCache.get(property);
 
 		if (cached != null) {
 			return cached;
 		}
 
-		var result = doGetIsCreatorParameter(property);
+		boolean result = doGetIsCreatorParameter(property);
 
 		isPropertyParameterCache.put(property, result);
 

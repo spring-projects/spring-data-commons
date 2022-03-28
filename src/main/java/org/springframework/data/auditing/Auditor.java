@@ -110,7 +110,7 @@ class Auditor<T> {
 		if (o == null || getClass() != o.getClass())
 			return false;
 
-		var auditor = (Auditor<?>) o;
+		Auditor<?> auditor = (Auditor<?>) o;
 
 		return ObjectUtils.nullSafeEquals(value, auditor.value);
 	}

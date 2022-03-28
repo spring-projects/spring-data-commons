@@ -61,7 +61,7 @@ public class HashMapChangeSet implements ChangeSet {
 	@Nullable
 	public <T> T get(String key, Class<T> requiredClass, ConversionService conversionService) {
 
-		var value = values.get(key);
+		Object value = values.get(key);
 
 		if (value == null) {
 			return null;

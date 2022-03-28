@@ -91,7 +91,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 	private void populateRepositoryFactoryInformation(ListableBeanFactory factory) {
 
-		for (var name : BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory, RepositoryFactoryInformation.class,
+		for (String name : BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory, RepositoryFactoryInformation.class,
 				false, false)) {
 			cacheRepositoryFactory(name);
 		}
@@ -100,19 +100,19 @@ public class Repositories implements Iterable<Class<?>> {
 	@SuppressWarnings("rawtypes")
 	private synchronized void cacheRepositoryFactory(String name) {
 
-		var repositoryFactoryInformation = beanFactory.get().getBean(name,
+		RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.get().getBean(name,
 				RepositoryFactoryInformation.class);
-		var domainType = ClassUtils
+		Class<?> domainType = ClassUtils
 				.getUserClass(repositoryFactoryInformation.getRepositoryInformation().getDomainType());
 
-		var information = repositoryFactoryInformation.getRepositoryInformation();
-		var alternativeDomainTypes = information.getAlternativeDomainTypes();
+		RepositoryInformation information = repositoryFactoryInformation.getRepositoryInformation();
+		Set<Class<?>> alternativeDomainTypes = information.getAlternativeDomainTypes();
 
 		Set<Class<?>> typesToRegister = new HashSet<>(alternativeDomainTypes.size() + 1);
 		typesToRegister.add(domainType);
 		typesToRegister.addAll(alternativeDomainTypes);
 
-		for (var type : typesToRegister) {
+		for (Class<?> type : typesToRegister) {
 			cacheFirstOrPrimary(type, repositoryFactoryInformation, BeanFactoryUtils.transformedBeanName(name));
 		}
 	}
@@ -128,7 +128,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		var userClass = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
+		Class<?> userClass = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
 
 		return repositoryFactoryInfos.containsKey(userClass);
 	}
@@ -144,8 +144,8 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		var userClass = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
-		var repositoryBeanName = Optional.ofNullable(repositoryBeanNames.get(userClass));
+		Class<?> userClass = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
+		Optional<String> repositoryBeanName = Optional.ofNullable(repositoryBeanNames.get(userClass));
 
 		return beanFactory.flatMap(it -> repositoryBeanName.map(it::getBean));
 	}
@@ -163,8 +163,8 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		var userType = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
-		var repositoryInfo = repositoryFactoryInfos.get(userType);
+		Class<?> userType = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
+		RepositoryFactoryInformation<Object, Object> repositoryInfo = repositoryFactoryInfos.get(userType);
 
 		if (repositoryInfo != null) {
 			return repositoryInfo;
@@ -206,7 +206,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
-		var information = getRepositoryFactoryInfoFor(domainClass);
+		RepositoryFactoryInformation<Object, Object> information = getRepositoryFactoryInfoFor(domainClass);
 		return information == EMPTY_REPOSITORY_FACTORY_INFO ? Optional.empty()
 				: Optional.of(information.getRepositoryInformation());
 	}
@@ -289,7 +289,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		if (repositoryBeanNames.containsKey(type)) {
 
-			var factoryToUse = this.beanFactory.map(it -> {
+			Optional<ConfigurableListableBeanFactory> factoryToUse = this.beanFactory.map(it -> {
 
 				if (it instanceof ConfigurableListableBeanFactory) {
 					return (ConfigurableListableBeanFactory) it;
@@ -302,7 +302,7 @@ public class Repositories implements Iterable<Class<?>> {
 				return null;
 			});
 
-			var presentAndPrimary = factoryToUse.map(it -> it.getMergedBeanDefinition(name)) //
+			Boolean presentAndPrimary = factoryToUse.map(it -> it.getMergedBeanDefinition(name)) //
 					.map(BeanDefinition::isPrimary) //
 					.orElse(false);
 
@@ -327,13 +327,13 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(domainType, "Domain type must not be null!");
 
-		var declaredTypes = repositoryBeanNames.keySet();
+		Set<Class<?>> declaredTypes = repositoryBeanNames.keySet();
 
 		if (declaredTypes.contains(domainType)) {
 			return domainType;
 		}
 
-		for (var declaredType : declaredTypes) {
+		for (Class<?> declaredType : declaredTypes) {
 			if (declaredType.isAssignableFrom(domainType)) {
 				return declaredType;
 			}

@@ -46,7 +46,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 	public DefaultAuditableBeanWrapperFactory() {
 
-		var conversionService = new DefaultFormattingConversionService();
+		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
 
 		Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
 
@@ -75,7 +75,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 				return (AuditableBeanWrapper<T>) new AuditableInterfaceBeanWrapper(conversionService, (Auditable<Object, ?, TemporalAccessor>) it);
 			}
 
-			var metadata = AnnotationAuditingMetadata.getMetadata(it.getClass());
+			AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(it.getClass());
 
 			if (metadata.isAuditable()) {
 				return new ReflectionAuditingBeanWrapper<T>(conversionService, it);
@@ -191,7 +191,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 									value.getClass(), targetType));
 				}
 
-				var date = conversionService.convert(value, Date.class);
+				Date date = conversionService.convert(value, Date.class);
 				return conversionService.convert(date, targetType);
 			}
 
@@ -277,7 +277,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 			return getAsTemporalAccessor(metadata.getLastModifiedDateField().map(field -> {
 
-				var value = org.springframework.util.ReflectionUtils.getField(field, target);
+				Object value = org.springframework.util.ReflectionUtils.getField(field, target);
 				return value instanceof Optional ? ((Optional<?>) value).orElse(null) : value;
 
 			}), TemporalAccessor.class);

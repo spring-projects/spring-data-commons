@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.model;
 
 import kotlin.jvm.JvmClassMappingKt;
+import kotlin.reflect.KClass;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.KParameter.Kind;
@@ -25,6 +26,7 @@ import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,13 +78,13 @@ class KotlinCopyMethod {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		var syntheticCopyMethod = findSyntheticCopyMethod(type);
+		Optional<Method> syntheticCopyMethod = findSyntheticCopyMethod(type);
 
 		if (!syntheticCopyMethod.isPresent()) {
 			return Optional.empty();
 		}
 
-		var publicCopyMethod = syntheticCopyMethod.flatMap(KotlinCopyMethod::findPublicCopyMethod);
+		Optional<Method> publicCopyMethod = syntheticCopyMethod.flatMap(KotlinCopyMethod::findPublicCopyMethod);
 
 		return publicCopyMethod.map(method -> new KotlinCopyMethod(method, syntheticCopyMethod.get()));
 	}
@@ -121,7 +123,7 @@ class KotlinCopyMethod {
 	 */
 	Optional<KotlinCopyByProperty> forProperty(PersistentProperty<?> property) {
 
-		var index = KotlinCopyByProperty.findIndex(copyFunction, property.getName());
+		int index = KotlinCopyByProperty.findIndex(copyFunction, property.getName());
 
 		if (index == -1) {
 			return Optional.empty();
@@ -147,9 +149,9 @@ class KotlinCopyMethod {
 			return false;
 		}
 
-		var parameterTypes = publicCopyMethod.getParameterTypes();
+		Class<?>[] parameterTypes = publicCopyMethod.getParameterTypes();
 
-		for (var i = 0; i < parameterTypes.length; i++) {
+		for (int i = 0; i < parameterTypes.length; i++) {
 			if (!parameterTypes[i].equals(persistentProperties.get(i).getType())) {
 				return false;
 			}
@@ -160,16 +162,16 @@ class KotlinCopyMethod {
 
 	private static Optional<Method> findPublicCopyMethod(Method defaultKotlinMethod) {
 
-		var type = defaultKotlinMethod.getDeclaringClass();
-		var kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+		Class<?> type = defaultKotlinMethod.getDeclaringClass();
+		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
 
-		var primaryConstructor = KClasses.getPrimaryConstructor(kotlinClass);
+		KFunction<?> primaryConstructor = KClasses.getPrimaryConstructor(kotlinClass);
 
 		if (primaryConstructor == null) {
 			return Optional.empty();
 		}
 
-		var constructorArguments = getComponentArguments(primaryConstructor);
+		List<KParameter> constructorArguments = getComponentArguments(primaryConstructor);
 
 		return Arrays.stream(type.getDeclaredMethods()).filter(it -> it.getName().equals("copy") //
 				&& !it.isSynthetic() //
@@ -178,7 +180,7 @@ class KotlinCopyMethod {
 				&& it.getParameterCount() == constructorArguments.size()) //
 				.filter(it -> {
 
-					var kotlinFunction = ReflectJvmMapping.getKotlinFunction(it);
+					KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(it);
 
 					if (kotlinFunction == null) {
 						return false;
@@ -190,10 +192,10 @@ class KotlinCopyMethod {
 
 	private static boolean parameterMatches(List<KParameter> constructorArguments, KFunction<?> kotlinFunction) {
 
-		var foundInstance = false;
-		var constructorArgIndex = 0;
+		boolean foundInstance = false;
+		int constructorArgIndex = 0;
 
-		for (var parameter : kotlinFunction.getParameters()) {
+		for (KParameter parameter : kotlinFunction.getParameters()) {
 
 			if (parameter.getKind() == Kind.INSTANCE) {
 				foundInstance = true;
@@ -204,7 +206,7 @@ class KotlinCopyMethod {
 				return false;
 			}
 
-			var constructorParameter = constructorArguments.get(constructorArgIndex);
+			KParameter constructorParameter = constructorArguments.get(constructorArgIndex);
 
 			if (constructorParameter.getName() == null || !constructorParameter.getName().equals(parameter.getName())
 					|| !constructorParameter.getType().equals(parameter.getType())) {
@@ -219,8 +221,8 @@ class KotlinCopyMethod {
 
 	private static Optional<Method> findSyntheticCopyMethod(Class<?> type) {
 
-		var kotlinClass = JvmClassMappingKt.getKotlinClass(type);
-		var primaryConstructor = KClasses.getPrimaryConstructor(kotlinClass);
+		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+		KFunction<?> primaryConstructor = KClasses.getPrimaryConstructor(kotlinClass);
 
 		if (primaryConstructor == null) {
 			return Optional.empty();
@@ -240,9 +242,9 @@ class KotlinCopyMethod {
 	 */
 	private static boolean matchesPrimaryConstructor(Class<?>[] parameterTypes, KFunction<?> primaryConstructor) {
 
-		var constructorArguments = getComponentArguments(primaryConstructor);
+		List<KParameter> constructorArguments = getComponentArguments(primaryConstructor);
 
-		var defaultingArgs = KotlinDefaultMask.from(primaryConstructor, kParameter -> false).getDefaulting().length;
+		int defaultingArgs = KotlinDefaultMask.from(primaryConstructor, kParameter -> false).getDefaulting().length;
 
 		if (parameterTypes.length != 1 /* $this */ + constructorArguments.size() + defaultingArgs + 1 /* object marker */) {
 			return false;
@@ -253,9 +255,9 @@ class KotlinCopyMethod {
 			return false;
 		}
 
-		for (var i = 0; i < constructorArguments.size(); i++) {
+		for (int i = 0; i < constructorArguments.size(); i++) {
 
-			var kParameter = constructorArguments.get(i);
+			KParameter kParameter = constructorArguments.get(i);
 
 			if (!isAssignableFrom(parameterTypes[i + 1], kParameter.getType())) {
 				return false;
@@ -274,9 +276,9 @@ class KotlinCopyMethod {
 
 	private static boolean isAssignableFrom(Class<?> target, KType source) {
 
-		var parameterType = ReflectJvmMapping.getJavaType(source);
+		Type parameterType = ReflectJvmMapping.getJavaType(source);
 
-		var rawClass = ResolvableType.forType(parameterType).getRawClass();
+		Class<?> rawClass = ResolvableType.forType(parameterType).getRawClass();
 		return rawClass == null || target.isAssignableFrom(rawClass);
 	}
 
@@ -300,7 +302,7 @@ class KotlinCopyMethod {
 
 		static int findIndex(KFunction<?> function, String parameterName) {
 
-			for (var parameter : function.getParameters()) {
+			for (KParameter parameter : function.getParameters()) {
 				if (parameterName.equals(parameter.getName())) {
 					return parameter.getIndex();
 				}

@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.core.KotlinDetector;
@@ -85,7 +86,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		if (KotlinDetector.isKotlinType(method.getDeclaringClass()) && KotlinReflectionUtils.isSuspend(method)) {
 
 			// the last parameter is Continuation<? super T> or Continuation<? super Flow<? super T>>
-			var types = typeInformation.getParameterTypes(method);
+			List<TypeInformation<?>> types = typeInformation.getParameterTypes(method);
 			returnType = types.get(types.size() - 1).getComponentType();
 		}
 
@@ -98,7 +99,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 	public Class<?> getReturnedDomainClass(Method method) {
 
-		var returnType = getReturnType(method);
+		TypeInformation<?> returnType = getReturnType(method);
 
 		return QueryExecutionConverters.unwrapWrapperTypes(ReactiveWrapperConverters.unwrapWrapperTypes(returnType))
 				.getType();

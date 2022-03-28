@@ -124,7 +124,7 @@ public class TraversalContext {
 		Assert.isTrue(type.isAssignableFrom(property.getType()), () -> String
 				.format("Cannot register a property handler for %s on a property of type %s!", type, property.getType()));
 
-		var caster = (Function<Object, T>) it -> type.cast(it);
+		Function<Object, T> caster = (Function<Object, T>) it -> type.cast(it);
 
 		return registerHandler(property, caster.andThen(handler));
 	}
@@ -139,7 +139,7 @@ public class TraversalContext {
 	@Nullable
 	Object postProcess(PersistentProperty<?> property, @Nullable Object value) {
 
-		var handler = handlers.get(property);
+		Function<Object, Object> handler = handlers.get(property);
 
 		return handler == null ? value : handler.apply(value);
 	}
