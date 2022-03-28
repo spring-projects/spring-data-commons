@@ -16,6 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Set;
 
 import org.springframework.data.repository.core.CrudMethods;
@@ -102,5 +103,10 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 	@Override
 	public boolean isReactiveRepository() {
 		return metadata.isReactiveRepository();
+	}
+
+	@Override
+	public Set<RepositoryFragment<?>> getFragments() {
+		return Collections.emptySet();
 	}
 }

@@ -21,13 +21,13 @@ import java.lang.annotation.RetentionPolicy;
 
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
+import org.springframework.data.repository.core.support.ReactiveDummyRepositoryFactoryBean;
+import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Import(DummyRegistrar.class)
+@Import(ReactiveDummyRegistrar.class)
 @Inherited
-public @interface EnableRepositories {
+public @interface EnableReactiveRepositories {
 
 	String[] value() default {};
 
@@ -39,9 +39,9 @@ public @interface EnableRepositories {
 
 	Filter[] excludeFilters() default {};
 
-	Class<?> repositoryFactoryBeanClass() default DummyRepositoryFactoryBean.class;
+	Class<?> repositoryFactoryBeanClass() default ReactiveDummyRepositoryFactoryBean.class;
 
-	Class<?> repositoryBaseClass() default PagingAndSortingRepository.class;
+	Class<?> repositoryBaseClass() default ReactiveSortingRepository.class;
 
 	String namedQueriesLocation() default "";
 

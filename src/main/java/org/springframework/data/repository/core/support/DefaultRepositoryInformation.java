@@ -15,26 +15,19 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.springframework.data.repository.util.ClassUtils.*;
 import static org.springframework.util.ReflectionUtils.*;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.data.annotation.QueryAnnotation;
-import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.RepositoryInformationSupport;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * Default implementation of {@link RepositoryInformation}.
@@ -45,12 +38,10 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Alessandro Nistico
  */
-class DefaultRepositoryInformation implements RepositoryInformation {
+class DefaultRepositoryInformation extends RepositoryInformationSupport implements RepositoryInformation {
 
 	private final Map<Method, Method> methodCache = new ConcurrentHashMap<>();
 
-	private final RepositoryMetadata metadata;
-	private final Class<?> repositoryBaseClass;
 	private final RepositoryComposition composition;
 	private final RepositoryComposition baseComposition;
 
@@ -64,31 +55,13 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	public DefaultRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass,
 			RepositoryComposition composition) {
 
-		Assert.notNull(metadata, "Repository metadata must not be null");
-		Assert.notNull(repositoryBaseClass, "Repository base class must not be null");
+		super(() -> metadata, () -> repositoryBaseClass);
 		Assert.notNull(composition, "Repository composition must not be null");
 
-		this.metadata = metadata;
-		this.repositoryBaseClass = repositoryBaseClass;
 		this.composition = composition;
 		this.baseComposition = RepositoryComposition.of(RepositoryFragment.structural(repositoryBaseClass)) //
 				.withArgumentConverter(composition.getArgumentConverter()) //
 				.withMethodLookup(composition.getMethodLookup());
-	}
-
-	@Override
-	public TypeInformation<?> getDomainTypeInformation() {
-		return metadata.getDomainTypeInformation();
-	}
-
-	@Override
-	public TypeInformation<?> getIdTypeInformation() {
-		return metadata.getIdTypeInformation();
-	}
-
-	@Override
-	public Class<?> getRepositoryBaseClass() {
-		return this.repositoryBaseClass;
 	}
 
 	@Override
@@ -118,52 +91,8 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	}
 
 	@Override
-	public Streamable<Method> getQueryMethods() {
-
-		Set<Method> result = new HashSet<>();
-
-		for (Method method : getRepositoryInterface().getMethods()) {
-			method = ClassUtils.getMostSpecificMethod(method, getRepositoryInterface());
-			if (isQueryMethodCandidate(method)) {
-				result.add(method);
-			}
-		}
-
-		return Streamable.of(Collections.unmodifiableSet(result));
-	}
-
-	/**
-	 * Checks whether the given method is a query method candidate.
-	 *
-	 * @param method
-	 * @return
-	 */
-	private boolean isQueryMethodCandidate(Method method) {
-		return !method.isBridge() && !method.isDefault() //
-				&& !Modifier.isStatic(method.getModifiers()) //
-				&& (isQueryAnnotationPresentOn(method) || !isCustomMethod(method) && !isBaseClassMethod(method));
-	}
-
-	/**
-	 * Checks whether the given method contains a custom store specific query annotation annotated with
-	 * {@link QueryAnnotation}. The method-hierarchy is also considered in the search for the annotation.
-	 *
-	 * @param method
-	 * @return
-	 */
-	private boolean isQueryAnnotationPresentOn(Method method) {
-
-		return AnnotationUtils.findAnnotation(method, QueryAnnotation.class) != null;
-	}
-
-	@Override
 	public boolean isCustomMethod(Method method) {
 		return composition.getMethod(method) != null;
-	}
-
-	@Override
-	public boolean isQueryMethod(Method method) {
-		return getQueryMethods().stream().anyMatch(it -> it.equals(method));
 	}
 
 	@Override
@@ -173,57 +102,15 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 		return baseComposition.getMethod(method) != null;
 	}
 
-	@Override
-	public boolean hasCustomMethod() {
-
-		Class<?> repositoryInterface = getRepositoryInterface();
-
-		// No detection required if no typing interface was configured
-		if (isGenericRepositoryInterface(repositoryInterface)) {
-			return false;
-		}
-
-		for (Method method : repositoryInterface.getMethods()) {
-			if (isCustomMethod(method) && !isBaseClassMethod(method)) {
-				return true;
-			}
-		}
-
-		return false;
+	/**
+	 *
+	 * @return
+	 * @since 3.0
+	 *
+	 */
+	@Nullable
+	public Set<RepositoryFragment<?>> getFragments() {
+		return composition.getFragments().toSet();
 	}
 
-	@Override
-	public Class<?> getRepositoryInterface() {
-		return metadata.getRepositoryInterface();
-	}
-
-	@Override
-	public Class<?> getReturnedDomainClass(Method method) {
-		return metadata.getReturnedDomainClass(method);
-	}
-
-	@Override
-	public TypeInformation<?> getReturnType(Method method) {
-		return metadata.getReturnType(method);
-	}
-
-	@Override
-	public CrudMethods getCrudMethods() {
-		return metadata.getCrudMethods();
-	}
-
-	@Override
-	public boolean isPagingRepository() {
-		return metadata.isPagingRepository();
-	}
-
-	@Override
-	public Set<Class<?>> getAlternativeDomainTypes() {
-		return metadata.getAlternativeDomainTypes();
-	}
-
-	@Override
-	public boolean isReactiveRepository() {
-		return metadata.isReactiveRepository();
-	}
 }

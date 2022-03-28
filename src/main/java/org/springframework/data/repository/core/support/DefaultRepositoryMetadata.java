@@ -15,7 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.springframework.data.repository.Repository;
@@ -78,5 +80,10 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 		}
 
 		return arguments.get(index);
+	}
+
+	@Override
+	public Set<RepositoryFragment<?>> getFragments() {
+		return Collections.emptySet();
 	}
 }
