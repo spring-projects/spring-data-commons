@@ -25,21 +25,14 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.ResolvableType;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -112,7 +105,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		this.componentType = Lazy.of(this::doGetComponentType);
 		this.valueType = Lazy.of(this::doGetMapValueType);
 		this.typeVariableMap = typeVariableMap;
-		this.hashCode = 17 + 31 * type.hashCode() + 31 * typeVariableMap.hashCode();
+		this.hashCode = 17 + (31 * type.hashCode()) + (31 * typeVariableMap.hashCode());
 	}
 
 	/**
@@ -291,18 +284,14 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return parameterTypes.length == 0 ? null : parameterTypes[0];
 	}
 
+	@Override
 	public Class<S> getType() {
 		return resolvedType.get();
 	}
-	
-	@Override
-	public Type getGenericType() {
-		return type;
-	}
 
 	@Override
-	public TypeInformation<?> getGenericTypeInformation() {
-		return createInfo(type);
+	public TypeDescriptor toTypeDescriptor() {
+		return new TypeDescriptor(toResolvableType(), getType(), null);
 	}
 
 	@Override
@@ -499,6 +488,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return getSuperTypeWithin(MAP_TYPES);
 	}
 
+	protected ResolvableType toResolvableType() {
+		return ResolvableType.forType(type);
+	}
+
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -656,7 +649,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(typeInformation);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(typeParameters);
+			result = (31 * result) + ObjectUtils.nullSafeHashCode(typeParameters);
 			return result;
 		}
 	}

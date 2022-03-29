@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
@@ -55,6 +56,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	}
 
 	private final Class<S> type;
+	private final Lazy<TypeDescriptor> descriptor;
 
 	/**
 	 * Simple factory method to easily create new instances of {@link ClassTypeInformation}.
@@ -89,8 +91,11 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @param type
 	 */
 	ClassTypeInformation(Class<S> type) {
+
 		super(type, getTypeVariableMap(type));
+
 		this.type = type;
+		this.descriptor = Lazy.of(() -> TypeDescriptor.valueOf(type));
 	}
 
 	/**
@@ -150,6 +155,11 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	@Override
 	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
 		return (TypeInformation<? extends S>) type;
+	}
+
+	@Override
+	public TypeDescriptor toTypeDescriptor() {
+		return descriptor.get();
 	}
 
 	@Override

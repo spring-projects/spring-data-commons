@@ -28,7 +28,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -305,7 +304,8 @@ class RepositoriesUnitTests {
 			var domainType = super.getDomainType().getName().concat("Entity");
 
 			try {
-				this.domainType = ClassTypeInformation.from(ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader()));
+				this.domainType = ClassTypeInformation
+						.from(ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader()));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -313,7 +313,7 @@ class RepositoriesUnitTests {
 
 		@Override
 		public TypeInformation<?> getDomainTypeInformation() {
-			return this.domainType;
+			return domainType == null ? super.getDomainTypeInformation() : domainType;
 		}
 
 		@Override

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -74,7 +73,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		this.repository = repository;
 		this.methods = metadata.getCrudMethods();
 		TypeInformation<?> idType = metadata.getIdTypeInformation();
-		this.idTypeDescriptor = new TypeDescriptor(ResolvableType.forType(idType.getGenericType()), null, idType.getType().getAnnotations());
+		this.idTypeDescriptor = idType.toTypeDescriptor();
 		this.conversionService = conversionService;
 	}
 
@@ -249,7 +248,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	protected Object convertId(Object id) {
 
 		Assert.notNull(id, "Id must not be null!");
-        TypeDescriptor idDescriptor = TypeDescriptor.forObject(id);
+		TypeDescriptor idDescriptor = TypeDescriptor.forObject(id);
 
 		if (idDescriptor.isAssignableTo(idTypeDescriptor)) {
 			return id;
@@ -259,7 +258,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 		if (result == null) {
 			throw new IllegalStateException(
-					String.format("Identifier conversion of %s to %s unexpectedly returned null!", id, idTypeDescriptor.getType()));
+					String.format("Identifier conversion of %s to %s unexpectedly returned null!", id,
+							idTypeDescriptor.getType()));
 		}
 
 		return result;

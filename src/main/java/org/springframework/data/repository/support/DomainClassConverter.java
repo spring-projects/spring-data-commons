@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
@@ -30,7 +29,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -104,12 +102,6 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			return repositories;
 		});
 	}
-	
-	
-	private static TypeDescriptor getIdTypeDescriptor(RepositoryInformation information) {
-		TypeInformation<?> idType = information.getIdTypeInformation();
-		return new TypeDescriptor(ResolvableType.forType(idType.getGenericType()), null, idType.getType().getAnnotations());
-	}
 
 	/**
 	 * Converter to create domain types from any source that can be converted into the domain types identifier type.
@@ -157,7 +149,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			Class<?> domainType = targetType.getType();
 			RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(domainType);
 			RepositoryInformation information = repositories.getRequiredRepositoryInformation(domainType);
-			TypeDescriptor idTypeDescriptor = getIdTypeDescriptor(information);
+			TypeDescriptor idTypeDescriptor = information.getIdTypeInformation().toTypeDescriptor();
 
 			Object id = conversionService.convert(source, sourceType, idTypeDescriptor);
 
@@ -181,7 +173,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 			return repositoryInformation.map(it -> {
 
-				TypeDescriptor idTypeDescriptor = getIdTypeDescriptor(it);
+				TypeDescriptor idTypeDescriptor = it.getIdTypeInformation().toTypeDescriptor();
 
 				return sourceType.equals(idTypeDescriptor)
 						|| conversionService.canConvert(sourceType, idTypeDescriptor);
@@ -249,7 +241,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 
 			return information.map(it -> {
 
-				TypeDescriptor idTypeDescriptor = getIdTypeDescriptor(it);
+				TypeDescriptor idTypeDescriptor = it.getIdTypeInformation().toTypeDescriptor();
 
 				return targetType.equals(idTypeDescriptor)
 						|| conversionService.canConvert(idTypeDescriptor, targetType);
