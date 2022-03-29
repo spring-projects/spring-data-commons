@@ -19,6 +19,7 @@ import static org.springframework.util.ObjectUtils.*;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.List;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -33,6 +34,7 @@ import org.springframework.util.Assert;
 class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
 	private final TypeVariable<?> variable;
+	private final Lazy<List<TypeInformation<?>>> parameters;
 
 	/**
 	 * Creates a new {@link TypeVariableTypeInformation} for the given {@link TypeVariable} owning {@link Type} and parent
@@ -49,11 +51,18 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 		Assert.notNull(variable, "TypeVariable must not be null!");
 
 		this.variable = variable;
+		this.parameters = Lazy.of(() -> {
+			return createInfo(getTypeVariableMap().getOrDefault(variable, Object.class)).getTypeArguments();
+		});
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.util.TypeDiscoverer#getTypeArguments()
+	 */
 	@Override
-	public TypeInformation<?> getGenericTypeInformation() {
-		return createInfo(getTypeVariableMap().getOrDefault(variable, Object.class));
+	public List<TypeInformation<?>> getTypeArguments() {
+		return parameters.get();
 	}
 
 	/*

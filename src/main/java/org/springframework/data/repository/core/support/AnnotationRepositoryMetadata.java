@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.util.function.Function;
+
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -52,8 +54,8 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 		Assert.isTrue(AnnotationUtils.findAnnotation(repositoryInterface, RepositoryDefinition.class) != null,
 				() -> String.format(NO_ANNOTATION_FOUND, repositoryInterface.getName()));
 
-		this.idType = resolveIdType(repositoryInterface);
-		this.domainType = resolveDomainType(repositoryInterface);
+		this.idType = resolveType(repositoryInterface, RepositoryDefinition::idClass);
+		this.domainType = resolveType(repositoryInterface, RepositoryDefinition::domainClass);
 	}
 
 	/*
@@ -74,25 +76,15 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 		return this.domainType;
 	}
 
-	private TypeInformation<?> resolveIdType(Class<?> repositoryInterface) {
+	private static TypeInformation<?> resolveType(Class<?> repositoryInterface,
+			Function<RepositoryDefinition, Class<?>> extractor) {
 
 		RepositoryDefinition annotation = AnnotationUtils.findAnnotation(repositoryInterface, RepositoryDefinition.class);
 
-		if (annotation == null || annotation.idClass() == null) {
-			throw new IllegalArgumentException(String.format("Could not resolve id type of %s!", repositoryInterface));
-		}
-
-		return ClassTypeInformation.from(annotation.idClass());
-	}
-
-	private TypeInformation<?> resolveDomainType(Class<?> repositoryInterface) {
-
-		RepositoryDefinition annotation = AnnotationUtils.findAnnotation(repositoryInterface, RepositoryDefinition.class);
-
-		if (annotation == null || annotation.domainClass() == null) {
+		if ((annotation == null) || (extractor.apply(annotation) == null)) {
 			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s!", repositoryInterface));
 		}
 
-		return ClassTypeInformation.from(annotation.domainClass());
+		return ClassTypeInformation.from(extractor.apply(annotation));
 	}
 }

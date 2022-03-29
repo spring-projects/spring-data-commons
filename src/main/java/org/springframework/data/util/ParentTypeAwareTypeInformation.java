@@ -19,6 +19,8 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
 
+import org.springframework.core.ResolvableType;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
 
 /**
@@ -29,6 +31,7 @@ import org.springframework.lang.Nullable;
 public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S> {
 
 	private final TypeDiscoverer<?> parent;
+	private final Lazy<TypeDescriptor> descriptor;
 	private int hashCode;
 
 	/**
@@ -44,7 +47,14 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 	protected ParentTypeAwareTypeInformation(Type type, TypeDiscoverer<?> parent, Map<TypeVariable<?>, Type> map) {
 
 		super(type, map);
+
 		this.parent = parent;
+		this.descriptor = Lazy.of(() -> new TypeDescriptor(toResolvableType(), null, null));
+	}
+
+	@Override
+	public TypeDescriptor toTypeDescriptor() {
+		return descriptor.get();
 	}
 
 	/*
@@ -65,6 +75,11 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 	 * (non-Javadoc)
 	 * @see org.springframework.data.util.TypeDiscoverer#equals(java.lang.Object)
 	 */
+	@Override
+	protected ResolvableType toResolvableType() {
+		return ResolvableType.forType(getType(), parent.toResolvableType());
+	}
+
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -92,7 +107,7 @@ public abstract class ParentTypeAwareTypeInformation<S> extends TypeDiscoverer<S
 	public int hashCode() {
 
 		if (this.hashCode == 0) {
-			this.hashCode = super.hashCode() + 31 * parent.hashCode();
+			this.hashCode = super.hashCode() + (31 * parent.hashCode());
 		}
 
 		return this.hashCode;

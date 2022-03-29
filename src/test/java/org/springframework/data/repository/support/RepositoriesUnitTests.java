@@ -305,7 +305,8 @@ class RepositoriesUnitTests {
 			String domainType = super.getDomainType().getName().concat("Entity");
 
 			try {
-				this.domainType = ClassTypeInformation.from(ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader()));
+				this.domainType = ClassTypeInformation
+						.from(ClassUtils.forName(domainType, CustomRepositoryMetadata.class.getClassLoader()));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -317,7 +318,7 @@ class RepositoriesUnitTests {
 		 */
 		@Override
 		public TypeInformation<?> getDomainTypeInformation() {
-			return this.domainType;
+			return domainType == null ? super.getDomainTypeInformation() : domainType;
 		}
 
 		/*

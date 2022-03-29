@@ -56,26 +56,28 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 
 		this.domainType = resolveTypeParameter(arguments, 0,
 				() -> String.format("Could not resolve domain type of %s!", repositoryInterface));
-		
+
 		this.idType = resolveTypeParameter(arguments, 1,
 				() -> String.format("Could not resolve id type of %s!", repositoryInterface));
+	}
+
+	@Override
+	public TypeInformation<?> getIdTypeInformation() {
+		return this.idType;
+	}
+
+	@Override
+	public TypeInformation<?> getDomainTypeInformation() {
+		return this.domainType;
 	}
 
 	private static TypeInformation<?> resolveTypeParameter(List<TypeInformation<?>> arguments, int index,
 			Supplier<String> exceptionMessage) {
 
-		if (arguments.size() <= index || arguments.get(index) == null) {
+		if ((arguments.size() <= index) || (arguments.get(index) == null)) {
 			throw new IllegalArgumentException(exceptionMessage.get());
 		}
 
-		return arguments.get(index).getGenericTypeInformation();
-	}
-
-	public TypeInformation<?> getIdTypeInformation() {
-		return this.idType;
-	}
-
-	public TypeInformation<?> getDomainTypeInformation() {
-		return this.domainType;
+		return arguments.get(index);
 	}
 }

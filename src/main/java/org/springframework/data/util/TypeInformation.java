@@ -17,9 +17,9 @@ package org.springframework.data.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.List;
 
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
 
 /**
@@ -150,15 +150,6 @@ public interface TypeInformation<S> {
 	 * @return
 	 */
 	Class<S> getType();
-	
-	/**
-	 * Returns the type of the property with all resolvable generics applied
-	 *
-	 * @return
-	 */
-	default Type getGenericType() {
-		return getType();
-	}
 
 	/**
 	 * Returns the user type of the property if proxied.
@@ -180,13 +171,6 @@ public interface TypeInformation<S> {
 	 * @return
 	 */
 	ClassTypeInformation<?> getRawTypeInformation();
-
-	/**
-	 * Returns a {@link TypeInformation} to represent the {@link TypeInformation} of the type of the current instance with all the generics parameters resolved.
-	 *
-	 * @return
-	 */
-	TypeInformation<?> getGenericTypeInformation();
 
 	/**
 	 * Transparently returns the {@link java.util.Map} value type if the type is a {@link java.util.Map}, returns the
@@ -305,4 +289,11 @@ public interface TypeInformation<S> {
 		return !type.equals(getType()) && type.isAssignableFrom(getType());
 	}
 
+	/**
+	 * Returns the {@link TypeDescriptor} equivalent of this {@link TypeInformation}.
+	 *
+	 * @return will never be {@literal null}.
+	 * @since 2.7
+	 */
+	TypeDescriptor toTypeDescriptor();
 }
