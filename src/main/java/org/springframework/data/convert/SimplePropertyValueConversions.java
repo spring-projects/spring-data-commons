@@ -17,7 +17,6 @@ package org.springframework.data.convert;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.convert.PropertyValueConverterFactories.ChainedPropertyValueConverterFactory;
@@ -40,7 +39,6 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	private @Nullable PropertyValueConverterFactory converterFactory;
 	private @Nullable ValueConverterRegistry<?> valueConverterRegistry;
 	private boolean converterCacheEnabled = true;
-	private final AtomicBoolean initialized = new AtomicBoolean(false);
 
 	/**
 	 * Set the {@link PropertyValueConverterFactory factory} responsible for creating the actual
@@ -91,11 +89,6 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 
 	@Override
 	public boolean hasValueConverter(PersistentProperty<?> property) {
-
-		if (!initialized.get()) {
-			init();
-		}
-
 		return this.converterFactory.getConverter(property) != null;
 	}
 
@@ -103,11 +96,6 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	@Override
 	public <DV, SV, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<DV, SV, D> getValueConverter(
 			C property) {
-
-		if (!initialized.get()) {
-			init();
-		}
-
 		return this.converterFactory.getConverter(property);
 	}
 
@@ -116,27 +104,24 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	 */
 	public void init() {
 
-		if (initialized.compareAndSet(false, true)) {
+		List<PropertyValueConverterFactory> factoryList = new ArrayList<>(3);
 
-			List<PropertyValueConverterFactory> factoryList = new ArrayList<>(3);
-
-			if (converterFactory != null) {
-				factoryList.add(converterFactory);
-			} else {
-				factoryList.add(PropertyValueConverterFactory.simple());
-			}
-
-			if ((valueConverterRegistry != null) && !valueConverterRegistry.isEmpty()) {
-				factoryList.add(PropertyValueConverterFactory.configuredInstance(valueConverterRegistry));
-			}
-
-			PropertyValueConverterFactory targetFactory = factoryList.size() > 1
-					? PropertyValueConverterFactory.chained(factoryList)
-					: factoryList.iterator().next();
-
-			this.converterFactory = converterCacheEnabled ? PropertyValueConverterFactory.caching(targetFactory)
-					: targetFactory;
+		if (converterFactory != null) {
+			factoryList.add(converterFactory);
+		} else {
+			factoryList.add(PropertyValueConverterFactory.simple());
 		}
+
+		if ((valueConverterRegistry != null) && !valueConverterRegistry.isEmpty()) {
+			factoryList.add(PropertyValueConverterFactory.configuredInstance(valueConverterRegistry));
+		}
+
+		PropertyValueConverterFactory targetFactory = factoryList.size() > 1
+				? PropertyValueConverterFactory.chained(factoryList)
+				: factoryList.iterator().next();
+
+		this.converterFactory = converterCacheEnabled ? PropertyValueConverterFactory.caching(targetFactory)
+				: targetFactory;
 	}
 
 	@Override

@@ -932,7 +932,7 @@ public class CustomConversions {
 		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters,
 				Predicate<ConvertiblePair> converterRegistrationFilter) {
 
-			this(storeConversions, userConverters, converterRegistrationFilter, new SimplePropertyValueConversions());
+			this(storeConversions, userConverters, converterRegistrationFilter, PropertyValueConversions.simple(it -> {}));
 		}
 
 		/**
