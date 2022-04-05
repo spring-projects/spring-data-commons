@@ -45,11 +45,13 @@ public interface PropertyValueConversions {
 	 * @param property must not be {@literal null}.
 	 * @param <DV> domain-specific type
 	 * @param <SV> store-native type
-	 * @param <C> conversion context type
+	 * @param <P> conversion context type
 	 * @return the suitable {@link PropertyValueConverter}.
+	 * @throws IllegalArgumentException if there is no converter available for {@code property}.
+	 * @see #hasValueConverter(PersistentProperty)
 	 */
-	<DV, SV, C extends PersistentProperty<C>, VCC extends ValueConversionContext<C>> PropertyValueConverter<DV, SV, VCC> getValueConverter(
-			C property);
+	<DV, SV, P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> PropertyValueConverter<DV, SV, VCC> getValueConverter(
+			P property);
 
 	/**
 	 * Helper that allows to create {@link PropertyValueConversions} instance with the configured

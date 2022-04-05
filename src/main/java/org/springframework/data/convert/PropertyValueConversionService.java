@@ -28,13 +28,14 @@ import org.springframework.util.Assert;
  */
 public class PropertyValueConversionService {
 
-	private final CustomConversions conversions;
+	private final PropertyValueConversions conversions;
 
 	public PropertyValueConversionService(CustomConversions conversions) {
 
 		Assert.notNull(conversions, "CustomConversions must not be null");
 
-		this.conversions = conversions;
+		PropertyValueConversions pvc = conversions.getPropertyValueConversions();
+		this.conversions = pvc == null ? NoOpPropertyValueConversions.INSTANCE : pvc;
 	}
 
 	/**
@@ -47,7 +48,7 @@ public class PropertyValueConversionService {
 	 * @return {@literal true} there is a converter registered for {@link PersistentProperty}.
 	 */
 	public boolean hasConverter(PersistentProperty<?> property) {
-		return conversions.hasPropertyValueConverter(property);
+		return conversions.hasValueConverter(property);
 	}
 
 	/**
@@ -64,7 +65,8 @@ public class PropertyValueConversionService {
 	public <P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> Object read(@Nullable Object value,
 			P property, VCC context) {
 
-		PropertyValueConverter<Object, Object, ValueConversionContext<P>> converter = getRequiredConverter(property);
+		PropertyValueConverter<Object, Object, ValueConversionContext<P>> converter = conversions
+				.getValueConverter(property);
 
 		if (value == null) {
 			return converter.readNull(context);
@@ -87,7 +89,8 @@ public class PropertyValueConversionService {
 	public <P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> Object write(@Nullable Object value,
 			P property, VCC context) {
 
-		PropertyValueConverter<Object, Object, ValueConversionContext<P>> converter = getRequiredConverter(property);
+		PropertyValueConverter<Object, Object, ValueConversionContext<P>> converter = conversions
+				.getValueConverter(property);
 
 		if (value == null) {
 			return converter.writeNull(context);
@@ -96,16 +99,19 @@ public class PropertyValueConversionService {
 		return converter.write(value, context);
 	}
 
-	private <P extends PersistentProperty<P>> PropertyValueConverter<Object, Object, ValueConversionContext<P>> getRequiredConverter(
-			P property) {
+	enum NoOpPropertyValueConversions implements PropertyValueConversions {
 
-		PropertyValueConverter<Object, Object, ValueConversionContext<P>> converter = conversions
-				.getPropertyValueConverter(property);
+		INSTANCE;
 
-		if (converter == null) {
-			throw new IllegalArgumentException(String.format("No converter registered for property %s", property));
+		@Override
+		public boolean hasValueConverter(PersistentProperty<?> property) {
+			return false;
 		}
 
-		return converter;
+		@Override
+		public <DV, SV, P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> PropertyValueConverter<DV, SV, VCC> getValueConverter(
+				P property) {
+			throw new UnsupportedOperationException();
+		}
 	}
 }

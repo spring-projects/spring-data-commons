@@ -105,11 +105,17 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 		return obtainConverterFactory().getConverter(property) != null;
 	}
 
-	@Nullable
 	@Override
-	public <DV, SV, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<DV, SV, D> getValueConverter(
-			C property) {
-		return obtainConverterFactory().getConverter(property);
+	public <DV, SV, P extends PersistentProperty<P>, D extends ValueConversionContext<P>> PropertyValueConverter<DV, SV, D> getValueConverter(
+			P property) {
+
+		PropertyValueConverter<DV, SV, D> converter = obtainConverterFactory().getConverter(property);
+
+		if (converter == null) {
+			throw new IllegalArgumentException(String.format("No PropertyValueConverter registered for %s", property));
+		}
+
+		return converter;
 	}
 
 	/**

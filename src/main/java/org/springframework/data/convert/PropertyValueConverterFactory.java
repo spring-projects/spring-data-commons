@@ -46,12 +46,12 @@ public interface PropertyValueConverterFactory {
 	 * @param property must not be {@literal null}.
 	 * @param <DV> domain-specific type.
 	 * @param <SV> store-native type.
-	 * @param <C> value conversion context to use.
+	 * @param <P> value conversion context to use.
 	 * @return can be {@literal null}.
 	 */
 	@SuppressWarnings("unchecked")
 	@Nullable
-	default <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
+	default <DV, SV, P extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, P> getConverter(
 			PersistentProperty<?> property) {
 
 		AnnotatedPropertyValueConverterAccessor accessor = new AnnotatedPropertyValueConverterAccessor(property);
@@ -60,7 +60,7 @@ public interface PropertyValueConverterFactory {
 			return null;
 		}
 
-		return getConverter((Class<PropertyValueConverter<DV, SV, C>>) accessor.getValueConverterType());
+		return getConverter((Class<PropertyValueConverter<DV, SV, P>>) accessor.getValueConverterType());
 	}
 
 	/**
