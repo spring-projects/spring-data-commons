@@ -205,14 +205,14 @@ public class CustomConversions {
 	 * @param property must not be {@literal null}.
 	 * @param <DV> domain-specific type
 	 * @param <SV> store-native type
-	 * @param <C> conversion context type
+	 * @param <P> conversion context type
 	 * @return the suitable {@link PropertyValueConverter} or {@literal null} if none available.
 	 * @see PropertyValueConversions#getValueConverter(PersistentProperty)
 	 * @since 2.7
 	 */
 	@Nullable
-	public <DV, SV, C extends PersistentProperty<C>, VCC extends ValueConversionContext<C>> PropertyValueConverter<DV, SV, VCC> getPropertyValueConverter(
-			C property) {
+	public <DV, SV, P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> PropertyValueConverter<DV, SV, VCC> getPropertyValueConverter(
+			P property) {
 		return propertyValueConversions != null ? propertyValueConversions.getValueConverter(property) : null;
 	}
 
