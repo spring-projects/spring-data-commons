@@ -26,8 +26,13 @@ import org.springframework.lang.Nullable;
  * <p>
  * A {@link PropertyValueConverter} is, other than a {@link ReadingConverter} or {@link WritingConverter}, only applied
  * to special annotated fields which allows a fine-grained conversion of certain values within a specific context.
+ * <p>
+ * Converter methods are called with non-null values only and provide specific hooks for {@code null} value handling.
+ * {@link #readNull(ValueConversionContext)} and {@link #writeNull(ValueConversionContext)} methods are specifically
+ * designated to either retain {@code null} values or return a different value to indicate {@code null} values.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @param <DV> domain-specific type.
  * @param <SV> store-native type.
  * @param <C> the store specific {@link ValueConversionContext conversion context}.
@@ -39,23 +44,47 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 	 * Convert the given store specific value into it's domain value representation. Typically, a {@literal read}
 	 * operation.
 	 *
-	 * @param value can be {@literal null}.
+	 * @param value the value to read.
 	 * @param context never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
-	DV read(@Nullable SV value, C context);
+	DV read(SV value, C context);
+
+	/**
+	 * Convert the given {@code null} value from the store into it's domain value representation. Typically, a
+	 * {@literal read} operation. Returns {@code null} by default.
+	 *
+	 * @param context never {@literal null}.
+	 * @return the converted value. Can be {@literal null}.
+	 */
+	@Nullable
+	default DV readNull(C context) {
+		return null;
+	}
 
 	/**
 	 * Convert the given domain-specific value into it's native store representation. Typically, a {@literal write}
 	 * operation.
 	 *
-	 * @param value can be {@literal null}.
+	 * @param value the value to write.
 	 * @param context never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
-	SV write(@Nullable DV value, C context);
+	SV write(DV value, C context);
+
+	/**
+	 * Convert the given {@code null} value from the domain model into it's native store representation. Typically, a
+	 * {@literal write} operation. Returns {@code null} by default.
+	 *
+	 * @param context never {@literal null}.
+	 * @return the converted value. Can be {@literal null}.
+	 */
+	@Nullable
+	default SV writeNull(C context) {
+		return null;
+	}
 
 	/**
 	 * No-op {@link PropertyValueConverter} implementation.
@@ -100,14 +129,24 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 
 		@Nullable
 		@Override
-		public SV write(@Nullable DV value, ValueConversionContext<P> context) {
+		public SV write(DV value, ValueConversionContext<P> context) {
 			return writer.apply(value, context);
+		}
+
+		@Override
+		public SV writeNull(ValueConversionContext<P> context) {
+			return writer.apply(null, context);
 		}
 
 		@Nullable
 		@Override
 		public DV read(@Nullable SV value, ValueConversionContext<P> context) {
 			return reader.apply(value, context);
+		}
+
+		@Override
+		public DV readNull(ValueConversionContext<P> context) {
+			return reader.apply(null, context);
 		}
 	}
 }
