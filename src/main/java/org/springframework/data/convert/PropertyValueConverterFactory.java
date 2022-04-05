@@ -54,11 +54,13 @@ public interface PropertyValueConverterFactory {
 	default <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
 			PersistentProperty<?> property) {
 
-		if (!property.hasValueConverter()) {
+		AnnotatedPropertyValueConverterAccessor accessor = new AnnotatedPropertyValueConverterAccessor(property);
+
+		if (!accessor.hasValueConverter()) {
 			return null;
 		}
 
-		return getConverter((Class<PropertyValueConverter<DV, SV, C>>) property.getValueConverterType());
+		return getConverter((Class<PropertyValueConverter<DV, SV, C>>) accessor.getValueConverterType());
 	}
 
 	/**

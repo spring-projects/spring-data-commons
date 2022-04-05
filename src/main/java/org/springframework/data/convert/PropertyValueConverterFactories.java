@@ -15,7 +15,6 @@
  */
 package org.springframework.data.convert;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -53,10 +52,6 @@ final class PropertyValueConverterFactories {
 
 		private List<PropertyValueConverterFactory> delegates;
 
-		ChainedPropertyValueConverterFactory(PropertyValueConverterFactory... delegates) {
-			this(Arrays.asList(delegates));
-		}
-
 		ChainedPropertyValueConverterFactory(List<PropertyValueConverterFactory> delegates) {
 			this.delegates = Collections.unmodifiableList(delegates);
 		}
@@ -74,10 +69,6 @@ final class PropertyValueConverterFactories {
 				Class<? extends PropertyValueConverter<S, T, C>> converterType) {
 			return delegates.stream().filter(it -> it.getConverter(converterType) != null).findFirst()
 					.map(it -> it.getConverter(converterType)).orElse(null);
-		}
-
-		public List<PropertyValueConverterFactory> converterFactories() {
-			return delegates;
 		}
 	}
 
@@ -221,9 +212,11 @@ final class PropertyValueConverterFactories {
 
 			<S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> cache(PersistentProperty<?> property,
 					@Nullable PropertyValueConverter<S, T, C> converter) {
+
 				perPropertyCache.putIfAbsent(property, Optional.ofNullable(converter));
 
-				Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> valueConverterType = property
+				AnnotatedPropertyValueConverterAccessor accessor = new AnnotatedPropertyValueConverterAccessor(property);
+				Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> valueConverterType = accessor
 						.getValueConverterType();
 				if (valueConverterType != null) {
 					cache(valueConverterType, converter);

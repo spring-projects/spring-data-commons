@@ -34,6 +34,7 @@ import org.springframework.lang.Nullable;
  * Unit tests for {@link PropertyValueConverterFactory}.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class PropertyValueConverterFactoryUnitTests {
 
@@ -48,8 +49,9 @@ public class PropertyValueConverterFactoryUnitTests {
 	void simpleConverterFactoryReadsConverterFromAnnotation() {
 
 		PersistentProperty property = mock(PersistentProperty.class);
-		when(property.hasValueConverter()).thenReturn(true);
-		when(property.getValueConverterType()).thenReturn(ConverterWithDefaultCtor.class);
+		ValueConverter annotation = mock(ValueConverter.class);
+		when(annotation.value()).thenReturn((Class) ConverterWithDefaultCtor.class);
+		when(property.findAnnotation(ValueConverter.class)).thenReturn(annotation);
 
 		assertThat(PropertyValueConverterFactory.simple().getConverter(property))
 				.isInstanceOf(ConverterWithDefaultCtor.class);
@@ -191,8 +193,9 @@ public class PropertyValueConverterFactoryUnitTests {
 	void cachingConverterFactoryServesCachedInstanceForProperty() {
 
 		PersistentProperty property = mock(PersistentProperty.class);
-		when(property.hasValueConverter()).thenReturn(true);
-		when(property.getValueConverterType()).thenReturn(ConverterWithDefaultCtor.class);
+		ValueConverter annotation = mock(ValueConverter.class);
+		when(annotation.value()).thenReturn((Class) ConverterWithDefaultCtor.class);
+		when(property.findAnnotation(ValueConverter.class)).thenReturn(annotation);
 
 		PropertyValueConverterFactory factory = PropertyValueConverterFactory
 				.caching(PropertyValueConverterFactory.simple());
