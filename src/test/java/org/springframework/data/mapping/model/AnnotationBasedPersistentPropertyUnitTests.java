@@ -36,6 +36,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -44,9 +45,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.convert.PropertyValueConverter;
-import org.springframework.data.convert.ValueConversionContext;
-import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -341,15 +339,6 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		assertThat(property.isIdProperty()).isTrue();
 	}
 
-	@Test // GH-1484
-	void detectsValueConverter() {
-
-		SamplePersistentProperty property = getProperty(WithPropertyConverter.class, "value");
-
-		assertThat(property.hasValueConverter()).isTrue();
-		assertThat(property.getValueConverterType()).isEqualTo(MyPropertyConverter.class);
-	}
-
 	@SuppressWarnings("unchecked")
 	private Map<Class<? extends Annotation>, Annotation> getAnnotationCache(SamplePersistentProperty property) {
 		return (Map<Class<? extends Annotation>, Annotation>) ReflectionTestUtils.getField(property, "annotationCache");
@@ -472,7 +461,8 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 	@Id
-	public @interface MyId {}
+	public @interface MyId {
+	}
 
 	static class FieldAccess {
 		String name;
@@ -542,23 +532,4 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 	interface JMoleculesAggregate extends AggregateRoot<JMoleculesAggregate, Identifier> {}
 
-	static class WithPropertyConverter {
-
-		@ValueConverter(MyPropertyConverter.class)
-		String value;
-	}
-
-	static class MyPropertyConverter
-			implements PropertyValueConverter<Object, Object, ValueConversionContext<SamplePersistentProperty>> {
-
-		@Override
-		public Object read(Object value, ValueConversionContext context) {
-			return null;
-		}
-
-		@Override
-		public Object write(Object value, ValueConversionContext context) {
-			return null;
-		}
-	}
 }
