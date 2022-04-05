@@ -61,13 +61,11 @@ public interface PropertyValueConversions {
 
 		SimplePropertyValueConversions conversions = new SimplePropertyValueConversions();
 		PropertyValueConverterRegistrar registrar = new PropertyValueConverterRegistrar();
+
 		config.accept(registrar);
 		conversions.setValueConverterRegistry(registrar.buildRegistry());
-		try {
-			conversions.afterPropertiesSet();
-		} catch (Exception e) {
-			throw new IllegalStateException("Could not initialize value conversions.");
-		}
+		conversions.afterPropertiesSet();
+
 		return conversions;
 	}
 }
