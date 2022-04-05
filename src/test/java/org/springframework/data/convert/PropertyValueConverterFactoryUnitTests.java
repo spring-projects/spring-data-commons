@@ -226,13 +226,13 @@ public class PropertyValueConverterFactoryUnitTests {
 
 		@Nullable
 		@Override
-		public String read(@Nullable UUID value, ValueConversionContext context) {
+		public String read(UUID value, ValueConversionContext context) {
 			return value.toString();
 		}
 
 		@Nullable
 		@Override
-		public UUID write(@Nullable String value, ValueConversionContext context) {
+		public UUID write(String value, ValueConversionContext context) {
 			return UUID.fromString(value);
 		}
 	}
@@ -248,7 +248,7 @@ public class PropertyValueConverterFactoryUnitTests {
 
 		@Nullable
 		@Override
-		public String read(@Nullable UUID value, ValueConversionContext<SamplePersistentProperty> context) {
+		public String read(UUID value, ValueConversionContext<SamplePersistentProperty> context) {
 
 			assertThat(someDependency).isNotNull();
 			return value.toString();
@@ -256,7 +256,7 @@ public class PropertyValueConverterFactoryUnitTests {
 
 		@Nullable
 		@Override
-		public UUID write(@Nullable String value, ValueConversionContext<SamplePersistentProperty> context) {
+		public UUID write(String value, ValueConversionContext<SamplePersistentProperty> context) {
 
 			assertThat(someDependency).isNotNull();
 			return UUID.fromString(value);
