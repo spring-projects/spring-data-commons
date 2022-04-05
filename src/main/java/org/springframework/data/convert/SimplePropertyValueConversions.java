@@ -32,6 +32,7 @@ import org.springframework.lang.Nullable;
  * {@link PropertyValueConverter converter} retrieval.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 2.7
  */
 public class SimplePropertyValueConversions implements PropertyValueConversions, InitializingBean {
@@ -53,6 +54,18 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	@Nullable
 	public PropertyValueConverterFactory getConverterFactory() {
 		return converterFactory;
+	}
+
+	private PropertyValueConverterFactory obtainConverterFactory() {
+
+		PropertyValueConverterFactory factory = getConverterFactory();
+
+		if (factory == null) {
+			throw new IllegalStateException(
+					"PropertyValueConverterFactory is not set. Make sure to either set the converter factory or call afterPropertiesSet() to initialize the object.");
+		}
+
+		return factory;
 	}
 
 	/**
@@ -78,7 +91,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	}
 
 	/**
-	 * Dis-/Enable caching. Enabled by default.
+	 * Configure whether to use converter cache. Enabled by default.
 	 *
 	 * @param converterCacheEnabled set to {@literal true} to enable caching of {@link PropertyValueConverter converter}
 	 *          instances.
@@ -89,14 +102,14 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 
 	@Override
 	public boolean hasValueConverter(PersistentProperty<?> property) {
-		return this.converterFactory.getConverter(property) != null;
+		return obtainConverterFactory().getConverter(property) != null;
 	}
 
 	@Nullable
 	@Override
 	public <DV, SV, C extends PersistentProperty<C>, D extends ValueConversionContext<C>> PropertyValueConverter<DV, SV, D> getValueConverter(
 			C property) {
-		return this.converterFactory.getConverter(property);
+		return obtainConverterFactory().getConverter(property);
 	}
 
 	/**
@@ -125,7 +138,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		init();
 	}
 }
