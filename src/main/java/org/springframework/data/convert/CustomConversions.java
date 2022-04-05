@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.Converter;
@@ -42,7 +43,6 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.Streamable;
@@ -183,35 +183,9 @@ public class CustomConversions {
 		VavrCollectionConverters.getConvertersToRegister().forEach(it -> registerConverterIn(it, conversionService));
 	}
 
-	/**
-	 * Delegate check if a {@link PropertyValueConverter} for the given {@literal property} is present via
-	 * {@link PropertyValueConversions}.
-	 *
-	 * @param property must not be {@literal null}.
-	 * @return {@literal true} if a specific {@link PropertyValueConverter} is available.
-	 * @see PropertyValueConversions#hasValueConverter(PersistentProperty)
-	 * @since 2.7
-	 */
-	public boolean hasPropertyValueConverter(PersistentProperty<?> property) {
-		return propertyValueConversions != null && propertyValueConversions.hasValueConverter(property);
-	}
-
-	/**
-	 * Delegate to obtain the {@link PropertyValueConverter} for the given {@literal property} from
-	 * {@link PropertyValueConversions}.
-	 *
-	 * @param property must not be {@literal null}.
-	 * @param <DV> domain-specific type
-	 * @param <SV> store-native type
-	 * @param <C> conversion context type
-	 * @return the suitable {@link PropertyValueConverter} or {@literal null} if none available.
-	 * @see PropertyValueConversions#getValueConverter(PersistentProperty)
-	 * @since 2.7
-	 */
 	@Nullable
-	public <DV, SV, C extends PersistentProperty<C>, VCC extends ValueConversionContext<C>> PropertyValueConverter<DV, SV, VCC> getPropertyValueConverter(
-			C property) {
-		return propertyValueConversions != null ? propertyValueConversions.getValueConverter(property) : null;
+	public PropertyValueConversions getPropertyValueConversions() {
+		return propertyValueConversions;
 	}
 
 	/**
