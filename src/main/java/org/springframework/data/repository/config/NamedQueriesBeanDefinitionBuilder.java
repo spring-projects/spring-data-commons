@@ -15,12 +15,9 @@
  */
 package org.springframework.data.repository.config;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -45,7 +42,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 	@SuppressWarnings("null")
 	public NamedQueriesBeanDefinitionBuilder(String defaultLocation) {
 
-		Assert.hasText(defaultLocation, "DefaultLocation must not be null nor empty");
+		Assert.hasText(defaultLocation, "DefaultLocation must not be null nor empty!");
 		this.defaultLocation = defaultLocation;
 	}
 
@@ -56,7 +53,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 	 */
 	public void setLocations(String locations) {
 
-		Assert.hasText(locations, "Locations must not be null nor empty");
+		Assert.hasText(locations, "Locations must not be null nor empty!");
 
 		this.locations = locations;
 	}
