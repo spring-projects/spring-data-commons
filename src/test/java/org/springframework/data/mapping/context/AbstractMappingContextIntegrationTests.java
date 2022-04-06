@@ -28,7 +28,6 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -45,7 +44,7 @@ class AbstractMappingContextIntegrationTests<T extends PersistentProperty<T>> {
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.initialize();
 
-		assertThat(context.getManagedTypes()).contains(ClassTypeInformation.from(Person.class));
+		assertThat(context.getManagedTypes()).contains(TypeInformation.of(Person.class));
 	}
 
 	@Test // DATACMNS-457

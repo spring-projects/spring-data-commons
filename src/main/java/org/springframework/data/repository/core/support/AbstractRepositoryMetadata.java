@@ -29,7 +29,6 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
@@ -60,7 +59,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		Assert.isTrue(repositoryInterface.isInterface(), "Given type must be an interface");
 
 		this.repositoryInterface = repositoryInterface;
-		this.typeInformation = ClassTypeInformation.from(repositoryInterface);
+		this.typeInformation = TypeInformation.of(repositoryInterface);
 		this.crudMethods = Lazy.of(() -> new DefaultCrudMethods(this));
 	}
 

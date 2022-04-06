@@ -68,7 +68,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		Assert.notNull(type, "Type must not be null");
 		Assert.notNull(propertyPath, "Property path must not be null");
 
-		return getPersistentPropertyPath(ClassTypeInformation.from(type), propertyPath);
+		return getPersistentPropertyPath(TypeInformation.of(type), propertyPath);
 	}
 
 	/**
@@ -112,7 +112,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		Assert.notNull(type, "Type must not be null");
 		Assert.notNull(propertyFilter, "Property filter must not be null");
 
-		return from(ClassTypeInformation.from(type), propertyFilter);
+		return from(TypeInformation.of(type), propertyFilter);
 	}
 
 	/**
@@ -131,7 +131,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		Assert.notNull(propertyFilter, "Property filter must not be null");
 		Assert.notNull(traversalGuard, "Traversal guard must not be null");
 
-		return from(ClassTypeInformation.from(type), propertyFilter, traversalGuard);
+		return from(TypeInformation.of(type), propertyFilter, traversalGuard);
 	}
 
 	/**

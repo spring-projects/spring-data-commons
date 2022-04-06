@@ -37,6 +37,7 @@ import org.springframework.data.repository.core.support.MethodLookup.MethodPredi
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -58,7 +59,7 @@ interface MethodLookups {
 	static MethodLookup direct() {
 
 		MethodPredicate direct = (MethodPredicate) (invoked, candidate) -> candidate.getName().equals(invoked.getName())
-				&& candidate.getParameterCount() == invoked.getParameterCount()
+				&& (candidate.getParameterCount() == invoked.getParameterCount())
 				&& Arrays.equals(candidate.getParameterTypes(), invoked.getParameterTypes());
 
 		return () -> Collections.singletonList(direct);
@@ -248,8 +249,8 @@ interface MethodLookups {
 
 			MethodPredicate detailedComparison = (MethodPredicate) (invokedMethod,
 					candidate) -> getMethodCandidate(invokedMethod,
-					candidate,
-					matchParameterOrComponentType(repositoryMetadata.getRepositoryInterface())).isPresent();
+							candidate,
+							matchParameterOrComponentType(repositoryMetadata.getRepositoryInterface())).isPresent();
 
 			return Arrays.asList(convertibleComparison, detailedComparison);
 		}
@@ -434,7 +435,7 @@ interface MethodLookups {
 			}
 
 			@Override
-			public boolean equals(Object o) {
+			public boolean equals(@Nullable Object o) {
 
 				if (this == o) {
 					return true;
@@ -454,7 +455,7 @@ interface MethodLookups {
 			@Override
 			public int hashCode() {
 				int result = ObjectUtils.nullSafeHashCode(declared);
-				result = 31 * result + ObjectUtils.nullSafeHashCode(base);
+				result = (31 * result) + ObjectUtils.nullSafeHashCode(base);
 				return result;
 			}
 

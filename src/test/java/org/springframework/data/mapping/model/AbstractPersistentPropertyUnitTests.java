@@ -35,13 +35,10 @@ import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Identifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.springframework.data.convert.PropertyValueConverter;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.Person;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
@@ -62,7 +59,7 @@ public class AbstractPersistentPropertyUnitTests {
 	@BeforeEach
 	void setUp() {
 
-		typeInfo = ClassTypeInformation.from(TestClassComplex.class);
+		typeInfo = TypeInformation.of(TestClassComplex.class);
 		entity = new BasicPersistentEntity<>(typeInfo);
 		typeHolder = new SimpleTypeHolder();
 	}
@@ -142,7 +139,7 @@ public class AbstractPersistentPropertyUnitTests {
 	void doesNotDiscoverGetterAndSetterIfNoPropertyDescriptorGiven() {
 
 		var field = ReflectionUtils.findField(AccessorTestClass.class, "id");
-		var property = Property.of(ClassTypeInformation.from(AccessorTestClass.class), field);
+		var property = Property.of(TypeInformation.of(AccessorTestClass.class), field);
 
 		PersistentProperty<SamplePersistentProperty> persistentProperty = new SamplePersistentProperty(property,
 				getEntity(AccessorTestClass.class), typeHolder);
@@ -247,12 +244,12 @@ public class AbstractPersistentPropertyUnitTests {
 	}
 
 	private <T> BasicPersistentEntity<T, SamplePersistentProperty> getEntity(Class<T> type) {
-		return new BasicPersistentEntity<>(ClassTypeInformation.from(type));
+		return new BasicPersistentEntity<>(TypeInformation.of(type));
 	}
 
 	private <T> SamplePersistentProperty getProperty(Class<T> type, String name) {
 
-		TypeInformation<?> typeInformation = ClassTypeInformation.from(type);
+		TypeInformation<?> typeInformation = TypeInformation.of(type);
 		var field = Optional.ofNullable(ReflectionUtils.findField(type, name));
 		var descriptor = getPropertyDescriptor(type, name);
 

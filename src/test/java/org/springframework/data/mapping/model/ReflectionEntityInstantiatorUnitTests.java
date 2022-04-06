@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.mapping.model.ReflectionEntityInstantiator.*;
-import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -34,6 +33,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.ReflectionEntityInstantiatorUnitTests.Outer.Inner;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -90,7 +90,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 	@Test // DATACMNS-134
 	void createsInnerClassInstanceCorrectly() {
 
-		var entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
+		var entity = new BasicPersistentEntity<Inner, P>(TypeInformation.of(Inner.class));
 		assertThat(entity.getInstanceCreatorMetadata()).satisfies(it -> {
 
 			var parameter = it.getParameters().iterator().next();
@@ -116,7 +116,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void capturesContextOnInstantiationException() throws Exception {
 
-		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<>(from(Sample.class));
+		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<>(TypeInformation.of(Sample.class));
 
 		doReturn("FOO").when(provider).getParameterValue(any(Parameter.class));
 

@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
@@ -85,7 +84,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 				continue;
 			}
 
-			if (arguments.length < i || arguments[i] == null) {
+			if ((arguments.length < i) || (arguments[i] == null)) {
 				throw new IllegalArgumentException(
 						String.format("Parameter %s in %s.%s must not be null", nullability.getMethodParameterName(i),
 								ClassUtils.getShortName(method.getDeclaringClass()), method.getName()));
@@ -94,7 +93,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 		Object result = invocation.proceed();
 
-		if (result == null && !nullability.isNullableReturn()) {
+		if ((result == null) && !nullability.isNullableReturn()) {
 			throw new EmptyResultDataAccessException("Result must not be null", 1);
 		}
 
@@ -170,7 +169,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (this == o) {
 				return true;
@@ -194,8 +193,8 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		@Override
 		public int hashCode() {
 			int result = (nullableReturn ? 1 : 0);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(nullableParameters);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(methodParameters);
+			result = (31 * result) + ObjectUtils.nullSafeHashCode(nullableParameters);
+			result = (31 * result) + ObjectUtils.nullSafeHashCode(methodParameters);
 			return result;
 		}
 

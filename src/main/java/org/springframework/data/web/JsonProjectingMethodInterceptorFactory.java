@@ -29,12 +29,10 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.projection.Accessor;
 import org.springframework.data.projection.MethodInterceptorFactory;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -146,7 +144,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
-			TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+			TypeInformation<?> returnType = TypeInformation.fromReturnTypeOf(method);
 			ResolvableType type = ResolvableType.forMethodReturnType(method);
 			boolean isCollectionResult = Collection.class.isAssignableFrom(type.getRawClass());
 			type = isCollectionResult ? type : ResolvableType.forClassWithGenerics(List.class, type);

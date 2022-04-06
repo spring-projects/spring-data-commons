@@ -69,7 +69,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 */
 	@Nullable
 	default <T> T write(@Nullable Object value, @NonNull Class<T> target) {
-		return write(value, ClassTypeInformation.from(target));
+		return write(value, TypeInformation.of(target));
 	}
 
 	/**
@@ -119,7 +119,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 */
 	@Nullable
 	default <T> T read(@Nullable Object value, @NonNull Class<T> target) {
-		return read(value, ClassTypeInformation.from(target));
+		return read(value, TypeInformation.of(target));
 	}
 
 	/**

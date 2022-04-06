@@ -30,7 +30,6 @@ import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -108,7 +107,7 @@ public class QueryMethod {
 			Class<?> repositoryDomainClass = metadata.getDomainType();
 			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
 
-			return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)
+			return (repositoryDomainClass == null) || repositoryDomainClass.isAssignableFrom(methodDomainClass)
 					? methodDomainClass
 					: repositoryDomainClass;
 		});
@@ -271,7 +270,7 @@ public class QueryMethod {
 			return !QueryExecutionConverters.isSingleValue(unwrappedReturnType);
 		}
 
-		return ClassTypeInformation.from(unwrappedReturnType).isCollectionLike();
+		return TypeInformation.of(unwrappedReturnType).isCollectionLike();
 	}
 
 	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(RepositoryMetadata metadata, Method method) {
@@ -301,7 +300,7 @@ public class QueryMethod {
 		Assert.notEmpty(types, "Types must not be null or empty");
 
 		// TODO: to resolve generics fully we'd need the actual repository interface here
-		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
+		TypeInformation<?> returnType = TypeInformation.fromReturnTypeOf(method);
 
 		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) //
 				? returnType.getRequiredComponentType() //

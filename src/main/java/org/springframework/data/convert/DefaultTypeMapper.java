@@ -27,7 +27,6 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -149,16 +148,16 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 
 		Class<T> rawType = basicType.getType();
 
-		boolean isMoreConcreteCustomType = rawType == null
-				|| rawType.isAssignableFrom(documentsTargetType) && !rawType.equals(documentsTargetType);
+		boolean isMoreConcreteCustomType = (rawType == null)
+				|| (rawType.isAssignableFrom(documentsTargetType) && !rawType.equals(documentsTargetType));
 
 		if (!isMoreConcreteCustomType) {
 			return basicType;
 		}
 
-		ClassTypeInformation<?> targetType = ClassTypeInformation.from(documentsTargetType);
+		TypeInformation<?> targetType = TypeInformation.of(documentsTargetType);
 
-		return (TypeInformation<? extends T>) basicType.specialize(targetType);
+		return basicType.specialize(targetType);
 	}
 
 	/**
@@ -190,7 +189,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 
 	@Override
 	public void writeType(Class<?> type, S dbObject) {
-		writeType(ClassTypeInformation.from(type), dbObject);
+		writeType(TypeInformation.of(type), dbObject);
 	}
 
 	@Override

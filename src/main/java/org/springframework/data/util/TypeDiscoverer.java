@@ -22,11 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,6 +35,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentLruCache;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -49,55 +48,36 @@ import org.springframework.util.ReflectionUtils;
  * @author Jürgen Diez
  * @author Alessandro Nistico
  * @author Johannes Englmeier
+ * @deprecated since 3.0 to go package protected at some point. Prefer to refer to {@link TypeInformation} instead.
  */
-public class TypeDiscoverer<S> implements TypeInformation<S> {
+@Deprecated
+class TypeDiscoverer<S> implements TypeInformation<S> {
 
-	protected static final Class<?>[] MAP_TYPES;
-	private static final Class<?>[] COLLECTION_TYPES;
+	private static final ConcurrentLruCache<ResolvableType, TypeInformation<?>> CACHE = new ConcurrentLruCache<>(64,
+			TypeDiscoverer::new);
 
-	static {
-
-		var classLoader = TypeDiscoverer.class.getClassLoader();
-
-		Set<Class<?>> mapTypes = new HashSet<>();
-		mapTypes.add(Map.class);
-
-		try {
-			mapTypes.add(ClassUtils.forName("io.vavr.collection.Map", classLoader));
-		} catch (ClassNotFoundException o_O) {}
-
-		MAP_TYPES = mapTypes.toArray(new Class[0]);
-
-		Set<Class<?>> collectionTypes = new HashSet<>();
-		collectionTypes.add(Collection.class);
-
-		try {
-			collectionTypes.add(ClassUtils.forName("io.vavr.collection.Seq", classLoader));
-		} catch (ClassNotFoundException o_O) {}
-
-		try {
-			collectionTypes.add(ClassUtils.forName("io.vavr.collection.Set", classLoader));
-		} catch (ClassNotFoundException o_O) {}
-
-		COLLECTION_TYPES = collectionTypes.toArray(new Class[0]);
-	}
-
-	ResolvableType resolvableType;
-	private Map<String, Optional<TypeInformation<?>>> fields = new ConcurrentHashMap<>();
-
+	private final ResolvableType resolvableType;
+	private final Map<String, Optional<TypeInformation<?>>> fields = new ConcurrentHashMap<>();
 	private final Lazy<TypeInformation<?>> componentType;
 	private final Lazy<TypeInformation<?>> valueType;
+	private final Map<Constructor<?>, List<TypeInformation<?>>> constructorParameters = new ConcurrentHashMap<>();
+	private final Lazy<List<TypeInformation<?>>> typeArguments;
 
-	public TypeDiscoverer(Class<?> type) {
-		this(ResolvableType.forClass(type));
-	}
-
-	public TypeDiscoverer(ResolvableType type) {
+	protected TypeDiscoverer(ResolvableType type) {
 
 		Assert.notNull(type, "Type must not be null");
+
 		this.resolvableType = type;
 		this.componentType = Lazy.of(this::doGetComponentType);
 		this.valueType = Lazy.of(this::doGetMapValueType);
+		this.typeArguments = Lazy.of(this::doGetTypeArguments);
+	}
+
+	static TypeDiscoverer<?> td(ResolvableType type) {
+
+		Assert.notNull(type, "Type must not be null");
+
+		return (TypeDiscoverer<?>) CACHE.get(type);
 	}
 
 	@Override
@@ -105,16 +85,16 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Assert.notNull(constructor, "Constructor must not be null");
 
-		List<TypeInformation<?>> target = new ArrayList<>();
-		for (int i = 0; i < constructor.getParameterCount(); i++) {
-			target.add(new TypeDiscoverer<>(ResolvableType.forConstructorParameter(constructor, i)));
-		}
-		return target;
-	}
+		return constructorParameters.computeIfAbsent(constructor, it -> {
 
-	@Override
-	public TypeDescriptor toTypeDescriptor() {
-		return new TypeDescriptor(resolvableType, null, null);
+			List<TypeInformation<?>> target = new ArrayList<>();
+
+			for (int i = 0; i < it.getParameterCount(); i++) {
+				target.add(TypeInformation.of(ResolvableType.forConstructorParameter(it, i)));
+			}
+
+			return target;
+		});
 	}
 
 	@Nullable
@@ -137,55 +117,10 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 		return info.getProperty(name.substring(separatorIndex + 1));
 	}
 
-	private Optional<TypeInformation<?>> getPropertyInformation(String fieldname) {
-
-		Class<?> rawType = resolvableType.toClass();
-		var field = ReflectionUtils.findField(rawType, fieldname);
-
-		if (field != null) {
-			return Optional.of(new TypeDiscoverer(ResolvableType.forField(field, resolvableType)));
-		}
-
-		return findPropertyDescriptor(rawType, fieldname).map(it -> {
-
-			if (it.getReadMethod() != null) {
-				return new TypeDiscoverer(ResolvableType.forMethodReturnType(it.getReadMethod(), rawType));
-			}
-			if (it.getWriteMethod() != null) {
-				return new TypeDiscoverer(ResolvableType.forMethodParameter(it.getWriteMethod(), 0, rawType));
-			}
-
-			return new TypeDiscoverer(ResolvableType.forType(it.getPropertyType(), resolvableType));
-		});
-	}
-
-	private Optional<PropertyDescriptor> findPropertyDescriptor(Class<?> type, String fieldname) {
-
-		PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(type, fieldname);
-
-		if (descriptor != null) {
-			return Optional.of(descriptor);
-		}
-
-		List<Class<?>> superTypes = new ArrayList<>();
-		superTypes.addAll(Arrays.asList(type.getInterfaces()));
-		superTypes.add(type.getSuperclass());
-
-		return Streamable.of(type.getInterfaces()).stream()//
-				.flatMap(it -> Optionals.toStream(findPropertyDescriptor(it, fieldname)))//
-				.findFirst();
-	}
-
 	@Override
 	public boolean isCollectionLike() {
 
 		Class<S> type = getType();
-
-		for (Class<?> collectionType : COLLECTION_TYPES) {
-			if (collectionType.isAssignableFrom(type)) {
-				return true;
-			}
-		}
 
 		return type.isArray() //
 				|| Iterable.class.equals(type) //
@@ -203,66 +138,27 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	protected TypeInformation<?> doGetComponentType() {
 
-		var rawType = getType();
-
-		if (rawType.isArray()) {
-			return new TypeDiscoverer<>(resolvableType.getComponentType());
+		if (resolvableType.isArray()) {
+			return TypeInformation.of(resolvableType.getComponentType());
 		}
 
-		if (isMap()) {
-			if (ClassUtils.isAssignable(Map.class, rawType)) {
-				ResolvableType mapValueType = resolvableType.asMap().getGeneric(0);
-				if (ResolvableType.NONE.equals(mapValueType)) {
-					return null;
-				}
+		Class<S> rawType = getType();
 
-				return mapValueType != null ? new TypeDiscoverer(mapValueType) : new ClassTypeInformation<>(Object.class);
-			}
-			if (resolvableType.hasGenerics()) {
-				ResolvableType mapValueType = resolvableType.getGeneric(0);
-				return mapValueType != null ? new TypeDiscoverer(mapValueType) : new ClassTypeInformation<>(Object.class);
-			}
-			return Arrays.stream(resolvableType.getInterfaces()).filter(ResolvableType::hasGenerics)
-					.findFirst()
-					.map(it -> it.getGeneric(0))
-					.map(TypeDiscoverer::new)
-					.orElse(null);
+		if (isMap()) {
+			return getTypeArgument(CustomCollections.getMapBaseType(rawType), 0);
 		}
 
 		if (Iterable.class.isAssignableFrom(rawType)) {
-
-			ResolvableType iterableType = resolvableType.as(Iterable.class);
-			ResolvableType mapValueType = iterableType.getGeneric(0);
-			if (ResolvableType.NONE.equals(mapValueType)) {
-				return null;
-			}
-
-			if (resolvableType.hasGenerics()) {
-				mapValueType = resolvableType.getGeneric(0);
-				return mapValueType != null ? new TypeDiscoverer(mapValueType) : new ClassTypeInformation<>(Object.class);
-			}
-
-			return mapValueType.resolve() != null ? new TypeDiscoverer<>(mapValueType) : null;
+			return getTypeArgument(Iterable.class, 0);
 		}
 
 		if (isNullableWrapper()) {
-			ResolvableType mapValueType = resolvableType.getGeneric(0);
-			if (ResolvableType.NONE.equals(mapValueType)) {
-				return null;
-			}
-			return mapValueType != null ? new TypeDiscoverer(mapValueType) : new ClassTypeInformation<>(Object.class);
+			return getTypeArgument(rawType, 0);
 		}
 
-		if (resolvableType.hasGenerics()) {
-			ResolvableType mapValueType = resolvableType.getGeneric(0);
-			return mapValueType != null ? new TypeDiscoverer(mapValueType) : new ClassTypeInformation<>(Object.class);
-		}
+		List<TypeInformation<?>> arguments = getTypeArguments();
 
-		return null;
-	}
-
-	private boolean isNullableWrapper() {
-		return NullableWrapperConverters.supports(getType());
+		return arguments.size() > 0 ? arguments.get(0) : null;
 	}
 
 	@Override
@@ -279,50 +175,31 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Nullable
 	protected TypeInformation<?> doGetMapValueType() {
 
-		if (isMap()) {
-			if (ClassUtils.isAssignable(Map.class, getType())) {
-				ResolvableType mapValueType = resolvableType.asMap().getGeneric(1);
-				if (ResolvableType.NONE.equals(mapValueType)) {
-					return null;
-				}
-
-				return mapValueType != null ? new TypeDiscoverer(mapValueType) : new ClassTypeInformation<>(Object.class);
-			}
-			if (resolvableType.hasGenerics()) {
-				ResolvableType mapValueType = resolvableType.getGeneric(1);
-				return mapValueType != null ? new TypeDiscoverer(mapValueType) : new ClassTypeInformation<>(Object.class);
-			}
-			return Arrays.stream(resolvableType.getInterfaces()).filter(ResolvableType::hasGenerics)
-					.findFirst()
-					.map(it -> it.getGeneric(1))
-					.map(TypeDiscoverer::new)
-					.orElse(null);
-		}
-
-		if (!resolvableType.hasGenerics()) {
-			return null;
-		}
-		ResolvableType x = Arrays.stream(resolvableType.getGenerics()).skip(1).findFirst().orElse(null);
-		if ((x == null) || ResolvableType.NONE.equals(x)) {
-			return null;
-		}
-
-		return new TypeDiscoverer<>(x);
+		return isMap() //
+				? getTypeArgument(CustomCollections.getMapBaseType(getType()), 1)
+				: getTypeArguments().stream().skip(1).findFirst().orElse(null);
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Class<S> getType() {
 		return (Class<S>) resolvableType.toClass();
 	}
 
 	@Override
+	public TypeDescriptor toTypeDescriptor() {
+		return new TypeDescriptor(resolvableType, getType(), null);
+	}
+
+	@Override
 	public ClassTypeInformation<?> getRawTypeInformation() {
-		return new ClassTypeInformation<>(this.resolvableType.getRawClass());
+		return new ClassTypeInformation<>(ResolvableType.forRawClass(resolvableType.getRawClass()));
 	}
 
 	@Nullable
 	@Override
 	public TypeInformation<?> getActualType() {
+
 		if (isMap()) {
 			return getMapValueType();
 		}
@@ -331,8 +208,6 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getComponentType();
 		}
 
-		// TODO: Consider that we will support value types beyond Optional<T>, such as Json<T>, Foo<T> that should remain
-		// configurable.
 		if (isNullableWrapper()) {
 			return getComponentType();
 		}
@@ -342,10 +217,7 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	@Override
 	public TypeInformation<?> getReturnType(Method method) {
-
-		Assert.notNull(method, "Method must not be null");
-
-		return new TypeDiscoverer(ResolvableType.forMethodReturnType(method, getType()));
+		return TypeInformation.of(ResolvableType.forMethodReturnType(method, getType()));
 	}
 
 	@Override
@@ -353,9 +225,11 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Assert.notNull(method, "Method most not be null");
 
-		return Streamable.of(method.getParameters()).stream().map(MethodParameter::forParameter)
-				.map(it -> ResolvableType.forMethodParameter(it, resolvableType)).map(TypeDiscoverer::new)
-				.collect(Collectors.toList());
+		return Arrays.stream(method.getParameters()) //
+				.map(MethodParameter::forParameter) //
+				.map(it -> ResolvableType.forMethodParameter(it, resolvableType)) //
+				.<TypeInformation<?>> map(TypeInformation::of) //
+				.toList();
 
 	}
 
@@ -373,46 +247,24 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 			return this;
 		}
 
-		List<ResolvableType> candidates = new ArrayList<>();
+		var resolvableSuperType = resolvableType.as(superType);
+		var type = resolvableType.getType();
 
-		ResolvableType genericSuperclass = resolvableType.getSuperType();
-		if ((genericSuperclass != null) && !genericSuperclass.equals(ResolvableType.NONE)) {
-			candidates.add(genericSuperclass);
+		if (!(type instanceof Class) || !ObjectUtils.isEmpty(((Class<?>) type).getTypeParameters())) {
+			return TypeInformation.of(resolvableSuperType);
 		}
 
-		candidates.addAll(Arrays.asList(resolvableType.getInterfaces()));
+		var noGenericsResolvable = !Arrays.stream(resolvableSuperType.resolveGenerics())
+				.filter(it -> it != null)
+				.findAny()
+				.isPresent();
 
-		for (var candidate : candidates) {
-			if (ObjectUtils.nullSafeEquals(superType, candidate.toClass())) {
-
-				if (resolvableType.getType() instanceof Class) {
-
-					if (ObjectUtils.isEmpty(((Class) resolvableType.getType()).getTypeParameters())) {
-						Class<?>[] classes = candidate.resolveGenerics(null);
-
-						if (!Arrays.stream(classes).filter(it -> it != null).findAny().isPresent()) {
-							return new TypeDiscoverer<>(ResolvableType.forRawClass(superType));
-						}
-					}
-				}
-				return new TypeDiscoverer(ResolvableType.forClass(superType, getType()));
-			} else {
-				var sup = candidate.getSuperType();
-				if ((sup != null) && !ResolvableType.NONE.equals(sup)) {
-					if (sup.equals(resolvableType)) {
-						return this;
-					}
-					return new TypeDiscoverer(sup);
-				}
-			}
-		}
-
-		return new TypeDiscoverer(resolvableType.as(superType));
+		return noGenericsResolvable
+				? new ClassTypeInformation<>(ResolvableType.forRawClass(superType))
+				: TypeInformation.of(resolvableSuperType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.util.TypeInformation#isAssignableFrom(org.springframework.data.util.TypeInformation)
-	 */
+	@Override
 	public boolean isAssignableFrom(TypeInformation<?> target) {
 
 		TypeInformation<?> superTypeInformation = target.getSuperTypeInformation(getType());
@@ -420,6 +272,7 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 		if (superTypeInformation == null) {
 			return false;
 		}
+
 		if (superTypeInformation.equals(this)) {
 			return true;
 		}
@@ -433,62 +286,58 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	@Override
 	public List<TypeInformation<?>> getTypeArguments() {
+		return typeArguments.get();
+	}
+
+	private List<TypeInformation<?>> doGetTypeArguments() {
 
 		if (!resolvableType.hasGenerics()) {
 			return Collections.emptyList();
 		}
 
-		return Arrays.stream(resolvableType.getGenerics()).map(it -> {
-			if ((it == null) || ResolvableType.NONE.equals(it)) {
-				return null;
-			}
-			return new TypeDiscoverer<>(it);
-
-		}).collect(Collectors.toList());
+		return Arrays.stream(resolvableType.getGenerics())
+				.<TypeInformation<?>> map(it -> it.resolve(Object.class) == null ? null : TypeInformation.of(it))
+				.toList();
 	}
 
 	@Override
-	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
-		// if(isAssignableFrom(type)) {
-		// return new ClassTypeInformation(type.getType());
-		// }
-		// return new NewTypeDiscoverer(type.resolvableType.as(getType()));
-		// if(type.resolvableType.isAssignableFrom(type.resolvableType)) {
-		// return (TypeInformation<? extends S>) type;
-		// }
+	@SuppressWarnings("unchecked")
+	public TypeInformation<? extends S> specialize(TypeInformation<?> type) {
 
-		if (this.resolvableType.getGenerics().length == type.resolvableType.getGenerics().length) {
-			return new TypeDiscoverer<>(
+		if (this.getTypeArguments().size() == type.getTypeArguments().size()) {
+			return (TypeInformation<? extends S>) TypeInformation.of(
 					ResolvableType.forClassWithGenerics(type.getType(), this.resolvableType.getGenerics()));
 		}
 
-		return new ClassTypeInformation(type.getType());
+		return TypeInformation.of((Class<S>) type.getType());
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
+
 		if (this == o) {
 			return true;
 		}
+
 		if ((o == null) || !ClassUtils.isAssignable(getClass(), o.getClass())) {
 			return false;
 		}
 
-		TypeDiscoverer<?> that = (TypeDiscoverer<?>) o;
+		var that = (TypeDiscoverer<?>) o;
 
 		if (!ObjectUtils.nullSafeEquals(getType(), that.getType())) {
 			return false;
 		}
 
-		List<? extends Class<?>> collect1 = Arrays.stream(resolvableType.getGenerics()).map(ResolvableType::toClass)
-				.collect(Collectors.toList());
-		List<? extends Class<?>> collect2 = Arrays.stream(that.resolvableType.getGenerics()).map(ResolvableType::toClass)
+		var collect1 = Arrays.stream(resolvableType.getGenerics()) //
+				.map(ResolvableType::toClass) //
 				.collect(Collectors.toList());
 
-		if (!ObjectUtils.nullSafeEquals(collect1, collect2)) {
-			return false;
-		}
-		return true;
+		var collect2 = Arrays.stream(that.resolvableType.getGenerics()) //
+				.map(ResolvableType::toClass) //
+				.collect(Collectors.toList());
+
+		return ObjectUtils.nullSafeEquals(collect1, collect2);
 	}
 
 	@Override
@@ -498,6 +347,57 @@ public class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	@Override
 	public String toString() {
-		return getType().getName();
+		return resolvableType.toString();
+	}
+
+	@Nullable
+	private TypeInformation<?> getTypeArgument(Class<?> bound, int index) {
+
+		var superTypeInformation = getSuperTypeInformation(bound);
+
+		if (superTypeInformation == null) {
+			return null;
+		}
+
+		var arguments = superTypeInformation.getTypeArguments();
+
+		if (arguments.isEmpty() || (index > (arguments.size() - 1))) {
+			return null;
+		}
+
+		return arguments.get(index);
+	}
+
+	private Optional<TypeInformation<?>> getPropertyInformation(String fieldname) {
+
+		var rawType = getType();
+		var field = ReflectionUtils.findField(rawType, fieldname);
+
+		return field != null
+				? Optional.of(TypeInformation.of(ResolvableType.forField(field, resolvableType)))
+				: Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname))
+						.map(it -> from(it, rawType))
+						.map(TypeInformation::of);
+	}
+
+	private ResolvableType from(PropertyDescriptor descriptor, Class<?> rawType) {
+
+		var method = descriptor.getReadMethod();
+
+		if (method != null) {
+			return ResolvableType.forMethodReturnType(method, rawType);
+		}
+
+		method = descriptor.getWriteMethod();
+
+		if (method != null) {
+			return ResolvableType.forMethodParameter(method, 0, rawType);
+		}
+
+		return ResolvableType.forType(descriptor.getPropertyType(), resolvableType);
+	}
+
+	private boolean isNullableWrapper() {
+		return NullableWrapperConverters.supports(getType());
 	}
 }

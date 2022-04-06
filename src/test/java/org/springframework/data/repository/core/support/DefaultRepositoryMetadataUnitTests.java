@@ -22,14 +22,12 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ClassUtils;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -84,7 +82,7 @@ class DefaultRepositoryMetadataUnitTests {
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(GenericEntityRepository.class);
 		TypeInformation<?> domainType = metadata.getDomainTypeInformation();
 		assertThat(domainType.getType()).isEqualTo(GenericEntity.class);
-		assertThat(domainType.getTypeArguments()).containsExactly(ClassTypeInformation.from(String.class));
+		assertThat(domainType.getTypeArguments()).containsExactly(TypeInformation.of(String.class));
 	}
 
 	@Test

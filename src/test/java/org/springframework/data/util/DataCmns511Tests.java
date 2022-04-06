@@ -33,7 +33,7 @@ public class DataCmns511Tests {
 	@Test // DATACMNS-511
 	public void detectsEqualTypeVariableTypeInformationInstances() {
 
-		var createdBy = ClassTypeInformation.from(AbstractRole.class).getProperty("createdBy");
+		var createdBy = TypeInformation.of(AbstractRole.class).getProperty("createdBy");
 
 		assertThat(createdBy.getProperty("roles").getActualType().getProperty("createdBy"))//
 				.satisfies(second -> {

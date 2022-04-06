@@ -63,7 +63,7 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 		Assert.notNull(type, "Type must not be null");
 
 		return Discoverers.findDiscoverer(type) //
-				.discover(ClassTypeInformation.from(type), null);
+				.discover(TypeInformation.of(type), null);
 	}
 
 	/**

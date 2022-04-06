@@ -36,7 +36,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -59,7 +58,7 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.Person;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -287,7 +286,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		var failed = new AtomicBoolean(false);
 
 		PersistentEntity<EntityWithAnnotation, T> entity = new BasicPersistentEntity<EntityWithAnnotation, T>(
-				ClassTypeInformation.from(EntityWithAnnotation.class), null) {
+				TypeInformation.of(EntityWithAnnotation.class), null) {
 
 			@Nullable
 			@Override
@@ -378,7 +377,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	}
 
 	private <S> BasicPersistentEntity<S, T> createEntity(Class<S> type, Comparator<T> comparator) {
-		return new BasicPersistentEntity<>(ClassTypeInformation.from(type), comparator);
+		return new BasicPersistentEntity<>(TypeInformation.of(type), comparator);
 	}
 
 	private static PersistentEntity<Object, ?> createPopulatedPersistentEntity(Class<?> type) {

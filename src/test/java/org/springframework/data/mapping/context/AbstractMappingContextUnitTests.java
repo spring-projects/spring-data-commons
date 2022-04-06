@@ -232,7 +232,7 @@ class AbstractMappingContextUnitTests {
 	void shouldIgnoreKotlinOverrideCtorPropertyInSuperClass() {
 
 		var entity = context
-				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyTypeWithCtor.class));
+				.getPersistentEntity(TypeInformation.of(ShadowingPropertyTypeWithCtor.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
 			assertThat(property.getField().getDeclaringClass()).isIn(ShadowingPropertyTypeWithCtor.class,
 					ShadowedPropertyTypeWithCtor.class);
@@ -243,7 +243,7 @@ class AbstractMappingContextUnitTests {
 	void shouldIncludeAssignableKotlinOverridePropertyInSuperClass() {
 
 		var entity = context
-				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyType.class));
+				.getPersistentEntity(TypeInformation.of(ShadowingPropertyType.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
 			assertThat(property.getField().getDeclaringClass()).isIn(ShadowedPropertyType.class, ShadowingPropertyType.class);
 		});
@@ -253,7 +253,7 @@ class AbstractMappingContextUnitTests {
 	void shouldIncludeAssignableShadowedPropertyInSuperClass() {
 
 		var entity = context
-				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyAssignable.class));
+				.getPersistentEntity(TypeInformation.of(ShadowingPropertyAssignable.class));
 
 		assertThat(StreamUtils.createStreamFromIterator(entity.iterator())
 				.filter(it -> it.getField().getDeclaringClass().equals(ShadowedPropertyAssignable.class)).findFirst() //
@@ -271,7 +271,7 @@ class AbstractMappingContextUnitTests {
 	void shouldIgnoreNonAssignableOverridePropertyInSuperClass() {
 
 		var entity = context
-				.getPersistentEntity(ClassTypeInformation.from(ShadowingPropertyNotAssignable.class));
+				.getPersistentEntity(TypeInformation.of(ShadowingPropertyNotAssignable.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
 			assertThat(property.getField().getDeclaringClass()).isEqualTo(ShadowingPropertyNotAssignable.class);
 		});

@@ -27,7 +27,7 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProviderUnitTests.Outer.Inner;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link PersistentEntityParameterValueProvider}.
@@ -46,7 +46,7 @@ class PersistentEntityParameterValueProviderUnitTests<P extends PersistentProper
 
 		Object outer = new Outer();
 
-		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(ClassTypeInformation.from(Inner.class)) {
+		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<Inner, P>(TypeInformation.of(Inner.class)) {
 
 			@Override
 			public P getPersistentProperty(String name) {
@@ -69,7 +69,7 @@ class PersistentEntityParameterValueProviderUnitTests<P extends PersistentProper
 	@Test
 	void rejectsPropertyIfNameDoesNotMatch() {
 
-		PersistentEntity<Entity, P> entity = new BasicPersistentEntity<>(ClassTypeInformation.from(Entity.class));
+		PersistentEntity<Entity, P> entity = new BasicPersistentEntity<>(TypeInformation.of(Entity.class));
 		ParameterValueProvider<P> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider,
 				Optional.of(property));
 

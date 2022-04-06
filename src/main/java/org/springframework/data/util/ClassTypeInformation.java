@@ -16,45 +16,85 @@
 package org.springframework.data.util;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.ResolvableType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
+import org.springframework.util.ConcurrentLruCache;
 
 /**
  * {@link TypeInformation} for a plain {@link Class}.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @deprecated since 3.0 to go package protected at some point. Refer to {@link TypeInformation} only.
  */
+@Deprecated
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
-	public static final ClassTypeInformation<Collection> COLLECTION = new ClassTypeInformation(Collection.class);
-	public static final ClassTypeInformation<List> LIST = new ClassTypeInformation(List.class);
-	public static final ClassTypeInformation<Set> SET = new ClassTypeInformation(Set.class);
-	public static final ClassTypeInformation<Map> MAP = new ClassTypeInformation(Map.class);
-	public static final ClassTypeInformation<Object> OBJECT = new ClassTypeInformation(Object.class);
+	private static final ConcurrentLruCache<ResolvableType, ClassTypeInformation<?>> cache = new ConcurrentLruCache<>(64,
+			ClassTypeInformation::new);
 
-	private static final Map<Class<?>, ClassTypeInformation<?>> cache = new ConcurrentReferenceHashMap<>(64,
-			ReferenceType.WEAK);
+	@Deprecated public static final ClassTypeInformation<Collection> COLLECTION;
+	@Deprecated public static final ClassTypeInformation<List> LIST;
+	@Deprecated public static final ClassTypeInformation<Set> SET;
+	@Deprecated public static final ClassTypeInformation<Map> MAP;
+	@Deprecated public static final ClassTypeInformation<Object> OBJECT;
+
+	static {
+
+		OBJECT = (ClassTypeInformation<Object>) cache.get(ResolvableType.forClass(Object.class));
+		COLLECTION = (ClassTypeInformation<Collection>) cache.get(ResolvableType.forClass(Collection.class));
+		LIST = (ClassTypeInformation<List>) cache.get(ResolvableType.forClass(List.class));
+		SET = (ClassTypeInformation<Set>) cache.get(ResolvableType.forClass(Set.class));
+		MAP = (ClassTypeInformation<Map>) cache.get(ResolvableType.forClass(Map.class));
+	}
+
+	private final Class<S> type;
+
+	ClassTypeInformation(ResolvableType type) {
+		super(type);
+		this.type = (Class<S>) type.resolve(Object.class);
+	}
+
+	private ClassTypeInformation(Class<S> type) {
+		super(ResolvableType.forClass(type));
+		this.type = type;
+	}
+
+	/**
+	 * @param <S>
+	 * @param type
+	 * @return
+	 * @deprecated since 3.0. Use {@link TypeInformation#of} instead.
+	 */
+	@Deprecated
+	public static <S> ClassTypeInformation<S> from(Class<S> type) {
+		return cti(ResolvableType.forClass(type));
+	}
+
+	static <S> ClassTypeInformation<S> cti(ResolvableType type) {
+
+		Assert.notNull(type, "Type must not be null");
+
+		return (ClassTypeInformation<S>) cache.get(type);
+	}
 
 	/**
 	 * Warning: Does not fully resolve generic arguments.
+	 *
 	 * @param method
 	 * @return
-	 * @deprecated since 3.0 Use {@link #fromReturnTypeOf(Method, Class)} instead.
+	 * @deprecated since 3.0. Use {@link TypeInformation#fromReturnTypeOf(Method)} instead.
 	 */
 	@Deprecated
-	public static TypeInformation<?> fromReturnTypeOf(Method method) {
-		return new TypeDiscoverer<>(ResolvableType.forMethodReturnType(method));
+	public static <S> TypeInformation<S> fromReturnTypeOf(Method method) {
+		return (TypeInformation<S>) TypeInformation.of(ResolvableType.forMethodReturnType(method));
 	}
 
 	/**
@@ -62,35 +102,18 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @param actualType can be {@literal null}.
 	 * @return
 	 */
-	public static TypeInformation<?> fromReturnTypeOf(Method method, @Nullable Class<?> actualType) {
+	static TypeInformation<?> fromReturnTypeOf(Method method, @Nullable Class<?> actualType) {
 
-		if(actualType == null) {
-			return new TypeDiscoverer<>(ResolvableType.forMethodReturnType(method));
-		}
-		return new TypeDiscoverer<>(ResolvableType.forMethodReturnType(method, actualType));
-	}
+		var type = actualType == null
+				? ResolvableType.forMethodReturnType(method)
+				: ResolvableType.forMethodReturnType(method, actualType);
 
-	Class<?> type;
-
-	static {
-		Arrays.asList(COLLECTION, LIST, SET, MAP, OBJECT).forEach(it -> cache.put(it.getType(), it));
-	}
-
-	public static <S> ClassTypeInformation<S> from(Class<S> type) {
-
-		Assert.notNull(type, "Type must not be null");
-
-		return (ClassTypeInformation<S>) cache.computeIfAbsent(type, ClassTypeInformation::new);
-	}
-
-	ClassTypeInformation(Class<S> type) {
-		super(ResolvableType.forClass(type));
-		this.type = type;
+		return TypeInformation.of(type);
 	}
 
 	@Override
 	public Class<S> getType() {
-		return (Class<S>) type;
+		return type;
 	}
 
 	@Override
@@ -104,17 +127,12 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	}
 
 	@Override
-	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
+	public TypeInformation<? extends S> specialize(TypeInformation<?> type) {
 		return (TypeInformation<? extends S>) type;
 	}
 
 	@Override
 	public String toString() {
 		return type.getName();
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		return super.equals(o);
 	}
 }

@@ -23,8 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -38,7 +36,7 @@ class ParameterUnitTests<P extends PersistentProperty<P>> {
 	@Mock PersistentEntity<Object, P> entity;
 	@Mock PersistentEntity<String, P> stringEntity;
 
-	private TypeInformation<Object> type = ClassTypeInformation.from(Object.class);
+	private TypeInformation<Object> type = TypeInformation.of(Object.class);
 	private Annotation[] annotations = new Annotation[0];
 
 	@Test
@@ -84,7 +82,7 @@ class ParameterUnitTests<P extends PersistentProperty<P>> {
 	void twoParametersWithDifferenTypeAreNotEqual() {
 
 		var left = new Parameter<Object, P>("name", type, annotations, entity);
-		var right = new Parameter<String, P>("name", ClassTypeInformation.from(String.class), annotations,
+		var right = new Parameter<String, P>("name", TypeInformation.of(String.class), annotations,
 				stringEntity);
 
 		assertThat(left).isNotEqualTo(right);

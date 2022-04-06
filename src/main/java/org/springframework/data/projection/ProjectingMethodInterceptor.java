@@ -25,10 +25,8 @@ import java.util.Map.Entry;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.TypeInformation;
@@ -66,7 +64,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	@Override
 	public Object invoke(@SuppressWarnings("null") @NonNull MethodInvocation invocation) throws Throwable {
 
-		TypeInformation<?> type = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod());
+		TypeInformation<?> type = TypeInformation.fromReturnTypeOf(invocation.getMethod());
 		TypeInformation<?> resultType = type;
 		TypeInformation<?> typeToReturn = type;
 
@@ -74,7 +72,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 		boolean applyWrapper = false;
 
 		if (NullableWrapperConverters.supports(type.getType())
-				&& (result == null || !NullableWrapperConverters.supports(result.getClass()))) {
+				&& ((result == null) || !NullableWrapperConverters.supports(result.getClass()))) {
 			resultType = NullableWrapperConverters.unwrapActualType(typeToReturn);
 			applyWrapper = true;
 		}
@@ -161,7 +159,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 
 	@Nullable
 	private Object getProjection(@Nullable Object result, Class<?> returnType) {
-		return result == null || ClassUtils.isAssignable(returnType, result.getClass()) ? result
+		return (result == null) || ClassUtils.isAssignable(returnType, result.getClass()) ? result
 				: factory.createProjection(returnType, result);
 	}
 

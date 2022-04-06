@@ -16,13 +16,10 @@
 package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.util.ClassTypeInformation.from;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -31,8 +28,8 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.ReflectionUtils;
 
@@ -45,11 +42,6 @@ import org.springframework.util.ReflectionUtils;
 @ExtendWith(MockitoExtension.class)
 public class TypeDiscovererUnitTests {
 
-	private static final Map<TypeVariable<?>, Type> EMPTY_MAP = Collections.emptyMap();
-
-	@Mock Map<TypeVariable<?>, Type> firstMap;
-	@Mock Map<TypeVariable<?>, Type> secondMap;
-
 	@Test
 	void rejectsNullType() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new TypeDiscoverer<>((ResolvableType) null));
@@ -58,27 +50,17 @@ public class TypeDiscovererUnitTests {
 	@Test
 	void isNotEqualIfTypesDiffer() {
 
-		var objectTypeInfo = new TypeDiscoverer<Object>(Object.class);
-		var stringTypeInfo = new TypeDiscoverer<String>(String.class);
+		var objectTypeInfo = TypeInformation.of(Object.class);
+		var stringTypeInfo = TypeInformation.of(String.class);
 
 		assertThat(objectTypeInfo.equals(stringTypeInfo)).isFalse();
 	}
 
-//	@Test
-//	void isNotEqualIfTypeVariableMapsDiffer() {
-//
-//		assertThat(firstMap.equals(secondMap)).isFalse();
-//
-//		var first = new TypeDiscoverer<Object>(Object.class);
-//		var second = new TypeDiscoverer<Object>(Object.class);
-//
-//		assertThat(first.equals(second)).isFalse();
-//	}
-
 	@Test
 	void dealsWithTypesReferencingThemselves() {
 
-		TypeInformation<SelfReferencing> information = from(SelfReferencing.class);
+		var information = TypeInformation.of(SelfReferencing.class);
+
 		var first = information.getProperty("parent").getMapValueType();
 		var second = first.getProperty("map").getMapValueType();
 
@@ -88,7 +70,7 @@ public class TypeDiscovererUnitTests {
 	@Test
 	void dealsWithTypesReferencingThemselvesInAMap() {
 
-		TypeInformation<SelfReferencingMap> information = from(SelfReferencingMap.class);
+		var information = TypeInformation.of(SelfReferencingMap.class);
 		var property = information.getProperty("map");
 
 		assertThat(property.getMapValueType()).isEqualTo(information);
@@ -97,7 +79,7 @@ public class TypeDiscovererUnitTests {
 	@Test
 	void returnsComponentAndValueTypesForMapExtensions() {
 
-		TypeInformation<?> discoverer = new TypeDiscoverer<>(CustomMap.class);
+		TypeInformation<?> discoverer = TypeInformation.of(CustomMap.class);
 
 		assertThat(discoverer.getMapValueType().getType()).isEqualTo(Locale.class);
 		assertThat(discoverer.getComponentType().getType()).isEqualTo(String.class);
@@ -106,7 +88,7 @@ public class TypeDiscovererUnitTests {
 	@Test
 	void returnsComponentTypeForCollectionExtension() {
 
-		var discoverer = new TypeDiscoverer<CustomCollection>(CustomCollection.class);
+		var discoverer = TypeInformation.of(CustomCollection.class);
 
 		assertThat(discoverer.getComponentType().getType()).isEqualTo(String.class);
 	}
@@ -114,7 +96,7 @@ public class TypeDiscovererUnitTests {
 	@Test
 	void returnsComponentTypeForArrays() {
 
-		var discoverer = new TypeDiscoverer<String[]>(String[].class);
+		var discoverer = TypeInformation.of(String[].class);
 
 		assertThat(discoverer.getComponentType().getType()).isEqualTo(String.class);
 	}
@@ -122,7 +104,7 @@ public class TypeDiscovererUnitTests {
 	@Test // DATACMNS-57
 	void discoveresConstructorParameterTypesCorrectly() throws NoSuchMethodException, SecurityException {
 
-		var discoverer = new TypeDiscoverer<GenericConstructors>(GenericConstructors.class);
+		var discoverer = TypeInformation.of(GenericConstructors.class);
 		var constructor = GenericConstructors.class.getConstructor(List.class, Locale.class);
 		var types = discoverer.getParameterTypes(constructor);
 
@@ -135,7 +117,7 @@ public class TypeDiscovererUnitTests {
 	@SuppressWarnings("rawtypes")
 	void returnsNullForComponentAndValueTypesForRawMaps() {
 
-		var discoverer = new TypeDiscoverer<Map>(Map.class);
+		var discoverer = TypeInformation.of(Map.class);
 
 		assertThat(discoverer.getComponentType()).isNotNull();
 		assertThat(discoverer.getMapValueType()).isNotNull();
@@ -145,8 +127,8 @@ public class TypeDiscovererUnitTests {
 	@SuppressWarnings("rawtypes")
 	void doesNotConsiderTypeImplementingIterableACollection() {
 
-		var discoverer = new TypeDiscoverer<Person>(Person.class);
-		TypeInformation reference = from(Address.class);
+		var discoverer = TypeInformation.of(Person.class);
+		TypeInformation reference = TypeInformation.of(Address.class);
 
 		var addresses = discoverer.getProperty("addresses");
 
@@ -166,7 +148,7 @@ public class TypeDiscovererUnitTests {
 	@Test // DATACMNS-1342, DATACMNS-1430
 	void considersStreamableToBeCollectionLike() {
 
-		TypeInformation<SomeStreamable> type = from(SomeStreamable.class);
+		TypeInformation<SomeStreamable> type = TypeInformation.of(SomeStreamable.class);
 
 		assertThat(type.isCollectionLike()).isTrue();
 		assertThat(type.getRequiredProperty("streamable").isCollectionLike()).isTrue();
@@ -175,7 +157,7 @@ public class TypeDiscovererUnitTests {
 	@Test // DATACMNS-1419
 	void detectsSubTypes() {
 
-		var type = from(Set.class);
+		var type = TypeInformation.of(Set.class);
 
 		assertThat(type.isSubTypeOf(Collection.class)).isTrue();
 		assertThat(type.isSubTypeOf(Set.class)).isFalse();
@@ -196,124 +178,115 @@ public class TypeDiscovererUnitTests {
 
 	}
 
-	@Test
-		// GH-2312
+	@Test // GH-2312
 	void sameFieldNoGenericsInfoShouldBeEqual() {
 
-		Field addresses = ReflectionUtils.findField(Person.class, "addresses");
+		var addresses = ReflectionUtils.findField(Person.class, "addresses");
 
-		TypeDiscoverer<Object> discoverer1 = new TypeDiscoverer<>(ResolvableType.forField(addresses, Person.class));
-		TypeDiscoverer<Object> discoverer2 = new TypeDiscoverer<>(ResolvableType.forField(addresses, Person.class));
+		var discoverer1 = TypeInformation.of(ResolvableType.forField(addresses, Person.class));
+		var discoverer2 = TypeInformation.of(ResolvableType.forField(addresses, Person.class));
 
 		assertThat(discoverer1).isEqualTo(discoverer2);
 		assertThat(discoverer1.hashCode()).isEqualTo(discoverer2.hashCode());
 	}
 
-	@Test
-		// GH-2312
+	@Test // GH-2312
 	void sameFieldNoGenericsWhenInherited() {
 
-		Field addresses = ReflectionUtils.findField(Person.class, "addresses");
-		TypeDiscoverer<Object> discoverer1 = new TypeDiscoverer<>(ResolvableType.forField(addresses, Person.class));
-		TypeDiscoverer<Object> discoverer2 = new TypeDiscoverer<>(ResolvableType.forField(addresses, TypeExtendingPerson.class));
+		var addresses = ReflectionUtils.findField(Person.class, "addresses");
+
+		var discoverer1 = TypeInformation.of(ResolvableType.forField(addresses, Person.class));
+		var discoverer2 = TypeInformation.of(ResolvableType.forField(addresses, TypeExtendingPerson.class));
 
 		assertThat(discoverer1).isEqualTo(discoverer2);
 		assertThat(discoverer1.hashCode()).isEqualTo(discoverer2.hashCode());
 	}
 
-	@Test
-		// GH-2312
+	@Test // GH-2312
 	void sameFieldNoGenericsOnDifferentTypes() {
 
-		Field addresses1 = ReflectionUtils.findField(Person.class, "addresses");
-		TypeDiscoverer<Object> discoverer1 = new TypeDiscoverer<>(ResolvableType.forField(addresses1, Person.class));
+		var addresses1 = ReflectionUtils.findField(Person.class, "addresses");
+		var discoverer1 = TypeInformation.of(ResolvableType.forField(addresses1, Person.class));
 
-		Field addresses2 = ReflectionUtils.findField(OtherPerson.class, "addresses");
-		TypeDiscoverer<Object> discoverer2 = new TypeDiscoverer<>(ResolvableType.forField(addresses2, OtherPerson.class));
+		var addresses2 = ReflectionUtils.findField(OtherPerson.class, "addresses");
+		var discoverer2 = TypeInformation.of(ResolvableType.forField(addresses2, OtherPerson.class));
 
 		assertThat(discoverer1).isEqualTo(discoverer2);
 		assertThat(discoverer1.hashCode()).isEqualTo(discoverer2.hashCode());
 	}
 
-	@Test
-		// GH-2312
+	@Test // GH-2312
 	void sameFieldWithGenerics() {
 
-		Field field1 = ReflectionUtils.findField(GenericPerson.class, "value");
-		TypeDiscoverer<Object> discoverer1 = new TypeDiscoverer<>(ResolvableType.forField(field1, GenericPerson.class));
+		var field1 = ReflectionUtils.findField(GenericPerson.class, "value");
+		var discoverer1 = TypeInformation.of(ResolvableType.forField(field1, GenericPerson.class));
 
-		Field field2 = ReflectionUtils.findField(GenericPerson.class, "value");
-		TypeDiscoverer<Object> discoverer2 = new TypeDiscoverer<>(ResolvableType.forField(field2, GenericPerson.class));
+		var field2 = ReflectionUtils.findField(GenericPerson.class, "value");
+		var discoverer2 = TypeInformation.of(ResolvableType.forField(field2, GenericPerson.class));
 
 		assertThat(discoverer1).isEqualTo(discoverer2);
 		assertThat(discoverer1.hashCode()).isEqualTo(discoverer2.hashCode());
 	}
 
-	@Test
-		// GH-2312
+	@Test // GH-2312
 	void sameFieldWithGenericsSet() {
 
-		Field field1 = ReflectionUtils.findField(GenericPerson.class, "value");
-		TypeDiscoverer<Object> discoverer1 = new TypeDiscoverer<>(ResolvableType.forField(field1, TypeExtendingGenericPersonWithObject.class));
+		var field1 = ReflectionUtils.findField(GenericPerson.class, "value");
+		var discoverer1 = TypeInformation.of(ResolvableType.forField(field1, TypeExtendingGenericPersonWithObject.class));
 
-		Field field2 = ReflectionUtils.findField(GenericPerson.class, "value");
-		TypeDiscoverer<Object> discoverer2 = new TypeDiscoverer<>(ResolvableType.forField(field2, TypeExtendingGenericPersonWithObject.class));
+		var field2 = ReflectionUtils.findField(GenericPerson.class, "value");
+		var discoverer2 = TypeInformation.of(ResolvableType.forField(field2, TypeExtendingGenericPersonWithObject.class));
 
 		assertThat(discoverer1).isEqualTo(discoverer2);
 		assertThat(discoverer1.hashCode()).isEqualTo(discoverer2.hashCode());
 	}
 
-	@Test
-		// GH-2312
+	@Test // GH-2312
 	void sameFieldWithDifferentGenericsSet() {
 
-		Field field1 = ReflectionUtils.findField(GenericPerson.class, "value");
-		TypeDiscoverer<Object> discoverer1 = new TypeDiscoverer<>(ResolvableType.forField(field1, TypeExtendingGenericPersonWithObject.class));
+		var field1 = ReflectionUtils.findField(GenericPerson.class, "value");
+		var discoverer1 = TypeInformation.of(ResolvableType.forField(field1, TypeExtendingGenericPersonWithObject.class));
 
-		Field field2 = ReflectionUtils.findField(GenericPerson.class, "value");
-		TypeDiscoverer<Object> discoverer2 = new TypeDiscoverer<>(ResolvableType.forField(field2, TypeExtendingGenericPersonWithAddress.class));
+		var field2 = ReflectionUtils.findField(GenericPerson.class, "value");
+		var discoverer2 = TypeInformation.of(ResolvableType.forField(field2, TypeExtendingGenericPersonWithAddress.class));
 
 		assertThat(discoverer1).isNotEqualTo(discoverer2);
 		assertThat(discoverer1.hashCode()).isNotEqualTo(discoverer2.hashCode());
 	}
 
-	@Test
-		// GH-2312
+	@Test // GH-2312
 	void sameFieldWithDifferentNoGenericsAndObjectOneSet() {
 
-		Field field1 = ReflectionUtils.findField(GenericPerson.class, "value");
-		TypeDiscoverer<Object> discoverer1 = new TypeDiscoverer<>(ResolvableType.forField(field1, GenericPerson.class));
+		var field1 = ReflectionUtils.findField(GenericPerson.class, "value");
+		var discoverer1 = TypeInformation.of(ResolvableType.forField(field1, GenericPerson.class));
 
-		Field field2 = ReflectionUtils.findField(GenericPerson.class, "value");
-		TypeDiscoverer<Object> discoverer2 = new TypeDiscoverer<>(ResolvableType.forField(field2, TypeExtendingGenericPersonWithObject.class));
+		var field2 = ReflectionUtils.findField(GenericPerson.class, "value");
+		var discoverer2 = TypeInformation.of(ResolvableType.forField(field2, TypeExtendingGenericPersonWithObject.class));
 
 		assertThat(discoverer1).isEqualTo(discoverer2); // TODO: notEquals
 		assertThat(discoverer1.hashCode()).isEqualTo(discoverer2.hashCode());
 	}
 
-	@Test
-		// GH-2312
+	@Test // GH-2312
 	void genericFieldOfType() {
 
-		Field field = ReflectionUtils.findField(GenericPerson.class, "value");
-		TypeDiscoverer<Object> discoverer = new TypeDiscoverer<>(ResolvableType.forField(field, TypeExtendingGenericPersonWithAddress.class));
+		var field = ReflectionUtils.findField(GenericPerson.class, "value");
+		var discoverer = TypeInformation.of(ResolvableType.forField(field, TypeExtendingGenericPersonWithAddress.class));
 
-		assertThat(discoverer).isEqualTo(ClassTypeInformation.from(Address.class));
-		assertThat(discoverer.hashCode()).isEqualTo(ClassTypeInformation.from(Address.class).hashCode());
+		assertThat(discoverer).isEqualTo(TypeInformation.of(Address.class));
+		assertThat(discoverer.hashCode()).isEqualTo(TypeInformation.of(Address.class).hashCode());
 	}
 
 	@Test // #2511
 	void considerVavrMapToBeAMap() {
 
-		var type = from(io.vavr.collection.Map.class);
-
-		assertThat(type.isMap()).isTrue();
+		assertThat(TypeInformation.of(io.vavr.collection.Map.class).isMap()).isTrue();
 	}
 
 	@Test // #2517
 	void returnsComponentAndValueTypesForVavrMapExtensions() {
 
-		var discoverer = new TypeDiscoverer<>(CustomVavrMap.class);
+		var discoverer = TypeInformation.of(CustomVavrMap.class);
 
 		assertThat(discoverer.getMapValueType().getType()).isEqualTo(Locale.class);
 		assertThat(discoverer.getComponentType().getType()).isEqualTo(String.class);
@@ -321,26 +294,36 @@ public class TypeDiscovererUnitTests {
 
 	@Test // #2511
 	void considerVavrSetToBeCollectionLike() {
-
-		var type = from(io.vavr.collection.Set.class);
-
-		assertThat(type.isCollectionLike()).isTrue();
+		assertThat(TypeInformation.of(io.vavr.collection.Set.class).isCollectionLike()).isTrue();
 	}
 
 	@Test // #2511
 	void considerVavrSeqToBeCollectionLike() {
-
-		var type = from(io.vavr.collection.Seq.class);
-
-		assertThat(type.isCollectionLike()).isTrue();
+		assertThat(TypeInformation.of(io.vavr.collection.Seq.class).isCollectionLike()).isTrue();
 	}
 
 	@Test // #2511
 	void considerVavrListToBeCollectionLike() {
+		assertThat(TypeInformation.of(io.vavr.collection.List.class).isCollectionLike()).isTrue();
+	}
 
-		var type = from(io.vavr.collection.List.class);
+	@Test
+	void typeInfoShouldPreserveGenericParameter() {
 
-		assertThat(type.isCollectionLike()).isTrue();
+		TypeInformation<Wrapper> wrapperTypeInfo = TypeInformation.of(Wrapper.class);
+		TypeInformation<?> fieldTypeInfo = wrapperTypeInfo.getProperty("field");
+		TypeInformation<?> valueTypeInfo = fieldTypeInfo.getProperty("value");
+
+		assertThat(valueTypeInfo.getType()).isEqualTo(Leaf.class);
+	}
+
+	@Test
+	void detectsMapKeyAndValueOnEnumMaps() {
+
+		TypeInformation<?> map = TypeInformation.of(EnumMapWrapper.class).getProperty("map");
+
+		assertThat(map.getComponentType().getType()).isEqualTo(Autowire.class);
+		assertThat(map.getMapValueType().getType()).isEqualTo(String.class);
 	}
 
 	class Person {
@@ -368,7 +351,6 @@ public class TypeDiscovererUnitTests {
 	class TypeExtendingGenericPersonWithAddress extends GenericPerson<Address> {
 
 	}
-
 
 	abstract class Addresses implements Iterable<Address> {
 
@@ -415,4 +397,22 @@ public class TypeDiscovererUnitTests {
 	}
 
 	interface CustomVavrMap extends io.vavr.collection.Map<String, Locale> {}
+
+	// #2312
+
+	class SomeGeneric<T> {
+		T value;
+	}
+
+	class GenericExtendingSomeGeneric<T> extends SomeGeneric<T> {}
+
+	class Wrapper {
+		GenericExtendingSomeGeneric<Leaf> field;
+	}
+
+	class Leaf {}
+
+	class EnumMapWrapper {
+		EnumMap<Autowire, String> map;
+	}
 }

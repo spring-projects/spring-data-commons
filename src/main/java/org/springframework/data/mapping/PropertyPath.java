@@ -68,7 +68,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @param owningType must not be {@literal null}.
 	 */
 	PropertyPath(String name, Class<?> owningType) {
-		this(name, ClassTypeInformation.from(owningType), Collections.emptyList());
+		this(name, TypeInformation.of(owningType), Collections.emptyList());
 	}
 
 	/**
@@ -315,7 +315,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * @return
 	 */
 	public static PropertyPath from(String source, Class<?> type) {
-		return from(source, ClassTypeInformation.from(type));
+		return from(source, TypeInformation.of(type));
 	}
 
 	/**

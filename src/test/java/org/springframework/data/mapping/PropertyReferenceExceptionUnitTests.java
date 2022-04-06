@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -33,7 +31,7 @@ import org.springframework.data.util.TypeInformation;
  */
 public class PropertyReferenceExceptionUnitTests {
 
-	static final TypeInformation<Sample> TYPE_INFO = ClassTypeInformation.from(Sample.class);
+	static final TypeInformation<Sample> TYPE_INFO = TypeInformation.of(Sample.class);
 	static final List<PropertyPath> NO_PATHS = Collections.emptyList();
 
 	@Test

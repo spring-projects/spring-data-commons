@@ -24,13 +24,12 @@ import java.lang.annotation.Target;
 import java.util.Iterator;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mapping.PreferredConstructorDiscovererUnitTests.Outer.Inner;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link PreferredConstructorDiscoverer}.
@@ -94,7 +93,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // DATACMNS-134, DATACMNS-1126
 	void discoversInnerClassConstructorCorrectly() {
 
-		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(ClassTypeInformation.from(Inner.class));
+		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(TypeInformation.of(Inner.class));
 
 		assertThat(PreferredConstructorDiscoverer.discover(entity)).satisfies(constructor -> {
 
@@ -107,7 +106,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	void skipsSyntheticConstructor() {
 
 		PersistentEntity<SyntheticConstructor, P> entity = new BasicPersistentEntity<>(
-				ClassTypeInformation.from(SyntheticConstructor.class));
+				TypeInformation.of(SyntheticConstructor.class));
 
 		assertThat(PreferredConstructorDiscoverer.discover(entity)).satisfies(constructor -> {
 
@@ -222,11 +221,11 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 	static class ClassWithMetaAnnotatedParameter {
 
-		ClassWithMetaAnnotatedParameter(@MyValue String value) { }
+		ClassWithMetaAnnotatedParameter(@MyValue String value) {}
 	}
 
 	@Target(ElementType.PARAMETER)
 	@Retention(RetentionPolicy.RUNTIME)
 	@Value("${hello-world}")
-	@interface MyValue { }
+	@interface MyValue {}
 }

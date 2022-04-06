@@ -17,7 +17,6 @@ package org.springframework.data.repository.query;
 
 import static java.lang.String.*;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,10 +31,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.data.util.TypeDiscoverer;
 import org.springframework.util.Assert;
 
 /**
@@ -218,7 +215,9 @@ public class Parameter {
 		}
 
 		ResolvableType returnType = ResolvableType.forMethodReturnType(parameter.getMethod());
-		if(new TypeDiscoverer(returnType).isCollectionLike() || org.springframework.util.ClassUtils.isAssignable(Stream.class, returnType.toClass())) {
+
+		if (TypeInformation.of(returnType).isCollectionLike()
+				|| org.springframework.util.ClassUtils.isAssignable(Stream.class, returnType.toClass())) {
 			returnType = returnType.getGeneric(0);
 		}
 

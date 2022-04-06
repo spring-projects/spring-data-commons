@@ -33,20 +33,18 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
-
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.Streamable;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
@@ -185,7 +183,7 @@ class QueryExecutionConvertersUnitTests {
 	void unwrapsPages() throws Exception {
 
 		var method = Sample.class.getMethod("pages");
-		var returnType = ClassTypeInformation.fromReturnTypeOf(method);
+		var returnType = TypeInformation.fromReturnTypeOf(method);
 
 		assertThat(QueryExecutionConverters.unwrapWrapperTypes(returnType).getType())
 				.isEqualTo(String.class);
@@ -207,9 +205,7 @@ class QueryExecutionConvertersUnitTests {
 		for (var methodName : Arrays.asList("tryMethod", "tryForSeqMethod")) {
 
 			var method = Sample.class.getMethod(methodName);
-
-			var type = QueryExecutionConverters
-					.unwrapWrapperTypes(ClassTypeInformation.fromReturnTypeOf(method));
+			var type = QueryExecutionConverters.unwrapWrapperTypes(TypeInformation.fromReturnTypeOf(method));
 
 			assertThat(type.getType()).isEqualTo(Sample.class);
 		}
@@ -231,9 +227,7 @@ class QueryExecutionConvertersUnitTests {
 		for (var methodName : Arrays.asList("tryMethod", "tryForSeqMethod")) {
 
 			var method = Sample.class.getMethod(methodName);
-
-			var type = QueryExecutionConverters
-					.unwrapWrapperTypes(ClassTypeInformation.fromReturnTypeOf(method));
+			var type = QueryExecutionConverters.unwrapWrapperTypes(TypeInformation.fromReturnTypeOf(method));
 
 			assertThat(type.getType()).isEqualTo(Sample.class);
 		}

@@ -16,7 +16,6 @@
 package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.util.Collections;
 
@@ -28,7 +27,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.AnnotatedTypeScanner;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link MappingContextTypeInformationMapper}.
@@ -58,7 +57,7 @@ class MappingContextTypeInformationMapperUnitTests {
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
 
-		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Entity.class)).hasValue("foo")).isTrue();
+		assertThat(mapper.createAliasFor(TypeInformation.of(Entity.class)).hasValue("foo")).isTrue();
 	}
 
 	@Test
@@ -69,7 +68,7 @@ class MappingContextTypeInformationMapperUnitTests {
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
 
-		assertThat(mapper.createAliasFor(from(Entity.class)).hasValue("foo")).isTrue();
+		assertThat(mapper.createAliasFor(TypeInformation.of(Entity.class)).hasValue("foo")).isTrue();
 	}
 
 	@Test
@@ -79,7 +78,7 @@ class MappingContextTypeInformationMapperUnitTests {
 		mappingContext.initialize();
 
 		mapper = new MappingContextTypeInformationMapper(mappingContext);
-		assertThat(mapper.createAliasFor(from(String.class)).isPresent()).isFalse();
+		assertThat(mapper.createAliasFor(TypeInformation.of(String.class)).isPresent()).isFalse();
 	}
 
 	@Test
@@ -94,7 +93,7 @@ class MappingContextTypeInformationMapperUnitTests {
 		PersistentEntity<?, SamplePersistentProperty> entity = mappingContext.getRequiredPersistentEntity(Entity.class);
 
 		assertThat(entity).isNotNull();
-		assertThat(mapper.resolveTypeFrom(Alias.of("foo"))).isEqualTo(from(Entity.class));
+		assertThat(mapper.resolveTypeFrom(Alias.of("foo"))).isEqualTo(TypeInformation.of(Entity.class));
 	}
 
 	@Test // DATACMNS-485

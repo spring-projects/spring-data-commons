@@ -23,14 +23,12 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.ModelAndView;
@@ -47,7 +45,7 @@ import com.querydsl.core.types.Predicate;
  */
 class QuerydslBindingsFactoryUnitTests {
 
-	static final TypeInformation<?> USER_TYPE = ClassTypeInformation.from(User.class);
+	static final TypeInformation<?> USER_TYPE = TypeInformation.of(User.class);
 
 	QuerydslBindingsFactory factory;
 
@@ -123,7 +121,7 @@ class QuerydslBindingsFactoryUnitTests {
 	void rejectsPredicateResolutionIfDomainTypeCantBeAutoDetected() {
 
 		assertThatIllegalStateException()//
-				.isThrownBy(() -> factory.createBindingsFor(ClassTypeInformation.from(ModelAndView.class)))//
+				.isThrownBy(() -> factory.createBindingsFor(TypeInformation.of(ModelAndView.class)))//
 				.withMessageContaining(QuerydslPredicate.class.getSimpleName())//
 				.withMessageContaining("root");
 

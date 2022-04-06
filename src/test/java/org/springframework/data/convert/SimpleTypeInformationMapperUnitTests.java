@@ -39,7 +39,7 @@ class SimpleTypeInformationMapperUnitTests {
 
 		var type = mapper.resolveTypeFrom(Alias.of("java.lang.String"));
 
-		TypeInformation<?> expected = ClassTypeInformation.from(String.class);
+		TypeInformation<?> expected = TypeInformation.of(String.class);
 
 		assertThat(type).isEqualTo(expected);
 	}
@@ -73,7 +73,7 @@ class SimpleTypeInformationMapperUnitTests {
 	@Test
 	void usesFullyQualifiedClassNameAsTypeKey() {
 
-		assertThat(mapper.createAliasFor(ClassTypeInformation.from(String.class)))
+		assertThat(mapper.createAliasFor(TypeInformation.of(String.class)))
 				.isEqualTo(Alias.of(String.class.getName()));
 	}
 

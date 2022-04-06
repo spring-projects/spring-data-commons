@@ -36,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.AccessType;
@@ -49,7 +48,7 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -328,7 +327,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		assertThat(property.getPersistentEntityTypeInformation()) //
 				.isNotEmpty() //
-				.allMatch(it -> it.equals(ClassTypeInformation.from(Sample.class)));
+				.allMatch(it -> it.equals(TypeInformation.of(Sample.class)));
 	}
 
 	@Test // #2438
@@ -461,8 +460,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 	@Id
-	public @interface MyId {
-	}
+	public @interface MyId {}
 
 	static class FieldAccess {
 		String name;

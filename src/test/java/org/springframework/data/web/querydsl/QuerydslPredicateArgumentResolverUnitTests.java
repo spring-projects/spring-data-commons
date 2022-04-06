@@ -16,7 +16,7 @@
 package org.springframework.data.web.querydsl;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver.*;
+import static org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolverSupport.*;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -26,7 +26,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -39,7 +38,6 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
@@ -210,15 +208,15 @@ class QuerydslPredicateArgumentResolverUnitTests {
 		TypeInformation<?> type = ReflectionTestUtils.invokeMethod(resolver, "extractTypeInfo",
 				getMethodParameterFor("predicateWithoutAnnotation", Predicate.class), MergedAnnotation.missing());
 
-		assertThat(type).isEqualTo(ClassTypeInformation.from(User.class));
+		assertThat(type).isEqualTo(TypeInformation.of(User.class));
 	}
 
 	@Test // DATACMNS-669
 	@SuppressWarnings("rawtypes")
 	void detectsDomainTypesCorrectly() {
 
-		TypeInformation USER_TYPE = ClassTypeInformation.from(User.class);
-		TypeInformation MODELA_AND_VIEW_TYPE = ClassTypeInformation.from(ModelAndView.class);
+		TypeInformation USER_TYPE = TypeInformation.of(User.class);
+		TypeInformation MODELA_AND_VIEW_TYPE = TypeInformation.of(ModelAndView.class);
 
 		assertThat(extractTypeInfo(getMethodParameterFor("forEntity"), MergedAnnotation.missing())).isEqualTo(USER_TYPE);
 		assertThat(extractTypeInfo(getMethodParameterFor("forResourceOfUser"), MergedAnnotation.missing()))

@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -175,7 +174,7 @@ public class QuerydslBindings {
 		Assert.notNull(path, "Path must not be null");
 		Assert.notNull(type, "Type must not be null");
 
-		return isPathAvailable(path, ClassTypeInformation.from(type));
+		return isPathAvailable(path, TypeInformation.of(type));
 	}
 
 	/**
@@ -573,7 +572,7 @@ public class QuerydslBindings {
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 			if (this == o) {
 				return true;
 			}
@@ -589,7 +588,7 @@ public class QuerydslBindings {
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(path);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(binding);
+			result = (31 * result) + ObjectUtils.nullSafeHashCode(binding);
 			return result;
 		}
 

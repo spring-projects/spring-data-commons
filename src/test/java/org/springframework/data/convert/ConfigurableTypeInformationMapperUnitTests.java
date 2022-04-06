@@ -25,10 +25,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link ConfigurableTypeInformationMapper}.
@@ -64,14 +63,14 @@ class ConfigurableTypeInformationMapperUnitTests<T extends PersistentProperty<T>
 	@Test
 	void writesMapKeyForType() {
 
-		assertThat(mapper.createAliasFor(ClassTypeInformation.from(String.class))).isEqualTo(Alias.of("1"));
-		assertThat(mapper.createAliasFor(ClassTypeInformation.from(Object.class))).isEqualTo(Alias.NONE);
+		assertThat(mapper.createAliasFor(TypeInformation.of(String.class))).isEqualTo(Alias.of("1"));
+		assertThat(mapper.createAliasFor(TypeInformation.of(Object.class))).isEqualTo(Alias.NONE);
 	}
 
 	@Test
 	void readsTypeForMapKey() {
 
-		assertThat(mapper.resolveTypeFrom(Alias.of("1"))).isEqualTo(ClassTypeInformation.from(String.class));
+		assertThat(mapper.resolveTypeFrom(Alias.of("1"))).isEqualTo(TypeInformation.of(String.class));
 		assertThat(mapper.resolveTypeFrom(Alias.of("unmapped"))).isNull();
 	}
 }

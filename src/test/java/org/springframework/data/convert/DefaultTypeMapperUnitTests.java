@@ -46,7 +46,7 @@ import org.springframework.data.util.TypeInformation;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DefaultTypeMapperUnitTests {
 
-	static final TypeInformation<String> STRING_TYPE_INFO = ClassTypeInformation.from(String.class);
+	static final TypeInformation<String> STRING_TYPE_INFO = TypeInformation.of(String.class);
 	static final Alias ALIAS = Alias.of(String.class.getName());
 
 	@Mock TypeAliasAccessor<Map<String, String>> accessor;
@@ -88,9 +88,9 @@ class DefaultTypeMapperUnitTests {
 	@Test // DATACMNS-783
 	void specializesRawSourceTypeUsingGenericContext() {
 
-		var root = ClassTypeInformation.from(Foo.class);
+		var root = TypeInformation.of(Foo.class);
 		var propertyType = root.getProperty("abstractBar");
-		TypeInformation<?> barType = ClassTypeInformation.from(Bar.class);
+		TypeInformation<?> barType = TypeInformation.of(Bar.class);
 
 		doReturn(Alias.of(barType)).when(accessor).readAliasFrom(source);
 		doReturn(barType).when(mapper).resolveTypeFrom(Alias.of(barType));

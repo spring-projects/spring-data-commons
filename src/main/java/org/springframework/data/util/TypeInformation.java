@@ -17,10 +17,15 @@ package org.springframework.data.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * Interface to access property types and resolving generics on the way. Starting with a {@link ClassTypeInformation}
@@ -30,8 +35,76 @@ import org.springframework.lang.Nullable;
  * @author Mark Paluch
  * @author Alessandro Nistico
  * @author Johannes Englmeier
+ * @author Christoph Strobl
  */
+@SuppressWarnings({ "deprecation", "rawtypes" })
 public interface TypeInformation<S> {
+
+	public static final TypeInformation<Collection> COLLECTION = ClassTypeInformation.COLLECTION;
+	public static final TypeInformation<List> LIST = ClassTypeInformation.LIST;
+	public static final TypeInformation<Set> SET = ClassTypeInformation.SET;
+	public static final TypeInformation<Map> MAP = ClassTypeInformation.MAP;
+	public static final TypeInformation<Object> OBJECT = ClassTypeInformation.OBJECT;
+
+	static TypeInformation<?> orObject(@Nullable ResolvableType type) {
+		return type == null ? ClassTypeInformation.OBJECT : of(type);
+	}
+
+	/**
+	 * Creates a new {@link TypeInformation} from the given {@link ResolvableType}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.0
+	 */
+	public static TypeInformation<?> of(ResolvableType type) {
+
+		Assert.notNull(type, "Type must not be null");
+
+		return type.hasGenerics() || (type.isArray() && type.getComponentType().hasGenerics()) //
+				? TypeDiscoverer.td(type)
+				: ClassTypeInformation.cti(type);
+	}
+
+	/**
+	 * Creates a new {@link TypeInformation} for the given {@link Class}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.0
+	 */
+	public static <S> TypeInformation<S> of(Class<S> type) {
+
+		Assert.notNull(type, "Type must not be null");
+
+		return ClassTypeInformation.from(type);
+	}
+
+	/**
+	 * Returns a {@link TypeInformation} for the given {@link Method}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.0
+	 */
+	public static TypeInformation<?> fromReturnTypeOf(Method method) {
+
+		Assert.notNull(method, "Method must not be null");
+
+		return fromReturnTypeOf(method, null);
+	}
+
+	/**
+	 * Returns a {@link TypeInformation} for the given method as declared on the given type.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param type can be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.0
+	 */
+	public static TypeInformation<?> fromReturnTypeOf(Method method, @Nullable Class<?> type) {
+		return ClassTypeInformation.fromReturnTypeOf(method, type);
+	}
 
 	/**
 	 * Returns the {@link TypeInformation}s for the parameters of the given {@link Constructor}.
@@ -162,7 +235,7 @@ public interface TypeInformation<S> {
 	default TypeInformation<?> getUserTypeInformation() {
 
 		Class<?> userType = ProxyUtils.getUserClass(getType());
-		return userType.equals(getType()) ? this : ClassTypeInformation.from(userType);
+		return userType.equals(getType()) ? this : TypeInformation.of(userType);
 	}
 
 	/**
@@ -276,12 +349,27 @@ public interface TypeInformation<S> {
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return will never be {@literal null}.
+	 * @deprecated since 3.0. Use {@link #specialize(TypeInformation)} instead, i.e. switch the given parameter's type to
+	 *             {@link TypeInformation} in the first place.
 	 */
-	TypeInformation<? extends S> specialize(ClassTypeInformation<?> type);
-
-	default TypeInformation<? extends S> specialize(TypeInformation<?> type) {
-		return specialize(ClassTypeInformation.from(type.getType()));
+	@Deprecated
+	default TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
+		return specialize((TypeInformation<?>) type);
 	}
+
+	/**
+	 * Specializes the given (raw) {@link TypeInformation} using the context of the current potentially parameterized
+	 * type, basically turning the given raw type into a parameterized one. Will return the given type as is if no
+	 * generics are involved.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	@SuppressWarnings("unchecked")
+	default TypeInformation<? extends S> specialize(TypeInformation<?> type) {
+		return (TypeInformation<? extends S>) type;
+	}
+
 	/**
 	 * Returns whether the current type is a sub type of the given one, i.e. whether it's assignable but not the same one.
 	 *

@@ -189,7 +189,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	@Nullable
 	public E getPersistentEntity(Class<?> type) {
-		return getPersistentEntity(ClassTypeInformation.from(type));
+		return getPersistentEntity(TypeInformation.of(type));
 	}
 
 	@Override
@@ -197,7 +197,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		Assert.notNull(type, "Type must not be null");
 
-		TypeInformation<?> typeInformation = ClassTypeInformation.from(type);
+		TypeInformation<?> typeInformation = TypeInformation.of(type);
 
 		try {
 
@@ -312,7 +312,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	protected final <T> PersistentPropertyPaths<T, P> doFindPersistentPropertyPaths(Class<T> type,
 			Predicate<? super P> predicate, Predicate<P> traversalGuard) {
-		return persistentPropertyPathFactory.from(ClassTypeInformation.from(type), predicate, traversalGuard);
+		return persistentPropertyPathFactory.from(TypeInformation.of(type), predicate, traversalGuard);
 	}
 
 	/**
@@ -322,7 +322,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @return
 	 */
 	protected Optional<E> addPersistentEntity(Class<?> type) {
-		return addPersistentEntity(ClassTypeInformation.from(type));
+		return addPersistentEntity(TypeInformation.of(type));
 	}
 
 	/**
@@ -728,7 +728,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			 */
 			public PropertyMatch(@Nullable String namePattern, @Nullable String typeName) {
 
-				Assert.isTrue(!(namePattern == null && typeName == null), "Either name pattern or type name must be given");
+				Assert.isTrue(!((namePattern == null) && (typeName == null)), "Either name pattern or type name must be given");
 
 				this.namePattern = namePattern;
 				this.typeName = typeName;
@@ -746,11 +746,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				Assert.notNull(name, "Name must not be null");
 				Assert.notNull(type, "Type must not be null");
 
-				if (namePattern != null && !name.matches(namePattern)) {
+				if ((namePattern != null) && !name.matches(namePattern)) {
 					return false;
 				}
 
-				if (typeName != null && !type.getName().equals(typeName)) {
+				if ((typeName != null) && !type.getName().equals(typeName)) {
 					return false;
 				}
 

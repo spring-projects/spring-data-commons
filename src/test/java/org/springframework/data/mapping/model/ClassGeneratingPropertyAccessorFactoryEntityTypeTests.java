@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;

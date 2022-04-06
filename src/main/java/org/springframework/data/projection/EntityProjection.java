@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -37,6 +36,7 @@ import org.springframework.lang.Nullable;
  * @param <D> the domain type.
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Oliver Drotbohm
  * @since 2.7
  */
 public class EntityProjection<M, D> implements Streamable<EntityProjection.PropertyProjection<?, ?>> {
@@ -90,7 +90,9 @@ public class EntityProjection<M, D> implements Streamable<EntityProjection.Prope
 	 * @return new instance of {@link EntityProjection}.
 	 */
 	public static <T> EntityProjection<T, T> nonProjecting(Class<T> type) {
-		ClassTypeInformation<T> typeInformation = ClassTypeInformation.from(type);
+
+		TypeInformation<T> typeInformation = TypeInformation.of(type);
+
 		return new EntityProjection<>(typeInformation, typeInformation, Collections.emptyList(), false,
 				ProjectionType.CLOSED);
 	}

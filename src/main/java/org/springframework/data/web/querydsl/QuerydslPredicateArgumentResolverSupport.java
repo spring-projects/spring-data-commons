@@ -29,7 +29,6 @@ import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.util.CastUtils;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -135,7 +134,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		Optional<QuerydslPredicate> annotation = predicateAnnotation.synthesize(MergedAnnotation::isPresent);
 
 		return annotation.filter(it -> !Object.class.equals(it.root()))//
-				.<TypeInformation<?>> map(it -> ClassTypeInformation.from(it.root()))//
+				.<TypeInformation<?>> map(it -> TypeInformation.of(it.root()))//
 				.orElseGet(() -> detectDomainType(parameter));
 	}
 
@@ -147,7 +146,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 			throw new IllegalArgumentException("Method parameter is not backed by a method");
 		}
 
-		return detectDomainType(ClassTypeInformation.fromReturnTypeOf(method));
+		return detectDomainType(TypeInformation.fromReturnTypeOf(method));
 	}
 
 	private static TypeInformation<?> detectDomainType(TypeInformation<?> source) {

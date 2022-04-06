@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.data.mapping.Alias;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
@@ -36,7 +35,7 @@ import org.springframework.util.ClassUtils;
  */
 public class SimpleTypeInformationMapper implements TypeInformationMapper, BeanClassLoaderAware {
 
-	private final Map<String, Optional<ClassTypeInformation<?>>> cache = new ConcurrentHashMap<>();
+	private final Map<String, Optional<TypeInformation<?>>> cache = new ConcurrentHashMap<>();
 
 	private @Nullable ClassLoader classLoader;
 
@@ -79,10 +78,10 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper, BeanC
 		this.classLoader = classLoader;
 	}
 
-	private Optional<ClassTypeInformation<?>> loadClass(String typeName) {
+	private Optional<TypeInformation<?>> loadClass(String typeName) {
 
 		try {
-			return Optional.of(ClassTypeInformation.from(ClassUtils.forName(typeName, this.classLoader)));
+			return Optional.of(TypeInformation.of(ClassUtils.forName(typeName, this.classLoader)));
 		} catch (ClassNotFoundException e) {
 			return Optional.empty();
 		}

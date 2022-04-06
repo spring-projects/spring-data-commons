@@ -25,9 +25,8 @@ import java.util.Set;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.projection.EntityProjection.ProjectionType;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.projection.EntityProjection.ProjectionType;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -39,6 +38,7 @@ import org.springframework.util.Assert;
  * @author Gerrit Meier
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Oliver Drotbohm
  * @since 2.7
  */
 public class EntityProjectionIntrospector {
@@ -91,8 +91,8 @@ public class EntityProjectionIntrospector {
 	 */
 	public <M, D> EntityProjection<M, D> introspect(Class<M> mappedType, Class<D> domainType) {
 
-		ClassTypeInformation<M> returnedTypeInformation = ClassTypeInformation.from(mappedType);
-		ClassTypeInformation<D> domainTypeInformation = ClassTypeInformation.from(domainType);
+		TypeInformation<M> returnedTypeInformation = TypeInformation.of(mappedType);
+		TypeInformation<D> domainTypeInformation = TypeInformation.of(domainType);
 
 		boolean isProjection = projectionPredicate.test(mappedType, domainType);
 
@@ -111,7 +111,8 @@ public class EntityProjectionIntrospector {
 		List<EntityProjection.PropertyProjection<?, ?>> propertyDescriptors = getProperties(null, projectionInformation,
 				returnedTypeInformation, persistentEntity, null);
 
-		return EntityProjection.projecting(returnedTypeInformation, domainTypeInformation, propertyDescriptors, ProjectionType.CLOSED);
+		return EntityProjection.projecting(returnedTypeInformation, domainTypeInformation, propertyDescriptors,
+				ProjectionType.CLOSED);
 	}
 
 	private List<EntityProjection.PropertyProjection<?, ?>> getProperties(@Nullable PropertyPath propertyPath,
@@ -157,10 +158,12 @@ public class EntityProjectionIntrospector {
 
 				if (container) {
 					propertyDescriptors.add(EntityProjection.ContainerPropertyProjection.projecting(nestedPropertyPath, property,
-							persistentProperty.getTypeInformation(), nestedPropertyDescriptors, ProjectionType.from(projectionInformation)));
+							persistentProperty.getTypeInformation(), nestedPropertyDescriptors,
+							ProjectionType.from(projectionInformation)));
 				} else {
 					propertyDescriptors.add(EntityProjection.PropertyProjection.projecting(nestedPropertyPath, property,
-							persistentProperty.getTypeInformation(), nestedPropertyDescriptors, ProjectionType.from(projectionInformation)));
+							persistentProperty.getTypeInformation(), nestedPropertyDescriptors,
+							ProjectionType.from(projectionInformation)));
 				}
 
 			} else {

@@ -88,7 +88,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return Optional.of(Reference.class) //
 				.map(this::findAnnotation) //
 				.map(Reference::to) //
-				.map(it -> !Class.class.equals(it) ? ClassTypeInformation.from(it) : getActualTypeInformation()) //
+				.map(it -> !Class.class.equals(it) ? TypeInformation.of(it) : getActualTypeInformation()) //
 				.orElseGet(() -> super.getAssociationTargetTypeInformation());
 	});
 

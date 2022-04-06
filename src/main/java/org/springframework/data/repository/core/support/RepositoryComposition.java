@@ -81,7 +81,7 @@ public class RepositoryComposition {
 
 				Class<?> parameterType = parameterTypes.length > i ? parameterTypes[i] : null;
 
-				if (value != null && parameterType != null) {
+				if ((value != null) && (parameterType != null)) {
 					if (!parameterType.isAssignableFrom(value.getClass())
 							&& ReactiveWrapperConverters.canConvert(value.getClass(), parameterType)) {
 
@@ -558,7 +558,7 @@ public class RepositoryComposition {
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (this == o) {
 				return true;
@@ -582,8 +582,8 @@ public class RepositoryComposition {
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(fragmentCache);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(invocationMetadataCache);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(fragments);
+			result = (31 * result) + ObjectUtils.nullSafeHashCode(invocationMetadataCache);
+			result = (31 * result) + ObjectUtils.nullSafeHashCode(fragments);
 			return result;
 		}
 	}

@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mapping.Parameter;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link org.springframework.data.mapping.FactoryMethod}.
@@ -34,7 +34,7 @@ class FactoryMethodUnitTests {
 	@Test
 	void shouldCreateInstanceThroughFactoryMethod() {
 
-		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(FactoryPerson.class));
+		var entity = new BasicPersistentEntity<>(TypeInformation.of(FactoryPerson.class));
 
 		var result = instantiators.getInstantiatorFor(entity).createInstance(entity,
 				new ParameterValueProvider() {

@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.querydsl.Address;
 import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
@@ -32,7 +31,8 @@ import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.querydsl.UserWrapper;
 import org.springframework.data.querydsl.Users;
-import org.springframework.data.util.ClassTypeInformation;
+// import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.data.util.Version;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.LinkedMultiValueMap;
@@ -51,7 +51,7 @@ import com.querydsl.core.types.dsl.StringPath;
  */
 class QuerydslPredicateBuilderUnitTests {
 
-	static final ClassTypeInformation<User> USER_TYPE = ClassTypeInformation.from(User.class);
+	static final TypeInformation<User> USER_TYPE = TypeInformation.of(User.class);
 	static final QuerydslBindings DEFAULT_BINDINGS = new QuerydslBindings();
 	static final SingleValueBinding<StringPath, String> CONTAINS_BINDING = (path, value) -> path.contains(value);
 
@@ -79,8 +79,9 @@ class QuerydslPredicateBuilderUnitTests {
 	@Test // DATACMNS-669, DATACMNS-1168
 	void getPredicateShouldReturnEmptyWhenPropertiesAreEmpty() {
 		assertThat(
-				QuerydslPredicateBuilder.isEmpty(builder.getPredicate(ClassTypeInformation.OBJECT, values, DEFAULT_BINDINGS)))
-						.isTrue();
+				QuerydslPredicateBuilder
+						.isEmpty(builder.getPredicate(TypeInformation.of(Object.class), values, DEFAULT_BINDINGS)))
+								.isTrue();
 	}
 
 	@Test // GH-2418
@@ -89,11 +90,11 @@ class QuerydslPredicateBuilderUnitTests {
 		DEFAULT_BINDINGS.bind(QUser.user.description).first(CONTAINS_BINDING);
 
 		values.add("description", "Linz");
-		var predicate = this.builder.getPredicate(ClassTypeInformation.from(User.class), values, DEFAULT_BINDINGS);
+		var predicate = this.builder.getPredicate(TypeInformation.of(User.class), values, DEFAULT_BINDINGS);
 
 		assertThat(predicate).hasToString("contains(user.description,Linz)");
 
-		predicate = this.builder.getPredicate(ClassTypeInformation.from(Address.class), values, DEFAULT_BINDINGS);
+		predicate = this.builder.getPredicate(TypeInformation.of(Address.class), values, DEFAULT_BINDINGS);
 
 		assertThat(predicate).hasToString("address.description = Linz");
 	}
@@ -214,7 +215,7 @@ class QuerydslPredicateBuilderUnitTests {
 		bindings.bind(wrapper.user.as(QSpecialUser.class).specialProperty)//
 				.first(QuerydslBindingsUnitTests.ContainsBinding.INSTANCE);
 
-		assertThat(builder.getPredicate(ClassTypeInformation.from(UserWrapper.class), values, bindings))//
+		assertThat(builder.getPredicate(TypeInformation.of(UserWrapper.class), values, bindings))//
 				.isEqualTo(wrapper.user.as(QSpecialUser.class).specialProperty.contains("VALUE"));
 	}
 

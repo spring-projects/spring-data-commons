@@ -23,8 +23,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
-
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -44,7 +42,7 @@ class PropertyPathUnitTests {
 
 		assertThat(reference.hasNext()).isFalse();
 		assertThat(reference.toDotPath()).isEqualTo("userName");
-		assertThat(reference.getOwningType()).isEqualTo(ClassTypeInformation.from(Foo.class));
+		assertThat(reference.getOwningType()).isEqualTo(TypeInformation.of(Foo.class));
 	}
 
 	@Test

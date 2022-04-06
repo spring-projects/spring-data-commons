@@ -21,6 +21,7 @@ import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -75,8 +76,7 @@ public interface MethodLookup {
 	/**
 	 * Value object representing an invoked {@link Method}.
 	 */
-	final
-	class InvokedMethod {
+	final class InvokedMethod {
 
 		private final Method method;
 
@@ -109,7 +109,7 @@ public interface MethodLookup {
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (this == o) {
 				return true;

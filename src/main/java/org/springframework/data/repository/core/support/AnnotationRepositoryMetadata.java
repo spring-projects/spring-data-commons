@@ -20,7 +20,6 @@ import java.util.function.Function;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -78,6 +77,6 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s", repositoryInterface));
 		}
 
-		return ClassTypeInformation.from(extractor.apply(annotation));
+		return TypeInformation.of(extractor.apply(annotation));
 	}
 }

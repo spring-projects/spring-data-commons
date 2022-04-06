@@ -24,12 +24,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link PersistentEntities}.
@@ -76,7 +75,7 @@ class PersistentEntitiesUnitTests {
 
 		assertThat(entities.getPersistentEntity(Sample.class)).isPresent();
 		assertThat(entities.getPersistentEntity(Object.class)).isNotPresent();
-		assertThat(entities.getManagedTypes()).contains(ClassTypeInformation.from(Sample.class));
+		assertThat(entities.getManagedTypes()).contains(TypeInformation.of(Sample.class));
 
 		assertThat(entities.getPersistentEntity(Sample.class)).hasValueSatisfying(it -> assertThat(entities).contains(it));
 	}

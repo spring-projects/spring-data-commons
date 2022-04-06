@@ -18,7 +18,6 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.util.ClassTypeInformation.from;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -40,7 +39,6 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator.ObjectInstantiator;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
@@ -104,7 +102,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	@Test // DATACMNS-134, DATACMNS-578
 	void createsInnerClassInstanceCorrectly() {
 
-		var entity = new BasicPersistentEntity<Inner, P>(from(Inner.class));
+		var entity = new BasicPersistentEntity<Inner, P>(TypeInformation.of(Inner.class));
 		assertThat(entity.getInstanceCreatorMetadata()).satisfies(constructor -> {
 
 			var parameter = constructor.getParameters().iterator().next();
@@ -130,7 +128,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void capturesContextOnInstantiationException() throws Exception {
 
-		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<>(from(Sample.class));
+		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<>(TypeInformation.of(Sample.class));
 
 		doReturn("FOO").when(provider).getParameterValue(any(Parameter.class));
 
@@ -159,8 +157,9 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void createsInstancesWithRecursionAndSameCtorArgCountCorrectly() {
 
-		PersistentEntity<SampleWithReference, P> outer = new BasicPersistentEntity<>(from(SampleWithReference.class));
-		PersistentEntity<Sample, P> inner = new BasicPersistentEntity<>(from(Sample.class));
+		PersistentEntity<SampleWithReference, P> outer = new BasicPersistentEntity<>(
+				TypeInformation.of(SampleWithReference.class));
+		PersistentEntity<Sample, P> inner = new BasicPersistentEntity<>(TypeInformation.of(Sample.class));
 
 		doReturn(2L, "FOO").when(provider).getParameterValue(any(Parameter.class));
 
@@ -193,7 +192,8 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void createsInstancesWithFactoryMethodCorrectly() {
 
-		PersistentEntity<WithFactoryMethod, P> entity = new BasicPersistentEntity<>(from(WithFactoryMethod.class));
+		PersistentEntity<WithFactoryMethod, P> entity = new BasicPersistentEntity<>(
+				TypeInformation.of(WithFactoryMethod.class));
 
 		doReturn(2L, "FOO").when(provider).getParameterValue(any(Parameter.class));
 
@@ -436,7 +436,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 	void entityInstantiatorShouldFailForAbstractClass() {
 
 		assertThatExceptionOfType(MappingInstantiationException.class).isThrownBy(() -> this.instance
-				.createInstance(new BasicPersistentEntity<>(ClassTypeInformation.from(AbstractDto.class)), provider));
+				.createInstance(new BasicPersistentEntity<>(TypeInformation.of(AbstractDto.class)), provider));
 	}
 
 	private void prepareMocks(Class<?> type) {

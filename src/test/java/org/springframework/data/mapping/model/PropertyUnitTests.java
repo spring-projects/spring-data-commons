@@ -21,7 +21,7 @@ import lombok.Value;
 import lombok.With;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -35,17 +35,17 @@ class PropertyUnitTests {
 	void shouldNotFindWitherMethod() {
 
 		assertThat(Property
-				.of(ClassTypeInformation.from(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "id"))
+				.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "id"))
 				.getWither()).isEmpty();
 		assertThat(Property
-				.of(ClassTypeInformation.from(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "name"))
+				.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "name"))
 				.getWither()).isEmpty();
 	}
 
 	@Test // DATACMNS-1322
 	void shouldDiscoverWitherMethod() {
 
-		var property = Property.of(ClassTypeInformation.from(WitherType.class),
+		var property = Property.of(TypeInformation.of(WitherType.class),
 				ReflectionUtils.findField(WitherType.class, "id"));
 
 		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
@@ -57,7 +57,7 @@ class PropertyUnitTests {
 	@Test // DATACMNS-1421
 	void shouldDiscoverDerivedWitherMethod() {
 
-		var property = Property.of(ClassTypeInformation.from(DerivedWitherClass.class),
+		var property = Property.of(TypeInformation.of(DerivedWitherClass.class),
 				ReflectionUtils.findField(DerivedWitherClass.class, "id"));
 
 		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
@@ -70,7 +70,7 @@ class PropertyUnitTests {
 	@Test // DATACMNS-1421
 	void shouldNotDiscoverWitherMethodWithIncompatibleReturnType() {
 
-		var property = Property.of(ClassTypeInformation.from(AnotherLevel.class),
+		var property = Property.of(TypeInformation.of(AnotherLevel.class),
 				ReflectionUtils.findField(AnotherLevel.class, "id"));
 
 		assertThat(property.getWither()).isEmpty();
@@ -110,6 +110,7 @@ class PropertyUnitTests {
 
 	static abstract class WitherIntermediateClass extends WitherBaseClass {
 
+		@Override
 		abstract WitherIntermediateClass withId(String id);
 	}
 
@@ -121,6 +122,7 @@ class PropertyUnitTests {
 			this.id = id;
 		}
 
+		@Override
 		DerivedWitherClass withId(String id) {
 			return new DerivedWitherClass(id);
 		}
@@ -132,6 +134,7 @@ class PropertyUnitTests {
 			super(id);
 		}
 
+		@Override
 		DerivedWitherClass withId(String id) {
 			return new AnotherLevel(id);
 		}

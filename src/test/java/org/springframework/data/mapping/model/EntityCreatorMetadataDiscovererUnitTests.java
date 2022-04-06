@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link InstanceCreatorMetadataDiscoverer}.
@@ -33,7 +33,7 @@ class EntityCreatorMetadataDiscovererUnitTests {
 	@Test
 	void shouldDiscoverAnnotatedFactoryMethod() {
 
-		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(FactoryMethodsPerson.class));
+		var entity = new BasicPersistentEntity<>(TypeInformation.of(FactoryMethodsPerson.class));
 		var creator = InstanceCreatorMetadataDiscoverer.discover(entity);
 
 		assertThat(creator).isInstanceOf(org.springframework.data.mapping.FactoryMethod.class);
@@ -44,7 +44,7 @@ class EntityCreatorMetadataDiscovererUnitTests {
 	@Test
 	void shouldDiscoverAnnotatedConstructor() {
 
-		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(ConstructorPerson.class));
+		var entity = new BasicPersistentEntity<>(TypeInformation.of(ConstructorPerson.class));
 		var creator = InstanceCreatorMetadataDiscoverer.discover(entity);
 
 		assertThat(creator).isInstanceOf(PreferredConstructor.class);
@@ -53,7 +53,7 @@ class EntityCreatorMetadataDiscovererUnitTests {
 	@Test
 	void shouldDiscoverDefaultConstructor() {
 
-		var entity = new BasicPersistentEntity<>(ClassTypeInformation.from(Person.class));
+		var entity = new BasicPersistentEntity<>(TypeInformation.of(Person.class));
 		var creator = InstanceCreatorMetadataDiscoverer.discover(entity);
 
 		assertThat(creator).isInstanceOf(PreferredConstructor.class);
@@ -62,7 +62,7 @@ class EntityCreatorMetadataDiscovererUnitTests {
 	@Test
 	void shouldRejectNonStaticFactoryMethod() {
 		assertThatExceptionOfType(MappingException.class)
-				.isThrownBy(() -> new BasicPersistentEntity<>(ClassTypeInformation.from(NonStaticFactoryMethod.class)));
+				.isThrownBy(() -> new BasicPersistentEntity<>(TypeInformation.of(NonStaticFactoryMethod.class)));
 	}
 
 	static class Person {

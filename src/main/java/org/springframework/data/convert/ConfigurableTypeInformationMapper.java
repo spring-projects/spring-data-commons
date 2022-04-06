@@ -22,7 +22,6 @@ import java.util.Map.Entry;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -37,8 +36,8 @@ import org.springframework.util.Assert;
  */
 public class ConfigurableTypeInformationMapper implements TypeInformationMapper {
 
-	private final Map<ClassTypeInformation<?>, Alias> typeToAlias;
-	private final Map<Alias, ClassTypeInformation<?>> aliasToType;
+	private final Map<TypeInformation<?>, Alias> typeToAlias;
+	private final Map<Alias, TypeInformation<?>> aliasToType;
 
 	/**
 	 * Creates a new {@link ConfigurableTypeInformationMapper} for the given type map.
@@ -54,7 +53,7 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 
 		for (Entry<? extends Class<?>, String> entry : sourceTypeMap.entrySet()) {
 
-			ClassTypeInformation<?> type = ClassTypeInformation.from(entry.getKey());
+			TypeInformation<?> type = TypeInformation.of(entry.getKey());
 			Alias alias = Alias.of(entry.getValue());
 
 			if (typeToAlias.containsValue(alias)) {
