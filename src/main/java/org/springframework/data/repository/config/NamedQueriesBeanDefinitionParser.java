@@ -18,13 +18,11 @@ package org.springframework.data.repository.config;
 import java.util.Properties;
 
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.repository.core.NamedQueries;
-import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -36,6 +34,7 @@ import org.w3c.dom.Element;
  * {@link Properties} file fom the given location.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 
@@ -55,18 +54,13 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 	@NonNull
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
 
-		BeanDefinitionBuilder properties = BeanDefinitionBuilder.rootBeanDefinition(PropertiesFactoryBean.class);
-		properties.addPropertyValue("locations", getDefaultedLocation(element));
+		BeanDefinitionBuilder namedQueries = BeanDefinitionBuilder
+				.rootBeanDefinition(PropertiesBasedNamedQueriesFactoryBean.class);
+		namedQueries.addPropertyValue("locations", getDefaultedLocation(element));
 
 		if (isDefaultLocation(element)) {
-			properties.addPropertyValue("ignoreResourceNotFound", true);
+			namedQueries.addPropertyValue("ignoreResourceNotFound", true);
 		}
-
-		AbstractBeanDefinition propertiesDefinition = properties.getBeanDefinition();
-		propertiesDefinition.setSource(parserContext.extractSource(element));
-
-		BeanDefinitionBuilder namedQueries = BeanDefinitionBuilder.rootBeanDefinition(PropertiesBasedNamedQueries.class);
-		namedQueries.addConstructorArgValue(propertiesDefinition);
 
 		AbstractBeanDefinition namedQueriesDefinition = namedQueries.getBeanDefinition();
 		namedQueriesDefinition.setSource(parserContext.extractSource(element));

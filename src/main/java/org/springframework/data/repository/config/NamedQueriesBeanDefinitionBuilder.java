@@ -16,19 +16,18 @@
 package org.springframework.data.repository.config;
 
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.repository.core.NamedQueries;
-import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Builder to create a {@link BeanDefinition} for a {@link NamedQueries} instance.
+ * Builder to create a {@link BeanDefinition} for a {@link NamedQueries} instance using properties.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class NamedQueriesBeanDefinitionBuilder {
 
@@ -67,20 +66,14 @@ public class NamedQueriesBeanDefinitionBuilder {
 	 */
 	public BeanDefinition build(@Nullable Object source) {
 
-		BeanDefinitionBuilder properties = BeanDefinitionBuilder.rootBeanDefinition(PropertiesFactoryBean.class);
-
+		BeanDefinitionBuilder namedQueries = BeanDefinitionBuilder
+				.rootBeanDefinition(PropertiesBasedNamedQueriesFactoryBean.class);
 		String locationsToUse = StringUtils.hasText(locations) ? locations : defaultLocation;
-		properties.addPropertyValue("locations", locationsToUse);
+		namedQueries.addPropertyValue("locations", locationsToUse);
 
 		if (!StringUtils.hasText(locations)) {
-			properties.addPropertyValue("ignoreResourceNotFound", true);
+			namedQueries.addPropertyValue("ignoreResourceNotFound", true);
 		}
-
-		AbstractBeanDefinition propertiesDefinition = properties.getBeanDefinition();
-		propertiesDefinition.setSource(source);
-
-		BeanDefinitionBuilder namedQueries = BeanDefinitionBuilder.rootBeanDefinition(PropertiesBasedNamedQueries.class);
-		namedQueries.addConstructorArgValue(propertiesDefinition);
 
 		AbstractBeanDefinition namedQueriesDefinition = namedQueries.getBeanDefinition();
 		namedQueriesDefinition.setSource(source);
