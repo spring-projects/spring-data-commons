@@ -334,7 +334,7 @@ class AbstractMappingContextUnitTests {
 		persistentEntity.getTypeInformation().getType().equals(Base.class);
 
 		assertThat(context.hasPersistentEntityFor(Base.class)).isTrue();
-		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isFalse();
+		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isTrue();
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntityForProxy = context
 				.getRequiredPersistentEntity(Base$$SpringProxy$873fa2e.class);
