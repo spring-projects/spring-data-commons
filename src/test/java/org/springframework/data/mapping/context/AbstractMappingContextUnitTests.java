@@ -40,7 +40,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
@@ -334,7 +333,7 @@ class AbstractMappingContextUnitTests {
 		persistentEntity.getTypeInformation().getType().equals(Base.class);
 
 		assertThat(context.hasPersistentEntityFor(Base.class)).isTrue();
-		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isFalse();
+		assertThat(context.hasPersistentEntityFor(Base$$SpringProxy$873fa2e.class)).isTrue();
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> persistentEntityForProxy = context
 				.getRequiredPersistentEntity(Base$$SpringProxy$873fa2e.class);
