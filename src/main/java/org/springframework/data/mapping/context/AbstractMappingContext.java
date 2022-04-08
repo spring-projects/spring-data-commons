@@ -218,9 +218,34 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		Assert.notNull(type, "Type must not be null!");
 
-		Optional<E> entity = persistentEntities.get(ClassTypeInformation.from(type));
+		TypeInformation<?> typeInformation = ClassTypeInformation.from(type);
 
-		return entity == null ? false : entity.isPresent();
+		try {
+
+			read.lock();
+
+			// Try the original type first
+			Optional<E> entity = persistentEntities.get(typeInformation);
+
+			if (entity != null) {
+				return entity.isPresent();
+			}
+
+			// User type is the same?
+			TypeInformation<?> userTypeInformation = typeInformation.getUserTypeInformation();
+
+			if (userTypeInformation.equals(typeInformation)) {
+				return false;
+			}
+
+			// Try the user type
+			entity = persistentEntities.get(typeInformation.getUserTypeInformation());
+
+			return entity == null ? false : entity.isPresent();
+
+		} finally {
+			read.unlock();
+		}
 	}
 
 	/*
