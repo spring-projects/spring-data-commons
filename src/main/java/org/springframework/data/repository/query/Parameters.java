@@ -42,7 +42,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
 
-	private static final String PARAM_ON_SPECIAL = format("You must not user @%s on a parameter typed %s or %s",
+	private static final String PARAM_ON_SPECIAL = format("You must not use @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
 	private static final String ALL_OR_NOTHING = String.format(
 			"Either use @%s on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
@@ -301,8 +301,6 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	/**
 	 * Asserts that either all of the non special parameters ({@link Pageable}, {@link Sort}) are annotated with
 	 * {@link Param} or none of them is.
-	 *
-	 * @param method
 	 */
 	private void assertEitherAllParamAnnotatedOrNone() {
 

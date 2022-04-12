@@ -69,12 +69,12 @@ public class QueryMethod {
 		Assert.notNull(metadata, "Repository metadata must not be null!");
 		Assert.notNull(factory, "ProjectionFactory must not be null!");
 
-		Parameters.TYPES.stream()//
-				.filter(type -> getNumberOfOccurences(method, type) > 1)//
+		Parameters.TYPES.stream()
+				.filter(type -> getNumberOfOccurences(method, type) > 1)
 				.findFirst().ifPresent(type -> {
 					throw new IllegalStateException(
-							String.format("Method must only one argument of type %s! Offending method: %s", type.getSimpleName(),
-									method.toString()));
+							String.format("Method must have only one argument of type %s! Offending method: %s",
+									type.getSimpleName(), method));
 				});
 
 		this.method = method;
@@ -89,8 +89,8 @@ public class QueryMethod {
 			}
 
 			if (hasParameterOfType(method, Sort.class)) {
-				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameter. "
-						+ "Use sorting capabilities on Pageable instead! Offending method: %s", method.toString()));
+				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameters. "
+						+ "Use sorting capabilities on Pageable instead! Offending method: %s", method));
 			}
 		}
 
@@ -99,7 +99,7 @@ public class QueryMethod {
 
 		if (isPageQuery()) {
 			Assert.isTrue(this.parameters.hasPageableParameter(),
-					String.format("Paging query needs to have a Pageable parameter! Offending method %s", method.toString()));
+					String.format("Paging query needs to have a Pageable parameter! Offending method: %s", method));
 		}
 
 		this.domainClass = Lazy.of(() -> {
@@ -311,6 +311,6 @@ public class QueryMethod {
 			}
 		}
 
-		throw new IllegalStateException("Method has to have one of the following return types! " + types.toString());
+		throw new IllegalStateException("Method has to have one of the following return types! " + types);
 	}
 }
