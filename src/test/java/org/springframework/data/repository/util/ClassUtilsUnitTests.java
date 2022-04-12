@@ -15,10 +15,11 @@
  */
 package org.springframework.data.repository.util;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.repository.util.ClassUtils.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -26,33 +27,62 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.Repository;
 import org.springframework.scheduling.annotation.Async;
 
 /**
- * Unit test for {@link ClassUtils}.
+ * Unit tests for {@link ClassUtils}.
  *
  * @author Oliver Gierke
+ * @author John Blum
  */
 class ClassUtilsUnitTests {
 
 	@Test
 	void rejectsInvalidReturnType() {
-		assertThatIllegalStateException().isThrownBy(() -> assertReturnTypeAssignable(
+		assertThatIllegalStateException().isThrownBy(() -> ClassUtils.assertReturnTypeAssignable(
 				SomeDao.class.getMethod("findByFirstname", Pageable.class, String.class), User.class));
 	}
 
 	@Test
 	void determinesValidFieldsCorrectly() {
 
-		assertThat(hasProperty(User.class, "firstname")).isTrue();
-		assertThat(hasProperty(User.class, "Firstname")).isTrue();
-		assertThat(hasProperty(User.class, "address")).isFalse();
+		assertThat(ClassUtils.hasProperty(User.class, "firstname")).isTrue();
+		assertThat(ClassUtils.hasProperty(User.class, "Firstname")).isTrue();
+		assertThat(ClassUtils.hasProperty(User.class, "address")).isFalse();
 	}
 
 	@Test // DATACMNS-769
 	void unwrapsWrapperTypesBeforeAssignmentCheck() throws Exception {
-		assertReturnTypeAssignable(UserRepository.class.getMethod("findAsync", Pageable.class), Page.class);
+		ClassUtils.assertReturnTypeAssignable(UserRepository.class.getMethod("findAsync", Pageable.class),
+				Page.class);
+	}
+
+	@Test
+	public void numberOfOccurrencesForMultipleMethodParametersOfType() throws Exception {
+
+		Method findByAddress = AnotherDao.class.getMethod("findByAddress", Pageable.class, Pageable.class);
+
+		assertThat(ClassUtils.getNumberOfOccurrences(findByAddress, Pageable.class)).isEqualTo(2);
+	}
+
+	@Test
+	public void numberOfOccurrencesForNoMethodParameterOfType() throws Exception {
+
+		Method findByAddress = AnotherDao.class.getMethod("findByAddress", Pageable.class, Pageable.class);
+
+		assertThat(ClassUtils.getNumberOfOccurrences(findByAddress, Sort.class)).isZero();
+		assertThat(ClassUtils.getNumberOfOccurrences(findByAddress, Page.class)).isZero();
+	}
+
+	@Test
+	public void numberOfOccurrencesForSingleMethodParameterOfType() throws Exception {
+
+		Method findByFirstname = SomeDao.class.getMethod("findByFirstname", Pageable.class, String.class);
+
+		assertThat(ClassUtils.getNumberOfOccurrences(findByFirstname, Pageable.class)).isOne();
+		assertThat(ClassUtils.getNumberOfOccurrences(findByFirstname, String.class)).isOne();
 	}
 
 	@SuppressWarnings("unused")
@@ -66,7 +96,7 @@ class ClassUtilsUnitTests {
 		}
 	}
 
-	static interface UserRepository extends Repository<User, Integer> {
+	interface UserRepository extends Repository<User, Integer> {
 
 		@Async
 		Future<Page<User>> findAsync(Pageable pageable);
@@ -79,6 +109,12 @@ class ClassUtilsUnitTests {
 		GenericType<User> someMethod();
 
 		List<Map<String, Object>> anotherMethod();
+	}
+
+	interface AnotherDao extends Repository<User, Integer> {
+
+		Page<User> findByAddress(Pageable pageableOne, Pageable pageableTwo);
+
 	}
 
 	class GenericType<T> {

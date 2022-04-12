@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -104,22 +105,28 @@ public abstract class ClassUtils {
 	}
 
 	/**
-	 * Returns the number of occurences of the given type in the given {@link Method}s parameters.
-	 *
-	 * @param method
-	 * @param type
-	 * @return
+	 * @deprecated Use {@link #getNumberOfOccurrences(Method, Class)}.
 	 */
-	public static int getNumberOfOccurences(Method method, Class<?> type) {
+	@Deprecated
+	public static int getNumberOfOccurences(@NonNull Method method, @NonNull Class<?> type) {
+		return getNumberOfOccurrences(method, type);
+	}
 
-		int result = 0;
-		for (Class<?> clazz : method.getParameterTypes()) {
-			if (type.equals(clazz)) {
-				result++;
-			}
-		}
+	/**
+	 * Returns the number of occurrences for the given {@link Method#getParameterTypes() parameter type}
+	 * in the given {@link Method}.
+	 *
+	 * @param method {@link Method} to evaluate.
+	 * @param parameterType {@link Class} of the {@link Method} parameter type to count.
+	 * @return the number of occurrences for the given {@link Method#getParameterTypes() parameter type}
+	 * in the given {@link Method}.
+	 * @see java.lang.reflect.Method#getParameterTypes()
+	 */
+	public static int getNumberOfOccurrences(@NonNull Method method, @NonNull Class<?> parameterType) {
 
-		return result;
+		return (int) Arrays.stream(method.getParameterTypes())
+				.filter(parameterType::equals)
+				.count();
 	}
 
 	/**

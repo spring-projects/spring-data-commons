@@ -70,7 +70,7 @@ public class QueryMethod {
 		Assert.notNull(factory, "ProjectionFactory must not be null!");
 
 		Parameters.TYPES.stream()
-				.filter(type -> getNumberOfOccurences(method, type) > 1)
+				.filter(type -> getNumberOfOccurrences(method, type) > 1)
 				.findFirst().ifPresent(type -> {
 					throw new IllegalStateException(
 							String.format("Method must have only one argument of type %s! Offending method: %s",
