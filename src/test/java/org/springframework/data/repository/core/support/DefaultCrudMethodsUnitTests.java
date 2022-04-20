@@ -28,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.ReadOnlyRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -111,10 +112,10 @@ class DefaultCrudMethodsUnitTests {
 	void ignoresWrongOverloadedMethods() throws Exception {
 
 		var type = RepositoryWithAllCrudMethodOverloadedWrong.class;
-		assertFindOneMethodOn(type, CrudRepository.class.getDeclaredMethod("findById", Object.class));
+		assertFindOneMethodOn(type, ReadOnlyRepository.class.getDeclaredMethod("findById", Object.class));
 		assertDeleteMethodOn(type, CrudRepository.class.getDeclaredMethod("delete", Object.class));
 		assertSaveMethodOn(type, CrudRepository.class.getDeclaredMethod("save", Object.class));
-		assertFindAllMethodOn(type, CrudRepository.class.getDeclaredMethod("findAll"));
+		assertFindAllMethodOn(type, ReadOnlyRepository.class.getDeclaredMethod("findAll"));
 	}
 
 	@Test // DATACMNS-464
