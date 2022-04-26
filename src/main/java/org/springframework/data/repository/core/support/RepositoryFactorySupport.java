@@ -29,7 +29,6 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -80,6 +79,7 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author John Blum
+ * @author Greg Turnquist
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
@@ -365,8 +365,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		if (logger.isDebugEnabled()) {
 			logger
-					.debug(LogMessage.format("Finished creation of repository instance for %s.",
-				repositoryInterface.getName()));
+					.debug(LogMessage.format("Finished creation of repository instance for %s.", repositoryInterface.getName()));
 		}
 
 		return repository;
@@ -518,6 +517,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 	protected void validate(RepositoryMetadata repositoryMetadata) {
 
+	}
+
+	/**
+	 * Give access to the {@link BeanFactory}.
+	 *
+	 * @return
+	 * @since 3.0
+	 */
+	protected BeanFactory getBeanFactory() {
+		return this.beanFactory;
 	}
 
 	/**
