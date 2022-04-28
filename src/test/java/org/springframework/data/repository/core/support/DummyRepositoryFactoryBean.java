@@ -17,15 +17,13 @@ package org.springframework.data.repository.core.support;
 
 import static org.mockito.Mockito.*;
 
-import java.io.Serializable;
-
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.repository.Repository;
 
 /**
  * @author Oliver Gierke
  */
-public class DummyRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
+public class DummyRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
 	private final T repository;

@@ -15,35 +15,49 @@
  */
 package org.springframework.data.repository.init;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.reactivestreams.Publisher;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.CrudMethods;
+import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.DefaultCrudMethods;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.repository.support.RepositoryInvoker;
-import org.springframework.data.repository.support.RepositoryInvokerFactory;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * A {@link RepositoryPopulator} using a {@link ResourceReader} to read objects from the configured {@link Resource}s.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 1.4
  */
 public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, ApplicationEventPublisherAware {
 
- 	private static final Log logger = LogFactory.getLog(ResourceReaderRepositoryPopulator.class);
+	private static final Log logger = LogFactory.getLog(ResourceReaderRepositoryPopulator.class);
 
 	private final ResourceReader reader;
 	private final @Nullable ClassLoader classLoader;
@@ -114,7 +128,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 
-		RepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories);
+		RepositoryPersisterFactory persisterFactory = new RepositoryPersisterFactory(repositories);
 
 		for (Resource resource : resources) {
 
@@ -125,13 +139,13 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 			if (result instanceof Collection) {
 				for (Object element : (Collection<?>) result) {
 					if (element != null) {
-						persist(element, invokerFactory);
+						persist(element, persisterFactory);
 					} else {
 						logger.info("Skipping null element found in unmarshal result!");
 					}
 				}
 			} else {
-				persist(result, invokerFactory);
+				persist(result, persisterFactory);
 			}
 		}
 
@@ -158,12 +172,172 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * Persists the given {@link Object} using a suitable repository.
 	 *
 	 * @param object must not be {@literal null}.
-	 * @param invokerFactory must not be {@literal null}.
+	 * @param persisterFactory must not be {@literal null}.
 	 */
-	private void persist(Object object, RepositoryInvokerFactory invokerFactory) {
+	private void persist(Object object, RepositoryPersisterFactory persisterFactory) {
 
-		RepositoryInvoker invoker = invokerFactory.getInvokerFor(object.getClass());
-		logger.debug(String.format("Persisting %s using repository %s", object, invoker));
-		invoker.invokeSave(object);
+		RepositoryPersister persister = persisterFactory.getPersisterFor(object.getClass());
+		logger.debug(String.format("Persisting %s using repository %s", object, persister));
+		persister.save(object);
+	}
+
+	/**
+	 * Factory to create {@link RepositoryPersister} instances.
+	 */
+	static class RepositoryPersisterFactory {
+
+		private final Map<Class<?>, RepositoryPersister> persisters = new HashMap<>();
+		private final Repositories repositories;
+
+		public RepositoryPersisterFactory(Repositories repositories) {
+			this.repositories = repositories;
+		}
+
+		/**
+		 * Obtain a {@link RepositoryPersister}.
+		 *
+		 * @param domainType
+		 * @return
+		 */
+		public RepositoryPersister getPersisterFor(Class<?> domainType) {
+			return persisters.computeIfAbsent(domainType, this::createPersisterFor);
+		}
+
+		private RepositoryPersister createPersisterFor(Class<?> domainType) {
+
+			RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(domainType);
+			Object repository = repositories.getRepositoryFor(domainType).orElseThrow(
+					() -> new IllegalArgumentException(String.format("No repository found for domain type: %s", domainType)));
+
+			if (repositoryInformation.isReactiveRepository()) {
+				return repository instanceof ReactiveCrudRepository ? new ReactiveCrudRepositoryPersister(repository)
+						: new ReflectiveReactivePersister(repositoryInformation, repository);
+			}
+
+			if (repository instanceof CrudRepository) {
+				return new CrudRepositoryPersister(repository);
+			}
+
+			return new ReflectivePersister(repositoryInformation, repository);
+		}
+	}
+
+	/**
+	 * Interface defining a save method to persist an object within a repository.
+	 */
+	interface RepositoryPersister {
+
+		/**
+		 * Saves the {@code object} in an appropriate repository.
+		 *
+		 * @param object
+		 */
+		void save(Object object);
+	}
+
+	/**
+	 * Reflection variant of a {@link RepositoryPersister}.
+	 */
+	private static class ReflectivePersister implements RepositoryPersister {
+
+		private final CrudMethods methods;
+		private final Object repository;
+
+		public ReflectivePersister(RepositoryMetadata metadata, Object repository) {
+			this.methods = new DefaultCrudMethods(metadata);
+			this.repository = repository;
+		}
+
+		@Override
+		public void save(Object object) {
+
+			doPersist(object);
+		}
+
+		Object doPersist(Object object) {
+			Method method = methods.getSaveMethod()//
+					.orElseThrow(() -> new IllegalStateException("Repository doesn't have a save-method declared!"));
+
+			return ReflectionUtils.invokeMethod(method, repository, object);
+		}
+
+		@Override
+		public String toString() {
+			return repository.toString();
+		}
+	}
+
+	/**
+	 * Reactive extension to save objects in a reactive repository.
+	 */
+	private static class ReflectiveReactivePersister extends ReflectivePersister {
+
+		public ReflectiveReactivePersister(RepositoryMetadata metadata, Object repository) {
+			super(metadata, repository);
+		}
+
+		@Override
+		public void save(Object object) {
+
+			Object wrapper = doPersist(object);
+
+			Publisher<?> publisher = ReactiveWrapperConverters.toWrapper(wrapper, Publisher.class);
+
+			if (!(publisher instanceof Mono)) {
+				publisher = Flux.from(publisher).collectList();
+			}
+
+			Mono.from(publisher).block();
+		}
+	}
+
+	/**
+	 * {@link RepositoryPersister} to operate with {@link CrudRepository}.
+	 */
+	private static class CrudRepositoryPersister implements RepositoryPersister {
+
+		private final CrudRepository<Object, Object> repository;
+
+		@SuppressWarnings("unchecked")
+		public CrudRepositoryPersister(Object repository) {
+
+			Assert.isInstanceOf(CrudRepository.class, repository);
+			this.repository = (CrudRepository<Object, Object>) repository;
+		}
+
+		@Override
+		public void save(Object object) {
+			repository.save(object);
+		}
+
+		@Override
+		public String toString() {
+			return repository.toString();
+		}
+	}
+
+	/**
+	 * {@link RepositoryPersister} to operate with {@link ReactiveCrudRepository}.
+	 */
+	private static class ReactiveCrudRepositoryPersister implements RepositoryPersister {
+
+		private final ReactiveCrudRepository<Object, Object> repository;
+
+		@SuppressWarnings("unchecked")
+		public ReactiveCrudRepositoryPersister(Object repository) {
+
+			Assert.isInstanceOf(ReactiveCrudRepository.class, repository);
+			this.repository = (ReactiveCrudRepository<Object, Object>) repository;
+		}
+
+		@Override
+		public void save(Object object) {
+			repository.save(object).block();
+		}
+
+		@Override
+		public String toString() {
+			return repository.toString();
+		}
 	}
 }
