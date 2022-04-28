@@ -37,12 +37,13 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
- * Unit tests for {@link UnmarshallingRepositoryInitializer}.
+ * Unit tests for {@link ResourceReaderRepositoryPopulator}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @SpringJUnitConfig(classes = SampleConfiguration.class)
-class ResourceReaderRepositoryInitializerUnitTests {
+class ResourceReaderRepositoryPopulatorUnitTests {
 
 	@Autowired ProductRepository productRepository;
 	@Autowired Repositories repositories;
@@ -63,7 +64,7 @@ class ResourceReaderRepositoryInitializerUnitTests {
 	void storesSingleObjectCorrectly() throws Exception {
 
 		Product reference = new Product();
-		setUpReferenceAndInititalize(reference);
+		setUpReferenceAndInitialize(reference);
 
 		verify(productRepository).save(reference);
 	}
@@ -74,7 +75,7 @@ class ResourceReaderRepositoryInitializerUnitTests {
 		Product product = new Product();
 		Collection<Product> reference = Collections.singletonList(product);
 
-		setUpReferenceAndInititalize(reference);
+		setUpReferenceAndInitialize(reference);
 
 		verify(productRepository, times(1)).save(product);
 	}
@@ -82,13 +83,13 @@ class ResourceReaderRepositoryInitializerUnitTests {
 	@Test // DATACMNS-224
 	void emitsRepositoriesPopulatedEventIfPublisherConfigured() throws Exception {
 
-		RepositoryPopulator populator = setUpReferenceAndInititalize(new User(), publisher);
+		RepositoryPopulator populator = setUpReferenceAndInitialize(new User(), publisher);
 
 		ApplicationEvent event = new RepositoriesPopulatedEvent(populator, repositories);
 		verify(publisher, times(1)).publishEvent(event);
 	}
 
-	private RepositoryPopulator setUpReferenceAndInititalize(Object reference, ApplicationEventPublisher publish)
+	private RepositoryPopulator setUpReferenceAndInitialize(Object reference, ApplicationEventPublisher publish)
 			throws Exception {
 
 		when(reader.readFrom(any(), any())).thenReturn(reference);
@@ -102,7 +103,7 @@ class ResourceReaderRepositoryInitializerUnitTests {
 		return populator;
 	}
 
-	private RepositoryPopulator setUpReferenceAndInititalize(Object reference) throws Exception {
-		return setUpReferenceAndInititalize(reference, null);
+	private RepositoryPopulator setUpReferenceAndInitialize(Object reference) throws Exception {
+		return setUpReferenceAndInitialize(reference, null);
 	}
 }
