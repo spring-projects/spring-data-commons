@@ -18,6 +18,7 @@ package org.springframework.data.convert;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -29,6 +30,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Christoph Strobl
  * @author Oliver Drotbohm
+ * @see org.springframework.data.mapping.PersistentProperty
  */
 public interface ValueConversionContext<P extends PersistentProperty<P>> {
 
@@ -36,14 +38,19 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * Return the {@link PersistentProperty} to be handled.
 	 *
 	 * @return will never be {@literal null}.
+	 * @see org.springframework.data.mapping.PersistentProperty
 	 */
 	P getProperty();
 
 	/**
-	 * Write to whatever type is considered best for the given source.
+	 * Write the value as an instance of the {@link PersistentProperty#getTypeInformation() property type}.
 	 *
-	 * @param value
-	 * @return
+	 * @param value {@link Object value} to write; can be {@literal null}.
+	 * @return can be {@literal null}.
+	 * @throws IllegalStateException if value cannot be written as an instance of the
+	 * {@link PersistentProperty#getTypeInformation() property type}.
+	 * @see PersistentProperty#getTypeInformation()
+	 * @see #write(Object, TypeInformation)
 	 */
 	@Nullable
 	default Object write(@Nullable Object value) {
@@ -51,26 +58,31 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Write as the given type.
+	 * Write the value as an instance of {@link Class type}.
 	 *
-	 * @param value can be {@literal null}.
-	 * @param target must not be {@literal null}.
+	 * @param value {@link Object value} to write; can be {@literal null}.
+	 * @param target {@link Class type} of value to be written; must not be {@literal null}.
 	 * @return can be {@literal null}.
+	 * @throws IllegalStateException if value cannot be written as an instance of {@link Class type}.
+	 * @see #write(Object, TypeInformation)
+	 * @see ClassTypeInformation
 	 */
 	@Nullable
-	default <T> T write(@Nullable Object value, Class<T> target) {
+	default <T> T write(@Nullable Object value, @NonNull Class<T> target) {
 		return write(value, ClassTypeInformation.from(target));
 	}
 
 	/**
-	 * Write as the given type.
+	 * Write the value as an instance of {@link TypeInformation type}.
 	 *
-	 * @param value can be {@literal null}.
-	 * @param target must not be {@literal null}.
+	 * @param value {@link Object value} to write; can be {@literal null}.
+	 * @param target {@link TypeInformation type} of value to be written; must not be {@literal null}.
 	 * @return can be {@literal null}.
+	 * @throws IllegalStateException if value cannot be written as an instance of {@link TypeInformation type}.
+	 * @see TypeInformation
 	 */
 	@Nullable
-	default <T> T write(@Nullable Object value, TypeInformation<T> target) {
+	default <T> T write(@Nullable Object value, @NonNull TypeInformation<T> target) {
 
 		if (value == null || target.getType().isInstance(value)) {
 			return target.getType().cast(value);
@@ -81,10 +93,14 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Reads the value into the type of the current property.
+	 * Reads the value as an instance of the {@link PersistentProperty#getTypeInformation() property type}.
 	 *
-	 * @param value can be {@literal null}.
+	 * @param value {@link Object value} to be read; can be {@literal null}.
 	 * @return can be {@literal null}.
+	 * @throws IllegalStateException if value cannot be read as an instance of the
+	 * {@link PersistentProperty#getTypeInformation() property type}.
+	 * @see PersistentProperty#getTypeInformation()
+	 * @see #read(Object, TypeInformation)
 	 */
 	@Nullable
 	default Object read(@Nullable Object value) {
@@ -92,32 +108,37 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Reads the value as the given type.
+	 * Reads the value as an instance of {@link Class type}.
 	 *
-	 * @param value can be {@literal null}.
-	 * @param target must not be {@literal null}.
+	 * @param value {@link Object value} to be read; can be {@literal null}.
+	 * @param target {@link Class type} of value to be read; must not be {@literal null}.
 	 * @return can be {@literal null}.
+	 * @throws IllegalStateException if value cannot be read as an instance of {@link Class type}.
+	 * @see #read(Object, TypeInformation)
+	 * @see ClassTypeInformation
 	 */
 	@Nullable
-	default <T> T read(@Nullable Object value, Class<T> target) {
+	default <T> T read(@Nullable Object value, @NonNull Class<T> target) {
 		return read(value, ClassTypeInformation.from(target));
 	}
 
 	/**
-	 * Reads the value as the given type.
+	 * Reads the value as an instance of {@link TypeInformation type}.
 	 *
-	 * @param value can be {@literal null}.
-	 * @param target must not be {@literal null}.
+	 * @param value {@link Object value} to be read; can be {@literal null}.
+	 * @param target {@link TypeInformation type} of value to be read; must not be {@literal null}.
 	 * @return can be {@literal null}.
+	 * @throws IllegalStateException if value cannot be read as an instance of {@link TypeInformation type}.
+	 * @see TypeInformation
 	 */
 	@Nullable
-	default <T> T read(@Nullable Object value, TypeInformation<T> target) {
+	default <T> T read(@Nullable Object value, @NonNull TypeInformation<T> target) {
 
 		if (value == null || target.getType().isInstance(value)) {
 			return target.getType().cast(value);
 		}
 
 		throw new IllegalStateException(String.format(
-				"%s does not provide write function that allows value conversion to target type (%s).", getClass(), target));
+				"%s does not provide read function that allows value conversion to target type (%s).", getClass(), target));
 	}
 }

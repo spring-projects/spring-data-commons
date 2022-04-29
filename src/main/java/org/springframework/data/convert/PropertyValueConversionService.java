@@ -16,36 +16,50 @@
 package org.springframework.data.convert;
 
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * Conversion service based on {@link CustomConversions} to convert domain and store values using
+ * Conversion service based on {@link CustomConversions} used to convert domain and store values using
  * {@link PropertyValueConverter property-specific converters}.
  *
  * @author Mark Paluch
+ * @see PropertyValueConverter
  * @since 2.7
  */
 public class PropertyValueConversionService {
 
 	private final PropertyValueConversions conversions;
 
-	public PropertyValueConversionService(CustomConversions conversions) {
+	/**
+	 * Constructs a new instance of the {@link PropertyValueConversionService} initialized with the given,
+	 * required {@link CustomConversions} for resolving the {@link PropertyValueConversions} used to
+	 * convert {@link PersistentProperty} values during data access operations.
+	 *
+	 * @param conversions {@link CustomConversions} used to handle domain and store type conversions;
+	 * must not be {@literal null}.
+	 * @throws IllegalArgumentException if {@link CustomConversions} is {@literal null}.
+	 * @see CustomConversions
+	 */
+	public PropertyValueConversionService(@NonNull CustomConversions conversions) {
 
 		Assert.notNull(conversions, "CustomConversions must not be null");
 
-		PropertyValueConversions pvc = conversions.getPropertyValueConversions();
-		this.conversions = pvc == null ? NoOpPropertyValueConversions.INSTANCE : pvc;
+		PropertyValueConversions valueConversions = conversions.getPropertyValueConversions();
+
+		this.conversions = valueConversions != null ? valueConversions : NoOpPropertyValueConversions.INSTANCE;
 	}
 
 	/**
-	 * Return {@literal true} there is a converter registered for {@link PersistentProperty}.
+	 * Return {@literal true} if a {@link PropertyValueConverter} is registered for the {@link PersistentProperty}.
 	 * <p>
 	 * If this method returns {@literal true}, it means {@link #read(Object, PersistentProperty, ValueConversionContext)}
-	 * and {@link #write(Object, PersistentProperty, ValueConversionContext)} are capable to invoke conversion.
+	 * and {@link #write(Object, PersistentProperty, ValueConversionContext)} are capable of handling conversions.
 	 *
-	 * @param property the underlying property.
-	 * @return {@literal true} there is a converter registered for {@link PersistentProperty}.
+	 * @param property {@link PersistentProperty property} to evaluate for registration.
+	 * @return {@literal true} if a {@link PropertyValueConverter} is registered for the {@link PersistentProperty}.
+	 * @see PersistentProperty
 	 */
 	public boolean hasConverter(PersistentProperty<?> property) {
 		return conversions.hasValueConverter(property);
@@ -68,11 +82,8 @@ public class PropertyValueConversionService {
 		PropertyValueConverter<Object, Object, ValueConversionContext<P>> converter = conversions
 				.getValueConverter(property);
 
-		if (value == null) {
-			return converter.readNull(context);
-		}
-
-		return converter.read(value, context);
+		return value != null ? converter.read(value, context)
+				: converter.readNull(context);
 	}
 
 	/**
@@ -92,11 +103,8 @@ public class PropertyValueConversionService {
 		PropertyValueConverter<Object, Object, ValueConversionContext<P>> converter = conversions
 				.getValueConverter(property);
 
-		if (value == null) {
-			return converter.writeNull(context);
-		}
-
-		return converter.write(value, context);
+		return value != null ? converter.write(value, context)
+				: converter.writeNull(context);
 	}
 
 	enum NoOpPropertyValueConversions implements PropertyValueConversions {
@@ -111,7 +119,7 @@ public class PropertyValueConversionService {
 		@Override
 		public <DV, SV, P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> PropertyValueConverter<DV, SV, VCC> getValueConverter(
 				P property) {
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException("No PropertyValueConversions was configured");
 		}
 	}
 }

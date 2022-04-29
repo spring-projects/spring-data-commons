@@ -18,6 +18,7 @@ package org.springframework.data.convert;
 import java.util.function.BiFunction;
 
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -36,6 +37,8 @@ import org.springframework.lang.Nullable;
  * @param <DV> domain-specific type.
  * @param <SV> store-native type.
  * @param <C> the store specific {@link ValueConversionContext conversion context}.
+ * @see org.springframework.data.convert.ValueConversionContext
+ * @see org.springframework.data.mapping.PersistentProperty
  * @since 2.7
  */
 public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext<? extends PersistentProperty<?>>> {
@@ -44,18 +47,20 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 	 * Convert the given store specific value into it's domain value representation. Typically, a {@literal read}
 	 * operation.
 	 *
-	 * @param value the value to read.
-	 * @param context never {@literal null}.
+	 * @param value value to read.
+	 * @param context {@link ValueConversionContext} containing store-specific metadata
+	 * used in the value conversion; never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
 	DV read(SV value, C context);
 
 	/**
-	 * Convert the given {@code null} value from the store into it's domain value representation. Typically, a
+	 * Convert the given {@code null} value from the store into its domain value representation. Typically, a
 	 * {@literal read} operation. Returns {@code null} by default.
 	 *
-	 * @param context never {@literal null}.
+	 * @param context {@link ValueConversionContext} containing store-specific metadata
+	 * used in the value conversion; never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
@@ -67,8 +72,9 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 	 * Convert the given domain-specific value into it's native store representation. Typically, a {@literal write}
 	 * operation.
 	 *
-	 * @param value the value to write.
-	 * @param context never {@literal null}.
+	 * @param value value to write; can be {@literal null}.
+	 * @param context {@link ValueConversionContext} containing store-specific metadata
+	 * used in the value conversion; never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
@@ -78,7 +84,8 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 	 * Convert the given {@code null} value from the domain model into it's native store representation. Typically, a
 	 * {@literal write} operation. Returns {@code null} by default.
 	 *
-	 * @param context never {@literal null}.
+	 * @param context {@link ValueConversionContext} containing store-specific metadata
+	 * used in the value conversion; never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
@@ -120,8 +127,8 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 		private final BiFunction<DV, ValueConversionContext<P>, SV> writer;
 		private final BiFunction<SV, ValueConversionContext<P>, DV> reader;
 
-		public FunctionPropertyValueConverter(BiFunction<DV, ValueConversionContext<P>, SV> writer,
-				BiFunction<SV, ValueConversionContext<P>, DV> reader) {
+		public FunctionPropertyValueConverter(@NonNull BiFunction<DV, ValueConversionContext<P>, SV> writer,
+				@NonNull BiFunction<SV, ValueConversionContext<P>, DV> reader) {
 
 			this.writer = writer;
 			this.reader = reader;
@@ -129,23 +136,23 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 
 		@Nullable
 		@Override
-		public SV write(DV value, ValueConversionContext<P> context) {
+		public SV write(@Nullable DV value, @NonNull ValueConversionContext<P> context) {
 			return writer.apply(value, context);
 		}
 
 		@Override
-		public SV writeNull(ValueConversionContext<P> context) {
+		public SV writeNull(@NonNull ValueConversionContext<P> context) {
 			return writer.apply(null, context);
 		}
 
 		@Nullable
 		@Override
-		public DV read(@Nullable SV value, ValueConversionContext<P> context) {
+		public DV read(@Nullable SV value, @NonNull ValueConversionContext<P> context) {
 			return reader.apply(value, context);
 		}
 
 		@Override
-		public DV readNull(ValueConversionContext<P> context) {
+		public DV readNull(@NonNull ValueConversionContext<P> context) {
 			return reader.apply(null, context);
 		}
 	}
