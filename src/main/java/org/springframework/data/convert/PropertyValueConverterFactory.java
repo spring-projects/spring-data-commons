@@ -29,9 +29,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * A factory that provides {@link PropertyValueConverter value converters}.
+ * A factory providing {@link PropertyValueConverter value converters}.
  * <p>
- * Depending on the applications need {@link PropertyValueConverterFactory factories} can be {@link #chained(List)
+ * Depending on the applications' need {@link PropertyValueConverterFactory factories} can be {@link #chained(List)
  * chained} and the resulting {@link PropertyValueConverter converter} may be
  * {@link #caching(PropertyValueConverterFactory) cached}.
  *
@@ -129,7 +129,7 @@ public interface PropertyValueConverterFactory {
 	 */
 	static PropertyValueConverterFactory chained(List<PropertyValueConverterFactory> factoryList) {
 
-		Assert.noNullElements(factoryList, "FactoryList must not contain null elements.");
+		Assert.noNullElements(factoryList, "FactoryList must not contain null elements");
 
 		if (factoryList.size() == 1) {
 			return factoryList.iterator().next();

@@ -21,9 +21,10 @@ import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * {@link PropertyValueConversions} provides access to {@link PropertyValueConverter converters} that may only be
- * applied to a specific property. Other than {@link org.springframework.core.convert.converter.Converter converters}
- * registered in {@link CustomConversions}, the property based variants accept and allow returning {@literal null}
- * values and provide access to a store specific {@link ValueConversionContext conversion context}.
+ * applied to a specific {@link PersistentProperty property}. Other than
+ * {@link org.springframework.core.convert.converter.Converter converters} registered in {@link CustomConversions},
+ * the {@link PersistentProperty property} based variants accept and allow returning {@literal null} values
+ * and provide access to a store-specific {@link ValueConversionContext conversion context}.
  *
  * @author Christoph Strobl
  * @since 2.7
@@ -32,30 +33,41 @@ import org.springframework.data.mapping.PersistentProperty;
 public interface PropertyValueConversions {
 
 	/**
-	 * Check if a {@link PropertyValueConverter} is present for the given {@literal property}.
+	 * Check if a {@link PropertyValueConverter converter} is registered for
+	 * the given {@link PersistentProperty property}.
 	 *
-	 * @param property must not be {@literal null}.
-	 * @return {@literal true} if a specific {@link PropertyValueConverter} is available.
+	 * @param property {@link PersistentProperty} to evaluate; must not be {@literal null}.
+	 * @return {@literal true} if a specific {@link PropertyValueConverter converter} is registered for
+	 * the given {@link PersistentProperty}.
+	 * @see PersistentProperty
 	 */
 	boolean hasValueConverter(PersistentProperty<?> property);
 
 	/**
-	 * Get the {@link PropertyValueConverter} for the given {@literal property}.
+	 * Get the {@link PropertyValueConverter converter} registered for the given {@link PersistentProperty property}.
 	 *
-	 * @param property must not be {@literal null}.
+	 * @param property {@link PersistentProperty} used to look up the registered {@link PropertyValueConverter};
+	 * must not be {@literal null}.
 	 * @param <DV> domain-specific type
 	 * @param <SV> store-native type
 	 * @param <P> conversion context type
-	 * @return the suitable {@link PropertyValueConverter}.
-	 * @throws IllegalArgumentException if there is no converter available for {@code property}.
+	 * @return the {@link PropertyValueConverter} registered for the given {@link PersistentProperty};
+	 * never {@literal null}.
+	 * @throws IllegalArgumentException if no {@link PropertyValueConverter} was registered for
+	 * the given {@link PersistentProperty}.
 	 * @see #hasValueConverter(PersistentProperty)
+	 * @see PropertyValueConverter
+	 * @see PersistentProperty
 	 */
 	<DV, SV, P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> PropertyValueConverter<DV, SV, VCC> getValueConverter(
 			P property);
 
 	/**
-	 * Helper that allows to create {@link PropertyValueConversions} instance with the configured
-	 * {@link PropertyValueConverter converters} provided via the given callback.
+	 * Helper method used to create a {@link PropertyValueConversions} instance with the configured
+	 * {@link PropertyValueConverter converters} provided by the {@link Consumer callback}.
+	 *
+	 * @see PropertyValueConverterRegistrar
+	 * @see PropertyValueConversions
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	static <P extends PersistentProperty<P>> PropertyValueConversions simple(

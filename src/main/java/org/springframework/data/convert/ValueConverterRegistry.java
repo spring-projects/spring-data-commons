@@ -19,16 +19,17 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
 /**
- * A registry of property-specific {@link PropertyValueConverter value converters} to convert only specific
- * properties/values of an object.
+ * A registry of {@link PersistentProperty property-specific} {@link PropertyValueConverter value converters}
+ * to convert only specific properties/values of an object.
  *
  * @author Christoph Strobl
+ * @see PropertyValueConverter
  * @since 2.7
  */
 public interface ValueConverterRegistry<P extends PersistentProperty<P>> {
 
 	/**
-	 * Register the {@link PropertyValueConverter} for the property of the given type.
+	 * Register the {@link PropertyValueConverter} for the {@link PersistentProperty property} of the given type.
 	 *
 	 * @param type the target type. Must not be {@literal null}.
 	 * @param path the property name. Must not be {@literal null}.
@@ -38,12 +39,13 @@ public interface ValueConverterRegistry<P extends PersistentProperty<P>> {
 			PropertyValueConverter<?, ?, ? extends ValueConversionContext<P>> converter);
 
 	/**
-	 * Obtain the converter registered for the given type, path combination or {@literal null} if none defined.
+	 * Obtain the {@link PropertyValueConverter} registered for the given type, path combination or {@literal null}
+	 * if none defined.
 	 *
 	 * @param type the target type. Must not be {@literal null}.
 	 * @param path the property name. Must not be {@literal null}.
-	 * @param <DV>
-	 * @param <SV>
+	 * @param <DV> domain-specific type.
+	 * @param <SV> store-specific type.
 	 * @return {@literal null} if no converter present for the given type/path combination.
 	 */
 	@Nullable
@@ -54,7 +56,7 @@ public interface ValueConverterRegistry<P extends PersistentProperty<P>> {
 	 *
 	 * @param type the target type. Must not be {@literal null}.
 	 * @param path the property name. Must not be {@literal null}.
-	 * @return {@literal false} if no converter present for the given type/path combination.
+	 * @return {@literal false} if no converter is present for the given type/path combination.
 	 */
 	default boolean containsConverterFor(Class<?> type, String path) {
 		return getConverter(type, path) != null;
@@ -68,10 +70,10 @@ public interface ValueConverterRegistry<P extends PersistentProperty<P>> {
 	/**
 	 * Obtain a simple {@link ValueConverterRegistry}.
 	 *
-	 * @param <T>
+	 * @param <P> {@link PersistentProperty} type.
 	 * @return new instance of {@link ValueConverterRegistry}.
 	 */
-	static <T extends PersistentProperty<T>> ValueConverterRegistry<T> simple() {
+	static <P extends PersistentProperty<P>> ValueConverterRegistry<P> simple() {
 		return new SimplePropertyValueConverterRegistry<>();
 	}
 }

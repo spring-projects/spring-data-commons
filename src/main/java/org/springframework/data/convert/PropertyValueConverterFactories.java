@@ -50,7 +50,7 @@ final class PropertyValueConverterFactories {
 	 */
 	static class ChainedPropertyValueConverterFactory implements PropertyValueConverterFactory {
 
-		private List<PropertyValueConverterFactory> delegates;
+		private final List<PropertyValueConverterFactory> delegates;
 
 		ChainedPropertyValueConverterFactory(List<PropertyValueConverterFactory> delegates) {
 			this.delegates = Collections.unmodifiableList(delegates);
@@ -58,8 +58,10 @@ final class PropertyValueConverterFactories {
 
 		@Nullable
 		@Override
+		@SuppressWarnings("unchecked")
 		public <A, B, C extends ValueConversionContext<?>> PropertyValueConverter<A, B, C> getConverter(
 				PersistentProperty<?> property) {
+
 			return delegates.stream().map(it -> (PropertyValueConverter<A, B, C>) it.getConverter(property))
 					.filter(Objects::nonNull).findFirst().orElse(null);
 		}
@@ -67,6 +69,7 @@ final class PropertyValueConverterFactories {
 		@Override
 		public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 				Class<? extends PropertyValueConverter<S, T, C>> converterType) {
+
 			return delegates.stream().filter(it -> it.getConverter(converterType) != null).findFirst()
 					.map(it -> it.getConverter(converterType)).orElse(null);
 		}
@@ -82,6 +85,7 @@ final class PropertyValueConverterFactories {
 	static class SimplePropertyConverterFactory implements PropertyValueConverterFactory {
 
 		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 				Class<? extends PropertyValueConverter<S, T, C>> converterType) {
 
@@ -90,6 +94,7 @@ final class PropertyValueConverterFactories {
 			if (converterType.isEnum()) {
 				return (PropertyValueConverter<S, T, C>) EnumSet.allOf((Class) converterType).iterator().next();
 			}
+
 			return BeanUtils.instantiateClass(converterType);
 		}
 	}
@@ -110,10 +115,11 @@ final class PropertyValueConverterFactories {
 		}
 
 		@Override
+		@SuppressWarnings("unchecked")
 		public <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
 				Class<? extends PropertyValueConverter<DV, SV, C>> converterType) {
 
-			Assert.notNull(converterType, "ConverterType must not be null!");
+			Assert.notNull(converterType, "ConverterType must not be null");
 
 			PropertyValueConverter<DV, SV, C> converter = beanFactory.getBeanProvider(converterType).getIfAvailable();
 
@@ -139,14 +145,17 @@ final class PropertyValueConverterFactories {
 
 		ConfiguredInstanceServingValueConverterFactory(ValueConverterRegistry<?> converterRegistry) {
 
-			Assert.notNull(converterRegistry, "ConversionsRegistrar must not be null!");
+			Assert.notNull(converterRegistry, "ConversionsRegistrar must not be null");
+
 			this.converterRegistry = converterRegistry;
 		}
 
 		@Nullable
 		@Override
+		@SuppressWarnings("unchecked")
 		public <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
 				PersistentProperty<?> property) {
+
 			return (PropertyValueConverter<DV, SV, C>) converterRegistry.getConverter(property.getOwner().getType(),
 					property.getName());
 		}
@@ -154,6 +163,7 @@ final class PropertyValueConverterFactories {
 		@Override
 		public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 				Class<? extends PropertyValueConverter<S, T, C>> converterType) {
+
 			return null;
 		}
 	}
@@ -172,12 +182,14 @@ final class PropertyValueConverterFactories {
 
 		CachingPropertyValueConverterFactory(PropertyValueConverterFactory delegate) {
 
-			Assert.notNull(delegate, "Delegate must not be null!");
+			Assert.notNull(delegate, "Delegate must not be null");
+
 			this.delegate = delegate;
 		}
 
 		@Nullable
 		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
 				PersistentProperty<?> property) {
 
@@ -188,6 +200,7 @@ final class PropertyValueConverterFactories {
 		}
 
 		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public <DV, SV, C extends ValueConversionContext<?>> PropertyValueConverter<DV, SV, C> getConverter(
 				Class<? extends PropertyValueConverter<DV, SV, C>> converterType) {
 
@@ -218,15 +231,19 @@ final class PropertyValueConverterFactories {
 				AnnotatedPropertyValueConverterAccessor accessor = new AnnotatedPropertyValueConverterAccessor(property);
 				Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> valueConverterType = accessor
 						.getValueConverterType();
+
 				if (valueConverterType != null) {
 					cache(valueConverterType, converter);
 				}
+
 				return converter;
 			}
 
 			<S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> cache(Class<?> type,
 					@Nullable PropertyValueConverter<S, T, C> converter) {
+
 				typeCache.putIfAbsent(type, Optional.ofNullable(converter));
+
 				return converter;
 			}
 		}
