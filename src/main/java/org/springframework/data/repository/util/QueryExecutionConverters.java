@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.springframework.core.convert.ConversionService;
@@ -38,12 +39,13 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.geo.GeoResults;
+import org.springframework.data.util.CustomCollections;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.data.util.VavrCollectionConverters;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
@@ -80,7 +82,7 @@ public abstract class QueryExecutionConverters {
 
 	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<>();
 	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>();
-	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<>();
+	private static final Set<Function<Object, Object>> UNWRAPPERS = new HashSet<>();
 	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<>();
 	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>();
 	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentReferenceHashMap<>();
@@ -98,16 +100,19 @@ public abstract class QueryExecutionConverters {
 
 		WRAPPER_TYPES.add(NullableWrapperToCompletableFutureConverter.getWrapperType());
 
-		if (VAVR_PRESENT) {
+		UNWRAPPERS.addAll(CustomCollections.getUnwrappers());
 
-			WRAPPER_TYPES.add(VavrTraversableUnwrapper.INSTANCE.getWrapperType());
-			UNWRAPPERS.add(VavrTraversableUnwrapper.INSTANCE);
+		CustomCollections.getCustomTypes().stream()
+				.map(WrapperType::multiValue)
+				.forEach(WRAPPER_TYPES::add);
+
+		CustomCollections.getPaginationReturnTypes().forEach(ALLOWED_PAGEABLE_TYPES::add);
+
+		if (VAVR_PRESENT) {
 
 			// Try support
 			WRAPPER_TYPES.add(WrapperType.singleValue(io.vavr.control.Try.class));
 			EXECUTION_ADAPTER.put(io.vavr.control.Try.class, it -> io.vavr.control.Try.of(it::get));
-
-			ALLOWED_PAGEABLE_TYPES.add(io.vavr.collection.Seq.class);
 		}
 	}
 
@@ -195,10 +200,7 @@ public abstract class QueryExecutionConverters {
 		conversionService.removeConvertible(Collection.class, Object.class);
 
 		NullableWrapperConverters.registerConvertersIn(conversionService);
-
-		if (VAVR_PRESENT) {
-			conversionService.addConverter(VavrCollectionConverters.FromJavaConverter.INSTANCE);
-		}
+		CustomCollections.registerConvertersIn(conversionService);
 
 		conversionService.addConverter(new NullableWrapperToCompletableFutureConverter());
 		conversionService.addConverter(new NullableWrapperToFutureConverter());
@@ -220,9 +222,9 @@ public abstract class QueryExecutionConverters {
 			return source;
 		}
 
-		for (Converter<Object, Object> converter : UNWRAPPERS) {
+		for (Function<Object, Object> converter : UNWRAPPERS) {
 
-			Object result = converter.convert(source);
+			Object result = converter.apply(source);
 
 			if (result != source) {
 				return result;
@@ -382,36 +384,6 @@ public abstract class QueryExecutionConverters {
 		}
 	}
 
-	/**
-	 * Converter to unwrap Vavr {@link io.vavr.collection.Traversable} instances.
-	 *
-	 * @author Oliver Gierke
-	 * @since 2.0
-	 */
-	private enum VavrTraversableUnwrapper implements Converter<Object, Object> {
-
-		INSTANCE;
-
-		private static final TypeDescriptor OBJECT_DESCRIPTOR = TypeDescriptor.valueOf(Object.class);
-
-		@Nullable
-		@Override
-		@SuppressWarnings("null")
-		public Object convert(Object source) {
-
-			if (source instanceof io.vavr.collection.Traversable) {
-				return VavrCollectionConverters.ToJavaConverter.INSTANCE //
-						.convert(source, TypeDescriptor.forObject(source), OBJECT_DESCRIPTOR);
-			}
-
-			return source;
-		}
-
-		public WrapperType getWrapperType() {
-			return WrapperType.multiValue(io.vavr.collection.Traversable.class);
-		}
-	}
-
 	private static class IterableToStreamableConverter implements ConditionalGenericConverter {
 
 		private static final TypeDescriptor STREAMABLE = TypeDescriptor.valueOf(Streamable.class);
@@ -477,7 +449,7 @@ public abstract class QueryExecutionConverters {
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (this == o) {
 				return true;
