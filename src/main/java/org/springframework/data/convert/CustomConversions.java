@@ -43,10 +43,12 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.VavrCollectionConverters;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -67,13 +69,13 @@ import org.springframework.util.ObjectUtils;
 public class CustomConversions {
 
 	private static final Log logger = LogFactory.getLog(CustomConversions.class);
-	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type! You might want to check your annotation setup at the converter implementation.";
-	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type! You might want to check your annotation setup at the converter implementation.";
-	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory!";
+	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type; You might want to check your annotation setup at the converter implementation.";
+	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type; You might want to check your annotation setup at the converter implementation.";
+	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory";
 	private static final String CONVERTER_FILTER = "converter from %s to %s as %s converter.";
 	private static final String ADD_CONVERTER = "Adding %s" + CONVERTER_FILTER;
 	private static final String SKIP_CONVERTER = "Skipping " + CONVERTER_FILTER
-			+ " %s is not a store supported simple type!";
+			+ " %s is not a store supported simple type";
 	private static final List<Object> DEFAULT_CONVERTERS;
 
 	static {
@@ -106,23 +108,24 @@ public class CustomConversions {
 	private final Function<ConvertiblePair, Class<?>> getRawWriteTarget = convertiblePair -> getCustomTarget(
 			convertiblePair.getSourceType(), null, writingPairs);
 
-	private @Nullable PropertyValueConversions propertyValueConversions;
+	@Nullable
+	private final PropertyValueConversions propertyValueConversions;
 
 	/**
 	 * @param converterConfiguration the {@link ConverterConfiguration} to apply.
 	 * @since 2.3
 	 */
-	public CustomConversions(ConverterConfiguration converterConfiguration) {
+	public CustomConversions(@NonNull ConverterConfiguration converterConfiguration) {
 
 		this.converterConfiguration = converterConfiguration;
 
 		List<Object> registeredConverters = collectPotentialConverterRegistrations(
-				converterConfiguration.getStoreConversions(), converterConfiguration.getUserConverters()).stream() //
-						.filter(this::isSupportedConverter) //
-						.filter(this::shouldRegister) //
-						.map(ConverterRegistrationIntent::getConverterRegistration) //
-						.map(this::register) //
-						.distinct() //
+				converterConfiguration.getStoreConversions(), converterConfiguration.getUserConverters()).stream()
+						.filter(this::isSupportedConverter)
+						.filter(this::shouldRegister)
+						.map(ConverterRegistrationIntent::getConverterRegistration)
+						.map(this::register)
+						.distinct()
 						.collect(Collectors.toList());
 
 		Collections.reverse(registeredConverters);
@@ -142,17 +145,44 @@ public class CustomConversions {
 	 * @param storeConversions must not be {@literal null}.
 	 * @param converters must not be {@literal null}.
 	 */
-	public CustomConversions(StoreConversions storeConversions, Collection<?> converters) {
+	public CustomConversions(@NonNull StoreConversions storeConversions, @NonNull Collection<?> converters) {
 		this(new ConverterConfiguration(storeConversions, new ArrayList<>(converters)));
 	}
 
 	/**
 	 * Returns the underlying {@link SimpleTypeHolder}.
 	 *
-	 * @return
+	 * @return the underlying {@link SimpleTypeHolder}.
+	 * @see SimpleTypeHolder
 	 */
-	public SimpleTypeHolder getSimpleTypeHolder() {
+	public @NonNull SimpleTypeHolder getSimpleTypeHolder() {
 		return simpleTypeHolder;
+	}
+
+	/**
+	 * Determines whether the given, required {@link PersistentProperty property} has a value-specific converter
+	 * registered. Returns {@literal false} if no {@link PropertyValueConversions} have been configured for the
+	 * underlying store.
+	 * <p>
+	 * This method protects against {@literal null} when not {@link PropertyValueConversions} have been configured for
+	 * the underlying data store, and is a shortcut for:
+	 *
+	 * <code>
+	 *     customConversions.getPropertyValueConversions().hasValueConverter(property);
+	 * </code>
+	 *
+	 * @param property {@link PersistentProperty} to evaluate; must not be {@literal null}.
+	 * @return a boolean value indicating whether {@link PropertyValueConverter} has been configured and registered
+	 * for the {@link PersistentProperty property}.
+	 * @see PropertyValueConversions#hasValueConverter(PersistentProperty)
+	 * @see #getPropertyValueConversions()
+	 * @see PersistentProperty
+	 */
+	public boolean hasValueConverter(@NonNull PersistentProperty<?> property) {
+
+		PropertyValueConversions propertyValueConversions = getPropertyValueConversions();
+
+		return propertyValueConversions != null && propertyValueConversions.hasValueConverter(property);
 	}
 
 	/**
@@ -160,12 +190,15 @@ public class CustomConversions {
 	 * a writing {@link Converter} registered for a particular type.
 	 *
 	 * @see SimpleTypeHolder#isSimpleType(Class)
-	 * @param type
-	 * @return
+	 * @param type {@link Class} to evaluate as a simple type, such as a primitive type.
+	 * @return a boolean value indicating whether the given, required {@link Class type} is simple.
 	 */
-	public boolean isSimpleType(Class<?> type) {
+	// TODO: Technically, an 'isXyz(..)' method (returning a boolean to answer a user's question should not throw an Exception).
+	//  Rather, a null Class type argument should simply return false to indicate it is clearly not a "simple type".
+	//  How much data store specific code relies on the existing behavior?
+	public boolean isSimpleType(@NonNull Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return simpleTypeHolder.isSimpleType(type);
 	}
@@ -173,16 +206,25 @@ public class CustomConversions {
 	/**
 	 * Populates the given {@link GenericConversionService} with the converters registered.
 	 *
-	 * @param conversionService
+	 * @param conversionService {@link ConverterRegistry} to populate; must not be {@literal null}.
+	 * @see ConverterRegistry
 	 */
-	public void registerConvertersIn(ConverterRegistry conversionService) {
+	public void registerConvertersIn(@NonNull ConverterRegistry conversionService) {
 
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		converters.forEach(it -> registerConverterIn(it, conversionService));
 		VavrCollectionConverters.getConvertersToRegister().forEach(it -> registerConverterIn(it, conversionService));
 	}
 
+	/**
+	 * Gets a reference to the configured {@link PropertyValueConversions} if property value conversions
+	 * are supported by the underlying data store.
+	 *
+	 * @return a reference to the configured {@link PropertyValueConversions}; may be {@literal null}
+	 * if the underlying data store does not support property value conversions.
+	 * @see PropertyValueConversions
+	 */
 	@Nullable
 	public PropertyValueConversions getPropertyValueConversions() {
 		return propertyValueConversions;
@@ -191,32 +233,33 @@ public class CustomConversions {
 	/**
 	 * Get all converters and add origin information
 	 *
-	 * @param storeConversions
-	 * @param converters
-	 * @return
+	 * @param storeConversions collection of store-base conversions; must not be {@literal null}.
+	 * @param converters collections of custom, user-based converters; must not be {@literal null}.
+	 * @return a {@link List} of intended {@link ConverterRegistration ConverterRegistrations}.
+	 * @see ConverterRegistration
 	 * @since 2.3
 	 */
-	private List<ConverterRegistrationIntent> collectPotentialConverterRegistrations(StoreConversions storeConversions,
-			Collection<?> converters) {
+	private List<ConverterRegistrationIntent> collectPotentialConverterRegistrations(@
+			NonNull StoreConversions storeConversions, @NonNull Collection<?> converters) {
 
 		List<ConverterRegistrationIntent> converterRegistrations = new ArrayList<>();
 
-		converters.stream() //
-				.map(storeConversions::getRegistrationsFor) //
-				.flatMap(Streamable::stream) //
-				.map(ConverterRegistrationIntent::userConverters) //
+		converters.stream()
+				.map(storeConversions::getRegistrationsFor)
+				.flatMap(Streamable::stream)
+				.map(ConverterRegistrationIntent::userConverters)
 				.forEach(converterRegistrations::add);
 
-		storeConversions.getStoreConverters().stream() //
-				.map(storeConversions::getRegistrationsFor) //
-				.flatMap(Streamable::stream) //
-				.map(ConverterRegistrationIntent::storeConverters) //
+		storeConversions.getStoreConverters().stream()
+				.map(storeConversions::getRegistrationsFor)
+				.flatMap(Streamable::stream)
+				.map(ConverterRegistrationIntent::storeConverters)
 				.forEach(converterRegistrations::add);
 
-		DEFAULT_CONVERTERS.stream() //
-				.map(storeConversions::getRegistrationsFor) //
-				.flatMap(Streamable::stream) //
-				.map(ConverterRegistrationIntent::defaultConverters) //
+		DEFAULT_CONVERTERS.stream()
+				.map(storeConversions::getRegistrationsFor)
+				.flatMap(Streamable::stream)
+				.map(ConverterRegistrationIntent::defaultConverters)
 				.forEach(converterRegistrations::add);
 
 		return converterRegistrations;
@@ -230,38 +273,29 @@ public class CustomConversions {
 	 */
 	private void registerConverterIn(Object candidate, ConverterRegistry conversionService) {
 
-		if (candidate instanceof Converter) {
-			conversionService.addConverter(Converter.class.cast(candidate));
-			return;
+		if (candidate instanceof Converter converter) {
+			conversionService.addConverter(converter);
+		} else if (candidate instanceof ConverterFactory converterFactory) {
+			conversionService.addConverterFactory(converterFactory);
+		} else if (candidate instanceof GenericConverter genericConverter) {
+			conversionService.addConverter(genericConverter);
+		} else if (candidate instanceof ConverterAware converterAware) {
+			converterAware.getConverters().forEach(it -> registerConverterIn(it, conversionService));
+		} else {
+			throw new IllegalArgumentException(String.format(NOT_A_CONVERTER, candidate));
 		}
-
-		if (candidate instanceof ConverterFactory) {
-			conversionService.addConverterFactory(ConverterFactory.class.cast(candidate));
-			return;
-		}
-
-		if (candidate instanceof GenericConverter) {
-			conversionService.addConverter(GenericConverter.class.cast(candidate));
-			return;
-		}
-
-		if (candidate instanceof ConverterAware) {
-			ConverterAware.class.cast(candidate).getConverters().forEach(it -> registerConverterIn(it, conversionService));
-			return;
-		}
-
-		throw new IllegalArgumentException(String.format(NOT_A_CONVERTER, candidate));
 	}
 
 	/**
 	 * Registers the given {@link ConvertiblePair} as reading or writing pair depending on the type sides being basic
 	 * types.
 	 *
-	 * @param converterRegistration
+	 * @param converterRegistration {@link ConverterRegistration} to register; must not be {@literal null}.
+	 * @see ConverterRegistration
 	 */
-	private Object register(ConverterRegistration converterRegistration) {
+	private Object register(@NonNull ConverterRegistration converterRegistration) {
 
-		Assert.notNull(converterRegistration, "Converter registration must not be null!");
+		Assert.notNull(converterRegistration, "Converter registration must not be null");
 
 		ConvertiblePair pair = converterRegistration.getConvertiblePair();
 
@@ -288,15 +322,15 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Validate a given {@link ConverterRegistration} in a specific setup. <br />
+	 * Validate a given {@link ConverterRegistration} in a specific setup.<br/>
 	 * Non {@link ReadingConverter reading} and user defined {@link Converter converters} are only considered supported if
 	 * the {@link ConverterRegistrationIntent#isSimpleTargetType() target type} is considered to be a store simple type.
 	 *
-	 * @param registrationIntent
+	 * @param registrationIntent {@link ConverterRegistrationIntent} to validate; must not be {@literal null}.
 	 * @return {@literal true} if supported.
 	 * @since 2.3
 	 */
-	private boolean isSupportedConverter(ConverterRegistrationIntent registrationIntent) {
+	private boolean isSupportedConverter(@NonNull ConverterRegistrationIntent registrationIntent) {
 
 		boolean register = registrationIntent.isUserConverter() || registrationIntent.isStoreConverter()
 				|| (registrationIntent.isReading() && registrationIntent.isSimpleSourceType())
@@ -323,7 +357,7 @@ public class CustomConversions {
 	 * @return {@literal false} if the given {@link ConverterRegistration} shall be skipped.
 	 * @since 2.3
 	 */
-	private boolean shouldRegister(ConverterRegistrationIntent intent) {
+	private boolean shouldRegister(@NonNull ConverterRegistrationIntent intent) {
 		return !intent.isDefaultConverter()
 				|| converterConfiguration.shouldRegister(intent.getConverterRegistration().getConvertiblePair());
 	}
@@ -333,11 +367,12 @@ public class CustomConversions {
 	 * type into a store native one.
 	 *
 	 * @param sourceType must not be {@literal null}
-	 * @return
+	 * @return the target type to convert to in case we have a custom conversion registered to convert the given source
+	 * type into a store native one.
 	 */
-	public Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType) {
+	public Optional<Class<?>> getCustomWriteTarget(@NonNull Class<?> sourceType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
 
 		Class<?> target = customWriteTargetTypes.computeIfAbsent(sourceType, getRawWriteTarget);
 
@@ -351,12 +386,12 @@ public class CustomConversions {
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param requestedTargetType must not be {@literal null}.
-	 * @return
+	 * @return the target type we can read an inject of the given source type to.
 	 */
-	public Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType, Class<?> requestedTargetType) {
+	public Optional<Class<?>> getCustomWriteTarget(@NonNull Class<?> sourceType, @NonNull Class<?> requestedTargetType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
-		Assert.notNull(requestedTargetType, "Target type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
+		Assert.notNull(requestedTargetType, "Target type must not be null");
 
 		Class<?> target = customWriteTargetTypes.computeIfAbsent(sourceType, requestedTargetType, getWriteTarget);
 
@@ -368,11 +403,11 @@ public class CustomConversions {
 	 * type might be a subclass of the given expected type though.
 	 *
 	 * @param sourceType must not be {@literal null}
-	 * @return
+	 * @return whether we have a custom conversion registered to read {@code sourceType} into a native type.
 	 */
-	public boolean hasCustomWriteTarget(Class<?> sourceType) {
+	public boolean hasCustomWriteTarget(@NonNull Class<?> sourceType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
 
 		return getCustomWriteTarget(sourceType).isPresent();
 	}
@@ -383,12 +418,13 @@ public class CustomConversions {
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
-	 * @return
+	 * @return whether we have a custom conversion registered to read an object of the given source type into an object
+	 * of the given native target type.
 	 */
-	public boolean hasCustomWriteTarget(Class<?> sourceType, Class<?> targetType) {
+	public boolean hasCustomWriteTarget(@NonNull Class<?> sourceType, @NonNull Class<?> targetType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
-		Assert.notNull(targetType, "Target type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
+		Assert.notNull(targetType, "Target type must not be null");
 
 		return getCustomWriteTarget(sourceType, targetType).isPresent();
 	}
@@ -398,12 +434,12 @@ public class CustomConversions {
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param targetType must not be {@literal null}
-	 * @return
+	 * @return whether we have a custom conversion registered to read the given source into the given target type.
 	 */
-	public boolean hasCustomReadTarget(Class<?> sourceType, Class<?> targetType) {
+	public boolean hasCustomReadTarget(@NonNull Class<?> sourceType, @NonNull Class<?> targetType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
-		Assert.notNull(targetType, "Target type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
+		Assert.notNull(targetType, "Target type must not be null");
 
 		return getCustomReadTarget(sourceType, targetType) != null;
 	}
@@ -414,24 +450,24 @@ public class CustomConversions {
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
-	 * @return
+	 * @return the actual target type for the given {@code sourceType} and {@code targetType}.
 	 */
 	@Nullable
-	private Class<?> getCustomReadTarget(Class<?> sourceType, Class<?> targetType) {
+	private Class<?> getCustomReadTarget(@NonNull Class<?> sourceType, @NonNull Class<?> targetType) {
 		return customReadTargetTypes.computeIfAbsent(sourceType, targetType, getReadTarget);
 	}
 
 	/**
 	 * Inspects the given {@link ConvertiblePair ConvertiblePairs} for ones that have a source compatible type as source.
-	 * Additionally checks assignability of the target type if one is given.
+	 * Additionally, checks assignability of the target type if one is given.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param targetType can be {@literal null}.
 	 * @param pairs must not be {@literal null}.
-	 * @return
+	 * @return the base {@link Class type} for the (requested) {@link Class target type} if present.
 	 */
 	@Nullable
-	private Class<?> getCustomTarget(Class<?> sourceType, @Nullable Class<?> targetType,
+	private Class<?> getCustomTarget(@NonNull Class<?> sourceType, @Nullable Class<?> targetType,
 			Collection<ConvertiblePair> pairs) {
 
 		if (targetType != null && pairs.contains(new ConvertiblePair(sourceType, targetType))) {
@@ -456,11 +492,13 @@ public class CustomConversions {
 		return null;
 	}
 
-	private static boolean hasAssignableSourceType(ConvertiblePair pair, Class<?> sourceType) {
+	private static boolean hasAssignableSourceType(@NonNull ConvertiblePair pair, @NonNull Class<?> sourceType) {
 		return pair.getSourceType().isAssignableFrom(sourceType);
 	}
 
-	private static boolean requestedTargetTypeIsAssignable(@Nullable Class<?> requestedTargetType, Class<?> targetType) {
+	private static boolean requestedTargetTypeIsAssignable(@Nullable Class<?> requestedTargetType,
+			@NonNull Class<?> targetType) {
+
 		return requestedTargetType == null || targetType.isAssignableFrom(requestedTargetType);
 	}
 
@@ -736,8 +774,8 @@ public class CustomConversions {
 		 */
 		public static StoreConversions of(SimpleTypeHolder storeTypeHolder, Object... converters) {
 
-			Assert.notNull(storeTypeHolder, "SimpleTypeHolder must not be null!");
-			Assert.notNull(converters, "Converters must not be null!");
+			Assert.notNull(storeTypeHolder, "SimpleTypeHolder must not be null");
+			Assert.notNull(converters, "Converters must not be null");
 
 			return new StoreConversions(storeTypeHolder, Arrays.asList(converters));
 		}
@@ -752,8 +790,8 @@ public class CustomConversions {
 		 */
 		public static StoreConversions of(SimpleTypeHolder storeTypeHolder, Collection<?> converters) {
 
-			Assert.notNull(storeTypeHolder, "SimpleTypeHolder must not be null!");
-			Assert.notNull(converters, "Converters must not be null!");
+			Assert.notNull(storeTypeHolder, "SimpleTypeHolder must not be null");
+			Assert.notNull(converters, "Converters must not be null");
 
 			return new StoreConversions(storeTypeHolder, converters);
 		}
@@ -766,23 +804,23 @@ public class CustomConversions {
 		 */
 		public Streamable<ConverterRegistration> getRegistrationsFor(Object converter) {
 
-			Assert.notNull(converter, "Converter must not be null!");
+			Assert.notNull(converter, "Converter must not be null");
 
 			Class<?> type = converter.getClass();
 			boolean isWriting = isAnnotatedWith(type, WritingConverter.class);
 			boolean isReading = isAnnotatedWith(type, ReadingConverter.class);
 
-			if (converter instanceof ConverterAware) {
+			if (converter instanceof ConverterAware converterAware) {
 
-				return Streamable.of(() -> ConverterAware.class.cast(converter).getConverters().stream()//
+				return Streamable.of(() -> converterAware.getConverters().stream()
 						.flatMap(it -> getRegistrationsFor(it).stream()));
 
-			} else if (converter instanceof GenericConverter) {
+			} else if (converter instanceof GenericConverter genericConverter) {
 
-				Set<ConvertiblePair> convertibleTypes = GenericConverter.class.cast(converter).getConvertibleTypes();
+				Set<ConvertiblePair> convertibleTypes = genericConverter.getConvertibleTypes();
 
-				return convertibleTypes == null //
-						? Streamable.empty() //
+				return convertibleTypes == null
+						? Streamable.empty()
 						: Streamable.of(convertibleTypes).map(it -> register(converter, it, isReading, isWriting));
 
 			} else if (converter instanceof ConverterFactory) {
@@ -794,7 +832,7 @@ public class CustomConversions {
 				return getRegistrationFor(converter, Converter.class, isReading, isWriting);
 
 			} else {
-				throw new IllegalArgumentException(String.format("Unsupported converter type %s!", converter));
+				throw new IllegalArgumentException(String.format("Unsupported converter type %s", converter));
 			}
 		}
 
@@ -809,7 +847,7 @@ public class CustomConversions {
 			Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(converterType, type);
 
 			if (arguments == null) {
-				throw new IllegalStateException(String.format("Couldn't resolve type arguments for %s!", converterType));
+				throw new IllegalStateException(String.format("Couldn't resolve type arguments for %s", converterType));
 			}
 
 			return Streamable.of(register(converter, arguments[0], arguments[1], isReading, isWriting));
@@ -922,8 +960,8 @@ public class CustomConversions {
 		 * @param propertyValueConversions can be {@literal null}.
 		 * @since 2.7
 		 */
-		public ConverterConfiguration(StoreConversions storeConversions, List<?> userConverters,
-				Predicate<ConvertiblePair> converterRegistrationFilter,
+		public ConverterConfiguration(@NonNull StoreConversions storeConversions, @NonNull List<?> userConverters,
+				@NonNull Predicate<ConvertiblePair> converterRegistrationFilter,
 				@Nullable PropertyValueConversions propertyValueConversions) {
 
 			this.storeConversions = storeConversions;

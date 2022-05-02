@@ -42,6 +42,7 @@ import org.springframework.data.convert.CustomConversions.ConverterConfiguration
 import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConverter;
 import org.springframework.data.geo.Point;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
@@ -59,7 +60,7 @@ class CustomConversionsUnitTests {
 
 		@Override
 		public boolean isSimpleType(Class<?> type) {
-			return type.getName().startsWith("java.time") ? false : super.isSimpleType(type);
+			return !type.getName().startsWith("java.time") && super.isSimpleType(type);
 		}
 	};
 
@@ -103,7 +104,7 @@ class CustomConversionsUnitTests {
 		GenericConversionService conversionService = new DefaultConversionService();
 
 		var conversions = new CustomConversions(StoreConversions.NONE,
-				Arrays.asList(StringToFormatConverter.INSTANCE));
+				Collections.singletonList(StringToFormatConverter.INSTANCE));
 		conversions.registerConvertersIn(conversionService);
 
 		assertThat(conversionService.canConvert(String.class, Format.class)).isTrue();
@@ -113,7 +114,7 @@ class CustomConversionsUnitTests {
 	void doesNotConsiderTypeSimpleIfOnlyReadConverterIsRegistered() {
 
 		var conversions = new CustomConversions(StoreConversions.NONE,
-				Arrays.asList(StringToFormatConverter.INSTANCE));
+				Collections.singletonList(StringToFormatConverter.INSTANCE));
 		assertThat(conversions.isSimpleType(Format.class)).isFalse();
 	}
 
@@ -121,7 +122,7 @@ class CustomConversionsUnitTests {
 	void discoversConvertersForSubtypesOfMongoTypes() {
 
 		var conversions = new CustomConversions(StoreConversions.NONE,
-				Arrays.asList(StringToIntegerConverter.INSTANCE));
+				Collections.singletonList(StringToIntegerConverter.INSTANCE));
 		assertThat(conversions.hasCustomReadTarget(String.class, Integer.class)).isTrue();
 		assertThat(conversions.hasCustomWriteTarget(String.class, Integer.class)).isTrue();
 	}
@@ -130,7 +131,7 @@ class CustomConversionsUnitTests {
 	void shouldSelectPropertCustomWriteTargetForCglibProxiedType() {
 
 		var conversions = new CustomConversions(StoreConversions.NONE,
-				Arrays.asList(FormatToStringConverter.INSTANCE));
+				Collections.singletonList(FormatToStringConverter.INSTANCE));
 		assertThat(conversions.getCustomWriteTarget(createProxyTypeFor(Format.class))).hasValue(String.class);
 	}
 
@@ -138,7 +139,7 @@ class CustomConversionsUnitTests {
 	void shouldSelectPropertCustomReadTargetForCglibProxiedType() {
 
 		var conversions = new CustomConversions(StoreConversions.NONE,
-				Arrays.asList(CustomTypeToStringConverter.INSTANCE));
+				Collections.singletonList(CustomTypeToStringConverter.INSTANCE));
 		assertThat(conversions.hasCustomReadTarget(createProxyTypeFor(CustomType.class), String.class)).isTrue();
 	}
 
@@ -202,7 +203,7 @@ class CustomConversionsUnitTests {
 				Collections.emptyList());
 		conversions.registerConvertersIn(registry);
 
-		assertThat(conversions.isSimpleType(Point.class));
+		assertThat(conversions.isSimpleType(Point.class)).isTrue(); // Point is a custom simple type
 		verify(registry).addConverter(any(PointToMapConverter.class));
 	}
 
@@ -277,6 +278,44 @@ class CustomConversionsUnitTests {
 
 		new CustomConversions(
 				new ConverterConfiguration(StoreConversions.NONE, Collections.emptyList(), (it) -> true, null));
+	}
+
+	@Test
+	void hasValueConverterReturnsFalseWhenNoPropertyValueConversionsAreConfigured() {
+
+		ConverterConfiguration configuration = new ConverterConfiguration(StoreConversions.NONE,
+				Collections.emptyList(), it -> true, null);
+
+		CustomConversions conversions = new CustomConversions(configuration);
+
+		PersistentProperty<?> mockProperty = mock(PersistentProperty.class);
+
+		assertThat(conversions.getPropertyValueConversions()).isNull();
+		assertThat(conversions.hasValueConverter(mockProperty)).isFalse();
+
+		verifyNoInteractions(mockProperty);
+	}
+
+	@Test
+	public void hasValueConverterReturnsTrueWhenConverterRegisteredForProperty() {
+
+		PersistentProperty<?> mockProperty = mock(PersistentProperty.class);
+
+		PropertyValueConversions mockPropertyValueConversions = mock(PropertyValueConversions.class);
+
+		doReturn(true).when(mockPropertyValueConversions).hasValueConverter(eq(mockProperty));
+
+		ConverterConfiguration configuration = new ConverterConfiguration(StoreConversions.NONE,
+				Collections.emptyList(), it -> true, mockPropertyValueConversions);
+
+		CustomConversions conversions = new CustomConversions(configuration);
+
+		assertThat(conversions.getPropertyValueConversions()).isSameAs(mockPropertyValueConversions);
+		assertThat(conversions.hasValueConverter(mockProperty)).isTrue();
+
+		verify(mockPropertyValueConversions, times(1)).hasValueConverter(eq(mockProperty));
+		verifyNoMoreInteractions(mockPropertyValueConversions);
+		verifyNoInteractions(mockProperty);
 	}
 
 	private static Class<?> createProxyTypeFor(Class<?> type) {
