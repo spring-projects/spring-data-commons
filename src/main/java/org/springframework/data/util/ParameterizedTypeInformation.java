@@ -20,7 +20,6 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -134,7 +133,8 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 				: target.getSuperTypeInformation(rawType);
 
 		List<TypeInformation<?>> myParameters = getTypeArguments();
-		List<TypeInformation<?>> typeParameters = otherTypeInformation == null ? Collections.emptyList()
+		List<TypeInformation<?>> typeParameters = otherTypeInformation == null //
+				? java.util.Collections.emptyList() //
 				: otherTypeInformation.getTypeArguments();
 
 		if (myParameters.size() != typeParameters.size()) {
@@ -158,8 +158,10 @@ class ParameterizedTypeInformation<T> extends ParentTypeAwareTypeInformation<T> 
 	@Nullable
 	protected TypeInformation<?> doGetComponentType() {
 
-		return isMap() && !isMapBaseType()
-				? getRequiredSuperTypeInformation(getMapBaseType()).getComponentType()
+		Class<?> type = getType();
+
+		return isMap() && !CustomCollections.isMapBaseType(type)
+				? getRequiredSuperTypeInformation(CustomCollections.getMapBaseType(type)).getComponentType()
 				: createInfo(this.type.getActualTypeArguments()[0]);
 	}
 

@@ -25,7 +25,12 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -35,7 +40,6 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -49,36 +53,6 @@ import org.springframework.util.ReflectionUtils;
  * @author Alessandro Nistico
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
-
-	protected static final Class<?>[] MAP_TYPES;
-	private static final Class<?>[] COLLECTION_TYPES;
-
-	static {
-
-		ClassLoader classLoader = TypeDiscoverer.class.getClassLoader();
-
-		Set<Class<?>> mapTypes = new HashSet<>();
-		mapTypes.add(Map.class);
-
-		try {
-			mapTypes.add(ClassUtils.forName("io.vavr.collection.Map", classLoader));
-		} catch (ClassNotFoundException o_O) {}
-
-		MAP_TYPES = mapTypes.toArray(new Class[0]);
-
-		Set<Class<?>> collectionTypes = new HashSet<>();
-		collectionTypes.add(Collection.class);
-
-		try {
-			collectionTypes.add(ClassUtils.forName("io.vavr.collection.Seq", classLoader));
-		} catch (ClassNotFoundException o_O) {}
-
-		try {
-			collectionTypes.add(ClassUtils.forName("io.vavr.collection.Set", classLoader));
-		} catch (ClassNotFoundException o_O) {}
-
-		COLLECTION_TYPES = collectionTypes.toArray(new Class[0]);
-	}
 
 	private final Type type;
 	private final Map<TypeVariable<?>, Type> typeVariableMap;
@@ -343,16 +317,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#isMap()
 	 */
 	public boolean isMap() {
-
-		Class<S> type = getType();
-
-		for (Class<?> mapType : MAP_TYPES) {
-			if (mapType.isAssignableFrom(type)) {
-				return true;
-			}
-		}
-
-		return false;
+		return CustomCollections.isMap(getType());
 	}
 
 	/*
@@ -366,7 +331,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	@Nullable
 	protected TypeInformation<?> doGetMapValueType() {
-		return isMap() ? getTypeArgument(getMapBaseType(), 1)
+
+		return isMap() //
+				? getTypeArgument(CustomCollections.getMapBaseType(getType()), 1)
 				: getTypeArguments().stream().skip(1).findFirst().orElse(null);
 	}
 
@@ -381,7 +348,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return rawType.isArray() //
 				|| Iterable.class.equals(rawType) //
 				|| Streamable.class.isAssignableFrom(rawType) //
-				|| isCollection();
+				|| CustomCollections.isCollection(rawType);
 	}
 
 	/*
@@ -403,7 +370,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		if (isMap()) {
-			return getTypeArgument(getMapBaseType(), 0);
+			return getTypeArgument(CustomCollections.getMapBaseType(rawType), 0);
 		}
 
 		if (Iterable.class.isAssignableFrom(rawType)) {
@@ -492,7 +459,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 * @see org.springframework.data.util.TypeInformation#getTypeParameters()
 	 */
 	public List<TypeInformation<?>> getTypeArguments() {
-		return Collections.emptyList();
+		return java.util.Collections.emptyList();
 	}
 
 	/* (non-Javadoc)
@@ -538,14 +505,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 				: null;
 	}
 
-	protected boolean isMapBaseType() {
-		return isOneOf(MAP_TYPES);
-	}
-
-	protected Class<?> getMapBaseType() {
-		return getSuperTypeWithin(MAP_TYPES);
-	}
-
 	protected ResolvableType toResolvableType() {
 		return ResolvableType.forType(type);
 	}
@@ -585,66 +544,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@Override
 	public int hashCode() {
 		return hashCode;
-	}
-
-	/**
-	 * Returns whether the current type is considered a collection.
-	 *
-	 * @return
-	 */
-	private boolean isCollection() {
-
-		Class<S> type = getType();
-
-		for (Class<?> collectionType : COLLECTION_TYPES) {
-			if (collectionType.isAssignableFrom(type)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Returns whether the current's raw type is one of the given ones.
-	 *
-	 * @param candidates must not be {@literal null}.
-	 * @return
-	 */
-	private boolean isOneOf(Class<?>[] candidates) {
-
-		Assert.notNull(candidates, "Candidates must not be null!");
-
-		Class<S> type = getType();
-
-		for (Class<?> candidate : candidates) {
-			if (candidate.equals(type)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Returns the super type of the current raw type from the given candidates.
-	 *
-	 * @param candidates must not be {@literal null}.
-	 * @return
-	 */
-	private Class<?> getSuperTypeWithin(Class<?>[] candidates) {
-
-		Assert.notNull(candidates, "Candidates must not be null!");
-
-		Class<S> type = getType();
-
-		for (Class<?> candidate : candidates) {
-			if (candidate.isAssignableFrom(type)) {
-				return candidate;
-			}
-		}
-
-		throw new IllegalArgumentException(String.format("Type %s not contained in candidates %s!", type, candidates));
 	}
 
 	private boolean isNullableWrapper() {
