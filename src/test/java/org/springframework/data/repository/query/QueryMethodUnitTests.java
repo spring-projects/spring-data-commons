@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
+import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -27,9 +28,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+import org.eclipse.collections.api.list.ImmutableList;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Mono;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -249,6 +249,15 @@ class QueryMethodUnitTests {
 		assertThat(returnedType.getDomainType()).isEqualTo(User.class);
 	}
 
+	@Test // #1817
+	void considersEclipseCollectionCollectionQuery() throws Exception {
+
+		Method method = SampleRepository.class.getMethod("returnsEclipseCollection");
+		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
+
+		assertThat(queryMethod.isCollectionQuery()).isTrue();
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -295,6 +304,8 @@ class QueryMethodUnitTests {
 		Future<Option<User>> returnsFutureOfOption();
 
 		Mono<Slice<User>> reactiveSlice();
+
+		ImmutableList<User> returnsEclipseCollection();
 	}
 
 	class User {

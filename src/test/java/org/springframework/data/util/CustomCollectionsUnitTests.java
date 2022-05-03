@@ -78,6 +78,17 @@ class CustomCollectionsUnitTests {
 				.verify();
 	}
 
+	@TestFactory // #1817
+	Stream<DynamicTest> registersEclipseCollections() {
+
+		return new CustomCollectionTester()
+				.withCollections(ImmutableSet.class, ImmutableList.class, ImmutableBag.class, MutableSet.class,
+						MutableList.class, MutableBag.class)
+				.withMaps(ImmutableMap.class, MutableMap.class)
+				.withMapImplementations(ImmutableUnifiedMap.class, UnifiedMap.class)
+				.verify();
+	}
+
 	@Test // DATACMNS-1065, #1817
 	void conversListToVavr() {
 
@@ -125,12 +136,81 @@ class CustomCollectionsUnitTests {
 		assertThat(result).isInstanceOf(io.vavr.collection.Map.class);
 	}
 
+	@Test // #1817
+	void conversListToEclipse() {
+
+		assertThat(conversionService.canConvert(List.class, RichIterable.class)).isTrue();
+		assertThat(conversionService.canConvert(List.class, ImmutableList.class)).isTrue();
+		assertThat(conversionService.canConvert(List.class, ImmutableSet.class)).isTrue();
+		assertThat(conversionService.canConvert(List.class, ImmutableBag.class)).isTrue();
+		assertThat(conversionService.canConvert(List.class, ImmutableMap.class)).isFalse();
+
+		List<Integer> integers = Arrays.asList(1, 2, 3);
+
+		assertThat(conversionService.convert(integers, RichIterable.class)).isInstanceOf(MutableList.class);
+		assertThat(conversionService.convert(integers, MutableList.class)).isInstanceOf(MutableList.class);
+		assertThat(conversionService.convert(integers, MutableSet.class)).isInstanceOf(MutableSet.class);
+		assertThat(conversionService.convert(integers, MutableBag.class)).isInstanceOf(MutableBag.class);
+		assertThat(conversionService.convert(integers, ImmutableList.class)).isInstanceOf(ImmutableList.class);
+		assertThat(conversionService.convert(integers, ImmutableSet.class)).isInstanceOf(ImmutableSet.class);
+		assertThat(conversionService.convert(integers, ImmutableBag.class)).isInstanceOf(ImmutableBag.class);
+	}
+
+	@Test // #1817
+	void convertsSetToEclipse() {
+
+		assertThat(conversionService.canConvert(Set.class, ImmutableSet.class)).isTrue();
+		assertThat(conversionService.canConvert(Set.class, ImmutableBag.class)).isTrue();
+		assertThat(conversionService.canConvert(Set.class, ImmutableList.class)).isTrue();
+		assertThat(conversionService.canConvert(Set.class, ImmutableMap.class)).isFalse();
+
+		Set<Integer> integers = Collections.singleton(1);
+
+		assertThat(conversionService.convert(integers, RichIterable.class)).isInstanceOf(MutableSet.class);
+		assertThat(conversionService.convert(integers, MutableList.class)).isInstanceOf(MutableList.class);
+		assertThat(conversionService.convert(integers, MutableSet.class)).isInstanceOf(MutableSet.class);
+		assertThat(conversionService.convert(integers, MutableBag.class)).isInstanceOf(MutableBag.class);
+		assertThat(conversionService.convert(integers, ImmutableList.class)).isInstanceOf(ImmutableList.class);
+		assertThat(conversionService.convert(integers, ImmutableSet.class)).isInstanceOf(ImmutableSet.class);
+		assertThat(conversionService.convert(integers, ImmutableBag.class)).isInstanceOf(ImmutableBag.class);
+	}
+
+	@Test // #1817
+	void convertsMapToEclipse() {
+
+		assertThat(conversionService.canConvert(Map.class, RichIterable.class)).isTrue();
+		assertThat(conversionService.canConvert(Map.class, MapIterable.class)).isTrue();
+		assertThat(conversionService.canConvert(Map.class, SetIterable.class)).isFalse();
+		assertThat(conversionService.canConvert(Map.class, ListIterable.class)).isFalse();
+
+		Map<String, String> map = Collections.singletonMap("key", "value");
+
+		assertThat(conversionService.convert(map, RichIterable.class)).isInstanceOf(MutableMap.class);
+		assertThat(conversionService.convert(map, ImmutableMap.class)).isInstanceOf(ImmutableMap.class);
+
+		// Required as MutableMap implements both Iterable and Map and for the standard
+		// Java compiler this creates an ambiguity
+		assertThat((Map<?, ?>) conversionService.convert(map, MutableMap.class)).isInstanceOf(MutableMap.class);
+	}
+
 	@Test // DATACMNS-1065, #1817
 	void unwrapsVavrCollectionsToJavaOnes() {
 
 		assertThat(unwrap(io.vavr.collection.List.of(1, 2, 3))).isInstanceOf(List.class);
 		assertThat(unwrap(io.vavr.collection.LinkedHashSet.of(1, 2, 3))).isInstanceOf(Set.class);
 		assertThat(unwrap(io.vavr.collection.LinkedHashMap.of("key", "value"))).isInstanceOf(Map.class);
+	}
+
+	@Test // #1817
+	void unwrapsEclipseCollectionsToJavaOnes() {
+
+		assertThat(unwrap(Lists.immutable.of(1, 2, 3))).isInstanceOf(List.class);
+		assertThat(unwrap(Sets.immutable.of(1, 2, 3))).isInstanceOf(Set.class);
+		assertThat(unwrap(Maps.immutable.of("key", "value"))).isInstanceOf(Map.class);
+
+		assertThat(unwrap(Lists.mutable.of(1, 2, 3))).isInstanceOf(List.class);
+		assertThat(unwrap(Sets.mutable.of(1, 2, 3))).isInstanceOf(Set.class);
+		assertThat(unwrap(Maps.mutable.of("key", "value"))).isInstanceOf(Map.class);
 	}
 
 	@Test // #1817
@@ -143,7 +223,15 @@ class CustomCollectionsUnitTests {
 		assertThat(CustomCollections.getPaginationReturnTypes()).contains(io.vavr.collection.Seq.class);
 	}
 
-	@Test // DATAJPA-1258. #1817
+	@TestFactory // #1817
+	Stream<DynamicTest> eclipseSupportedPaginationReturnTypes() {
+
+		return DynamicTest.stream(Stream.of(ImmutableList.class, MutableList.class),
+				it -> it.getSimpleName() + " is a pagination return type",
+				it -> assertThat(CustomCollections.getPaginationReturnTypes()).contains(it));
+	}
+
+	@Test // DATAJPA-1258, #1817
 	void convertsJavaListsToVavrSet() {
 		assertThat(conversionService.convert(Collections.singletonList("foo"), io.vavr.collection.Set.class)) //
 				.isInstanceOf(io.vavr.collection.Set.class);

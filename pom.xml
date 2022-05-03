@@ -18,6 +18,7 @@
 	<properties>
 		<javaslang>2.0.6</javaslang>
 		<vavr>0.10.4</vavr>
+		<eclipse-collections>11.0.0</eclipse-collections>
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.23</xmlbeam>
 
@@ -222,6 +223,22 @@
 			<artifactId>vavr</artifactId>
 			<version>${vavr}</version>
 			<optional>true</optional>
+		</dependency>
+		
+		<!-- Eclipse Collections -->
+
+		<dependency>
+			<groupId>org.eclipse.collections</groupId>
+			<artifactId>eclipse-collections-api</artifactId>
+			<version>${eclipse-collections}</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.collections</groupId>
+			<artifactId>eclipse-collections</artifactId>
+			<version>${eclipse-collections}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

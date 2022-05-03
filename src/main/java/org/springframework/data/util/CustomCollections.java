@@ -34,8 +34,24 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.bag.ImmutableBag;
+import org.eclipse.collections.api.bag.MutableBag;
+import org.eclipse.collections.api.factory.Bags;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.ImmutableMap;
+import org.eclipse.collections.api.map.MapIterable;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.ImmutableSet;
+import org.eclipse.collections.api.set.MutableSet;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.converter.ConditionalConverter;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.lang.NonNull;
@@ -482,6 +498,234 @@ public class CustomCollections {
 
 				if (source instanceof Map) {
 					return LinkedHashMap.ofAll((Map<?, ?>) source);
+				}
+
+				return source;
+			}
+		}
+	}
+
+	static class EclipseCollections implements CustomCollectionRegistrar {
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.CustomCollectionRegistrar#isAvailable()
+		 */
+		@Override
+		public boolean isAvailable() {
+			return ClassUtils.isPresent("org.eclipse.collections.api.list.ImmutableList",
+					EclipseCollections.class.getClassLoader());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.CustomCollectionRegistrar#getCollectionTypes()
+		 */
+		@Override
+		public Collection<Class<?>> getCollectionTypes() {
+			return Arrays.asList(ImmutableList.class, ImmutableSet.class, ImmutableBag.class, //
+					MutableList.class, MutableSet.class, MutableBag.class);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.CustomCollectionRegistrar#getMapTypes()
+		 */
+		@Override
+		public Collection<Class<?>> getMapTypes() {
+			return Arrays.asList(ImmutableMap.class, MutableMap.class);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.CustomCollectionRegistrar#getAllowedPaginationReturnTypes()
+		 */
+		@Override
+		public Collection<Class<?>> getAllowedPaginationReturnTypes() {
+			return Arrays.asList(ImmutableList.class, MutableList.class);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.CustomCollectionRegistrar#toJavaNativeCollection()
+		 */
+		@Override
+		public Function<Object, Object> toJavaNativeCollection() {
+
+			return source -> source instanceof RichIterable
+					? EclipseToJavaConverter.INSTANCE.convert(source)
+					: source;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.util.CustomCollectionRegistrar#registerConvertersIn(org.springframework.core.convert.converter.ConverterRegistry)
+		 */
+		@Override
+		public void registerConvertersIn(ConverterRegistry registry) {
+
+			registry.addConverter(EclipseToJavaConverter.INSTANCE);
+			registry.addConverter(JavaToEclipseConverter.INSTANCE);
+		}
+
+		enum EclipseToJavaConverter implements Converter<Object, Object>, ConditionalConverter {
+
+			INSTANCE;
+
+			private static final TypeDescriptor RICH_ITERABLE_DESCRIPTOR = TypeDescriptor.valueOf(RichIterable.class);
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+			 */
+			@Override
+			public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+				return sourceType.isAssignableTo(RICH_ITERABLE_DESCRIPTOR)
+						&& COLLECTIONS_AND_MAP.contains(targetType.getType());
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+			 */
+			@Nullable
+			@Override
+			public Object convert(@Nullable Object source) {
+
+				if (source instanceof ImmutableList) {
+					return ((ImmutableList<?>) source).toList();
+				}
+
+				if (source instanceof ImmutableBag) {
+					return ((ImmutableBag<?>) source).toList();
+				}
+
+				if (source instanceof ImmutableSet) {
+					return ((ImmutableSet<?>) source).toSet();
+				}
+
+				if (source instanceof ImmutableMap) {
+					return ((ImmutableMap<?, ?>) source).toMap();
+				}
+
+				return source;
+			}
+		}
+
+		enum JavaToEclipseConverter implements ConditionalGenericConverter {
+
+			INSTANCE;
+
+			private static final Set<ConvertiblePair> CONVERTIBLE_PAIRS;
+
+			static {
+
+				Set<ConvertiblePair> pairs = new HashSet<>();
+				pairs.add(new ConvertiblePair(Collection.class, RichIterable.class));
+
+				pairs.add(new ConvertiblePair(Set.class, MutableSet.class));
+				pairs.add(new ConvertiblePair(Set.class, MutableList.class));
+				pairs.add(new ConvertiblePair(Set.class, ImmutableSet.class));
+				pairs.add(new ConvertiblePair(Set.class, ImmutableList.class));
+
+				pairs.add(new ConvertiblePair(List.class, MutableList.class));
+				pairs.add(new ConvertiblePair(List.class, ImmutableList.class));
+
+				pairs.add(new ConvertiblePair(Map.class, RichIterable.class));
+				pairs.add(new ConvertiblePair(Map.class, MutableMap.class));
+				pairs.add(new ConvertiblePair(Map.class, ImmutableMap.class));
+
+				CONVERTIBLE_PAIRS = Collections.unmodifiableSet(pairs);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
+			 */
+			@NonNull
+			@Override
+			public Set<ConvertiblePair> getConvertibleTypes() {
+				return CONVERTIBLE_PAIRS;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+			 */
+			@Override
+			public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+				// Prevent collections to be mapped to maps
+				if (sourceType.isCollection() && MapIterable.class.isAssignableFrom(targetType.getType())) {
+					return false;
+				}
+
+				// Prevent maps to be mapped to collections
+				if (sourceType.isMap() //
+						&& !(MapIterable.class.isAssignableFrom(targetType.getType())
+								|| targetType.getType().equals(RichIterable.class))) {
+					return false;
+				}
+
+				return true;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+			 */
+			@Nullable
+			@Override
+			public Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {
+
+				Class<?> targetType = targetDescriptor.getType();
+
+				if (ImmutableList.class.isAssignableFrom(targetType)) {
+					return Lists.immutable.ofAll((Iterable<?>) source);
+				}
+
+				if (ImmutableSet.class.isAssignableFrom(targetType)) {
+					return Sets.immutable.ofAll((Iterable<?>) source);
+				}
+
+				if (ImmutableBag.class.isAssignableFrom(targetType)) {
+					return Bags.immutable.ofAll((Iterable<?>) source);
+				}
+
+				if (ImmutableMap.class.isAssignableFrom(targetType)) {
+					return Maps.immutable.ofAll((Map<?, ?>) source);
+				}
+
+				if (MutableList.class.isAssignableFrom(targetType)) {
+					return Lists.mutable.ofAll((Iterable<?>) source);
+				}
+
+				if (MutableSet.class.isAssignableFrom(targetType)) {
+					return Sets.mutable.ofAll((Iterable<?>) source);
+				}
+
+				if (MutableBag.class.isAssignableFrom(targetType)) {
+					return Bags.mutable.ofAll((Iterable<?>) source);
+				}
+
+				if (MutableMap.class.isAssignableFrom(targetType)) {
+					return Maps.mutable.ofMap((Map<?, ?>) source);
+				}
+
+				// No dedicated type asked for, probably RichIterable.
+				// Try to stay as close to the source value.
+
+				if (source instanceof List) {
+					return Lists.mutable.ofAll((Iterable<?>) source);
+				}
+
+				if (source instanceof Set) {
+					return Sets.mutable.ofAll((Iterable<?>) source);
+				}
+
+				if (source instanceof Map) {
+					return Maps.mutable.ofMap((Map<?, ?>) source);
 				}
 
 				return source;
