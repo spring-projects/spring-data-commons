@@ -1,2 +1,3 @@
 org.springframework.data.web.config.SpringDataJacksonModules=org.springframework.data.web.config.SpringDataJacksonConfiguration
-org.springframework.data.util.CustomCollectionRegistrar=org.springframework.data.util.CustomCollections.VavrCollections
+org.springframework.data.util.CustomCollectionRegistrar=org.springframework.data.util.CustomCollections.VavrCollections, \
+ org.springframework.data.util.CustomCollections.EclipseCollections
