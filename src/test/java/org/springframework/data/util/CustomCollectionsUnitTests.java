@@ -95,7 +95,6 @@ class CustomCollectionsUnitTests {
 		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Traversable.class)).isTrue();
 		assertThat(conversionService.canConvert(List.class, io.vavr.collection.List.class)).isTrue();
 		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Set.class)).isTrue();
-		assertThat(conversionService.canConvert(List.class, io.vavr.collection.Map.class)).isFalse();
 
 		List<Integer> integers = Arrays.asList(1, 2, 3);
 
@@ -111,7 +110,6 @@ class CustomCollectionsUnitTests {
 		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Traversable.class)).isTrue();
 		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Set.class)).isTrue();
 		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.List.class)).isTrue();
-		assertThat(conversionService.canConvert(Set.class, io.vavr.collection.Map.class)).isFalse();
 
 		Set<Integer> integers = Collections.singleton(1);
 
@@ -143,7 +141,6 @@ class CustomCollectionsUnitTests {
 		assertThat(conversionService.canConvert(List.class, ImmutableList.class)).isTrue();
 		assertThat(conversionService.canConvert(List.class, ImmutableSet.class)).isTrue();
 		assertThat(conversionService.canConvert(List.class, ImmutableBag.class)).isTrue();
-		assertThat(conversionService.canConvert(List.class, ImmutableMap.class)).isFalse();
 
 		List<Integer> integers = Arrays.asList(1, 2, 3);
 
@@ -162,7 +159,6 @@ class CustomCollectionsUnitTests {
 		assertThat(conversionService.canConvert(Set.class, ImmutableSet.class)).isTrue();
 		assertThat(conversionService.canConvert(Set.class, ImmutableBag.class)).isTrue();
 		assertThat(conversionService.canConvert(Set.class, ImmutableList.class)).isTrue();
-		assertThat(conversionService.canConvert(Set.class, ImmutableMap.class)).isFalse();
 
 		Set<Integer> integers = Collections.singleton(1);
 
