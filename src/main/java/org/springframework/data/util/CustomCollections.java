@@ -182,9 +182,6 @@ public class CustomCollections {
 
 		Assert.notNull(registry, "ConverterRegistry must not be null!");
 
-		// Remove general collection to anything conversion as that would also convert collections to maps
-		registry.removeConvertible(Collection.class, Object.class);
-
 		REGISTRARS.forEach(it -> it.registerConvertersIn(registry));
 	}
 
@@ -350,6 +347,7 @@ public class CustomCollections {
 		 * @see org.springframework.data.util.CustomCollectionRegistrar#toJavaNativeCollection()
 		 */
 		@Override
+		@SuppressWarnings("null")
 		public Function<Object, Object> toJavaNativeCollection() {
 
 			return source -> source instanceof io.vavr.collection.Traversable
