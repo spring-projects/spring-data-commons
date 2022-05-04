@@ -15,6 +15,7 @@
  */
 package org.springframework.data.util;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -158,7 +159,7 @@ public class MethodInvocationRecorder {
 
 		private InvocationInformation registerInvocation(Method method, Class<?> proxyType) {
 
-			Recorded<?> create = Modifier.isFinal(proxyType.getModifiers()) ? new Unrecorded() : create(proxyType);
+			Recorded<?> create = Modifier.isFinal(proxyType.getModifiers()) ? new Unrecorded(proxyType) : create(proxyType);
 			InvocationInformation information = new InvocationInformation(create, method);
 
 			return this.information = information;
@@ -167,7 +168,7 @@ public class MethodInvocationRecorder {
 
 	private static final class InvocationInformation {
 
-		private static final InvocationInformation NOT_INVOKED = new InvocationInformation(new Unrecorded(), null);
+		private static final InvocationInformation NOT_INVOKED = new InvocationInformation(new Unrecorded(null), null);
 
 		private final Recorded<?> recorded;
 		private final @Nullable Method invokedMethod;
@@ -251,7 +252,7 @@ public class MethodInvocationRecorder {
 
 			int result = ObjectUtils.nullSafeHashCode(recorded);
 
-			result = 31 * result + ObjectUtils.nullSafeHashCode(invokedMethod);
+			result = (31 * result) + ObjectUtils.nullSafeHashCode(invokedMethod);
 
 			return result;
 		}
@@ -386,8 +387,8 @@ public class MethodInvocationRecorder {
 
 	static class Unrecorded extends Recorded<Object> {
 
-		private Unrecorded() {
-			super(null, null);
+		private Unrecorded(@Nullable Class<?> type) {
+			super(type == null ? null : type.isPrimitive() ? getDefaultValue(type) : null, null);
 		}
 
 		/*
@@ -397,6 +398,10 @@ public class MethodInvocationRecorder {
 		@Override
 		public Optional<String> getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
 			return Optional.empty();
+		}
+
+		private static Object getDefaultValue(Class<?> clazz) {
+			return Array.get(Array.newInstance(clazz, 1), 0);
 		}
 	}
 }
