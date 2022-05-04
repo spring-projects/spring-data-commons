@@ -86,6 +86,14 @@ class MethodInvocationRecorderUnitTests {
 		assertThat(recorder.record(Sample::getName).getPropertyPath()).hasValue("name");
 	}
 
+	@Test // #2612
+	void registersLookupForPrimitiveValue() {
+
+		var recorder = MethodInvocationRecorder.forProxyOf(Foo.class);
+
+		assertThat(recorder.record(Foo::getAge).getPropertyPath()).hasValue("age");
+	}
+
 	static final class FinalType {}
 
 	@Getter
@@ -93,6 +101,7 @@ class MethodInvocationRecorderUnitTests {
 		Bar bar;
 		Collection<Bar> bars;
 		String name;
+		int age;
 	}
 
 	@Getter
