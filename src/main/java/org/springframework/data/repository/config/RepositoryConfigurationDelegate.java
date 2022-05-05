@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
@@ -48,11 +49,11 @@ import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.ManagedTypes;
-import org.springframework.data.aot.AotDataComponentsBeanFactoryPostProcessor;
 import org.springframework.data.aot.TypeScanner;
 import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver.ManagedTypesBean;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.util.Lazy;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StopWatch;
@@ -67,6 +68,7 @@ import org.springframework.util.StopWatch;
  * @author Jens Schauder
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author John Blum
  */
 public class RepositoryConfigurationDelegate {
 
@@ -114,7 +116,8 @@ public class RepositoryConfigurationDelegate {
 	 *
 	 * @param environment can be {@literal null}.
 	 * @param resourceLoader can be {@literal null}.
-	 * @return
+	 * @return the given {@link Environment} if not {@literal null}, a configured {@link Environment},
+	 * or a default {@link Environment}.
 	 */
 	private static Environment defaultEnvironment(@Nullable Environment environment,
 			@Nullable ResourceLoader resourceLoader) {
@@ -128,11 +131,13 @@ public class RepositoryConfigurationDelegate {
 	}
 
 	/**
-	 * Registers the found repositories in the given {@link BeanDefinitionRegistry}.
+	 * Registers the discovered repositories in the given {@link BeanDefinitionRegistry}.
 	 *
-	 * @param registry
-	 * @param extension
+	 * @param registry {@link BeanDefinitionRegistry} in which to register the repository bean.
+	 * @param extension {@link RepositoryConfigurationExtension} for the module.
 	 * @return {@link BeanComponentDefinition}s for all repository bean definitions found.
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension
+	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
 	 */
 	public List<BeanComponentDefinition> registerRepositoriesIn(BeanDefinitionRegistry registry,
 			RepositoryConfigurationExtension extension) {
@@ -146,9 +151,6 @@ public class RepositoryConfigurationDelegate {
 
 		RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension,
 				configurationSource, resourceLoader, environment);
-		List<BeanComponentDefinition> definitions = new ArrayList<>();
-
-		StopWatch watch = new StopWatch();
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(LogMessage.format("Scanning for %s repositories in packages %s.", //
@@ -156,19 +158,22 @@ public class RepositoryConfigurationDelegate {
 					configurationSource.getBasePackages().stream().collect(Collectors.joining(", "))));
 		}
 
+		StopWatch watch = new StopWatch();
 		ApplicationStartup startup = getStartup(registry);
 		StartupStep repoScan = startup.start("spring.data.repository.scanning");
+
 		repoScan.tag("dataModule", extension.getModuleName());
 		repoScan.tag("basePackages",
 				() -> configurationSource.getBasePackages().stream().collect(Collectors.joining(", ")));
-
 		watch.start();
 
 		Collection<RepositoryConfiguration<RepositoryConfigurationSource>> configurations = extension
 				.getRepositoryConfigurations(configurationSource, resourceLoader, inMultiStoreMode);
 
+		List<BeanComponentDefinition> definitions = new ArrayList<>();
+
 		Map<String, RepositoryConfiguration<?>> configurationsByRepositoryName = new HashMap<>(configurations.size());
-		Map<String, RepositoryMetadata<?>> metadataMap = new HashMap<>(configurations.size());
+		Map<String, RepositoryMetadata<?>> metadataByRepositoryBeanName = new HashMap<>(configurations.size());
 
 		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : configurations) {
 
@@ -185,6 +190,8 @@ public class RepositoryConfigurationDelegate {
 			}
 
 			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
+
+			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, configuration.getRepositoryInterface());
 			beanDefinition.setResourceDescription(configuration.getResourceDescription());
 
 			String beanName = configurationSource.generateBeanName(beanDefinition);
@@ -194,9 +201,7 @@ public class RepositoryConfigurationDelegate {
 						configuration.getRepositoryInterface(), configuration.getRepositoryFactoryBeanClassName()));
 			}
 
-			metadataMap.put(beanName, builder.buildMetadata(configuration));
-
-			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, configuration.getRepositoryInterface());
+			metadataByRepositoryBeanName.put(beanName, builder.buildMetadata(configuration));
 			registry.registerBeanDefinition(beanName, beanDefinition);
 			definitions.add(new BeanComponentDefinition(beanDefinition, beanName));
 		}
@@ -204,68 +209,62 @@ public class RepositoryConfigurationDelegate {
 		potentiallyLazifyRepositories(configurationsByRepositoryName, registry, configurationSource.getBootstrapMode());
 
 		watch.stop();
-
 		repoScan.tag("repository.count", Integer.toString(configurations.size()));
 		repoScan.end();
 
 		if (logger.isInfoEnabled()) {
-			logger.info(
-					LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interfaces.", //
-							watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName()));
+			logger.info(LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interfaces.",
+					watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName()));
 		}
 
 		// TODO: AOT Processing -> guard this one with a flag so it's not always present
-		registerAotComponents(registry, extension, metadataMap);
+		// TODO: With regard to AOT Processing, perhaps we need to be smart and detect whether "core" AOT components are
+		//  (or rather configuration is) present on the classpath to enable Spring Data AOT component registration.
+		registerAotComponents(registry, extension, metadataByRepositoryBeanName);
 
 		return definitions;
 	}
 
 	private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
-			Map<String, RepositoryMetadata<?>> metadataMap) {
+			Map<String, RepositoryMetadata<?>> metadataByRepositoryBeanName) {
 
-		{ // overall general data bean factory postprocessor - TODO: move this to spring factories!!!
-			if (!registry.isBeanNameInUse(AotDataComponentsBeanFactoryPostProcessor.class.getName())) {
-				registry.registerBeanDefinition(AotDataComponentsBeanFactoryPostProcessor.class.getName(), BeanDefinitionBuilder
-						.rootBeanDefinition(AotDataComponentsBeanFactoryPostProcessor.class).getBeanDefinition());
+		// Managed types lookup if possible
+		if (extension instanceof RepositoryConfigurationExtensionSupport extensionSupport) {
+
+			String targetManagedTypesBeanName = String.format("%s.managed-types", extension.getModulePrefix());
+
+			if (!registry.isBeanNameInUse(targetManagedTypesBeanName)) {
+
+				// this needs to be lazy or we'd resolve types to early maybe
+				Supplier<Set<Class<?>>> args = () -> {
+
+					Set<String> packages = metadataByRepositoryBeanName.values().stream()
+							.flatMap(it -> it.getBasePackages().stream())
+							.collect(Collectors.toSet());
+
+					return new TypeScanner(resourceLoader.getClassLoader())
+							.scanForTypesAnnotatedWith(extensionSupport.getIdentifyingAnnotations())
+							.inPackages(packages);
+				};
+
+				registry.registerBeanDefinition(targetManagedTypesBeanName, BeanDefinitionBuilder
+						.rootBeanDefinition(ManagedTypesBean.class).addConstructorArgValue(args).getBeanDefinition());
 			}
 		}
 
-		{ // Managed types lookup if possible
-			if (extension instanceof RepositoryConfigurationExtensionSupport configExtensionSupport) {
+		// module-specific repository aot processor
+		String repositoryAotProcessorBeanName = String.format("data-%s.repository-aot-processor" /* might be duplicate */,
+				extension.getModulePrefix());
 
-				String targetManagedTypesBeanName = String.format("%s.managed-types", extension.getModulePrefix());
-				if (!registry.isBeanNameInUse(targetManagedTypesBeanName)) {
+		if (!registry.isBeanNameInUse(repositoryAotProcessorBeanName)) {
 
-					// this needs to be lazy or we'd resolve types to early maybe
-					Supplier<Set<Class<?>>> args = new Supplier<Set<Class<?>>>() {
+			BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
+					.rootBeanDefinition(extension.getRepositoryAotProcessor())
+					.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 
-						@Override
-						public Set<Class<?>> get() {
+			repositoryAotProcessor.addPropertyValue("configMap", metadataByRepositoryBeanName);
 
-							Set<String> packages = metadataMap.values().stream().flatMap(it -> it.getBasePackages().stream())
-									.collect(Collectors.toSet());
-							return new TypeScanner(resourceLoader.getClassLoader())
-									.scanForTypesAnnotatedWith(configExtensionSupport.getIdentifyingAnnotations()).inPackages(packages);
-						}
-					};
-
-					registry.registerBeanDefinition(targetManagedTypesBeanName, BeanDefinitionBuilder
-							.rootBeanDefinition(ManagedTypesBean.class).addConstructorArgValue(args).getBeanDefinition());
-				}
-			}
-		}
-
-		{ // module specific repository post processor
-			String aotRepoPostProcessorBeanName = String.format("data-%s.repository-post-processor" /* might be duplicate */,
-					extension.getModulePrefix());
-
-			if (!registry.isBeanNameInUse(aotRepoPostProcessorBeanName)) {
-
-				BeanDefinitionBuilder aotRepoPostProcessor = BeanDefinitionBuilder
-						.rootBeanDefinition(extension.getAotPostProcessor());
-				aotRepoPostProcessor.addPropertyValue("configMap", metadataMap);
-				registry.registerBeanDefinition(aotRepoPostProcessorBeanName, aotRepoPostProcessor.getBeanDefinition());
-			}
+			registry.registerBeanDefinition(repositoryAotProcessorBeanName, repositoryAotProcessor.getBeanDefinition());
 		}
 	}
 
@@ -280,7 +279,7 @@ public class RepositoryConfigurationDelegate {
 	private static void potentiallyLazifyRepositories(Map<String, RepositoryConfiguration<?>> configurations,
 			BeanDefinitionRegistry registry, BootstrapMode mode) {
 
-		if (!DefaultListableBeanFactory.class.isInstance(registry) || mode.equals(BootstrapMode.DEFAULT)) {
+		if (!DefaultListableBeanFactory.class.isInstance(registry) || BootstrapMode.DEFAULT.equals(mode)) {
 			return;
 		}
 
@@ -315,7 +314,8 @@ public class RepositoryConfigurationDelegate {
 	 * than a single type is considered a multi-store configuration scenario which will trigger stricter repository
 	 * scanning.
 	 *
-	 * @return
+	 * @return {@literal true} if multiple data store repository implementations are present in the application.
+	 * This typically means an Spring application is using more than 1 type of data store.
 	 */
 	private boolean multipleStoresDetected() {
 
@@ -360,11 +360,12 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		/**
-		 * Returns a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with the
-		 * given ones.
+		 * Returns a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with
+		 * the given ones.
 		 *
 		 * @param configurations must not be {@literal null}.
-		 * @return
+		 * @return a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with
+		 * the given ones.
 		 */
 		LazyRepositoryInjectionPointResolver withAdditionalConfigurations(
 				Map<String, RepositoryConfiguration<?>> configurations) {
@@ -398,14 +399,14 @@ public class RepositoryConfigurationDelegate {
 
 		static class ManagedTypesBean implements ManagedTypes {
 
-			private Lazy<Set<Class<?>>> types;
+			private final Lazy<Set<Class<?>>> types;
 
 			public ManagedTypesBean(Supplier<Set<Class<?>>> types) {
 				this.types = Lazy.of(types);
 			}
 
 			@Override
-			public void forEach(Consumer<Class<?>> action) {
+			public void forEach(@NonNull Consumer<Class<?>> action) {
 				types.get().forEach(action);
 			}
 		}

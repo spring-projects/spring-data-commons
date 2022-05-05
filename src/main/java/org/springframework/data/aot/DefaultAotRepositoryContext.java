@@ -30,53 +30,23 @@ import org.springframework.data.util.Lazy;
  * Default implementation of {@link AotRepositoryContext}
  *
  * @author Christoph Strobl
+ * @author John Blum
+ * @see AotRepositoryContext
  * @since 3.0
  */
-class DefaultRepositoryContext implements AotRepositoryContext {
+class DefaultAotRepositoryContext implements AotRepositoryContext {
 
 	private AotContext aotContext;
 
-	private String beanName;
-	private java.util.Set<String> basePackages;
+	private final Lazy<Set<MergedAnnotation<Annotation>>> resolvedAnnotations = Lazy.of(this::discoverAnnotations);
+	private final Lazy<Set<Class<?>>> managedTypes = Lazy.of(this::discoverTypes);
+
 	private RepositoryInformation repositoryInformation;
+
+	private Set<String> basePackages;
 	private Set<Class<? extends Annotation>> identifyingAnnotations;
-	private Lazy<Set<MergedAnnotation<Annotation>>> resolvedAnnotations = Lazy.of(this::discoverAnnotations);
-	private Lazy<Set<Class<?>>> managedTypes = Lazy.of(this::discoverTypes);
 
-	@Override
-	public ConfigurableListableBeanFactory getBeanFactory() {
-		return aotContext.getBeanFactory();
-	}
-
-	@Override
-	public String getBeanName() {
-		return beanName;
-	}
-
-	@Override
-	public Set<String> getBasePackages() {
-		return basePackages;
-	}
-
-	@Override
-	public RepositoryInformation getRepositoryInformation() {
-		return repositoryInformation;
-	}
-
-	@Override
-	public Set<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return identifyingAnnotations;
-	}
-
-	@Override
-	public Set<Class<?>> getResolvedTypes() {
-		return managedTypes.get();
-	}
-
-	@Override
-	public Set<MergedAnnotation<Annotation>> getResolvedAnnotations() {
-		return resolvedAnnotations.get();
-	}
+	private String beanName;
 
 	public AotContext getAotContext() {
 		return aotContext;
@@ -86,28 +56,65 @@ class DefaultRepositoryContext implements AotRepositoryContext {
 		this.aotContext = aotContext;
 	}
 
-	public void setBeanName(String beanName) {
-		this.beanName = beanName;
+	@Override
+	public ConfigurableListableBeanFactory getBeanFactory() {
+		return getAotContext().getBeanFactory();
+	}
+
+	@Override
+	public Set<String> getBasePackages() {
+		return basePackages;
 	}
 
 	public void setBasePackages(Set<String> basePackages) {
 		this.basePackages = basePackages;
 	}
 
-	public void setRepositoryInformation(RepositoryInformation repositoryInformation) {
-		this.repositoryInformation = repositoryInformation;
+	@Override
+	public String getBeanName() {
+		return beanName;
+	}
+
+	public void setBeanName(String beanName) {
+		this.beanName = beanName;
+	}
+
+	@Override
+	public Set<Class<? extends Annotation>> getIdentifyingAnnotations() {
+		return identifyingAnnotations;
 	}
 
 	public void setIdentifyingAnnotations(Set<Class<? extends Annotation>> identifyingAnnotations) {
 		this.identifyingAnnotations = identifyingAnnotations;
 	}
 
+	@Override
+	public RepositoryInformation getRepositoryInformation() {
+		return repositoryInformation;
+	}
+
+	public void setRepositoryInformation(RepositoryInformation repositoryInformation) {
+		this.repositoryInformation = repositoryInformation;
+	}
+
+	@Override
+	public Set<MergedAnnotation<Annotation>> getResolvedAnnotations() {
+		return resolvedAnnotations.get();
+	}
+
+	@Override
+	public Set<Class<?>> getResolvedTypes() {
+		return managedTypes.get();
+	}
+
 	protected Set<MergedAnnotation<Annotation>> discoverAnnotations() {
 
-		Set<MergedAnnotation<Annotation>> annotations = new LinkedHashSet<>(getResolvedTypes().stream().flatMap(type -> {
-			return TypeUtils.resolveUsedAnnotations(type).stream();
-		}).collect(Collectors.toSet()));
+		Set<MergedAnnotation<Annotation>> annotations = getResolvedTypes().stream()
+				.flatMap(type -> TypeUtils.resolveUsedAnnotations(type).stream())
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+
 		annotations.addAll(TypeUtils.resolveUsedAnnotations(repositoryInformation.getRepositoryInterface()));
+
 		return annotations;
 	}
 
@@ -123,7 +130,7 @@ class DefaultRepositoryContext implements AotRepositoryContext {
 
 			Scanner typeScanner = aotContext.getTypeScanner().scanForTypesAnnotatedWith(getIdentifyingAnnotations());
 			Set<Class<?>> classes = typeScanner.inPackages(getBasePackages());
-			TypeCollector.inspect(classes).list().stream().forEach(types::add);
+			types.addAll(TypeCollector.inspect(classes).list());
 		}
 
 		// context.get

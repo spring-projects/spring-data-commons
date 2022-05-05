@@ -38,6 +38,7 @@ import org.springframework.util.ObjectUtils;
 /**
  * @author Christoph Strobl
  */
+// TODO: Consider moving to the org.springframework.data.util package.
 public class TypeUtils {
 
 	/**

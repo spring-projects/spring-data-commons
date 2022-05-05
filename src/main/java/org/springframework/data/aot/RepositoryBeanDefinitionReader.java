@@ -31,42 +31,53 @@ import org.springframework.data.util.Lazy;
 import org.springframework.util.ClassUtils;
 
 /**
- * Reader that allows to extract {@link RepositoryInformation} from metadata.
+ * Reader used to extract {@link RepositoryInformation} from {@link RepositoryMetadata}.
  *
  * @author Christoph Strobl
- * @since 3.0
+ * @author John Blum
+ * @see org.springframework.data.repository.config.RepositoryFragmentConfiguration
+ * @see org.springframework.data.repository.config.RepositoryMetadata
+ * @see org.springframework.data.repository.core.RepositoryInformation
+ * @see org.springframework.data.repository.core.support.RepositoryFragment
+ * @since 3.0.0
  */
 class RepositoryBeanDefinitionReader {
 
-	static RepositoryInformation readRepositoryInformation(RepositoryMetadata metadata,
+	static RepositoryInformation readRepositoryInformation(RepositoryMetadata<?> metadata,
 			ConfigurableListableBeanFactory beanFactory) {
 
 		return new AotRepositoryInformation(metadataSupplier(metadata, beanFactory),
 				repositoryBaseClass(metadata, beanFactory), fragments(metadata, beanFactory));
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static Supplier<Collection<RepositoryFragment<?>>> fragments(RepositoryMetadata metadata,
 			ConfigurableListableBeanFactory beanFactory) {
-		return Lazy
-				.of(() -> (Collection<RepositoryFragment<?>>) metadata.getFragmentConfiguration().stream().flatMap(it -> {
-					RepositoryFragmentConfiguration fragmentConfiguration = (RepositoryFragmentConfiguration) it;
 
-					List<RepositoryFragment> fragments = new ArrayList<>(2);
-					if (fragmentConfiguration.getClassName() != null) {
-						fragments.add(RepositoryFragment.implemented(forName(fragmentConfiguration.getClassName(), beanFactory)));
-					}
-					if (fragmentConfiguration.getInterfaceName() != null) {
-						fragments
-								.add(RepositoryFragment.structural(forName(fragmentConfiguration.getInterfaceName(), beanFactory)));
-					}
+		return Lazy.of(() -> (Collection<RepositoryFragment<?>>) metadata.getFragmentConfiguration().stream()
+				.flatMap(it -> {
 
-					return fragments.stream();
-				}).collect(Collectors.toList()));
+						RepositoryFragmentConfiguration fragmentConfiguration = (RepositoryFragmentConfiguration) it;
+						List<RepositoryFragment> fragments = new ArrayList<>(2);
+
+						if (fragmentConfiguration.getClassName() != null) {
+							fragments.add(RepositoryFragment.implemented(forName(fragmentConfiguration.getClassName(), beanFactory)));
+						}
+						if (fragmentConfiguration.getInterfaceName() != null) {
+							fragments.add(RepositoryFragment.structural(forName(fragmentConfiguration.getInterfaceName(), beanFactory)));
+						}
+
+						return fragments.stream();
+				})
+				.collect(Collectors.toList()));
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static Supplier<Class<?>> repositoryBaseClass(RepositoryMetadata metadata,
 			ConfigurableListableBeanFactory beanFactory) {
-		return Lazy.of(() -> (Class<?>) metadata.getRepositoryBaseClassName().map(it -> forName(it.toString(), beanFactory))
+
+		return Lazy.of(() ->
+					(Class<?>) metadata.getRepositoryBaseClassName().map(it -> forName(it.toString(), beanFactory))
 				.orElseGet(() -> {
 					// TODO: retrieve the default without loading the actual RepositoryBeanFactory
 					return Object.class;
@@ -74,15 +85,16 @@ class RepositoryBeanDefinitionReader {
 	}
 
 	static Supplier<org.springframework.data.repository.core.RepositoryMetadata> metadataSupplier(
-			RepositoryMetadata metadata, ConfigurableListableBeanFactory beanFactory) {
+			RepositoryMetadata<?> metadata, ConfigurableListableBeanFactory beanFactory) {
+
 		return Lazy.of(() -> new DefaultRepositoryMetadata(forName(metadata.getRepositoryInterface(), beanFactory)));
 	}
 
 	static Class<?> forName(String name, ConfigurableListableBeanFactory beanFactory) {
 		try {
 			return ClassUtils.forName(name, beanFactory.getBeanClassLoader());
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+		} catch (ClassNotFoundException cause) {
+			throw new TypeNotPresentException(name, cause);
 		}
 	}
 }

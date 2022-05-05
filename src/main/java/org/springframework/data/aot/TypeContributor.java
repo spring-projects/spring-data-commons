@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.springframework.aot.generator.CodeContribution;
+import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.SynthesizedAnnotation;
@@ -39,7 +39,7 @@ class TypeContributor {
 	 * @param type
 	 * @param contribution
 	 */
-	static void contribute(Class<?> type, CodeContribution contribution) {
+	static void contribute(Class<?> type, GenerationContext contribution) {
 		contribute(type, Collections.emptySet(), contribution);
 	}
 
@@ -50,7 +50,8 @@ class TypeContributor {
 	 * @param filter
 	 * @param contribution
 	 */
-	static void contribute(Class<?> type, Predicate<Class<? extends Annotation>> filter, CodeContribution contribution) {
+	@SuppressWarnings("unchecked")
+	static void contribute(Class<?> type, Predicate<Class<? extends Annotation>> filter, GenerationContext contribution) {
 
 		if (type.isPrimitive()) {
 			return;
@@ -58,27 +59,24 @@ class TypeContributor {
 
 		if (type.isAnnotation() && filter.test((Class<? extends Annotation>) type)) {
 
-			contribution.runtimeHints().reflection().registerType(type, hint -> {
-				hint.withMembers(MemberCategory.INTROSPECT_PUBLIC_METHODS);
-			});
+			contribution.getRuntimeHints().reflection().registerType(type, hint ->
+				hint.withMembers(MemberCategory.INTROSPECT_PUBLIC_METHODS));
 
 			// TODO: do we need this if meta annotated with SD annotation?
 			if (type.getPackage().getName().startsWith(DATA_NAMESPACE)) {
-				contribution.runtimeHints().proxies().registerJdkProxy(type, SynthesizedAnnotation.class);
+				contribution.getRuntimeHints().proxies().registerJdkProxy(type, SynthesizedAnnotation.class);
 			}
 			return;
 		}
 
 		if (type.isInterface()) {
-			contribution.runtimeHints().reflection().registerType(type, hint -> {
-				hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
-			});
+			contribution.getRuntimeHints().reflection().registerType(type, hint ->
+				hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS));
 			return;
 		}
 
-		contribution.runtimeHints().reflection().registerType(type, hint -> {
-			hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
-		});
+		contribution.getRuntimeHints().reflection().registerType(type, hint ->
+			hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
 	}
 
 	/**
@@ -89,7 +87,7 @@ class TypeContributor {
 	 * @param annotationNamespaces
 	 * @param contribution
 	 */
-	static void contribute(Class<?> type, Set<String> annotationNamespaces, CodeContribution contribution) {
+	static void contribute(Class<?> type, Set<String> annotationNamespaces, GenerationContext contribution) {
 		contribute(type, it -> isPartOfOrMetaAnnotatedWith(it, annotationNamespaces), contribution);
 	}
 
