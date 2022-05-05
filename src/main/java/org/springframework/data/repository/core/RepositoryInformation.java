@@ -27,19 +27,13 @@ import org.springframework.data.util.Streamable;
 public interface RepositoryInformation extends RepositoryMetadata {
 
 	/**
-	 * Returns the base class to be used to create the proxy backing instance.
+	 * Returns whether the given method is logically a base class method. This also includes methods (re)declared in the
+	 * repository interface that match the signatures of the base implementation.
 	 *
+	 * @param method must not be {@literal null}.
 	 * @return
 	 */
-	Class<?> getRepositoryBaseClass();
-
-	/**
-	 * Returns if the configured repository interface has custom methods, that might have to be delegated to a custom
-	 * implementation. This is used to verify repository configuration.
-	 *
-	 * @return
-	 */
-	boolean hasCustomMethod();
+	boolean isBaseClassMethod(Method method);
 
 	/**
 	 * Returns whether the given method is a custom repository method.
@@ -58,20 +52,18 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	boolean isQueryMethod(Method method);
 
 	/**
-	 * Returns whether the given method is logically a base class method. This also includes methods (re)declared in the
-	 * repository interface that match the signatures of the base implementation.
-	 *
-	 * @param method must not be {@literal null}.
-	 * @return
-	 */
-	boolean isBaseClassMethod(Method method);
-
-	/**
 	 * Returns all methods considered to be query methods.
 	 *
 	 * @return
 	 */
 	Streamable<Method> getQueryMethods();
+
+	/**
+	 * Returns the base class to be used to create the proxy backing instance.
+	 *
+	 * @return
+	 */
+	Class<?> getRepositoryBaseClass();
 
 	/**
 	 * Returns the target class method that is backing the given method. This can be necessary if a repository interface
@@ -83,6 +75,16 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	 * @return
 	 */
 	Method getTargetClassMethod(Method method);
+
+	/**
+	 * Returns if the configured repository interface has custom methods, that might have to be delegated to a custom
+	 * implementation. This is used to verify repository configuration.
+	 *
+	 * @return
+	 */
+	default boolean hasCustomMethod() {
+		return getQueryMethods().stream().anyMatch(this::isCustomMethod);
+	}
 
 	default boolean hasQueryMethods() {
 		return getQueryMethods().iterator().hasNext();

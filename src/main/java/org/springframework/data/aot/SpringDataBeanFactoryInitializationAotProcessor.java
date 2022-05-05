@@ -19,49 +19,67 @@ import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
+import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
-import org.springframework.beans.factory.generator.AotContributingBeanFactoryPostProcessor;
-import org.springframework.beans.factory.generator.BeanFactoryContribution;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.data.ManagedTypes;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
- * {@link AotContributingBeanFactoryPostProcessor} implementation to capture common data infrastructure concerns.
+ * {@link BeanFactoryInitializationAotProcessor} implementation used to encapsulate common data infrastructure concerns
+ * and preprocess the {@link ConfigurableListableBeanFactory} ahead of the AOT compilation in order to prepare
+ * the Spring Data {@link BeanDefinition BeanDefinitions} for AOT processing.
  *
  * @author Christoph Strobl
+ * @author John Blum
+ * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
+ * @see org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution
+ * @see org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor
  * @since 3.0
  */
-public class AotDataComponentsBeanFactoryPostProcessor implements AotContributingBeanFactoryPostProcessor {
+public class SpringDataBeanFactoryInitializationAotProcessor implements BeanFactoryInitializationAotProcessor {
 
-	private static final Log logger = LogFactory.getLog(AotContributingBeanFactoryPostProcessor.class);
+	private static final Log logger = LogFactory.getLog(BeanFactoryInitializationAotProcessor.class);
 
 	@Nullable
 	@Override
-	public BeanFactoryContribution contribute(ConfigurableListableBeanFactory beanFactory) {
-		postProcessManagedTypes(beanFactory);
+	public BeanFactoryInitializationAotContribution processAheadOfTime(
+			@NonNull ConfigurableListableBeanFactory beanFactory) {
+
+		processManagedTypes(beanFactory);
 		return null;
 	}
 
-	private void postProcessManagedTypes(ConfigurableListableBeanFactory beanFactory) {
+	private void processManagedTypes(@NonNull ConfigurableListableBeanFactory beanFactory) {
 
 		if (beanFactory instanceof BeanDefinitionRegistry registry) {
 			for (String beanName : beanFactory.getBeanNamesForType(ManagedTypes.class)) {
 
 				BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-				ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, null, null, null);
+
+				ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues()
+						.getArgumentValue(0, null, null, null);
+
 				if (argumentValue.getValue() instanceof Supplier supplier) {
 
 					if (logger.isDebugEnabled()) {
 						logger.info(String.format("Replacing ManagedType bean definition %s.", beanName));
 					}
 
+					BeanDefinition beanDefinitionReplacement = BeanDefinitionBuilder
+							.rootBeanDefinition(ManagedTypes.class)
+							.setFactoryMethod("of")
+							.addConstructorArgValue(supplier.get())
+							.getBeanDefinition();
+
 					registry.removeBeanDefinition(beanName);
-					registry.registerBeanDefinition(beanName, BeanDefinitionBuilder.rootBeanDefinition(ManagedTypes.class)
-							.setFactoryMethod("of").addConstructorArgValue(supplier.get()).getBeanDefinition());
+					registry.registerBeanDefinition(beanName, beanDefinitionReplacement);
 				}
 			}
 		}

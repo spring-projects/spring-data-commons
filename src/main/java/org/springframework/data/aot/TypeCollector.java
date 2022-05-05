@@ -17,8 +17,8 @@ package org.springframework.data.aot;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,57 +37,64 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.util.Lazy;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Christoph Strobl
  * @author Sebastien Deleuze
+ * @author John Blum
  */
 public class TypeCollector {
 
-	private static Log logger = LogFactory.getLog(TypeCollector.class);
+	private static final Log logger = LogFactory.getLog(TypeCollector.class);
 
 	static final Set<String> EXCLUDED_DOMAINS = new HashSet<>(Arrays.asList("java", "sun.", "jdk.", "reactor.",
 			"kotlinx.", "kotlin.", "org.springframework.core.", "org.springframework.boot."));
 
-	private Predicate<Class<?>> excludedDomainsFilter = (type) -> {
-		return EXCLUDED_DOMAINS.stream().noneMatch(type.getPackageName()::startsWith);
+	private final Predicate<Class<?>> excludedDomainsFilter = type -> {
+		String packageName = type.getPackageName();
+		return EXCLUDED_DOMAINS.stream().noneMatch(packageName::startsWith);
 	};
 
-	Predicate<Class<?>> typeFilter = excludedDomainsFilter;
+	private Predicate<Class<?>> typeFilter = excludedDomainsFilter;
 
-	private final Predicate<Method> methodFilter = (method) -> {
-		if (method.getName().startsWith("$$_hibernate")) {
-			return false;
-		}
-		if (method.getDeclaringClass().getPackageName().startsWith("java.") || method.getDeclaringClass().isEnum()
-				|| EXCLUDED_DOMAINS.stream().anyMatch(it -> method.getDeclaringClass().getPackageName().startsWith(it))) {
-			return false;
-		}
-		if (method.isBridge() || method.isSynthetic()) {
-			return false;
-		}
-		return (!Modifier.isNative(method.getModifiers()) && !Modifier.isPrivate(method.getModifiers())
-				&& !Modifier.isProtected(method.getModifiers())) || !method.getDeclaringClass().equals(Object.class);
+	private final Predicate<Method> methodFilter = method -> {
+
+		Predicate<Method> excludedDomainsPredicate = methodToTest ->
+			excludedDomainsFilter.test(methodToTest.getDeclaringClass());
+
+		Predicate<Method> excludedMethodsPredicate = Predicates.IS_BRIDGE_METHOD
+				.or(Predicates.IS_OBJECT_MEMBER)
+				.or(Predicates.IS_HIBERNATE_MEMBER)
+				.or(Predicates.IS_ENUM_MEMBER)
+				.or(Predicates.IS_NATIVE)
+				.or(Predicates.IS_PRIVATE)
+				.or(Predicates.IS_PROTECTED)
+				.or(Predicates.IS_SYNTHETIC)
+				.or(excludedDomainsPredicate.negate());
+
+		return !excludedMethodsPredicate.test(method);
 	};
 
-	private Predicate<Field> fieldFilter = (field) -> {
-		if (field.isSynthetic() | field.getName().startsWith("$$_hibernate")) {
-			return false;
-		}
-		if (field.getDeclaringClass().getPackageName().startsWith("java.")) {
-			return false;
-		}
-		return true;
+	private Predicate<Field> fieldFilter = field -> {
+
+		Predicate<Member> excludedFieldPredicate = Predicates.IS_HIBERNATE_MEMBER
+			.or(Predicates.IS_SYNTHETIC)
+			.or(Predicates.IS_JAVA);
+
+		return !excludedFieldPredicate.test(field);
 	};
 
-	public TypeCollector filterFields(Predicate<Field> filter) {
+	@NonNull
+	public TypeCollector filterFields(@NonNull Predicate<Field> filter) {
 		this.fieldFilter = filter.and(filter);
 		return this;
 	}
 
-	public TypeCollector filterTypes(Predicate<Class<?>> filter) {
+	@NonNull
+	public TypeCollector filterTypes(@NonNull Predicate<Class<?>> filter) {
 		this.typeFilter = this.typeFilter.and(filter);
 		return this;
 	}
@@ -98,10 +105,12 @@ public class TypeCollector {
 	 * @param types the types to inspect
 	 * @return a type model collector for the type
 	 */
+	@NonNull
 	public static ReachableTypes inspect(Class<?>... types) {
 		return inspect(Arrays.asList(types));
 	}
 
+	@NonNull
 	public static ReachableTypes inspect(Collection<Class<?>> types) {
 		return new ReachableTypes(new TypeCollector(), types);
 	}
@@ -168,8 +177,8 @@ public class TypeCollector {
 					}
 				}
 			});
-		} catch (Exception ex) {
-			logger.warn(ex);
+		} catch (Exception cause) {
+			logger.warn(cause);
 		}
 		return new HashSet<>(discoveredTypes);
 	}
@@ -191,11 +200,11 @@ public class TypeCollector {
 
 	public static class ReachableTypes {
 
-		private TypeCollector typeCollector;
 		private final Iterable<Class<?>> roots;
 		private final Lazy<List<Class<?>>> reachableTypes = Lazy.of(this::collect);
+		private final TypeCollector typeCollector;
 
-		public ReachableTypes(TypeCollector typeCollector, Iterable<Class<?>> roots) {
+		public ReachableTypes(@NonNull TypeCollector typeCollector, @NonNull Iterable<Class<?>> roots) {
 
 			this.typeCollector = typeCollector;
 			this.roots = roots;
@@ -220,24 +229,24 @@ public class TypeCollector {
 
 		private final Map<String, ResolvableType> mutableCache = new LinkedHashMap<>();
 
-		public void add(ResolvableType resolvableType) {
+		public void add(@NonNull ResolvableType resolvableType) {
 			mutableCache.put(resolvableType.toString(), resolvableType);
 		}
 
-		public boolean contains(ResolvableType key) {
-			return mutableCache.containsKey(key.toString());
+		public void clear() {
+			mutableCache.clear();
 		}
 
-		public int size() {
-			return mutableCache.size();
+		public boolean contains(@NonNull ResolvableType key) {
+			return mutableCache.containsKey(key.toString());
 		}
 
 		public boolean isEmpty() {
 			return mutableCache.isEmpty();
 		}
 
-		public void clear() {
-			mutableCache.clear();
+		public int size() {
+			return mutableCache.size();
 		}
 	}
 }

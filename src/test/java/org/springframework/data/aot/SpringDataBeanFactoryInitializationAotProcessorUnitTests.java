@@ -15,15 +15,18 @@
  */
 package org.springframework.data.aot;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -33,25 +36,28 @@ import org.springframework.data.ManagedTypes;
 /**
  * @author Christoph Strobl
  */
-class AotDataComponentsBeanFactoryPostProcessorUnitTests {
+class SpringDataBeanFactoryInitializationAotProcessorUnitTests {
 
 	@Test // Gh-2593
-	void replacesManagedTypesBeanDefinitionUsingSupplierForCtorValue() {
+	@SuppressWarnings("all")
+	void replacesManagedTypesBeanDefinitionUsingSupplierForConstructorValue() {
 
 		Supplier<Iterable<Class<?>>> typesSupplier = mock(Supplier.class);
 
-		Mockito.when(typesSupplier.get()).thenReturn(Collections.singleton(DomainType.class));
+		doReturn(Collections.singleton(DomainType.class)).when(typesSupplier).get();
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+
 		beanFactory.registerBeanDefinition("data.managed-types", BeanDefinitionBuilder
 				.rootBeanDefinition(ManagedTypes.class).addConstructorArgValue(typesSupplier).getBeanDefinition());
 
-		new AotDataComponentsBeanFactoryPostProcessor().contribute(beanFactory);
+		new SpringDataBeanFactoryInitializationAotProcessor().processAheadOfTime(beanFactory);
 
 		assertThat(beanFactory.getBeanNamesForType(ManagedTypes.class)).hasSize(1);
 		verify(typesSupplier).get();
 
 		BeanDefinition beanDefinition = beanFactory.getBeanDefinition("data.managed-types");
+
 		assertThat(beanDefinition.getFactoryMethodName()).isEqualTo("of");
 		assertThat(beanDefinition.hasConstructorArgumentValues()).isTrue();
 		assertThat(beanDefinition.getConstructorArgumentValues().getArgumentValue(0, null).getValue())
@@ -59,21 +65,23 @@ class AotDataComponentsBeanFactoryPostProcessorUnitTests {
 	}
 
 	@Test // Gh-2593
-	void leavesManagedTypesBeanDefinitionNotUsingSupplierForCtorValue() {
+	void leavesManagedTypesBeanDefinitionNotUsingSupplierForConstructorValue() {
 
 		Iterable<Class<?>> types = spy(new LinkedHashSet<>(Collections.singleton(DomainType.class)));
 
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-		AbstractBeanDefinition sourceBD = BeanDefinitionBuilder.rootBeanDefinition(ManagedTypes.class)
-				.addConstructorArgValue(types).getBeanDefinition();
-		beanFactory.registerBeanDefinition("data.managed-types", sourceBD);
 
-		new AotDataComponentsBeanFactoryPostProcessor().contribute(beanFactory);
+		AbstractBeanDefinition sourceBeanDefinition = BeanDefinitionBuilder.rootBeanDefinition(ManagedTypes.class)
+				.addConstructorArgValue(types).getBeanDefinition();
+
+		beanFactory.registerBeanDefinition("data.managed-types", sourceBeanDefinition);
+
+		new SpringDataBeanFactoryInitializationAotProcessor().processAheadOfTime(beanFactory);
 
 		assertThat(beanFactory.getBeanNamesForType(ManagedTypes.class)).hasSize(1);
 		verifyNoInteractions(types);
 
-		assertThat(beanFactory.getBeanDefinition("data.managed-types")).isSameAs(sourceBD);
+		assertThat(beanFactory.getBeanDefinition("data.managed-types")).isSameAs(sourceBeanDefinition);
 	}
 
 	private static class DomainType {}

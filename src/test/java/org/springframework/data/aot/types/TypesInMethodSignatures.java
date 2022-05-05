@@ -18,6 +18,7 @@ package org.springframework.data.aot.types;
 /**
  * @author Christoph Strobl
  */
+@SuppressWarnings("unused")
 public class TypesInMethodSignatures {
 
 	TypesInMethodSignatures(String ctorArg) {
@@ -39,8 +40,6 @@ public class TypesInMethodSignatures {
 	void setSomething(EmptyType2 something) {
 
 	}
-
-
 
 	Object methodArg(Integer methodArg) {
 		return null;
