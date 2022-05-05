@@ -8,6 +8,16 @@
 	<version>3.0.0-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
+	<description>Core Spring concepts underpinning every Spring Data module.</description>
+	<url>https://spring.io/projects/spring-data</url>
+	<scm>
+		<connection>scm:git:https://github.com/spring-projects/spring-data-commons.git</connection>
+		<developerConnection>scm:git:git@github.com:spring-projects/spring-data-commons.git</developerConnection>
+		<url>https://github.com/spring-projects/spring-data-commons</url>    
+	</scm>
+	<issueManagement>
+		<url>https://github.com/spring-projects/spring-data-commons/issues</url>
+	</issueManagement>
 
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
