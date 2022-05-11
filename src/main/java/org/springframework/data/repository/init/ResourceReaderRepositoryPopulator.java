@@ -29,7 +29,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.reactivestreams.Publisher;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.Resource;
@@ -207,7 +206,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 			RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(domainType);
 			Object repository = repositories.getRepositoryFor(domainType).orElseThrow(
-					() -> new IllegalArgumentException(String.format("No repository found for domain type: %s", domainType)));
+					() -> new IllegalStateException(String.format("No repository found for domain type: %s", domainType)));
 
 			if (repositoryInformation.isReactiveRepository()) {
 				return repository instanceof ReactiveCrudRepository ? new ReactiveCrudRepositoryPersister(repository)
@@ -244,13 +243,13 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 		private final Object repository;
 
 		public ReflectivePersister(RepositoryMetadata metadata, Object repository) {
-			this.methods = new DefaultCrudMethods(metadata);
+
+			this.methods = metadata.getCrudMethods();
 			this.repository = repository;
 		}
 
 		@Override
 		public void save(Object object) {
-
 			doPersist(object);
 		}
 

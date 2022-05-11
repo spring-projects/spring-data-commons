@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  * Unit tests for {@link ResourceReaderRepositoryPopulator} using reactive repositories.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @SpringJUnitConfig(classes = ReactiveResourceReaderRepositoryPopulatorUnitTests.ReactiveSampleConfiguration.class)
 class ReactiveResourceReaderRepositoryPopulatorUnitTests {
@@ -64,7 +65,7 @@ class ReactiveResourceReaderRepositoryPopulatorUnitTests {
 		this.resource = mock(Resource.class);
 	}
 
-	@Test
+	@Test // GH-2558
 	void storesSingleUsingReactiveRepositoryObjectCorrectly() throws Exception {
 
 		ReactivePerson reference = new ReactivePerson();
@@ -74,7 +75,7 @@ class ReactiveResourceReaderRepositoryPopulatorUnitTests {
 		verify(personRepository).save(reference);
 	}
 
-	@Test
+	@Test // GH-2558
 	void storesSingleUsingSimpleReactiveRepositoryObjectCorrectly() throws Exception {
 
 		ReactiveContact reference = new ReactiveContact();
@@ -84,7 +85,7 @@ class ReactiveResourceReaderRepositoryPopulatorUnitTests {
 		verify(contactRepository).save(reference);
 	}
 
-	@Test
+	@Test // GH-2558
 	void storesSingleUsingRxJavaRepositoryObjectCorrectly() throws Exception {
 
 		ReactiveUser reference = new ReactiveUser();
@@ -105,7 +106,7 @@ class ReactiveResourceReaderRepositoryPopulatorUnitTests {
 		verify(publisher, times(1)).publishEvent(event);
 	}
 
-	private RepositoryPopulator setUpReferenceAndInitialize(Object reference, ApplicationEventPublisher publish)
+	private RepositoryPopulator setUpReferenceAndInitialize(Object reference, ApplicationEventPublisher publisher)
 			throws Exception {
 
 		when(reader.readFrom(any(), any())).thenReturn(reference);
