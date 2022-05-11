@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
  * Unit tests for {@link ParametersParameterAccessor}.
  *
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 class ParametersParameterAccessorUnitTests {
 
@@ -75,6 +76,19 @@ class ParametersParameterAccessorUnitTests {
 				new Object[] { PageRequest.of(0, 10), "Foo" });
 
 		assertThat(accessor).hasSize(1);
+		assertThat(accessor.getBindableValue(0)).isEqualTo("Foo");
+	}
+
+	@Test // #2626
+	void handlesPageRequestAsAParameterType() throws NoSuchMethodException {
+
+		Method method = Sample.class.getMethod("methodWithPageRequest", PageRequest.class, String.class);
+		DefaultParameters parameters = new DefaultParameters(method);
+
+		ParameterAccessor accessor = new ParametersParameterAccessor(parameters, new Object[] { PageRequest.of(0, 10), "Foo" });
+
+		assertThat(accessor).hasSize(1);
+		assertThat(accessor.getBindableValue(0)).isEqualTo("Foo");
 	}
 
 	interface Sample {
@@ -82,5 +96,7 @@ class ParametersParameterAccessorUnitTests {
 		void method(String string, int integer);
 
 		void method(Pageable pageable, String string);
+
+		void methodWithPageRequest(PageRequest pageRequest, String string);
 	}
 }
