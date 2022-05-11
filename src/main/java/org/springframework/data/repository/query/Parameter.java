@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Jens Schauder
+ * @author Greg Turnquist
  */
 public class Parameter {
 
@@ -79,7 +80,7 @@ public class Parameter {
 		this.parameter = parameter;
 		this.parameterType = potentiallyUnwrapParameterType(parameter);
 		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter);
-		this.name = TYPES.contains(parameter.getParameterType()) ? Lazy.of(Optional.empty()) : Lazy.of(() -> {
+		this.name = isSpecialParameterType(parameter.getParameterType()) ? Lazy.of(Optional.empty()) : Lazy.of(() -> {
 			Param annotation = parameter.getParameterAnnotation(Param.class);
 			return Optional.ofNullable(annotation == null ? parameter.getParameterName() : annotation.value());
 		});
@@ -92,7 +93,7 @@ public class Parameter {
 	 * @see #TYPES
 	 */
 	public boolean isSpecialParameter() {
-		return isDynamicProjectionParameter || TYPES.contains(parameter.getParameterType());
+		return isDynamicProjectionParameter || isSpecialParameterType(parameter.getParameterType());
 	}
 
 	/**
@@ -268,5 +269,16 @@ public class Parameter {
 		}
 
 		return originalType;
+	}
+
+	/**
+	 * Identify is a given {@link Class} is either part of {@code TYPES} or an instanceof of one of its members. For
+	 * example, {@code PageRequest} is an instance of {@code Pageable} (a member of {@code TYPES}).
+	 *
+	 * @param parameterType
+	 * @return boolean
+	 */
+	private static boolean isSpecialParameterType(Class<?> parameterType) {
+		return TYPES.stream().anyMatch(clazz -> clazz.isAssignableFrom(parameterType));
 	}
 }

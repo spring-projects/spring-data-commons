@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -27,6 +26,7 @@ import org.springframework.data.domain.Pageable;
  * Unit tests for {@link ParametersParameterAccessor}.
  *
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 class ParametersParameterAccessorUnitTests {
 
@@ -69,10 +69,22 @@ class ParametersParameterAccessorUnitTests {
 		var method = Sample.class.getMethod("method", Pageable.class, String.class);
 		var parameters = new DefaultParameters(method);
 
-		var accessor = new ParametersParameterAccessor(parameters,
-				new Object[] { PageRequest.of(0, 10), "Foo" });
+		var accessor = new ParametersParameterAccessor(parameters, new Object[] { PageRequest.of(0, 10), "Foo" });
 
 		assertThat(accessor).hasSize(1);
+		assertThat(accessor.getBindableValue(0)).isEqualTo("Foo");
+	}
+
+	@Test
+	void handlesPageRequestAsAParameterType() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("methodWithPageRequest", PageRequest.class, String.class);
+		var parameters = new DefaultParameters(method);
+
+		var accessor = new ParametersParameterAccessor(parameters, new Object[] { PageRequest.of(0, 10), "Foo" });
+
+		assertThat(accessor).hasSize(1);
+		assertThat(accessor.getBindableValue(0)).isEqualTo("Foo");
 	}
 
 	interface Sample {
@@ -80,5 +92,7 @@ class ParametersParameterAccessorUnitTests {
 		void method(String string, int integer);
 
 		void method(Pageable pageable, String string);
+
+		void methodWithPageRequest(PageRequest pageRequest, String string);
 	}
 }
