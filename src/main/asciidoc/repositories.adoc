@@ -989,7 +989,8 @@ class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
 
 NOTE: The most important part of the class name that corresponds to the fragment interface is the `Impl` postfix.
 
-The implementation itself does not depend on Spring Data and can be a regular Spring bean.Consequently, you can use standard dependency injection behavior to inject references to other beans (such as a `JdbcTemplate`), take part in aspects, and so on.
+The implementation itself does not depend on Spring Data and can be a regular Spring bean.
+Consequently, you can use standard dependency injection behavior to inject references to other beans (such as a `JdbcTemplate`), take part in aspects, and so on.
 
 Then you can let your repository interface extend the fragment interface, as follows:
 
@@ -1006,7 +1007,10 @@ interface UserRepository extends CrudRepository<User, Long>, CustomizedUserRepos
 
 Extending the fragment interface with your repository interface combines the CRUD and custom functionality and makes it available to clients.
 
-Spring Data repositories are implemented by using fragments that form a repository composition. Fragments are the base repository, functional aspects (such as <<core.extensions.querydsl,QueryDsl>>), and custom interfaces along with their implementations. Each time you add an interface to your repository interface, you enhance the composition by adding a fragment. The base repository and repository aspect implementations are provided by each Spring Data module.
+Spring Data repositories are implemented by using fragments that form a repository composition.
+Fragments are the base repository, functional aspects (such as <<core.extensions.querydsl,QueryDsl>>), and custom interfaces along with their implementations.
+Each time you add an interface to your repository interface, you enhance the composition by adding a fragment.
+The base repository and repository aspect implementations are provided by each Spring Data module.
 
 The following example shows custom interfaces and their implementations:
 
@@ -1058,7 +1062,11 @@ interface UserRepository extends CrudRepository<User, Long>, HumanRepository, Co
 ----
 ====
 
-Repositories may be composed of multiple custom implementations that are imported in the order of their declaration. Custom implementations have a higher priority than the base implementation and repository aspects. This ordering lets you override base repository and aspect methods and resolves ambiguity if two fragments contribute the same method signature. Repository fragments are not limited to use in a single repository interface. Multiple repositories may use a fragment interface, letting you reuse customizations across different repositories.
+Repositories may be composed of multiple custom implementations that are imported in the order of their declaration.
+Custom implementations have a higher priority than the base implementation and repository aspects.
+This ordering lets you override base repository and aspect methods and resolves ambiguity if two fragments contribute the same method signature.
+Repository fragments are not limited to use in a single repository interface.
+Multiple repositories may use a fragment interface, letting you reuse customizations across different repositories.
 
 The following example shows a repository fragment and its implementation:
 
