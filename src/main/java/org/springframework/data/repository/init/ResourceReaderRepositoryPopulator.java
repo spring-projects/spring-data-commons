@@ -38,7 +38,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.core.support.DefaultCrudMethods;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
@@ -127,7 +126,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 
-		RepositoryPersisterFactory persisterFactory = new RepositoryPersisterFactory(repositories);
+		AggregatePersisterFactory persisterFactory = new AggregatePersisterFactory(repositories);
 
 		for (Resource resource : resources) {
 
@@ -173,43 +172,45 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * @param object must not be {@literal null}.
 	 * @param persisterFactory must not be {@literal null}.
 	 */
-	private void persist(Object object, RepositoryPersisterFactory persisterFactory) {
+	private void persist(Object object, AggregatePersisterFactory persisterFactory) {
 
-		RepositoryPersister persister = persisterFactory.getPersisterFor(object.getClass());
+		AggregatePersister persister = persisterFactory.getPersisterFor(object.getClass());
 		logger.debug(String.format("Persisting %s using repository %s", object, persister));
 		persister.save(object);
 	}
 
 	/**
-	 * Factory to create {@link RepositoryPersister} instances.
+	 * Factory to create {@link AggregatePersister} instances.
 	 */
-	static class RepositoryPersisterFactory {
+	static class AggregatePersisterFactory {
 
-		private final Map<Class<?>, RepositoryPersister> persisters = new HashMap<>();
+		private final Map<Class<?>, AggregatePersister> persisters = new HashMap<>();
 		private final Repositories repositories;
 
-		public RepositoryPersisterFactory(Repositories repositories) {
+		public AggregatePersisterFactory(Repositories repositories) {
 			this.repositories = repositories;
 		}
 
 		/**
-		 * Obtain a {@link RepositoryPersister}.
+		 * Obtain a {@link AggregatePersister}.
 		 *
 		 * @param domainType
 		 * @return
 		 */
-		public RepositoryPersister getPersisterFor(Class<?> domainType) {
+		public AggregatePersister getPersisterFor(Class<?> domainType) {
 			return persisters.computeIfAbsent(domainType, this::createPersisterFor);
 		}
 
-		private RepositoryPersister createPersisterFor(Class<?> domainType) {
+		private AggregatePersister createPersisterFor(Class<?> domainType) {
 
 			RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(domainType);
 			Object repository = repositories.getRepositoryFor(domainType).orElseThrow(
 					() -> new IllegalStateException(String.format("No repository found for domain type: %s", domainType)));
 
 			if (repositoryInformation.isReactiveRepository()) {
-				return repository instanceof ReactiveCrudRepository ? new ReactiveCrudRepositoryPersister(repository)
+
+				return repository instanceof ReactiveCrudRepository //
+						? new ReactiveCrudRepositoryPersister(repository) //
 						: new ReflectiveReactivePersister(repositoryInformation, repository);
 			}
 
@@ -224,7 +225,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	/**
 	 * Interface defining a save method to persist an object within a repository.
 	 */
-	interface RepositoryPersister {
+	interface AggregatePersister {
 
 		/**
 		 * Saves the {@code object} in an appropriate repository.
@@ -235,9 +236,9 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	}
 
 	/**
-	 * Reflection variant of a {@link RepositoryPersister}.
+	 * Reflection variant of a {@link AggregatePersister}.
 	 */
-	private static class ReflectivePersister implements RepositoryPersister {
+	private static class ReflectivePersister implements AggregatePersister {
 
 		private final CrudMethods methods;
 		private final Object repository;
@@ -291,9 +292,9 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	}
 
 	/**
-	 * {@link RepositoryPersister} to operate with {@link CrudRepository}.
+	 * {@link AggregatePersister} to operate with {@link CrudRepository}.
 	 */
-	private static class CrudRepositoryPersister implements RepositoryPersister {
+	private static class CrudRepositoryPersister implements AggregatePersister {
 
 		private final CrudRepository<Object, Object> repository;
 
@@ -316,9 +317,9 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	}
 
 	/**
-	 * {@link RepositoryPersister} to operate with {@link ReactiveCrudRepository}.
+	 * {@link AggregatePersister} to operate with {@link ReactiveCrudRepository}.
 	 */
-	private static class ReactiveCrudRepositoryPersister implements RepositoryPersister {
+	private static class ReactiveCrudRepositoryPersister implements AggregatePersister {
 
 		private final ReactiveCrudRepository<Object, Object> repository;
 

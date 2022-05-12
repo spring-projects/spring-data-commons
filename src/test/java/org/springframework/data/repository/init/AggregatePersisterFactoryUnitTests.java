@@ -16,6 +16,7 @@
 package org.springframework.data.repository.init;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -29,7 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.init.ResourceReaderRepositoryPopulator.RepositoryPersisterFactory;
+import org.springframework.data.repository.init.ResourceReaderRepositoryPopulator.AggregatePersisterFactory;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.support.Repositories;
 
@@ -37,15 +38,15 @@ import org.springframework.data.repository.support.Repositories;
  * @author Christoph Strobl
  */
 @ExtendWith(MockitoExtension.class)
-class RepositoryPersisterFactoryUnitTests {
+class AggregatePersisterFactoryUnitTests {
 
 	@Mock Repositories repositories;
 	@Mock RepositoryInformation repoInfo;
-	RepositoryPersisterFactory factory;
+	AggregatePersisterFactory factory;
 
 	@BeforeEach
 	void beforeEach() {
-		factory = new RepositoryPersisterFactory(repositories);
+		factory = new AggregatePersisterFactory(repositories);
 	}
 
 	@Test // GH-2558
@@ -59,6 +60,7 @@ class RepositoryPersisterFactoryUnitTests {
 	void usesCrudRepoPersisterForNonReactiveCrudRepo() {
 
 		CrudRepository<?, ?> crudRepository = mock(CrudRepository.class);
+
 		when(repositories.getRequiredRepositoryInformation(any())).thenReturn(repoInfo);
 		when(repoInfo.isReactiveRepository()).thenReturn(false);
 		when(repositories.getRepositoryFor(Mockito.any())).thenReturn(Optional.of(crudRepository));
@@ -71,6 +73,7 @@ class RepositoryPersisterFactoryUnitTests {
 	void usesReactiveCrudRepoPersisterForReactiveCrudRepo() {
 
 		ReactiveCrudRepository<?, ?> crudRepository = mock(ReactiveCrudRepository.class);
+
 		when(repositories.getRequiredRepositoryInformation(any())).thenReturn(repoInfo);
 		when(repoInfo.isReactiveRepository()).thenReturn(true);
 		when(repositories.getRepositoryFor(Mockito.any())).thenReturn(Optional.of(crudRepository));
@@ -83,6 +86,7 @@ class RepositoryPersisterFactoryUnitTests {
 	void usesReflectiveRepoPersisterForNonReactiveNonCrudRepo() {
 
 		Repository<?, ?> repository = mock(Repository.class);
+
 		when(repositories.getRequiredRepositoryInformation(any())).thenReturn(repoInfo);
 		when(repoInfo.isReactiveRepository()).thenReturn(false);
 		when(repositories.getRepositoryFor(Mockito.any())).thenReturn(Optional.of(repository));
@@ -95,6 +99,7 @@ class RepositoryPersisterFactoryUnitTests {
 	void usesReactiveReflectiveRepoPersisterForReactiveNonCrudRepo() {
 
 		Repository<?, ?> repository = mock(Repository.class);
+
 		when(repositories.getRequiredRepositoryInformation(any())).thenReturn(repoInfo);
 		when(repoInfo.isReactiveRepository()).thenReturn(true);
 		when(repositories.getRepositoryFor(Mockito.any())).thenReturn(Optional.of(repository));
