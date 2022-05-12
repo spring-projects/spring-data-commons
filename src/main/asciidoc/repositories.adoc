@@ -1009,7 +1009,7 @@ class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
 
 NOTE: The most important part of the class name that corresponds to the fragment interface is the `Impl` postfix.
 
-The implementation itself does not depend on Spring Data and can be a regular Spring bean.Consequently, you can use standard dependency injection behavior to inject references to other beans (such as a `JdbcTemplate`), take part in aspects, and so on.
+The implementation itself does not depend on Spring Data and can be a regular Spring bean. Consequently, you can use standard dependency injection behavior to inject references to other beans (such as a `JdbcTemplate`), take part in aspects, and so on.
 
 Then you can let your repository interface extend the fragment interface, as follows:
 
