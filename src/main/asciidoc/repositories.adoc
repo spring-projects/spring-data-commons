@@ -1568,7 +1568,7 @@ Please refer to the store specific section for more details.
 [[core.web.binding]]
 ==== Web Databinding Support
 
-You can use Spring Data projections (described in <<projections>>) to bind incoming request payloads by using either https://goessner.net/articles/JsonPath/[JSONPath] expressions (requires https://github.com/json-path/JsonPath[Jayway JsonPath] or https://www.w3.org/TR/xpath-31/[XPath] expressions (requires https://xmlbeam.org/[XmlBeam]), as the following example shows:
+You can use Spring Data projections (described in <<projections>>) to bind incoming request payloads by using either https://goessner.net/articles/JsonPath/[JSONPath] expressions (requires https://github.com/json-path/JsonPath[Jayway JsonPath]) or https://www.w3.org/TR/xpath-31/[XPath] expressions (requires https://xmlbeam.org/[XmlBeam]), as the following example shows:
 
 .HTTP payload binding using JSONPath or XPath expressions
 ====
