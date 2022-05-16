@@ -35,10 +35,8 @@ pipeline {
 			}
 			steps {
 				script {
-					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
-						docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
-							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list verify -Dsort -U -B'
-						}
+					docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list verify -Dsort -U -B'
 					}
 				}
 			}
@@ -63,17 +61,15 @@ pipeline {
 
 			steps {
 				script {
-					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
-						docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
-							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
-									'-Dartifactory.server=https://repo.spring.io ' +
-									"-Dartifactory.username=${ARTIFACTORY_USR} " +
-									"-Dartifactory.password=${ARTIFACTORY_PSW} " +
-									"-Dartifactory.staging-repository=libs-snapshot-local " +
-									"-Dartifactory.build-name=spring-data-commons " +
-									"-Dartifactory.build-number=${BUILD_NUMBER} " +
-									'-Dmaven.test.skip=true clean deploy -U -B'
-						}
+					docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
+								'-Dartifactory.server=https://repo.spring.io ' +
+								"-Dartifactory.username=${ARTIFACTORY_USR} " +
+								"-Dartifactory.password=${ARTIFACTORY_PSW} " +
+								"-Dartifactory.staging-repository=libs-snapshot-local " +
+								"-Dartifactory.build-name=spring-data-commons " +
+								"-Dartifactory.build-number=${BUILD_NUMBER} " +
+								'-Dmaven.test.skip=true clean deploy -U -B'
 					}
 				}
 			}
