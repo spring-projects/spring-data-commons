@@ -60,11 +60,6 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	private boolean noMultiStoreSupport = false;
 
-	@Override
-	public String getModuleName() {
-		return StringUtils.capitalize(getModulePrefix());
-	}
-
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader) {
 		return getRepositoryConfigurations(configSource, loader, false);
@@ -109,29 +104,11 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	public void registerBeansForRoot(BeanDefinitionRegistry registry,
 			RepositoryConfigurationSource configurationSource) {}
 
-	/**
-	 * Returns the prefix of the module to be used to create the default location for Spring Data named queries.
-	 *
-	 * @return must not be {@literal null}.
-	 */
-	protected abstract String getModulePrefix();
-
 	public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {}
 
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {}
 
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {}
-
-	/**
-	 * Return the annotations to scan domain types for when evaluating repository interfaces for store assignment. Modules
-	 * should return the annotations that identify a domain type as managed by the store explicitly.
-	 *
-	 * @return
-	 * @since 1.9
-	 */
-	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return Collections.emptySet();
-	}
 
 	/**
 	 * Returns the types that indicate a store match when inspecting repositories for strict matches.

@@ -42,6 +42,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.NativeDetector;
+import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -101,7 +102,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private @Nullable ApplicationEventPublisher applicationEventPublisher;
 	private EvaluationContextProvider evaluationContextProvider = EvaluationContextProvider.DEFAULT;
 
-	private Set<? extends Class<?>> initialEntitySet = new HashSet<>();
+	private ManagedTypes managedTypes = ManagedTypes.empty();
+
 	private boolean strict = false;
 	private SimpleTypeHolder simpleTypeHolder = SimpleTypeHolder.DEFAULT;
 
@@ -143,7 +145,17 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @param initialEntitySet
 	 */
 	public void setInitialEntitySet(Set<? extends Class<?>> initialEntitySet) {
-		this.initialEntitySet = initialEntitySet;
+		setManagedTypes(ManagedTypes.of(initialEntitySet));
+	}
+
+	/**
+	 * Sets the types to populate the context initially.
+	 *
+	 * @param managedTypes must not be {@literal null}. Use {@link ManagedTypes#empty()} instead;
+	 * @since 3.0
+	 */
+	public void setManagedTypes(ManagedTypes managedTypes) {
+		this.managedTypes = managedTypes;
 	}
 
 	/**
@@ -467,7 +479,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * context.
 	 */
 	public void initialize() {
-		initialEntitySet.forEach(this::addPersistentEntity);
+		managedTypes.forEach(this::addPersistentEntity);
 	}
 
 	/**

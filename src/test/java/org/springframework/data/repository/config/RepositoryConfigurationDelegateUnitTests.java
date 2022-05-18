@@ -16,6 +16,13 @@
 package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.Collections;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,9 +31,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -34,16 +41,20 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.metrics.ApplicationStartup;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver;
 import org.springframework.data.repository.sample.AddressRepository;
 import org.springframework.data.repository.sample.AddressRepositoryClient;
 import org.springframework.data.repository.sample.ProductRepository;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link RepositoryConfigurationDelegate}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @soundtrack Richard Spaven - Tribute (Whole Other*)
  */
 @ExtendWith(MockitoExtension.class)
@@ -126,6 +137,85 @@ class RepositoryConfigurationDelegateUnitTests {
 		Mockito.verify(startup).start("spring.data.repository.scanning");
 	}
 
+	@Test // GH-2634
+	void registersManagedTypesBeanIfNotPresent() {
+
+		when(extension.getModulePrefix()).thenReturn("data");
+
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), null);
+
+		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+
+		delegate.registerRepositoriesIn(context, extension);
+
+		assertThat(context.getDefaultListableBeanFactory().getBeanNamesForType(ManagedTypes.class))
+				.contains("data.managed-types");
+	}
+
+	@Test // GH-2634
+	void readsManagedTypesFromPackages() {
+
+		RepositoryConfiguration repoConfig = mock(RepositoryConfiguration.class);
+		ImplementationLookupConfiguration lookupConfig = mock(ImplementationLookupConfiguration.class);
+		when(repoConfig.getBasePackages()).thenReturn(Streamable.of(this.getClass().getPackageName()));
+		when(repoConfig.toLookupConfiguration(any())).thenReturn(lookupConfig);
+		when(lookupConfig.getImplementationBeanName()).thenReturn("don't look up!");
+		when(repoConfig.getRepositoryInterface()).thenReturn(TestConfig.class.getName());
+
+		when(extension.getModulePrefix()).thenReturn("data");
+		when(extension.getDefaultNamedQueryLocation()).thenReturn("here");
+		when(extension.getIdentifyingAnnotations()).thenReturn(Collections.singleton(MyIdentifyingAnnotation.class));
+		when(extension.getRepositoryConfigurations(any(), any(), anyBoolean()))
+				.thenReturn(Collections.singleton(repoConfig));
+
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), null);
+
+		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+
+		delegate.registerRepositoriesIn(context, extension);
+
+		assertThat(context.getDefaultListableBeanFactory().getBeanDefinition("data.managed-types")).satisfies(bd -> {
+
+			Object ctorArg = bd.getConstructorArgumentValues().getArgumentValue(0, Object.class).getValue();
+			assertThat(ctorArg).isInstanceOf(Supplier.class).satisfies(arg -> {
+				assertThat(((Supplier<Set<Class<?>>>) arg).get()).containsExactly(MyDomainType.class);
+			});
+		});
+	}
+
+	@Test // DATACMNS-2634
+	void skipsManagedTypesBeanIfAlreadyPresent() {
+
+		when(extension.getModulePrefix()).thenReturn("data");
+
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), null);
+
+		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+
+		context.getDefaultListableBeanFactory().registerBeanDefinition("data.managed-types",
+				BeanDefinitionBuilder.rootBeanDefinition(ManagedTypes.class).setFactoryMethod("woot").getBeanDefinition());
+		delegate.registerRepositoriesIn(context, extension);
+
+		assertThat(context.getDefaultListableBeanFactory().getBeanDefinition("data.managed-types")).satisfies(bd -> {
+			assertThat(bd.getFactoryMethodName()).isEqualTo("woot");
+		});
+	}
+
 	@EnableRepositories(basePackageClasses = ProductRepository.class)
 	static class TestConfig {}
 
@@ -140,4 +230,14 @@ class RepositoryConfigurationDelegateUnitTests {
 			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AddressRepository.class),
 			bootstrapMode = BootstrapMode.DEFERRED)
 	static class DeferredConfig {}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	private @interface MyIdentifyingAnnotation {
+
+	}
+
+	@MyIdentifyingAnnotation
+	static class MyDomainType {
+
+	}
 }

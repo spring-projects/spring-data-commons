@@ -21,11 +21,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
@@ -44,10 +46,14 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
+import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.util.Lazy;
+import org.springframework.data.util.TypeScanner;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StopWatch;
+import org.springframework.util.StringUtils;
 
 /**
  * Delegate for configuration integration to reuse the general way of detecting repositories. Customization is done by
@@ -203,7 +209,47 @@ public class RepositoryConfigurationDelegate {
 					watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName()));
 		}
 
+		registerManagedTypes(registry, extension,
+				() -> configurations.stream().flatMap(it -> it.getBasePackages().stream()).collect(Collectors.toSet()));
 		return definitions;
+	}
+
+	protected void registerManagedTypes(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
+			Supplier<Set<String>> basePackages) {
+
+		String beanName = String.format("%s.managed-types", extension.getModulePrefix());
+		if (!registry.isBeanNameInUse(beanName)) {
+
+			// this needs to be lazy or we'd resolve types to early maybe
+			Supplier<Set<Class<?>>> args = new Supplier<Set<Class<?>>>() {
+
+				@Override
+				public Set<Class<?>> get() {
+
+					Set<String> packagesToScan = basePackages.get();
+
+					ApplicationStartup startup = getStartup(registry);
+					StartupStep typeScan = startup.start("spring.data.type.scanning");
+					typeScan.tag("dataModule", extension.getModuleName());
+					typeScan.tag("basePackages", () -> StringUtils.collectionToCommaDelimitedString(packagesToScan));
+
+					Set<Class<?>> types = TypeScanner.typeScanner(resourceLoader) //
+							.scanPackages(packagesToScan) //
+							.forTypesAnnotatedWith(extension.getIdentifyingAnnotations()) //
+							.collectAsSet();
+
+					//TODO: should the set include the repo domain types
+
+					typeScan.tag("type.count", Integer.toString(types.size()));
+					typeScan.end();
+
+					return types;
+				}
+			};
+
+			registry.registerBeanDefinition(beanName, BeanDefinitionBuilder.rootBeanDefinition(ManagedTypesBean.class)
+					.addConstructorArgValue(args).getBeanDefinition());
+		}
 	}
 
 	/**
@@ -330,6 +376,32 @@ public class RepositoryConfigurationDelegate {
 			}
 
 			return lazyInit;
+		}
+	}
+
+	/**
+	 * Lazy evalutating ManagedTypes implementation using a supplier to avoid eager class instantiation. This type is
+	 * intended to be rewritten during AOT processing.
+	 * 
+	 * @author Christoph Strobl
+	 * @since 3.0
+	 */
+	static class ManagedTypesBean implements ManagedTypes {
+
+		private Lazy<Set<Class<?>>> types;
+
+		ManagedTypesBean(Supplier<Set<Class<?>>> types) {
+			this.types = Lazy.of(types);
+		}
+
+		@Override
+		public List<Class<?>> toList() {
+			return new ArrayList<>(types.get());
+		}
+
+		@Override
+		public void forEach(Consumer<Class<?>> action) {
+			types.get().forEach(action);
 		}
 	}
 }

@@ -15,18 +15,22 @@
  */
 package org.springframework.data.repository.config;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.StringUtils;
 
 /**
  * SPI to implement store specific extension to the repository bean definition registration process.
  *
  * @see RepositoryConfigurationExtensionSupport
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public interface RepositoryConfigurationExtension {
 
@@ -35,7 +39,17 @@ public interface RepositoryConfigurationExtension {
 	 *
 	 * @return
 	 */
-	String getModuleName();
+	default String getModuleName() {
+		return StringUtils.capitalize(getModulePrefix());
+	}
+
+	/**
+	 * Returns the prefix of the module to be used to create the default location for Spring Data named queries and module
+	 * specific bean definitions.
+	 *
+	 * @return must not be {@literal null}.
+	 */
+	String getModulePrefix();
 
 	/**
 	 * Returns all {@link RepositoryConfiguration}s obtained through the given {@link RepositoryConfigurationSource}.
@@ -64,6 +78,17 @@ public interface RepositoryConfigurationExtension {
 	 * @return
 	 */
 	String getRepositoryFactoryBeanClassName();
+
+	/**
+	 * Return the annotations to scan domain types for when evaluating repository interfaces for store assignment. Modules
+	 * should return the annotations that identify a domain type as managed by the store explicitly.
+	 *
+	 * @return
+	 * @since 3.0
+	 */
+	default Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
+		return Collections.emptySet();
+	}
 
 	/**
 	 * Callback to register additional bean definitions for a {@literal repositories} root node. This usually includes

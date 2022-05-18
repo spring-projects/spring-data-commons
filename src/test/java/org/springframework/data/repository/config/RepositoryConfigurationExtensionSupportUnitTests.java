@@ -100,7 +100,7 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 	static class SampleRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
 		@Override
-		protected String getModulePrefix() {
+		public String getModulePrefix() {
 			return "core";
 		}
 
@@ -110,7 +110,7 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 		}
 
 		@Override
-		protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
+		public Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
 			return Collections.singleton(Primary.class);
 		}
 
@@ -123,7 +123,7 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 	static class NonIdentifyingConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
 		@Override
-		protected String getModulePrefix() {
+		public String getModulePrefix() {
 			return "non-identifying";
 		}
 
