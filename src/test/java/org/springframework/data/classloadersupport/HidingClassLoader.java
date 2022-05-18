@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  *
  * @author Jens Schauder
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class HidingClassLoader extends ShadowingClassLoader {
 
@@ -61,11 +62,21 @@ public class HidingClassLoader extends ShadowingClassLoader {
 				.collect(Collectors.toList()));
 	}
 
+	public static HidingClassLoader hideTypes(Class<?>... types) {
+
+		Assert.notNull(types, "Types must not be null!");
+
+		return new HidingClassLoader(Arrays.stream(types)//
+				.map(it -> it.getName())//
+				.collect(Collectors.toList()));
+	}
+
 	@Override
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
 
-		checkIfHidden(name);
-		return super.loadClass(name);
+		Class<?> loaded = super.loadClass(name);
+		checkIfHidden(loaded);
+		return loaded;
 	}
 
 	@Override
@@ -76,13 +87,14 @@ public class HidingClassLoader extends ShadowingClassLoader {
 	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException {
 
-		checkIfHidden(name);
-		return super.findClass(name);
+		Class<?> loaded = super.findClass(name);
+		checkIfHidden(loaded);
+		return loaded;
 	}
 
-	private void checkIfHidden(String name) throws ClassNotFoundException {
+	private void checkIfHidden(Class<?> type) throws ClassNotFoundException {
 
-		if (hidden.stream().anyMatch(it -> name.startsWith(it))) {
+		if (hidden.stream().anyMatch(it -> type.getName().startsWith(it))) {
 			throw new ClassNotFoundException();
 		}
 	}

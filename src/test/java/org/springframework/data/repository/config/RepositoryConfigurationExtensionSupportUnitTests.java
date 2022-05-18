@@ -100,7 +100,7 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 	static class SampleRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
 		@Override
-		protected String getModulePrefix() {
+		public String getModulePrefix() {
 			return "core";
 		}
 
@@ -123,7 +123,7 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 	static class NonIdentifyingConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
 		@Override
-		protected String getModulePrefix() {
+		public String getModulePrefix() {
 			return "non-identifying";
 		}
 

@@ -60,11 +60,6 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	private boolean noMultiStoreSupport = false;
 
-	@Override
-	public String getModuleName() {
-		return StringUtils.capitalize(getModulePrefix());
-	}
-
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader) {
 		return getRepositoryConfigurations(configSource, loader, false);
@@ -108,13 +103,6 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	public void registerBeansForRoot(BeanDefinitionRegistry registry,
 			RepositoryConfigurationSource configurationSource) {}
-
-	/**
-	 * Returns the prefix of the module to be used to create the default location for Spring Data named queries.
-	 *
-	 * @return must not be {@literal null}.
-	 */
-	protected abstract String getModulePrefix();
 
 	public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {}
 

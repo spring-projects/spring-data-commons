@@ -187,7 +187,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		}
 
 		@Override
-		protected String getModulePrefix() {
+		public String getModulePrefix() {
 			return "commons";
 		}
 	}
