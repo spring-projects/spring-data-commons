@@ -56,7 +56,7 @@ Having trouble with Spring Data? We’d love to help!
 https://docs.spring.io/spring-data/commons/docs/current/reference/html/[reference documentation], and https://docs.spring.io/spring-data/commons/docs/current/api/[Javadocs].
 * Learn the Spring basics – Spring Data builds on Spring Framework, check the https://spring.io[spring.io] web-site for a wealth of reference documentation.
 If you are just starting out with Spring, try one of the https://spring.io/guides[guides].
-* If you are upgrading, check out the https://docs.spring.io/spring-data/commons/docs/current/changelog.txt[changelog] for "`new and noteworthy`" features.
+* If you are upgrading, check out the https://github.com/spring-projects/spring-data-commons/releases[GitHub releases] and the https://github.com/spring-projects/spring-data-commons/wiki#release-notes[release notes] for "`new and noteworthy`" features.
 * Ask a question - we monitor https://stackoverflow.com[stackoverflow.com] for questions tagged with https://stackoverflow.com/tags/spring-data[`spring-data`].
 You can also chat with the community on https://gitter.im/spring-projects/spring-data[Gitter].
 * Report bugs with Spring Data Commons at https://github.com/spring-projects/spring-data-commons/issues[github.com/spring-projects/spring-data-commons/issues].
