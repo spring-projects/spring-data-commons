@@ -30,6 +30,7 @@ import com.querydsl.core.types.Path;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 1.13
  */
 class QuerydslPathInformation implements PathInformation {
@@ -60,7 +61,7 @@ class QuerydslPathInformation implements PathInformation {
 		Path<?> parent = path.getMetadata().getParent();
 
 		if (parent == null) {
-			throw new IllegalStateException(String.format("Could not obtain metadata for parent node of %s!", path));
+			throw new IllegalStateException(String.format("Could not obtain metadata for parent node of %s", path));
 		}
 
 		return parent.getType();

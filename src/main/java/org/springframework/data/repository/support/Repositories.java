@@ -49,6 +49,7 @@ import org.springframework.util.ConcurrentLruCache;
  * @author Thomas Eizinger
  * @author Christoph Strobl
  * @author Alessandro Nistico
+ * @author Johannes Englmeier
  */
 public class Repositories implements Iterable<Class<?>> {
 
@@ -223,7 +224,7 @@ public class Repositories implements Iterable<Class<?>> {
 	public RepositoryInformation getRequiredRepositoryInformation(Class<?> domainType) {
 
 		return getRepositoryInformationFor(domainType).orElseThrow(() -> new IllegalArgumentException(
-				"No required RepositoryInformation found for domain type " + domainType.getName() + "!"));
+				"No required RepositoryInformation found for domain type " + domainType.getName()));
 	}
 
 	/**

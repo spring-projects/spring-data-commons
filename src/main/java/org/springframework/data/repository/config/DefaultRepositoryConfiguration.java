@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSource>
 		implements RepositoryConfiguration<T> {
@@ -55,7 +56,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 
 	public String getBeanId() {
 		return StringUtils.uncapitalize(ClassUtils.getShortName(getRepositoryBaseClassName().orElseThrow(
-				() -> new IllegalStateException("Can't create bean identifier without a repository base class defined!"))));
+				() -> new IllegalStateException("Can't create bean identifier without a repository base class defined"))));
 	}
 
 	public Object getQueryLookupStrategyKey() {

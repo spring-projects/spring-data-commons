@@ -36,6 +36,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implements RevisionMetadata<N> {
 
@@ -135,6 +136,6 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 			return ((Date) timestamp).toInstant();
 		}
 
-		throw new IllegalArgumentException(String.format("Can't convert %s to Instant!", timestamp));
+		throw new IllegalArgumentException(String.format("Can't convert %s to Instant", timestamp));
 	}
 }

@@ -51,6 +51,7 @@ import org.springframework.web.bind.WebDataBinder;
  * A {@link WebDataBinder} that automatically binds all properties exposed in the given type using a {@link Map}.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 1.10
  */
 class MapDataBinder extends WebDataBinder {
@@ -80,7 +81,7 @@ class MapDataBinder extends WebDataBinder {
 		Object target = super.getTarget();
 
 		if (target == null) {
-			throw new IllegalStateException("Target bean should never be null!");
+			throw new IllegalStateException("Target bean should never be null");
 		}
 
 		return (Map<String, Object>) target;
@@ -96,6 +97,7 @@ class MapDataBinder extends WebDataBinder {
 	 * deeply nested Map structures.
 	 *
 	 * @author Oliver Gierke
+	 * @author Johannes Englmeier
 	 * @since 1.10
 	 */
 	private static class MapPropertyAccessor extends AbstractPropertyAccessor {
@@ -160,7 +162,7 @@ class MapDataBinder extends WebDataBinder {
 						leafProperty.getSegment());
 
 				if (descriptor == null) {
-					throw new IllegalStateException(String.format("Couldn't find PropertyDescriptor for %s on %s!",
+					throw new IllegalStateException(String.format("Couldn't find PropertyDescriptor for %s on %s",
 							leafProperty.getSegment(), owningType.getType()));
 				}
 
@@ -186,7 +188,7 @@ class MapDataBinder extends WebDataBinder {
 			try {
 				expression.setValue(context, value);
 			} catch (SpelEvaluationException o_O) {
-				throw new NotWritablePropertyException(type, propertyName, "Could not write property!", o_O);
+				throw new NotWritablePropertyException(type, propertyName, "Could not write property", o_O);
 			}
 		}
 

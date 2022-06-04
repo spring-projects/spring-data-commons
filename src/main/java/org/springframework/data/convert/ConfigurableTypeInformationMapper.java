@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
  * inspecting the {@link PersistentEntity} instances for type alias information.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  */
 public class ConfigurableTypeInformationMapper implements TypeInformationMapper {
 
@@ -58,7 +59,7 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 
 			if (typeToAlias.containsValue(alias)) {
 				throw new IllegalArgumentException(
-						String.format("Detected mapping ambiguity! String %s cannot be mapped to more than one type!", alias));
+						String.format("Detected mapping ambiguity! String %s cannot be mapped to more than one type", alias));
 			}
 
 			this.typeToAlias.put(type, alias);

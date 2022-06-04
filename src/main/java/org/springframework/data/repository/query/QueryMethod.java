@@ -44,6 +44,7 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @author Maciek Opała
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public class QueryMethod {
 
@@ -285,7 +286,7 @@ public class QueryMethod {
 
 			if (componentType == null) {
 				throw new IllegalStateException(
-						String.format("Couldn't find component type for return value of method %s!", method));
+						String.format("Couldn't find component type for return value of method %s", method));
 			}
 
 			return componentType.getType();
@@ -311,6 +312,6 @@ public class QueryMethod {
 			}
 		}
 
-		throw new IllegalStateException("Method has to have one of the following return types! " + types);
+		throw new IllegalStateException("Method has to have one of the following return types" + types);
 	}
 }

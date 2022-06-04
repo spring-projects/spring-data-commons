@@ -39,6 +39,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
@@ -80,7 +81,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 				}
 
 				throw new UnsupportedOperationException(
-						String.format("Cannot set immutable property %s.%s!", property.getOwner().getName(), property.getName()));
+						String.format("Cannot set immutable property %s.%s ", property.getOwner().getName(), property.getName()));
 			}
 
 			if (!property.usePropertyAccess()) {
@@ -98,7 +99,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 			ReflectionUtils.invokeMethod(setter, bean, value);
 
 		} catch (IllegalStateException e) {
-			throw new MappingException("Could not set object property!", e);
+			throw new MappingException("Could not set object property", e);
 		}
 	}
 
@@ -138,7 +139,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 		} catch (IllegalStateException e) {
 			throw new MappingException(
-					String.format("Could not read property %s of %s!", property.toString(), bean.toString()), e);
+					String.format("Could not read property %s of %s", property.toString(), bean.toString()), e);
 		}
 	}
 
@@ -168,7 +169,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 			if (copy == null) {
 				throw new UnsupportedOperationException(String.format(
-						"Kotlin class %s has no .copy(…) method for property %s!", type.getName(), property.getName()));
+						"Kotlin class %s has no .copy(…) method for property %s", type.getName(), property.getName()));
 			}
 
 			return copy.callBy(getCallArgs(copy, property, bean, value));

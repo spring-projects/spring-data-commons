@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 1.8
  */
 public class PersistentEntities implements Streamable<PersistentEntity<?, ? extends PersistentProperty<?>>> {
@@ -117,7 +118,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 		return getPersistentEntity(type).orElseThrow(() -> {
 			return new MappingException(String.format(
-					"Cannot get or create PersistentEntity for type %s! PersistentEntities knows about %s MappingContext instances and therefore cannot identify a single responsible one. Please configure the initialEntitySet through an entity scan using the base package in your configuration to pre initialize contexts.",
+					"Cannot get or create PersistentEntity for type %s! PersistentEntities knows about %s MappingContext instances and therefore cannot identify a single responsible one. Please configure the initialEntitySet through an entity scan using the base package in your configuration to pre initialize contexts",
 					type.getName(), contexts.size()));
 		});
 	}
@@ -253,7 +254,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 			String message = "Found multiple entities identified by " + type.getType() + ": ";
 			message += entities.stream().map(it -> it.getType().getName()).collect(Collectors.joining(", "));
-			message += "! Introduce dedicated unique identifier types or explicitly define the target type in @Reference!";
+			message += "! Introduce dedicated unique identifier types or explicitly define the target type in @Reference";
 
 			throw new IllegalStateException(message);
 		}

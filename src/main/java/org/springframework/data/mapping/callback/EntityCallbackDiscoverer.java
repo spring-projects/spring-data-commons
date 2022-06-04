@@ -44,6 +44,7 @@ import org.springframework.util.comparator.Comparators;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Myeonghyeon Lee
+ * @author Johannes Englmeier
  * @since 2.2
  */
 class EntityCallbackDiscoverer {
@@ -322,7 +323,7 @@ class EntityCallbackDiscoverer {
 		}
 
 		throw new IllegalStateException(
-				String.format("%s does not define a callback method accepting %s and %s additional arguments.",
+				String.format("%s does not define a callback method accepting %s and %s additional arguments",
 						ClassUtils.getShortName(callbackType), ClassUtils.getShortName(entityType), args.length));
 	}
 

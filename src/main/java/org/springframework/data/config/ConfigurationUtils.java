@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
  * implementation.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 2.0
  * @soundtrack Richard Spaven - The Self (feat. Jordan Rakei)
  */
@@ -44,7 +45,7 @@ public interface ConfigurationUtils {
 		ResourceLoader resourceLoader = context.getResourceLoader();
 
 		if (resourceLoader == null) {
-			throw new IllegalArgumentException("Could not obtain ResourceLoader from XmlReaderContext!");
+			throw new IllegalArgumentException("Could not obtain ResourceLoader from XmlReaderContext");
 		}
 
 		return resourceLoader;
@@ -75,7 +76,7 @@ public interface ConfigurationUtils {
 		ClassLoader classLoader = resourceLoader.getClassLoader();
 
 		if (classLoader == null) {
-			throw new IllegalArgumentException("Could not obtain ClassLoader from ResourceLoader!");
+			throw new IllegalArgumentException("Could not obtain ClassLoader from ResourceLoader");
 		}
 
 		return classLoader;
@@ -96,7 +97,7 @@ public interface ConfigurationUtils {
 
 		if (result == null) {
 			throw new IllegalArgumentException(
-					String.format("Could not obtain required bean class name from BeanDefinition!", beanDefinition));
+					String.format("Could not obtain required bean class name from BeanDefinition", beanDefinition));
 		}
 
 		return result;

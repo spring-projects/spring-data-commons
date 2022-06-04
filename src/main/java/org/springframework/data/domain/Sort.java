@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public class Sort implements Streamable<org.springframework.data.domain.Sort.Order>, Serializable {
 
@@ -64,7 +65,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	private Sort(Direction direction, List<String> properties) {
 
 		if (properties == null || properties.isEmpty()) {
-			throw new IllegalArgumentException("You have to provide at least one property to sort by!");
+			throw new IllegalArgumentException("You have to provide at least one property to sort by");
 		}
 
 		this.orders = properties.stream() //
@@ -304,7 +305,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 				return Direction.valueOf(value.toUpperCase(Locale.US));
 			} catch (Exception e) {
 				throw new IllegalArgumentException(String.format(
-						"Invalid value '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive).", value), e);
+						"Invalid value '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive)", value), e);
 			}
 		}
 
@@ -436,7 +437,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		private Order(@Nullable Direction direction, String property, boolean ignoreCase, NullHandling nullHandling) {
 
 			if (!StringUtils.hasText(property)) {
-				throw new IllegalArgumentException("Property must not be null or empty!");
+				throw new IllegalArgumentException("Property must not be null or empty");
 			}
 
 			this.direction = direction == null ? DEFAULT_DIRECTION : direction;

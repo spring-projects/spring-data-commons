@@ -42,6 +42,7 @@ import org.xmlbeam.config.DefaultXMLFactoriesConfig;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  * @see <a href="https://www.xmlbeam.org">https://www.xmlbeam.org</a>
  * @soundtrack Dr. Kobayashi Maru & The Mothership Connection - Anthem (EPisode One)
  */
@@ -121,7 +122,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 			Throwable cause = o_O.getCause();
 
 			if (SAXParseException.class.isInstance(cause)) {
-				throw new HttpMessageNotReadableException("Cannot read input message!", cause, inputMessage);
+				throw new HttpMessageNotReadableException("Cannot read input message", cause, inputMessage);
 			} else {
 				throw o_O;
 			}

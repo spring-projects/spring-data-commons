@@ -59,6 +59,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  * @soundtrack Masterboy - Anybody (Fj Gauder Mix)
  * @since 2.0
  * @see RepositoryFragment
@@ -317,7 +318,7 @@ public class RepositoryComposition {
 		fragments.stream().forEach(it -> it.getImplementation() //
 				.orElseThrow(() -> {
 					Class<?> repositoryInterface = metadata != null ? metadata.getRepositoryInterface() : Object.class;
-					return new FragmentNotImplementedException(String.format("Fragment %s used in %s has no implementation.",
+					return new FragmentNotImplementedException(String.format("Fragment %s used in %s has no implementation",
 							ClassUtils.getQualifiedName(it.getSignatureContributor()),
 							ClassUtils.getQualifiedName(repositoryInterface)), repositoryInterface, it);
 				}));

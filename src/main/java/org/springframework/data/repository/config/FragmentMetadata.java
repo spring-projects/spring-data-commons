@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 2.1
  */
 public class FragmentMetadata {
@@ -76,7 +77,7 @@ public class FragmentMetadata {
 		try {
 			return factory.getMetadataReader(className).getAnnotationMetadata();
 		} catch (IOException e) {
-			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
+			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata", className), e);
 		}
 	}
 
@@ -85,7 +86,7 @@ public class FragmentMetadata {
 		try {
 			return factory.getMetadataReader(className).getClassMetadata();
 		} catch (IOException e) {
-			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata.", className), e);
+			throw new BeanDefinitionStoreException(String.format("Cannot parse %s metadata", className), e);
 		}
 	}
 }

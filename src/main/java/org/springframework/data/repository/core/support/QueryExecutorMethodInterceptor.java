@@ -47,6 +47,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author John Blum
+ * @author Johannes Englmeier
  */
 class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
@@ -79,7 +80,7 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 			throw new IllegalStateException("You have defined query methods in the repository"
 					+ " but do not have any query lookup strategy defined."
-					+ " The infrastructure apparently does not support query methods!");
+					+ " The infrastructure apparently does not support query methods");
 		}
 
 		this.queries = queryLookupStrategy //

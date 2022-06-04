@@ -45,6 +45,7 @@ import org.springframework.util.ObjectUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  * @since 1.10
  */
 class ProjectingMethodInterceptor implements MethodInterceptor {
@@ -108,7 +109,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 			return getProjection(result, targetType);
 		} else {
 			throw new UnsupportedOperationException(
-					String.format("Cannot project %s to %s. Target type is not an interface and no matching Converter found!",
+					String.format("Cannot project %s to %s. Target type is not an interface and no matching Converter found",
 							ClassUtils.getDescriptiveType(result), ClassUtils.getQualifiedName(targetType)));
 		}
 	}

@@ -22,6 +22,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @see TargetAwareIdentifierAccessor
  */
 public interface IdentifierAccessor {
@@ -51,6 +52,6 @@ public interface IdentifierAccessor {
 			return identifier;
 		}
 
-		throw new IllegalStateException("Could not obtain identifier!");
+		throw new IllegalStateException("Could not obtain identifier");
 	}
 }

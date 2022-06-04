@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @see org.springframework.data.repository.core.support.PersistentEntityInformation
  */
 public interface EntityInformation<T, ID> extends EntityMetadata<T> {
@@ -62,7 +63,7 @@ public interface EntityInformation<T, ID> extends EntityMetadata<T> {
 			return id;
 		}
 
-		throw new IllegalArgumentException(String.format("Could not obtain required identifier from entity %s!", entity));
+		throw new IllegalArgumentException(String.format("Could not obtain required identifier from entity %s", entity));
 	}
 
 	/**

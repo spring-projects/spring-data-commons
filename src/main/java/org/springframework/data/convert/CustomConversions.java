@@ -54,6 +54,7 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Xeno Amess
+ * @author Johannes Englmeier
  * @since 2.0
  */
 public class CustomConversions {

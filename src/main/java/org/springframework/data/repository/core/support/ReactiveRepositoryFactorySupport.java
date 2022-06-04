@@ -34,6 +34,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 2.0
  */
 public abstract class ReactiveRepositoryFactorySupport extends RepositoryFactorySupport {
@@ -44,7 +45,7 @@ public abstract class ReactiveRepositoryFactorySupport extends RepositoryFactory
 		if (!ReactiveWrappers.isAvailable()) {
 
 			throw new InvalidDataAccessApiUsageException(
-					String.format("Cannot implement repository %s without reactive library support.",
+					String.format("Cannot implement repository %s without reactive library support",
 							repositoryMetadata.getRepositoryInterface().getName()));
 		}
 
@@ -94,7 +95,7 @@ public abstract class ReactiveRepositoryFactorySupport extends RepositoryFactory
 					&& !ReactiveWrapperConverters.supports(method.getReturnType())) {
 
 				throw new InvalidDataAccessApiUsageException(
-						String.format("No reactive type converter found for type %s used in %s, method %s.",
+						String.format("No reactive type converter found for type %s used in %s, method %s",
 								method.getReturnType().getName(), method.getDeclaringClass().getName(), method));
 			}
 
@@ -104,7 +105,7 @@ public abstract class ReactiveRepositoryFactorySupport extends RepositoryFactory
 					.filter(parameterType -> !ReactiveWrapperConverters.supports(parameterType)) //
 					.forEach(parameterType -> {
 						throw new InvalidDataAccessApiUsageException(
-								String.format("No reactive type converter found for type %s used in %s, method %s.",
+								String.format("No reactive type converter found for type %s used in %s, method %s",
 										parameterType.getName(), method.getDeclaringClass().getName(), method));
 					});
 		}

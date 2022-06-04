@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public abstract class AbstractEntityInformation<T, ID> implements EntityInformation<T, ID> {
 
@@ -51,7 +52,7 @@ public abstract class AbstractEntityInformation<T, ID> implements EntityInformat
 			return ((Number) id).longValue() == 0L;
 		}
 
-		throw new IllegalArgumentException(String.format("Unsupported primitive id type %s!", idType));
+		throw new IllegalArgumentException(String.format("Unsupported primitive id type %s", idType));
 	}
 
 	public Class<T> getJavaType() {

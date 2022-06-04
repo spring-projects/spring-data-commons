@@ -40,6 +40,7 @@ import org.springframework.util.ObjectUtils;
  * Supports Kotlin nullability markers and JSR-305 Non-null annotations.
  *
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 2.0
  * @see org.springframework.lang.NonNull
  * @see ReflectionUtils#isNullable(MethodParameter)
@@ -86,7 +87,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 			if (arguments.length < i || arguments[i] == null) {
 				throw new IllegalArgumentException(
-						String.format("Parameter %s in %s.%s must not be null!", nullability.getMethodParameterName(i),
+						String.format("Parameter %s in %s.%s must not be null", nullability.getMethodParameterName(i),
 								ClassUtils.getShortName(method.getDeclaringClass()), method.getName()));
 			}
 		}
@@ -94,7 +95,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		Object result = invocation.proceed();
 
 		if (result == null && !nullability.isNullableReturn()) {
-			throw new EmptyResultDataAccessException("Result must not be null!", 1);
+			throw new EmptyResultDataAccessException("Result must not be null", 1);
 		}
 
 		return result;

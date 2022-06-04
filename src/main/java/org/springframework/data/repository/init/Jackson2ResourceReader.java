@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 1.6
  */
 public class Jackson2ResourceReader implements ResourceReader {
@@ -112,7 +113,7 @@ public class Jackson2ResourceReader implements ResourceReader {
 		JsonNode typeNode = node.findValue(typeKey);
 
 		if (typeNode == null) {
-			throw new IllegalArgumentException(String.format("Could not find type for type key '%s'!", typeKey));
+			throw new IllegalArgumentException(String.format("Could not find type for type key '%s'", typeKey));
 		}
 
 		String typeName = typeNode.asText();

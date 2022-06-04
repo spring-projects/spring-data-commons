@@ -28,6 +28,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @soundtrack Scary Pockets - Crash Into Me (Dave Matthews Band Cover feat. Julia Nunes) -
  *             https://www.youtube.com/watch?v=syGlBNVGEqU
  */
@@ -60,7 +61,7 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 			if (!ClassUtils.isAssignable(Number.class, type)) {
 
 				throw new IllegalArgumentException(String
-						.format("Only numeric primitives are supported as identifier / version field types! Got: %s.", valueType));
+						.format("Only numeric primitives are supported as identifier / version field types! Got: %s", valueType));
 			}
 		}
 	}
@@ -104,6 +105,6 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 		}
 
 		throw new IllegalArgumentException(
-				String.format("Could not determine whether %s is new! Unsupported identifier or version property!", entity));
+				String.format("Could not determine whether %s is new! Unsupported identifier or version property", entity));
 	}
 }

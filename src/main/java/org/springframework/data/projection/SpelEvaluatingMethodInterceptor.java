@@ -47,6 +47,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Xeno Amess
+ * @author Johannes Englmeier
  * @see 1.10
  */
 class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
@@ -116,7 +117,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 			}
 
 			if (!StringUtils.hasText(value.value())) {
-				throw new IllegalStateException(String.format("@Value annotation on %s contains empty expression!", method));
+				throw new IllegalStateException(String.format("@Value annotation on %s contains empty expression", method));
 			}
 
 			expressions.put(method.hashCode(), parser.parseExpression(value.value(), PARSER_CONTEXT));

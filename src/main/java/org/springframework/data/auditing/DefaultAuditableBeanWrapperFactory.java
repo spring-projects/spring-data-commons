@@ -38,6 +38,7 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author Pavel Horal
+ * @author Johannes Englmeier
  * @since 1.5
  */
 class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory {
@@ -187,7 +188,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 				if (!conversionService.canConvert(value.getClass(), Date.class)) {
 					throw new IllegalArgumentException(
-							String.format("Cannot convert date type for member %s! From %s to java.util.Date to %s.", source,
+							String.format("Cannot convert date type for member %s! From %s to java.util.Date to %s", source,
 									value.getClass(), targetType));
 				}
 
@@ -227,7 +228,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	}
 
 	private static IllegalArgumentException rejectUnsupportedType(Object source) {
-		return new IllegalArgumentException(String.format("Invalid date type %s for member %s! Supported types are %s.",
+		return new IllegalArgumentException(String.format("Invalid date type %s for member %s! Supported types are %s",
 				source.getClass(), source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
 	}
 

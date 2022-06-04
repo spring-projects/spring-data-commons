@@ -63,6 +63,7 @@ import org.springframework.util.StringUtils;
  * @author Christoph Strobl
  * @author Ariel Carrera
  * @author Xeno Amess
+ * @author Johannes Englmeier
  */
 public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapable {
 
@@ -108,7 +109,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		this.repositoryType = repositoryType;
 		this.beanManager = beanManager;
 		this.context = new CdiRepositoryContext(getClass().getClassLoader(), detector
-				.orElseThrow(() -> new IllegalArgumentException("CustomRepositoryImplementationDetector must be present!")));
+				.orElseThrow(() -> new IllegalArgumentException("CustomRepositoryImplementationDetector must be present")));
 		this.passivationId = createPassivationId(qualifiers, repositoryType);
 	}
 
@@ -356,7 +357,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return Arrays.stream(repositoryType.getInterfaces()) //
 				.filter(it -> it.getName().equals(interfaceName)) //
 				.findFirst() //
-				.orElseThrow(() -> new IllegalArgumentException(String.format("Did not find type %s in %s!", interfaceName,
+				.orElseThrow(() -> new IllegalArgumentException(String.format("Did not find type %s in %s", interfaceName,
 						Arrays.asList(repositoryType.getInterfaces()))));
 	}
 

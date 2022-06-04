@@ -30,6 +30,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public class AnnotationDetectionMethodCallback<A extends Annotation> implements MethodCallback {
 
@@ -83,7 +84,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 		Method method = this.foundMethod;
 
 		if (method == null) {
-			throw new IllegalStateException(String.format("No method with annotation %s found!", annotationType));
+			throw new IllegalStateException(String.format("No method with annotation %s found", annotationType));
 		}
 
 		return method;

@@ -45,6 +45,7 @@ import com.querydsl.core.types.Predicate;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Matías Hermosilla
+ * @author Johannes Englmeier
  * @since 2.5
  */
 public abstract class QuerydslPredicateArgumentResolverSupport {
@@ -83,7 +84,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
 
 		if (annotations.isPresent(QuerydslPredicate.class)) {
-			throw new IllegalArgumentException(String.format("Parameter at position %s must be of type Predicate but was %s.",
+			throw new IllegalArgumentException(String.format("Parameter at position %s must be of type Predicate but was %s",
 					parameter.getParameterIndex(), parameter.getParameterType()));
 		}
 
@@ -143,7 +144,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		Method method = parameter.getMethod();
 
 		if (method == null) {
-			throw new IllegalArgumentException("Method parameter is not backed by a method!");
+			throw new IllegalArgumentException("Method parameter is not backed by a method");
 		}
 
 		return detectDomainType(ClassTypeInformation.fromReturnTypeOf(method));
@@ -158,7 +159,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		TypeInformation<?> actualType = source.getActualType();
 
 		if (actualType == null) {
-			throw new IllegalArgumentException(String.format("Could not determine domain type from %s!", source));
+			throw new IllegalArgumentException(String.format("Could not determine domain type from %s", source));
 		}
 
 		if (source != actualType) {

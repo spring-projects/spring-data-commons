@@ -31,6 +31,7 @@ import org.w3c.dom.Element;
  * {@link BeanDefinitionParser} to parse repository initializers.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  */
 public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
@@ -46,7 +47,7 @@ public class ResourceReaderRepositoryPopulatorBeanDefinitionParser extends Abstr
 			return Jackson2RepositoryPopulatorFactoryBean.class.getName();
 		}
 
-		throw new IllegalStateException("Unsupported populator type " + name + "!");
+		throw new IllegalStateException("Unsupported populator type " + name);
 	}
 
 	@Override

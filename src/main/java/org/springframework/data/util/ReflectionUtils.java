@@ -43,6 +43,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 1.5
  */
 public final class ReflectionUtils {
@@ -223,7 +224,7 @@ public final class ReflectionUtils {
 		Field result = org.springframework.util.ReflectionUtils.findField(type, name);
 
 		if (result == null) {
-			throw new IllegalArgumentException(String.format("Unable to find field %s on %s!", name, type));
+			throw new IllegalArgumentException(String.format("Unable to find field %s on %s", name, type));
 		}
 
 		return result;
@@ -440,7 +441,7 @@ public final class ReflectionUtils {
 			return Boolean.FALSE;
 		}
 
-		throw new IllegalArgumentException(String.format("Primitive type %s not supported!", type));
+		throw new IllegalArgumentException(String.format("Primitive type %s not supported", type));
 	}
 
 	/**

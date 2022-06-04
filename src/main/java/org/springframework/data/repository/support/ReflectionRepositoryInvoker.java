@@ -43,6 +43,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  * @author Alessandro Nistico
+ * @author Johannes Englmeier
  * @since 1.10
  */
 class ReflectionRepositoryInvoker implements RepositoryInvoker {
@@ -101,7 +102,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	public <T> T invokeSave(T object) {
 
 		Method method = methods.getSaveMethod()//
-				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a save-method declared!"));
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a save-method declared"));
 
 		return invokeForNonNullResult(method, object);
 	}
@@ -115,7 +116,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	public <T> Optional<T> invokeFindById(Object id) {
 
 		Method method = methods.getFindOneMethod()//
-				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-one-method declared!"));
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-one-method declared"));
 
 		return returnAsOptional(invoke(method, convertId(id)));
 	}
@@ -131,7 +132,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		Assert.notNull(id, "Identifier must not be null!");
 
 		Method method = methods.getDeleteMethod()
-				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a delete-method declared!"));
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a delete-method declared"));
 
 		if (method.getName().endsWith("ById")) {
 			invoke(method, convertId(id));
@@ -224,7 +225,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		T result = invoke(method, arguments);
 
 		if (result == null) {
-			throw new IllegalStateException(String.format("Invocation of method %s(%s) on %s unexpectedly returned null!",
+			throw new IllegalStateException(String.format("Invocation of method %s(%s) on %s unexpectedly returned null",
 					method, Arrays.toString(arguments), repository));
 		}
 
@@ -258,7 +259,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 		if (result == null) {
 			throw new IllegalStateException(
-					String.format("Identifier conversion of %s to %s unexpectedly returned null!", id,
+					String.format("Identifier conversion of %s to %s unexpectedly returned null", id,
 							idTypeDescriptor.getType()));
 		}
 
@@ -268,7 +269,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	protected Iterable<Object> invokeFindAllReflectively(Pageable pageable) {
 
 		Method method = methods.getFindAllMethod()
-				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared"));
 
 		if (method.getParameterCount() == 0) {
 			return invokeForNonNullResult(method);
@@ -286,7 +287,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	protected Iterable<Object> invokeFindAllReflectively(Sort sort) {
 
 		Method method = methods.getFindAllMethod()
-				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared!"));
+				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a find-all-method declared"));
 
 		if (method.getParameterCount() == 0) {
 			return invokeForNonNullResult(method);

@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
  * @author Ranie Jade Ramiso
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  * @since 1.5
  */
 final class AnnotationAuditingMetadata {
@@ -108,7 +109,7 @@ final class AnnotationAuditingMetadata {
 			}
 
 			throw new IllegalStateException(String.format(
-					"Found created/modified date field with type %s but only %s as well as java.time types are supported!", type,
+					"Found created/modified date field with type %s but only %s as well as java.time types are supported", type,
 					SUPPORTED_DATE_TYPES));
 		});
 	}

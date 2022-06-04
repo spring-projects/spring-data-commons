@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Drotbohm
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 2.3
  */
 public class InstantiationAwarePropertyAccessor<T> implements PersistentPropertyAccessor<T> {
@@ -98,7 +99,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 
 			if (it.getName() == null) {
 				throw new IllegalStateException(
-						String.format("Cannot detect parameter names of copy creator of %s!", owner.getType()));
+						String.format("Cannot detect parameter names of copy creator of %s", owner.getType()));
 			}
 		});
 

@@ -39,6 +39,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @soundtrack Apparat With Soap & Skin - Goodbye (Dark Theme Song - https://www.youtube.com/watch?v=66VnOdk6oto)
  */
 @Configuration(proxyBeanMethods = false)
@@ -111,7 +112,7 @@ public class ProjectingArgumentResolverRegistrar {
 
 			if (currentResolvers == null) {
 				throw new IllegalStateException(
-						String.format("No HandlerMethodArgumentResolvers found in RequestMappingHandlerAdapter %s!", beanName));
+						String.format("No HandlerMethodArgumentResolvers found in RequestMappingHandlerAdapter %s", beanName));
 			}
 
 			List<HandlerMethodArgumentResolver> newResolvers = new ArrayList<HandlerMethodArgumentResolver>(

@@ -22,6 +22,7 @@ import org.springframework.util.Assert;
  * {@link IsNewStrategy} that invokes {@link Persistable#isNew()} on the given object.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  */
 public enum PersistableIsNewStrategy implements IsNewStrategy {
 
@@ -34,7 +35,7 @@ public enum PersistableIsNewStrategy implements IsNewStrategy {
 
 		if (!(entity instanceof Persistable)) {
 			throw new IllegalArgumentException(
-					String.format("Given object of type %s does not implement %s!", entity.getClass(), Persistable.class));
+					String.format("Given object of type %s does not implement %s", entity.getClass(), Persistable.class));
 		}
 
 		return ((Persistable<?>) entity).isNew();

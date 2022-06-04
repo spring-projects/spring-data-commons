@@ -57,6 +57,7 @@ import org.springframework.util.StringUtils;
  * @author Peter Rietzler
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -118,7 +119,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(annotation.getName());
 
 		if (annotationAttributes == null) {
-			throw new IllegalStateException(String.format("Unable to obtain annotation attributes for %s!", annotation));
+			throw new IllegalStateException(String.format("Unable to obtain annotation attributes for %s", annotation));
 		}
 
 		this.attributes = new AnnotationAttributes(annotationAttributes);
@@ -228,7 +229,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	public <T> Optional<T> getAttribute(String name, Class<T> type) {
 
 		if (!attributes.containsKey(name)) {
-			throw new IllegalArgumentException(String.format("No attribute named %s found!", name));
+			throw new IllegalArgumentException(String.format("No attribute named %s found", name));
 		}
 
 		Object value = attributes.get(name);
@@ -238,7 +239,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		}
 
 		Assert.isInstanceOf(type, value,
-				() -> String.format("Attribute value for %s is of type %s but was expected to be of type %s!", name,
+				() -> String.format("Attribute value for %s is of type %s but was expected to be of type %s", name,
 						value.getClass(), type));
 
 		Object result = value instanceof String //
