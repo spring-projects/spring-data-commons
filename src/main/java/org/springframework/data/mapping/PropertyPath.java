@@ -41,10 +41,11 @@ import org.springframework.util.StringUtils;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Mariusz Mączkowski
+ * @author Johannes Englmeier
  */
 public class PropertyPath implements Streamable<PropertyPath> {
 
-	private static final String PARSE_DEPTH_EXCEEDED = "Trying to parse a path with depth greater than 1000! This has been disabled for security reasons to prevent parsing overflows.";
+	private static final String PARSE_DEPTH_EXCEEDED = "Trying to parse a path with depth greater than 1000! This has been disabled for security reasons to prevent parsing overflows";
 
 	private static final String DELIMITERS = "_\\.";
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
@@ -314,7 +315,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 		if (result == null) {
 			throw new IllegalStateException(
-					"No next path available! Clients should call hasNext() before invoking this method!");
+					"No next path available! Clients should call hasNext() before invoking this method");
 		}
 
 		return result;
@@ -372,7 +373,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 			if (result == null) {
 				throw new IllegalStateException(
-						String.format("Expected parsing to yield a PropertyPath from %s but got null!", source));
+						String.format("Expected parsing to yield a PropertyPath from %s but got null", source));
 			}
 
 			return result;

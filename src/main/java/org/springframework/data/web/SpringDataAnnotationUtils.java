@@ -35,6 +35,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 abstract class SpringDataAnnotationUtils {
 
@@ -50,7 +51,7 @@ abstract class SpringDataAnnotationUtils {
 		Method method = parameter.getMethod();
 
 		if (method == null) {
-			throw new IllegalArgumentException(String.format("Method parameter %s is not backed by a method.", parameter));
+			throw new IllegalArgumentException(String.format("Method parameter %s is not backed by a method", parameter));
 		}
 
 		if (containsMoreThanOnePageableParameter(method)) {
@@ -102,7 +103,7 @@ abstract class SpringDataAnnotationUtils {
 				: propertyValue;
 
 		if (result == null) {
-			throw new IllegalStateException("Exepected to be able to look up an annotation property value but failed!");
+			throw new IllegalStateException("Exepected to be able to look up an annotation property value but failed");
 		}
 
 		return (T) result;
@@ -151,7 +152,7 @@ abstract class SpringDataAnnotationUtils {
 				}
 
 				if (values.contains(qualifier.value())) {
-					throw new IllegalStateException("Values of the user Qualifiers must be unique!");
+					throw new IllegalStateException("Values of the user Qualifiers must be unique");
 				}
 
 				values.add(qualifier.value());

@@ -40,6 +40,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor {
 
@@ -122,7 +123,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 			MethodHandle lookup(Method method) throws ReflectiveOperationException {
 
 				if (privateLookupIn == null) {
-					throw new IllegalStateException("Could not obtain MethodHandles.privateLookupIn!");
+					throw new IllegalStateException("Could not obtain MethodHandles.privateLookupIn");
 				}
 
 				return doLookup(method, getLookup(method.getDeclaringClass(), privateLookupIn));
@@ -165,7 +166,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 			MethodHandle lookup(Method method) throws ReflectiveOperationException {
 
 				if (!isAvailable()) {
-					throw new IllegalStateException("Could not obtain MethodHandles.lookup constructor!");
+					throw new IllegalStateException("Could not obtain MethodHandles.lookup constructor");
 				}
 
 				Constructor<Lookup> constructor = this.constructor.get();
@@ -250,7 +251,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 				}
 			}
 
-			throw new IllegalStateException("No MethodHandleLookup available!");
+			throw new IllegalStateException("No MethodHandleLookup available");
 		}
 
 		@Nullable

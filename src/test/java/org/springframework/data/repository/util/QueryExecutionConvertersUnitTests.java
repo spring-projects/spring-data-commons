@@ -59,6 +59,7 @@ import com.google.common.base.Optional;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Maciek Opała
+ * @author Johannes Englmeier
  */
 class QueryExecutionConvertersUnitTests {
 
@@ -272,7 +273,7 @@ class QueryExecutionConvertersUnitTests {
 	void exposesExecutionAdapterForJavaslangTry() throws Throwable {
 
 		Object result = getExecutionAdapter(Try.class).apply(() -> {
-			throw new IOException("Some message!");
+			throw new IOException("Some message");
 		});
 
 		assertThat(result).isInstanceOf(Failure.class);
@@ -296,7 +297,7 @@ class QueryExecutionConvertersUnitTests {
 	void exposesExecutionAdapterForVavrTry() throws Throwable {
 
 		Object result = getExecutionAdapter(io.vavr.control.Try.class).apply(() -> {
-			throw new IOException("Some message!");
+			throw new IOException("Some message");
 		});
 
 		assertThat(result).isInstanceOf(io.vavr.control.Try.Failure.class);

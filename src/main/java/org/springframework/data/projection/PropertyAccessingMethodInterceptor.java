@@ -32,6 +32,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 1.10
  */
 class PropertyAccessingMethodInterceptor implements MethodInterceptor {
@@ -66,7 +67,7 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 		PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method);
 
 		if (descriptor == null) {
-			throw new IllegalStateException("Invoked method is not a property accessor!");
+			throw new IllegalStateException("Invoked method is not a property accessor");
 		}
 
 		if (!isSetterMethod(method, descriptor)) {
@@ -74,7 +75,7 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 		}
 
 		if (invocation.getArguments().length != 1) {
-			throw new IllegalStateException("Invoked setter method requires exactly one argument!");
+			throw new IllegalStateException("Invoked setter method requires exactly one argument");
 		}
 
 		target.setPropertyValue(descriptor.getName(), invocation.getArguments()[0]);

@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
  *
  * @author Jens Schauder
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 2.0
  */
 class SelectionSet<T> {
@@ -82,7 +83,7 @@ class SelectionSet<T> {
 			if (c.isEmpty()) {
 				return Optional.empty();
 			} else {
-				throw new IllegalStateException("More then one element in collection.");
+				throw new IllegalStateException("More then one element in collection");
 			}
 		};
 	}

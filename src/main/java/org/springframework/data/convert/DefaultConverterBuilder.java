@@ -38,6 +38,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 2.0
  * @see ConverterBuilder#writing(Class, Class, Function)
  * @see ConverterBuilder#reading(Class, Class, Function)
@@ -83,7 +84,7 @@ class DefaultConverterBuilder<S, T>
 	@Override
 	public GenericConverter getReadingConverter() {
 		return getOptionalReadingConverter()
-				.orElseThrow(() -> new IllegalStateException("No reading converter specified!"));
+				.orElseThrow(() -> new IllegalStateException("No reading converter specified"));
 	}
 
 	/*
@@ -93,7 +94,7 @@ class DefaultConverterBuilder<S, T>
 	@Override
 	public GenericConverter getWritingConverter() {
 		return getOptionalWritingConverter()
-				.orElseThrow(() -> new IllegalStateException("No writing converter specified!"));
+				.orElseThrow(() -> new IllegalStateException("No writing converter specified"));
 	}
 
 	/*

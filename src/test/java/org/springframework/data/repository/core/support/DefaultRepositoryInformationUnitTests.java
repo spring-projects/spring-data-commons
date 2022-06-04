@@ -54,6 +54,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -295,7 +296,7 @@ class DefaultRepositoryInformationUnitTests {
 		return Arrays.stream(type.getMethods())//
 				.filter(method -> method.getName().equals(name))//
 				.findFirst()//
-				.orElseThrow(() -> new IllegalStateException("No method found with name ".concat(name).concat("!")));
+				.orElseThrow(() -> new IllegalStateException("No method found with name ".concat(name)));
 	}
 
 	@Target(ElementType.METHOD)

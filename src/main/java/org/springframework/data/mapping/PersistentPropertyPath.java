@@ -23,6 +23,7 @@ import org.springframework.lang.Nullable;
  * Abstraction of a path of {@link PersistentProperty}s.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  */
 public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends Streamable<P> {
 
@@ -79,7 +80,7 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 		P property = getLeafProperty();
 
 		if (property == null) {
-			throw new IllegalStateException("No leaf property found!");
+			throw new IllegalStateException("No leaf property found");
 		}
 
 		return property;

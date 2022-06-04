@@ -27,6 +27,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public interface TypeInformation<S> {
 
@@ -66,7 +67,7 @@ public interface TypeInformation<S> {
 		}
 
 		throw new IllegalArgumentException(
-				String.format("Could not find required property %s on %s!", property, getType()));
+				String.format("Could not find required property %s on %s", property, getType()));
 	}
 
 	/**
@@ -103,7 +104,7 @@ public interface TypeInformation<S> {
 			return componentType;
 		}
 
-		throw new IllegalStateException(String.format("Can't resolve required component type for %s!", getType()));
+		throw new IllegalStateException(String.format("Can't resolve required component type for %s", getType()));
 	}
 
 	/**
@@ -139,7 +140,7 @@ public interface TypeInformation<S> {
 			return mapValueType;
 		}
 
-		throw new IllegalStateException(String.format("Can't resolve required map value type for %s!", getType()));
+		throw new IllegalStateException(String.format("Can't resolve required map value type for %s", getType()));
 	}
 
 	/**
@@ -195,7 +196,7 @@ public interface TypeInformation<S> {
 
 		if (result == null) {
 			throw new IllegalStateException(
-					"Expected to be able to resolve a type but got null! This usually stems from types implementing raw Map or Collection interfaces!");
+					"Expected to be able to resolve a type but got null! This usually stems from types implementing raw Map or Collection interfaces");
 		}
 
 		return result;
@@ -242,7 +243,7 @@ public interface TypeInformation<S> {
 
 		if (result == null) {
 			throw new IllegalArgumentException(String.format(
-					"Can't retrieve super type information for %s! Does current type really implement the given one?",
+					"Can't retrieve super type information for %s! Does current type really implement the given one",
 					superType));
 		}
 

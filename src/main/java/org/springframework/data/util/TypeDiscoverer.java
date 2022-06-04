@@ -52,6 +52,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
@@ -537,7 +538,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			}
 		}
 
-		throw new IllegalArgumentException(String.format("Type %s not contained in candidates %s!", type, candidates));
+		throw new IllegalArgumentException(String.format("Type %s not contained in candidates %s", type, candidates));
 	}
 
 	private boolean isNullableWrapper() {

@@ -41,6 +41,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  * @since 2.3
  * @see org.springframework.core.KotlinDetector#isKotlinReflectPresent()
  */
@@ -125,7 +126,7 @@ public final class KotlinReflectionUtils {
 		KFunction<?> kotlinFunction = KotlinReflectionUtils.findKotlinFunction(method);
 
 		if (kotlinFunction == null) {
-			throw new IllegalArgumentException(String.format("Cannot resolve %s to a KFunction!", method));
+			throw new IllegalArgumentException(String.format("Cannot resolve %s to a KFunction", method));
 		}
 
 		return JvmClassMappingKt.getJavaClass(KTypesJvm.getJvmErasure(kotlinFunction.getReturnType()));
@@ -143,13 +144,13 @@ public final class KotlinReflectionUtils {
 		Method method = parameter.getMethod();
 
 		if (method == null) {
-			throw new IllegalStateException(String.format("Cannot obtain method from parameter %s!", parameter));
+			throw new IllegalStateException(String.format("Cannot obtain method from parameter %s", parameter));
 		}
 
 		KFunction<?> kotlinFunction = findKotlinFunction(method);
 
 		if (kotlinFunction == null) {
-			throw new IllegalArgumentException(String.format("Cannot resolve %s to a Kotlin function!", parameter));
+			throw new IllegalArgumentException(String.format("Cannot resolve %s to a Kotlin function", parameter));
 		}
 
 		// Special handling for Coroutines
