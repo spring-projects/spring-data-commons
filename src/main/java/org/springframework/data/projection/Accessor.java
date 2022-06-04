@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  * @soundtrack Benny Greb - Soulfood (Live)
  * @since 1.13
  */
@@ -47,7 +48,7 @@ public final class Accessor {
 		PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method);
 
 		if (descriptor == null) {
-			throw new IllegalArgumentException(String.format("Invoked method %s is no accessor method!", method));
+			throw new IllegalArgumentException(String.format("Invoked method %s is no accessor method", method));
 		}
 
 		this.descriptor = descriptor;

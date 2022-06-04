@@ -64,6 +64,7 @@ import org.springframework.data.util.TypeInformation;
  * @author Thomas Darimont
  * @author Mark Paluch
  * @author Christoph Stobl
+ * @author Johannes Englmeier
  */
 class AbstractMappingContextUnitTests {
 
@@ -79,7 +80,7 @@ class AbstractMappingContextUnitTests {
 	@Test // DATACMNS-92
 	void doesNotAddInvalidEntity() {
 
-		context = TypeRejectingMappingContext.rejecting(() -> new MappingException("Not supported!"), Unsupported.class);
+		context = TypeRejectingMappingContext.rejecting(() -> new MappingException("Not supported"), Unsupported.class);
 
 		assertThatExceptionOfType(MappingException.class) //
 				.isThrownBy(() -> context.getPersistentEntity(Unsupported.class));

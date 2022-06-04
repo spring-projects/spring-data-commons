@@ -28,6 +28,7 @@ import org.springframework.util.ClassUtils;
  * Expresses configuration to be used to detect implementation classes for repositories and repository fragments.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 2.1
  */
 public interface ImplementationDetectionConfiguration {
@@ -73,7 +74,7 @@ public interface ImplementationDetectionConfiguration {
 		String beanName = definition.getBeanClassName();
 
 		if (beanName == null) {
-			throw new IllegalStateException("Cannot generate bean name for BeanDefinition without bean class name!");
+			throw new IllegalStateException("Cannot generate bean name for BeanDefinition without bean class name");
 		}
 
 		return Introspector.decapitalize(ClassUtils.getShortName(beanName));

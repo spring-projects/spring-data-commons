@@ -37,6 +37,7 @@ import org.springframework.lang.Nullable;
  * @author Graeme Rocher
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public interface MappingContext<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> {
 
@@ -76,7 +77,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 			return entity;
 		}
 
-		throw new MappingException(String.format("Couldn't find PersistentEntity for type %s!", type));
+		throw new MappingException(String.format("Couldn't find PersistentEntity for type %s", type));
 	}
 
 	/**
@@ -116,7 +117,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 			return entity;
 		}
 
-		throw new MappingException(String.format("Couldn't find PersistentEntity for type %s!", type));
+		throw new MappingException(String.format("Couldn't find PersistentEntity for type %s", type));
 	}
 
 	/**
@@ -149,7 +150,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 			return entity;
 		}
 
-		throw new MappingException(String.format("Couldn't find PersistentEntity for property %s!", persistentProperty));
+		throw new MappingException(String.format("Couldn't find PersistentEntity for property %s", persistentProperty));
 	}
 
 	/**

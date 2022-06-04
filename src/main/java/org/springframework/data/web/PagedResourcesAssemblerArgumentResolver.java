@@ -43,6 +43,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -118,7 +119,7 @@ public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArg
 		Method method = parameter.getMethod();
 
 		if (method == null) {
-			throw new IllegalArgumentException(String.format("Could not obtain method from parameter %s!", parameter));
+			throw new IllegalArgumentException(String.format("Could not obtain method from parameter %s", parameter));
 		}
 
 		MethodParameters parameters = MethodParameters.of(method);

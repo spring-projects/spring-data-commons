@@ -60,6 +60,7 @@ import com.querydsl.core.types.Path;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 1.11
  * @see QuerydslBinderCustomizer
  */
@@ -357,7 +358,7 @@ public class QuerydslBindings {
 		Path<?> rootPath = path.getMetadata().getRootPath();
 
 		if (rootPath == null) {
-			throw new IllegalStateException(String.format("Couldn't find root path on path %s!", path));
+			throw new IllegalStateException(String.format("Couldn't find root path on path %s", path));
 		}
 
 		return path.toString().substring(rootPath.getMetadata().getName().length() + 1);

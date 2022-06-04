@@ -21,6 +21,7 @@ package org.springframework.data.mapping;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 2.0
  * @soundtrack Anika Nilles - Greenfield (Pikalar)
  */
@@ -45,6 +46,6 @@ public abstract class TargetAwareIdentifierAccessor implements IdentifierAccesso
 			return identifier;
 		}
 
-		throw new IllegalStateException(String.format("Could not obtain identifier from %s!", target));
+		throw new IllegalStateException(String.format("Could not obtain identifier from %s", target));
 	}
 }

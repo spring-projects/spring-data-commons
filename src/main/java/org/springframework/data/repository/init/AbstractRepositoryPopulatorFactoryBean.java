@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public abstract class AbstractRepositoryPopulatorFactoryBean
 		extends AbstractFactoryBean<ResourceReaderRepositoryPopulator>
@@ -99,7 +100,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 		RepositoryPopulator populator = this.populator;
 
 		if (populator == null) {
-			throw new IllegalStateException("RepositoryPopulator was not properly initialized!");
+			throw new IllegalStateException("RepositoryPopulator was not properly initialized");
 		}
 
 		if (event.getApplicationContext().equals(context)) {

@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author Jens Schauder
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public interface PersistentProperty<P extends PersistentProperty<P>> {
 
@@ -100,7 +101,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		Method getter = getGetter();
 
 		if (getter == null) {
-			throw new IllegalArgumentException(String.format("No getter available for persistent property %s!", this));
+			throw new IllegalArgumentException(String.format("No getter available for persistent property %s", this));
 		}
 
 		return getter;
@@ -120,7 +121,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		Method setter = getSetter();
 
 		if (setter == null) {
-			throw new IllegalArgumentException(String.format("No setter available for persistent property %s!", this));
+			throw new IllegalArgumentException(String.format("No setter available for persistent property %s", this));
 		}
 
 		return setter;
@@ -158,7 +159,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		Method wither = getWither();
 
 		if (wither == null) {
-			throw new IllegalArgumentException(String.format("No wither available for persistent property %s!", this));
+			throw new IllegalArgumentException(String.format("No wither available for persistent property %s", this));
 		}
 
 		return wither;
@@ -172,7 +173,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		Field field = getField();
 
 		if (field == null) {
-			throw new IllegalArgumentException(String.format("No field backing persistent property %s!", this));
+			throw new IllegalArgumentException(String.format("No field backing persistent property %s", this));
 		}
 
 		return field;
@@ -204,7 +205,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 			return association;
 		}
 
-		throw new IllegalStateException("No association found!");
+		throw new IllegalStateException("No association found");
 	}
 
 	/**

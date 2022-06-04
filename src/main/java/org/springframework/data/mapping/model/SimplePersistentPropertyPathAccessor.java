@@ -45,6 +45,7 @@ import org.springframework.util.Assert;
  * property, the nested property will be set on all collection elements and map values.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 2.3
  * @soundtrack Ron Spielman - Nineth Song (Tip of My Tongue)
  */
@@ -276,7 +277,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 		}
 
 		if (!type.isInstance(value)) {
-			throw new MappingException(String.format("Invalid property value type! Need %s but got %s!", //
+			throw new MappingException(String.format("Invalid property value type! Need %s but got %s", //
 					type.getName(), value.getClass().getName()));
 		}
 

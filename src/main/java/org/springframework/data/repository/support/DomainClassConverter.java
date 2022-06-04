@@ -43,6 +43,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Alessandro Nistico
+ * @author Johannes Englmeier
  */
 public class DomainClassConverter<T extends ConversionService & ConverterRegistry>
 		implements ConditionalGenericConverter, ApplicationContextAware {
@@ -206,7 +207,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 				return sourceType.equals(idTypeDescriptor)
 						|| conversionService.canConvert(sourceType, idTypeDescriptor);
 			}).orElseThrow(
-					() -> new IllegalStateException(String.format("Couldn't find RepositoryInformation for %s!", domainType)));
+					() -> new IllegalStateException(String.format("Couldn't find RepositoryInformation for %s", domainType)));
 		}
 	}
 
@@ -287,7 +288,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 						|| conversionService.canConvert(idTypeDescriptor, targetType);
 
 			}).orElseThrow(
-					() -> new IllegalStateException(String.format("Couldn't find RepositoryInformation for %s!", domainType)));
+					() -> new IllegalStateException(String.format("Couldn't find RepositoryInformation for %s", domainType)));
 		}
 	}
 }

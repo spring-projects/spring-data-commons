@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Xeno Amess
  * @author Alessandro Nistico
+ * @author Johannes Englmeier
  */
 public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 
@@ -82,7 +83,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 		RepositoryDefinition annotation = AnnotationUtils.findAnnotation(repositoryInterface, RepositoryDefinition.class);
 
 		if ((annotation == null) || (extractor.apply(annotation) == null)) {
-			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s!", repositoryInterface));
+			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s", repositoryInterface));
 		}
 
 		return ClassTypeInformation.from(extractor.apply(annotation));

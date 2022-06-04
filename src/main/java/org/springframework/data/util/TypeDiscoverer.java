@@ -51,6 +51,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Mark Paluch
  * @author Jürgen Diez
  * @author Alessandro Nistico
+ * @author Johannes Englmeier
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
@@ -469,7 +470,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		TypeInformation<?> superTypeInformation = target.getSuperTypeInformation(getType());
 
-		return superTypeInformation == null ? false : superTypeInformation.equals(this);
+		return superTypeInformation != null && superTypeInformation.equals(this);
 	}
 
 	/*

@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Johannes Englmeier
  * @since 1.9
  */
 public class ExtensionAwareQueryMethodEvaluationContextProvider implements QueryMethodEvaluationContextProvider {
@@ -118,7 +119,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 		parameters.stream()//
 				.filter(Parameter::isNamedParameter)//
 				.forEach(it -> variables.put(//
-						it.getName().orElseThrow(() -> new IllegalStateException("Should never occur!")), //
+						it.getName().orElseThrow(() -> new IllegalStateException("Should never occur")), //
 						arguments[it.getIndex()]));
 
 		return variables;

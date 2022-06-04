@@ -43,6 +43,7 @@ import org.springframework.util.StringUtils;
  * @see ReactiveSortHandlerMethodArgumentResolver
  * @author Mark Paluch
  * @author Vedran Pavic
+ * @author Johannes Englmeier
  */
 public abstract class SortHandlerMethodArgumentResolverSupport {
 
@@ -128,7 +129,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 		if (annotatedDefault != null && annotatedDefaults != null) {
 			throw new IllegalArgumentException(
-					String.format("Cannot use both @%s and @%s on parameter %s! Move %s into %s to define sorting order!",
+					String.format("Cannot use both @%s and @%s on parameter %s! Move %s into %s to define sorting order",
 							SORT_DEFAULTS_NAME, SORT_DEFAULT_NAME, parameter.toString(), SORT_DEFAULT_NAME, SORT_DEFAULTS_NAME));
 		}
 
@@ -276,7 +277,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 				builder = new ExpressionBuilder(direction);
 			} else if (!builder.hasSameDirectionAs(order)) {
 				throw new IllegalArgumentException(String.format(
-						"%s in legacy configuration only supports a single direction to sort by!", getClass().getSimpleName()));
+						"%s in legacy configuration only supports a single direction to sort by", getClass().getSimpleName()));
 			}
 
 			builder.add(order.getProperty());

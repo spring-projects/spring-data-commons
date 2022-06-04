@@ -84,6 +84,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Ariel Carrera
+ * @author Johannes Englmeier
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -361,7 +362,7 @@ class RepositoryFactorySupportUnitTests {
 		assertThatThrownBy( //
 				() -> repository.findById("")) //
 						.isInstanceOf(EmptyResultDataAccessException.class) //
-						.hasMessageContaining("Result must not be null!");
+						.hasMessageContaining("Result must not be null");
 
 		assertThat(repository.findByUsername("")).isNull();
 	}
@@ -374,7 +375,7 @@ class RepositoryFactorySupportUnitTests {
 		assertThatThrownBy( //
 				() -> repository.findByClass(null)) //
 						.isInstanceOf(IllegalArgumentException.class) //
-						.hasMessageContaining("must not be null!");
+						.hasMessageContaining("must not be null");
 	}
 
 	@Test // DATACMNS-1154
@@ -395,7 +396,7 @@ class RepositoryFactorySupportUnitTests {
 		assertThatThrownBy( //
 				() -> repository.findById(null)) //
 						.isInstanceOf(IllegalArgumentException.class) //
-						.hasMessageContaining("must not be null!"); //
+						.hasMessageContaining("must not be null"); //
 	}
 
 	@Test // DATACMNS-1154
@@ -438,7 +439,7 @@ class RepositoryFactorySupportUnitTests {
 	void dummyRepositoryNotSupportingReactiveQuerydslShouldRaiseException() {
 		assertThatThrownBy(() -> factory.getRepository(WithReactiveQuerydsl.class, backingRepo))
 				.isInstanceOf(UnsupportedFragmentException.class).hasMessage(
-						"Repository org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests$WithReactiveQuerydsl implements org.springframework.data.repository.query.ReactiveQueryByExampleExecutor but DummyRepositoryFactory does not support Reactive Query by Example!");
+						"Repository org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests$WithReactiveQuerydsl implements org.springframework.data.repository.query.ReactiveQueryByExampleExecutor but DummyRepositoryFactory does not support Reactive Query by Example");
 	}
 
 	@Test // GH-2341

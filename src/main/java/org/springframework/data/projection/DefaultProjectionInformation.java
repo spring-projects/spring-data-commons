@@ -47,6 +47,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 1.12
  */
 class DefaultProjectionInformation implements ProjectionInformation {
@@ -257,7 +258,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 					.filter(it -> name.equals(it.getName())) //
 					.findFirst()
 					.orElseThrow(() -> new IllegalStateException(
-							String.format("Did not find type %s in %s!", name, Arrays.toString(types))));
+							String.format("Did not find type %s in %s", name, Arrays.toString(types))));
 		}
 
 		/**

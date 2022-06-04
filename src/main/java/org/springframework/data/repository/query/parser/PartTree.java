@@ -42,6 +42,7 @@ import org.springframework.util.StringUtils;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Shaun Chyxion
+ * @author Johannes Englmeier
  */
 public class PartTree implements Streamable<OrPart> {
 
@@ -375,7 +376,7 @@ public class PartTree implements Streamable<OrPart> {
 			String[] parts = split(detectAndSetAllIgnoreCase(predicate), ORDER_BY);
 
 			if (parts.length > 2) {
-				throw new IllegalArgumentException("OrderBy must not be used more than once in a method name!");
+				throw new IllegalArgumentException("OrderBy must not be used more than once in a method name");
 			}
 
 			this.nodes = Arrays.stream(split(parts[0], "Or")) //

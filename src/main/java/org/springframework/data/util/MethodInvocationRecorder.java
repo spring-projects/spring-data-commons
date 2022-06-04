@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
  * API to record method invocations via method references on a proxy.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 2.2
  * @soundtrack The Intersphere - Don't Think Twice (The Grand Delusion)
  */
@@ -207,7 +208,7 @@ public class MethodInvocationRecorder {
 					.map(it -> it.getPropertyName(invokedMethod)) //
 					.findFirst() //
 					.orElseThrow(() -> new IllegalArgumentException(
-							String.format("No property name found for method %s!", invokedMethod)));
+							String.format("No property name found for method %s", invokedMethod)));
 		}
 
 		public Recorded<?> getRecorded() {

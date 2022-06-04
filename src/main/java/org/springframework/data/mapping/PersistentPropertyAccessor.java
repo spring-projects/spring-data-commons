@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 1.10
  * @see PersistentEntity#getPropertyAccessor(Object)
  * @see ConvertingPropertyAccessor
@@ -74,7 +75,7 @@ public interface PersistentPropertyAccessor<T> {
 
 		if (parent == null) {
 
-			String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
+			String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s";
 
 			throw new MappingException(
 					String.format(nullIntermediateMessage, parentProperty, path.toDotPath(), getBean().getClass().getName()));
@@ -150,7 +151,7 @@ public interface PersistentPropertyAccessor<T> {
 
 			if (current == null) {
 
-				String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
+				String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s";
 
 				throw new MappingException(
 						String.format(nullIntermediateMessage, property, path.toDotPath(), bean.getClass().getName()));

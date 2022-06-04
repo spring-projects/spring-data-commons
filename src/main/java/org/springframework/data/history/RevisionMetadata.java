@@ -24,6 +24,7 @@ import java.util.Optional;
  * @author Philipp Huegelmeyer
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Johannes Englmeier
  */
 public interface RevisionMetadata<N extends Number & Comparable<N>> {
 
@@ -43,7 +44,7 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 	default N getRequiredRevisionNumber() {
 
 		return getRevisionNumber().orElseThrow(
-				() -> new IllegalStateException(String.format("No revision number found on %s!", this.<Object> getDelegate())));
+				() -> new IllegalStateException(String.format("No revision number found on %s", this.<Object> getDelegate())));
 	}
 
 	/**
@@ -62,7 +63,7 @@ public interface RevisionMetadata<N extends Number & Comparable<N>> {
 	default Instant getRequiredRevisionInstant() {
 
 		return getRevisionInstant().orElseThrow(
-				() -> new IllegalStateException(String.format("No revision date found on %s!", this.<Object> getDelegate())));
+				() -> new IllegalStateException(String.format("No revision date found on %s", this.<Object> getDelegate())));
 	}
 
 	/**

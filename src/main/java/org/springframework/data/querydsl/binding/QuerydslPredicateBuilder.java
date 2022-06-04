@@ -48,6 +48,7 @@ import com.querydsl.core.types.Predicate;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  * @since 1.11
  */
 public class QuerydslPredicateBuilder {
@@ -225,7 +226,7 @@ public class QuerydslPredicateBuilder {
 						.nested(new Property(owningType, descriptor.getReadMethod(), descriptor.getWriteMethod(), leafProperty), 0);
 
 		if (result == null) {
-			throw new IllegalStateException(String.format("Could not obtain TypeDescriptor for PathInformation %s!", path));
+			throw new IllegalStateException(String.format("Could not obtain TypeDescriptor for PathInformation %s", path));
 		}
 
 		return result;

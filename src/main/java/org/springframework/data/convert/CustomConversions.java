@@ -52,6 +52,7 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Xeno Amess
+ * @author Johannes Englmeier
  * @since 2.0
  */
 public class CustomConversions {
@@ -786,7 +787,7 @@ public class CustomConversions {
 				return getRegistrationFor(converter, Converter.class, isReading, isWriting);
 
 			} else {
-				throw new IllegalArgumentException(String.format("Unsupported converter type %s!", converter));
+				throw new IllegalArgumentException(String.format("Unsupported converter type %s", converter));
 			}
 		}
 
@@ -801,7 +802,7 @@ public class CustomConversions {
 			Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(converterType, type);
 
 			if (arguments == null) {
-				throw new IllegalStateException(String.format("Couldn't resolve type arguments for %s!", converterType));
+				throw new IllegalStateException(String.format("Couldn't resolve type arguments for %s", converterType));
 			}
 
 			return Streamable.of(register(converter, arguments[0], arguments[1], isReading, isWriting));

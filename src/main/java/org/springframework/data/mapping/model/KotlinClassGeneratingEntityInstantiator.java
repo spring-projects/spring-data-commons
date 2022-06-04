@@ -39,6 +39,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 2.0
  */
 class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInstantiator {
@@ -219,7 +220,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 				@Nullable InstanceCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
 
 			if (entityCreator == null) {
-				throw new IllegalArgumentException("EntityCreator must not be null!");
+				throw new IllegalArgumentException("EntityCreator must not be null");
 			}
 
 			Object[] params = allocateArguments(synthetic.getParameterCount()

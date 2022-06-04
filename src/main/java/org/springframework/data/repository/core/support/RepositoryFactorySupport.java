@@ -80,6 +80,7 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author John Blum
+ * @author Johannes Englmeier
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
@@ -641,7 +642,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 				org.springframework.data.repository.util.ClassUtils.unwrapReflectionException(e);
 			}
 
-			throw new IllegalStateException("Should not occur!");
+			throw new IllegalStateException("Should not occur");
 		}
 	}
 
@@ -799,7 +800,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 				if (composition.isEmpty()) {
 
 					throw new IncompleteRepositoryCompositionException(
-							String.format("You have custom methods in %s but have not provided a custom implementation!",
+							String.format("You have custom methods in %s but have not provided a custom implementation",
 									org.springframework.util.ClassUtils.getQualifiedName(repositoryInterface)),
 							repositoryInterface);
 				}
@@ -816,7 +817,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 				if (!containsFragmentImplementation(composition, executorInterface)) {
 					throw new UnsupportedFragmentException(
-							String.format("Repository %s implements %s but %s does not support %s!",
+							String.format("Repository %s implements %s but %s does not support %s",
 									ClassUtils.getQualifiedName(repositoryInterface), ClassUtils.getQualifiedName(executorInterface),
 									ClassUtils.getShortName(source), entry.getValue()),
 							repositoryInterface, executorInterface);

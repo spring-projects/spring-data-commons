@@ -38,6 +38,7 @@ import com.querydsl.core.types.dsl.SimpleExpression;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Colin Gao
+ * @author Johannes Englmeier
  * @since 1.11
  */
 class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>, Object> {
@@ -84,6 +85,6 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 		}
 
 		throw new IllegalArgumentException(
-				String.format("Cannot create predicate for path '%s' with type '%s'.", path, path.getMetadata().getPathType()));
+				String.format("Cannot create predicate for path '%s' with type '%s'", path, path.getMetadata().getPathType()));
 	}
 }

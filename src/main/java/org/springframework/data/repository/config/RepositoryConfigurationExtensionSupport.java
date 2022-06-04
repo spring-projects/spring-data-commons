@@ -50,6 +50,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public abstract class RepositoryConfigurationExtensionSupport implements RepositoryConfigurationExtension {
 
@@ -365,7 +366,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 		if (metadata.isReactiveRepository()) {
 			throw new InvalidDataAccessApiUsageException(
-					String.format("Reactive Repositories are not supported by %s. Offending repository is %s!", getModuleName(),
+					String.format("Reactive Repositories are not supported by %s. Offending repository is %s", getModuleName(),
 							metadata.getRepositoryInterface().getName()));
 		}
 

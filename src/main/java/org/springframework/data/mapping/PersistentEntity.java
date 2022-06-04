@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
  * @author Patryk Wasik
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public interface PersistentEntity<T, P extends PersistentProperty<P>> extends Iterable<P> {
 
@@ -131,7 +132,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 			return property;
 		}
 
-		throw new IllegalStateException(String.format("Required identifier property not found for %s!", getType()));
+		throw new IllegalStateException(String.format("Required identifier property not found for %s", getType()));
 	}
 
 	/**
@@ -159,7 +160,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 			return property;
 		}
 
-		throw new IllegalStateException(String.format("Required version property not found for %s!", getType()));
+		throw new IllegalStateException(String.format("Required version property not found for %s", getType()));
 	}
 
 	/**
@@ -186,7 +187,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 			return property;
 		}
 
-		throw new IllegalStateException(String.format("Required property %s not found for %s!", name, getType()));
+		throw new IllegalStateException(String.format("Required property %s not found for %s", name, getType()));
 	}
 
 	/**
@@ -312,7 +313,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 		}
 
 		throw new IllegalStateException(
-				String.format("Required annotation %s not found for %s!", annotationType, getType()));
+				String.format("Required annotation %s not found for %s", annotationType, getType()));
 	}
 
 	/**

@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractRepositoryPopulatorFactoryBean {
 
@@ -48,7 +49,7 @@ public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractReposito
 		Unmarshaller unmarshaller = this.unmarshaller;
 
 		if (unmarshaller == null) {
-			throw new IllegalStateException("No Unmarshaller configured!");
+			throw new IllegalStateException("No Unmarshaller configured");
 		}
 
 		return new UnmarshallingResourceReader(unmarshaller);
