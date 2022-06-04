@@ -36,6 +36,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAware {
 
@@ -119,7 +120,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 
 				if (beanClassName == null) {
 					throw new IllegalStateException(
-							String.format("Unable to obtain bean class name from bean definition %s!", definition));
+							String.format("Unable to obtain bean class name from bean definition %s", definition));
 				}
 
 				try {

@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Johannes Englmeier
  */
 public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 
@@ -74,7 +75,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 		RepositoryDefinition annotation = repositoryInterface.getAnnotation(RepositoryDefinition.class);
 
 		if (annotation == null || annotation.idClass() == null) {
-			throw new IllegalArgumentException(String.format("Could not resolve id type of %s!", repositoryInterface));
+			throw new IllegalArgumentException(String.format("Could not resolve id type of %s", repositoryInterface));
 		}
 
 		return annotation.idClass();
@@ -85,7 +86,7 @@ public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 		RepositoryDefinition annotation = repositoryInterface.getAnnotation(RepositoryDefinition.class);
 
 		if (annotation == null || annotation.domainClass() == null) {
-			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s!", repositoryInterface));
+			throw new IllegalArgumentException(String.format("Could not resolve domain type of %s", repositoryInterface));
 		}
 
 		return annotation.domainClass();

@@ -29,6 +29,7 @@ import org.springframework.util.ReflectionUtils;
  * {@link MethodInterceptor} to support accessor methods to store and retrieve values from a {@link Map}.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 1.10
  */
 class MapAccessingMethodInterceptor implements MethodInterceptor {
@@ -65,6 +66,6 @@ class MapAccessingMethodInterceptor implements MethodInterceptor {
 			return null;
 		}
 
-		throw new IllegalStateException("Should never get here!");
+		throw new IllegalStateException("Should never get here");
 	}
 }

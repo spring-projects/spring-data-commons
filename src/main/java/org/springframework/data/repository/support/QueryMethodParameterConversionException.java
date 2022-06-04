@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
  * Exception to represent a failed attempt to convert a source value into a query method parameter.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @soundtrack Dave Matthews Band - The Dreaming Tree (DMB 2009-2018 Europe)
  * @since 1.11
  */
@@ -43,10 +44,10 @@ public class QueryMethodParameterConversionException extends RuntimeException {
 	 */
 	public QueryMethodParameterConversionException(Object source, MethodParameter parameter, ConversionException cause) {
 
-		super(String.format("Failed to convert %s into %s!", source, parameter.getParameterType().getName()), cause);
+		super(String.format("Failed to convert %s into %s", source, parameter.getParameterType().getName()), cause);
 
-		Assert.notNull(parameter, "Method parameter must not be null!");
-		Assert.notNull(cause, "ConversionException must not be null!");
+		Assert.notNull(parameter, "Method parameter must not be null");
+		Assert.notNull(cause, "ConversionException must not be null");
 
 		this.parameter = parameter;
 		this.source = source;

@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * @author Peter Rietzler
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public interface RepositoryConfigurationSource {
 
@@ -126,7 +127,7 @@ public interface RepositoryConfigurationSource {
 		Assert.hasText(name, "Attribute name must not be null or empty!");
 
 		return getAttribute(name, type)
-				.orElseThrow(() -> new IllegalArgumentException(String.format("No attribute named %s found!", name)));
+				.orElseThrow(() -> new IllegalArgumentException(String.format("No attribute named %s found", name)));
 	}
 
 	/**

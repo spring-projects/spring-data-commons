@@ -31,6 +31,7 @@ import org.springframework.util.ObjectUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Henning Rohlfs
+ * @author Johannes Englmeier
  * @since 2.0
  */
 public class Lazy<T> implements Supplier<T> {
@@ -114,7 +115,7 @@ public class Lazy<T> implements Supplier<T> {
 		T value = getNullable();
 
 		if (value == null) {
-			throw new IllegalStateException("Expected lazy evaluation to yield a non-null value but got null!");
+			throw new IllegalStateException("Expected lazy evaluation to yield a non-null value but got null");
 		}
 
 		return value;

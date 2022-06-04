@@ -35,6 +35,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public abstract class ClassUtils {
 
@@ -146,7 +147,7 @@ public abstract class ClassUtils {
 		Arrays.stream(types)//
 				.filter(it -> it.isAssignableFrom(returnType.getType()))//
 				.findAny().orElseThrow(() -> new IllegalStateException(
-						"Method has to have one of the following return types! " + Arrays.toString(types)));
+						"Method has to have one of the following return types " + Arrays.toString(types)));
 	}
 
 	/**

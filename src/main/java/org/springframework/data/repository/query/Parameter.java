@@ -43,6 +43,7 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author Jens Schauder
  * @author Greg Turnquist
+ * @author Johannes Englmeier
  */
 public class Parameter {
 
@@ -217,7 +218,7 @@ public class Parameter {
 		Method method = parameter.getMethod();
 
 		if (method == null) {
-			throw new IllegalStateException(String.format("Method parameter %s is not backed by a method!", parameter));
+			throw new IllegalStateException(String.format("Method parameter %s is not backed by a method", parameter));
 		}
 
 		ClassTypeInformation<?> ownerType = ClassTypeInformation.from(parameter.getDeclaringClass());

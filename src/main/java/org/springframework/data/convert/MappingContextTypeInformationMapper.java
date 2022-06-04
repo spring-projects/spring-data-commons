@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public class MappingContextTypeInformationMapper implements TypeInformationMapper {
 
@@ -91,7 +92,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 		if (existingAlias.isPresentButDifferent(alias)) {
 
 			throw new IllegalArgumentException(
-					String.format("Trying to register alias '%s', but found already registered alias '%s' for type %s!", alias,
+					String.format("Trying to register alias '%s', but found already registered alias '%s' for type %s", alias,
 							existingAlias, key));
 		}
 
@@ -104,7 +105,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 					.findFirst().ifPresent(it -> {
 
 						throw new IllegalArgumentException(String.format(
-								"Detected existing type mapping of %s to alias '%s' but attempted to bind the same alias to %s!", key,
+								"Detected existing type mapping of %s to alias '%s' but attempted to bind the same alias to %s", key,
 								alias, it.getKey()));
 					});
 		}

@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
  * repository proxy.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  */
 public class PersistenceExceptionTranslationRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
 
@@ -39,7 +40,7 @@ public class PersistenceExceptionTranslationRepositoryProxyPostProcessor impleme
 	 */
 	public PersistenceExceptionTranslationRepositoryProxyPostProcessor(ListableBeanFactory beanFactory) {
 
-		Assert.notNull(beanFactory, "BeanFactory must not be null!");
+		Assert.notNull(beanFactory, "BeanFactory must not be null");
 
 		this.interceptor = new PersistenceExceptionTranslationInterceptor();
 		this.interceptor.setBeanFactory(beanFactory);

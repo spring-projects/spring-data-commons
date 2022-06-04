@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public abstract class AbstractQueryCreator<T, S> {
 
@@ -113,7 +114,7 @@ public abstract class AbstractQueryCreator<T, S> {
 			Iterator<Part> parts = node.iterator();
 
 			if (!parts.hasNext()) {
-				throw new IllegalStateException(String.format("No part found in PartTree %s!", tree));
+				throw new IllegalStateException(String.format("No part found in PartTree %s", tree));
 			}
 
 			S criteria = create(parts.next(), iterator);

@@ -37,6 +37,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Streamable<T> {
 
@@ -236,7 +237,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			return parameters.get(index);
 		} catch (IndexOutOfBoundsException e) {
 			throw new ParameterOutOfBoundsException(
-					"Invalid parameter index! You seem to have declared too little query method parameters!", e);
+					"Invalid parameter index! You seem to have declared too little query method parameters", e);
 		}
 	}
 

@@ -29,6 +29,7 @@ import org.springframework.lang.Nullable;
  * expression evaluation.
  *
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  */
 public class PersistentEntityParameterValueProvider<P extends PersistentProperty<P>>
 		implements ParameterValueProvider<P> {
@@ -61,14 +62,14 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 		String name = parameter.getName();
 
 		if (name == null) {
-			throw new MappingException(String.format("Parameter %s does not have a name!", parameter));
+			throw new MappingException(String.format("Parameter %s does not have a name", parameter));
 		}
 
 		P property = entity.getPersistentProperty(name);
 
 		if (property == null) {
 			throw new MappingException(
-					String.format("No property %s found on entity %s to bind constructor parameter to!", name, entity.getType()));
+					String.format("No property %s found on entity %s to bind constructor parameter to", name, entity.getType()));
 		}
 
 		return provider.getPropertyValue(property);

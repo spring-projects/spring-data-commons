@@ -30,6 +30,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 public class AnnotationDetectionFieldCallback implements FieldCallback {
 
@@ -86,7 +87,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 		Field field = this.field;
 
 		if (field == null) {
-			throw new IllegalStateException(String.format("No field found for annotation %s!", annotationType));
+			throw new IllegalStateException(String.format("No field found for annotation %s", annotationType));
 		}
 
 		return field;

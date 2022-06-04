@@ -33,6 +33,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 class RepositoryBeanNameGenerator {
 
@@ -90,7 +91,7 @@ class RepositoryBeanNameGenerator {
 
 		if (argumentValue == null) {
 			throw new IllegalStateException(
-					String.format("Failed to obtain first constructor parameter value of BeanDefinition %s!", beanDefinition));
+					String.format("Failed to obtain first constructor parameter value of BeanDefinition %s", beanDefinition));
 		}
 
 		Object value = argumentValue.getValue();
@@ -98,7 +99,7 @@ class RepositoryBeanNameGenerator {
 		if (value == null) {
 
 			throw new IllegalStateException(
-					String.format("Value of first constructor parameter value of BeanDefinition %s is null!", beanDefinition));
+					String.format("Value of first constructor parameter value of BeanDefinition %s is null", beanDefinition));
 
 		} else if (value instanceof Class<?>) {
 

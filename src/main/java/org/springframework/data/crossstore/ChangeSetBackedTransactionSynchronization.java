@@ -19,7 +19,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.transaction.support.TransactionSynchronization;
-
+/**
+ * @author Johannes Englmeier
+ */
 public class ChangeSetBackedTransactionSynchronization implements TransactionSynchronization {
 
 	private static final Log logger = LogFactory.getLog(ChangeSetBackedTransactionSynchronization.class);
@@ -63,12 +65,12 @@ public class ChangeSetBackedTransactionSynchronization implements TransactionSyn
 
 	public void resume() {
 		throw new IllegalStateException(
-				"ChangedSetBackedTransactionSynchronization does not support transaction suspension currently.");
+				"ChangedSetBackedTransactionSynchronization does not support transaction suspension currently");
 	}
 
 	public void suspend() {
 		throw new IllegalStateException(
-				"ChangedSetBackedTransactionSynchronization does not support transaction suspension currently.");
+				"ChangedSetBackedTransactionSynchronization does not support transaction suspension currently");
 	}
 
 }

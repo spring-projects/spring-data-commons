@@ -53,6 +53,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID>
 		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware,
@@ -249,7 +250,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public PersistentEntity<?, ?> getPersistentEntity() {
 
-		return mappingContext.orElseThrow(() -> new IllegalStateException("No MappingContext available!"))
+		return mappingContext.orElseThrow(() -> new IllegalStateException("No MappingContext available"))
 				.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
 	}
 

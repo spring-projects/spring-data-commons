@@ -58,6 +58,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Johannes Englmeier
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
@@ -237,7 +238,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 				throw new MappingException(
 						String.format(
 								"Attempt to add version property %s but already have property %s registered "
-										+ "as version. Check your mapping configuration!",
+										+ "as version. Check your mapping configuration",
 								property.getField(), versionProperty.getField()));
 			}
 
@@ -271,7 +272,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		if (idProperty != null) {
 			throw new MappingException(String.format("Attempt to add id property %s but already have property %s registered "
-					+ "as id. Check your mapping configuration!", property.getField(), idProperty.getField()));
+					+ "as id. Check your mapping configuration ", property.getField(), idProperty.getField()));
 		}
 
 		return property;
@@ -646,11 +647,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		public int compare(@Nullable Association<P> left, @Nullable Association<P> right) {
 
 			if (left == null) {
-				throw new IllegalArgumentException("Left argument must not be null!");
+				throw new IllegalArgumentException("Left argument must not be null");
 			}
 
 			if (right == null) {
-				throw new IllegalArgumentException("Right argument must not be null!");
+				throw new IllegalArgumentException("Right argument must not be null");
 			}
 
 			return delegate.compare(left.getInverse(), right.getInverse());

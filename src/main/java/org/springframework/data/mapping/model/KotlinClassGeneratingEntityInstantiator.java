@@ -38,6 +38,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
+ * @author Johannes Englmeier
  * @since 2.0
  */
 class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInstantiator {
@@ -212,7 +213,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 				@Nullable PreferredConstructor<? extends T, P> preferredConstructor, ParameterValueProvider<P> provider) {
 
 			if (preferredConstructor == null) {
-				throw new IllegalArgumentException("PreferredConstructor must not be null!");
+				throw new IllegalArgumentException("PreferredConstructor must not be null");
 			}
 
 			Object[] params = allocateArguments(synthetic.getParameterCount()

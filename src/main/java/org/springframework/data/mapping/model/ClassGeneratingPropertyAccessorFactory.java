@@ -65,6 +65,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Johannes Englmeier
  * @since 1.13
  */
 public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
@@ -780,7 +781,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			visitGetPropertySwitch(entity, persistentProperties, internalClassName, mv);
 
 			mv.visitLabel(l1);
-			visitThrowUnsupportedOperationException(mv, "No accessor to get property %s!");
+			visitThrowUnsupportedOperationException(mv, "No accessor to get property %s");
 
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l1, 0);
 			mv.visitLocalVariable("property", referenceName(PERSISTENT_PROPERTY),
@@ -943,7 +944,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			Label l1 = new Label();
 			mv.visitLabel(l1);
 
-			visitThrowUnsupportedOperationException(mv, "No accessor to set property %s!");
+			visitThrowUnsupportedOperationException(mv, "No accessor to set property %s");
 
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l1, 0);
 			mv.visitLocalVariable("property", "Lorg/springframework/data/mapping/PersistentProperty;",

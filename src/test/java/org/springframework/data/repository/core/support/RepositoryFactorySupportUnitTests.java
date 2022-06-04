@@ -84,6 +84,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Ariel Carrera
+ * @author Johannes Englmeier
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -438,7 +439,7 @@ class RepositoryFactorySupportUnitTests {
 	void dummyRepositoryNotSupportingReactiveQuerydslShouldRaiseException() {
 		assertThatThrownBy(() -> factory.getRepository(WithReactiveQuerydsl.class, backingRepo))
 				.isInstanceOf(UnsupportedFragmentException.class).hasMessage(
-						"Repository org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests$WithReactiveQuerydsl implements org.springframework.data.repository.query.ReactiveQueryByExampleExecutor but DummyRepositoryFactory does not support Reactive Query by Example!");
+						"Repository org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests$WithReactiveQuerydsl implements org.springframework.data.repository.query.ReactiveQueryByExampleExecutor but DummyRepositoryFactory does not support Reactive Query by Example");
 	}
 
 	@Test // GH-2341

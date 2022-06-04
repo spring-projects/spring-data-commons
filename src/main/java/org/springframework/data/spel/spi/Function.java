@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Johannes Englmeier
  * @since 1.9
  */
 public class Function {
@@ -107,7 +108,7 @@ public class Function {
 			return method.invoke(target, argumentsToUse.size() == 1 ? argumentsToUse.get(0) : argumentsToUse.toArray());
 		}
 
-		throw new IllegalStateException(String.format("Could not invoke method %s for arguments %s!", method, arguments));
+		throw new IllegalStateException(String.format("Could not invoke method %s for arguments %s", method, arguments));
 	}
 
 	/**
