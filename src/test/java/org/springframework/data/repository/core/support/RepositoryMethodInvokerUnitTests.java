@@ -64,6 +64,7 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Christoph Strobl
+ * @author Johannes Englmeier
  */
 @ExtendWith(MockitoExtension.class)
 class RepositoryMethodInvokerUnitTests {
@@ -212,7 +213,7 @@ class RepositoryMethodInvokerUnitTests {
 	@Test // DATACMNS-1764
 	void capturesImperativeErrorCorrectly() {
 
-		when(query.execute(any())).thenThrow(new IllegalStateException("I'll be back!"));
+		when(query.execute(any())).thenThrow(new IllegalStateException("I'll be back"));
 		assertThatIllegalStateException().isThrownBy(() -> repositoryMethodInvoker("findAll").invoke());
 
 		assertThat(multicaster.first().getResult().getState()).isEqualTo(State.ERROR);
@@ -223,7 +224,7 @@ class RepositoryMethodInvokerUnitTests {
 	void capturesReactiveErrorCorrectly() throws Exception {
 
 		when(query.execute(any())).thenReturn(Mono.fromSupplier(() -> {
-			throw new IllegalStateException("I'll be back!");
+			throw new IllegalStateException("I'll be back");
 		}));
 
 		repositoryMethodInvokerForReactive("findByName").<Mono<TestDummy>> invoke().as(StepVerifier::create).verifyError();
