@@ -65,8 +65,8 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 */
 	public PersistentPropertyPath<P> from(Class<?> type, String propertyPath) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(propertyPath, "Property path must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(propertyPath, "Property path must not be null");
 
 		return getPersistentPropertyPath(ClassTypeInformation.from(type), propertyPath);
 	}
@@ -80,8 +80,8 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 */
 	public PersistentPropertyPath<P> from(TypeInformation<?> type, String propertyPath) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(propertyPath, "Property path must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(propertyPath, "Property path must not be null");
 
 		return getPersistentPropertyPath(type, propertyPath);
 	}
@@ -94,7 +94,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 */
 	public PersistentPropertyPath<P> from(PropertyPath path) {
 
-		Assert.notNull(path, "Property path must not be null!");
+		Assert.notNull(path, "Property path must not be null");
 
 		return from(path.getOwningType(), path.toDotPath());
 	}
@@ -109,8 +109,8 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 */
 	public <T> PersistentPropertyPaths<T, P> from(Class<T> type, Predicate<? super P> propertyFilter) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(propertyFilter, "Property filter must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(propertyFilter, "Property filter must not be null");
 
 		return from(ClassTypeInformation.from(type), propertyFilter);
 	}
@@ -127,9 +127,9 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	public <T> PersistentPropertyPaths<T, P> from(Class<T> type, Predicate<? super P> propertyFilter,
 			Predicate<P> traversalGuard) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(propertyFilter, "Property filter must not be null!");
-		Assert.notNull(traversalGuard, "Traversal guard must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(propertyFilter, "Property filter must not be null");
+		Assert.notNull(traversalGuard, "Traversal guard must not be null");
 
 		return from(ClassTypeInformation.from(type), propertyFilter, traversalGuard);
 	}
@@ -158,9 +158,9 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	public <T> PersistentPropertyPaths<T, P> from(TypeInformation<T> type, Predicate<? super P> propertyFilter,
 			Predicate<P> traversalGuard) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(propertyFilter, "Property filter must not be null!");
-		Assert.notNull(traversalGuard, "Traversal guard must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(propertyFilter, "Property filter must not be null");
+		Assert.notNull(traversalGuard, "Traversal guard must not be null");
 
 		return DefaultPersistentPropertyPaths.of(type,
 				from(type, propertyFilter, traversalGuard, DefaultPersistentPropertyPath.empty()));
@@ -394,7 +394,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		@Override
 		public boolean contains(PropertyPath path) {
 
-			Assert.notNull(path, "PropertyPath must not be null!");
+			Assert.notNull(path, "PropertyPath must not be null");
 
 			if (!path.getOwningType().equals(type)) {
 				return false;
@@ -421,7 +421,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		@Override
 		public PersistentPropertyPaths<T, P> dropPathIfSegmentMatches(Predicate<? super P> predicate) {
 
-			Assert.notNull(predicate, "Predicate must not be null!");
+			Assert.notNull(predicate, "Predicate must not be null");
 
 			List<PersistentPropertyPath<P>> paths = this.stream() //
 					.filter(it -> !it.stream().anyMatch(predicate)) //

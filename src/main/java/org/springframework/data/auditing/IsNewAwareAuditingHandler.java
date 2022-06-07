@@ -69,7 +69,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 */
 	public Object markAudited(Object object) {
 
-		Assert.notNull(object, "Source object must not be null!");
+		Assert.notNull(object, "Source object must not be null");
 
 		if (!isAuditable(object)) {
 			return object;

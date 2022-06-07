@@ -128,8 +128,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 				Annotation mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
 
 				validateAnnotation(mergedAnnotation,
-						"Ambiguous mapping! Annotation %s configured "
-								+ "multiple times on accessor methods of property %s in class %s!",
+						"Ambiguous mapping; Annotation %s configured "
+								+ "multiple times on accessor methods of property %s in class %s",
 						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
 
 				annotationCache.put(annotationType,
@@ -145,7 +145,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 				Annotation mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
 
 				validateAnnotation(mergedAnnotation,
-						"Ambiguous mapping! Annotation %s configured " + "on field %s and one of its accessor methods in class %s!",
+						"Ambiguous mapping; Annotation %s configured " + "on field %s and one of its accessor methods in class %s",
 						annotationType.getSimpleName(), it.getName(), getOwner().getType().getSimpleName());
 
 				annotationCache.put(annotationType,
@@ -243,7 +243,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@Nullable
 	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 
-		Assert.notNull(annotationType, "Annotation type must not be null!");
+		Assert.notNull(annotationType, "Annotation type must not be null");
 
 		return doFindAnnotation(annotationType).orElse(null);
 	}

@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
  */
 public class PropertiesBasedNamedQueries implements NamedQueries {
 
-	private static final String NO_QUERY_FOUND = "No query with name %s found! Make sure you call hasQuery(…) before calling this method!";
+	private static final String NO_QUERY_FOUND = "No query with name %s found; Make sure you call hasQuery(…) before calling this method";
 
 	public static final NamedQueries EMPTY = new PropertiesBasedNamedQueries(new Properties());
 
@@ -43,7 +43,7 @@ public class PropertiesBasedNamedQueries implements NamedQueries {
 	 */
 	public boolean hasQuery(String queryName) {
 
-		Assert.hasText(queryName, "Query name must not be null or empty!");
+		Assert.hasText(queryName, "Query name must not be null or empty");
 
 		return properties.containsKey(queryName);
 	}
@@ -54,7 +54,7 @@ public class PropertiesBasedNamedQueries implements NamedQueries {
 	 */
 	public String getQuery(String queryName) {
 
-		Assert.hasText(queryName, "Query name must not be null or empty!");
+		Assert.hasText(queryName, "Query name must not be null or empty");
 
 		String query = properties.getProperty(queryName);
 

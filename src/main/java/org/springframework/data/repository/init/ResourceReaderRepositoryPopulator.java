@@ -70,7 +70,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 */
 	public ResourceReaderRepositoryPopulator(ResourceReader reader, @Nullable ClassLoader classLoader) {
 
-		Assert.notNull(reader, "Reader must not be null!");
+		Assert.notNull(reader, "Reader must not be null");
 
 		this.reader = reader;
 		this.classLoader = classLoader;
@@ -85,7 +85,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 * @throws IOException
 	 */
 	public void setResourceLocation(String location) throws IOException {
-		Assert.hasText(location, "Location must not be null!");
+		Assert.hasText(location, "Location must not be null");
 		setResources(resolver.getResources(location));
 	}
 
@@ -112,7 +112,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 	 */
 	public void populate(Repositories repositories) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
 
 		RepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories);
 
@@ -127,7 +127,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 					if (element != null) {
 						persist(element, invokerFactory);
 					} else {
-						logger.info("Skipping null element found in unmarshal result!");
+						logger.info("Skipping null element found in unmarshal result");
 					}
 				}
 			} else {

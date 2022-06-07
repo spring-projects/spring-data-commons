@@ -62,8 +62,8 @@ class TypedExampleMatcher implements ExampleMatcher {
 	@Override
 	public ExampleMatcher withIgnorePaths(String... ignoredPaths) {
 
-		Assert.notEmpty(ignoredPaths, "IgnoredPaths must not be empty!");
-		Assert.noNullElements(ignoredPaths, "IgnoredPaths must not contain null elements!");
+		Assert.notEmpty(ignoredPaths, "IgnoredPaths must not be empty");
+		Assert.noNullElements(ignoredPaths, "IgnoredPaths must not contain null elements");
 
 		Set<String> newIgnoredPaths = new LinkedHashSet<>(this.ignoredPaths);
 		newIgnoredPaths.addAll(Arrays.asList(ignoredPaths));
@@ -79,7 +79,7 @@ class TypedExampleMatcher implements ExampleMatcher {
 	@Override
 	public ExampleMatcher withStringMatcher(StringMatcher defaultStringMatcher) {
 
-		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty!");
+		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty");
 
 		return new TypedExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
 				defaultIgnoreCase, mode);
@@ -102,8 +102,8 @@ class TypedExampleMatcher implements ExampleMatcher {
 	@Override
 	public ExampleMatcher withMatcher(String propertyPath, GenericPropertyMatcher genericPropertyMatcher) {
 
-		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
-		Assert.notNull(genericPropertyMatcher, "GenericPropertyMatcher must not be empty!");
+		Assert.hasText(propertyPath, "PropertyPath must not be empty");
+		Assert.notNull(genericPropertyMatcher, "GenericPropertyMatcher must not be empty");
 
 		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
 		PropertySpecifier propertySpecifier = new PropertySpecifier(propertyPath);
@@ -131,8 +131,8 @@ class TypedExampleMatcher implements ExampleMatcher {
 	@Override
 	public ExampleMatcher withTransformer(String propertyPath, PropertyValueTransformer propertyValueTransformer) {
 
-		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
-		Assert.notNull(propertyValueTransformer, "PropertyValueTransformer must not be empty!");
+		Assert.hasText(propertyPath, "PropertyPath must not be empty");
+		Assert.notNull(propertyValueTransformer, "PropertyValueTransformer must not be empty");
 
 		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
 		PropertySpecifier propertySpecifier = getOrCreatePropertySpecifier(propertyPath, propertySpecifiers);
@@ -150,8 +150,8 @@ class TypedExampleMatcher implements ExampleMatcher {
 	@Override
 	public ExampleMatcher withIgnoreCase(String... propertyPaths) {
 
-		Assert.notEmpty(propertyPaths, "PropertyPaths must not be empty!");
-		Assert.noNullElements(propertyPaths, "PropertyPaths must not contain null elements!");
+		Assert.notEmpty(propertyPaths, "PropertyPaths must not be empty");
+		Assert.noNullElements(propertyPaths, "PropertyPaths must not contain null elements");
 
 		PropertySpecifiers propertySpecifiers = new PropertySpecifiers(this.propertySpecifiers);
 
@@ -171,7 +171,7 @@ class TypedExampleMatcher implements ExampleMatcher {
 	@Override
 	public ExampleMatcher withNullHandler(NullHandler nullHandler) {
 
-		Assert.notNull(nullHandler, "NullHandler must not be null!");
+		Assert.notNull(nullHandler, "NullHandler must not be null");
 		return new TypedExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
 				defaultIgnoreCase, mode);
 	}

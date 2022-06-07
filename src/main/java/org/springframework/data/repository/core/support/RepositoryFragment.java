@@ -86,7 +86,7 @@ public interface RepositoryFragment<T> {
 	 */
 	default boolean hasMethod(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 		return ReflectionUtils.findMethod(getSignatureContributor(), method.getName(), method.getParameterTypes()) != null;
 	}
 
@@ -197,13 +197,13 @@ public interface RepositoryFragment<T> {
 		 */
 		public ImplementedRepositoryFragment(Optional<Class<T>> interfaceClass, T implementation) {
 
-			Assert.notNull(interfaceClass, "Interface class must not be null!");
-			Assert.notNull(implementation, "Implementation object must not be null!");
+			Assert.notNull(interfaceClass, "Interface class must not be null");
+			Assert.notNull(implementation, "Implementation object must not be null");
 
 			interfaceClass.ifPresent(it -> {
 
 				Assert.isTrue(ClassUtils.isAssignableValue(it, implementation),
-						() -> String.format("Fragment implementation %s does not implement %s!",
+						() -> String.format("Fragment implementation %s does not implement %s",
 								ClassUtils.getQualifiedName(implementation.getClass()), ClassUtils.getQualifiedName(it)));
 			});
 

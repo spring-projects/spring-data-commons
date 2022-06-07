@@ -43,7 +43,7 @@ public interface Optionals {
 	 */
 	public static boolean isAnyPresent(Optional<?>... optionals) {
 
-		Assert.notNull(optionals, "Optionals must not be null!");
+		Assert.notNull(optionals, "Optionals must not be null");
 
 		return Arrays.stream(optionals).anyMatch(Optional::isPresent);
 	}
@@ -57,7 +57,7 @@ public interface Optionals {
 	@SafeVarargs
 	public static <T> Stream<T> toStream(Optional<? extends T>... optionals) {
 
-		Assert.notNull(optionals, "Optional must not be null!");
+		Assert.notNull(optionals, "Optional must not be null");
 
 		return Arrays.asList(optionals).stream().flatMap(it -> it.map(Stream::of).orElseGet(Stream::empty));
 	}
@@ -71,8 +71,8 @@ public interface Optionals {
 	 */
 	public static <S, T> Optional<T> firstNonEmpty(Iterable<S> source, Function<S, Optional<T>> function) {
 
-		Assert.notNull(source, "Source must not be null!");
-		Assert.notNull(function, "Function must not be null!");
+		Assert.notNull(source, "Source must not be null");
+		Assert.notNull(function, "Function must not be null");
 
 		return Streamable.of(source).stream()//
 				.map(function::apply)//
@@ -89,8 +89,8 @@ public interface Optionals {
 	 */
 	public static <S, T> T firstNonEmpty(Iterable<S> source, Function<S, T> function, T defaultValue) {
 
-		Assert.notNull(source, "Source must not be null!");
-		Assert.notNull(function, "Function must not be null!");
+		Assert.notNull(source, "Source must not be null");
+		Assert.notNull(function, "Function must not be null");
 
 		return Streamable.of(source).stream()//
 				.map(function::apply)//
@@ -107,7 +107,7 @@ public interface Optionals {
 	@SafeVarargs
 	public static <T> Optional<T> firstNonEmpty(Supplier<Optional<T>>... suppliers) {
 
-		Assert.notNull(suppliers, "Suppliers must not be null!");
+		Assert.notNull(suppliers, "Suppliers must not be null");
 
 		return firstNonEmpty(Streamable.of(suppliers));
 	}
@@ -120,7 +120,7 @@ public interface Optionals {
 	 */
 	public static <T> Optional<T> firstNonEmpty(Iterable<Supplier<Optional<T>>> suppliers) {
 
-		Assert.notNull(suppliers, "Suppliers must not be null!");
+		Assert.notNull(suppliers, "Suppliers must not be null");
 
 		return Streamable.of(suppliers).stream()//
 				.map(Supplier::get)//
@@ -137,7 +137,7 @@ public interface Optionals {
 	 */
 	public static <T> Optional<T> next(Iterator<T> iterator) {
 
-		Assert.notNull(iterator, "Iterator must not be null!");
+		Assert.notNull(iterator, "Iterator must not be null");
 
 		return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
 	}
@@ -163,9 +163,9 @@ public interface Optionals {
 	 */
 	public static <T, S> void ifAllPresent(Optional<T> left, Optional<S> right, BiConsumer<T, S> consumer) {
 
-		Assert.notNull(left, "Optional must not be null!");
-		Assert.notNull(right, "Optional must not be null!");
-		Assert.notNull(consumer, "Consumer must not be null!");
+		Assert.notNull(left, "Optional must not be null");
+		Assert.notNull(right, "Optional must not be null");
+		Assert.notNull(consumer, "Consumer must not be null");
 
 		mapIfAllPresent(left, right, (l, r) -> {
 			consumer.accept(l, r);
@@ -184,9 +184,9 @@ public interface Optionals {
 	public static <T, S, R> Optional<R> mapIfAllPresent(Optional<T> left, Optional<S> right,
 			BiFunction<T, S, R> function) {
 
-		Assert.notNull(left, "Optional must not be null!");
-		Assert.notNull(right, "Optional must not be null!");
-		Assert.notNull(function, "BiFunctionmust not be null!");
+		Assert.notNull(left, "Optional must not be null");
+		Assert.notNull(right, "Optional must not be null");
+		Assert.notNull(function, "BiFunction must not be null");
 
 		return left.flatMap(l -> right.map(r -> function.apply(l, r)));
 	}
@@ -200,9 +200,9 @@ public interface Optionals {
 	 */
 	public static <T> void ifPresentOrElse(Optional<T> optional, Consumer<? super T> consumer, Runnable runnable) {
 
-		Assert.notNull(optional, "Optional must not be null!");
-		Assert.notNull(consumer, "Consumer must not be null!");
-		Assert.notNull(runnable, "Runnable must not be null!");
+		Assert.notNull(optional, "Optional must not be null");
+		Assert.notNull(consumer, "Consumer must not be null");
+		Assert.notNull(runnable, "Runnable must not be null");
 
 		if (optional.isPresent()) {
 			optional.ifPresent(consumer);

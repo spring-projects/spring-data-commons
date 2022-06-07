@@ -59,8 +59,8 @@ public interface PersistentPropertyAccessor<T> {
 	@Deprecated
 	default void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value) {
 
-		Assert.notNull(path, "PersistentPropertyPath must not be null!");
-		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty!");
+		Assert.notNull(path, "PersistentPropertyPath must not be null");
+		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty");
 
 		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
 		PersistentProperty<?> leafProperty = path.getRequiredLeafProperty();
@@ -75,7 +75,7 @@ public interface PersistentPropertyAccessor<T> {
 
 		if (parent == null) {
 
-			String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s";
+			String nullIntermediateMessage = "Cannot lookup property %s on null intermediate; Original path was: %s on %s";
 
 			throw new MappingException(
 					String.format(nullIntermediateMessage, parentProperty, path.toDotPath(), getBean().getClass().getName()));
@@ -151,7 +151,7 @@ public interface PersistentPropertyAccessor<T> {
 
 			if (current == null) {
 
-				String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s";
+				String nullIntermediateMessage = "Cannot lookup property %s on null intermediate; Original path was: %s on %s";
 
 				throw new MappingException(
 						String.format(nullIntermediateMessage, property, path.toDotPath(), bean.getClass().getName()));

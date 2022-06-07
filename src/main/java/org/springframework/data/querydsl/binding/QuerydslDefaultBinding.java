@@ -51,8 +51,8 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Optional<Predicate> bind(Path<?> path, Collection<? extends Object> value) {
 
-		Assert.notNull(path, "Path must not be null!");
-		Assert.notNull(value, "Value must not be null!");
+		Assert.notNull(path, "Path must not be null");
+		Assert.notNull(value, "Value must not be null");
 
 		if (value.isEmpty()) {
 			return Optional.empty();

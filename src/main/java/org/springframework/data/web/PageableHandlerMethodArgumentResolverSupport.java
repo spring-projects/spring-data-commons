@@ -45,7 +45,7 @@ import org.springframework.util.StringUtils;
  */
 public abstract class PageableHandlerMethodArgumentResolverSupport {
 
-	private static final String INVALID_DEFAULT_PAGE_SIZE = "Invalid default page size configured for method %s! Must not be less than one!";
+	private static final String INVALID_DEFAULT_PAGE_SIZE = "Invalid default page size configured for method %s; Must not be less than one";
 
 	private static final String DEFAULT_PAGE_PARAMETER = "page";
 	private static final String DEFAULT_SIZE_PARAMETER = "size";
@@ -73,7 +73,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 	 */
 	public void setFallbackPageable(Pageable fallbackPageable) {
 
-		Assert.notNull(fallbackPageable, "Fallback Pageable must not be null!");
+		Assert.notNull(fallbackPageable, "Fallback Pageable must not be null");
 
 		this.fallbackPageable = fallbackPageable;
 	}
@@ -115,7 +115,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 	 */
 	public void setPageParameterName(String pageParameterName) {
 
-		Assert.hasText(pageParameterName, "Page parameter name must not be null or empty!");
+		Assert.hasText(pageParameterName, "Page parameter name must not be null or empty");
 		this.pageParameterName = pageParameterName;
 	}
 
@@ -135,7 +135,7 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 	 */
 	public void setSizeParameterName(String sizeParameterName) {
 
-		Assert.hasText(sizeParameterName, "Size parameter name must not be null or empty!");
+		Assert.hasText(sizeParameterName, "Size parameter name must not be null or empty");
 		this.sizeParameterName = sizeParameterName;
 	}
 

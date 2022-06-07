@@ -51,7 +51,7 @@ public class RepositoryFragmentsFactoryBean<T>
 	@SuppressWarnings("null")
 	public RepositoryFragmentsFactoryBean(List<String> fragmentBeanNames) {
 
-		Assert.notNull(fragmentBeanNames, "Fragment bean names must not be null!");
+		Assert.notNull(fragmentBeanNames, "Fragment bean names must not be null");
 		this.fragmentBeanNames = fragmentBeanNames;
 	}
 

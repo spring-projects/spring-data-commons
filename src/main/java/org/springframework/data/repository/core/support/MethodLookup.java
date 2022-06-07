@@ -56,7 +56,7 @@ public interface MethodLookup {
 	 */
 	default MethodLookup and(MethodLookup other) {
 
-		Assert.notNull(other, "Other method lookup must not be null!");
+		Assert.notNull(other, "Other method lookup must not be null");
 
 		return () -> Stream.concat(getLookups().stream(), other.getLookups().stream()).collect(Collectors.toList());
 	}

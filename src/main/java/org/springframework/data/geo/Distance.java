@@ -61,7 +61,7 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	 */
 	public Distance(double value, Metric metric) {
 
-		Assert.notNull(metric, "Metric must not be null!");
+		Assert.notNull(metric, "Metric must not be null");
 
 		this.value = value;
 		this.metric = metric;
@@ -119,7 +119,7 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	 */
 	public Distance add(Distance other) {
 
-		Assert.notNull(other, "Distance to add must not be null!");
+		Assert.notNull(other, "Distance to add must not be null");
 
 		double newNormalizedValue = getNormalizedValue() + other.getNormalizedValue();
 
@@ -135,8 +135,8 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	 */
 	public Distance add(Distance other, Metric metric) {
 
-		Assert.notNull(other, "Distance to must not be null!");
-		Assert.notNull(metric, "Result metric must not be null!");
+		Assert.notNull(other, "Distance to must not be null");
+		Assert.notNull(metric, "Result metric must not be null");
 
 		double newLeft = getNormalizedValue() * metric.getMultiplier();
 		double newRight = other.getNormalizedValue() * metric.getMultiplier();
@@ -153,7 +153,7 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	 */
 	public Distance in(Metric metric) {
 
-		Assert.notNull(metric, "Metric must not be null!");
+		Assert.notNull(metric, "Metric must not be null");
 
 		return this.metric.equals(metric) ? this : new Distance(getNormalizedValue() * metric.getMultiplier(), metric);
 	}

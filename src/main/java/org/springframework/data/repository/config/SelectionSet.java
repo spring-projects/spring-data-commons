@@ -83,7 +83,7 @@ class SelectionSet<T> {
 			if (c.isEmpty()) {
 				return Optional.empty();
 			} else {
-				throw new IllegalStateException("More then one element in collection");
+				throw new IllegalStateException("More than one element in collection");
 			}
 		};
 	}

@@ -43,7 +43,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 	@SuppressWarnings("null")
 	public NamedQueriesBeanDefinitionBuilder(String defaultLocation) {
 
-		Assert.hasText(defaultLocation, "DefaultLocation must not be null nor empty!");
+		Assert.hasText(defaultLocation, "DefaultLocation must not be null nor empty");
 		this.defaultLocation = defaultLocation;
 	}
 
@@ -54,7 +54,7 @@ public class NamedQueriesBeanDefinitionBuilder {
 	 */
 	public void setLocations(String locations) {
 
-		Assert.hasText(locations, "Locations must not be null nor empty!");
+		Assert.hasText(locations, "Locations must not be null nor empty");
 
 		this.locations = locations;
 	}

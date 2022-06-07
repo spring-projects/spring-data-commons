@@ -120,7 +120,7 @@ public abstract class QueryExecutionConverters {
 	 */
 	public static boolean supports(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return supportsCache.computeIfAbsent(type, key -> {
 
@@ -142,7 +142,7 @@ public abstract class QueryExecutionConverters {
 	 */
 	public static boolean supportsUnwrapping(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		if (NullableWrapperConverters.supportsUnwrapping(type)) {
 			return NullableWrapperConverters.supportsUnwrapping(type);
@@ -189,7 +189,7 @@ public abstract class QueryExecutionConverters {
 	 */
 	public static void registerConvertersIn(ConfigurableConversionService conversionService) {
 
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		conversionService.removeConvertible(Collection.class, Object.class);
 
@@ -262,7 +262,7 @@ public abstract class QueryExecutionConverters {
 	@Nullable
 	public static ExecutionAdapter getExecutionAdapter(Class<?> returnType) {
 
-		Assert.notNull(returnType, "Return type must not be null!");
+		Assert.notNull(returnType, "Return type must not be null");
 
 		return EXECUTION_ADAPTER.get(returnType);
 	}
@@ -293,7 +293,7 @@ public abstract class QueryExecutionConverters {
 		 */
 		AbstractWrapperTypeConverter(Object nullValue) {
 
-			Assert.notNull(nullValue, "Null value must not be null!");
+			Assert.notNull(nullValue, "Null value must not be null");
 
 			this.nullValue = nullValue;
 			this.wrapperTypes = Collections.singleton(nullValue.getClass());

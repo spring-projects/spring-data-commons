@@ -57,8 +57,8 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
 
-		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null!");
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
+		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 
 		AbstractBeanDefinition ahbd = registerAuditHandlerBeanDefinition(registry, getConfiguration(annotationMetadata));
 		registerAuditListenerBeanDefinition(ahbd, registry);
@@ -74,8 +74,8 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	private AbstractBeanDefinition registerAuditHandlerBeanDefinition(BeanDefinitionRegistry registry,
 			AuditingConfiguration configuration) {
 
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
-		Assert.notNull(configuration, "AuditingConfiguration must not be null!");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+		Assert.notNull(configuration, "AuditingConfiguration must not be null");
 
 		AbstractBeanDefinition ahbd = getAuditHandlerBeanDefinitionBuilder(configuration).getBeanDefinition();
 		registry.registerBeanDefinition(getAuditingHandlerBeanName(), ahbd);
@@ -91,7 +91,7 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	 */
 	protected BeanDefinitionBuilder getAuditHandlerBeanDefinitionBuilder(AuditingConfiguration configuration) {
 
-		Assert.notNull(configuration, "AuditingConfiguration must not be null!");
+		Assert.notNull(configuration, "AuditingConfiguration must not be null");
 
 		return configureDefaultAuditHandlerAttributes(configuration,
 				BeanDefinitionBuilder.rootBeanDefinition(AuditingHandler.class));

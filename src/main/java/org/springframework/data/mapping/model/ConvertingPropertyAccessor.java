@@ -48,8 +48,8 @@ public class ConvertingPropertyAccessor<T> extends SimplePersistentPropertyPathA
 
 		super(accessor);
 
-		Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(accessor, "PersistentPropertyAccessor must not be null");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		this.accessor = accessor;
 		this.conversionService = conversionService;
@@ -86,8 +86,8 @@ public class ConvertingPropertyAccessor<T> extends SimplePersistentPropertyPathA
 	@Nullable
 	public <S> S getProperty(PersistentProperty<?> property, Class<S> targetType) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
-		Assert.notNull(targetType, "Target type must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
+		Assert.notNull(targetType, "Target type must not be null");
 
 		return convertIfNecessary(getProperty(property), targetType);
 	}

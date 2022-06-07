@@ -50,10 +50,10 @@ public abstract class ParsingUtils {
 	public static void setPropertyValue(BeanDefinitionBuilder builder, Element element, String attrName,
 			String propertyName) {
 
-		Assert.notNull(builder, "BeanDefinitionBuilder must not be null!");
-		Assert.notNull(element, "Element must not be null!");
-		Assert.hasText(attrName, "Attribute name must not be null!");
-		Assert.hasText(propertyName, "Property name must not be null!");
+		Assert.notNull(builder, "BeanDefinitionBuilder must not be null");
+		Assert.notNull(element, "Element must not be null");
+		Assert.hasText(attrName, "Attribute name must not be null");
+		Assert.hasText(propertyName, "Property name must not be null");
 
 		String attr = element.getAttribute(attrName);
 
@@ -85,10 +85,10 @@ public abstract class ParsingUtils {
 	public static void setPropertyReference(BeanDefinitionBuilder builder, Element element, String attribute,
 			String property) {
 
-		Assert.notNull(builder, "BeanDefinitionBuilder must not be null!");
-		Assert.notNull(element, "Element must not be null!");
-		Assert.hasText(attribute, "Attribute name must not be null!");
-		Assert.hasText(property, "Property name must not be null!");
+		Assert.notNull(builder, "BeanDefinitionBuilder must not be null");
+		Assert.notNull(element, "Element must not be null");
+		Assert.hasText(attribute, "Attribute name must not be null");
+		Assert.hasText(property, "Property name must not be null");
 
 		String value = element.getAttribute(attribute);
 
@@ -109,8 +109,8 @@ public abstract class ParsingUtils {
 	public static AbstractBeanDefinition getSourceBeanDefinition(BeanDefinitionBuilder builder, ParserContext context,
 			Element element) {
 
-		Assert.notNull(element, "Element must not be null!");
-		Assert.notNull(context, "ParserContext must not be null!");
+		Assert.notNull(element, "Element must not be null");
+		Assert.notNull(context, "ParserContext must not be null");
 
 		return getSourceBeanDefinition(builder, context.extractSource(element));
 	}
@@ -124,7 +124,7 @@ public abstract class ParsingUtils {
 	 */
 	public static AbstractBeanDefinition getSourceBeanDefinition(BeanDefinitionBuilder builder, @Nullable Object source) {
 
-		Assert.notNull(builder, "Builder must not be null!");
+		Assert.notNull(builder, "Builder must not be null");
 
 		AbstractBeanDefinition definition = builder.getRawBeanDefinition();
 		definition.setSource(source);
@@ -141,7 +141,7 @@ public abstract class ParsingUtils {
 	 */
 	public static AbstractBeanDefinition getObjectFactoryBeanDefinition(String targetBeanName, @Nullable Object source) {
 
-		Assert.hasText(targetBeanName, "Target bean name must not be null or empty!");
+		Assert.hasText(targetBeanName, "Target bean name must not be null or empty");
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(ObjectFactoryCreatingFactoryBean.class);
 		builder.addPropertyValue("targetBeanName", targetBeanName);

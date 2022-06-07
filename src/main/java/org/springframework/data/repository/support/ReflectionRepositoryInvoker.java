@@ -47,7 +47,7 @@ import org.springframework.util.StringUtils;
 class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	private static final AnnotationAttribute PARAM_ANNOTATION = new AnnotationAttribute(Param.class);
-	private static final String NAME_NOT_FOUND = "Unable to detect parameter names for query method %s! Use @Param or compile with -parameters on JDK 8.";
+	private static final String NAME_NOT_FOUND = "Unable to detect parameter names for query method %s; Use @Param or compile with -parameters on JDK 8";
 
 	private final Object repository;
 	private final CrudMethods methods;
@@ -65,9 +65,9 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	public ReflectionRepositoryInvoker(Object repository, RepositoryMetadata metadata,
 			ConversionService conversionService) {
 
-		Assert.notNull(repository, "Repository must not be null!");
-		Assert.notNull(metadata, "RepositoryMetadata must not be null!");
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(repository, "Repository must not be null");
+		Assert.notNull(metadata, "RepositoryMetadata must not be null");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		this.repository = repository;
 		this.methods = metadata.getCrudMethods();
@@ -162,7 +162,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	@Override
 	public void invokeDeleteById(Object id) {
 
-		Assert.notNull(id, "Identifier must not be null!");
+		Assert.notNull(id, "Identifier must not be null");
 
 		Method method = methods.getDeleteMethod()
 				.orElseThrow(() -> new IllegalStateException("Repository doesn't have a delete-method declared"));
@@ -182,10 +182,10 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	public Optional<Object> invokeQueryMethod(Method method, MultiValueMap<String, ?> parameters, Pageable pageable,
 			Sort sort) {
 
-		Assert.notNull(method, "Method must not be null!");
-		Assert.notNull(parameters, "Parameters must not be null!");
-		Assert.notNull(pageable, "Pageable must not be null!");
-		Assert.notNull(sort, "Sort must not be null!");
+		Assert.notNull(method, "Method must not be null");
+		Assert.notNull(parameters, "Parameters must not be null");
+		Assert.notNull(pageable, "Pageable must not be null");
+		Assert.notNull(sort, "Sort must not be null");
 
 		ReflectionUtils.makeAccessible(method);
 
@@ -285,7 +285,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	protected Object convertId(Object id) {
 
-		Assert.notNull(id, "Id must not be null!");
+		Assert.notNull(id, "Id must not be null");
 
 		if (idType.isInstance(id)) {
 			return id;

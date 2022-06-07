@@ -40,7 +40,7 @@ public interface ConfigurationUtils {
 	 */
 	public static ResourceLoader getRequiredResourceLoader(XmlReaderContext context) {
 
-		Assert.notNull(context, "XmlReaderContext must not be null!");
+		Assert.notNull(context, "XmlReaderContext must not be null");
 
 		ResourceLoader resourceLoader = context.getResourceLoader();
 
@@ -71,7 +71,7 @@ public interface ConfigurationUtils {
 	 */
 	public static ClassLoader getRequiredClassLoader(ResourceLoader resourceLoader) {
 
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
 
 		ClassLoader classLoader = resourceLoader.getClassLoader();
 
@@ -91,7 +91,7 @@ public interface ConfigurationUtils {
 	 */
 	public static String getRequiredBeanClassName(BeanDefinition beanDefinition) {
 
-		Assert.notNull(beanDefinition, "BeanDefinition must not be null!");
+		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
 
 		String result = beanDefinition.getBeanClassName();
 

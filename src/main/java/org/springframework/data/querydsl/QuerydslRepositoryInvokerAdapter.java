@@ -49,8 +49,8 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 	public QuerydslRepositoryInvokerAdapter(RepositoryInvoker delegate, QuerydslPredicateExecutor<Object> executor,
 			Predicate predicate) {
 
-		Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null!");
-		Assert.notNull(executor, "QuerydslPredicateExecutor must not be null!");
+		Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null");
+		Assert.notNull(executor, "QuerydslPredicateExecutor must not be null");
 
 		this.delegate = delegate;
 		this.executor = executor;

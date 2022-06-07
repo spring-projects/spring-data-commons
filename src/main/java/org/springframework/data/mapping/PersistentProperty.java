@@ -351,7 +351,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		}
 
 		throw new IllegalStateException(
-				String.format("Required annotation %s not found for %s!", annotationType, getName()));
+				String.format("Required annotation %s not found for %s", annotationType, getName()));
 	}
 
 	/**
@@ -390,7 +390,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 */
 	default boolean hasActualTypeAnnotation(Class<? extends Annotation> annotationType) {
 
-		Assert.notNull(annotationType, "Annotation type must not be null!");
+		Assert.notNull(annotationType, "Annotation type must not be null");
 
 		return AnnotatedElementUtils.hasAnnotation(getActualType(), annotationType);
 	}
@@ -430,7 +430,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 */
 	default <T> PersistentPropertyAccessor<T> getAccessorForOwner(T owner) {
 
-		Assert.notNull(owner, "Owner must not be null!");
+		Assert.notNull(owner, "Owner must not be null");
 
 		return getOwner().getPropertyAccessor(owner);
 	}

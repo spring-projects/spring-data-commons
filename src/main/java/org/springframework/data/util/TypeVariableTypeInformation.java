@@ -45,7 +45,7 @@ class TypeVariableTypeInformation<T> extends ParentTypeAwareTypeInformation<T> {
 
 		super(variable, parent);
 
-		Assert.notNull(variable, "TypeVariable must not be null!");
+		Assert.notNull(variable, "TypeVariable must not be null");
 
 		this.variable = variable;
 	}

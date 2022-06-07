@@ -92,7 +92,7 @@ public abstract class AbstractQueryCreator<T, S> {
 	 */
 	public T createQuery(Sort dynamicSort) {
 
-		Assert.notNull(dynamicSort, "DynamicSort must not be null!");
+		Assert.notNull(dynamicSort, "DynamicSort must not be null");
 		return complete(createCriteria(tree), tree.getSort().and(dynamicSort));
 	}
 

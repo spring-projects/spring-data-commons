@@ -52,7 +52,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 	 */
 	protected BeanWrapper(T bean) {
 
-		Assert.notNull(bean, "Bean must not be null!");
+		Assert.notNull(bean, "Bean must not be null");
 		this.bean = bean;
 	}
 
@@ -63,7 +63,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 	@SuppressWarnings("unchecked")
 	public void setProperty(PersistentProperty<?> property, @Nullable Object value) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
 
 		try {
 
@@ -128,7 +128,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 	@Nullable
 	public <S> Object getProperty(PersistentProperty<?> property, Class<? extends S> type) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
 
 		try {
 

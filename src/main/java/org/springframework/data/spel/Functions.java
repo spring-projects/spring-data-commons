@@ -39,7 +39,7 @@ import org.springframework.util.MultiValueMap;
 class Functions {
 
 	private static final String MESSAGE_TEMPLATE = "There are multiple matching methods of name '%s' for parameter types (%s), but no "
-			+ "exact match. Make sure to provide only one matching overload or one with exactly those types.";
+			+ "exact match; Make sure to provide only one matching overload or one with exactly those types";
 
 	private final MultiValueMap<String, Function> functions = new LinkedMultiValueMap<>();
 

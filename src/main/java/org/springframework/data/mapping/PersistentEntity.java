@@ -251,7 +251,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 */
 	default void doWithAll(PropertyHandler<P> handler) {
 
-		Assert.notNull(handler, "PropertyHandler must not be null!");
+		Assert.notNull(handler, "PropertyHandler must not be null");
 
 		doWithProperties(handler);
 		doWithAssociations(

@@ -75,7 +75,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		super(environment, ConfigurationUtils.getRequiredClassLoader(context.getReaderContext()), context.getRegistry(),
 				defaultBeanNameGenerator(context.getReaderContext().getReader().getBeanNameGenerator()));
 
-		Assert.notNull(element, "Element must not be null!");
+		Assert.notNull(element, "Element must not be null");
 
 		this.element = element;
 		this.context = context;
@@ -217,7 +217,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	@Override
 	public <T> Optional<T> getAttribute(String name, Class<T> type) {
 
-		Assert.isAssignable(String.class, type, "Only String attribute lookups are allowed for XML namespaces!");
+		Assert.isAssignable(String.class, type, "Only String attribute lookups are allowed for XML namespaces");
 
 		return (Optional<T>) getAttribute(name);
 	}

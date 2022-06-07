@@ -63,9 +63,9 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	public DefaultRepositoryInformation(RepositoryMetadata metadata, Class<?> repositoryBaseClass,
 			RepositoryComposition composition) {
 
-		Assert.notNull(metadata, "Repository metadata must not be null!");
-		Assert.notNull(repositoryBaseClass, "Repository base class must not be null!");
-		Assert.notNull(composition, "Repository composition must not be null!");
+		Assert.notNull(metadata, "Repository metadata must not be null");
+		Assert.notNull(repositoryBaseClass, "Repository base class must not be null");
+		Assert.notNull(composition, "Repository composition must not be null");
 
 		this.metadata = metadata;
 		this.repositoryBaseClass = repositoryBaseClass;
@@ -200,7 +200,7 @@ class DefaultRepositoryInformation implements RepositoryInformation {
 	@Override
 	public boolean isBaseClassMethod(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 		return baseComposition.getMethod(method) != null;
 	}
 

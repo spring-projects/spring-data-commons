@@ -63,13 +63,13 @@ import org.springframework.util.ObjectUtils;
 public class CustomConversions {
 
 	private static final Log logger = LogFactory.getLog(CustomConversions.class);
-	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type! You might want to check your annotation setup at the converter implementation.";
-	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type! You might want to check your annotation setup at the converter implementation.";
-	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory!";
-	private static final String CONVERTER_FILTER = "converter from %s to %s as %s converter.";
+	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type; You might want to check your annotation setup at the converter implementation";
+	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type; You might want to check your annotation setup at the converter implementation";
+	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory";
+	private static final String CONVERTER_FILTER = "converter from %s to %s as %s converter";
 	private static final String ADD_CONVERTER = "Adding %s" + CONVERTER_FILTER;
 	private static final String SKIP_CONVERTER = "Skipping " + CONVERTER_FILTER
-			+ " %s is not a store supported simple type!";
+			+ " %s is not a store supported simple type";
 	private static final List<Object> DEFAULT_CONVERTERS;
 
 	static {
@@ -160,7 +160,7 @@ public class CustomConversions {
 	 */
 	public boolean isSimpleType(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return simpleTypeHolder.isSimpleType(type);
 	}
@@ -172,7 +172,7 @@ public class CustomConversions {
 	 */
 	public void registerConvertersIn(ConverterRegistry conversionService) {
 
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		converters.forEach(it -> registerConverterIn(it, conversionService));
 	}
@@ -250,7 +250,7 @@ public class CustomConversions {
 	 */
 	private Object register(ConverterRegistration converterRegistration) {
 
-		Assert.notNull(converterRegistration, "Converter registration must not be null!");
+		Assert.notNull(converterRegistration, "Converter registration must not be null");
 
 		ConvertiblePair pair = converterRegistration.getConvertiblePair();
 
@@ -326,7 +326,7 @@ public class CustomConversions {
 	 */
 	public Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
 
 		Class<?> target = customWriteTargetTypes.computeIfAbsent(sourceType, getRawWriteTarget);
 
@@ -344,8 +344,8 @@ public class CustomConversions {
 	 */
 	public Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType, Class<?> requestedTargetType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
-		Assert.notNull(requestedTargetType, "Target type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
+		Assert.notNull(requestedTargetType, "Target type must not be null");
 
 		Class<?> target = customWriteTargetTypes.computeIfAbsent(sourceType, requestedTargetType, getWriteTarget);
 
@@ -361,7 +361,7 @@ public class CustomConversions {
 	 */
 	public boolean hasCustomWriteTarget(Class<?> sourceType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
 
 		return getCustomWriteTarget(sourceType).isPresent();
 	}
@@ -376,8 +376,8 @@ public class CustomConversions {
 	 */
 	public boolean hasCustomWriteTarget(Class<?> sourceType, Class<?> targetType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
-		Assert.notNull(targetType, "Target type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
+		Assert.notNull(targetType, "Target type must not be null");
 
 		return getCustomWriteTarget(sourceType, targetType).isPresent();
 	}
@@ -391,8 +391,8 @@ public class CustomConversions {
 	 */
 	public boolean hasCustomReadTarget(Class<?> sourceType, Class<?> targetType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
-		Assert.notNull(targetType, "Target type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
+		Assert.notNull(targetType, "Target type must not be null");
 
 		return getCustomReadTarget(sourceType, targetType) != null;
 	}
@@ -725,8 +725,8 @@ public class CustomConversions {
 		 */
 		public static StoreConversions of(SimpleTypeHolder storeTypeHolder, Object... converters) {
 
-			Assert.notNull(storeTypeHolder, "SimpleTypeHolder must not be null!");
-			Assert.notNull(converters, "Converters must not be null!");
+			Assert.notNull(storeTypeHolder, "SimpleTypeHolder must not be null");
+			Assert.notNull(converters, "Converters must not be null");
 
 			return new StoreConversions(storeTypeHolder, Arrays.asList(converters));
 		}
@@ -741,8 +741,8 @@ public class CustomConversions {
 		 */
 		public static StoreConversions of(SimpleTypeHolder storeTypeHolder, Collection<?> converters) {
 
-			Assert.notNull(storeTypeHolder, "SimpleTypeHolder must not be null!");
-			Assert.notNull(converters, "Converters must not be null!");
+			Assert.notNull(storeTypeHolder, "SimpleTypeHolder must not be null");
+			Assert.notNull(converters, "Converters must not be null");
 
 			return new StoreConversions(storeTypeHolder, converters);
 		}
@@ -755,7 +755,7 @@ public class CustomConversions {
 		 */
 		public Streamable<ConverterRegistration> getRegistrationsFor(Object converter) {
 
-			Assert.notNull(converter, "Converter must not be null!");
+			Assert.notNull(converter, "Converter must not be null");
 
 			Class<?> type = converter.getClass();
 			boolean isWriting = type.isAnnotationPresent(WritingConverter.class);

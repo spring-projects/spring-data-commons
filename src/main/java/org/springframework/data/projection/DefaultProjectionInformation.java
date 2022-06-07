@@ -62,7 +62,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	 */
 	DefaultProjectionInformation(Class<?> type) {
 
-		Assert.notNull(type, "Projection type must not be null!");
+		Assert.notNull(type, "Projection type must not be null");
 
 		this.projectionType = type;
 		this.properties = new PropertyDescriptorSource(type).getDescriptors();
@@ -145,7 +145,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		 */
 		PropertyDescriptorSource(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
 			this.type = type;
 			this.metadata = getMetadata(type);
@@ -240,7 +240,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 			} catch (IOException e) {
 
-				logger.info(LogMessage.format("Couldn't read class metadata for %s. Input property calculation might fail!", type));
+				logger.info(LogMessage.format("Couldn't read class metadata for %s. Input property calculation might fail", type));
 				return Optional.empty();
 			}
 		}

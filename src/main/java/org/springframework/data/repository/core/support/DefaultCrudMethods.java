@@ -65,7 +65,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	public DefaultCrudMethods(RepositoryMetadata metadata) {
 
-		Assert.notNull(metadata, "RepositoryInformation must not be null!");
+		Assert.notNull(metadata, "RepositoryInformation must not be null");
 
 		this.findOneMethod = selectMostSuitableFindOneMethod(metadata);
 		this.findAllMethod = selectMostSuitableFindAllMethod(metadata);

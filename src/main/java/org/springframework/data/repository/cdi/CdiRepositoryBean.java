@@ -98,10 +98,10 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	public CdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
 			Optional<CustomRepositoryImplementationDetector> detector) {
 
-		Assert.notNull(qualifiers, "Qualifiers must not be null!");
-		Assert.notNull(beanManager, "BeanManager must not be null!");
-		Assert.notNull(repositoryType, "Repoitory type must not be null!");
-		Assert.isTrue(repositoryType.isInterface(), "RepositoryType must be an interface!");
+		Assert.notNull(qualifiers, "Qualifiers must not be null");
+		Assert.notNull(beanManager, "BeanManager must not be null");
+		Assert.notNull(repositoryType, "Repoitory type must not be null");
+		Assert.isTrue(repositoryType.isInterface(), "RepositoryType must be an interface");
 
 		this.qualifiers = qualifiers;
 		this.repositoryType = repositoryType;
@@ -123,10 +123,10 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	public CdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
 			CdiRepositoryContext context) {
 
-		Assert.notNull(qualifiers, "Qualifiers must not be null!");
-		Assert.notNull(beanManager, "BeanManager must not be null!");
-		Assert.notNull(repositoryType, "Repoitory type must not be null!");
-		Assert.isTrue(repositoryType.isInterface(), "RepositoryType must be an interface!");
+		Assert.notNull(qualifiers, "Qualifiers must not be null");
+		Assert.notNull(beanManager, "BeanManager must not be null");
+		Assert.notNull(repositoryType, "Repoitory type must not be null");
+		Assert.isTrue(repositoryType.isInterface(), "RepositoryType must be an interface");
 
 		this.qualifiers = qualifiers;
 		this.repositoryType = repositoryType;
@@ -363,7 +363,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 */
 	protected RepositoryFragments getRepositoryFragments(Class<T> repositoryType) {
 
-		Assert.notNull(repositoryType, "Repository type must not be null!");
+		Assert.notNull(repositoryType, "Repository type must not be null");
 
 		CdiRepositoryConfiguration cdiRepositoryConfiguration = lookupConfiguration(beanManager, qualifiers);
 

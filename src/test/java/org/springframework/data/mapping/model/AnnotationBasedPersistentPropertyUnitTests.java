@@ -114,7 +114,7 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 
 		try {
 			context.getPersistentEntity(InvalidSample.class);
-			fail("Expected MappingException!");
+			fail("Expected MappingException");
 		} catch (MappingException o_O) {
 			assertThat(context.hasPersistentEntityFor(InvalidSample.class)).isFalse();
 		}

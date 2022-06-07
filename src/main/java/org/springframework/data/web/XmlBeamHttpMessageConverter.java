@@ -86,7 +86,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 
 		super(MediaType.APPLICATION_XML, MediaType.parseMediaType("application/*+xml"));
 
-		Assert.notNull(projector, "XBProjector must not be null!");
+		Assert.notNull(projector, "XBProjector must not be null");
 
 		this.projectionFactory = projector;
 	}

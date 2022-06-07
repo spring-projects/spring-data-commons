@@ -28,7 +28,7 @@ import org.springframework.data.repository.core.RepositoryCreationException;
 public final class QueryCreationException extends RepositoryCreationException {
 
 	private static final long serialVersionUID = -1238456123580L;
-	private static final String MESSAGE_TEMPLATE = "Could not create query for method %s! Could not find property %s on domain class %s.";
+	private static final String MESSAGE_TEMPLATE = "Could not create query for method %s; Could not find property %s on domain class %s";
 
 	private final Method method;
 
@@ -72,7 +72,7 @@ public final class QueryCreationException extends RepositoryCreationException {
 	 */
 	public static QueryCreationException create(QueryMethod method, String message) {
 
-		return new QueryCreationException(String.format("Could not create query for %s! Reason: %s", method, message),
+		return new QueryCreationException(String.format("Could not create query for %s; Reason: %s", method, message),
 				method);
 	}
 
@@ -98,7 +98,7 @@ public final class QueryCreationException extends RepositoryCreationException {
 	 */
 	public static QueryCreationException create(String message, Throwable cause, Class<?> repositoryInterface,
 			Method method) {
-		return new QueryCreationException(String.format("Could not create query for %s! Reason: %s", method, message),
+		return new QueryCreationException(String.format("Could not create query for %s; Reason: %s", method, message),
 				cause, repositoryInterface, method);
 	}
 

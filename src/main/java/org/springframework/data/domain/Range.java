@@ -43,8 +43,8 @@ public final class Range<T extends Comparable<T>> {
 
 	private Range(Bound<T> lowerBound, Bound<T> upperBound) {
 
-		Assert.notNull(lowerBound, "Lower bound must not be null!");
-		Assert.notNull(upperBound, "Upper bound must not be null!");
+		Assert.notNull(lowerBound, "Lower bound must not be null");
+		Assert.notNull(upperBound, "Upper bound must not be null");
 
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;
@@ -148,7 +148,7 @@ public final class Range<T extends Comparable<T>> {
 	 */
 	public static <T extends Comparable<T>> RangeBuilder<T> from(Bound<T> lower) {
 
-		Assert.notNull(lower, "Lower bound must not be null!");
+		Assert.notNull(lower, "Lower bound must not be null");
 		return new RangeBuilder<>(lower);
 	}
 
@@ -185,7 +185,7 @@ public final class Range<T extends Comparable<T>> {
 	 */
 	public boolean contains(T value) {
 
-		Assert.notNull(value, "Reference value must not be null!");
+		Assert.notNull(value, "Reference value must not be null");
 
 		boolean greaterThanLowerBound = lowerBound.getValue() //
 				.map(it -> lowerBound.isInclusive() ? it.compareTo(value) <= 0 : it.compareTo(value) < 0) //
@@ -296,7 +296,7 @@ public final class Range<T extends Comparable<T>> {
 		 */
 		public static <T extends Comparable<T>> Bound<T> inclusive(T value) {
 
-			Assert.notNull(value, "Value must not be null!");
+			Assert.notNull(value, "Value must not be null");
 			return new Bound<>(Optional.of(value), true);
 		}
 
@@ -348,7 +348,7 @@ public final class Range<T extends Comparable<T>> {
 		 */
 		public static <T extends Comparable<T>> Bound<T> exclusive(T value) {
 
-			Assert.notNull(value, "Value must not be null!");
+			Assert.notNull(value, "Value must not be null");
 			return new Bound<>(Optional.of(value), false);
 		}
 
@@ -483,7 +483,7 @@ public final class Range<T extends Comparable<T>> {
 		 */
 		public Range<T> to(Bound<T> upper) {
 
-			Assert.notNull(upper, "Upper bound must not be null!");
+			Assert.notNull(upper, "Upper bound must not be null");
 			return new Range<>(lower, upper);
 		}
 	}

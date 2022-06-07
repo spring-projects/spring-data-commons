@@ -252,7 +252,7 @@ public class AbstractPersistentPropertyUnitTests {
 				() -> Optionals.mapIfAllPresent(field, descriptor, (left, right) -> Property.of(typeInformation, left, right)), //
 				() -> field.map(it -> Property.of(typeInformation, it)), //
 				() -> descriptor.map(it -> Property.of(typeInformation, it))) //
-				.orElseThrow(() -> new IllegalArgumentException(String.format("Couldn't find property %s on %s!", name, type)));
+				.orElseThrow(() -> new IllegalArgumentException(String.format("Couldn't find property %s on %s", name, type)));
 
 		return new SamplePersistentProperty(property, getEntity(type), typeHolder);
 	}

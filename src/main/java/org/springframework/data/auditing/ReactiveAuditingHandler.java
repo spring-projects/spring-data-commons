@@ -49,7 +49,7 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 	 */
 	public void setAuditorAware(ReactiveAuditorAware<?> auditorAware) {
 
-		Assert.notNull(auditorAware, "AuditorAware must not be null!");
+		Assert.notNull(auditorAware, "AuditorAware must not be null");
 		this.auditorAware = auditorAware;
 	}
 
@@ -60,7 +60,7 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 	 */
 	public <T> Mono<T> markCreated(T source) {
 
-		Assert.notNull(source, "Entity must not be null!");
+		Assert.notNull(source, "Entity must not be null");
 
 		return getAuditor() //
 				.map(auditor -> markCreated(auditor, source));
@@ -73,7 +73,7 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 	 */
 	public <T> Mono<T> markModified(T source) {
 
-		Assert.notNull(source, "Entity must not be null!");
+		Assert.notNull(source, "Entity must not be null");
 
 		return getAuditor() //
 				.map(auditor -> markModified(auditor, source));

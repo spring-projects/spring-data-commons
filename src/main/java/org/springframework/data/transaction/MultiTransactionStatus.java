@@ -49,7 +49,7 @@ class MultiTransactionStatus implements TransactionStatus {
 	 */
 	public MultiTransactionStatus(PlatformTransactionManager mainTransactionManager) {
 
-		Assert.notNull(mainTransactionManager, "TransactionManager must not be null!");
+		Assert.notNull(mainTransactionManager, "TransactionManager must not be null");
 		this.mainTransactionManager = mainTransactionManager;
 	}
 
@@ -180,7 +180,7 @@ class MultiTransactionStatus implements TransactionStatus {
 
 		private void addSavePoint(TransactionStatus status, Object savepoint) {
 
-			Assert.notNull(status, "TransactionStatus must not be null!");
+			Assert.notNull(status, "TransactionStatus must not be null");
 			this.savepoints.put(status, savepoint);
 		}
 

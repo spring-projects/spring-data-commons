@@ -362,7 +362,7 @@ class RepositoryFactorySupportUnitTests {
 		assertThatThrownBy( //
 				() -> repository.findById("")) //
 						.isInstanceOf(EmptyResultDataAccessException.class) //
-						.hasMessageContaining("Result must not be null!");
+						.hasMessageContaining("Result must not be null");
 
 		assertThat(repository.findByUsername("")).isNull();
 	}
@@ -375,7 +375,7 @@ class RepositoryFactorySupportUnitTests {
 		assertThatThrownBy( //
 				() -> repository.findByClass(null)) //
 						.isInstanceOf(IllegalArgumentException.class) //
-						.hasMessageContaining("must not be null!");
+						.hasMessageContaining("must not be null");
 	}
 
 	@Test // DATACMNS-1154
@@ -396,7 +396,7 @@ class RepositoryFactorySupportUnitTests {
 		assertThatThrownBy( //
 				() -> repository.findById(null)) //
 						.isInstanceOf(IllegalArgumentException.class) //
-						.hasMessageContaining("must not be null!"); //
+						.hasMessageContaining("must not be null"); //
 	}
 
 	@Test // DATACMNS-1154

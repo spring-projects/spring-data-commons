@@ -62,7 +62,7 @@ import org.springframework.util.StringUtils;
  */
 public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implements MutablePersistentEntity<T, P> {
 
-	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)!";
+	private static final String TYPE_MISMATCH = "Target bean of type %s is not of type of the persistent entity (%s)";
 
 	private final @Nullable PreferredConstructor<T, P> constructor;
 	private final TypeInformation<T> information;
@@ -104,7 +104,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public BasicPersistentEntity(TypeInformation<T> information, @Nullable Comparator<P> comparator) {
 
-		Assert.notNull(information, "Information must not be null!");
+		Assert.notNull(information, "Information must not be null");
 
 		this.information = information;
 		this.properties = new ArrayList<>();
@@ -209,7 +209,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void addPersistentProperty(P property) {
 
-		Assert.notNull(property, "Property must not be null!");
+		Assert.notNull(property, "Property must not be null");
 
 		if (properties.contains(property)) {
 			return;
@@ -238,7 +238,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 				throw new MappingException(
 						String.format(
 								"Attempt to add version property %s but already have property %s registered "
-										+ "as version. Check your mapping configuration",
+										+ "as version; Check your mapping configuration",
 								property.getField(), versionProperty.getField()));
 			}
 
@@ -272,7 +272,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		if (idProperty != null) {
 			throw new MappingException(String.format("Attempt to add id property %s but already have property %s registered "
-					+ "as id. Check your mapping configuration ", property.getField(), idProperty.getField()));
+					+ "as id; Check your mapping configuration ", property.getField(), idProperty.getField()));
 		}
 
 		return property;
@@ -284,7 +284,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void addAssociation(Association<P> association) {
 
-		Assert.notNull(association, "Association must not be null!");
+		Assert.notNull(association, "Association must not be null");
 
 		associations.add(association);
 	}
@@ -306,7 +306,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	@Override
 	public Iterable<P> getPersistentProperties(Class<? extends Annotation> annotationType) {
 
-		Assert.notNull(annotationType, "Annotation type must not be null!");
+		Assert.notNull(annotationType, "Annotation type must not be null");
 		return propertyAnnotationCache.computeIfAbsent(annotationType, this::doFindPersistentProperty);
 	}
 
@@ -355,7 +355,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void doWithProperties(PropertyHandler<P> handler) {
 
-		Assert.notNull(handler, "PropertyHandler must not be null!");
+		Assert.notNull(handler, "PropertyHandler must not be null");
 
 		for (P property : persistentPropertiesCache) {
 			handler.doWithPersistentProperty(property);
@@ -369,7 +369,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	@Override
 	public void doWithProperties(SimplePropertyHandler handler) {
 
-		Assert.notNull(handler, "Handler must not be null!");
+		Assert.notNull(handler, "Handler must not be null");
 
 		for (PersistentProperty<?> property : persistentPropertiesCache) {
 			handler.doWithPersistentProperty(property);
@@ -382,7 +382,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void doWithAssociations(AssociationHandler<P> handler) {
 
-		Assert.notNull(handler, "Handler must not be null!");
+		Assert.notNull(handler, "Handler must not be null");
 
 		for (Association<P> association : associations) {
 			handler.doWithAssociation(association);
@@ -395,7 +395,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	public void doWithAssociations(SimpleAssociationHandler handler) {
 
-		Assert.notNull(handler, "Handler must not be null!");
+		Assert.notNull(handler, "Handler must not be null");
 
 		for (Association<? extends PersistentProperty<?>> association : associations) {
 			handler.doWithAssociation(association);
@@ -581,7 +581,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	private void verifyBeanType(Object bean) {
 
-		Assert.notNull(bean, "Target bean must not be null!");
+		Assert.notNull(bean, "Target bean must not be null");
 		Assert.isInstanceOf(getType(), bean,
 				() -> String.format(TYPE_MISMATCH, bean.getClass().getName(), getType().getName()));
 	}

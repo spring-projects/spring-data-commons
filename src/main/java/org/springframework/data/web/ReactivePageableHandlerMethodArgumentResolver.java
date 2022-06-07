@@ -55,7 +55,7 @@ public class ReactivePageableHandlerMethodArgumentResolver extends PageableHandl
 	 */
 	public ReactivePageableHandlerMethodArgumentResolver(ReactiveSortHandlerMethodArgumentResolver sortResolver) {
 
-		Assert.notNull(sortResolver, "ReactiveSortHandlerMethodArgumentResolver must not be null!");
+		Assert.notNull(sortResolver, "ReactiveSortHandlerMethodArgumentResolver must not be null");
 
 		this.sortResolver = sortResolver;
 	}

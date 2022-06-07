@@ -175,7 +175,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	public void setSimpleTypeHolder(SimpleTypeHolder simpleTypes) {
 
-		Assert.notNull(simpleTypes, "SimpleTypeHolder must not be null!");
+		Assert.notNull(simpleTypes, "SimpleTypeHolder must not be null");
 
 		this.simpleTypeHolder = simpleTypes;
 	}
@@ -216,7 +216,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	@Override
 	public boolean hasPersistentEntityFor(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		TypeInformation<?> typeInformation = ClassTypeInformation.from(type);
 
@@ -256,7 +256,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	@Override
 	public E getPersistentEntity(TypeInformation<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		try {
 
@@ -299,7 +299,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	@Override
 	public E getPersistentEntity(P persistentProperty) {
 
-		Assert.notNull(persistentProperty, "PersistentProperty must not be null!");
+		Assert.notNull(persistentProperty, "PersistentProperty must not be null");
 
 		if (!persistentProperty.isEntity()) {
 			return null;
@@ -334,8 +334,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	@Override
 	public <T> PersistentPropertyPaths<T, P> findPersistentPropertyPaths(Class<T> type, Predicate<? super P> predicate) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(predicate, "Selection predicate must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(predicate, "Selection predicate must not be null");
 
 		return doFindPersistentPropertyPaths(type, predicate, it -> !it.isAssociation());
 	}
@@ -374,7 +374,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 */
 	protected Optional<E> addPersistentEntity(TypeInformation<?> typeInformation) {
 
-		Assert.notNull(typeInformation, "TypeInformation must not be null!");
+		Assert.notNull(typeInformation, "TypeInformation must not be null");
 
 		try {
 
@@ -755,7 +755,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 */
 		public boolean matches(Property property) {
 
-			Assert.notNull(property, "Property must not be null!");
+			Assert.notNull(property, "Property must not be null");
 
 			if (!property.hasAccessor()) {
 				return false;
@@ -786,7 +786,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			public PropertyMatch(@Nullable String namePattern, @Nullable String typeName) {
 
 				Assert.isTrue(!((namePattern == null) && (typeName == null)),
-						"Either name pattern or type name must be given!");
+						"Either name pattern or type name must be given");
 
 				this.namePattern = namePattern;
 				this.typeName = typeName;
@@ -801,8 +801,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			 */
 			public boolean matches(String name, Class<?> type) {
 
-				Assert.notNull(name, "Name must not be null!");
-				Assert.notNull(type, "Type must not be null!");
+				Assert.notNull(name, "Name must not be null");
+				Assert.notNull(type, "Type must not be null");
 
 				if ((namePattern != null) && !name.matches(namePattern)) {
 					return false;

@@ -138,7 +138,7 @@ public abstract class ReactiveWrappers {
 	 */
 	public static boolean isAvailable(ReactiveLibrary reactiveLibrary) {
 
-		Assert.notNull(reactiveLibrary, "Reactive library must not be null!");
+		Assert.notNull(reactiveLibrary, "Reactive library must not be null");
 
 		switch (reactiveLibrary) {
 			case PROJECT_REACTOR:
@@ -176,7 +176,7 @@ public abstract class ReactiveWrappers {
 	 */
 	public static boolean usesReactiveType(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return Arrays.stream(type.getMethods())//
 				.flatMap(ReflectionUtils::returnTypeAndParameters)//
@@ -191,7 +191,7 @@ public abstract class ReactiveWrappers {
 	 */
 	public static boolean isNoValueType(Class<?> type) {
 
-		Assert.notNull(type, "Candidate type must not be null!");
+		Assert.notNull(type, "Candidate type must not be null");
 
 		return findDescriptor(type).map(ReactiveTypeDescriptor::isNoValue).orElse(false);
 	}
@@ -204,7 +204,7 @@ public abstract class ReactiveWrappers {
 	 */
 	public static boolean isSingleValueType(Class<?> type) {
 
-		Assert.notNull(type, "Candidate type must not be null!");
+		Assert.notNull(type, "Candidate type must not be null");
 
 		return findDescriptor(type).map(it -> !it.isMultiValue() && !it.isNoValue()).orElse(false);
 	}
@@ -219,7 +219,7 @@ public abstract class ReactiveWrappers {
 	 */
 	public static boolean isMultiValueType(Class<?> type) {
 
-		Assert.notNull(type, "Candidate type must not be null!");
+		Assert.notNull(type, "Candidate type must not be null");
 
 		// Prevent single-types with a multi-hierarchy supertype to be reported as multi type
 		// See Mono implements Publisher
@@ -268,7 +268,7 @@ public abstract class ReactiveWrappers {
 	 */
 	private static boolean isWrapper(Class<?> type) {
 
-		Assert.notNull(type, "Candidate type must not be null!");
+		Assert.notNull(type, "Candidate type must not be null");
 
 		return isNoValueType(type) || isSingleValueType(type) || isMultiValueType(type);
 	}
@@ -281,7 +281,7 @@ public abstract class ReactiveWrappers {
 	 */
 	private static Optional<ReactiveTypeDescriptor> findDescriptor(Class<?> type) {
 
-		Assert.notNull(type, "Wrapper type must not be null!");
+		Assert.notNull(type, "Wrapper type must not be null");
 
 		ReactiveAdapterRegistry adapterRegistry = ReactiveWrapperConverters.RegistryHolder.REACTIVE_ADAPTER_REGISTRY;
 

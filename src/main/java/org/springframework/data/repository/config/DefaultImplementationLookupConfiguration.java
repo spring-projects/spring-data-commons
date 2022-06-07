@@ -51,8 +51,8 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 	 */
 	DefaultImplementationLookupConfiguration(ImplementationDetectionConfiguration config, String interfaceName) {
 
-		Assert.notNull(config, "ImplementationDetectionConfiguration must not be null!");
-		Assert.hasText(interfaceName, "Interface name must not be null or empty!");
+		Assert.notNull(config, "ImplementationDetectionConfiguration must not be null");
+		Assert.hasText(interfaceName, "Interface name must not be null or empty");
 
 		this.config = config;
 		this.interfaceName = interfaceName;
@@ -121,7 +121,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 	@Override
 	public boolean hasMatchingBeanName(BeanDefinition definition) {
 
-		Assert.notNull(definition, "BeanDefinition must not be null!");
+		Assert.notNull(definition, "BeanDefinition must not be null");
 
 		return beanName != null && beanName.equals(config.generateBeanName(definition));
 	}
@@ -133,7 +133,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 	@Override
 	public boolean matches(BeanDefinition definition) {
 
-		Assert.notNull(definition, "BeanDefinition must not be null!");
+		Assert.notNull(definition, "BeanDefinition must not be null");
 
 		String beanClassName = definition.getBeanClassName();
 
