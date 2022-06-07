@@ -180,8 +180,8 @@ public final class ReflectionUtils {
 	@Nullable
 	public static Field findField(Class<?> type, DescribedFieldFilter filter, boolean enforceUniqueness) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(filter, "Filter must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(filter, "Filter must not be null");
 
 		Class<?> targetClass = type;
 		Field foundField = null;
@@ -252,8 +252,8 @@ public final class ReflectionUtils {
 	 */
 	public static Optional<Constructor<?>> findConstructor(Class<?> type, Object... constructorArguments) {
 
-		Assert.notNull(type, "Target type must not be null!");
-		Assert.notNull(constructorArguments, "Constructor arguments must not be null!");
+		Assert.notNull(type, "Target type must not be null");
+		Assert.notNull(constructorArguments, "Constructor arguments must not be null");
 
 		return Arrays.stream(type.getDeclaredConstructors())//
 				.filter(constructor -> argumentsMatch(constructor.getParameterTypes(), constructorArguments))//
@@ -297,7 +297,7 @@ public final class ReflectionUtils {
 					.collect(Collectors.joining(", "));
 
 			throw new IllegalArgumentException(
-					String.format("Unable to find method %s(%s)on %s!", name, parameterTypeNames, type));
+					String.format("Unable to find method %s(%s) on %s", name, parameterTypeNames, type));
 		}
 
 		return result;
@@ -316,7 +316,7 @@ public final class ReflectionUtils {
 	 */
 	public static Stream<Class<?>> returnTypeAndParameters(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 
 		Stream<Class<?>> returnType = Stream.of(method.getReturnType());
 		Stream<Class<?>> parameterTypes = Arrays.stream(method.getParameterTypes());
@@ -335,9 +335,9 @@ public final class ReflectionUtils {
 	 */
 	public static Optional<Method> getMethod(Class<?> type, String name, ResolvableType... parameterTypes) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.hasText(name, "Name must not be null or empty!");
-		Assert.notNull(parameterTypes, "Parameter types must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.hasText(name, "Name must not be null or empty");
+		Assert.notNull(parameterTypes, "Parameter types must not be null");
 
 		List<Class<?>> collect = Arrays.stream(parameterTypes)//
 				.map(ResolvableType::getRawClass)//

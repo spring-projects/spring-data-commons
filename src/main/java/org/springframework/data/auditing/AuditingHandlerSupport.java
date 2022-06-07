@@ -53,7 +53,7 @@ public abstract class AuditingHandlerSupport {
 	 */
 	public AuditingHandlerSupport(PersistentEntities entities) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
 
 		this.factory = new MappingAuditableBeanWrapperFactory(entities);
 	}
@@ -96,7 +96,7 @@ public abstract class AuditingHandlerSupport {
 	 */
 	protected final boolean isAuditable(Object source) {
 
-		Assert.notNull(source, "Source entity must not be null!");
+		Assert.notNull(source, "Source entity must not be null");
 
 		return factory.getBeanWrapperFor(source).isPresent();
 	}
@@ -109,7 +109,7 @@ public abstract class AuditingHandlerSupport {
 	 */
 	<T> T markCreated(Auditor<?> auditor, T source) {
 
-		Assert.notNull(source, "Source entity must not be null!");
+		Assert.notNull(source, "Source entity must not be null");
 
 		return touch(auditor, source, true);
 	}
@@ -122,7 +122,7 @@ public abstract class AuditingHandlerSupport {
 	 */
 	<T> T markModified(Auditor<?> auditor, T source) {
 
-		Assert.notNull(source, "Source entity must not be null!");
+		Assert.notNull(source, "Source entity must not be null");
 
 		return touch(auditor, source, false);
 	}
@@ -163,7 +163,7 @@ public abstract class AuditingHandlerSupport {
 			return;
 		}
 
-		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null!");
+		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null");
 
 		if (isNew) {
 			wrapper.setCreatedBy(auditor.getValue());
@@ -183,11 +183,11 @@ public abstract class AuditingHandlerSupport {
 	 */
 	private Optional<TemporalAccessor> touchDate(AuditableBeanWrapper<?> wrapper, boolean isNew) {
 
-		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null!");
+		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null");
 
 		Optional<TemporalAccessor> now = dateTimeProvider.getNow();
 
-		Assert.notNull(now, () -> String.format("Now must not be null! Returned by: %s!", dateTimeProvider.getClass()));
+		Assert.notNull(now, () -> String.format("Now must not be null Returned by: %s", dateTimeProvider.getClass()));
 
 		now.filter(__ -> isNew).ifPresent(wrapper::setCreatedDate);
 		now.filter(__ -> !isNew || modifyOnCreation).ifPresent(wrapper::setLastModifiedDate);

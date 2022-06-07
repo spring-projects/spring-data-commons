@@ -66,7 +66,7 @@ public interface StreamUtils {
 	 */
 	static <T> Stream<T> createStreamFromIterator(CloseableIterator<T> iterator) {
 
-		Assert.notNull(iterator, "Iterator must not be null!");
+		Assert.notNull(iterator, "Iterator must not be null");
 
 		return createStreamFromIterator((Iterator<T>) iterator).onClose(() -> iterator.close());
 	}
@@ -124,9 +124,9 @@ public interface StreamUtils {
 	 */
 	static <L, R, T> Stream<T> zip(Stream<L> left, Stream<R> right, BiFunction<L, R, T> combiner) {
 
-		Assert.notNull(left, "Left stream must not be null!");
-		Assert.notNull(right, "Right must not be null!");
-		Assert.notNull(combiner, "Combiner must not be null!");
+		Assert.notNull(left, "Left stream must not be null");
+		Assert.notNull(right, "Right must not be null");
+		Assert.notNull(combiner, "Combiner must not be null");
 
 		Spliterator<L> lefts = left.spliterator();
 		Spliterator<R> rights = right.spliterator();

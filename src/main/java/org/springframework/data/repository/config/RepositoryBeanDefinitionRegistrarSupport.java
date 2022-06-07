@@ -73,9 +73,9 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 	public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry,
 			BeanNameGenerator generator) {
 
-		Assert.notNull(metadata, "AnnotationMetadata must not be null!");
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+		Assert.notNull(metadata, "AnnotationMetadata must not be null");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
 
 		// Guard against calls for sub-classes
 		if (metadata.getAnnotationAttributes(getAnnotation().getName()) == null) {

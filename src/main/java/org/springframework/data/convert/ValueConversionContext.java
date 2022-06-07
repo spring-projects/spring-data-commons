@@ -89,7 +89,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 		}
 
 		throw new IllegalStateException(String.format(
-				"%s does not provide write function that allows value conversion to target type (%s).", getClass(), target));
+				"%s does not provide write function that allows value conversion to target type (%s)", getClass(), target));
 	}
 
 	/**
@@ -139,6 +139,6 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 		}
 
 		throw new IllegalStateException(String.format(
-				"%s does not provide read function that allows value conversion to target type (%s).", getClass(), target));
+				"%s does not provide read function that allows value conversion to target type (%s)", getClass(), target));
 	}
 }

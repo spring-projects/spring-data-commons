@@ -56,8 +56,8 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 */
 	public AbstractRepositoryMetadata(Class<?> repositoryInterface) {
 
-		Assert.notNull(repositoryInterface, "Given type must not be null!");
-		Assert.isTrue(repositoryInterface.isInterface(), "Given type must be an interface!");
+		Assert.notNull(repositoryInterface, "Given type must not be null");
+		Assert.isTrue(repositoryInterface.isInterface(), "Given type must be an interface");
 
 		this.repositoryInterface = repositoryInterface;
 		this.typeInformation = ClassTypeInformation.from(repositoryInterface);
@@ -73,7 +73,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 */
 	public static RepositoryMetadata getMetadata(Class<?> repositoryInterface) {
 
-		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
+		Assert.notNull(repositoryInterface, "Repository interface must not be null");
 
 		return Repository.class.isAssignableFrom(repositoryInterface) ? new DefaultRepositoryMetadata(repositoryInterface)
 				: new AnnotationRepositoryMetadata(repositoryInterface);

@@ -51,7 +51,7 @@ public abstract class ProxyUtils {
 	 */
 	public static Class<?> getUserClass(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return USER_TYPES.computeIfAbsent(type, it -> {
 
@@ -73,7 +73,7 @@ public abstract class ProxyUtils {
 	 */
 	public static Class<?> getUserClass(Object source) {
 
-		Assert.notNull(source, "Source object must not be null!");
+		Assert.notNull(source, "Source object must not be null");
 
 		return getUserClass(AopUtils.getTargetClass(source));
 	}

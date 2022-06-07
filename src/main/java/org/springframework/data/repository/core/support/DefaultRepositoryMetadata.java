@@ -34,7 +34,7 @@ import org.springframework.util.Assert;
  */
 public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 
-	private static final String MUST_BE_A_REPOSITORY = String.format("Given type must be assignable to %s!",
+	private static final String MUST_BE_A_REPOSITORY = String.format("Given type must be assignable to %s",
 			Repository.class);
 
 	private final TypeInformation<?> idType;
@@ -55,10 +55,10 @@ public class DefaultRepositoryMetadata extends AbstractRepositoryMetadata {
 				.getTypeArguments();
 
 		this.domainType = resolveTypeParameter(arguments, 0,
-				() -> String.format("Could not resolve domain type of %s!", repositoryInterface));
+				() -> String.format("Could not resolve domain type of %s", repositoryInterface));
 
 		this.idType = resolveTypeParameter(arguments, 1,
-				() -> String.format("Could not resolve id type of %s!", repositoryInterface));
+				() -> String.format("Could not resolve id type of %s", repositoryInterface));
 	}
 
 	@Override

@@ -46,7 +46,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private static final String PARAM_ON_SPECIAL = format("You must not use @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
 	private static final String ALL_OR_NOTHING = String.format(
-			"Either use @%s on all parameters except %s and %s typed once, or none at all!", Param.class.getSimpleName(),
+			"Either use @%s on all parameters except %s and %s typed once, or none at all", Param.class.getSimpleName(),
 			Pageable.class.getSimpleName(), Sort.class.getSimpleName());
 
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
@@ -65,7 +65,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 */
 	public Parameters(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 
 		int parameterCount = method.getParameterCount();
 
@@ -237,7 +237,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			return parameters.get(index);
 		} catch (IndexOutOfBoundsException e) {
 			throw new ParameterOutOfBoundsException(
-					"Invalid parameter index! You seem to have declared too little query method parameters", e);
+					"Invalid parameter index; You seem to have declared too little query method parameters", e);
 		}
 	}
 

@@ -44,7 +44,7 @@ class MethodParameterAwarePagedResourcesAssembler<T> extends PagedResourcesAssem
 
 		super(resolver, baseUri);
 
-		Assert.notNull(parameter, "Method parameter must not be null!");
+		Assert.notNull(parameter, "Method parameter must not be null");
 		this.parameter = parameter;
 	}
 

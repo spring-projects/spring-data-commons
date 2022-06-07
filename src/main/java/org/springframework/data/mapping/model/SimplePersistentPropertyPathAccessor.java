@@ -119,8 +119,8 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 	public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value,
 			SetOptions options) {
 
-		Assert.notNull(path, "PersistentPropertyPath must not be null!");
-		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty!");
+		Assert.notNull(path, "PersistentPropertyPath must not be null");
+		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty");
 
 		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
 		PersistentProperty<? extends PersistentProperty<?>> leafProperty = path.getRequiredLeafProperty();
@@ -199,7 +199,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 			return null;
 		}
 
-		String nullIntermediateMessage = "Cannot lookup property %s on null intermediate! Original path was: %s on %s.";
+		String nullIntermediateMessage = "Cannot lookup property %s on null intermediate; Original path was: %s on %s";
 
 		if (SetNulls.SKIP_AND_LOG.equals(handling)) {
 			logger.info(nullIntermediateMessage);
@@ -240,8 +240,8 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 	@Nullable
 	protected <S> S getTypedProperty(PersistentProperty<?> property, Class<S> type) {
 
-		Assert.notNull(property, "Property must not be null!");
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(property, "Property must not be null");
+		Assert.notNull(type, "Type must not be null");
 
 		Object value = getProperty(property);
 
@@ -250,7 +250,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 		}
 
 		if (!type.isInstance(value)) {
-			throw new MappingException(String.format("Invalid property value type! Need %s but got %s", //
+			throw new MappingException(String.format("Invalid property value type; Need %s but got %s", //
 					type.getName(), value.getClass().getName()));
 		}
 

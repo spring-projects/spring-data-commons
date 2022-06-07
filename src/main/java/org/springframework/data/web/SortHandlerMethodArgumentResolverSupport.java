@@ -64,7 +64,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 	 */
 	public void setSortParameter(String sortParameter) {
 
-		Assert.hasText(sortParameter, "SortParameter must not be null nor empty!");
+		Assert.hasText(sortParameter, "SortParameter must not be null nor empty");
 		this.sortParameter = sortParameter;
 	}
 
@@ -76,7 +76,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 	 */
 	public void setPropertyDelimiter(String propertyDelimiter) {
 
-		Assert.hasText(propertyDelimiter, "Property delimiter must not be null or empty!");
+		Assert.hasText(propertyDelimiter, "Property delimiter must not be null or empty");
 		this.propertyDelimiter = propertyDelimiter;
 	}
 
@@ -126,7 +126,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 		if (annotatedDefault != null && annotatedDefaults != null) {
 			throw new IllegalArgumentException(
-					String.format("Cannot use both @%s and @%s on parameter %s! Move %s into %s to define sorting order",
+					String.format("Cannot use both @%s and @%s on parameter %s; Move %s into %s to define sorting order",
 							SORT_DEFAULTS_NAME, SORT_DEFAULT_NAME, parameter.toString(), SORT_DEFAULT_NAME, SORT_DEFAULTS_NAME));
 		}
 
@@ -310,7 +310,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		 */
 		ExpressionBuilder(Direction direction) {
 
-			Assert.notNull(direction, "Direction must not be null!");
+			Assert.notNull(direction, "Direction must not be null");
 			this.direction = direction;
 		}
 

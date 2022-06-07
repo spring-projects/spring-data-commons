@@ -121,8 +121,8 @@ public interface ExampleMatcher {
 	 */
 	default ExampleMatcher withMatcher(String propertyPath, MatcherConfigurer<GenericPropertyMatcher> matcherConfigurer) {
 
-		Assert.hasText(propertyPath, "PropertyPath must not be empty!");
-		Assert.notNull(matcherConfigurer, "MatcherConfigurer must not be empty!");
+		Assert.hasText(propertyPath, "PropertyPath must not be empty");
+		Assert.notNull(matcherConfigurer, "MatcherConfigurer must not be empty");
 
 		GenericPropertyMatcher genericPropertyMatcher = new GenericPropertyMatcher();
 		matcherConfigurer.configureMatcher(genericPropertyMatcher);
@@ -418,7 +418,7 @@ public interface ExampleMatcher {
 		 */
 		public GenericPropertyMatcher stringMatcher(StringMatcher stringMatcher) {
 
-			Assert.notNull(stringMatcher, "StringMatcher must not be null!");
+			Assert.notNull(stringMatcher, "StringMatcher must not be null");
 			this.stringMatcher = stringMatcher;
 			return this;
 		}
@@ -431,7 +431,7 @@ public interface ExampleMatcher {
 		 */
 		public GenericPropertyMatcher transform(PropertyValueTransformer propertyValueTransformer) {
 
-			Assert.notNull(propertyValueTransformer, "PropertyValueTransformer must not be null!");
+			Assert.notNull(propertyValueTransformer, "PropertyValueTransformer must not be null");
 			this.valueTransformer = propertyValueTransformer;
 			return this;
 		}
@@ -627,7 +627,7 @@ public interface ExampleMatcher {
 		 */
 		PropertySpecifier(String path) {
 
-			Assert.hasText(path, "Path must not be null/empty!");
+			Assert.hasText(path, "Path must not be null/empty");
 			this.path = path;
 
 			this.stringMatcher = null;
@@ -652,7 +652,7 @@ public interface ExampleMatcher {
 		 */
 		public PropertySpecifier withStringMatcher(StringMatcher stringMatcher) {
 
-			Assert.notNull(stringMatcher, "StringMatcher must not be null!");
+			Assert.notNull(stringMatcher, "StringMatcher must not be null");
 			return new PropertySpecifier(this.path, stringMatcher, this.ignoreCase, this.valueTransformer);
 		}
 
@@ -676,7 +676,7 @@ public interface ExampleMatcher {
 		 */
 		public PropertySpecifier withValueTransformer(PropertyValueTransformer valueTransformer) {
 
-			Assert.notNull(valueTransformer, "PropertyValueTransformer must not be null!");
+			Assert.notNull(valueTransformer, "PropertyValueTransformer must not be null");
 			return new PropertySpecifier(this.path, this.stringMatcher, this.ignoreCase, valueTransformer);
 		}
 
@@ -785,7 +785,7 @@ public interface ExampleMatcher {
 
 		public void add(PropertySpecifier specifier) {
 
-			Assert.notNull(specifier, "PropertySpecifier must not be null!");
+			Assert.notNull(specifier, "PropertySpecifier must not be null");
 			propertySpecifiers.put(specifier.getPath(), specifier);
 		}
 

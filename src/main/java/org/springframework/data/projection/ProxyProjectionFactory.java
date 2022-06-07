@@ -86,7 +86,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	 */
 	public void registerMethodInvokerFactory(MethodInterceptorFactory factory) {
 
-		Assert.notNull(factory, "MethodInterceptorFactory must not be null!");
+		Assert.notNull(factory, "MethodInterceptorFactory must not be null");
 
 		this.factories.add(0, factory);
 	}
@@ -95,9 +95,9 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	@SuppressWarnings("unchecked")
 	public <T> T createProjection(Class<T> projectionType, Object source) {
 
-		Assert.notNull(projectionType, "Projection type must not be null!");
-		Assert.notNull(source, "Source must not be null!");
-		Assert.isTrue(projectionType.isInterface(), "Projection type must be an interface!");
+		Assert.notNull(projectionType, "Projection type must not be null");
+		Assert.notNull(source, "Source must not be null");
+		Assert.isTrue(projectionType.isInterface(), "Projection type must be an interface");
 
 		if (projectionType.isInstance(source)) {
 			return (T) source;
@@ -118,7 +118,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	@Override
 	public <T> T createProjection(Class<T> projectionType) {
 
-		Assert.notNull(projectionType, "Projection type must not be null!");
+		Assert.notNull(projectionType, "Projection type must not be null");
 
 		return createProjection(projectionType, new HashMap<String, Object>());
 	}
@@ -216,7 +216,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		 */
 		public TargetAwareMethodInterceptor(Class<?> targetType) {
 
-			Assert.notNull(targetType, "Target type must not be null!");
+			Assert.notNull(targetType, "Target type must not be null");
 			this.targetType = targetType;
 		}
 

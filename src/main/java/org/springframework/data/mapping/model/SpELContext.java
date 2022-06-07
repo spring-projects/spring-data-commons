@@ -79,7 +79,7 @@ public class SpELContext {
 	 */
 	private SpELContext(PropertyAccessor accessor, @Nullable SpelExpressionParser parser, @Nullable BeanFactory factory) {
 
-		Assert.notNull(accessor, "PropertyAccessor must not be null!");
+		Assert.notNull(accessor, "PropertyAccessor must not be null");
 
 		this.parser = parser == null ? new SpelExpressionParser() : parser;
 		this.accessor = accessor;

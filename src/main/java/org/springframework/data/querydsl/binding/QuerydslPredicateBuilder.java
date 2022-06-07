@@ -66,7 +66,7 @@ public class QuerydslPredicateBuilder {
 	 */
 	public QuerydslPredicateBuilder(ConversionService conversionService, EntityPathResolver resolver) {
 
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		this.defaultBinding = new QuerydslDefaultBinding();
 		this.conversionService = conversionService;
@@ -85,7 +85,7 @@ public class QuerydslPredicateBuilder {
 	 */
 	public Predicate getPredicate(TypeInformation<?> type, MultiValueMap<String, ?> values, QuerydslBindings bindings) {
 
-		Assert.notNull(bindings, "Context must not be null!");
+		Assert.notNull(bindings, "Context must not be null");
 
 		BooleanBuilder builder = new BooleanBuilder();
 

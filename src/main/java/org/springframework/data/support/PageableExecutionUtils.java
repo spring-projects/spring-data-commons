@@ -50,9 +50,9 @@ public abstract class PageableExecutionUtils {
 	 */
 	public static <T> Page<T> getPage(List<T> content, Pageable pageable, LongSupplier totalSupplier) {
 
-		Assert.notNull(content, "Content must not be null!");
-		Assert.notNull(pageable, "Pageable must not be null!");
-		Assert.notNull(totalSupplier, "TotalSupplier must not be null!");
+		Assert.notNull(content, "Content must not be null");
+		Assert.notNull(pageable, "Pageable must not be null");
+		Assert.notNull(totalSupplier, "TotalSupplier must not be null");
 
 		if (pageable.isUnpaged() || pageable.getOffset() == 0) {
 

@@ -72,7 +72,7 @@ class EvaluationContextExtensionInformation {
 	 */
 	public EvaluationContextExtensionInformation(Class<? extends EvaluationContextExtension> type) {
 
-		Assert.notNull(type, "Extension type must not be null!");
+		Assert.notNull(type, "Extension type must not be null");
 
 		Class<?> rootObjectType = org.springframework.data.util.ReflectionUtils.findRequiredMethod(type, "getRootObject")
 				.getReturnType();
@@ -154,7 +154,7 @@ class EvaluationContextExtensionInformation {
 		 */
 		public ExtensionTypeInformation(Class<? extends EvaluationContextExtension> type) {
 
-			Assert.notNull(type, "Extension type must not be null!");
+			Assert.notNull(type, "Extension type must not be null");
 
 			this.functions = discoverDeclaredFunctions(type);
 			this.properties = discoverDeclaredProperties(type);
@@ -256,7 +256,7 @@ class EvaluationContextExtensionInformation {
 		 */
 		RootObjectInformation(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
 			this.accessors = new HashMap<>();
 			this.methods = new Methods();

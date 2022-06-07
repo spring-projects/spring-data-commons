@@ -34,7 +34,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  */
 public class AnnotationDetectionMethodCallback<A extends Annotation> implements MethodCallback {
 
-	private static final String MULTIPLE_FOUND = "Found annotation %s both on %s and %s! Make sure only one of them is annotated with it!";
+	private static final String MULTIPLE_FOUND = "Found annotation %s both on %s and %s; Make sure only one of them is annotated with it";
 
 	private final boolean enforceUniqueness;
 	private final Class<A> annotationType;
@@ -59,7 +59,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 	 */
 	public AnnotationDetectionMethodCallback(Class<A> annotationType, boolean enforceUniqueness) {
 
-		Assert.notNull(annotationType, "Annotation type must not be null!");
+		Assert.notNull(annotationType, "Annotation type must not be null");
 
 		this.annotationType = annotationType;
 		this.enforceUniqueness = enforceUniqueness;

@@ -41,8 +41,8 @@ public class Box implements Shape {
 	 */
 	public Box(Point first, Point second) {
 
-		Assert.notNull(first, "First point must not be null!");
-		Assert.notNull(second, "Second point must not be null!");
+		Assert.notNull(first, "First point must not be null");
+		Assert.notNull(second, "Second point must not be null");
 
 		this.first = first;
 		this.second = second;
@@ -56,8 +56,8 @@ public class Box implements Shape {
 	 */
 	public Box(double[] first, double[] second) {
 
-		Assert.isTrue(first.length == 2, "Point array has to have 2 elements!");
-		Assert.isTrue(second.length == 2, "Point array has to have 2 elements!");
+		Assert.isTrue(first.length == 2, "Point array has to have 2 elements");
+		Assert.isTrue(second.length == 2, "Point array has to have 2 elements");
 
 		this.first = new Point(first[0], first[1]);
 		this.second = new Point(second[0], second[1]);

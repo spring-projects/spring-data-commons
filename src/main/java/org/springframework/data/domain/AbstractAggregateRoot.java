@@ -46,7 +46,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 */
 	protected <T> T registerEvent(T event) {
 
-		Assert.notNull(event, "Domain event must not be null!");
+		Assert.notNull(event, "Domain event must not be null");
 
 		this.domainEvents.add(event);
 		return event;
@@ -78,7 +78,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	@SuppressWarnings("unchecked")
 	protected final A andEventsFrom(A aggregate) {
 
-		Assert.notNull(aggregate, "Aggregate must not be null!");
+		Assert.notNull(aggregate, "Aggregate must not be null");
 
 		this.domainEvents.addAll(aggregate.domainEvents());
 

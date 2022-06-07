@@ -81,7 +81,7 @@ public interface EntityCallbacks {
 	 */
 	static EntityCallbacks create(BeanFactory beanFactory) {
 
-		Assert.notNull(beanFactory, "Context must not be null!");
+		Assert.notNull(beanFactory, "Context must not be null");
 		return new DefaultEntityCallbacks(beanFactory);
 	}
 }

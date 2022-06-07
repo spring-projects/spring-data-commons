@@ -39,8 +39,8 @@ import org.springframework.util.Assert;
  */
 public class InstantiationAwarePropertyAccessor<T> implements PersistentPropertyAccessor<T> {
 
-	private static final String NO_SETTER_OR_CONSTRUCTOR = "Cannot set property %s because no setter, wither or copy constructor exists for %s!";
-	private static final String NO_CONSTRUCTOR_PARAMETER = "Cannot set property %s because no setter, no wither and it's not part of the persistence constructor %s!";
+	private static final String NO_SETTER_OR_CONSTRUCTOR = "Cannot set property %s because no setter, wither or copy constructor exists for %s";
+	private static final String NO_CONSTRUCTOR_PARAMETER = "Cannot set property %s because no setter, no wither and it's not part of the persistence constructor %s";
 
 	private final Function<T, PersistentPropertyAccessor<T>> delegateFunction;
 	private final EntityInstantiators instantiators;
@@ -60,9 +60,9 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 	public InstantiationAwarePropertyAccessor(T bean, Function<T, PersistentPropertyAccessor<T>> accessorFunction,
 			EntityInstantiators instantiators) {
 
-		Assert.notNull(bean, "Bean must not be null!");
-		Assert.notNull(accessorFunction, "PersistentPropertyAccessor function must not be null!");
-		Assert.notNull(instantiators, "EntityInstantiators must not be null!");
+		Assert.notNull(bean, "Bean must not be null");
+		Assert.notNull(accessorFunction, "PersistentPropertyAccessor function must not be null");
+		Assert.notNull(instantiators, "EntityInstantiators must not be null");
 
 		this.delegateFunction = accessorFunction;
 		this.instantiators = instantiators;

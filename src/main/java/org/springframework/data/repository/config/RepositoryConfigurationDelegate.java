@@ -63,8 +63,8 @@ import org.springframework.util.StopWatch;
 public class RepositoryConfigurationDelegate {
 
 	private static final String REPOSITORY_REGISTRATION = "Spring Data %s - Registering repository: %s - Interface: %s - Factory: %s";
-	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode!";
-	private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = "Non-default AutowireCandidateResolver (%s) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working!";
+	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode";
+	private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = "Non-default AutowireCandidateResolver (%s) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working";
 
 	static final String FACTORY_BEAN_OBJECT_TYPE = "factoryBeanObjectType";
 
@@ -91,8 +91,8 @@ public class RepositoryConfigurationDelegate {
 		boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
 
 		Assert.isTrue(isXml || isAnnotation,
-				"Configuration source must either be an Xml- or an AnnotationBasedConfigurationSource!");
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+				"Configuration source must either be an Xml- or an AnnotationBasedConfigurationSource");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
 
 		this.configurationSource = configurationSource;
 		this.resourceLoader = resourceLoader;

@@ -43,7 +43,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 	INSTANCE;
 
 	private static final Map<String, Metric> SUPPORTED_METRICS;
-	private static final String INVALID_DISTANCE = "Expected double amount optionally followed by a metrics abbreviation (%s) but got '%s'!";
+	private static final String INVALID_DISTANCE = "Expected double amount optionally followed by a metrics abbreviation (%s) but got '%s'";
 
 	static {
 

@@ -43,7 +43,7 @@ public final class Accessor {
 	 */
 	public Accessor(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 
 		PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method);
 

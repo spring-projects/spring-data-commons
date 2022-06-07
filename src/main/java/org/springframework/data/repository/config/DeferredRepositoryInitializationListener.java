@@ -48,7 +48,7 @@ class DeferredRepositoryInitializationListener implements ApplicationListener<Co
 
 		beanFactory.getBeansOfType(Repository.class);
 
-		logger.info("Spring Data repositories initialized!");
+		logger.info("Spring Data repositories initialized");
 	}
 
 	@Override

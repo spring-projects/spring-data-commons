@@ -725,10 +725,10 @@ class PartTreeUnitTests {
 		for (var k = 0; k < part.length; k++) {
 			assertThat(partIterator.hasNext()).as("Expected %d parts but have %d", part.length, k).isTrue();
 			var next = partIterator.next();
-			assertThat(part[k]).as("Expected %s but got %s!", part[k], next).isEqualTo(next);
+			assertThat(part[k]).as("Expected %s but got %s", part[k], next).isEqualTo(next);
 		}
 
-		assertThat(partIterator.hasNext()).as("Too many parts!").isFalse();
+		assertThat(partIterator.hasNext()).as("Too many parts").isFalse();
 	}
 
 	private static <T> Collection<T> toCollection(Iterable<T> iterable) {

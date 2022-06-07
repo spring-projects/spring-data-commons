@@ -109,7 +109,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 			return getProjection(result, targetType);
 		} else {
 			throw new UnsupportedOperationException(
-					String.format("Cannot project %s to %s. Target type is not an interface and no matching Converter found",
+					String.format("Cannot project %s to %s; Target type is not an interface and no matching Converter found",
 							ClassUtils.getDescriptiveType(result), ClassUtils.getQualifiedName(targetType)));
 		}
 	}
@@ -174,7 +174,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	 */
 	private static Collection<?> asCollection(Object source) {
 
-		Assert.notNull(source, "Source object must not be null!");
+		Assert.notNull(source, "Source object must not be null");
 
 		if (source instanceof Collection) {
 			return (Collection<?>) source;

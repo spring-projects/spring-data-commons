@@ -44,7 +44,7 @@ import com.querydsl.core.types.EntityPath;
  */
 public class QuerydslBindingsFactory implements ApplicationContextAware {
 
-	private static final String INVALID_DOMAIN_TYPE = "Unable to find Querydsl root type for detected domain type %s! User @%s's root attribute to define the domain type manually!";
+	private static final String INVALID_DOMAIN_TYPE = "Unable to find Querydsl root type for detected domain type %s; User @%s's root attribute to define the domain type manually";
 
 	private final EntityPathResolver entityPathResolver;
 	private final Map<TypeInformation<?>, EntityPath<?>> entityPaths;
@@ -60,7 +60,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	 */
 	public QuerydslBindingsFactory(EntityPathResolver entityPathResolver) {
 
-		Assert.notNull(entityPathResolver, "EntityPathResolver must not be null!");
+		Assert.notNull(entityPathResolver, "EntityPathResolver must not be null");
 
 		this.entityPathResolver = entityPathResolver;
 		this.entityPaths = new ConcurrentReferenceHashMap<>();
@@ -122,8 +122,8 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	private QuerydslBindings createBindingsFor(TypeInformation<?> domainType,
 			Optional<Class<? extends QuerydslBinderCustomizer<?>>> customizer) {
 
-		Assert.notNull(customizer, "Customizer must not be null!");
-		Assert.notNull(domainType, "Domain type must not be null!");
+		Assert.notNull(customizer, "Customizer must not be null");
+		Assert.notNull(domainType, "Domain type must not be null");
 
 		EntityPath<?> path = verifyEntityPathPresent(domainType);
 

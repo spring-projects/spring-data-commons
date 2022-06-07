@@ -70,8 +70,8 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	@PersistenceConstructor
 	public GeoResults(List<? extends GeoResult<T>> results, Distance averageDistance) {
 
-		Assert.notNull(results, "Results must not be null!");
-		Assert.notNull(averageDistance, "Average Distance must not be null!");
+		Assert.notNull(results, "Results must not be null");
+		Assert.notNull(averageDistance, "Average Distance must not be null");
 
 		this.results = results;
 		this.averageDistance = averageDistance;
@@ -133,8 +133,8 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	private static Distance calculateAverageDistance(List<? extends GeoResult<?>> results, Metric metric) {
 
-		Assert.notNull(results, "Results must not be null!");
-		Assert.notNull(metric, "Metric must not be null!");
+		Assert.notNull(results, "Results must not be null");
+		Assert.notNull(metric, "Metric must not be null");
 
 		if (results.isEmpty()) {
 			return new Distance(0, metric);

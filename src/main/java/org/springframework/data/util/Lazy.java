@@ -86,7 +86,7 @@ public class Lazy<T> implements Supplier<T> {
 	 */
 	public static <T> Lazy<T> of(T value) {
 
-		Assert.notNull(value, "Value must not be null!");
+		Assert.notNull(value, "Value must not be null");
 
 		return new Lazy<>(() -> value);
 	}
@@ -137,7 +137,7 @@ public class Lazy<T> implements Supplier<T> {
 	 */
 	public Lazy<T> or(Supplier<? extends T> supplier) {
 
-		Assert.notNull(supplier, "Supplier must not be null!");
+		Assert.notNull(supplier, "Supplier must not be null");
 
 		return Lazy.of(() -> orElseGet(supplier));
 	}
@@ -150,7 +150,7 @@ public class Lazy<T> implements Supplier<T> {
 	 */
 	public Lazy<T> or(T value) {
 
-		Assert.notNull(value, "Value must not be null!");
+		Assert.notNull(value, "Value must not be null");
 
 		return Lazy.of(() -> orElse(value));
 	}
@@ -180,7 +180,7 @@ public class Lazy<T> implements Supplier<T> {
 	@Nullable
 	private T orElseGet(Supplier<? extends T> supplier) {
 
-		Assert.notNull(supplier, "Default value supplier must not be null!");
+		Assert.notNull(supplier, "Default value supplier must not be null");
 
 		T value = getNullable();
 
@@ -195,7 +195,7 @@ public class Lazy<T> implements Supplier<T> {
 	 */
 	public <S> Lazy<S> map(Function<? super T, ? extends S> function) {
 
-		Assert.notNull(function, "Function must not be null!");
+		Assert.notNull(function, "Function must not be null");
 
 		return Lazy.of(() -> function.apply(get()));
 	}
@@ -208,7 +208,7 @@ public class Lazy<T> implements Supplier<T> {
 	 */
 	public <S> Lazy<S> flatMap(Function<? super T, Lazy<? extends S>> function) {
 
-		Assert.notNull(function, "Function must not be null!");
+		Assert.notNull(function, "Function must not be null");
 
 		return Lazy.of(() -> function.apply(get()).get());
 	}

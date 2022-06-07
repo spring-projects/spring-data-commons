@@ -80,7 +80,7 @@ public class Jackson2ResourceReader implements ResourceReader {
 
 	public Object readFrom(Resource resource, @Nullable ClassLoader classLoader) throws Exception {
 
-		Assert.notNull(resource, "Resource must not be null!");
+		Assert.notNull(resource, "Resource must not be null");
 
 		InputStream stream = resource.getInputStream();
 		JsonNode node = mapper.readerFor(JsonNode.class).readTree(stream);

@@ -115,7 +115,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	@Override
 	public boolean isSupported(PersistentEntity<?, ?> entity) {
 
-		Assert.notNull(entity, "PersistentEntity must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null");
 
 		return isClassLoaderDefineClassAvailable(entity) && isTypeInjectable(entity) && hasUniquePropertyHashCodes(entity);
 	}
@@ -260,7 +260,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * 			// …
 	 * 		}
 	 * 		throw new UnsupportedOperationException(
-	 * 				String.format("No accessor to set property %s!", new Object[] { property }));
+	 * 				String.format("No accessor to set property %s", new Object[] { property }));
 	 * 	}
 	 *
 	 * 	public Object getProperty(PersistentProperty<?> property) {
@@ -275,7 +275,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * 				return bean.field;
 	 * 				// …
 	 * 				throw new UnsupportedOperationException(
-	 * 						String.format("No accessor to get property %s!", new Object[] { property }));
+	 * 						String.format("No accessor to get property %s", new Object[] { property }));
 	 * 		}
 	 * 	}
 	 * }
@@ -446,7 +446,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			// Assert.notNull(bean)
 			mv.visitVarInsn(ALOAD, 1);
-			mv.visitLdcInsn("Bean must not be null!");
+			mv.visitLdcInsn("Bean must not be null");
 			mv.visitMethodInsn(INVOKESTATIC, "org/springframework/util/Assert", "notNull",
 					String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_STRING)), false);
 
@@ -911,7 +911,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * 		// …
 		 * 	}
 		 * 	throw new UnsupportedOperationException(
-		 * 			String.format("No accessor to set property %s!", new Object[] { property }));
+		 * 			String.format("No accessor to set property %s", new Object[] { property }));
 		 * }
 		 * </pre>
 		 */
@@ -1240,7 +1240,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			// Assert.notNull(property)
 			mv.visitVarInsn(ALOAD, 1);
-			mv.visitLdcInsn("Property must not be null!");
+			mv.visitLdcInsn("Property must not be null");
 			mv.visitMethodInsn(INVOKESTATIC, "org/springframework/util/Assert", "notNull",
 					String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_STRING)), false);
 		}

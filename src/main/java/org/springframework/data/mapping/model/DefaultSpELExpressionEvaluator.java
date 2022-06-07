@@ -36,8 +36,8 @@ public class DefaultSpELExpressionEvaluator implements SpELExpressionEvaluator {
 
 	public DefaultSpELExpressionEvaluator(Object source, SpELContext factory) {
 
-		Assert.notNull(source, "Source must not be null!");
-		Assert.notNull(factory, "SpELContext must not be null!");
+		Assert.notNull(source, "Source must not be null");
+		Assert.notNull(factory, "SpELContext must not be null");
 
 		this.source = source;
 		this.factory = factory;

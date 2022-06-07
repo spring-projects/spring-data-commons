@@ -112,9 +112,9 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		super(environment, ConfigurationUtils.getRequiredClassLoader(resourceLoader), registry,
 				defaultBeanNameGenerator(generator));
 
-		Assert.notNull(metadata, "Metadata must not be null!");
-		Assert.notNull(annotation, "Annotation must not be null!");
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+		Assert.notNull(metadata, "Metadata must not be null");
+		Assert.notNull(annotation, "Annotation must not be null");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
 
 		Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(annotation.getName());
 

@@ -56,7 +56,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	@SuppressWarnings("unchecked")
 	public PersistentEntities(Iterable<? extends MappingContext<?, ?>> contexts) {
 
-		Assert.notNull(contexts, "MappingContexts must not be null!");
+		Assert.notNull(contexts, "MappingContexts must not be null");
 
 		this.contexts = contexts instanceof Collection
 				? (Collection<? extends MappingContext<?, ? extends PersistentProperty<?>>>) contexts
@@ -71,7 +71,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 */
 	public static PersistentEntities of(MappingContext<?, ?>... contexts) {
 
-		Assert.notNull(contexts, "MappingContexts must not be null!");
+		Assert.notNull(contexts, "MappingContexts must not be null");
 
 		return new PersistentEntities(Arrays.asList(contexts));
 	}
@@ -110,7 +110,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 */
 	public PersistentEntity<?, ? extends PersistentProperty<?>> getRequiredPersistentEntity(Class<?> type) {
 
-		Assert.notNull(type, "Domain type must not be null!");
+		Assert.notNull(type, "Domain type must not be null");
 
 		if (contexts.size() == 1) {
 			return contexts.iterator().next().getRequiredPersistentEntity(type);
@@ -118,7 +118,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 		return getPersistentEntity(type).orElseThrow(() -> {
 			return new MappingException(String.format(
-					"Cannot get or create PersistentEntity for type %s! PersistentEntities knows about %s MappingContext instances and therefore cannot identify a single responsible one. Please configure the initialEntitySet through an entity scan using the base package in your configuration to pre initialize contexts",
+					"Cannot get or create PersistentEntity for type %s; PersistentEntities knows about %s MappingContext instances and therefore cannot identify a single responsible one; Please configure the initialEntitySet through an entity scan using the base package in your configuration to pre initialize contexts",
 					type.getName(), contexts.size()));
 		});
 	}
@@ -135,8 +135,8 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	public <T> Optional<T> mapOnContext(Class<?> type,
 			BiFunction<MappingContext<?, ? extends PersistentProperty<?>>, PersistentEntity<?, ?>, T> combiner) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(combiner, "Combining BiFunction must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(combiner, "Combining BiFunction must not be null");
 
 		if (contexts.size() == 1) {
 			return contexts.stream() //
@@ -215,7 +215,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 */
 	public TypeInformation<?> getTypeUltimatelyReferredToBy(PersistentProperty<?> property) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
 
 		PersistentEntity<?, ? extends PersistentProperty<?>> entity = getEntityUltimatelyReferredToBy(property);
 
@@ -254,7 +254,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 			String message = "Found multiple entities identified by " + type.getType() + ": ";
 			message += entities.stream().map(it -> it.getType().getName()).collect(Collectors.joining(", "));
-			message += "! Introduce dedicated unique identifier types or explicitly define the target type in @Reference";
+			message += "; Introduce dedicated unique identifier types or explicitly define the target type in @Reference";
 
 			throw new IllegalStateException(message);
 		}

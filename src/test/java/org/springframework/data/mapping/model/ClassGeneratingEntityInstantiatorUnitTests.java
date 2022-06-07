@@ -140,7 +140,7 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 		try {
 
 			this.instance.createInstance(entity, provider);
-			fail("Expected MappingInstantiationException!");
+			fail("Expected MappingInstantiationException");
 
 		} catch (MappingInstantiationException o_O) {
 

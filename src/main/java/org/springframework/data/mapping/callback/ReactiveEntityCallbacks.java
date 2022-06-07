@@ -84,7 +84,7 @@ public interface ReactiveEntityCallbacks {
 	 */
 	static ReactiveEntityCallbacks create(BeanFactory beanFactory) {
 
-		Assert.notNull(beanFactory, "Context must not be null!");
+		Assert.notNull(beanFactory, "Context must not be null");
 		return new DefaultReactiveEntityCallbacks(beanFactory);
 	}
 }

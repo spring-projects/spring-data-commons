@@ -60,7 +60,7 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 	@Nullable
 	static <T, P extends PersistentProperty<P>> PreferredConstructor<T, P> discover(Class<T> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return Discoverers.findDiscoverer(type) //
 				.discover(ClassTypeInformation.from(type), null);
@@ -75,7 +75,7 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 	@Nullable
 	static <T, P extends PersistentProperty<P>> PreferredConstructor<T, P> discover(PersistentEntity<T, P> entity) {
 
-		Assert.notNull(entity, "PersistentEntity must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null");
 
 		return Discoverers.findDiscoverer(entity.getType()) //
 				.discover(entity.getTypeInformation(), entity);

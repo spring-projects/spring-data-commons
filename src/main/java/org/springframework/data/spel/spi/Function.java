@@ -51,7 +51,7 @@ public class Function {
 
 		this(method, null);
 
-		Assert.isTrue(Modifier.isStatic(method.getModifiers()), "Method must be static!");
+		Assert.isTrue(Modifier.isStatic(method.getModifiers()), "Method must be static");
 	}
 
 	/**
@@ -62,9 +62,9 @@ public class Function {
 	 */
 	public Function(Method method, @Nullable Object target) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 		Assert.isTrue(target != null || Modifier.isStatic(method.getModifiers()),
-				"Method must either be static or a non-static one with a target object!");
+				"Method must either be static or a non-static one with a target object");
 
 		this.method = method;
 		this.target = target;

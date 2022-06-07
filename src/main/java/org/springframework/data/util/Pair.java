@@ -41,8 +41,8 @@ public final class Pair<S, T> {
 
 	private Pair(S first, T second) {
 
-		Assert.notNull(first, "First must not be null!");
-		Assert.notNull(second, "Second must not be null!");
+		Assert.notNull(first, "First must not be null");
+		Assert.notNull(second, "Second must not be null");
 
 		this.first = first;
 		this.second = second;

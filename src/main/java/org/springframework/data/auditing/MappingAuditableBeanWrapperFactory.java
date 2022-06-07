@@ -64,7 +64,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 	 */
 	public MappingAuditableBeanWrapperFactory(PersistentEntities entities) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
 
 		this.entities = entities;
 		this.metadataCache = new ConcurrentReferenceHashMap<>();
@@ -118,7 +118,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		 */
 		public <P> MappingAuditingMetadata(MappingContext<?, ? extends PersistentProperty<?>> context, Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
 			this.createdByPaths = findPropertyPaths(type, CreatedBy.class, context);
 			this.createdDatePaths = findPropertyPaths(type, CreatedDate.class, context);
@@ -184,8 +184,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 				MappingAuditingMetadata metadata) {
 			super(conversionService);
 
-			Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
-			Assert.notNull(metadata, "Auditing metadata must not be null!");
+			Assert.notNull(accessor, "PersistentPropertyAccessor must not be null");
+			Assert.notNull(metadata, "Auditing metadata must not be null");
 
 			this.accessor = accessor;
 			this.metadata = metadata;

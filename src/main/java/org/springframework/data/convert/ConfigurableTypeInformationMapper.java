@@ -47,7 +47,7 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 	 */
 	public ConfigurableTypeInformationMapper(Map<? extends Class<?>, String> sourceTypeMap) {
 
-		Assert.notNull(sourceTypeMap, "SourceTypeMap must not be null!");
+		Assert.notNull(sourceTypeMap, "SourceTypeMap must not be null");
 
 		this.typeToAlias = new HashMap<>(sourceTypeMap.size());
 		this.aliasToType = new HashMap<>(sourceTypeMap.size());
@@ -59,7 +59,7 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 
 			if (typeToAlias.containsValue(alias)) {
 				throw new IllegalArgumentException(
-						String.format("Detected mapping ambiguity! String %s cannot be mapped to more than one type", alias));
+						String.format("Detected mapping ambiguity; String %s cannot be mapped to more than one type", alias));
 			}
 
 			this.typeToAlias.put(type, alias);

@@ -68,9 +68,9 @@ class RepositoryBeanDefinitionBuilder {
 	public RepositoryBeanDefinitionBuilder(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
 			RepositoryConfigurationSource configurationSource, ResourceLoader resourceLoader, Environment environment) {
 
-		Assert.notNull(extension, "RepositoryConfigurationExtension must not be null!");
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
-		Assert.notNull(environment, "Environment must not be null!");
+		Assert.notNull(extension, "RepositoryConfigurationExtension must not be null");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
+		Assert.notNull(environment, "Environment must not be null");
 
 		this.registry = registry;
 		this.extension = extension;
@@ -92,8 +92,8 @@ class RepositoryBeanDefinitionBuilder {
 	 */
 	public BeanDefinitionBuilder build(RepositoryConfiguration<?> configuration) {
 
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.rootBeanDefinition(configuration.getRepositoryFactoryBeanClassName());

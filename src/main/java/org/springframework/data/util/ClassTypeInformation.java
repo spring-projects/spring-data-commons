@@ -67,7 +67,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 */
 	public static <S> ClassTypeInformation<S> from(Class<S> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return (ClassTypeInformation<S>) cache.computeIfAbsent(type, ClassTypeInformation::new);
 	}
@@ -80,7 +80,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 */
 	public static <S> TypeInformation<S> fromReturnTypeOf(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 		return (TypeInformation<S>) ClassTypeInformation.from(method.getDeclaringClass())
 				.createInfo(method.getGenericReturnType());
 	}

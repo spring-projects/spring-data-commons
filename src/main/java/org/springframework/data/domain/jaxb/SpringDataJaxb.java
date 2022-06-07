@@ -111,7 +111,7 @@ public abstract class SpringDataJaxb {
 	 */
 	public static <T, S> List<T> unmarshal(Collection<S> source, XmlAdapter<S, T> adapter) {
 
-		Assert.notNull(adapter, "Adapter must not be null!");
+		Assert.notNull(adapter, "Adapter must not be null");
 
 		if (source == null || source.isEmpty()) {
 			return Collections.emptyList();
@@ -138,7 +138,7 @@ public abstract class SpringDataJaxb {
 	 */
 	public static <T, S> List<S> marshal(@Nullable Iterable<T> source, XmlAdapter<S, T> adapter) {
 
-		Assert.notNull(adapter, "Adapter must not be null!");
+		Assert.notNull(adapter, "Adapter must not be null");
 
 		if (source == null) {
 			return Collections.emptyList();

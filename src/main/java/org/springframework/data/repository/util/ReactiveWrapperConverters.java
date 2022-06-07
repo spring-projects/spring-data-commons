@@ -102,7 +102,7 @@ public abstract class ReactiveWrapperConverters {
 	 */
 	private static ConversionService registerConvertersIn(ConfigurableConversionService conversionService) {
 
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		if (ReactiveWrappers.isAvailable(ReactiveLibrary.PROJECT_REACTOR)) {
 
@@ -163,8 +163,8 @@ public abstract class ReactiveWrapperConverters {
 	@SuppressWarnings("unchecked")
 	public static <T> T toWrapper(Object reactiveObject, Class<? extends T> targetWrapperType) {
 
-		Assert.notNull(reactiveObject, "Reactive source object must not be null!");
-		Assert.notNull(targetWrapperType, "Reactive target type must not be null!");
+		Assert.notNull(reactiveObject, "Reactive source object must not be null");
+		Assert.notNull(targetWrapperType, "Reactive target type must not be null");
 
 		if (targetWrapperType.isAssignableFrom(reactiveObject.getClass())) {
 			return (T) reactiveObject;
@@ -183,8 +183,8 @@ public abstract class ReactiveWrapperConverters {
 	@SuppressWarnings("unchecked")
 	public static <T> T map(Object reactiveObject, Function<Object, Object> converter) {
 
-		Assert.notNull(reactiveObject, "Reactive source object must not be null!");
-		Assert.notNull(converter, "Converter must not be null!");
+		Assert.notNull(reactiveObject, "Reactive source object must not be null");
+		Assert.notNull(converter, "Converter must not be null");
 
 		return getFirst(reactiveObject)//
 				.map(it -> (T) it.map(reactiveObject, converter))//
@@ -206,8 +206,8 @@ public abstract class ReactiveWrapperConverters {
 	 */
 	public static boolean canConvert(Class<?> sourceType, Class<?> targetType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
-		Assert.notNull(targetType, "Target type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
+		Assert.notNull(targetType, "Target type must not be null");
 
 		return GENERIC_CONVERSION_SERVICE.canConvert(sourceType, targetType);
 	}

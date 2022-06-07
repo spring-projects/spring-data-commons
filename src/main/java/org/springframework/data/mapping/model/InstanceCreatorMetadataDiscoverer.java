@@ -65,7 +65,7 @@ class InstanceCreatorMetadataDiscoverer {
 
 		if (hasAnnotatedConstructor && hasAnnotatedFactoryMethod) {
 			throw new MappingException(
-					"Invalid usage of @Factory and @PersistenceConstructor on %s. Only one annotation type permitted to indicate how entity instances should be created."
+					"Invalid usage of @Factory and @PersistenceConstructor on %s; Only one annotation type permitted to indicate how entity instances should be created"
 							.formatted(entity.getType().getName()));
 		}
 
@@ -130,7 +130,7 @@ class InstanceCreatorMetadataDiscoverer {
 
 			if (!Modifier.isStatic(method.getModifiers())) {
 				throw new MappingException(
-						"@PersistenceCreator can only be used on static methods. Offending method: %s".formatted(method));
+						"@PersistenceCreator can only be used on static methods; Offending method: %s".formatted(method));
 			}
 		}
 	}

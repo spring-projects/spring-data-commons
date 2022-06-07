@@ -68,7 +68,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	@SuppressWarnings("unchecked")
 	public <T> Optional<AuditableBeanWrapper<T>> getBeanWrapperFor(T source) {
 
-		Assert.notNull(source, "Source must not be null!");
+		Assert.notNull(source, "Source must not be null");
 
 		return Optional.of(source).map(it -> {
 
@@ -188,7 +188,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 				if (!conversionService.canConvert(value.getClass(), Date.class)) {
 					throw new IllegalArgumentException(
-							String.format("Cannot convert date type for member %s! From %s to java.util.Date to %s", source,
+							String.format("Cannot convert date type for member %s; From %s to java.util.Date to %s", source,
 									value.getClass(), targetType));
 				}
 
@@ -228,7 +228,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	}
 
 	private static IllegalArgumentException rejectUnsupportedType(Object source) {
-		return new IllegalArgumentException(String.format("Invalid date type %s for member %s! Supported types are %s",
+		return new IllegalArgumentException(String.format("Invalid date type %s for member %s; Supported types are %s",
 				source.getClass(), source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
 	}
 
@@ -251,7 +251,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		public ReflectionAuditingBeanWrapper(ConversionService conversionService, T target) {
 			super(conversionService);
 
-			Assert.notNull(target, "Target object must not be null!");
+			Assert.notNull(target, "Target object must not be null");
 
 			this.metadata = AnnotationAuditingMetadata.getMetadata(target.getClass());
 			this.target = target;

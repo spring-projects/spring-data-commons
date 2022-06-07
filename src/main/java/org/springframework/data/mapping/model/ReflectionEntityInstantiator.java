@@ -66,7 +66,7 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 				T t = (T) ReflectionUtils.invokeMethod(method.getFactoryMethod(), null, params);
 
 				if (t == null) {
-					throw new IllegalStateException("Method %s returned null!".formatted(method.getFactoryMethod()));
+					throw new IllegalStateException("Method %s returned null".formatted(method.getFactoryMethod()));
 				}
 				return t;
 			} catch (Exception e) {

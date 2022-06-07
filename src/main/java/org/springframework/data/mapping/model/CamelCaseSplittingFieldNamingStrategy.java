@@ -41,7 +41,7 @@ public class CamelCaseSplittingFieldNamingStrategy implements FieldNamingStrateg
 	 */
 	public CamelCaseSplittingFieldNamingStrategy(String delimiter) {
 
-		Assert.notNull(delimiter, "Delimiter must not be null!");
+		Assert.notNull(delimiter, "Delimiter must not be null");
 		this.delimiter = delimiter;
 	}
 

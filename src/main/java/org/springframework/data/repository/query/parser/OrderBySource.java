@@ -45,7 +45,7 @@ class OrderBySource {
 
 	private static final String BLOCK_SPLIT = "(?<=Asc|Desc)(?=\\p{Lu})";
 	private static final Pattern DIRECTION_SPLIT = Pattern.compile("(.+?)(Asc|Desc)?$");
-	private static final String INVALID_ORDER_SYNTAX = "Invalid order syntax for part %s!";
+	private static final String INVALID_ORDER_SYNTAX = "Invalid order syntax for part %s";
 	private static final Set<String> DIRECTION_KEYWORDS = new HashSet<>(Arrays.asList("Asc", "Desc"));
 
 	private final List<Order> orders;

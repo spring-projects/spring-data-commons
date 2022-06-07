@@ -81,7 +81,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	public static Sort by(String... properties) {
 
-		Assert.notNull(properties, "Properties must not be null!");
+		Assert.notNull(properties, "Properties must not be null");
 
 		return properties.length == 0 //
 				? Sort.unsorted() //
@@ -96,7 +96,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	public static Sort by(List<Order> orders) {
 
-		Assert.notNull(orders, "Orders must not be null!");
+		Assert.notNull(orders, "Orders must not be null");
 
 		return orders.isEmpty() ? Sort.unsorted() : new Sort(orders);
 	}
@@ -109,7 +109,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	public static Sort by(Order... orders) {
 
-		Assert.notNull(orders, "Orders must not be null!");
+		Assert.notNull(orders, "Orders must not be null");
 
 		return new Sort(Arrays.asList(orders));
 	}
@@ -123,9 +123,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	public static Sort by(Direction direction, String... properties) {
 
-		Assert.notNull(direction, "Direction must not be null!");
-		Assert.notNull(properties, "Properties must not be null!");
-		Assert.isTrue(properties.length > 0, "At least one property must be given!");
+		Assert.notNull(direction, "Direction must not be null");
+		Assert.notNull(properties, "Properties must not be null");
+		Assert.isTrue(properties.length > 0, "At least one property must be given");
 
 		return Sort.by(Arrays.stream(properties)//
 				.map(it -> new Order(direction, it))//
@@ -192,7 +192,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	public Sort and(Sort sort) {
 
-		Assert.notNull(sort, "Sort must not be null!");
+		Assert.notNull(sort, "Sort must not be null");
 
 		ArrayList<Order> these = new ArrayList<Order>(this.toList());
 
@@ -305,7 +305,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 				return Direction.valueOf(value.toUpperCase(Locale.US));
 			} catch (Exception e) {
 				throw new IllegalArgumentException(String.format(
-						"Invalid value '%s' for orders given! Has to be either 'desc' or 'asc' (case insensitive)", value), e);
+						"Invalid value '%s' for orders given; Has to be either 'desc' or 'asc' (case insensitive)", value), e);
 			}
 		}
 

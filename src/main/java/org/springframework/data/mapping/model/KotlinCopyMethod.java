@@ -76,7 +76,7 @@ class KotlinCopyMethod {
 	 */
 	public static Optional<KotlinCopyMethod> findCopyMethod(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		Optional<Method> syntheticCopyMethod = findSyntheticCopyMethod(type);
 

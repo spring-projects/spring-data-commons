@@ -143,7 +143,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 				if (LOGGER.isDebugEnabled()) {
 					LOGGER.debug(
-							String.format("Cannot create entity instantiator for %s. Falling back to ReflectionEntityInstantiator.",
+							String.format("Cannot create entity instantiator for %s; Falling back to ReflectionEntityInstantiator",
 									entity.getName()),
 							ex);
 				}
@@ -172,7 +172,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		if (NativeDetector.inNativeImage()) {
 
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(String.format("graalvm.nativeimage - fall back to reflection for %s.", entity.getName()));
+				LOGGER.debug(String.format("graalvm.nativeimage - fall back to reflection for %s", entity.getName()));
 			}
 
 			return true;
@@ -575,7 +575,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		private static void insertAssertNotNull(MethodVisitor mv, String parameterName) {
 
 			// Assert.notNull(property)
-			mv.visitLdcInsn(String.format("Parameter %s must not be null!", parameterName));
+			mv.visitLdcInsn(String.format("Parameter %s must not be null", parameterName));
 			mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(Assert.class), "notNull", String.format("(%s%s)V",
 					BytecodeUtil.referenceName(JAVA_LANG_OBJECT), BytecodeUtil.referenceName(String.class)), false);
 		}

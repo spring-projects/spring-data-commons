@@ -112,8 +112,8 @@ public class AccessOptions {
 		 */
 		public GetOptions registerHandler(PersistentProperty<?> property, Function<Object, Object> handler) {
 
-			Assert.notNull(property, "Property must not be null!");
-			Assert.notNull(handler, "Handler must not be null!");
+			Assert.notNull(property, "Property must not be null");
+			Assert.notNull(handler, "Handler must not be null");
 
 			Map<PersistentProperty<?>, Function<Object, Object>> newHandlers = new HashMap<>(handlers);
 			newHandlers.put(property, handler);
@@ -184,7 +184,7 @@ public class AccessOptions {
 				Function<? super T, Object> handler) {
 
 			Assert.isTrue(type.isAssignableFrom(property.getType()), () -> String
-					.format("Cannot register a property handler for %s on a property of type %s!", type, property.getType()));
+					.format("Cannot register a property handler for %s on a property of type %s", type, property.getType()));
 
 			Function<Object, T> caster = (Function<Object, T>) it -> type.cast(it);
 
@@ -333,7 +333,7 @@ public class AccessOptions {
 		 */
 		public SetOptions withCollectionAndMapPropagation(Propagation propagation) {
 
-			Assert.notNull(propagation, "Propagation must not be null!");
+			Assert.notNull(propagation, "Propagation must not be null");
 
 			return withCollectionPropagation(propagation) //
 					.withMapPropagation(propagation);

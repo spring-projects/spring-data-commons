@@ -29,7 +29,7 @@ import org.springframework.util.StringUtils;
  */
 public class Version implements Comparable<Version> {
 
-	private static final String VERSION_PARSE_ERROR = "Invalid version string! Could not parse segment %s within %s.";
+	private static final String VERSION_PARSE_ERROR = "Invalid version string; Could not parse segment %s within %s";
 
 	private final int major;
 	private final int minor;
@@ -43,19 +43,19 @@ public class Version implements Comparable<Version> {
 	 */
 	public Version(int... parts) {
 
-		Assert.notNull(parts, "Parts must not be null!");
+		Assert.notNull(parts, "Parts must not be null");
 		Assert.isTrue(parts.length > 0 && parts.length < 5,
-				String.format("Invalid parts length. 0 < %s < 5", parts.length));
+				String.format("Invalid parts length: 0 < %s < 5", parts.length));
 
 		this.major = parts[0];
 		this.minor = parts.length > 1 ? parts[1] : 0;
 		this.bugfix = parts.length > 2 ? parts[2] : 0;
 		this.build = parts.length > 3 ? parts[3] : 0;
 
-		Assert.isTrue(major >= 0, "Major version must be greater or equal zero!");
-		Assert.isTrue(minor >= 0, "Minor version must be greater or equal zero!");
-		Assert.isTrue(bugfix >= 0, "Bugfix version must be greater or equal zero!");
-		Assert.isTrue(build >= 0, "Build version must be greater or equal zero!");
+		Assert.isTrue(major >= 0, "Major version must be greater or equal zero");
+		Assert.isTrue(minor >= 0, "Minor version must be greater or equal zero");
+		Assert.isTrue(bugfix >= 0, "Bugfix version must be greater or equal zero");
+		Assert.isTrue(build >= 0, "Build version must be greater or equal zero");
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class Version implements Comparable<Version> {
 	 */
 	public static Version parse(String version) {
 
-		Assert.hasText(version, "Version must not be null o empty!");
+		Assert.hasText(version, "Version must not be null o empty");
 
 		String[] parts = version.trim().split("\\.");
 		int[] intParts = new int[parts.length];

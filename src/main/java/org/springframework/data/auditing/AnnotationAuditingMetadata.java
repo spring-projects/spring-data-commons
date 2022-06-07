@@ -78,7 +78,7 @@ final class AnnotationAuditingMetadata {
 	 */
 	private AnnotationAuditingMetadata(Class<?> type) {
 
-		Assert.notNull(type, "Given type must not be null!");
+		Assert.notNull(type, "Given type must not be null");
 
 		this.createdByField = Optional.ofNullable(ReflectionUtils.findField(type, CREATED_BY_FILTER));
 		this.createdDateField = Optional.ofNullable(ReflectionUtils.findField(type, CREATED_DATE_FILTER));

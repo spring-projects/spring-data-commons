@@ -52,7 +52,7 @@ public interface Predicates {
 	 */
 	static <T> Predicate<T> negate(Predicate<T> predicate) {
 
-		Assert.notNull(predicate, "Predicate must not be null!");
+		Assert.notNull(predicate, "Predicate must not be null");
 		return predicate.negate();
 	}
 }

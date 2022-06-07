@@ -92,7 +92,7 @@ public class SimpleTypeHolder {
 	 */
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, boolean registerDefaults) {
 
-		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null!");
+		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null");
 
 		this.simpleTypes = new WeakHashMap<>(customSimpleTypes.size() + DEFAULTS.size());
 
@@ -111,8 +111,8 @@ public class SimpleTypeHolder {
 	 */
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, SimpleTypeHolder source) {
 
-		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null!");
-		Assert.notNull(source, "SourceTypeHolder must not be null!");
+		Assert.notNull(customSimpleTypes, "CustomSimpleTypes must not be null");
+		Assert.notNull(source, "SourceTypeHolder must not be null");
 
 		this.simpleTypes = new WeakHashMap<>(customSimpleTypes.size() + source.simpleTypes.size());
 
@@ -140,7 +140,7 @@ public class SimpleTypeHolder {
 	 */
 	public boolean isSimpleType(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		Map<Class<?>, Boolean> localSimpleTypes = this.simpleTypes;
 		Boolean isSimpleType = localSimpleTypes.get(type);

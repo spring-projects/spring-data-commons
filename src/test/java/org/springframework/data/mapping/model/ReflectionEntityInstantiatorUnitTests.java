@@ -126,7 +126,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 		try {
 
 			INSTANCE.createInstance(entity, provider);
-			fail("Expected MappingInstantiationException!");
+			fail("Expected MappingInstantiationException");
 
 		} catch (MappingInstantiationException o_O) {
 

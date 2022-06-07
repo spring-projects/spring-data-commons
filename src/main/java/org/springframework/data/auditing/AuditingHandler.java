@@ -48,7 +48,7 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 	public AuditingHandler(PersistentEntities entities) {
 
 		super(entities);
-		Assert.notNull(entities, "PersistentEntities must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
 
 		this.auditorAware = Optional.empty();
 	}
@@ -60,7 +60,7 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 	 */
 	public void setAuditorAware(AuditorAware<?> auditorAware) {
 
-		Assert.notNull(auditorAware, "AuditorAware must not be null!");
+		Assert.notNull(auditorAware, "AuditorAware must not be null");
 		this.auditorAware = Optional.of(auditorAware);
 	}
 
@@ -71,7 +71,7 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 	 */
 	public <T> T markCreated(T source) {
 
-		Assert.notNull(source, "Entity must not be null!");
+		Assert.notNull(source, "Entity must not be null");
 
 		return markCreated(getAuditor(), source);
 	}
@@ -83,7 +83,7 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 	 */
 	public <T> T markModified(T source) {
 
-		Assert.notNull(source, "Entity must not be null!");
+		Assert.notNull(source, "Entity must not be null");
 
 		return markModified(getAuditor(), source);
 	}
@@ -97,7 +97,7 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 	public void afterPropertiesSet() {
 
 		if (!auditorAware.isPresent()) {
-			logger.debug("No AuditorAware set! Auditing will not be applied!");
+			logger.debug("No AuditorAware set; Auditing will not be applied");
 		}
 	}
 }

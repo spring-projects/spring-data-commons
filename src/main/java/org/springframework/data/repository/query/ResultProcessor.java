@@ -68,9 +68,9 @@ public class ResultProcessor {
 	 */
 	private ResultProcessor(QueryMethod method, ProjectionFactory factory, Class<?> type) {
 
-		Assert.notNull(method, "QueryMethod must not be null!");
-		Assert.notNull(factory, "ProjectionFactory must not be null!");
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(method, "QueryMethod must not be null");
+		Assert.notNull(factory, "ProjectionFactory must not be null");
+		Assert.notNull(type, "Type must not be null");
 
 		this.method = method;
 		this.type = ReturnedType.of(type, method.getDomainClass(), factory);
@@ -94,7 +94,7 @@ public class ResultProcessor {
 	 */
 	public ResultProcessor withDynamicProjection(ParameterAccessor accessor) {
 
-		Assert.notNull(accessor, "Parameter accessor must not be null!");
+		Assert.notNull(accessor, "Parameter accessor must not be null");
 
 		Class<?> projection = accessor.findDynamicProjection();
 
@@ -139,7 +139,7 @@ public class ResultProcessor {
 			return (T) source;
 		}
 
-		Assert.notNull(preparingConverter, "Preparing converter must not be null!");
+		Assert.notNull(preparingConverter, "Preparing converter must not be null");
 
 		ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
 
@@ -214,7 +214,7 @@ public class ResultProcessor {
 		 */
 		public ChainingConverter and(final Converter<Object, Object> converter) {
 
-			Assert.notNull(converter, "Converter must not be null!");
+			Assert.notNull(converter, "Converter must not be null");
 
 			return new ChainingConverter(targetType, source -> {
 
@@ -282,7 +282,7 @@ public class ResultProcessor {
 		 */
 		ProjectingConverter withType(ReturnedType type) {
 
-			Assert.notNull(type, "ReturnedType must not be null!");
+			Assert.notNull(type, "ReturnedType must not be null");
 
 			return new ProjectingConverter(type, factory, conversionService);
 		}

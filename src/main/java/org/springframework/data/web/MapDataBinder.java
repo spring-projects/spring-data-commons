@@ -171,7 +171,7 @@ class MapDataBinder extends WebDataBinder {
 
 				if (typeDescriptor == null) {
 					throw new IllegalStateException(
-							String.format("Couldn't obtain type descriptor for method parameter %s!", methodParameter));
+							String.format("Couldn't obtain type descriptor for method parameter %s", methodParameter));
 				}
 
 				value = conversionService.convert(value, TypeDescriptor.forObject(value), typeDescriptor);
@@ -227,8 +227,8 @@ class MapDataBinder extends WebDataBinder {
 			 */
 			public PropertyTraversingMapAccessor(Class<?> type, ConversionService conversionService) {
 
-				Assert.notNull(type, "Type must not be null!");
-				Assert.notNull(conversionService, "ConversionService must not be null!");
+				Assert.notNull(type, "Type must not be null");
+				Assert.notNull(conversionService, "ConversionService must not be null");
 
 				this.type = type;
 				this.conversionService = conversionService;

@@ -377,7 +377,7 @@ class AbstractMappingContextUnitTests {
 		}
 
 		if (found != expected) {
-			fail(String.format("%s to find persistent entity for %s!", expected ? "Expected" : "Did not expect", type));
+			fail(String.format("%s to find persistent entity for %s", expected ? "Expected" : "Did not expect", type));
 		}
 	}
 

@@ -49,7 +49,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	 */
 	public ReactiveExtensionAwareQueryMethodEvaluationContextProvider(ListableBeanFactory beanFactory) {
 
-		Assert.notNull(beanFactory, "ListableBeanFactory must not be null!");
+		Assert.notNull(beanFactory, "ListableBeanFactory must not be null");
 
 		this.delegate = new ReactiveExtensionAwareEvaluationContextProvider(beanFactory);
 	}
@@ -63,7 +63,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	 */
 	public ReactiveExtensionAwareQueryMethodEvaluationContextProvider(List<? extends ExtensionIdAware> extensions) {
 
-		Assert.notNull(extensions, "EvaluationContextExtensions must not be null!");
+		Assert.notNull(extensions, "EvaluationContextExtensions must not be null");
 
 		this.delegate = new ReactiveExtensionAwareEvaluationContextProvider(extensions);
 	}

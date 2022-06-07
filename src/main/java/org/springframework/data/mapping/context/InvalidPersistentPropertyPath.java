@@ -37,7 +37,7 @@ import org.springframework.util.StringUtils;
 public class InvalidPersistentPropertyPath extends MappingException {
 
 	private static final long serialVersionUID = 2805815643641094488L;
-	private static final String DEFAULT_MESSAGE = "No property '%s' found on %s! Did you mean: %s?";
+	private static final String DEFAULT_MESSAGE = "No property '%s' found on %s; Did you mean: %s";
 
 	private final String source;
 	private final String unresolvableSegment;
@@ -57,9 +57,9 @@ public class InvalidPersistentPropertyPath extends MappingException {
 		super(createMessage(resolvedPath.isEmpty() ? type : resolvedPath.getRequiredLeafProperty().getTypeInformation(),
 				unresolvableSegment));
 
-		Assert.notNull(source, "Source property path must not be null!");
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(unresolvableSegment, "Unresolvable segment must not be null!");
+		Assert.notNull(source, "Source property path must not be null");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(unresolvableSegment, "Unresolvable segment must not be null");
 
 		this.source = source;
 		this.type = type;

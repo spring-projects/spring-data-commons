@@ -76,7 +76,7 @@ public class Parameter {
 	 */
 	protected Parameter(MethodParameter parameter) {
 
-		Assert.notNull(parameter, "MethodParameter must not be null!");
+		Assert.notNull(parameter, "MethodParameter must not be null");
 
 		this.parameter = parameter;
 		this.parameterType = potentiallyUnwrapParameterType(parameter);

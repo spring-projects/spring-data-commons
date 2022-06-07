@@ -66,15 +66,15 @@ public class QueryMethod {
 	 */
 	public QueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory) {
 
-		Assert.notNull(method, "Method must not be null!");
-		Assert.notNull(metadata, "Repository metadata must not be null!");
-		Assert.notNull(factory, "ProjectionFactory must not be null!");
+		Assert.notNull(method, "Method must not be null");
+		Assert.notNull(metadata, "Repository metadata must not be null");
+		Assert.notNull(factory, "ProjectionFactory must not be null");
 
 		Parameters.TYPES.stream()
 				.filter(type -> getNumberOfOccurrences(method, type) > 1)
 				.findFirst().ifPresent(type -> {
 					throw new IllegalStateException(
-							String.format("Method must have only one argument of type %s! Offending method: %s",
+							String.format("Method must have only one argument of type %s; Offending method: %s",
 									type.getSimpleName(), method));
 				});
 
@@ -91,16 +91,16 @@ public class QueryMethod {
 
 			if (hasParameterOfType(method, Sort.class)) {
 				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameters. "
-						+ "Use sorting capabilities on Pageable instead! Offending method: %s", method));
+						+ "Use sorting capabilities on Pageable instead; Offending method: %s", method));
 			}
 		}
 
 		Assert.notNull(this.parameters,
-				() -> String.format("Parameters extracted from method '%s' must not be null!", method.getName()));
+				() -> String.format("Parameters extracted from method '%s' must not be null", method.getName()));
 
 		if (isPageQuery()) {
 			Assert.isTrue(this.parameters.hasPageableParameter(),
-					String.format("Paging query needs to have a Pageable parameter! Offending method: %s", method));
+					String.format("Paging query needs to have a Pageable parameter; Offending method: %s", method));
 		}
 
 		this.domainClass = Lazy.of(() -> {
@@ -297,8 +297,8 @@ public class QueryMethod {
 
 	private static void assertReturnTypeAssignable(Method method, Set<Class<?>> types) {
 
-		Assert.notNull(method, "Method must not be null!");
-		Assert.notEmpty(types, "Types must not be null or empty!");
+		Assert.notNull(method, "Method must not be null");
+		Assert.notEmpty(types, "Types must not be null or empty");
 
 		TypeInformation<?> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 

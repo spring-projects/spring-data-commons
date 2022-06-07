@@ -60,8 +60,8 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 
 		super(false);
 
-		Assert.notNull(includeFilters, "Include filters must not be null!");
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
+		Assert.notNull(includeFilters, "Include filters must not be null");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 
 		this.registry = registry;
 
@@ -191,7 +191,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		 */
 		public AllTypeFilter(List<TypeFilter> delegates) {
 
-			Assert.notNull(delegates, "TypeFilter deleages must not be null!");
+			Assert.notNull(delegates, "TypeFilter deleages must not be null");
 			this.delegates = delegates;
 		}
 

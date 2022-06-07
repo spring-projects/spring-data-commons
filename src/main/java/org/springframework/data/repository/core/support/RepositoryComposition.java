@@ -391,8 +391,8 @@ public class RepositoryComposition {
 		 */
 		public static RepositoryFragments just(Object... implementations) {
 
-			Assert.notNull(implementations, "Implementations must not be null!");
-			Assert.noNullElements(implementations, "Implementations must not contain null elements!");
+			Assert.notNull(implementations, "Implementations must not be null");
+			Assert.noNullElements(implementations, "Implementations must not contain null elements");
 
 			return new RepositoryFragments(
 					Arrays.stream(implementations).map(RepositoryFragment::implemented).collect(Collectors.toList()));
@@ -406,8 +406,8 @@ public class RepositoryComposition {
 		 */
 		public static RepositoryFragments of(RepositoryFragment<?>... fragments) {
 
-			Assert.notNull(fragments, "RepositoryFragments must not be null!");
-			Assert.noNullElements(fragments, "RepositoryFragments must not contain null elements!");
+			Assert.notNull(fragments, "RepositoryFragments must not be null");
+			Assert.noNullElements(fragments, "RepositoryFragments must not contain null elements");
 
 			return new RepositoryFragments(Arrays.asList(fragments));
 		}
@@ -420,7 +420,7 @@ public class RepositoryComposition {
 		 */
 		public static RepositoryFragments from(List<RepositoryFragment<?>> fragments) {
 
-			Assert.notNull(fragments, "RepositoryFragments must not be null!");
+			Assert.notNull(fragments, "RepositoryFragments must not be null");
 
 			return new RepositoryFragments(new ArrayList<>(fragments));
 		}
@@ -434,7 +434,7 @@ public class RepositoryComposition {
 		 */
 		public RepositoryFragments append(RepositoryFragment<?> fragment) {
 
-			Assert.notNull(fragment, "RepositoryFragment must not be null!");
+			Assert.notNull(fragment, "RepositoryFragment must not be null");
 
 			return concat(stream(), Stream.of(fragment));
 		}
@@ -448,7 +448,7 @@ public class RepositoryComposition {
 		 */
 		public RepositoryFragments append(RepositoryFragments fragments) {
 
-			Assert.notNull(fragments, "RepositoryFragments must not be null!");
+			Assert.notNull(fragments, "RepositoryFragments must not be null");
 
 			return concat(stream(), fragments.stream());
 		}

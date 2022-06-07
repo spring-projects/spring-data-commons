@@ -31,7 +31,7 @@ public enum PersistableIsNewStrategy implements IsNewStrategy {
 	@Override
 	public boolean isNew(Object entity) {
 
-		Assert.notNull(entity, "Entity must not be null!");
+		Assert.notNull(entity, "Entity must not be null");
 
 		if (!(entity instanceof Persistable)) {
 			throw new IllegalArgumentException(

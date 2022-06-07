@@ -60,10 +60,10 @@ import org.springframework.util.ObjectUtils;
 public class CustomConversions {
 
 	private static final Log logger = LogFactory.getLog(CustomConversions.class);
-	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type; You might want to check your annotation setup at the converter implementation.";
-	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type; You might want to check your annotation setup at the converter implementation.";
+	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type; You might want to check your annotation setup at the converter implementation";
+	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type; You might want to check your annotation setup at the converter implementation";
 	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory";
-	private static final String CONVERTER_FILTER = "converter from %s to %s as %s converter.";
+	private static final String CONVERTER_FILTER = "converter from %s to %s as %s converter";
 	private static final String ADD_CONVERTER = "Adding %s" + CONVERTER_FILTER;
 	private static final String SKIP_CONVERTER = "Skipping " + CONVERTER_FILTER
 			+ " %s is not a store supported simple type";

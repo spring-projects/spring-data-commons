@@ -70,8 +70,8 @@ public class MethodInvocationRecorder {
 	 */
 	public static <T> Recorded<T> forProxyOf(Class<T> type) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.isTrue(!Modifier.isFinal(type.getModifiers()), "Type to record invocations on must not be final!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.isTrue(!Modifier.isFinal(type.getModifiers()), "Type to record invocations on must not be final");
 
 		return new MethodInvocationRecorder().create(type);
 	}
@@ -172,7 +172,7 @@ public class MethodInvocationRecorder {
 
 		public InvocationInformation(Recorded<?> recorded, @Nullable Method invokedMethod) {
 
-			Assert.notNull(recorded, "Recorded must not be null!");
+			Assert.notNull(recorded, "Recorded must not be null");
 
 			this.recorded = recorded;
 			this.invokedMethod = invokedMethod;
@@ -317,7 +317,7 @@ public class MethodInvocationRecorder {
 		 */
 		public <S> Recorded<S> record(Function<? super T, S> converter) {
 
-			Assert.notNull(converter, "Function must not be null!");
+			Assert.notNull(converter, "Function must not be null");
 
 			return new Recorded<S>(converter.apply(currentInstance), recorder);
 		}
@@ -330,7 +330,7 @@ public class MethodInvocationRecorder {
 		 */
 		public <S> Recorded<S> record(ToCollectionConverter<T, S> converter) {
 
-			Assert.notNull(converter, "Converter must not be null!");
+			Assert.notNull(converter, "Converter must not be null");
 
 			return new Recorded<S>(converter.apply(currentInstance).iterator().next(), recorder);
 		}
@@ -343,7 +343,7 @@ public class MethodInvocationRecorder {
 		 */
 		public <S> Recorded<S> record(ToMapConverter<T, S> converter) {
 
-			Assert.notNull(converter, "Converter must not be null!");
+			Assert.notNull(converter, "Converter must not be null");
 
 			return new Recorded<S>(converter.apply(currentInstance).values().iterator().next(), recorder);
 		}

@@ -44,8 +44,8 @@ public class RepositoriesPopulatedEvent extends ApplicationEvent {
 
 		super(populator);
 
-		Assert.notNull(populator, "Populator must not be null!");
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(populator, "Populator must not be null");
+		Assert.notNull(repositories, "Repositories must not be null");
 
 		this.repositories = repositories;
 	}

@@ -184,7 +184,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	public void addQueryCreationListener(QueryCreationListener<?> listener) {
 
-		Assert.notNull(listener, "Listener must not be null!");
+		Assert.notNull(listener, "Listener must not be null");
 		this.queryPostProcessors.add(listener);
 	}
 
@@ -197,7 +197,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	public void addInvocationListener(RepositoryMethodInvocationListener listener) {
 
-		Assert.notNull(listener, "Listener must not be null!");
+		Assert.notNull(listener, "Listener must not be null");
 		this.methodInvocationListeners.add(listener);
 	}
 
@@ -210,7 +210,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	public void addRepositoryProxyPostProcessor(RepositoryProxyPostProcessor processor) {
 
-		Assert.notNull(processor, "RepositoryProxyPostProcessor must not be null!");
+		Assert.notNull(processor, "RepositoryProxyPostProcessor must not be null");
 		this.postProcessors.add(processor);
 	}
 
@@ -272,8 +272,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			logger.debug(LogMessage.format("Initializing repository instance for %s…", repositoryInterface.getName()));
 		}
 
-		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
-		Assert.notNull(fragments, "RepositoryFragments must not be null!");
+		Assert.notNull(repositoryInterface, "Repository interface must not be null");
+		Assert.notNull(fragments, "RepositoryFragments must not be null");
 
 		ApplicationStartup applicationStartup = getStartup();
 
@@ -421,8 +421,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	private RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata, RepositoryFragments fragments) {
 
-		Assert.notNull(metadata, "RepositoryMetadata must not be null!");
-		Assert.notNull(fragments, "RepositoryFragments must not be null!");
+		Assert.notNull(metadata, "RepositoryMetadata must not be null");
+		Assert.notNull(fragments, "RepositoryFragments must not be null");
 
 		RepositoryComposition composition = getRepositoryComposition(metadata);
 		RepositoryFragments repositoryAspects = getRepositoryFragments(metadata);

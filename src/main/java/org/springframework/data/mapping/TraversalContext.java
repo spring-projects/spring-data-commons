@@ -49,8 +49,8 @@ public class TraversalContext {
 	 */
 	public TraversalContext registerHandler(PersistentProperty<?> property, Function<Object, Object> handler) {
 
-		Assert.notNull(property, "Property must not be null!");
-		Assert.notNull(handler, "Handler must not be null!");
+		Assert.notNull(property, "Property must not be null");
+		Assert.notNull(handler, "Handler must not be null");
 
 		handlers.put(property, handler);
 
@@ -122,7 +122,7 @@ public class TraversalContext {
 			Function<? super T, Object> handler) {
 
 		Assert.isTrue(type.isAssignableFrom(property.getType()), () -> String
-				.format("Cannot register a property handler for %s on a property of type %s!", type, property.getType()));
+				.format("Cannot register a property handler for %s on a property of type %s", type, property.getType()));
 
 		Function<Object, T> caster = (Function<Object, T>) it -> type.cast(it);
 

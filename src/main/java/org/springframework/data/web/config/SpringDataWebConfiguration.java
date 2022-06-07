@@ -70,8 +70,8 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	public SpringDataWebConfiguration(ApplicationContext context,
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
 
-		Assert.notNull(context, "ApplicationContext must not be null!");
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(context, "ApplicationContext must not be null");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		this.context = context;
 

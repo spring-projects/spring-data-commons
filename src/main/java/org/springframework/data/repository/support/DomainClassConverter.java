@@ -60,7 +60,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 	 */
 	public DomainClassConverter(T conversionService) {
 
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		this.conversionService = conversionService;
 		this.conversionService.addConverter(this);

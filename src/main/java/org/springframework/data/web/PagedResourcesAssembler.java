@@ -131,7 +131,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	public <R extends RepresentationModel<?>> PagedModel<R> toModel(Page<T> page,
 			RepresentationModelAssembler<T, R> assembler, Link link) {
 
-		Assert.notNull(link, "Link must not be null!");
+		Assert.notNull(link, "Link must not be null");
 
 		return createModel(page, assembler, Optional.of(link));
 	}
@@ -163,10 +163,10 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 
 	private PagedModel<?> toEmptyModel(Page<?> page, Class<?> type, Optional<Link> link) {
 
-		Assert.notNull(page, "Page must not be null!");
-		Assert.isTrue(!page.hasContent(), "Page must not have any content!");
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(link, "Link must not be null!");
+		Assert.notNull(page, "Page must not be null");
+		Assert.isTrue(!page.hasContent(), "Page must not have any content");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(link, "Link must not be null");
 
 		PageMetadata metadata = asPageMetadata(page);
 
@@ -187,9 +187,9 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	protected <R extends RepresentationModel<?>, S> PagedModel<R> createPagedModel(List<R> resources,
 			PageMetadata metadata, Page<S> page) {
 
-		Assert.notNull(resources, "Content resources must not be null!");
-		Assert.notNull(metadata, "PageMetadata must not be null!");
-		Assert.notNull(page, "Page must not be null!");
+		Assert.notNull(resources, "Content resources must not be null");
+		Assert.notNull(metadata, "PageMetadata must not be null");
+		Assert.notNull(page, "Page must not be null");
 
 		return PagedModel.of(resources, metadata);
 	}
@@ -197,8 +197,8 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	private <S, R extends RepresentationModel<?>> PagedModel<R> createModel(Page<S> page,
 			RepresentationModelAssembler<S, R> assembler, Optional<Link> link) {
 
-		Assert.notNull(page, "Page must not be null!");
-		Assert.notNull(assembler, "ResourceAssembler must not be null!");
+		Assert.notNull(page, "Page must not be null");
+		Assert.notNull(assembler, "ResourceAssembler must not be null");
 
 		List<R> resources = new ArrayList<>(page.getNumberOfElements());
 
@@ -292,7 +292,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	 */
 	private PageMetadata asPageMetadata(Page<?> page) {
 
-		Assert.notNull(page, "Page must not be null!");
+		Assert.notNull(page, "Page must not be null");
 
 		int number = pageableResolver.isOneIndexedParameters() ? page.getNumber() + 1 : page.getNumber();
 

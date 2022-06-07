@@ -74,7 +74,7 @@ class EntityCallbackDiscoverer {
 
 	void addEntityCallback(EntityCallback<?> callback) {
 
-		Assert.notNull(callback, "Callback must not be null!");
+		Assert.notNull(callback, "Callback must not be null");
 
 		synchronized (this.retrievalMutex) {
 

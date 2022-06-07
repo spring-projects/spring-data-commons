@@ -37,8 +37,8 @@ import org.springframework.util.StringUtils;
 public class PropertyReferenceException extends RuntimeException {
 
 	private static final long serialVersionUID = -5254424051438976570L;
-	private static final String ERROR_TEMPLATE = "No property '%s' found for type '%s'!";
-	private static final String HINTS_TEMPLATE = " Did you mean '%s'?";
+	private static final String ERROR_TEMPLATE = "No property '%s' found for type '%s'";
+	private static final String HINTS_TEMPLATE = " Did you mean '%s'";
 
 	private final String propertyName;
 	private final TypeInformation<?> type;
@@ -55,9 +55,9 @@ public class PropertyReferenceException extends RuntimeException {
 	public PropertyReferenceException(String propertyName, TypeInformation<?> type,
 			List<PropertyPath> alreadyResolvedPah) {
 
-		Assert.hasText(propertyName, "Property name must not be null!");
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(alreadyResolvedPah, "Already resolved paths must not be null!");
+		Assert.hasText(propertyName, "Property name must not be null");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(alreadyResolvedPah, "Already resolved paths must not be null");
 
 		this.propertyName = propertyName;
 		this.type = type;

@@ -82,8 +82,8 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 			@Nullable MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext,
 			List<? extends TypeInformationMapper> additionalMappers) {
 
-		Assert.notNull(accessor, "Accessor must not be null!");
-		Assert.notNull(additionalMappers, "AdditionalMappers must not be null!");
+		Assert.notNull(accessor, "Accessor must not be null");
+		Assert.notNull(additionalMappers, "AdditionalMappers must not be null");
 
 		List<TypeInformationMapper> mappers = new ArrayList<>(additionalMappers.size() + 1);
 		if (mappingContext != null) {
@@ -111,7 +111,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	@Override
 	public TypeInformation<?> readType(S source) {
 
-		Assert.notNull(source, "Source object must not be null!");
+		Assert.notNull(source, "Source object must not be null");
 
 		return getFromCacheOrCreate(accessor.readAliasFrom(source));
 	}
@@ -138,8 +138,8 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	@Override
 	public <T> TypeInformation<? extends T> readType(S source, TypeInformation<T> basicType) {
 
-		Assert.notNull(source, "Source must not be null!");
-		Assert.notNull(basicType, "Basic type must not be null!");
+		Assert.notNull(source, "Source must not be null");
+		Assert.notNull(basicType, "Basic type must not be null");
 
 		Class<?> documentsTargetType = getDefaultedTypeToBeUsed(source);
 
@@ -196,7 +196,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	@Override
 	public void writeType(TypeInformation<?> info, S sink) {
 
-		Assert.notNull(info, "TypeInformation must not be null!");
+		Assert.notNull(info, "TypeInformation must not be null");
 
 		Alias alias = getAliasFor(info);
 		if (alias.isPresent()) {
@@ -222,7 +222,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	 */
 	protected final Alias getAliasFor(TypeInformation<?> info) {
 
-		Assert.notNull(info, "TypeInformation must not be null!");
+		Assert.notNull(info, "TypeInformation must not be null");
 
 		for (TypeInformationMapper mapper : mappers) {
 

@@ -48,9 +48,9 @@ public interface ConverterBuilder {
 	static <S, T> ReadingConverterBuilder<S, T> reading(Class<S> source, Class<T> target,
 			Function<? super S, ? extends T> function) {
 
-		Assert.notNull(source, "Source type must not be null!");
-		Assert.notNull(target, "Target type must not be null!");
-		Assert.notNull(function, "Conversion function must not be null!");
+		Assert.notNull(source, "Source type must not be null");
+		Assert.notNull(target, "Target type must not be null");
+		Assert.notNull(function, "Conversion function must not be null");
 
 		return new DefaultConverterBuilder<>(new ConvertiblePair(source, target), Optional.empty(), Optional.of(function));
 	}
@@ -67,9 +67,9 @@ public interface ConverterBuilder {
 	static <S, T> WritingConverterBuilder<S, T> writing(Class<S> source, Class<T> target,
 			Function<? super S, ? extends T> function) {
 
-		Assert.notNull(source, "Source type must not be null!");
-		Assert.notNull(target, "Target type must not be null!");
-		Assert.notNull(function, "Conversion function must not be null!");
+		Assert.notNull(source, "Source type must not be null");
+		Assert.notNull(target, "Target type must not be null");
+		Assert.notNull(function, "Conversion function must not be null");
 
 		return new DefaultConverterBuilder<>(new ConvertiblePair(target, source), Optional.of(function), Optional.empty());
 	}

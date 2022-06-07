@@ -108,7 +108,7 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	 */
 	public void registerConvertersIn(@NonNull ValueConverterRegistry<P> target) {
 
-		Assert.notNull(target, "Target registry must not be null!");
+		Assert.notNull(target, "Target registry must not be null");
 
 		registry.getConverterRegistrationMap().forEach((key, value) ->
 				target.registerConverter(key.type, key.path, value));

@@ -64,9 +64,9 @@ public abstract class ReturnedType {
 	 */
 	static ReturnedType of(Class<?> returnedType, Class<?> domainType, ProjectionFactory factory) {
 
-		Assert.notNull(returnedType, "Returned type must not be null!");
-		Assert.notNull(domainType, "Domain type must not be null!");
-		Assert.notNull(factory, "ProjectionFactory must not be null!");
+		Assert.notNull(returnedType, "Returned type must not be null");
+		Assert.notNull(domainType, "Domain type must not be null");
+		Assert.notNull(factory, "ProjectionFactory must not be null");
 
 		return cache.computeIfAbsent(CacheKey.of(returnedType, domainType, factory.hashCode()), key -> {
 
@@ -153,7 +153,7 @@ public abstract class ReturnedType {
 
 			super(domainType);
 
-			Assert.notNull(information, "Projection information must not be null!");
+			Assert.notNull(information, "Projection information must not be null");
 
 			this.information = information;
 			this.domainType = domainType;
@@ -217,9 +217,9 @@ public abstract class ReturnedType {
 
 			super(domainType);
 
-			Assert.notNull(returnedType, "Returned type must not be null!");
-			Assert.notNull(domainType, "Domain type must not be null!");
-			Assert.isTrue(!returnedType.isInterface(), "Returned type must not be an interface!");
+			Assert.notNull(returnedType, "Returned type must not be null");
+			Assert.notNull(domainType, "Domain type must not be null");
+			Assert.isTrue(!returnedType.isInterface(), "Returned type must not be an interface");
 
 			this.type = returnedType;
 			this.inputProperties = detectConstructorParameterNames(returnedType);

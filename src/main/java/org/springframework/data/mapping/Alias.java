@@ -54,7 +54,7 @@ public final class Alias {
 	 */
 	public static Alias of(Object alias) {
 
-		Assert.notNull(alias, "Alias must not be null!");
+		Assert.notNull(alias, "Alias must not be null");
 
 		return new Alias(alias);
 	}
@@ -87,7 +87,7 @@ public final class Alias {
 	 */
 	public boolean isPresentButDifferent(Alias other) {
 
-		Assert.notNull(other, "Other alias must not be null!");
+		Assert.notNull(other, "Other alias must not be null");
 
 		return isPresent() && !this.value.equals(other.value);
 	}

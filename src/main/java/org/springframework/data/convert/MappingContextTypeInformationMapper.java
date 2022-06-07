@@ -49,7 +49,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	 */
 	public MappingContextTypeInformationMapper(MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext) {
 
-		Assert.notNull(mappingContext, "MappingContext must not be null!");
+		Assert.notNull(mappingContext, "MappingContext must not be null");
 
 		this.typeMap = new ConcurrentHashMap<>();
 		this.mappingContext = mappingContext;

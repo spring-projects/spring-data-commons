@@ -50,7 +50,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 	 */
 	public void setResources(Resource[] resources) {
 
-		Assert.notNull(resources, "Resources must not be null!");
+		Assert.notNull(resources, "Resources must not be null");
 		this.resources = resources.clone();
 	}
 
@@ -99,7 +99,7 @@ public abstract class AbstractRepositoryPopulatorFactoryBean
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		Assert.state(resources != null, "Resources must not be null!");
+		Assert.state(resources != null, "Resources must not be null");
 		super.afterPropertiesSet();
 	}
 }

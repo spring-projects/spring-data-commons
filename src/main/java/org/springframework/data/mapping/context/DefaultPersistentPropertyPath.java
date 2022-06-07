@@ -50,7 +50,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	 */
 	public DefaultPersistentPropertyPath(List<P> properties) {
 
-		Assert.notNull(properties, "Properties must not be null!");
+		Assert.notNull(properties, "Properties must not be null");
 
 		this.properties = properties;
 	}
@@ -73,7 +73,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	 */
 	public DefaultPersistentPropertyPath<P> append(P property) {
 
-		Assert.notNull(property, "Property must not be null!");
+		Assert.notNull(property, "Property must not be null");
 
 		if (isEmpty()) {
 			return new DefaultPersistentPropertyPath<>(Collections.singletonList(property));
@@ -83,7 +83,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		Class<?> leafPropertyType = getLeafProperty().getActualType();
 
 		Assert.isTrue(property.getOwner().getType().equals(leafPropertyType),
-				() -> String.format("Cannot append property %s to type %s!", property.getName(), leafPropertyType.getName()));
+				() -> String.format("Cannot append property %s to type %s", property.getName(), leafPropertyType.getName()));
 
 		List<P> properties = new ArrayList<>(this.properties);
 		properties.add(property);
@@ -109,8 +109,8 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	@Nullable
 	public String toPath(String delimiter, Converter<? super P, String> converter) {
 
-		Assert.hasText(delimiter, "Delimiter must not be null or empty!");
-		Assert.notNull(converter, "Converter must not be null!");
+		Assert.hasText(delimiter, "Delimiter must not be null or empty");
+		Assert.notNull(converter, "Converter must not be null");
 
 		String result = properties.stream() //
 				.map(converter::convert) //
@@ -132,7 +132,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 
 	public boolean isBasePathOf(PersistentPropertyPath<P> path) {
 
-		Assert.notNull(path, "PersistentPropertyPath must not be null!");
+		Assert.notNull(path, "PersistentPropertyPath must not be null");
 
 		Iterator<P> iterator = path.iterator();
 

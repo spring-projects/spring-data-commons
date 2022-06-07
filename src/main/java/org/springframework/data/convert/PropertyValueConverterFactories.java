@@ -89,7 +89,7 @@ final class PropertyValueConverterFactories {
 		public <S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> getConverter(
 				Class<? extends PropertyValueConverter<S, T, C>> converterType) {
 
-			Assert.notNull(converterType, "ConverterType must not be null!");
+			Assert.notNull(converterType, "ConverterType must not be null");
 
 			if (converterType.isEnum()) {
 				return (PropertyValueConverter<S, T, C>) EnumSet.allOf((Class) converterType).iterator().next();

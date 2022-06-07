@@ -44,7 +44,7 @@ public class PageRequest extends AbstractPageRequest {
 
 		super(page, size);
 
-		Assert.notNull(sort, "Sort must not be null!");
+		Assert.notNull(sort, "Sort must not be null");
 
 		this.sort = sort;
 	}
