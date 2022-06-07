@@ -50,7 +50,6 @@ import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.ManagedTypes;
 import org.springframework.data.aot.TypeScanner;
-import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver.ManagedTypesBean;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.util.Lazy;
 import org.springframework.lang.NonNull;
@@ -116,8 +115,8 @@ public class RepositoryConfigurationDelegate {
 	 *
 	 * @param environment can be {@literal null}.
 	 * @param resourceLoader can be {@literal null}.
-	 * @return the given {@link Environment} if not {@literal null}, a configured {@link Environment},
-	 * or a default {@link Environment}.
+	 * @return the given {@link Environment} if not {@literal null}, a configured {@link Environment}, or a default
+	 *         {@link Environment}.
 	 */
 	private static Environment defaultEnvironment(@Nullable Environment environment,
 			@Nullable ResourceLoader resourceLoader) {
@@ -213,13 +212,14 @@ public class RepositoryConfigurationDelegate {
 		repoScan.end();
 
 		if (logger.isInfoEnabled()) {
-			logger.info(LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interfaces.",
-					watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName()));
+			logger.info(
+					LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interfaces.",
+							watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName()));
 		}
 
 		// TODO: AOT Processing -> guard this one with a flag so it's not always present
 		// TODO: With regard to AOT Processing, perhaps we need to be smart and detect whether "core" AOT components are
-		//  (or rather configuration is) present on the classpath to enable Spring Data AOT component registration.
+		// (or rather configuration is) present on the classpath to enable Spring Data AOT component registration.
 		registerAotComponents(registry, extension, metadataByRepositoryBeanName);
 
 		return definitions;
@@ -239,16 +239,14 @@ public class RepositoryConfigurationDelegate {
 				Supplier<Set<Class<?>>> args = () -> {
 
 					Set<String> packages = metadataByRepositoryBeanName.values().stream()
-							.flatMap(it -> it.getBasePackages().stream())
-							.collect(Collectors.toSet());
+							.flatMap(it -> it.getBasePackages().stream()).collect(Collectors.toSet());
 
 					return new TypeScanner(resourceLoader.getClassLoader())
-							.scanForTypesAnnotatedWith(extensionSupport.getIdentifyingAnnotations())
-							.inPackages(packages);
+							.scanForTypesAnnotatedWith(extensionSupport.getIdentifyingAnnotations()).inPackages(packages);
 				};
 
-				registry.registerBeanDefinition(targetManagedTypesBeanName, BeanDefinitionBuilder
-						.rootBeanDefinition(ManagedTypesBean.class).addConstructorArgValue(args).getBeanDefinition());
+//				registry.registerBeanDefinition(targetManagedTypesBeanName, BeanDefinitionBuilder
+//						.rootBeanDefinition(ManagedTypesBean.class).addConstructorArgValue(args).getBeanDefinition());
 			}
 		}
 
@@ -259,8 +257,7 @@ public class RepositoryConfigurationDelegate {
 		if (!registry.isBeanNameInUse(repositoryAotProcessorBeanName)) {
 
 			BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
-					.rootBeanDefinition(extension.getRepositoryAotProcessor())
-					.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+					.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 
 			repositoryAotProcessor.addPropertyValue("configMap", metadataByRepositoryBeanName);
 
@@ -314,8 +311,8 @@ public class RepositoryConfigurationDelegate {
 	 * than a single type is considered a multi-store configuration scenario which will trigger stricter repository
 	 * scanning.
 	 *
-	 * @return {@literal true} if multiple data store repository implementations are present in the application.
-	 * This typically means an Spring application is using more than 1 type of data store.
+	 * @return {@literal true} if multiple data store repository implementations are present in the application. This
+	 *         typically means an Spring application is using more than 1 type of data store.
 	 */
 	private boolean multipleStoresDetected() {
 
@@ -360,12 +357,12 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		/**
-		 * Returns a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with
-		 * the given ones.
+		 * Returns a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with the
+		 * given ones.
 		 *
 		 * @param configurations must not be {@literal null}.
-		 * @return a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with
-		 * the given ones.
+		 * @return a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with the
+		 *         given ones.
 		 */
 		LazyRepositoryInjectionPointResolver withAdditionalConfigurations(
 				Map<String, RepositoryConfiguration<?>> configurations) {
@@ -397,18 +394,19 @@ public class RepositoryConfigurationDelegate {
 			return lazyInit;
 		}
 
-		static class ManagedTypesBean implements ManagedTypes {
+	}
 
-			private final Lazy<Set<Class<?>>> types;
+	public static class ManagedTypesBean implements ManagedTypes {
 
-			public ManagedTypesBean(Supplier<Set<Class<?>>> types) {
-				this.types = Lazy.of(types);
-			}
+		private final Lazy<Set<Class<?>>> types;
 
-			@Override
-			public void forEach(@NonNull Consumer<Class<?>> action) {
-				types.get().forEach(action);
-			}
+		public ManagedTypesBean(Supplier<Set<Class<?>>> types) {
+			this.types = Lazy.of(types);
+		}
+
+		@Override
+		public void forEach(@NonNull Consumer<Class<?>> action) {
+			types.get().forEach(action);
 		}
 	}
 }
