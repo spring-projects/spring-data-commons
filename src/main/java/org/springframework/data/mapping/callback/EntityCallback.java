@@ -15,6 +15,9 @@
  */
 package org.springframework.data.mapping.callback;
 
+import org.springframework.aot.hint.annotation.Reflective;
+import org.springframework.data.aot.PublicMethodReflectiveProcessor;
+
 /**
  * Marker interface for entity callbacks to be implemented in specific callback subtypes. Intended for internal usage
  * within store specific implementations.
@@ -59,6 +62,7 @@ package org.springframework.data.mapping.callback;
  * @see org.springframework.core.Ordered
  * @see org.springframework.core.annotation.Order
  */
+@Reflective({PublicMethodReflectiveProcessor.class})
 public interface EntityCallback<T> {
 
 }

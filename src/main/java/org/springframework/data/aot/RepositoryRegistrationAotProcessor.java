@@ -34,6 +34,7 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 import org.springframework.data.repository.config.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -51,7 +52,7 @@ import org.springframework.util.StringUtils;
  * via the {@link FactoryBean#OBJECT_TYPE_ATTRIBUTE}.
  * </p>
  * <p>
- * With {@link RepositoryRegistrationAotContribution#contribute(AotRepositoryContext, GenerationContext)}, stores
+ * With {@link RepositoryRegistrationAotProcessor#contribute(AotRepositoryContext, GenerationContext)}, stores
  * can provide custom logic for contributing additional (eg. reflection) configuration. By default, reflection
  * configuration will be added for types reachable from the repository declaration and query methods as well as
  * all used {@link Annotation annotations} from the {@literal org.springframework.data} namespace.
@@ -83,6 +84,19 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 				: null;
 	}
 
+	protected void contribute(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
+
+		repositoryContext.getResolvedTypes().stream()
+				.filter(it -> !RepositoryRegistrationAotContribution
+						.isJavaOrPrimitiveType(it))
+				.forEach(it -> RepositoryRegistrationAotContribution.contributeType(it, generationContext));
+
+		repositoryContext.getResolvedAnnotations().stream()
+				.filter(RepositoryRegistrationAotContribution::isSpringDataManagedAnnotation)
+				.map(MergedAnnotation::getType)
+				.forEach(it -> RepositoryRegistrationAotContribution.contributeType(it, generationContext));
+	}
+
 	private boolean isRepositoryBean(RegisteredBean bean) {
 		return bean != null && getConfigMap().containsKey(bean.getBeanName());
 	}
@@ -93,7 +107,7 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 		RepositoryRegistrationAotContribution contribution =
 				RepositoryRegistrationAotContribution.fromProcessor(this).forBean(repositoryBean);
 
-		return contribution.withModuleContribution(contribution::contribute);
+		return contribution.withModuleContribution(this::contribute);
 	}
 
 	@Override

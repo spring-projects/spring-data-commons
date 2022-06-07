@@ -29,7 +29,7 @@ import org.springframework.core.annotation.SynthesizedAnnotation;
  * @author Christoph Strobl
  * @since 3.0
  */
-class TypeContributor {
+public class TypeContributor {
 
 	public static final String DATA_NAMESPACE = "org.springframework.data";
 
@@ -39,7 +39,7 @@ class TypeContributor {
 	 * @param type
 	 * @param contribution
 	 */
-	static void contribute(Class<?> type, GenerationContext contribution) {
+	public static void contribute(Class<?> type, GenerationContext contribution) {
 		contribute(type, Collections.emptySet(), contribution);
 	}
 
@@ -51,7 +51,7 @@ class TypeContributor {
 	 * @param contribution
 	 */
 	@SuppressWarnings("unchecked")
-	static void contribute(Class<?> type, Predicate<Class<? extends Annotation>> filter, GenerationContext contribution) {
+	public static void contribute(Class<?> type, Predicate<Class<? extends Annotation>> filter, GenerationContext contribution) {
 
 		if (type.isPrimitive()) {
 			return;
@@ -76,7 +76,7 @@ class TypeContributor {
 		}
 
 		contribution.getRuntimeHints().reflection().registerType(type, hint ->
-			hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
+			hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.DECLARED_FIELDS));
 	}
 
 	/**
@@ -87,15 +87,15 @@ class TypeContributor {
 	 * @param annotationNamespaces
 	 * @param contribution
 	 */
-	static void contribute(Class<?> type, Set<String> annotationNamespaces, GenerationContext contribution) {
+	public static void contribute(Class<?> type, Set<String> annotationNamespaces, GenerationContext contribution) {
 		contribute(type, it -> isPartOfOrMetaAnnotatedWith(it, annotationNamespaces), contribution);
 	}
 
-	private static boolean isPartOf(Class<?> type, Set<String> namespaces) {
+	public static boolean isPartOf(Class<?> type, Set<String> namespaces) {
 		return namespaces.stream().anyMatch(namespace -> type.getPackageName().startsWith(namespace));
 	}
 
-	protected static boolean isPartOfOrMetaAnnotatedWith(Class<? extends Annotation> annotation, Set<String> namespaces) {
+	public static boolean isPartOfOrMetaAnnotatedWith(Class<? extends Annotation> annotation, Set<String> namespaces) {
 
 		if (isPartOf(annotation, namespaces)) {
 			return true;

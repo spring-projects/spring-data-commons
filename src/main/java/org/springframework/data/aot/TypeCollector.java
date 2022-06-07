@@ -121,7 +121,7 @@ public class TypeCollector {
 
 	private void processType(ResolvableType type, InspectionCache cache, Consumer<ResolvableType> callback) {
 
-		if (ResolvableType.NONE.equals(type) || cache.contains(type)) {
+		if (ResolvableType.NONE.equals(type) || cache.contains(type) || type.toClass().isSynthetic()) {
 			return;
 		}
 

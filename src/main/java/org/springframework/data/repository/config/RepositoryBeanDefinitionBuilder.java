@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -119,7 +120,11 @@ class RepositoryBeanDefinitionBuilder {
 				extension.getDefaultNamedQueryLocation());
 		configuration.getNamedQueriesLocation().ifPresent(definitionBuilder::setLocations);
 
-		builder.addPropertyValue("namedQueries", definitionBuilder.build(configuration.getSource()));
+		String namedQueriesBeanName = BeanDefinitionReaderUtils.uniqueBeanName(extension.getModulePrefix() + ".named-queries", registry);
+		BeanDefinition namedQueries = definitionBuilder.build(configuration.getSource());
+		registry.registerBeanDefinition(namedQueriesBeanName, namedQueries);
+
+		builder.addPropertyValue("namedQueries", new RuntimeBeanReference(namedQueriesBeanName));
 
 		registerCustomImplementation(configuration).ifPresent(it -> {
 			builder.addPropertyReference("customImplementation", it);
