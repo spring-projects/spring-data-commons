@@ -36,7 +36,7 @@ import org.springframework.util.Assert;
  */
 public class AnnotationRepositoryMetadata extends AbstractRepositoryMetadata {
 
-	private static final String NO_ANNOTATION_FOUND = String.format("Interface %%s must be annotated with @%s!",
+	private static final String NO_ANNOTATION_FOUND = String.format("Interface %%s must be annotated with @%s",
 			RepositoryDefinition.class.getName());
 
 	private final TypeInformation<?> idType;

@@ -46,9 +46,9 @@ public class IdPropertyIdentifierAccessor extends TargetAwareIdentifierAccessor 
 
 		super(target);
 
-		Assert.notNull(entity, "PersistentEntity must not be null!");
-		Assert.isTrue(entity.hasIdProperty(), "PersistentEntity must have an identifier property!");
-		Assert.notNull(target, "Target bean must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null");
+		Assert.isTrue(entity.hasIdProperty(), "PersistentEntity must have an identifier property");
+		Assert.notNull(target, "Target bean must not be null");
 
 		this.idProperty = entity.getRequiredIdProperty();
 		this.accessor = entity.getPropertyAccessor(target);

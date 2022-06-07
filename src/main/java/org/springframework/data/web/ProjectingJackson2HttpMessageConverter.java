@@ -82,7 +82,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 	 */
 	private static SpelAwareProxyProjectionFactory initProjectionFactory(ObjectMapper mapper) {
 
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 		projectionFactory.registerMethodInvokerFactory(new JsonProjectingMethodInterceptorFactory(

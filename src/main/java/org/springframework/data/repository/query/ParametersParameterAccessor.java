@@ -44,10 +44,10 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 */
 	public ParametersParameterAccessor(Parameters<?, ?> parameters, Object[] values) {
 
-		Assert.notNull(parameters, "Parameters must not be null!");
-		Assert.notNull(values, "Values must not be null!");
+		Assert.notNull(parameters, "Parameters must not be null");
+		Assert.notNull(values, "Values must not be null");
 
-		Assert.isTrue(parameters.getNumberOfParameters() == values.length, "Invalid number of parameters given!");
+		Assert.isTrue(parameters.getNumberOfParameters() == values.length, "Invalid number of parameters given");
 
 		this.parameters = parameters;
 
@@ -218,7 +218,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		 */
 		public BindableParameterIterator(ParametersParameterAccessor accessor) {
 
-			Assert.notNull(accessor, "ParametersParameterAccessor must not be null!");
+			Assert.notNull(accessor, "ParametersParameterAccessor must not be null");
 
 			this.accessor = accessor;
 			this.bindableParameterCount = accessor.getParameters().getBindableParameters().getNumberOfParameters();

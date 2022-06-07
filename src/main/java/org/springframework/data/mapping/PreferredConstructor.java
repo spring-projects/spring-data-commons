@@ -92,8 +92,8 @@ public final class PreferredConstructor<T, P extends PersistentProperty<P>> exte
 	public boolean isConstructorParameter(PersistentProperty<?> property) {
 		return isCreatorParameter(property);
 	}
-	@Override
 
+	@Override
 	public boolean isParentParameter(Parameter<?, P> parameter) {
 		return isEnclosingClassParameter(parameter);
 	}
@@ -108,7 +108,7 @@ public final class PreferredConstructor<T, P extends PersistentProperty<P>> exte
 	 */
 	public boolean isEnclosingClassParameter(Parameter<?, P> parameter) {
 
-		Assert.notNull(parameter, "Parameter must not be null!");
+		Assert.notNull(parameter, "Parameter must not be null");
 
 		if (parameters.isEmpty() || !parameter.isEnclosingClassParameter()) {
 			return false;
@@ -116,5 +116,4 @@ public final class PreferredConstructor<T, P extends PersistentProperty<P>> exte
 
 		return parameters.get(0).equals(parameter);
 	}
-
 }

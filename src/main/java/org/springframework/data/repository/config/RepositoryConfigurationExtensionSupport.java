@@ -55,8 +55,8 @@ import org.springframework.util.StringUtils;
 public abstract class RepositoryConfigurationExtensionSupport implements RepositoryConfigurationExtension {
 
  	private static final Log logger = LogFactory.getLog(RepositoryConfigurationExtensionSupport.class);
- 	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s.";
-	private static final String MULTI_STORE_DROPPED = "Spring Data %s - Could not safely identify store assignment for repository candidate %s. If you want this repository to be a %s repository,";
+ 	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s";
+	private static final String MULTI_STORE_DROPPED = "Spring Data %s - Could not safely identify store assignment for repository candidate %s; If you want this repository to be a %s repository,";
 
 	private boolean noMultiStoreSupport = false;
 
@@ -85,8 +85,8 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader, boolean strictMatchesOnly) {
 
-		Assert.notNull(configSource, "ConfigSource must not be null!");
-		Assert.notNull(loader, "Loader must not be null!");
+		Assert.notNull(configSource, "ConfigSource must not be null");
+		Assert.notNull(loader, "Loader must not be null");
 
 		Set<RepositoryConfiguration<T>> result = new HashSet<>();
 
@@ -309,7 +309,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 		if (types.isEmpty() && annotations.isEmpty()) {
 			if (!noMultiStoreSupport) {
-				logger.warn(LogMessage.format("Spring Data %s does not support multi-store setups!", moduleName));
+				logger.warn(LogMessage.format("Spring Data %s does not support multi-store setups", moduleName));
 				noMultiStoreSupport = true;
 				return false;
 			}
@@ -343,8 +343,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 			message = message.concat(annotations.isEmpty() ? " consider" : ", or consider") //
 					.concat(" extending one of the following types with your repository: ") //
-					.concat(toString(types)) //
-					.concat(".");
+					.concat(toString(types));
 		}
 
 		logger.info(message);
@@ -366,7 +365,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 		if (metadata.isReactiveRepository()) {
 			throw new InvalidDataAccessApiUsageException(
-					String.format("Reactive Repositories are not supported by %s. Offending repository is %s", getModuleName(),
+					String.format("Reactive Repositories are not supported by %s; Offending repository is %s", getModuleName(),
 							metadata.getRepositoryInterface().getName()));
 		}
 

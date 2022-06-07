@@ -77,7 +77,7 @@ class RepositoryInvocationTestUtils {
 
 				Class<?> type = invocation.getMethod().getDeclaringClass();
 
-				assertThat(type).as("Expected methods invocation on %s but was invoked on %s!", expectedInvocationTarget, type)
+				assertThat(type).as("Expected methods invocation on %s but was invoked on %s", expectedInvocationTarget, type)
 						.isEqualTo(expectedInvocationTarget);
 			}
 

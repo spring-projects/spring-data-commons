@@ -56,7 +56,7 @@ public class Repositories implements Iterable<Class<?>> {
 	static final Repositories NONE = new Repositories();
 
 	private static final RepositoryFactoryInformation<Object, Object> EMPTY_REPOSITORY_FACTORY_INFO = EmptyRepositoryFactoryInformation.INSTANCE;
-	private static final String DOMAIN_TYPE_MUST_NOT_BE_NULL = "Domain type must not be null!";
+	private static final String DOMAIN_TYPE_MUST_NOT_BE_NULL = "Domain type must not be null";
 
 	private final Optional<BeanFactory> beanFactory;
 	private final Map<Class<?>, String> repositoryBeanNames;
@@ -82,7 +82,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	public Repositories(ListableBeanFactory factory) {
 
-		Assert.notNull(factory, "ListableBeanFactory must not be null!");
+		Assert.notNull(factory, "ListableBeanFactory must not be null");
 
 		this.beanFactory = Optional.of(factory);
 		this.repositoryFactoryInfos = new HashMap<>();
@@ -330,7 +330,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	private Class<?> getRepositoryDomainTypeFor(Class<?> domainType) {
 
-		Assert.notNull(domainType, "Domain type must not be null!");
+		Assert.notNull(domainType, "Domain type must not be null");
 
 		Set<Class<?>> declaredTypes = repositoryBeanNames.keySet();
 

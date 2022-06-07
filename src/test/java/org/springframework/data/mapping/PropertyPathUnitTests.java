@@ -118,7 +118,7 @@ class PropertyPathUnitTests {
 
 		try {
 			PropertyPath.from("usersMame", Bar.class);
-			fail("Expected PropertyReferenceException!");
+			fail("Expected PropertyReferenceException");
 		} catch (PropertyReferenceException e) {
 			assertThat(e.getPropertyName()).isEqualTo("mame");
 			assertThat(e.getBaseProperty()).isEqualTo(PropertyPath.from("users", Bar.class));

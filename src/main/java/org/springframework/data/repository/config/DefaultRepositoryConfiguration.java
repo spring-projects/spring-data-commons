@@ -203,7 +203,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	@Override
 	public ImplementationDetectionConfiguration toImplementationDetectionConfiguration(MetadataReaderFactory factory) {
 
-		Assert.notNull(factory, "MetadataReaderFactory must not be null!");
+		Assert.notNull(factory, "MetadataReaderFactory must not be null");
 
 		return configurationSource.toImplementationDetectionConfiguration(factory);
 	}
@@ -215,7 +215,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	@Override
 	public ImplementationLookupConfiguration toLookupConfiguration(MetadataReaderFactory factory) {
 
-		Assert.notNull(factory, "MetadataReaderFactory must not be null!");
+		Assert.notNull(factory, "MetadataReaderFactory must not be null");
 
 		return toImplementationDetectionConfiguration(factory).forRepositoryConfiguration(this);
 	}

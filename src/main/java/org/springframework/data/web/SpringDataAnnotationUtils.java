@@ -148,7 +148,7 @@ abstract class SpringDataAnnotationUtils {
 
 				if (null == qualifier) {
 					throw new IllegalStateException(
-							"Ambiguous Pageable arguments in handler method. If you use multiple parameters of type Pageable you need to qualify them with @Qualifier");
+							"Ambiguous Pageable arguments in handler method; If you use multiple parameters of type Pageable you need to qualify them with @Qualifier");
 				}
 
 				if (values.contains(qualifier.value())) {

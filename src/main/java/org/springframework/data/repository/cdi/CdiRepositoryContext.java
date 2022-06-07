@@ -73,8 +73,8 @@ public class CdiRepositoryContext {
 	 */
 	public CdiRepositoryContext(ClassLoader classLoader, CustomRepositoryImplementationDetector detector) {
 
-		Assert.notNull(classLoader, "ClassLoader must not be null!");
-		Assert.notNull(detector, "CustomRepositoryImplementationDetector must not be null!");
+		Assert.notNull(classLoader, "ClassLoader must not be null");
+		Assert.notNull(detector, "CustomRepositoryImplementationDetector must not be null");
 
 		ResourceLoader resourceLoader = new PathMatchingResourcePatternResolver(classLoader);
 

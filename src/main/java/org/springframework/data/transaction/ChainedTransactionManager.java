@@ -93,9 +93,9 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 	ChainedTransactionManager(SynchronizationManager synchronizationManager,
 			PlatformTransactionManager... transactionManagers) {
 
-		Assert.notNull(synchronizationManager, "SynchronizationManager must not be null!");
-		Assert.notNull(transactionManagers, "Transaction managers must not be null!");
-		Assert.isTrue(transactionManagers.length > 0, "At least one PlatformTransactionManager must be given!");
+		Assert.notNull(synchronizationManager, "SynchronizationManager must not be null");
+		Assert.notNull(transactionManagers, "Transaction managers must not be null");
+		Assert.isTrue(transactionManagers.length > 0, "At least one PlatformTransactionManager must be given");
 
 		this.synchronizationManager = synchronizationManager;
 		this.transactionManagers = asList(transactionManagers);

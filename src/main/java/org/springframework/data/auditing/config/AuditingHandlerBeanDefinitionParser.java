@@ -56,7 +56,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	@SuppressWarnings("null")
 	public AuditingHandlerBeanDefinitionParser(String mappingContextBeanName) {
 
-		Assert.hasText(mappingContextBeanName, "MappingContext bean name must not be null!");
+		Assert.hasText(mappingContextBeanName, "MappingContext bean name must not be null");
 		this.mappingContextBeanName = mappingContextBeanName;
 	}
 

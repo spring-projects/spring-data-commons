@@ -125,7 +125,7 @@ public class CustomCollections {
 	 */
 	public static boolean isMapBaseType(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return MAP_TYPES.has(type);
 	}
@@ -182,7 +182,7 @@ public class CustomCollections {
 	 */
 	public static void registerConvertersIn(ConverterRegistry registry) {
 
-		Assert.notNull(registry, "ConverterRegistry must not be null!");
+		Assert.notNull(registry, "ConverterRegistry must not be null");
 
 		REGISTRARS.forEach(it -> it.registerConvertersIn(registry));
 	}
@@ -217,7 +217,7 @@ public class CustomCollections {
 
 		public boolean hasSuperTypeFor(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
 			return isOneOf(type, IS_ASSIGNABLE, IS_NOT_NULL);
 		}
@@ -230,7 +230,7 @@ public class CustomCollections {
 		 */
 		public boolean has(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
 			return isOneOf(type, EQUALS, IS_NOT_NULL);
 		}
@@ -244,9 +244,9 @@ public class CustomCollections {
 		 */
 		public Class<?> getSuperType(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
-			Supplier<String> message = () -> String.format("Type %s not contained in candidates %s!", type, types);
+			Supplier<String> message = () -> String.format("Type %s not contained in candidates %s", type, types);
 
 			return isOneOf(type, (l, r) -> l.isAssignableFrom(r), rejectNull(message));
 		}
@@ -280,7 +280,7 @@ public class CustomCollections {
 		 */
 		private static Function<Class<?>, Class<?>> rejectNull(Supplier<String> message) {
 
-			Assert.notNull(message, "Message must not be null!");
+			Assert.notNull(message, "Message must not be null");
 
 			return candidate -> {
 

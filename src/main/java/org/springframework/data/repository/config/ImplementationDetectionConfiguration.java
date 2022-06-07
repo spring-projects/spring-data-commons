@@ -69,7 +69,7 @@ public interface ImplementationDetectionConfiguration {
 	 */
 	default String generateBeanName(BeanDefinition definition) {
 
-		Assert.notNull(definition, "BeanDefinition must not be null!");
+		Assert.notNull(definition, "BeanDefinition must not be null");
 
 		String beanName = definition.getBeanClassName();
 
@@ -88,7 +88,7 @@ public interface ImplementationDetectionConfiguration {
 	 */
 	default ImplementationLookupConfiguration forFragment(String fragmentInterfaceName) {
 
-		Assert.hasText(fragmentInterfaceName, "Fragment interface name must not be null or empty!");
+		Assert.hasText(fragmentInterfaceName, "Fragment interface name must not be null or empty");
 
 		return new DefaultImplementationLookupConfiguration(this, fragmentInterfaceName);
 	}
@@ -101,7 +101,7 @@ public interface ImplementationDetectionConfiguration {
 	 */
 	default ImplementationLookupConfiguration forRepositoryConfiguration(RepositoryConfiguration<?> config) {
 
-		Assert.notNull(config, "RepositoryConfiguration must not be null!");
+		Assert.notNull(config, "RepositoryConfiguration must not be null");
 
 		return new DefaultImplementationLookupConfiguration(this, config.getRepositoryInterface()) {
 

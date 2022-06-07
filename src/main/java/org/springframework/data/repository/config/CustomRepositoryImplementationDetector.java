@@ -46,7 +46,7 @@ import org.springframework.util.Assert;
 public class CustomRepositoryImplementationDetector {
 
 	private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = "**/*%s.class";
-	private static final String AMBIGUOUS_CUSTOM_IMPLEMENTATIONS = "Ambiguous custom implementations detected! Found %s but expected a single implementation!";
+	private static final String AMBIGUOUS_CUSTOM_IMPLEMENTATIONS = "Ambiguous custom implementations detected; Found %s but expected a single implementation";
 
 	private final Environment environment;
 	private final ResourceLoader resourceLoader;
@@ -65,9 +65,9 @@ public class CustomRepositoryImplementationDetector {
 	public CustomRepositoryImplementationDetector(Environment environment, ResourceLoader resourceLoader,
 			ImplementationDetectionConfiguration configuration) {
 
-		Assert.notNull(environment, "Environment must not be null!");
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
-		Assert.notNull(configuration, "ImplementationDetectionConfiguration must not be null!");
+		Assert.notNull(environment, "Environment must not be null");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
+		Assert.notNull(configuration, "ImplementationDetectionConfiguration must not be null");
 
 		this.environment = environment;
 		this.resourceLoader = resourceLoader;
@@ -84,8 +84,8 @@ public class CustomRepositoryImplementationDetector {
 	 */
 	public CustomRepositoryImplementationDetector(Environment environment, ResourceLoader resourceLoader) {
 
-		Assert.notNull(environment, "Environment must not be null!");
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null!");
+		Assert.notNull(environment, "Environment must not be null");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
 
 		this.environment = environment;
 		this.resourceLoader = resourceLoader;
@@ -100,7 +100,7 @@ public class CustomRepositoryImplementationDetector {
 	 */
 	public Optional<AbstractBeanDefinition> detectCustomImplementation(ImplementationLookupConfiguration lookup) {
 
-		Assert.notNull(lookup, "ImplementationLookupConfiguration must not be null!");
+		Assert.notNull(lookup, "ImplementationLookupConfiguration must not be null");
 
 		Set<BeanDefinition> definitions = implementationCandidates.getOptional()
 				.orElseGet(() -> findCandidateBeanDefinitions(lookup)).stream() //

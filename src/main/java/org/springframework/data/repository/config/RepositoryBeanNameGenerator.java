@@ -52,9 +52,9 @@ class RepositoryBeanNameGenerator {
 	public RepositoryBeanNameGenerator(ClassLoader beanClassLoader, BeanNameGenerator generator,
 			BeanDefinitionRegistry registry) {
 
-		Assert.notNull(beanClassLoader, "Bean ClassLoader must not be null!");
-		Assert.notNull(generator, "BeanNameGenerator must not be null!");
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
+		Assert.notNull(beanClassLoader, "Bean ClassLoader must not be null");
+		Assert.notNull(generator, "BeanNameGenerator must not be null");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 
 		this.beanClassLoader = beanClassLoader;
 		this.generator = generator;

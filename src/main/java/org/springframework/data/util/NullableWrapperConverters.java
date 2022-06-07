@@ -103,7 +103,7 @@ public abstract class NullableWrapperConverters {
 	 */
 	public static boolean supports(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return supportsCache.computeIfAbsent(type, key -> {
 
@@ -125,7 +125,7 @@ public abstract class NullableWrapperConverters {
 	 */
 	public static boolean supportsUnwrapping(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		for (WrapperType candidate : UNWRAPPER_TYPES) {
 			if (candidate.getType().isAssignableFrom(type)) {
@@ -154,7 +154,7 @@ public abstract class NullableWrapperConverters {
 	 */
 	public static void registerConvertersIn(ConverterRegistry registry) {
 
-		Assert.notNull(registry, "ConversionService must not be null!");
+		Assert.notNull(registry, "ConversionService must not be null");
 
 		registry.addConverter(NullableWrapperToJdk8OptionalConverter.INSTANCE);
 
@@ -232,7 +232,7 @@ public abstract class NullableWrapperConverters {
 		 */
 		protected AbstractWrapperTypeConverter(Object nullValue) {
 
-			Assert.notNull(nullValue, "Null value must not be null!");
+			Assert.notNull(nullValue, "Null value must not be null");
 
 			this.nullValue = nullValue;
 			this.wrapperTypes = Collections.singleton(nullValue.getClass());

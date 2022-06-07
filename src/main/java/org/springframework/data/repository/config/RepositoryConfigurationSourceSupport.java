@@ -53,9 +53,9 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 	public RepositoryConfigurationSourceSupport(Environment environment, ClassLoader classLoader,
 			BeanDefinitionRegistry registry, BeanNameGenerator generator) {
 
-		Assert.notNull(environment, "Environment must not be null!");
-		Assert.notNull(classLoader, "ClassLoader must not be null!");
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
+		Assert.notNull(environment, "Environment must not be null");
+		Assert.notNull(classLoader, "ClassLoader must not be null");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 
 		this.environment = environment;
 		this.beanNameGenerator = new RepositoryBeanNameGenerator(classLoader, generator, registry);

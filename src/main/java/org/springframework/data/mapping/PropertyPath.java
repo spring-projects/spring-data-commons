@@ -45,7 +45,7 @@ import org.springframework.util.StringUtils;
  */
 public class PropertyPath implements Streamable<PropertyPath> {
 
-	private static final String PARSE_DEPTH_EXCEEDED = "Trying to parse a path with depth greater than 1000! This has been disabled for security reasons to prevent parsing overflows";
+	private static final String PARSE_DEPTH_EXCEEDED = "Trying to parse a path with depth greater than 1000; This has been disabled for security reasons to prevent parsing overflows";
 
 	private static final String DELIMITERS = "_\\.";
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
@@ -80,9 +80,9 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 */
 	PropertyPath(String name, TypeInformation<?> owningType, List<PropertyPath> base) {
 
-		Assert.hasText(name, "Name must not be null or empty!");
-		Assert.notNull(owningType, "Owning type must not be null!");
-		Assert.notNull(base, "Previously found properties must not be null!");
+		Assert.hasText(name, "Name must not be null or empty");
+		Assert.notNull(owningType, "Owning type must not be null");
+		Assert.notNull(base, "Previously found properties must not be null");
 
 		String propertyName = Introspector.decapitalize(name);
 		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
@@ -208,7 +208,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 */
 	public PropertyPath nested(String path) {
 
-		Assert.hasText(path, "Path must not be null or empty!");
+		Assert.hasText(path, "Path must not be null or empty");
 
 		String lookup = toDotPath().concat(".").concat(path);
 
@@ -315,7 +315,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 		if (result == null) {
 			throw new IllegalStateException(
-					"No next path available! Clients should call hasNext() before invoking this method");
+					"No next path available; Clients should call hasNext() before invoking this method");
 		}
 
 		return result;
@@ -343,8 +343,8 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 */
 	public static PropertyPath from(String source, TypeInformation<?> type) {
 
-		Assert.hasText(source, "Source must not be null or empty!");
-		Assert.notNull(type, "TypeInformation must not be null or empty!");
+		Assert.hasText(source, "Source must not be null or empty");
+		Assert.notNull(type, "TypeInformation must not be null or empty");
 
 		return cache.computeIfAbsent(Key.of(type, source), it -> {
 

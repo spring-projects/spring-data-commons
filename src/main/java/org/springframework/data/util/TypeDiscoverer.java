@@ -72,8 +72,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	protected TypeDiscoverer(Type type, Map<TypeVariable<?>, Type> typeVariableMap) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(typeVariableMap, "TypeVariableMap must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(typeVariableMap, "TypeVariableMap must not be null");
 
 		this.type = type;
 		this.resolvedType = Lazy.of(() -> resolveType(type));
@@ -101,7 +101,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected TypeInformation<?> createInfo(Type fieldType) {
 
-		Assert.notNull(fieldType, "Field type must not be null!");
+		Assert.notNull(fieldType, "Field type must not be null");
 
 		if (fieldType.equals(this.type)) {
 			return this;
@@ -167,7 +167,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public List<TypeInformation<?>> getParameterTypes(Constructor<?> constructor) {
 
-		Assert.notNull(constructor, "Constructor must not be null!");
+		Assert.notNull(constructor, "Constructor must not be null");
 
 		List<TypeInformation<?>> parameterTypes = new ArrayList<>(constructor.getParameterCount());
 		for (Parameter parameter : constructor.getParameters()) {
@@ -393,7 +393,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public TypeInformation<?> getReturnType(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 		return createInfo(method.getGenericReturnType());
 	}
 
@@ -403,7 +403,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	 */
 	public List<TypeInformation<?>> getParameterTypes(Method method) {
 
-		Assert.notNull(method, "Method most not be null!");
+		Assert.notNull(method, "Method most not be null");
 
 		return Streamable.of(method.getGenericParameterTypes()).stream()//
 				.map(this::createInfo)//
@@ -481,7 +481,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	@SuppressWarnings("unchecked")
 	public TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 		Assert.isTrue(getType().isAssignableFrom(type.getType()),
 				() -> String.format("%s must be assignable from %s", getType(), type.getType()));
 

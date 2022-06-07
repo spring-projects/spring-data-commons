@@ -119,7 +119,7 @@ interface MethodLookups {
 		 */
 		public RepositoryAwareMethodLookup(RepositoryMetadata repositoryMetadata) {
 
-			Assert.notNull(repositoryMetadata, "Repository metadata must not be null!");
+			Assert.notNull(repositoryMetadata, "Repository metadata must not be null");
 
 			this.entityType = repositoryMetadata.getDomainTypeInformation().toTypeDescriptor().getResolvableType();
 			this.idType = repositoryMetadata.getIdTypeInformation().toTypeDescriptor().getResolvableType();
@@ -298,7 +298,7 @@ interface MethodLookups {
 		 */
 		private static boolean isNonUnwrappingWrapper(Class<?> parameterType) {
 
-			Assert.notNull(parameterType, "Parameter type must not be null!");
+			Assert.notNull(parameterType, "Parameter type must not be null");
 
 			return ReactiveWrappers.supports(parameterType);
 		}
@@ -311,7 +311,7 @@ interface MethodLookups {
 		 */
 		private static boolean usesParametersWithReactiveWrappers(Method method) {
 
-			Assert.notNull(method, "Method must not be null!");
+			Assert.notNull(method, "Method must not be null");
 
 			return Arrays.stream(method.getParameterTypes())//
 					.anyMatch(ReactiveTypeInteropMethodLookup::isNonUnwrappingWrapper);

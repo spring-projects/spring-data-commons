@@ -49,7 +49,7 @@ public class CustomMetric implements Metric {
 	 */
 	public CustomMetric(double multiplier, String abbreviation) {
 
-		Assert.notNull(abbreviation, "Abbreviation must not be null!");
+		Assert.notNull(abbreviation, "Abbreviation must not be null");
 
 		this.multiplier = multiplier;
 		this.abbreviation = abbreviation;

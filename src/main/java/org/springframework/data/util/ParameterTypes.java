@@ -74,7 +74,7 @@ public class ParameterTypes {
 	 */
 	public static ParameterTypes of(List<TypeDescriptor> types) {
 
-		Assert.notNull(types, "Types must not be null!");
+		Assert.notNull(types, "Types must not be null");
 
 		return cache.computeIfAbsent(types, ParameterTypes::new);
 	}
@@ -87,8 +87,8 @@ public class ParameterTypes {
 	 */
 	static ParameterTypes of(Class<?>... types) {
 
-		Assert.notNull(types, "Types must not be null!");
-		Assert.noNullElements(types, "Types must not have null elements!");
+		Assert.notNull(types, "Types must not be null");
+		Assert.noNullElements(types, "Types must not have null elements");
 
 		return of(Arrays.stream(types) //
 				.map(TypeDescriptor::valueOf) //
@@ -104,7 +104,7 @@ public class ParameterTypes {
 	 */
 	public boolean areValidFor(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 
 		// Direct matches
 		if (areValidTypes(method)) {
@@ -150,7 +150,7 @@ public class ParameterTypes {
 	 */
 	boolean hasTypes(Class<?>... types) {
 
-		Assert.notNull(types, "Types must not be null!");
+		Assert.notNull(types, "Types must not be null");
 
 		return Arrays.stream(types) //
 				.map(TypeDescriptor::valueOf) //
@@ -257,7 +257,7 @@ public class ParameterTypes {
 	 */
 	private boolean areValidTypes(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 
 		if (method.getParameterCount() != types.size()) {
 			return false;

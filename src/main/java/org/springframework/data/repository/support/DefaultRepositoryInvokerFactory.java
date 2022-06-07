@@ -62,8 +62,8 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 	 */
 	public DefaultRepositoryInvokerFactory(Repositories repositories, ConversionService conversionService) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		this.repositories = repositories;
 		this.conversionService = conversionService;

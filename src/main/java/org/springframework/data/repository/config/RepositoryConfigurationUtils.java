@@ -43,9 +43,9 @@ public interface RepositoryConfigurationUtils {
 	public static void exposeRegistration(RepositoryConfigurationExtension extension, BeanDefinitionRegistry registry,
 			RepositoryConfigurationSource configurationSource) {
 
-		Assert.notNull(extension, "RepositoryConfigurationExtension must not be null!");
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
-		Assert.notNull(configurationSource, "RepositoryConfigurationSource must not be null!");
+		Assert.notNull(extension, "RepositoryConfigurationExtension must not be null");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+		Assert.notNull(configurationSource, "RepositoryConfigurationSource must not be null");
 
 		Class<? extends RepositoryConfigurationExtension> extensionType = extension.getClass();
 		String beanName = extensionType.getName().concat(GENERATED_BEAN_NAME_SEPARATOR).concat("0");

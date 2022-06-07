@@ -46,8 +46,8 @@ public final class RepositoryFragmentConfiguration {
 	 */
 	public RepositoryFragmentConfiguration(String interfaceName, String className) {
 
-		Assert.hasText(interfaceName, "Interface name must not be null or empty!");
-		Assert.hasText(className, "Class name must not be null or empty!");
+		Assert.hasText(interfaceName, "Interface name must not be null or empty");
+		Assert.hasText(className, "Class name must not be null or empty");
 
 		this.interfaceName = interfaceName;
 		this.className = className;
@@ -63,8 +63,8 @@ public final class RepositoryFragmentConfiguration {
 	 */
 	public RepositoryFragmentConfiguration(String interfaceName, AbstractBeanDefinition beanDefinition) {
 
-		Assert.hasText(interfaceName, "Interface name must not be null or empty!");
-		Assert.notNull(beanDefinition, "Bean definition must not be null!");
+		Assert.hasText(interfaceName, "Interface name must not be null or empty");
+		Assert.notNull(beanDefinition, "Bean definition must not be null");
 
 		this.interfaceName = interfaceName;
 		this.className = ConfigurationUtils.getRequiredBeanClassName(beanDefinition);

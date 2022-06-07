@@ -46,8 +46,8 @@ class InstanceCreatorMetadataSupport<T, P extends PersistentProperty<P>> impleme
 	@SafeVarargs
 	public InstanceCreatorMetadataSupport(Executable executable, Parameter<Object, P>... parameters) {
 
-		Assert.notNull(executable, "Executable must not be null!");
-		Assert.notNull(parameters, "Parameters must not be null!");
+		Assert.notNull(executable, "Executable must not be null");
+		Assert.notNull(parameters, "Parameters must not be null");
 
 		this.executable = executable;
 		this.parameters = Arrays.asList(parameters);
@@ -85,7 +85,7 @@ class InstanceCreatorMetadataSupport<T, P extends PersistentProperty<P>> impleme
 	@Override
 	public boolean isCreatorParameter(PersistentProperty<?> property) {
 
-		Assert.notNull(property, "Property must not be null!");
+		Assert.notNull(property, "Property must not be null");
 
 		Boolean cached = isPropertyParameterCache.get(property);
 

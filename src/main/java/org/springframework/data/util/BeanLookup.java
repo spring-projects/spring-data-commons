@@ -47,7 +47,7 @@ public abstract class BeanLookup {
 	 */
 	public static <T> Lazy<T> lazyIfAvailable(Class<T> type, BeanFactory beanFactory) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
 
 		return Lazy.of(() -> lookupBean(type, (ListableBeanFactory) beanFactory));

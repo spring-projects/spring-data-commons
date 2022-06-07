@@ -127,7 +127,7 @@ public class QuerydslBindings {
 	 */
 	public final void excluding(Path<?>... paths) {
 
-		Assert.notEmpty(paths, "At least one path has to be provided!");
+		Assert.notEmpty(paths, "At least one path has to be provided");
 
 		for (Path<?> path : paths) {
 			this.denyList.add(toDotPath(Optional.of(path)));
@@ -141,7 +141,7 @@ public class QuerydslBindings {
 	 */
 	public final void including(Path<?>... paths) {
 
-		Assert.notEmpty(paths, "At least one path has to be provided!");
+		Assert.notEmpty(paths, "At least one path has to be provided");
 
 		for (Path<?> path : paths) {
 			this.allowList.add(toDotPath(Optional.of(path)));
@@ -172,8 +172,8 @@ public class QuerydslBindings {
 	 */
 	boolean isPathAvailable(String path, Class<?> type) {
 
-		Assert.notNull(path, "Path must not be null!");
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(path, "Path must not be null");
+		Assert.notNull(type, "Type must not be null");
 
 		return isPathAvailable(path, ClassTypeInformation.from(type));
 	}
@@ -187,8 +187,8 @@ public class QuerydslBindings {
 	 */
 	boolean isPathAvailable(String path, TypeInformation<?> type) {
 
-		Assert.notNull(path, "Path must not be null!");
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(path, "Path must not be null");
+		Assert.notNull(type, "Type must not be null");
 
 		return getPropertyPath(path, type) != null;
 	}
@@ -203,7 +203,7 @@ public class QuerydslBindings {
 	@SuppressWarnings("unchecked")
 	public <S extends Path<? extends T>, T> Optional<MultiValueBinding<S, T>> getBindingForPath(PathInformation path) {
 
-		Assert.notNull(path, "PropertyPath must not be null!");
+		Assert.notNull(path, "PropertyPath must not be null");
 
 		PathAndBinding<S, T> pathAndBinding = (PathAndBinding<S, T>) pathSpecs.get(createKey(path));
 
@@ -229,7 +229,7 @@ public class QuerydslBindings {
 	 */
 	Optional<Path<?>> getExistingPath(PathInformation path) {
 
-		Assert.notNull(path, "PropertyPath must not be null!");
+		Assert.notNull(path, "PropertyPath must not be null");
 
 		return Optional.ofNullable(pathSpecs.get(createKey(path))).flatMap(PathAndBinding::getPath);
 	}
@@ -244,8 +244,8 @@ public class QuerydslBindings {
 	@Nullable
 	PathInformation getPropertyPath(String path, TypeInformation<?> type) {
 
-		Assert.notNull(path, "Path must not be null!");
-		Assert.notNull(type, "Type information must not be null!");
+		Assert.notNull(path, "Path must not be null");
+		Assert.notNull(type, "Type information must not be null");
 
 		if (!isPathVisible(path)) {
 			return null;
@@ -381,7 +381,7 @@ public class QuerydslBindings {
 		@SafeVarargs
 		PathBinder(P... paths) {
 
-			Assert.notEmpty(paths, "At least one path has to be provided!");
+			Assert.notEmpty(paths, "At least one path has to be provided");
 			this.paths = Arrays.asList(paths);
 		}
 
@@ -392,14 +392,14 @@ public class QuerydslBindings {
 		 */
 		public void firstOptional(OptionalValueBinding<P, T> binding) {
 
-			Assert.notNull(binding, "Binding must not be null!");
+			Assert.notNull(binding, "Binding must not be null");
 
 			all((path, value) -> binding.bind(path, Optionals.next(value.iterator())));
 		}
 
 		public void first(SingleValueBinding<P, T> binding) {
 
-			Assert.notNull(binding, "Binding must not be null!");
+			Assert.notNull(binding, "Binding must not be null");
 			all((path, value) -> Optionals.next(value.iterator()).map(t -> binding.bind(path, t)));
 		}
 
@@ -410,7 +410,7 @@ public class QuerydslBindings {
 		 */
 		public void all(MultiValueBinding<P, T> binding) {
 
-			Assert.notNull(binding, "Binding must not be null!");
+			Assert.notNull(binding, "Binding must not be null");
 
 			paths.forEach(path -> registerBinding(PathAndBinding.withPath(path).with(binding)));
 		}
@@ -450,7 +450,7 @@ public class QuerydslBindings {
 
 			super(path);
 
-			Assert.notNull(path, "Path must not be null!");
+			Assert.notNull(path, "Path must not be null");
 
 			this.alias = alias;
 			this.path = path;
@@ -466,7 +466,7 @@ public class QuerydslBindings {
 		 */
 		public AliasingPathBinder<P, T> as(String alias) {
 
-			Assert.hasText(alias, "Alias must not be null or empty!");
+			Assert.hasText(alias, "Alias must not be null or empty");
 			return new AliasingPathBinder<>(alias, path);
 		}
 
@@ -516,13 +516,13 @@ public class QuerydslBindings {
 		 */
 		public <P extends Path<T>> void firstOptional(OptionalValueBinding<P, T> binding) {
 
-			Assert.notNull(binding, "Binding must not be null!");
+			Assert.notNull(binding, "Binding must not be null");
 			all((MultiValueBinding<P, T>) (path, value) -> binding.bind(path, Optionals.next(value.iterator())));
 		}
 
 		public <P extends Path<T>> void first(SingleValueBinding<P, T> binding) {
 
-			Assert.notNull(binding, "Binding must not be null!");
+			Assert.notNull(binding, "Binding must not be null");
 			all((MultiValueBinding<P, T>) (path, value) -> Optionals.next(value.iterator()).map(t -> binding.bind(path, t)));
 		}
 
@@ -533,7 +533,7 @@ public class QuerydslBindings {
 		 */
 		public <P extends Path<T>> void all(MultiValueBinding<P, T> binding) {
 
-			Assert.notNull(binding, "Binding must not be null!");
+			Assert.notNull(binding, "Binding must not be null");
 
 			QuerydslBindings.this.typeSpecs.put(type, PathAndBinding.<T, P> withoutPath().with(binding));
 		}

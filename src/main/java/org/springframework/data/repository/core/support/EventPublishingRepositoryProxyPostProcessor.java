@@ -166,7 +166,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		@Nullable
 		public static EventPublishingMethod of(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
 			EventPublishingMethod eventPublishingMethod = cache.get(type);
 

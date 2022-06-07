@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  */
 public class AnnotationAuditingConfiguration implements AuditingConfiguration {
 
-	private static final String MISSING_ANNOTATION_ATTRIBUTES = "Couldn't find annotation attributes for %s in %s!";
+	private static final String MISSING_ANNOTATION_ATTRIBUTES = "Couldn't find annotation attributes for %s in %s";
 
 	private final AnnotationAttributes attributes;
 
@@ -44,8 +44,8 @@ public class AnnotationAuditingConfiguration implements AuditingConfiguration {
 	 */
 	public AnnotationAuditingConfiguration(AnnotationMetadata metadata, Class<? extends Annotation> annotation) {
 
-		Assert.notNull(metadata, "AnnotationMetadata must not be null!");
-		Assert.notNull(annotation, "Annotation must not be null!");
+		Assert.notNull(metadata, "AnnotationMetadata must not be null");
+		Assert.notNull(annotation, "Annotation must not be null");
 
 		Map<String, Object> attributesSource = metadata.getAnnotationAttributes(annotation.getName());
 

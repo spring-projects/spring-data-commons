@@ -54,9 +54,9 @@ public class DtoInstantiatingConverter implements Converter<Object, Object> {
 			MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> context,
 			EntityInstantiators instantiator) {
 
-		Assert.notNull(dtoType, "DTO type must not be null!");
-		Assert.notNull(context, "MappingContext must not be null!");
-		Assert.notNull(instantiator, "EntityInstantiators must not be null!");
+		Assert.notNull(dtoType, "DTO type must not be null");
+		Assert.notNull(context, "MappingContext must not be null");
+		Assert.notNull(instantiator, "EntityInstantiators must not be null");
 
 		this.targetType = dtoType;
 		this.context = context;

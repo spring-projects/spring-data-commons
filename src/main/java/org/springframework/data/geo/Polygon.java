@@ -50,10 +50,10 @@ public class Polygon implements Iterable<Point>, Shape {
 	 */
 	public Polygon(Point x, Point y, Point z, Point... others) {
 
-		Assert.notNull(x, "X coordinate must not be null!");
-		Assert.notNull(y, "Y coordinate must not be null!");
-		Assert.notNull(z, "Z coordinate must not be null!");
-		Assert.notNull(others, "Others must not be null!");
+		Assert.notNull(x, "X coordinate must not be null");
+		Assert.notNull(y, "Y coordinate must not be null");
+		Assert.notNull(z, "Z coordinate must not be null");
+		Assert.notNull(others, "Others must not be null");
 
 		List<Point> points = new ArrayList<>(3 + others.length);
 		points.addAll(Arrays.asList(x, y, z));
@@ -70,13 +70,13 @@ public class Polygon implements Iterable<Point>, Shape {
 	@PersistenceConstructor
 	public Polygon(List<? extends Point> points) {
 
-		Assert.notNull(points, "Points must not be null!");
+		Assert.notNull(points, "Points must not be null");
 
 		List<Point> pointsToSet = new ArrayList<>(points.size());
 
 		for (Point point : points) {
 
-			Assert.notNull(point, "Single Point in Polygon must not be null!");
+			Assert.notNull(point, "Single Point in Polygon must not be null");
 			pointsToSet.add(point);
 		}
 

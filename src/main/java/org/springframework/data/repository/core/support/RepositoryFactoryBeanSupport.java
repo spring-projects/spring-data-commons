@@ -86,7 +86,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	protected RepositoryFactoryBeanSupport(Class<? extends T> repositoryInterface) {
 
-		Assert.notNull(repositoryInterface, "Repository interface must not be null!");
+		Assert.notNull(repositoryInterface, "Repository interface must not be null");
 		this.repositoryInterface = repositoryInterface;
 	}
 

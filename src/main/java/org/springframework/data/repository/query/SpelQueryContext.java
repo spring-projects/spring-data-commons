@@ -104,7 +104,7 @@ public class SpelQueryContext {
 	 */
 	public EvaluatingSpelQueryContext withEvaluationContextProvider(QueryMethodEvaluationContextProvider provider) {
 
-		Assert.notNull(provider, "QueryMethodEvaluationContextProvider must not be null!");
+		Assert.notNull(provider, "QueryMethodEvaluationContextProvider must not be null");
 
 		return new EvaluatingSpelQueryContext(provider, parameterNameSource, replacementSource);
 	}

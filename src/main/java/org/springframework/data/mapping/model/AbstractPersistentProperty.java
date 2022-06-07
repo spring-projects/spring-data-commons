@@ -75,8 +75,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,
 			SimpleTypeHolder simpleTypeHolder) {
 
-		Assert.notNull(simpleTypeHolder, "SimpleTypeHolder must not be null!");
-		Assert.notNull(owner, "Owner entity must not be null!");
+		Assert.notNull(simpleTypeHolder, "SimpleTypeHolder must not be null");
+		Assert.notNull(owner, "Owner entity must not be null");
 
 		this.name = property.getName();
 		this.information = owner.getTypeInformation().getRequiredProperty(getName());

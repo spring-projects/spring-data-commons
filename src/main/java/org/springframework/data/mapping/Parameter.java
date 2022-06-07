@@ -56,8 +56,8 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	public Parameter(@Nullable String name, TypeInformation<T> type, Annotation[] annotations,
 			@Nullable PersistentEntity<T, P> entity) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(annotations, "Annotations must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(annotations, "Annotations must not be null");
 
 		this.name = name;
 		this.type = type;

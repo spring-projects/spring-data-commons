@@ -45,7 +45,7 @@ public class UnmarshallingResourceReader implements ResourceReader {
 	 */
 	public Object readFrom(Resource resource, @Nullable ClassLoader classLoader) throws IOException {
 
-		Assert.notNull(resource, "Resource must not be null!");
+		Assert.notNull(resource, "Resource must not be null");
 
 		StreamSource source = new StreamSource(resource.getInputStream());
 		return unmarshaller.unmarshal(source);

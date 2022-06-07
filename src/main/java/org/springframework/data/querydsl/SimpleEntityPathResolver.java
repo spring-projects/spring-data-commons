@@ -34,8 +34,8 @@ import com.querydsl.core.types.EntityPath;
  */
 public class SimpleEntityPathResolver implements EntityPathResolver {
 
-	private static final String NO_CLASS_FOUND_TEMPLATE = "Did not find a query class %s for domain class %s!";
-	private static final String NO_FIELD_FOUND_TEMPLATE = "Did not find a static field of the same type in %s!";
+	private static final String NO_CLASS_FOUND_TEMPLATE = "Did not find a query class %s for domain class %s";
+	private static final String NO_FIELD_FOUND_TEMPLATE = "Did not find a static field of the same type in %s";
 
 	public static final SimpleEntityPathResolver INSTANCE = new SimpleEntityPathResolver("");
 
@@ -48,7 +48,7 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	 */
 	public SimpleEntityPathResolver(String querySuffix) {
 
-		Assert.notNull(querySuffix, "Query suffix must not be null!");
+		Assert.notNull(querySuffix, "Query suffix must not be null");
 
 		this.querySuffix = querySuffix;
 	}

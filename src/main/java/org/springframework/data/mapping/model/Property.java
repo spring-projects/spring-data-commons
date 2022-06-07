@@ -54,8 +54,8 @@ public class Property {
 
 	private Property(TypeInformation<?> type, Optional<Field> field, Optional<PropertyDescriptor> descriptor) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.isTrue(Optionals.isAnyPresent(field, descriptor), "Either field or descriptor has to be given!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.isTrue(Optionals.isAnyPresent(field, descriptor), "Either field or descriptor has to be given");
 
 		this.field = field;
 		this.descriptor = descriptor;
@@ -89,7 +89,7 @@ public class Property {
 	 */
 	public static Property of(TypeInformation<?> type, Field field) {
 
-		Assert.notNull(field, "Field must not be null!");
+		Assert.notNull(field, "Field must not be null");
 
 		return new Property(type, Optional.of(field), Optional.empty());
 	}
@@ -104,8 +104,8 @@ public class Property {
 	 */
 	public static Property of(TypeInformation<?> type, Field field, PropertyDescriptor descriptor) {
 
-		Assert.notNull(field, "Field must not be null!");
-		Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
+		Assert.notNull(field, "Field must not be null");
+		Assert.notNull(descriptor, "PropertyDescriptor must not be null");
 
 		return new Property(type, Optional.of(field), Optional.of(descriptor));
 	}
@@ -121,7 +121,7 @@ public class Property {
 	 */
 	public static Property of(TypeInformation<?> type, PropertyDescriptor descriptor) {
 
-		Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
+		Assert.notNull(descriptor, "PropertyDescriptor must not be null");
 
 		return new Property(type, Optional.empty(), Optional.of(descriptor));
 	}
@@ -135,7 +135,7 @@ public class Property {
 	 */
 	public static boolean supportsStandalone(PropertyDescriptor descriptor) {
 
-		Assert.notNull(descriptor, "PropertyDescriptor must not be null!");
+		Assert.notNull(descriptor, "PropertyDescriptor must not be null");
 
 		return descriptor.getPropertyType() != null;
 	}
@@ -273,7 +273,7 @@ public class Property {
 		return Optionals.firstNonEmpty(//
 				() -> this.field.map(field), //
 				() -> this.descriptor.map(descriptor))//
-				.orElseThrow(() -> new IllegalStateException("Should not occur! Either field or descriptor has to be given"));
+				.orElseThrow(() -> new IllegalStateException("Should not occur; Either field or descriptor has to be given"));
 	}
 
 	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {

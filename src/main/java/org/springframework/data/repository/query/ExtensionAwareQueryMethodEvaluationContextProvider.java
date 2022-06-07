@@ -51,7 +51,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	 */
 	public ExtensionAwareQueryMethodEvaluationContextProvider(ListableBeanFactory beanFactory) {
 
-		Assert.notNull(beanFactory, "ListableBeanFactory must not be null!");
+		Assert.notNull(beanFactory, "ListableBeanFactory must not be null");
 
 		this.delegate = new ExtensionAwareEvaluationContextProvider(beanFactory);
 	}
@@ -64,7 +64,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	 */
 	public ExtensionAwareQueryMethodEvaluationContextProvider(List<? extends EvaluationContextExtension> extensions) {
 
-		Assert.notNull(extensions, "EvaluationContextExtensions must not be null!");
+		Assert.notNull(extensions, "EvaluationContextExtensions must not be null");
 
 		this.delegate = new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(extensions);
 	}

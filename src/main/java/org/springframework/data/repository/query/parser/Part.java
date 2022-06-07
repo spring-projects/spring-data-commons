@@ -68,8 +68,8 @@ public class Part {
 	 */
 	public Part(String source, Class<?> clazz, boolean alwaysIgnoreCase) {
 
-		Assert.hasText(source, "Part source must not be null or empty!");
-		Assert.notNull(clazz, "Type must not be null!");
+		Assert.hasText(source, "Part source must not be null or empty");
+		Assert.notNull(clazz, "Type must not be null");
 
 		String partToUse = detectAndSetIgnoreCase(source);
 

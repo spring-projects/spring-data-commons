@@ -62,7 +62,7 @@ public class UnmarshallerRepositoryPopulatorFactoryBean extends AbstractReposito
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		Assert.state(unmarshaller != null, "No Unmarshaller configured!");
+		Assert.state(unmarshaller != null, "No Unmarshaller configured");
 		super.afterPropertiesSet();
 	}
 }

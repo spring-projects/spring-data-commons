@@ -45,7 +45,7 @@ import org.springframework.util.Assert;
 public class SimplePropertyValueConversions implements PropertyValueConversions, InitializingBean {
 
 	private static final String NO_CONVERTER_FACTORY_ERROR_MESSAGE =
-			"PropertyValueConverterFactory is not set. Make sure to either set the converter factory or call afterPropertiesSet() to initialize the object.";
+			"PropertyValueConverterFactory is not set; Make sure to either set the converter factory or call afterPropertiesSet() to initialize the object";
 
 	private boolean converterCacheEnabled = true;
 

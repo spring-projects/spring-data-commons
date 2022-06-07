@@ -56,7 +56,7 @@ public class ReactiveIsNewAwareAuditingHandler extends ReactiveAuditingHandler {
 	 */
 	public Mono<Object> markAudited(Object object) {
 
-		Assert.notNull(object, "Source object must not be null!");
+		Assert.notNull(object, "Source object must not be null");
 
 		if (!isAuditable(object)) {
 			return Mono.just(object);
