@@ -16,6 +16,7 @@
 package org.springframework.data.repository.config;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,8 +24,10 @@ import java.util.stream.Stream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -128,8 +131,9 @@ class RepositoryBeanDefinitionBuilder {
 
 		fragmentsBuilder.addConstructorArgValue(fragmentBeanNames);
 
-		builder.addPropertyValue("repositoryFragments",
-				ParsingUtils.getSourceBeanDefinition(fragmentsBuilder, configuration.getSource()));
+		String fragmentsBeanName = BeanDefinitionReaderUtils.uniqueBeanName(extension.getModuleName().toLowerCase(Locale.ROOT) + ".repo-fragments", registry);
+		registry.registerBeanDefinition(fragmentsBeanName, fragmentsBuilder.getBeanDefinition());
+		builder.addPropertyValue("repositoryFragments", new RuntimeBeanReference(fragmentsBeanName));
 
 		return builder;
 	}
