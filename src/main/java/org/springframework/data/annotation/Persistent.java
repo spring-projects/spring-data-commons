@@ -20,6 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.stereotype.Indexed;
 
 /**
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Indexed;
  */
 @Indexed
 @Retention(RetentionPolicy.RUNTIME)
+@Reflective
 @Target(value = { ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER })
 public @interface Persistent {
 }

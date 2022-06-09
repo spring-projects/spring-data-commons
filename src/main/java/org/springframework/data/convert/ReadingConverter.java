@@ -22,7 +22,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.aot.PublicMethodReflectiveProcessor;
 
 /**
  * Annotation to clarify intended usage of a {@link Converter} as reading converter in case the conversion types leave
@@ -32,6 +34,7 @@ import org.springframework.core.convert.converter.Converter;
  */
 @Target(TYPE)
 @Documented
+@Reflective({PublicMethodReflectiveProcessor.class})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReadingConverter {
 

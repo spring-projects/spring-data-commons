@@ -286,7 +286,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 			.registerType(repositoryInformation.getRepositoryBaseClass(), hint ->
 				hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS))
 			.registerType(repositoryInformation.getDomainType(), hint ->
-				hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_DECLARED_METHODS));
+				hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
 
 		// Repository Fragments
 		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
@@ -308,7 +308,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				SpringProxy.class, Advised.class, DecoratingProxy.class);
 
 		// Transactional Repository Proxy
-		repositoryContext.ifTransactionManagerPresent(transactionManagerBeanNames -> {
+		//repositoryContext.ifTransactionManagerPresent(transactionManagerBeanNames -> {
 
 			// TODO: Is the following double JDK Proxy registration above necessary or would a single JDK Proxy
 			//  registration suffice?
@@ -327,7 +327,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				contribution.getRuntimeHints().proxies()
 						.registerJdkProxy(transactionalRepositoryProxyTypeReferences.toArray(new TypeReference[0]));
 			}
-		});
+		//});
 
 		// Reactive Repositories
 		if (repositoryInformation.isReactiveRepository()) {
@@ -396,39 +396,25 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 			.registerJdkProxy(type, TargetAware.class, SpringProxy.class, DecoratingProxy.class);
 	}
 
-	protected void contribute(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
-
-		repositoryContext.getResolvedTypes().stream()
-			.filter(it -> !isJavaOrPrimitiveType(it))
-			.forEach(it -> contributeType(it, generationContext));
-
-		repositoryContext.getResolvedAnnotations().stream()
-			.filter(this::isSpringDataManagedAnnotation)
-			.map(MergedAnnotation::getType)
-			.forEach(it -> contributeType(it, generationContext));
-	}
-
-	private boolean isJavaOrPrimitiveType(Class<?> type) {
+	static boolean isJavaOrPrimitiveType(Class<?> type) {
 
 		return TypeUtils.type(type).isPartOf("java")
 			|| type.isPrimitive()
 			|| ClassUtils.isPrimitiveArray(type);
 	}
 
-	private boolean isSpringDataManagedAnnotation(MergedAnnotation<?> annotation) {
+	static boolean isSpringDataManagedAnnotation(MergedAnnotation<?> annotation) {
 
 		return annotation != null
 				&& (isInSpringDataNamespace(annotation.getType()) || annotation.getMetaTypes().stream()
-						.anyMatch(this::isInSpringDataNamespace));
+						.anyMatch(RepositoryRegistrationAotContribution::isInSpringDataNamespace));
 	}
 
-	private boolean isInSpringDataNamespace(Class<?> type) {
+	static boolean isInSpringDataNamespace(Class<?> type) {
 		return type != null && type.getPackage().getName().startsWith(TypeContributor.DATA_NAMESPACE);
 	}
 
-	protected void contributeType(Class<?> type, GenerationContext generationContext) {
-
-		logTrace("Contributing type information for [%s]", type);
+	static void contributeType(Class<?> type, GenerationContext generationContext) {
 		TypeContributor.contribute(type, it -> true, generationContext);
 	}
 
