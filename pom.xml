@@ -31,6 +31,7 @@
 		<xmlbeam>1.4.23</xmlbeam>
 		<java-module-name>spring.data.commons</java-module-name>
 
+		<spring>6.0.0-SNAPSHOT</spring>
 	</properties>
 
 	<dependencies>
