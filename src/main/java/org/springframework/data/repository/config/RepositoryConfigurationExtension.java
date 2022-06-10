@@ -56,17 +56,7 @@ public interface RepositoryConfigurationExtension {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	default String getModuleName() {
-		return StringUtils.capitalize(getModulePrefix());
-	}
-
-	/**
-	 * Returns a {@link String prefix} identifying the module.
-	 *
-	 * @return a {@link String prefix} identifying the module.
-	 * @see #getModuleName()
-	 */
-	String getModulePrefix();
+	String getModuleName();
 
 	/**
 	 * Returns the {@link BeanRegistrationAotProcessor} type responsible for contributing AOT/native configuration
@@ -112,13 +102,6 @@ public interface RepositoryConfigurationExtension {
 	String getRepositoryFactoryBeanClassName();
 
 	/**
-	 * Returns the default location of the Spring Data named queries.
-	 *
-	 * @return must not be {@literal null} or empty.
-	 */
-	String getDefaultNamedQueryLocation();
-
-	/**
 	 * Callback to register additional bean definitions for a {@literal repositories} root node. This usually includes
 	 * beans you have to set up once independently of the number of repositories to be created. Will be called before any
 	 * repositories bean definitions have been registered.
@@ -153,5 +136,4 @@ public interface RepositoryConfigurationExtension {
 	 * @param config will never be {@literal null}.
 	 */
 	void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config);
-
 }

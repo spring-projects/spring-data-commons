@@ -25,6 +25,8 @@ import org.assertj.core.api.AbstractAssert;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.ClassProxyHint;
 import org.springframework.aot.hint.JdkProxyHint;
+import org.springframework.aot.hint.ProxyHintsPredicates;
+import org.springframework.aot.hint.RuntimeHintsPredicates;
 
 /**
  * AssertJ {@link AbstractAssert Assertion} for code contributions originating from
@@ -45,9 +47,9 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 	public CodeContributionAssert contributesReflectionFor(Class<?>... types) {
 
 		for (Class<?> type : types) {
-			assertThat(this.actual.getRuntimeHints().reflection().getTypeHint(type))
+			assertThat(this.actual.getRuntimeHints())
 					.describedAs("No reflection entry found for [%s]", type)
-					.isNotNull();
+					.matches(RuntimeHintsPredicates.reflection().onType(type));
 		}
 
 		return this;
@@ -56,9 +58,9 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 	public CodeContributionAssert doesNotContributeReflectionFor(Class<?>... types) {
 
 		for (Class<?> type : types) {
-			assertThat(this.actual.getRuntimeHints().reflection().getTypeHint(type))
+			assertThat(this.actual.getRuntimeHints())
 					.describedAs("Reflection entry found for [%s]", type)
-					.isNull();
+					.matches(RuntimeHintsPredicates.reflection().onType(type).negate());
 		}
 
 		return this;

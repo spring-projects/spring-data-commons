@@ -20,37 +20,46 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Collections;
 import java.util.function.Consumer;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.DefaultGenerationContext;
 import org.springframework.aot.generate.InMemoryGeneratedFiles;
 import org.springframework.aot.hint.RuntimeHints;
-import org.springframework.beans.factory.BeanFactory;
+import org.springframework.aot.hint.RuntimeHintsPredicates;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.data.ManagedTypes;
+import org.springframework.data.domain.ManagedTypes;
 
 /**
  * @author Christoph Strobl
  */
-class ManagedTypesRegistrationAotProcessorUnitTests {
+class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 
 	final RootBeanDefinition managedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
-			.rootBeanDefinition(ManagedTypes.class).setFactoryMethod("of")
+			.rootBeanDefinition(ManagedTypes.class).setFactoryMethod("fromIterable")
 			.addConstructorArgValue(Collections.singleton(A.class)).getBeanDefinition();
 
 	final RootBeanDefinition myManagedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
 			.rootBeanDefinition(MyManagedTypes.class).getBeanDefinition();
 
+	DefaultListableBeanFactory beanFactory;
+
+	@BeforeEach
+	void beforeEach() {
+		beanFactory = new DefaultListableBeanFactory();
+	}
+
 	@Test // GH-2593
 	void processesBeanWithMatchingModulePrefix() {
 
-		BeanRegistrationAotContribution contribution = createPostProcessor("commons", bf -> {
-			bf.registerBeanDefinition("commons.managed-types", managedTypesDefinition);
-		}).contribute(managedTypesDefinition, ManagedTypes.class, "commons.managed-types");
+		beanFactory.registerBeanDefinition("commons.managed-types", managedTypesDefinition);
+
+		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
+				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
 
 		assertThat(contribution).isNotNull();
 	}
@@ -58,26 +67,27 @@ class ManagedTypesRegistrationAotProcessorUnitTests {
 	@Test // GH-2593
 	void contributesReflectionForManagedTypes() {
 
-		BeanRegistrationAotContribution contribution = createPostProcessor("commons", bf -> {
-			bf.registerBeanDefinition("commons.managed-types", managedTypesDefinition);
-		}).contribute(managedTypesDefinition, ManagedTypes.class, "commons.managed-types");
+		beanFactory.registerBeanDefinition("commons.managed-types", managedTypesDefinition);
+
+		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
+				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
 
 		DefaultGenerationContext generationContext = new DefaultGenerationContext(new ClassNameGenerator(),
 				new InMemoryGeneratedFiles(), new RuntimeHints());
 
 		contribution.applyTo(generationContext, null);
 
-		new CodeContributionAssert(generationContext) //
-				.contributesReflectionFor(A.class) //
-				.doesNotContributeReflectionFor(B.class);
+		assertThat(generationContext.getRuntimeHints()).matches(RuntimeHintsPredicates.reflection().onType(A.class)
+				.and(RuntimeHintsPredicates.reflection().onType(B.class).negate()));
 	}
 
 	@Test // GH-2593
 	void processesMatchingSubtypeBean() {
 
-		BeanRegistrationAotContribution contribution = createPostProcessor("commons", bf -> {
-			bf.registerBeanDefinition("commons.managed-types", myManagedTypesDefinition);
-		}).contribute(myManagedTypesDefinition, MyManagedTypes.class, "commons.managed-types");
+		beanFactory.registerBeanDefinition("commons.managed-types", myManagedTypesDefinition);
+
+		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
+				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
 
 		assertThat(contribution).isNotNull();
 	}
@@ -85,9 +95,11 @@ class ManagedTypesRegistrationAotProcessorUnitTests {
 	@Test // GH-2593
 	void ignoresBeanNotMatchingRequiredType() {
 
-		BeanRegistrationAotContribution contribution = createPostProcessor("commons", bf -> {
-			bf.registerBeanDefinition("commons.managed-types", managedTypesDefinition);
-		}).contribute(managedTypesDefinition, Object.class, "commons.managed-types");
+		beanFactory.registerBeanDefinition("commons.managed-types",
+				BeanDefinitionBuilder.rootBeanDefinition(NotManagedTypes.class).getBeanDefinition());
+
+		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
+				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
 
 		assertThat(contribution).isNull();
 	}
@@ -95,29 +107,19 @@ class ManagedTypesRegistrationAotProcessorUnitTests {
 	@Test // GH-2593
 	void ignoresBeanNotMatchingPrefix() {
 
-		BeanRegistrationAotContribution contribution = createPostProcessor("commons", bf -> {
-			bf.registerBeanDefinition("commons.managed-types", managedTypesDefinition);
-		}).contribute(managedTypesDefinition, ManagedTypes.class, "jpa.managed-types");
+		beanFactory.registerBeanDefinition("jpa.managed-types", managedTypesDefinition);
+
+		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
+				.processAheadOfTime(RegisteredBean.of(beanFactory, "jpa.managed-types"));
 
 		assertThat(contribution).isNull();
 	}
 
-	private ManagedTypesRegistrationAotProcessor createPostProcessor(String prefix, Consumer<DefaultListableBeanFactory> action) {
-
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-		action.accept(beanFactory);
-
-		ManagedTypesRegistrationAotProcessor postProcessor = createPostProcessor(beanFactory);
-		postProcessor.setModulePrefix(prefix);
+	private ManagedTypesBeanRegistrationAotProcessor createPostProcessor(String moduleIdentifier) {
+		ManagedTypesBeanRegistrationAotProcessor postProcessor = new ManagedTypesBeanRegistrationAotProcessor();
+		postProcessor.setModuleIdentifier(moduleIdentifier);
 
 		return postProcessor;
-	}
-
-	private ManagedTypesRegistrationAotProcessor createPostProcessor(BeanFactory beanFactory) {
-
-		ManagedTypesRegistrationAotProcessor managedTypesRegistrationAotProcessor = new ManagedTypesRegistrationAotProcessor();
-		managedTypesRegistrationAotProcessor.setBeanFactory(beanFactory);
-		return managedTypesRegistrationAotProcessor;
 	}
 
 	static class A {}
@@ -125,10 +127,11 @@ class ManagedTypesRegistrationAotProcessorUnitTests {
 	static class B {}
 
 	static class MyManagedTypes implements ManagedTypes {
-
 		@Override
 		public void forEach(Consumer<Class<?>> action) {
 			// just do nothing ¯\_(ツ)_/¯
 		}
 	}
+
+	static class NotManagedTypes {}
 }

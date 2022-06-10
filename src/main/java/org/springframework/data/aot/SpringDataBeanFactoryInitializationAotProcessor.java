@@ -15,11 +15,12 @@
  */
 package org.springframework.data.aot;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -27,14 +28,16 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.data.ManagedTypes;
+import org.springframework.data.domain.ManagedTypes;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * {@link BeanFactoryInitializationAotProcessor} implementation used to encapsulate common data infrastructure concerns
- * and preprocess the {@link ConfigurableListableBeanFactory} ahead of the AOT compilation in order to prepare
- * the Spring Data {@link BeanDefinition BeanDefinitions} for AOT processing.
+ * and preprocess the {@link ConfigurableListableBeanFactory} ahead of the AOT compilation in order to prepare the
+ * Spring Data {@link BeanDefinition BeanDefinitions} for AOT processing.
  *
  * @author Christoph Strobl
  * @author John Blum
@@ -63,8 +66,11 @@ public class SpringDataBeanFactoryInitializationAotProcessor implements BeanFact
 
 				BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
 
-				ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues()
-						.getArgumentValue(0, null, null, null);
+				if(beanDefinition.getConstructorArgumentValues().isEmpty()) {
+					return;
+				}
+
+				ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, null, null, null);
 
 				if (argumentValue.getValue() instanceof Supplier supplier) {
 
@@ -72,11 +78,16 @@ public class SpringDataBeanFactoryInitializationAotProcessor implements BeanFact
 						logger.info(String.format("Replacing ManagedType bean definition %s.", beanName));
 					}
 
-					BeanDefinition beanDefinitionReplacement = BeanDefinitionBuilder
-							.rootBeanDefinition(ManagedTypes.class)
-							.setFactoryMethod("of")
-							.addConstructorArgValue(supplier.get())
-							.getBeanDefinition();
+					Object value = supplier.get();
+					if(ObjectUtils.isArray(value)) {
+						value = CollectionUtils.arrayToList(value);
+					}
+					if(!(value instanceof Iterable<?>)) {
+						value = Collections.singleton(value);
+					}
+
+					BeanDefinition beanDefinitionReplacement = BeanDefinitionBuilder.rootBeanDefinition(ManagedTypes.class)
+							.setFactoryMethod("fromIterable").addConstructorArgValue(value).getBeanDefinition();
 
 					registry.removeBeanDefinition(beanName);
 					registry.registerBeanDefinition(beanName, beanDefinitionReplacement);

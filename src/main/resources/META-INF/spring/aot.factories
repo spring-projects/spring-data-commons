@@ -1,4 +1,4 @@
 org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor=\
 	org.springframework.data.aot.SpringDataBeanFactoryInitializationAotProcessor
 org.springframework.aot.hint.RuntimeHintsRegistrar=\
-	org.springframework.data.aot.DataRuntimeHints
+	org.springframework.data.aot.hint.RepositoryRuntimeHints

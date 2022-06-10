@@ -59,6 +59,11 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	private boolean noMultiStoreSupport = false;
 
+	@Override
+	public String getModuleName() {
+		return StringUtils.capitalize(getModulePrefix());
+	}
+
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader) {
 		return getRepositoryConfigurations(configSource, loader, false);
@@ -127,7 +132,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * @return
 	 * @since 1.9
 	 */
-	public Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
+	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
 		return Collections.emptySet();
 	}
 

@@ -22,12 +22,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.aot.AotDetector;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -48,11 +48,8 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
-import org.springframework.data.ManagedTypes;
-import org.springframework.data.aot.TypeScanner;
+import org.springframework.data.util.TypeScanner;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
-import org.springframework.data.util.Lazy;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StopWatch;
@@ -228,31 +225,9 @@ public class RepositoryConfigurationDelegate {
 	private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
 			Map<String, RepositoryMetadata<?>> metadataByRepositoryBeanName) {
 
-		// Managed types lookup if possible
-		if (extension instanceof RepositoryConfigurationExtensionSupport extensionSupport) {
-
-			String targetManagedTypesBeanName = String.format("%s.managed-types", extension.getModulePrefix());
-
-			if (!registry.isBeanNameInUse(targetManagedTypesBeanName)) {
-
-				// this needs to be lazy or we'd resolve types to early maybe
-				Supplier<Set<Class<?>>> args = () -> {
-
-					Set<String> packages = metadataByRepositoryBeanName.values().stream()
-							.flatMap(it -> it.getBasePackages().stream()).collect(Collectors.toSet());
-
-					return new TypeScanner(resourceLoader.getClassLoader())
-							.scanForTypesAnnotatedWith(extensionSupport.getIdentifyingAnnotations()).inPackages(packages);
-				};
-
-//				registry.registerBeanDefinition(targetManagedTypesBeanName, BeanDefinitionBuilder
-//						.rootBeanDefinition(ManagedTypesBean.class).addConstructorArgValue(args).getBeanDefinition());
-			}
-		}
-
 		// module-specific repository aot processor
 		String repositoryAotProcessorBeanName = String.format("data-%s.repository-aot-processor" /* might be duplicate */,
-				extension.getModulePrefix());
+				extension.getModuleIdentifier());
 
 		if (!registry.isBeanNameInUse(repositoryAotProcessorBeanName)) {
 
@@ -394,19 +369,5 @@ public class RepositoryConfigurationDelegate {
 			return lazyInit;
 		}
 
-	}
-
-	public static class ManagedTypesBean implements ManagedTypes {
-
-		private final Lazy<Set<Class<?>>> types;
-
-		public ManagedTypesBean(Supplier<Set<Class<?>>> types) {
-			this.types = Lazy.of(types);
-		}
-
-		@Override
-		public void forEach(@NonNull Consumer<Class<?>> action) {
-			types.get().forEach(action);
-		}
 	}
 }
