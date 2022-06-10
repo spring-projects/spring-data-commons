@@ -148,6 +148,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getTypeArgument(CustomCollections.getMapBaseType(rawType), 0);
 		}
 
+		List<TypeInformation<?>> arguments = getTypeArguments();
+
+		if (arguments.size() > 0) {
+			return arguments.get(0);
+		}
+
 		if (Iterable.class.isAssignableFrom(rawType)) {
 			return getTypeArgument(Iterable.class, 0);
 		}
@@ -156,9 +162,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return getTypeArgument(rawType, 0);
 		}
 
-		List<TypeInformation<?>> arguments = getTypeArguments();
-
-		return arguments.size() > 0 ? arguments.get(0) : null;
+		return null;
 	}
 
 	@Override

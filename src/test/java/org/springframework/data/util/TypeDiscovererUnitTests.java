@@ -31,6 +31,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -326,6 +327,14 @@ public class TypeDiscovererUnitTests {
 		assertThat(map.getMapValueType().getType()).isEqualTo(String.class);
 	}
 
+	@Test
+	void detectsComponentTypeOfTypedClass() {
+
+		TypeInformation<?> property = TypeInformation.of(GeoResultsWrapper.class).getProperty("results");
+
+		assertThat(property.getComponentType().getType()).isEqualTo(Leaf.class);
+	}
+
 	class Person {
 
 		Addresses addresses;
@@ -414,5 +423,9 @@ public class TypeDiscovererUnitTests {
 
 	class EnumMapWrapper {
 		EnumMap<Autowire, String> map;
+	}
+
+	class GeoResultsWrapper {
+		GeoResults<Leaf> results;
 	}
 }
