@@ -28,6 +28,7 @@ import org.springframework.beans.factory.config.BeanReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.data.util.TypeScanner;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -118,7 +119,7 @@ public interface AotContext {
 	 */
 	@NonNull
 	default TypeScanner getTypeScanner() {
-		return new TypeScanner(getClassLoader());
+		return TypeScanner.typeScanner(getClassLoader());
 	}
 
 	/**
@@ -129,14 +130,12 @@ public interface AotContext {
 	 * model {@link Class types}; must not be {@literal null}.
 	 * @param packageNames {@link Collection} of {@link String package names} to scan.
 	 * @return a {@link Set} of {@link Class types} found during the scan.
-	 * @see TypeScanner#scanForTypesAnnotatedWith(Class[])
-	 * @see TypeScanner.Scanner#inPackages(Collection)
 	 * @see #getTypeScanner()
 	 */
 	default Set<Class<?>> scanPackageForTypes(@NonNull Collection<Class<? extends Annotation>> identifyingAnnotations,
 			Collection<String> packageNames) {
 
-		return getTypeScanner().scanForTypesAnnotatedWith(identifyingAnnotations).inPackages(packageNames);
+		return getTypeScanner().scanPackages(packageNames).forTypesAnnotatedWith(identifyingAnnotations).collectAsSet();
 	}
 
 	/**

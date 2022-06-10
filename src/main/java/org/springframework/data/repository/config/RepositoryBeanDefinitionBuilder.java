@@ -120,7 +120,7 @@ class RepositoryBeanDefinitionBuilder {
 				extension.getDefaultNamedQueryLocation());
 		configuration.getNamedQueriesLocation().ifPresent(definitionBuilder::setLocations);
 
-		String namedQueriesBeanName = BeanDefinitionReaderUtils.uniqueBeanName(extension.getModulePrefix() + ".named-queries", registry);
+		String namedQueriesBeanName = BeanDefinitionReaderUtils.uniqueBeanName(extension.getModuleIdentifier() + ".named-queries", registry);
 		BeanDefinition namedQueries = definitionBuilder.build(configuration.getSource());
 		registry.registerBeanDefinition(namedQueriesBeanName, namedQueries);
 

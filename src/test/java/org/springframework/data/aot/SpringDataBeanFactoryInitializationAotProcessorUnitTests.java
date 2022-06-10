@@ -15,12 +15,8 @@
  */
 package org.springframework.data.aot;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -31,7 +27,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.data.ManagedTypes;
+import org.springframework.data.domain.ManagedTypes;
 
 /**
  * @author Christoph Strobl
@@ -58,7 +54,7 @@ class SpringDataBeanFactoryInitializationAotProcessorUnitTests {
 
 		BeanDefinition beanDefinition = beanFactory.getBeanDefinition("data.managed-types");
 
-		assertThat(beanDefinition.getFactoryMethodName()).isEqualTo("of");
+		assertThat(beanDefinition.getFactoryMethodName()).isEqualTo("fromIterable");
 		assertThat(beanDefinition.hasConstructorArgumentValues()).isTrue();
 		assertThat(beanDefinition.getConstructorArgumentValues().getArgumentValue(0, null).getValue())
 				.isEqualTo(Collections.singleton(DomainType.class));

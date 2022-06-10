@@ -20,25 +20,21 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.aot.generate.GenerationContext;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.support.RegisteredBean;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.ResolvableType;
-import org.springframework.data.ManagedTypes;
+import org.springframework.data.domain.ManagedTypes;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link BeanRegistrationAotProcessor} handling {@link #getModulePrefix() module prefixed} {@link ManagedTypes}
- * instances. This AOT processor allows store specific handling of discovered types to be registered.
+ * {@link BeanRegistrationAotProcessor} handling {@link #getModuleIdentifier() module} {@link ManagedTypes} instances.
+ * This AOT processor allows store specific handling of discovered types to be registered.
  *
  * @author Christoph Strobl
  * @author John Blum
@@ -46,28 +42,21 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.aot.BeanRegistrationAotProcessor
  * @since 3.0
  */
-public class ManagedTypesRegistrationAotProcessor implements BeanRegistrationAotProcessor, BeanFactoryAware {
+public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistrationAotProcessor {
 
 	private final Log logger = LogFactory.getLog(getClass());
-
-	private BeanFactory beanFactory;
-
-	@Nullable
-	private String modulePrefix;
+	@Nullable private String moduleIdentifier;
 
 	@Override
 	public BeanRegistrationAotContribution processAheadOfTime(@NonNull RegisteredBean registeredBean) {
-		return contribute(registeredBean.getMergedBeanDefinition(), registeredBean.getBeanClass(), registeredBean.getBeanName());
-	}
 
-	@Nullable
-	@SuppressWarnings("unused")
-	protected BeanRegistrationAotContribution contribute(@NonNull RootBeanDefinition beanDefinition,
-			@NonNull Class<?> beanType, @NonNull String beanName) {
+		if (!isMatch(registeredBean.getBeanClass(), registeredBean.getBeanName())) {
+			return null;
+		}
 
-		return isMatch(beanType, beanName)
-				? contribute(AotContext.from(beanFactory), beanFactory.getBean(beanName, ManagedTypes.class))
-				: null;
+		BeanFactory beanFactory = registeredBean.getBeanFactory();
+		return contribute(AotContext.from(registeredBean.getBeanFactory()),
+				beanFactory.getBean(registeredBean.getBeanName(), ManagedTypes.class));
 	}
 
 	protected boolean isMatch(@Nullable Class<?> beanType, @Nullable String beanName) {
@@ -79,16 +68,16 @@ public class ManagedTypesRegistrationAotProcessor implements BeanRegistrationAot
 	}
 
 	protected boolean matchesPrefix(@Nullable String beanName) {
-		return StringUtils.startsWithIgnoreCase(beanName, getModulePrefix());
+		return StringUtils.startsWithIgnoreCase(beanName, getModuleIdentifier());
 	}
 
 	/**
-	 * Hook to provide a customized flavor of {@link BeanRegistrationAotContribution}. By overriding this method
-	 * calls to {@link #contributeType(ResolvableType, GenerationContext)} might no longer be issued.
+	 * Hook to provide a customized flavor of {@link BeanRegistrationAotContribution}. By overriding this method calls to
+	 * {@link #contributeType(ResolvableType, GenerationContext)} might no longer be issued.
 	 *
 	 * @param aotContext never {@literal null}.
 	 * @param managedTypes never {@literal null}.
-	 * @return new instance of {@link ManagedTypesRegistrationAotProcessor} or {@literal null} if nothing to do.
+	 * @return new instance of {@link ManagedTypesBeanRegistrationAotProcessor} or {@literal null} if nothing to do.
 	 */
 	@Nullable
 	protected BeanRegistrationAotContribution contribute(AotContext aotContext, ManagedTypes managedTypes) {
@@ -111,21 +100,16 @@ public class ManagedTypesRegistrationAotProcessor implements BeanRegistrationAot
 
 		TypeContributor.contribute(type.toClass(), annotationNamespaces, generationContext);
 
-		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(annotation ->
-				TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
+		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
+				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
 	}
 
-	@Override
-	public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-	public void setModulePrefix(@Nullable String modulePrefix) {
-		this.modulePrefix = modulePrefix;
+	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
+		this.moduleIdentifier = moduleIdentifier;
 	}
 
 	@Nullable
-	public String getModulePrefix() {
-		return this.modulePrefix;
+	public String getModuleIdentifier() {
+		return this.moduleIdentifier;
 	}
 }

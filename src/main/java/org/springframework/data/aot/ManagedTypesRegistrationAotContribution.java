@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,7 @@ import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.core.ResolvableType;
-import org.springframework.data.ManagedTypes;
+import org.springframework.data.domain.ManagedTypes;
 import org.springframework.lang.NonNull;
 
 /**
@@ -52,7 +52,7 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 
 	@NonNull
 	protected ManagedTypes getManagedTypes() {
-		return ManagedTypes.nullSafeManagedTypes(this.managedTypes);
+		return managedTypes == null ? ManagedTypes.empty() : managedTypes;
 	}
 
 	@Override

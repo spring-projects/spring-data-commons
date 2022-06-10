@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.data.aot.TypeScanner.Scanner;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
 
@@ -128,12 +127,10 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 
 		if (!getIdentifyingAnnotations().isEmpty()) {
 
-			Scanner typeScanner = aotContext.getTypeScanner().scanForTypesAnnotatedWith(getIdentifyingAnnotations());
-			Set<Class<?>> classes = typeScanner.inPackages(getBasePackages());
+			Set<Class<?>> classes = aotContext.getTypeScanner().scanPackages(getBasePackages()).forTypesAnnotatedWith(getIdentifyingAnnotations()).collectAsSet();
 			types.addAll(TypeCollector.inspect(classes).list());
 		}
 
-		// context.get
 		return types;
 	}
 }

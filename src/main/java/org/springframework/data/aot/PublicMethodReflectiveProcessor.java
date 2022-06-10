@@ -26,8 +26,6 @@ public class PublicMethodReflectiveProcessor extends SimpleReflectiveProcessor {
 
 	@Override
 	protected void registerTypeHint(ReflectionHints hints, Class<?> type) {
-		System.out.println("invoking reflective hint annotation for : " + type);
 		hints.registerType(type, builder -> builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS));
-
 	}
 }

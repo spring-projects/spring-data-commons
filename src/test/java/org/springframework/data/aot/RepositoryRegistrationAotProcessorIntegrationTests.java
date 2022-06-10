@@ -73,7 +73,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 							.contributesReflectionFor(ConfigWithSimpleCrudRepository.Person.class) // repository domain type
 							.contributesJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, SpringProxy.class, Advised.class,
 									DecoratingProxy.class) //
-							.doesNotContributeJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, Repository.class,
+							.contributesJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, Repository.class,
 									TransactionalProxy.class, Advised.class, DecoratingProxy.class)
 							.doesNotContributeJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, Repository.class,
 									TransactionalProxy.class, Advised.class, DecoratingProxy.class, Serializable.class);

@@ -31,7 +31,7 @@ import org.springframework.core.MethodParameter;
  *
  * @author Jens Schauder
  */
-class ParameterUnitTests {
+class KParameterUnitTests {
 
 	@Test // DATAJPA-1185
 	void classParameterWithSameTypeParameterAsReturnedListIsDynamicProjectionParameter() throws Exception {
