@@ -48,6 +48,7 @@ public interface RepositoryConfigurationExtension {
 	 * specific bean definitions.
 	 *
 	 * @return must not be {@literal null}.
+	 * @since 3.0
 	 */
 	String getModulePrefix();
 

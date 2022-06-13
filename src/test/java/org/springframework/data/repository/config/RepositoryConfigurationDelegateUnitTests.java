@@ -16,13 +16,6 @@
 package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.util.Collections;
-import java.util.Set;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +26,6 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -41,20 +33,16 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.metrics.ApplicationStartup;
-import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
-import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver;
 import org.springframework.data.repository.sample.AddressRepository;
 import org.springframework.data.repository.sample.AddressRepositoryClient;
 import org.springframework.data.repository.sample.ProductRepository;
-import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link RepositoryConfigurationDelegate}.
  *
  * @author Oliver Gierke
- * @author Christoph Strobl
  * @soundtrack Richard Spaven - Tribute (Whole Other*)
  */
 @ExtendWith(MockitoExtension.class)
@@ -151,5 +139,4 @@ class RepositoryConfigurationDelegateUnitTests {
 			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AddressRepository.class),
 			bootstrapMode = BootstrapMode.DEFERRED)
 	static class DeferredConfig {}
-
 }

@@ -110,7 +110,7 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 		}
 
 		@Override
-		public Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
+		protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
 			return Collections.singleton(Primary.class);
 		}
 

@@ -170,7 +170,7 @@ class RepositoryBeanDefinitionBuilder {
 		fragmentsBuilder.addConstructorArgValue(fragmentBeanNames);
 
 		String fragmentsBeanName = BeanDefinitionReaderUtils
-				.uniqueBeanName(String.format("%s.%s.fragments", extension.getModuleName().toLowerCase(Locale.ROOT),
+				.uniqueBeanName(String.format("%s.%s.fragments", extension.getModulePrefix(),
 						ClassUtils.getShortName(configuration.getRepositoryInterface())), registry);
 		registry.registerBeanDefinition(fragmentsBeanName, fragmentsBuilder.getBeanDefinition());
 		return fragmentsBeanName;
