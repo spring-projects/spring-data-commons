@@ -137,85 +137,6 @@ class RepositoryConfigurationDelegateUnitTests {
 		Mockito.verify(startup).start("spring.data.repository.scanning");
 	}
 
-	@Test // GH-2634
-	void registersManagedTypesBeanIfNotPresent() {
-
-		when(extension.getModulePrefix()).thenReturn("data");
-
-		var environment = new StandardEnvironment();
-		var context = new GenericApplicationContext();
-
-		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
-				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
-				context.getDefaultListableBeanFactory(), null);
-
-		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
-
-		delegate.registerRepositoriesIn(context, extension);
-
-		assertThat(context.getDefaultListableBeanFactory().getBeanNamesForType(ManagedTypes.class))
-				.contains("data.managed-types");
-	}
-
-	@Test // GH-2634
-	void readsManagedTypesFromPackages() {
-
-		RepositoryConfiguration repoConfig = mock(RepositoryConfiguration.class);
-		ImplementationLookupConfiguration lookupConfig = mock(ImplementationLookupConfiguration.class);
-		when(repoConfig.getBasePackages()).thenReturn(Streamable.of(this.getClass().getPackageName()));
-		when(repoConfig.toLookupConfiguration(any())).thenReturn(lookupConfig);
-		when(lookupConfig.getImplementationBeanName()).thenReturn("don't look up!");
-		when(repoConfig.getRepositoryInterface()).thenReturn(TestConfig.class.getName());
-
-		when(extension.getModulePrefix()).thenReturn("data");
-		when(extension.getDefaultNamedQueryLocation()).thenReturn("here");
-		when(extension.getIdentifyingAnnotations()).thenReturn(Collections.singleton(MyIdentifyingAnnotation.class));
-		when(extension.getRepositoryConfigurations(any(), any(), anyBoolean()))
-				.thenReturn(Collections.singleton(repoConfig));
-
-		var environment = new StandardEnvironment();
-		var context = new GenericApplicationContext();
-
-		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
-				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
-				context.getDefaultListableBeanFactory(), null);
-
-		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
-
-		delegate.registerRepositoriesIn(context, extension);
-
-		assertThat(context.getDefaultListableBeanFactory().getBeanDefinition("data.managed-types")).satisfies(bd -> {
-
-			Object ctorArg = bd.getConstructorArgumentValues().getArgumentValue(0, Object.class).getValue();
-			assertThat(ctorArg).isInstanceOf(Supplier.class).satisfies(arg -> {
-				assertThat(((Supplier<Set<Class<?>>>) arg).get()).containsExactly(MyDomainType.class);
-			});
-		});
-	}
-
-	@Test // DATACMNS-2634
-	void skipsManagedTypesBeanIfAlreadyPresent() {
-
-		when(extension.getModulePrefix()).thenReturn("data");
-
-		var environment = new StandardEnvironment();
-		var context = new GenericApplicationContext();
-
-		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
-				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
-				context.getDefaultListableBeanFactory(), null);
-
-		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
-
-		context.getDefaultListableBeanFactory().registerBeanDefinition("data.managed-types",
-				BeanDefinitionBuilder.rootBeanDefinition(ManagedTypes.class).setFactoryMethod("woot").getBeanDefinition());
-		delegate.registerRepositoriesIn(context, extension);
-
-		assertThat(context.getDefaultListableBeanFactory().getBeanDefinition("data.managed-types")).satisfies(bd -> {
-			assertThat(bd.getFactoryMethodName()).isEqualTo("woot");
-		});
-	}
-
 	@EnableRepositories(basePackageClasses = ProductRepository.class)
 	static class TestConfig {}
 
@@ -231,13 +152,4 @@ class RepositoryConfigurationDelegateUnitTests {
 			bootstrapMode = BootstrapMode.DEFERRED)
 	static class DeferredConfig {}
 
-	@Retention(RetentionPolicy.RUNTIME)
-	private @interface MyIdentifyingAnnotation {
-
-	}
-
-	@MyIdentifyingAnnotation
-	static class MyDomainType {
-
-	}
 }
