@@ -17,11 +17,8 @@ package org.springframework.data.util;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -31,7 +28,6 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
@@ -49,10 +45,6 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 
 	private @Nullable ResourceLoader resourceLoader;
 	private @Nullable Environment environment;
-
-	private Consumer<ClassNotFoundException> classNotFoundAction = ex -> {
-		throw new IllegalStateException(ex);
-	};
 
 	/**
 	 * Creates a new {@link AnnotatedTypeScanner} for the given annotation types.
@@ -72,18 +64,9 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 	 */
 	@SafeVarargs
 	public AnnotatedTypeScanner(boolean considerInterfaces, Class<? extends Annotation>... annotationTypes) {
-		this(considerInterfaces, Arrays.asList(annotationTypes));
-	}
 
-	/**
-	 * @param considerInterfaces
-	 * @param annotationTypes
-	 * @since 3.0
-	 */
-	public AnnotatedTypeScanner(boolean considerInterfaces, Collection<Class<? extends Annotation>> annotationTypes) {
-
+		this.annotationTypess = Arrays.asList(annotationTypes);
 		this.considerInterfaces = considerInterfaces;
-		this.annotationTypess = annotationTypes;
 	}
 
 	@Override
@@ -96,15 +79,11 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 		this.environment = environment;
 	}
 
-	void setClassNotFoundAction(Consumer<ClassNotFoundException> classNotFoundAction) {
-		this.classNotFoundAction = classNotFoundAction;
-	}
-
 	public Set<Class<?>> findTypes(String... basePackages) {
 		return findTypes(Arrays.asList(basePackages));
 	}
 
-	Set<Class<?>> findTypes(Iterable<String> basePackages, Collection<TypeFilter> filters) {
+	public Set<Class<?>> findTypes(Iterable<String> basePackages) {
 
 		ClassPathScanningCandidateComponentProvider provider = new InterfaceAwareScanner(considerInterfaces);
 
@@ -116,7 +95,9 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 			provider.setEnvironment(environment);
 		}
 
-		filters.forEach(provider::addIncludeFilter);
+		for (Class<? extends Annotation> annotationType : annotationTypess) {
+			provider.addIncludeFilter(new AnnotationTypeFilter(annotationType, true, considerInterfaces));
+		}
 
 		Set<Class<?>> types = new HashSet<>();
 
@@ -137,16 +118,12 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 				try {
 					types.add(ClassUtils.forName(beanClassName, classLoader));
 				} catch (ClassNotFoundException o_O) {
-					classNotFoundAction.accept(o_O);
+					throw new IllegalStateException(o_O);
 				}
 			}
 		}
 
 		return types;
-	}
-
-	public Set<Class<?>> findTypes(Iterable<String> basePackages) {
-		return findTypes(basePackages, Streamable.of(annotationTypess).stream().map(annotation -> new AnnotationTypeFilter(annotation, true, considerInterfaces)).collect(Collectors.toSet()));
 	}
 
 	/**
