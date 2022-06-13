@@ -55,7 +55,7 @@ class ManagedTypesUnitTests {
 			}
 		});
 
-		ManagedTypes managedTypes = ManagedTypes.of(typesSupplier);
+		ManagedTypes managedTypes = ManagedTypes.fromSupplier(typesSupplier);
 
 		managedTypes.forEach(action); // 1st invocation
 		verify(action).accept(any());
@@ -73,7 +73,7 @@ class ManagedTypesUnitTests {
 
 	@Test // GH-2634
 	void toListContainsEntriesInOrder() {
-		assertThat(ManagedTypes.of(Arrays.asList(Object.class, List.class)).toList()).containsExactly(Object.class,
+		assertThat(ManagedTypes.fromIterable(Arrays.asList(Object.class, List.class)).toList()).containsExactly(Object.class,
 				List.class);
 	}
 }

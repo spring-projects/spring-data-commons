@@ -143,9 +143,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * Sets the {@link Set} of types to populate the context initially.
 	 *
 	 * @param initialEntitySet
+	 * @see #setManagedTypes(ManagedTypes)
+	 *
 	 */
 	public void setInitialEntitySet(Set<? extends Class<?>> initialEntitySet) {
-		setManagedTypes(ManagedTypes.of(initialEntitySet));
+		setManagedTypes(ManagedTypes.fromIterable(initialEntitySet));
 	}
 
 	/**

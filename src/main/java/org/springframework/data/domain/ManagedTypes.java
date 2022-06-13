@@ -41,10 +41,10 @@ public interface ManagedTypes {
 	 *
 	 * @return an empty {@link ManagedTypes} instance.
 	 * @see java.util.Collections#emptySet()
-	 * @see #of(Iterable)
+	 * @see #fromIterable(Iterable)
 	 */
 	static ManagedTypes empty() {
-		return of(Collections.emptySet());
+		return fromIterable(Collections.emptySet());
 	}
 
 	/**
@@ -56,10 +56,10 @@ public interface ManagedTypes {
 	 * @return new instance of {@link ManagedTypes} initialized the given, required {@link Iterable} of {@link Class
 	 *         types}.
 	 * @see java.lang.Iterable
-	 * @see #of(Stream)
-	 * @see #of(Supplier)
+	 * @see #fromStream(Stream)
+	 * @see #fromSupplier(Supplier)
 	 */
-	static ManagedTypes of(Iterable<? extends Class<?>> types) {
+	static ManagedTypes fromIterable(Iterable<? extends Class<?>> types) {
 		return types::forEach;
 	}
 
@@ -71,10 +71,10 @@ public interface ManagedTypes {
 	 *          {@literal null}.
 	 * @return new instance of {@link ManagedTypes} initialized the given, required {@link Stream} of {@link Class types}.
 	 * @see java.util.stream.Stream
-	 * @see #of(Iterable)
-	 * @see #of(Supplier)
+	 * @see #fromIterable(Iterable)
+	 * @see #fromSupplier(Supplier)
 	 */
-	static ManagedTypes of(Stream<? extends Class<?>> types) {
+	static ManagedTypes fromStream(Stream<? extends Class<?>> types) {
 		return types::forEach;
 	}
 
@@ -88,10 +88,10 @@ public interface ManagedTypes {
 	 *         {@link Iterable} of {@link Class types}.
 	 * @see java.util.function.Supplier
 	 * @see java.lang.Iterable
-	 * @see #of(Iterable)
-	 * @see #of(Stream)
+	 * @see #fromIterable(Iterable) 
+	 * @see #fromStream(Stream) 
 	 */
-	static ManagedTypes of(Supplier<Iterable<Class<?>>> dataProvider) {
+	static ManagedTypes fromSupplier(Supplier<Iterable<Class<?>>> dataProvider) {
 
 		return new ManagedTypes() {
 
