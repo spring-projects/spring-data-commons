@@ -274,8 +274,7 @@ public class TypeDiscovererUnitTests {
 		var field = ReflectionUtils.findField(GenericPerson.class, "value");
 		var discoverer = TypeInformation.of(ResolvableType.forField(field, TypeExtendingGenericPersonWithAddress.class));
 
-		assertThat(discoverer).isEqualTo(TypeInformation.of(Address.class));
-		assertThat(discoverer.hashCode()).isEqualTo(TypeInformation.of(Address.class).hashCode());
+		assertThat(discoverer.getType()).isEqualTo(Address.class);
 	}
 
 	@Test // #2511
@@ -333,6 +332,20 @@ public class TypeDiscovererUnitTests {
 		TypeInformation<?> property = TypeInformation.of(GeoResultsWrapper.class).getProperty("results");
 
 		assertThat(property.getComponentType().getType()).isEqualTo(Leaf.class);
+	}
+
+	@Test
+	void differentEqualsAndHashCodeForTypeDiscovererAndClassTypeInformation() {
+
+		ResolvableType type = ResolvableType.forClass(Object.class);
+
+		var discoverer = new TypeDiscoverer<>(type);
+		var classTypeInformation = new ClassTypeInformation<>(type);
+
+		assertThat(discoverer).isNotEqualTo(classTypeInformation);
+		assertThat(classTypeInformation).isNotEqualTo(type);
+
+		assertThat(discoverer.hashCode()).isNotEqualTo(classTypeInformation.hashCode());
 	}
 
 	class Person {

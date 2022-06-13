@@ -17,11 +17,13 @@ package org.springframework.data.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
@@ -61,9 +63,11 @@ public interface TypeInformation<S> {
 
 		Assert.notNull(type, "Type must not be null");
 
-		return type.hasGenerics() || (type.isArray() && type.getComponentType().hasGenerics()) //
-				? TypeDiscoverer.td(type)
-				: ClassTypeInformation.cti(type);
+		return type.hasGenerics()
+				|| (type.isArray() && type.getComponentType().hasGenerics()) //
+				|| (type.getType() instanceof TypeVariable)
+						? TypeDiscoverer.td(type)
+						: ClassTypeInformation.cti(type);
 	}
 
 	/**
@@ -103,7 +107,23 @@ public interface TypeInformation<S> {
 	 * @since 3.0
 	 */
 	public static TypeInformation<?> fromReturnTypeOf(Method method, @Nullable Class<?> type) {
-		return ClassTypeInformation.fromReturnTypeOf(method, type);
+
+		ResolvableType intermediate = type == null
+				? ResolvableType.forMethodReturnType(method)
+				: ResolvableType.forMethodReturnType(method, type);
+
+		return TypeInformation.of(intermediate);
+	}
+
+	/**
+	 * Returns a new {@link TypeInformation} for the given {@link MethodParameter}.
+	 *
+	 * @param parameter must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.0
+	 */
+	public static TypeInformation<?> fromMethodParameter(MethodParameter parameter) {
+		return TypeInformation.of(ResolvableType.forMethodParameter(parameter));
 	}
 
 	/**

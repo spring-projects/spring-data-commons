@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
@@ -48,14 +49,17 @@ class ParameterUnitTests {
 		assertThat(parameter.isDynamicProjectionParameter()).isTrue();
 	}
 
+	@Test
+	void classParameterWithSameTypeParameterAsReturnedOptionalIsDynamicProjectionParameter() throws Exception {
+
+		var parameter = new Parameter(getMethodParameter("dynamicProjectionWithOptional"));
+
+		assertThat(parameter.isDynamicProjectionParameter()).isTrue();
+	}
+
 	@NotNull
 	private MethodParameter getMethodParameter(String methodName) throws NoSuchMethodException {
-		return new MethodParameter( //
-				this.getClass().getDeclaredMethod( //
-						methodName, //
-						Class.class //
-				), //
-				0);
+		return new MethodParameter(this.getClass().getDeclaredMethod(methodName, Class.class), 0);
 	}
 
 	<T> List<T> dynamicProjectionWithList(Class<T> type) {
@@ -64,5 +68,9 @@ class ParameterUnitTests {
 
 	<T> Stream<T> dynamicProjectionWithStream(Class<T> type) {
 		return Stream.empty();
+	}
+
+	<T> Optional<T> dynamicProjectionWithOptional(Class<T> type) {
+		return Optional.empty();
 	}
 }

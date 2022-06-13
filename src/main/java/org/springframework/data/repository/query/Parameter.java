@@ -17,12 +17,12 @@ package org.springframework.data.repository.query;
 
 import static java.lang.String.*;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
@@ -214,15 +214,17 @@ public class Parameter {
 			return false;
 		}
 
-		ResolvableType returnType = ResolvableType.forMethodReturnType(parameter.getMethod());
+		Method method = parameter.getMethod();
 
-		if (TypeInformation.of(returnType).isCollectionLike()
-				|| org.springframework.util.ClassUtils.isAssignable(Stream.class, returnType.toClass())) {
-			returnType = returnType.getGeneric(0);
+		if (method == null) {
+			throw new IllegalArgumentException("Parameter is not associated with any method");
 		}
 
-		ResolvableType type = ResolvableType.forMethodParameter(parameter);
-		return returnType.getType().equals(type.getGeneric(0).getType());
+		TypeInformation<?> returnType = TypeInformation.fromReturnTypeOf(method);
+		TypeInformation<?> unwrapped = QueryExecutionConverters.unwrapWrapperTypes(returnType);
+		TypeInformation<?> reactiveUnwrapped = ReactiveWrapperConverters.unwrapWrapperTypes(unwrapped);
+
+		return reactiveUnwrapped.equals(TypeInformation.fromMethodParameter(parameter).getComponentType());
 	}
 
 	/**

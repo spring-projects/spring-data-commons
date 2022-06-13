@@ -34,7 +34,6 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentLruCache;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -197,7 +196,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	@Override
 	public ClassTypeInformation<?> getRawTypeInformation() {
-		return new ClassTypeInformation<>(ResolvableType.forRawClass(resolvableType.getRawClass()));
+		return new ClassTypeInformation<>(ResolvableType.forRawClass(resolvableType.toClass()));
 	}
 
 	@Nullable
@@ -323,7 +322,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return true;
 		}
 
-		if ((o == null) || !ClassUtils.isAssignable(getClass(), o.getClass())) {
+		if ((o == null) || !ObjectUtils.nullSafeEquals(getClass(), o.getClass())) {
 			return false;
 		}
 
@@ -346,7 +345,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	@Override
 	public int hashCode() {
-		return ObjectUtils.nullSafeHashCode(resolvableType.toClass());
+
+		int result = 31 * getClass().hashCode();
+		result += 31 * getType().hashCode();
+
+		return result;
 	}
 
 	@Override
