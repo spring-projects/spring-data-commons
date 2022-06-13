@@ -85,7 +85,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 
 		registrar.registerBeanDefinitions(metadata, registry);
-		verify(registry, atLeast(1)).registerBeanDefinition(eq("commons.repo-fragments#0"), any(BeanDefinition.class));
+		verify(registry, atLeast(1)).registerBeanDefinition(eq("commons.MyRepository.fragments#0"), any(BeanDefinition.class));
 	}
 
 	@Test // DATACMNS-1754

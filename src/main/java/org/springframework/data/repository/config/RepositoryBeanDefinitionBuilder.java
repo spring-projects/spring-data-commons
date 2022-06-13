@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.config;
 
+import static org.springframework.beans.factory.config.BeanDefinition.*;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -23,7 +25,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -38,6 +39,7 @@ import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.core.support.RepositoryFragmentsFactoryBean;
 import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Builder to create {@link BeanDefinitionBuilder} instance to eventually create Spring Data repository instances.
@@ -122,17 +124,7 @@ class RepositoryBeanDefinitionBuilder {
 			builder.addDependsOn(it);
 		});
 
-		BeanDefinitionBuilder fragmentsBuilder = BeanDefinitionBuilder
-				.rootBeanDefinition(RepositoryFragmentsFactoryBean.class);
-
-		List<String> fragmentBeanNames = registerRepositoryFragmentsImplementation(configuration) //
-				.map(RepositoryFragmentConfiguration::getFragmentBeanName) //
-				.collect(Collectors.toList());
-
-		fragmentsBuilder.addConstructorArgValue(fragmentBeanNames);
-
-		String fragmentsBeanName = BeanDefinitionReaderUtils.uniqueBeanName(extension.getModuleName().toLowerCase(Locale.ROOT) + ".repo-fragments", registry);
-		registry.registerBeanDefinition(fragmentsBeanName, fragmentsBuilder.getBeanDefinition());
+		String fragmentsBeanName = registerRepositoryFragments(configuration);
 		builder.addPropertyValue("repositoryFragments", new RuntimeBeanReference(fragmentsBeanName));
 
 		return builder;
@@ -164,6 +156,26 @@ class RepositoryBeanDefinitionBuilder {
 			return beanName;
 		});
 	}
+
+	private String registerRepositoryFragments(RepositoryConfiguration<?> configuration) {
+
+		BeanDefinitionBuilder fragmentsBuilder = BeanDefinitionBuilder
+				.rootBeanDefinition(RepositoryFragmentsFactoryBean.class) //
+				.setRole(ROLE_INFRASTRUCTURE);
+
+		List<String> fragmentBeanNames = registerRepositoryFragmentsImplementation(configuration) //
+				.map(RepositoryFragmentConfiguration::getFragmentBeanName) //
+				.collect(Collectors.toList());
+
+		fragmentsBuilder.addConstructorArgValue(fragmentBeanNames);
+
+		String fragmentsBeanName = BeanDefinitionReaderUtils
+				.uniqueBeanName(String.format("%s.%s.fragments", extension.getModuleName().toLowerCase(Locale.ROOT),
+						ClassUtils.getShortName(configuration.getRepositoryInterface())), registry);
+		registry.registerBeanDefinition(fragmentsBeanName, fragmentsBuilder.getBeanDefinition());
+		return fragmentsBeanName;
+	}
+
 
 	private Stream<RepositoryFragmentConfiguration> registerRepositoryFragmentsImplementation(
 			RepositoryConfiguration<?> configuration) {
