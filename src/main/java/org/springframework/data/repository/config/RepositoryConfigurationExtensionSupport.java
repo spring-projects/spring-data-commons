@@ -111,6 +111,17 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {}
 
 	/**
+	 * Return the annotations to scan domain types for when evaluating repository interfaces for store assignment. Modules
+	 * should return the annotations that identify a domain type as managed by the store explicitly.
+	 *
+	 * @return
+	 * @since 1.9
+	 */
+	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
+		return Collections.emptySet();
+	}
+
+	/**
 	 * Returns the types that indicate a store match when inspecting repositories for strict matches.
 	 *
 	 * @return

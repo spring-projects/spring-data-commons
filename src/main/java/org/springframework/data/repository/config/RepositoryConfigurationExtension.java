@@ -80,17 +80,6 @@ public interface RepositoryConfigurationExtension {
 	String getRepositoryFactoryBeanClassName();
 
 	/**
-	 * Return the annotations to scan domain types for when evaluating repository interfaces for store assignment. Modules
-	 * should return the annotations that identify a domain type as managed by the store explicitly.
-	 *
-	 * @return
-	 * @since 3.0
-	 */
-	default Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return Collections.emptySet();
-	}
-
-	/**
 	 * Callback to register additional bean definitions for a {@literal repositories} root node. This usually includes
 	 * beans you have to set up once independently of the number of repositories to be created. Will be called before any
 	 * repositories bean definitions have been registered.
