@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -59,7 +60,6 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.Optionals;
@@ -153,7 +153,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	/**
 	 * Sets the types to populate the context initially.
 	 *
-	 * @param managedTypes must not be {@literal null}. Use {@link ManagedTypes#empty()} instead;
+	 * @param managedTypes must not be {@literal null}. Use {@link ManagedTypes#empty()} instead.
 	 * @since 3.0
 	 */
 	public void setManagedTypes(ManagedTypes managedTypes) {

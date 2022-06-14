@@ -23,14 +23,14 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.springframework.data.util.Lazy;
+import org.springframework.util.Assert;
 
 /**
- * Types managed by a Spring Data implementation. Used to predefine a set of know entities that might need processing
- * during the Spring container, Spring Data Repository initialization phase.
+ * Types managed by a Spring Data implementation. Used to predefine a set of known entities that might need processing
+ * during the initialization phase.
  *
  * @author Christoph Strobl
  * @author John Blum
- * @see java.lang.FunctionalInterface
  * @since 3.0
  */
 @FunctionalInterface
@@ -60,6 +60,8 @@ public interface ManagedTypes {
 	 * @see #fromSupplier(Supplier)
 	 */
 	static ManagedTypes fromIterable(Iterable<? extends Class<?>> types) {
+
+		Assert.notNull(types, "Types must not be null");
 		return types::forEach;
 	}
 
@@ -75,6 +77,8 @@ public interface ManagedTypes {
 	 * @see #fromSupplier(Supplier)
 	 */
 	static ManagedTypes fromStream(Stream<? extends Class<?>> types) {
+
+		Assert.notNull(types, "Types must not be null");
 		return types::forEach;
 	}
 
@@ -88,10 +92,12 @@ public interface ManagedTypes {
 	 *         {@link Iterable} of {@link Class types}.
 	 * @see java.util.function.Supplier
 	 * @see java.lang.Iterable
-	 * @see #fromIterable(Iterable) 
-	 * @see #fromStream(Stream) 
+	 * @see #fromIterable(Iterable)
+	 * @see #fromStream(Stream)
 	 */
 	static ManagedTypes fromSupplier(Supplier<Iterable<Class<?>>> dataProvider) {
+
+		Assert.notNull(dataProvider, "Supplier must not be null");
 
 		return new ManagedTypes() {
 
