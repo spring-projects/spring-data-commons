@@ -15,15 +15,12 @@
  */
 package org.springframework.data.repository.config;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.StringUtils;
 
 /**
  * SPI to implement store specific extension to the repository bean definition registration process.
@@ -39,18 +36,7 @@ public interface RepositoryConfigurationExtension {
 	 *
 	 * @return
 	 */
-	default String getModuleName() {
-		return StringUtils.capitalize(getModulePrefix());
-	}
-
-	/**
-	 * Returns the prefix of the module to be used to create the default location for Spring Data named queries and module
-	 * specific bean definitions.
-	 *
-	 * @return must not be {@literal null}.
-	 * @since 3.0
-	 */
-	String getModulePrefix();
+	String getModuleName();
 
 	/**
 	 * Returns all {@link RepositoryConfiguration}s obtained through the given {@link RepositoryConfigurationSource}.
