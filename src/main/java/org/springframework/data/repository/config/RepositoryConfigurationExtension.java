@@ -48,7 +48,7 @@ public interface RepositoryConfigurationExtension {
 	/**
 	 * Returns the descriptive name of the module.
 	 *
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
 	String getModuleName();
 
@@ -60,7 +60,7 @@ public interface RepositoryConfigurationExtension {
 	 * @param strictMatchesOnly whether to return strict repository matches only. Handing in {@literal true} will cause
 	 *          the repository interfaces and domain types handled to be checked whether they are managed by the current
 	 *          store.
-	 * @return
+	 * @return will never be {@literal null}.
 	 * @since 1.9
 	 */
 	<T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
@@ -69,14 +69,14 @@ public interface RepositoryConfigurationExtension {
 	/**
 	 * Returns the default location of the Spring Data named queries.
 	 *
-	 * @return must not be {@literal null} or empty.
+	 * @return will never be {@literal null}.
 	 */
 	String getDefaultNamedQueryLocation();
 
 	/**
 	 * Returns the name of the repository factory class to be used.
 	 *
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
 	String getRepositoryFactoryBeanClassName();
 

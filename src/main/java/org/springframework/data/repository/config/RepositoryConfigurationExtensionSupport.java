@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -54,8 +53,8 @@ import org.springframework.util.StringUtils;
  */
 public abstract class RepositoryConfigurationExtensionSupport implements RepositoryConfigurationExtension {
 
- 	private static final Log logger = LogFactory.getLog(RepositoryConfigurationExtensionSupport.class);
- 	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s";
+	private static final Log logger = LogFactory.getLog(RepositoryConfigurationExtensionSupport.class);
+	private static final String CLASS_LOADING_ERROR = "%s - Could not load type %s using class loader %s";
 	private static final String MULTI_STORE_DROPPED = "Spring Data %s - Could not safely identify store assignment for repository candidate %s; If you want this repository to be a %s repository,";
 
 	private boolean noMultiStoreSupport = false;
