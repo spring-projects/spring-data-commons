@@ -16,6 +16,7 @@
 package org.springframework.data.repository.config;
 
 import java.util.Collection;
+import java.util.Locale;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -30,6 +31,19 @@ import org.springframework.core.io.ResourceLoader;
  * @author Christoph Strobl
  */
 public interface RepositoryConfigurationExtension {
+
+	/**
+	 * A {@link String} uniquely identifying the module within all Spring Data modules. Must not contain any spaces.
+	 *
+	 * @return will never be {@literal null}.
+	 * @since 3.0
+	 */
+	default String getModuleIdentifier() {
+
+		return getModuleName()
+				.toLowerCase(Locale.ENGLISH)
+				.replace(' ', '-');
+	}
 
 	/**
 	 * Returns the descriptive name of the module.

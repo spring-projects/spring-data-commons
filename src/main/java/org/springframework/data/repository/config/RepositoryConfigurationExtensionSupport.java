@@ -103,7 +103,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	public String getDefaultNamedQueryLocation() {
-		return String.format("classpath*:META-INF/%s-named-queries.properties", getModulePrefix());
+		return String.format("classpath*:META-INF/%s-named-queries.properties", getModuleIdentifier());
 	}
 
 	public void registerBeansForRoot(BeanDefinitionRegistry registry,
@@ -113,7 +113,11 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * Returns the prefix of the module to be used to create the default location for Spring Data named queries.
 	 *
 	 * @return must not be {@literal null}.
+	 * @deprecated since 3.0, refer to {@link #getModuleIdentifier()} instead and implement either
+	 *             {@link #getModuleName()} directly or both methods if the default translation from name to identifier as
+	 *             defined in {@link RepositoryConfigurationExtension#getModuleIdentifier()} doesn't suit you.
 	 */
+	@Deprecated
 	protected abstract String getModulePrefix();
 
 	public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {}
