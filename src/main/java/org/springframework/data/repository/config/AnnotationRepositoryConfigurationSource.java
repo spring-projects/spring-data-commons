@@ -16,30 +16,22 @@
 package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
-import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.TypeFilterUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.core.type.filter.AspectJTypeFilter;
-import org.springframework.core.type.filter.AssignableTypeFilter;
-import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.data.util.Streamable;
@@ -58,6 +50,7 @@ import org.springframework.util.StringUtils;
  * @author Jens Schauder
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Florian Cramer
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -75,6 +68,8 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private final AnnotationMetadata enableAnnotationMetadata;
 	private final AnnotationAttributes attributes;
 	private final ResourceLoader resourceLoader;
+	private final Environment environment;
+	private final BeanDefinitionRegistry registry;
 	private final boolean hasExplicitFilters;
 
 	/**
@@ -126,6 +121,8 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		this.enableAnnotationMetadata = AnnotationMetadata.introspect(annotation);
 		this.configMetadata = metadata;
 		this.resourceLoader = resourceLoader;
+		this.environment = environment;
+		this.registry = registry;
 		this.hasExplicitFilters = hasExplicitFilters(attributes);
 	}
 
@@ -337,7 +334,9 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);
 
-		return Streamable.of(() -> Arrays.stream(filters).flatMap(it -> typeFiltersFor(it).stream()));
+		return Streamable.of(() -> Arrays.stream(filters) //
+				.flatMap(it -> TypeFilterUtils.createTypeFiltersFor(it, this.environment, this.resourceLoader, this.registry)
+						.stream()));
 	}
 
 	/**
@@ -352,71 +351,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		String attribute = attributes.getString(attributeName);
 
 		return StringUtils.hasText(attribute) ? Optional.of(attribute) : Optional.empty();
-	}
-
-	/**
-	 * Copy of {@code ComponentScanAnnotationParser#typeFiltersFor}.
-	 *
-	 * @param filterAttributes
-	 * @return
-	 */
-	private List<TypeFilter> typeFiltersFor(AnnotationAttributes filterAttributes) {
-
-		List<TypeFilter> typeFilters = new ArrayList<>();
-		FilterType filterType = filterAttributes.getEnum("type");
-
-		for (Class<?> filterClass : filterAttributes.getClassArray("value")) {
-			switch (filterType) {
-				case ANNOTATION:
-					Assert.isAssignable(Annotation.class, filterClass,
-							"An error occured when processing a @ComponentScan " + "ANNOTATION type filter: ");
-					@SuppressWarnings("unchecked")
-					Class<Annotation> annoClass = (Class<Annotation>) filterClass;
-					typeFilters.add(new AnnotationTypeFilter(annoClass));
-					break;
-				case ASSIGNABLE_TYPE:
-					typeFilters.add(new AssignableTypeFilter(filterClass));
-					break;
-				case CUSTOM:
-					Assert.isAssignable(TypeFilter.class, filterClass,
-							"An error occured when processing a @ComponentScan " + "CUSTOM type filter: ");
-					typeFilters.add(BeanUtils.instantiateClass(filterClass, TypeFilter.class));
-					break;
-				default:
-					throw new IllegalArgumentException("Unknown filter type " + filterType);
-			}
-		}
-
-		for (String expression : getPatterns(filterAttributes)) {
-
-			String rawName = filterType.toString();
-
-			if ("REGEX".equals(rawName)) {
-				typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(expression)));
-			} else if ("ASPECTJ".equals(rawName)) {
-				typeFilters.add(new AspectJTypeFilter(expression, this.resourceLoader.getClassLoader()));
-			} else {
-				throw new IllegalArgumentException("Unknown filter type " + filterType);
-			}
-		}
-
-		return typeFilters;
-	}
-
-	/**
-	 * Safely reads the {@code pattern} attribute from the given {@link AnnotationAttributes} and returns an empty list if
-	 * the attribute is not present.
-	 *
-	 * @param filterAttributes must not be {@literal null}.
-	 * @return
-	 */
-	private String[] getPatterns(AnnotationAttributes filterAttributes) {
-
-		try {
-			return filterAttributes.getStringArray("pattern");
-		} catch (IllegalArgumentException o_O) {
-			return new String[0];
-		}
 	}
 
 	/**
