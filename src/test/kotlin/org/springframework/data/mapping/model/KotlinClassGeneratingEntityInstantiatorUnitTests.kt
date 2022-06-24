@@ -46,7 +46,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "White")
 		every { entity.instanceCreatorMetadata } returns constructor
-		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.type } returns constructor!!.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
 		val instance: Contact =
@@ -74,7 +74,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		)
 
 		every { entity.instanceCreatorMetadata } returns constructor
-		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.type } returns constructor!!.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
 		val instance: ContactWithDefaulting = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
@@ -98,7 +98,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		every { provider.getParameterValue<Boolean>(any()) } returns null
 		every { entity.instanceCreatorMetadata } returns constructor
-		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.type } returns constructor!!.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
 		assertThatThrownBy {
@@ -108,7 +108,8 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 			)
 		} //
 			.isInstanceOf(MappingInstantiationException::class.java) //
-			.hasMessageContaining("fun <init>(kotlin.Boolean)") //
+			.hasMessageContaining("init") //
+			.hasMessageContaining("kotlin.Boolean") //
 			.hasCauseInstanceOf(IllegalArgumentException::class.java)
 	}
 
@@ -131,7 +132,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		every { provider.getParameterValue<Char>(any()) } returns null
 		every { provider.getParameterValue<Boolean>(any()) } returns null
 		every { entity.instanceCreatorMetadata } returns constructor
-		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.type } returns constructor!!.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
 		val instance: WithPrimitiveDefaulting = KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
@@ -157,7 +158,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		every { provider.getParameterValue<String>(any()) } returns "Walter"
 		every { entity.instanceCreatorMetadata } returns constructor
-		every { entity.type } returns constructor.constructor.declaringClass
+		every { entity.type } returns constructor!!.constructor.declaringClass
 		every { entity.typeInformation } returns mockk()
 
 		val instance: CustomUser =

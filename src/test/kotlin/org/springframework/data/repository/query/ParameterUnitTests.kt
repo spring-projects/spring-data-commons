@@ -31,7 +31,8 @@ class ParameterUnitTests {
 	@Test // DATACMNS-1508
 	fun `should consider Continuation a special parameter`() {
 
-		val methodParameter = MethodParameter(MyCoroutineRepository::hello.javaMethod, 0)
+		val methodParameter =
+			MethodParameter(MyCoroutineRepository::hello.javaMethod!!, 0)
 		methodParameter.initParameterNameDiscovery(DefaultParameterNameDiscoverer())
 		val parameter = Parameter(methodParameter)
 
