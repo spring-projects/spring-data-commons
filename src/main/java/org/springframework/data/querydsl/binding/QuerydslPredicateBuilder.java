@@ -175,30 +175,29 @@ public class QuerydslPredicateBuilder {
 	 */
 	private Collection<Object> convertToPropertyPathSpecificType(List<?> source, PathInformation path) {
 
-		Class<?> targetType = path.getLeafType();
-
 		if (source.isEmpty() || isSingleElementCollectionWithEmptyItem(source)) {
 			return Collections.emptyList();
 		}
 
+		TypeDescriptor targetType = getTargetTypeDescriptor(path);
 		Collection<Object> target = new ArrayList<>(source.size());
 
 		for (Object value : source) {
-			target.add(getValue(path, targetType, value));
+			target.add(getValue(targetType, value));
 		}
 
 		return target;
 	}
 
 	@Nullable
-	private Object getValue(PathInformation path, Class<?> targetType, Object value) {
+	private Object getValue(TypeDescriptor targetType, Object value) {
 
-		if (ClassUtils.isAssignableValue(targetType, value)) {
+		if (ClassUtils.isAssignableValue(targetType.getType(), value)) {
 			return value;
 		}
 
-		if (conversionService.canConvert(value.getClass(), targetType)) {
-			return conversionService.convert(value, TypeDescriptor.forObject(value), getTargetTypeDescriptor(path));
+		if (conversionService.canConvert(value.getClass(), targetType.getType())) {
+			return conversionService.convert(value, TypeDescriptor.forObject(value), targetType);
 		}
 
 		return value;
