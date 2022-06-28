@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assumptions.*;
 import static org.springframework.test.util.ReflectionTestUtils.*;
 
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.joda.time.DateTime;
@@ -196,6 +197,18 @@ class QuerydslPredicateBuilderUnitTests {
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
 		assertThat(predicate).isEqualTo(QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate()));
+	}
+
+	@Test
+	void resolvesCommaSeparatedArgumentToListCorrectly() {
+
+		values.add("nickNames", "Walt,Heisenberg");
+
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+
+		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(0);
+
+		assertThat(constant.getConstant()).isEqualTo(Arrays.asList("Walt", "Heisenberg"));
 	}
 
 	@Test // DATACMNS-883
