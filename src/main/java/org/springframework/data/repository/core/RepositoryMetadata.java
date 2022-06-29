@@ -129,10 +129,8 @@ public interface RepositoryMetadata {
 	boolean isReactiveRepository();
 
 	/**
-	 *
 	 * @return
 	 * @since 3.0
-	 *
 	 */
 	Set<RepositoryFragment<?>> getFragments();
 }

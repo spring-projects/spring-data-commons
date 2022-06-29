@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
@@ -27,7 +28,6 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.ManagedTypes;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -38,8 +38,6 @@ import org.springframework.util.StringUtils;
  *
  * @author Christoph Strobl
  * @author John Blum
- * @see org.springframework.beans.factory.BeanFactoryAware
- * @see org.springframework.beans.factory.aot.BeanRegistrationAotProcessor
  * @since 3.0
  */
 public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistrationAotProcessor {
@@ -48,7 +46,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	@Nullable private String moduleIdentifier;
 
 	@Override
-	public BeanRegistrationAotContribution processAheadOfTime(@NonNull RegisteredBean registeredBean) {
+	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
 
 		if (!isMatch(registeredBean.getBeanClass(), registeredBean.getBeanName())) {
 			return null;

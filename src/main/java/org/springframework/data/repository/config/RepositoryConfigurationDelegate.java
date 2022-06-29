@@ -21,13 +21,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.aot.AotDetector;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -48,7 +46,6 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
-import org.springframework.data.util.TypeScanner;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -71,8 +68,7 @@ public class RepositoryConfigurationDelegate {
 	private static final String REPOSITORY_REGISTRATION = "Spring Data %s - Registering repository: %s - Interface: %s - Factory: %s";
 	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode";
 	private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = "Non-default AutowireCandidateResolver (%s) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working";
-
-	static final String FACTORY_BEAN_OBJECT_TYPE = FactoryBean.OBJECT_TYPE_ATTRIBUTE; // "factoryBeanObjectType";
+	private static final String FACTORY_BEAN_OBJECT_TYPE = FactoryBean.OBJECT_TYPE_ATTRIBUTE;
 
 	private static final Log logger = LogFactory.getLog(RepositoryConfigurationDelegate.class);
 
@@ -169,7 +165,7 @@ public class RepositoryConfigurationDelegate {
 		List<BeanComponentDefinition> definitions = new ArrayList<>();
 
 		Map<String, RepositoryConfiguration<?>> configurationsByRepositoryName = new HashMap<>(configurations.size());
-		Map<String, RepositoryMetadata<?>> metadataByRepositoryBeanName = new HashMap<>(configurations.size());
+		Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName = new HashMap<>(configurations.size());
 
 		for (RepositoryConfiguration<? extends RepositoryConfigurationSource> configuration : configurations) {
 
@@ -223,7 +219,7 @@ public class RepositoryConfigurationDelegate {
 	}
 
 	private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
-			Map<String, RepositoryMetadata<?>> metadataByRepositoryBeanName) {
+			Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
 
 		// module-specific repository aot processor
 		String repositoryAotProcessorBeanName = String.format("data-%s.repository-aot-processor" /* might be duplicate */,

@@ -35,24 +35,21 @@ import org.springframework.data.util.Lazy;
  */
 class DefaultAotRepositoryContext implements AotRepositoryContext {
 
-	private AotContext aotContext;
-
+	private final AotContext aotContext;
 	private final Lazy<Set<MergedAnnotation<Annotation>>> resolvedAnnotations = Lazy.of(this::discoverAnnotations);
 	private final Lazy<Set<Class<?>>> managedTypes = Lazy.of(this::discoverTypes);
 
 	private RepositoryInformation repositoryInformation;
-
 	private Set<String> basePackages;
 	private Set<Class<? extends Annotation>> identifyingAnnotations;
-
 	private String beanName;
+
+	public DefaultAotRepositoryContext(AotContext aotContext) {
+		this.aotContext = aotContext;
+	}
 
 	public AotContext getAotContext() {
 		return aotContext;
-	}
-
-	public void setAotContext(AotContext aotContext) {
-		this.aotContext = aotContext;
 	}
 
 	@Override
@@ -106,6 +103,16 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 		return managedTypes.get();
 	}
 
+	@Override
+	public TypeIntrospector introspectType(String typeName) {
+		return aotContext.introspectType(typeName);
+	}
+
+	@Override
+	public IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
+		return aotContext.introspectBeanDefinition(beanName);
+	}
+
 	protected Set<MergedAnnotation<Annotation>> discoverAnnotations() {
 
 		Set<MergedAnnotation<Annotation>> annotations = getResolvedTypes().stream()
@@ -127,7 +134,8 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 
 		if (!getIdentifyingAnnotations().isEmpty()) {
 
-			Set<Class<?>> classes = aotContext.getTypeScanner().scanPackages(getBasePackages()).forTypesAnnotatedWith(getIdentifyingAnnotations()).collectAsSet();
+			Set<Class<?>> classes = aotContext.getTypeScanner().scanPackages(getBasePackages())
+					.forTypesAnnotatedWith(getIdentifyingAnnotations()).collectAsSet();
 			types.addAll(TypeCollector.inspect(classes).list());
 		}
 

@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.DefaultGenerationContext;
+import org.springframework.aot.generate.GeneratedClasses;
 import org.springframework.aot.generate.InMemoryGeneratedFiles;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsPredicates;
@@ -72,7 +73,8 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
 				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
 
-		DefaultGenerationContext generationContext = new DefaultGenerationContext(new ClassNameGenerator(),
+		DefaultGenerationContext generationContext = new DefaultGenerationContext(
+				new GeneratedClasses(new ClassNameGenerator(Object.class)),
 				new InMemoryGeneratedFiles(), new RuntimeHints());
 
 		contribution.applyTo(generationContext, null);

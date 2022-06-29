@@ -25,8 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryInformationSupport;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -102,13 +100,7 @@ class DefaultRepositoryInformation extends RepositoryInformationSupport implemen
 		return baseComposition.getMethod(method) != null;
 	}
 
-	/**
-	 *
-	 * @return
-	 * @since 3.0
-	 *
-	 */
-	@Nullable
+	@Override
 	public Set<RepositoryFragment<?>> getFragments() {
 		return composition.getFragments().toSet();
 	}

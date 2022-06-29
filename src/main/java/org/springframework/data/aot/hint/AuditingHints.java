@@ -26,8 +26,13 @@ import org.springframework.data.domain.ReactiveAuditorAware;
 import org.springframework.lang.Nullable;
 
 /**
+ * Runtime hint registrars for Spring Data modules that provide auditing functionality.
+ * <p>
+ * Mainly for internal use within the framework.
+ *
  * @author Christoph Strobl
  * @since 3.0
+ * @see RuntimeHintsRegistrar
  */
 public class AuditingHints {
 

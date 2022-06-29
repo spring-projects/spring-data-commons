@@ -35,10 +35,9 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.data.repository.config.RepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
-import org.springframework.data.repository.config.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -46,24 +45,22 @@ import org.springframework.util.StringUtils;
 /**
  * {@link BeanRegistrationAotProcessor} responsible processing and providing AOT configuration for repositories.
  * <p>
- * Processes {@link RepositoryFactoryBeanSupport repository factory beans} to provide generic type information to
- * the AOT tooling to allow deriving target type from the {@link RootBeanDefinition bean definition}. If generic types
- * do not match due to customization of the factory bean by the user, at least the target repository type is provided
- * via the {@link FactoryBean#OBJECT_TYPE_ATTRIBUTE}.
+ * Processes {@link RepositoryFactoryBeanSupport repository factory beans} to provide generic type information to the
+ * AOT tooling to allow deriving target type from the {@link RootBeanDefinition bean definition}. If generic types do
+ * not match due to customization of the factory bean by the user, at least the target repository type is provided via
+ * the {@link FactoryBean#OBJECT_TYPE_ATTRIBUTE}.
  * </p>
  * <p>
- * With {@link RepositoryRegistrationAotProcessor#contribute(AotRepositoryContext, GenerationContext)}, stores
- * can provide custom logic for contributing additional (eg. reflection) configuration. By default, reflection
- * configuration will be added for types reachable from the repository declaration and query methods as well as
- * all used {@link Annotation annotations} from the {@literal org.springframework.data} namespace.
+ * With {@link RepositoryRegistrationAotProcessor#contribute(AotRepositoryContext, GenerationContext)}, stores can
+ * provide custom logic for contributing additional (eg. reflection) configuration. By default, reflection configuration
+ * will be added for types reachable from the repository declaration and query methods as well as all used
+ * {@link Annotation annotations} from the {@literal org.springframework.data} namespace.
  * </p>
- * The processor is typically configured via {@link RepositoryConfigurationExtension#getRepositoryAotProcessor()}
- * and gets added by the {@link org.springframework.data.repository.config.RepositoryConfigurationDelegate}.
+ * The processor is typically configured via {@link RepositoryConfigurationExtension#getRepositoryAotProcessor()} and
+ * gets added by the {@link org.springframework.data.repository.config.RepositoryConfigurationDelegate}.
  *
  * @author Christoph Strobl
  * @author John Blum
- * @see org.springframework.beans.factory.BeanFactoryAware
- * @see org.springframework.beans.factory.aot.BeanRegistrationAotProcessor
  * @since 3.0.0
  */
 @SuppressWarnings("unused")
@@ -73,45 +70,41 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 
 	private final Log logger = LogFactory.getLog(getClass());
 
-	private Map<String, RepositoryMetadata<?>> configMap;
+	private Map<String, RepositoryConfiguration<?>> configMap;
 
 	@Nullable
 	@Override
-	public BeanRegistrationAotContribution processAheadOfTime(@NonNull RegisteredBean bean) {
+	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean bean) {
 
-		return isRepositoryBean(bean)
-				? newRepositoryRegistrationAotContribution(bean)
-				: null;
+		return isRepositoryBean(bean) ? newRepositoryRegistrationAotContribution(bean) : null;
 	}
 
 	protected void contribute(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
 
 		repositoryContext.getResolvedTypes().stream()
-				.filter(it -> !RepositoryRegistrationAotContribution
-						.isJavaOrPrimitiveType(it))
+				.filter(it -> !RepositoryRegistrationAotContribution.isJavaOrPrimitiveType(it))
 				.forEach(it -> RepositoryRegistrationAotContribution.contributeType(it, generationContext));
 
 		repositoryContext.getResolvedAnnotations().stream()
-				.filter(RepositoryRegistrationAotContribution::isSpringDataManagedAnnotation)
-				.map(MergedAnnotation::getType)
+				.filter(RepositoryRegistrationAotContribution::isSpringDataManagedAnnotation).map(MergedAnnotation::getType)
 				.forEach(it -> RepositoryRegistrationAotContribution.contributeType(it, generationContext));
 	}
 
 	private boolean isRepositoryBean(RegisteredBean bean) {
-		return bean != null && getConfigMap().containsKey(bean.getBeanName());
+		return getConfigMap().containsKey(bean.getBeanName());
 	}
 
 	protected RepositoryRegistrationAotContribution newRepositoryRegistrationAotContribution(
-			@NonNull RegisteredBean repositoryBean) {
+			RegisteredBean repositoryBean) {
 
-		RepositoryRegistrationAotContribution contribution =
-				RepositoryRegistrationAotContribution.fromProcessor(this).forBean(repositoryBean);
+		RepositoryRegistrationAotContribution contribution = RepositoryRegistrationAotContribution.fromProcessor(this)
+				.forBean(repositoryBean);
 
 		return contribution.withModuleContribution(this::contribute);
 	}
 
 	@Override
-	public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException {
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 
 		Assert.isInstanceOf(ConfigurableListableBeanFactory.class, beanFactory,
 				() -> "AutowiredAnnotationBeanPostProcessor requires a ConfigurableListableBeanFactory: " + beanFactory);
@@ -119,44 +112,40 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 		this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
 	}
 
-	@NonNull
 	protected ConfigurableListableBeanFactory getBeanFactory() {
 		return this.beanFactory;
 	}
 
-	public void setConfigMap(@Nullable Map<String, RepositoryMetadata<?>> configMap) {
+	public void setConfigMap(@Nullable Map<String, RepositoryConfiguration<?>> configMap) {
 		this.configMap = configMap;
 	}
 
-	@NonNull
-	public Map<String, RepositoryMetadata<?>> getConfigMap() {
+	public Map<String, RepositoryConfiguration<?>> getConfigMap() {
 		return nullSafeMap(this.configMap);
 	}
 
-	@NonNull
 	private <K, V> Map<K, V> nullSafeMap(@Nullable Map<K, V> map) {
 		return map != null ? map : Collections.emptyMap();
 	}
 
 	@Nullable
-	protected RepositoryMetadata<?> getRepositoryMetadata(@NonNull RegisteredBean bean) {
+	protected RepositoryConfiguration<?> getRepositoryMetadata(RegisteredBean bean) {
 		return getConfigMap().get(nullSafeBeanName(bean));
 	}
 
-	private String nullSafeBeanName(@Nullable RegisteredBean bean) {
+	private String nullSafeBeanName(RegisteredBean bean) {
 
-		String beanName = bean != null ? bean.getBeanName() : null;
+		String beanName = bean.getBeanName();
 
 		return StringUtils.hasText(beanName) ? beanName : "";
 	}
 
-	@NonNull
 	protected Log getLogger() {
 		return this.logger;
 	}
 
-	private void logAt(Predicate<Log> logLevelPredicate, BiConsumer<Log, String> logOperation,
-			String message, Object... arguments) {
+	private void logAt(Predicate<Log> logLevelPredicate, BiConsumer<Log, String> logOperation, String message,
+			Object... arguments) {
 
 		Log logger = getLogger();
 

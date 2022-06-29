@@ -15,8 +15,8 @@
  */
 package org.springframework.data.aot;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -27,36 +27,41 @@ import org.assertj.core.api.AbstractAssert;
 import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.DefaultGenerationContext;
 import org.springframework.aot.generate.InMemoryGeneratedFiles;
-import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
-import org.springframework.lang.NonNull;
 
 /**
  * AssertJ {@link AbstractAssert Assertion} for {@link RepositoryRegistrationAotContribution}.
  *
  * @author Christoph Strobl
  * @author John Blum
- * @see org.mockito.Mockito
- * @see org.assertj.core.api.AbstractAssert
- * @see org.springframework.data.aot.RepositoryRegistrationAotContribution
- * @since 3.0.0
+ * @since 3.0
  */
 public class RepositoryRegistrationAotContributionAssert
-		extends AbstractAssert<RepositoryRegistrationAotContributionAssert, RepositoryRegistrationAotContribution>  {
+		extends AbstractAssert<RepositoryRegistrationAotContributionAssert, RepositoryRegistrationAotContribution> {
 
-	@NonNull
 	public static RepositoryRegistrationAotContributionAssert assertThatContribution(
-			@NonNull RepositoryRegistrationAotContribution actual) {
+			RepositoryRegistrationAotContribution actual) {
 
 		return new RepositoryRegistrationAotContributionAssert(actual);
 	}
 
-	public RepositoryRegistrationAotContributionAssert(@NonNull RepositoryRegistrationAotContribution actual) {
+	/**
+	 * Create the assertion object.
+	 *
+	 * @param actual
+	 */
+	public RepositoryRegistrationAotContributionAssert(RepositoryRegistrationAotContribution actual) {
 		super(actual, RepositoryRegistrationAotContributionAssert.class);
 	}
 
+	/**
+	 * Verifies that the actual repository type is equal to the given one.
+	 *
+	 * @param expected
+	 * @return {@code this} assertion object.
+	 */
 	public RepositoryRegistrationAotContributionAssert targetRepositoryTypeIs(Class<?> expected) {
 
 		assertThat(getRepositoryInformation().getRepositoryInterface()).isEqualTo(expected);
@@ -64,6 +69,11 @@ public class RepositoryRegistrationAotContributionAssert
 		return this.myself;
 	}
 
+	/**
+	 * Verifies that the actual repository has no repository fragments.
+	 *
+	 * @return {@code this} assertion object.
+	 */
 	public RepositoryRegistrationAotContributionAssert hasNoFragments() {
 
 		assertThat(getRepositoryInformation().getFragments()).isEmpty();
@@ -71,6 +81,11 @@ public class RepositoryRegistrationAotContributionAssert
 		return this;
 	}
 
+	/**
+	 * Verifies that the actual repository has repository fragments.
+	 *
+	 * @return {@code this} assertion object.
+	 */
 	public RepositoryRegistrationAotContributionAssert hasFragments() {
 
 		assertThat(getRepositoryInformation().getFragments()).isNotEmpty();
@@ -78,10 +93,14 @@ public class RepositoryRegistrationAotContributionAssert
 		return this;
 	}
 
+	/**
+	 * Verifies that the actual repository fragments satisfy the given {@link Consumer}.
+	 *
+	 * @return {@code this} assertion object.
+	 */
 	public RepositoryRegistrationAotContributionAssert verifyFragments(Consumer<Set<RepositoryFragment<?>>> consumer) {
 
-		assertThat(getRepositoryInformation().getFragments())
-				.satisfies(it -> consumer.accept(new LinkedHashSet<>(it)));
+		assertThat(getRepositoryInformation().getFragments()).satisfies(it -> consumer.accept(new LinkedHashSet<>(it)));
 
 		return this;
 	}
@@ -91,8 +110,8 @@ public class RepositoryRegistrationAotContributionAssert
 
 		BeanRegistrationCode mockBeanRegistrationCode = mock(BeanRegistrationCode.class);
 
-		DefaultGenerationContext generationContext =
-				new DefaultGenerationContext(new ClassNameGenerator(), new InMemoryGeneratedFiles(), new RuntimeHints());
+		DefaultGenerationContext generationContext = new DefaultGenerationContext(new ClassNameGenerator(Object.class),
+				new InMemoryGeneratedFiles());
 
 		this.actual.applyTo(generationContext, mockBeanRegistrationCode);
 
@@ -103,13 +122,10 @@ public class RepositoryRegistrationAotContributionAssert
 
 	private RepositoryInformation getRepositoryInformation() {
 
-		assertThat(this.actual)
-				.describedAs("No repository interface found on null bean contribution")
-				.isNotNull();
+		assertThat(this.actual).describedAs("No repository interface found on null bean contribution").isNotNull();
 
 		assertThat(this.actual.getRepositoryInformation())
-				.describedAs("No repository interface found on null repository information")
-				.isNotNull();
+				.describedAs("No repository interface found on null repository information").isNotNull();
 
 		return this.actual.getRepositoryInformation();
 	}

@@ -25,14 +25,11 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryInformationSupport;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFragment;
-import org.springframework.lang.NonNull;
 
 /**
  * {@link RepositoryInformation} based on {@link RepositoryMetadata} collected at build time.
  *
  * @author Christoph Strobl
- * @see org.springframework.data.repository.core.RepositoryInformation
- * @see org.springframework.data.repository.core.RepositoryMetadata
  * @since 3.0
  */
 class AotRepositoryInformation extends RepositoryInformationSupport implements RepositoryInformation {
@@ -47,20 +44,19 @@ class AotRepositoryInformation extends RepositoryInformationSupport implements R
 	}
 
 	@Override
-	public boolean isCustomMethod(@NonNull Method method) {
+	public boolean isCustomMethod(Method method) {
 		// TODO:
 		return false;
 	}
 
 	@Override
-	public boolean isBaseClassMethod(@NonNull Method method) {
+	public boolean isBaseClassMethod(Method method) {
 		// TODO
 		return false;
 	}
 
-	@NonNull
 	@Override
-	public Method getTargetClassMethod(@NonNull Method method) {
+	public Method getTargetClassMethod(Method method) {
 		// TODO
 		return method;
 	}
@@ -69,7 +65,6 @@ class AotRepositoryInformation extends RepositoryInformationSupport implements R
 	 * @return configured repository fragments.
 	 * @since 3.0
 	 */
-	@NonNull
 	public Set<RepositoryFragment<?>> getFragments() {
 		return new LinkedHashSet<>(fragments.get());
 	}

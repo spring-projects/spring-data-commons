@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
@@ -47,12 +45,11 @@ import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.config.RepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
-import org.springframework.data.repository.config.RepositoryMetadata;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -62,29 +59,24 @@ import org.springframework.util.ClassUtils;
  * {@link BeanRegistrationAotContribution} used to contribute repository registrations.
  *
  * @author John Blum
- * @see org.springframework.aot.generate.GenerationContext
- * @see org.springframework.beans.factory.aot.BeanRegistrationAotContribution
- * @see org.springframework.beans.factory.support.RegisteredBean
- * @see org.springframework.data.aot.RepositoryRegistrationAotProcessor
- * @since 3.0.0
+ * @since 3.0
  */
 public class RepositoryRegistrationAotContribution implements BeanRegistrationAotContribution {
 
-	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME =
-			"org.springframework.data.repository.kotlin.CoroutineCrudRepository";
+	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME = "org.springframework.data.repository.kotlin.CoroutineCrudRepository";
 
 	/**
 	 * Factory method used to construct a new instance of {@link RepositoryRegistrationAotContribution} initialized with
 	 * the given, required {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
 	 *
-	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from which this
-	 * contribution was created.
+	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
+	 *          which this contribution was created.
 	 * @return a new instance of {@link RepositoryRegistrationAotContribution}.
 	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
 	 * @see org.springframework.data.aot.RepositoryRegistrationAotProcessor
 	 */
 	public static RepositoryRegistrationAotContribution fromProcessor(
-			@NonNull RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
+			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
 
 		return new RepositoryRegistrationAotContribution(repositoryRegistrationAotProcessor);
 	}
@@ -93,28 +85,25 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 	private BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution;
 
-	@NonNull
 	private final RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor;
 
 	/**
-	 * Constructs a new instance of the {@link RepositoryRegistrationAotContribution} initialized with the given,
-	 * required {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
+	 * Constructs a new instance of the {@link RepositoryRegistrationAotContribution} initialized with the given, required
+	 * {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
 	 *
-	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from which this
-	 * contribution was created.
+	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
+	 *          which this contribution was created.
 	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
 	 * @see org.springframework.data.aot.RepositoryRegistrationAotProcessor
 	 */
 	protected RepositoryRegistrationAotContribution(
-			@NonNull RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
+			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
 
-		Assert.notNull(repositoryRegistrationAotProcessor,
-			"RepositoryRegistrationAotProcessor must not be null");
+		Assert.notNull(repositoryRegistrationAotProcessor, "RepositoryRegistrationAotProcessor must not be null");
 
 		this.repositoryRegistrationAotProcessor = repositoryRegistrationAotProcessor;
 	}
 
-	@NonNull
 	protected ConfigurableListableBeanFactory getBeanFactory() {
 		return getRepositoryRegistrationAotProcessor().getBeanFactory();
 	}
@@ -123,16 +112,14 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return Optional.ofNullable(this.moduleContribution);
 	}
 
-	@NonNull
 	protected AotRepositoryContext getRepositoryContext() {
 
 		Assert.state(this.repositoryContext != null,
-			"The AOT RepositoryContext was not properly initialized; did you call the forBean(:RegisteredBean) method");
+				"The AOT RepositoryContext was not properly initialized; did you call the forBean(:RegisteredBean) method");
 
 		return this.repositoryContext;
 	}
 
-	@NonNull
 	protected RepositoryRegistrationAotProcessor getRepositoryRegistrationAotProcessor() {
 		return this.repositoryRegistrationAotProcessor;
 	}
@@ -146,20 +133,21 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	}
 
 	/**
-	 * Builds a {@link RepositoryRegistrationAotContribution} for given, required {@link RegisteredBean}
-	 * representing the {@link Repository} registered in the bean registry.
+	 * Builds a {@link RepositoryRegistrationAotContribution} for given, required {@link RegisteredBean} representing the
+	 * {@link Repository} registered in the bean registry.
 	 *
 	 * @param repositoryBean {@link RegisteredBean} for the {@link Repository}; must not be {@literal null}.
-	 * @return a {@link RepositoryRegistrationAotContribution} to contribute AOT metadata and code
-	 * for the {@link Repository} {@link RegisteredBean}.
+	 * @return a {@link RepositoryRegistrationAotContribution} to contribute AOT metadata and code for the
+	 *         {@link Repository} {@link RegisteredBean}.
 	 * @throws IllegalArgumentException if the {@link RegisteredBean} is {@literal null}.
 	 * @see org.springframework.beans.factory.support.RegisteredBean
 	 */
-	public RepositoryRegistrationAotContribution forBean(@NonNull RegisteredBean repositoryBean) {
+	public RepositoryRegistrationAotContribution forBean(RegisteredBean repositoryBean) {
 
 		Assert.notNull(repositoryBean, "The RegisteredBean for the repository must not be null");
 
-		RepositoryMetadata<?> repositoryMetadata = getRepositoryRegistrationAotProcessor().getRepositoryMetadata(repositoryBean);
+		RepositoryConfiguration<?> repositoryMetadata = getRepositoryRegistrationAotProcessor()
+				.getRepositoryMetadata(repositoryBean);
 
 		this.repositoryContext = buildAotRepositoryContext(repositoryBean, repositoryMetadata);
 
@@ -168,14 +156,14 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return this;
 	}
 
-	protected DefaultAotRepositoryContext buildAotRepositoryContext(@NonNull RegisteredBean bean,
-			@NonNull RepositoryMetadata<?> repositoryMetadata) {
+	protected DefaultAotRepositoryContext buildAotRepositoryContext(RegisteredBean bean,
+			RepositoryConfiguration<?> repositoryMetadata) {
 
 		RepositoryInformation repositoryInformation = resolveRepositoryInformation(repositoryMetadata);
 
-		DefaultAotRepositoryContext repositoryContext = new DefaultAotRepositoryContext();
+		DefaultAotRepositoryContext repositoryContext = new DefaultAotRepositoryContext(
+				AotContext.from(this.getBeanFactory()));
 
-		repositoryContext.setAotContext(this::getBeanFactory);
 		repositoryContext.setBeanName(bean.getBeanName());
 		repositoryContext.setBasePackages(repositoryMetadata.getBasePackages().toSet());
 		repositoryContext.setIdentifyingAnnotations(resolveIdentifyingAnnotations());
@@ -190,17 +178,17 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		try {
 			// TODO: Getting all beans of type RepositoryConfigurationExtensionSupport will have the effect that
-			//  if the user is currently operating in multi-store mode, then all identifying annotations from
-			//  all stores will be included in the resulting Set.
-			//  When using AOT, is multi-store mode allowed? I don't see why not, but does this work correctly
-			//  with AOT, ATM?
-			Map<String, RepositoryConfigurationExtensionSupport> repositoryConfigurationExtensionBeans =
-					getBeanFactory().getBeansOfType(RepositoryConfigurationExtensionSupport.class);
+			// if the user is currently operating in multi-store mode, then all identifying annotations from
+			// all stores will be included in the resulting Set.
+			// When using AOT, is multi-store mode allowed? I don't see why not, but does this work correctly
+			// with AOT, ATM?
+			Map<String, RepositoryConfigurationExtensionSupport> repositoryConfigurationExtensionBeans = getBeanFactory()
+					.getBeansOfType(RepositoryConfigurationExtensionSupport.class);
 
-//			repositoryConfigurationExtensionBeans.values().stream()
-//				.map(RepositoryConfigurationExtensionSupport::getIdentifyingAnnotations)
-//				.flatMap(Collection::stream)
-//				.collect(Collectors.toCollection(() -> identifyingAnnotations));
+			// repositoryConfigurationExtensionBeans.values().stream()
+			// .map(RepositoryConfigurationExtensionSupport::getIdentifyingAnnotations)
+			// .flatMap(Collection::stream)
+			// .collect(Collectors.toCollection(() -> identifyingAnnotations));
 
 		} catch (Throwable ignore) {
 			// Possible BeansException because no bean exists of type RepositoryConfigurationExtension,
@@ -210,26 +198,25 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return identifyingAnnotations;
 	}
 
-	private RepositoryInformation resolveRepositoryInformation(RepositoryMetadata<?> repositoryMetadata) {
+	private RepositoryInformation resolveRepositoryInformation(RepositoryConfiguration<?> repositoryMetadata) {
 		return RepositoryBeanDefinitionReader.readRepositoryInformation(repositoryMetadata, getBeanFactory());
 	}
 
 	/**
-	 * Helps the AOT processing render the {@link FactoryBean} type correctly that is used to tell the outcome of the {@link FactoryBean}.
-	 *
-	 * We just need to set the target {@link Repository} {@link Class type} of the {@link RepositoryFactoryBeanSupport}
-	 * while keeping the actual ID and DomainType set to {@link Object}. If the generic type signature does not match,
-	 * then we do not try to resolve and remap the types, but rather set the {@literal factoryBeanObjectType} attribute
-	 * on the {@link RootBeanDefinition}.
+	 * Helps the AOT processing render the {@link FactoryBean} type correctly that is used to tell the outcome of the
+	 * {@link FactoryBean}. We just need to set the target {@link Repository} {@link Class type} of the
+	 * {@link RepositoryFactoryBeanSupport} while keeping the actual ID and DomainType set to {@link Object}. If the
+	 * generic type signature does not match, then we do not try to resolve and remap the types, but rather set the
+	 * {@literal factoryBeanObjectType} attribute on the {@link RootBeanDefinition}.
 	 */
-	protected void enhanceRepositoryBeanDefinition(@NonNull RegisteredBean repositoryBean,
-			@NonNull RepositoryMetadata<?> repositoryMetadata, @NonNull AotRepositoryContext repositoryContext) {
+	protected void enhanceRepositoryBeanDefinition(RegisteredBean repositoryBean,
+			RepositoryConfiguration<?> repositoryMetadata, AotRepositoryContext repositoryContext) {
 
 		logTrace(String.format("Enhancing repository factory bean definition [%s]", repositoryBean.getBeanName()));
 
 		Class<?> repositoryFactoryBeanType = repositoryContext
-			.resolveType(repositoryMetadata.getRepositoryFactoryBeanClassName())
-			.orElse(RepositoryFactoryBeanSupport.class);
+				.introspectType(repositoryMetadata.getRepositoryFactoryBeanClassName()).resolveType()
+				.orElse(RepositoryFactoryBeanSupport.class);
 
 		ResolvableType resolvedRepositoryFactoryBeanType = ResolvableType.forClass(repositoryFactoryBeanType);
 
@@ -237,16 +224,16 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		if (isRepositoryWithTypeParameters(resolvedRepositoryFactoryBeanType)) {
 			repositoryBeanDefinition.setTargetType(ResolvableType.forClassWithGenerics(repositoryFactoryBeanType,
-				repositoryContext.getRepositoryInformation().getRepositoryInterface(), Object.class, Object.class));
+					repositoryContext.getRepositoryInformation().getRepositoryInterface(), Object.class, Object.class));
 		} else {
 			repositoryBeanDefinition.setTargetType(resolvedRepositoryFactoryBeanType);
 			repositoryBeanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE,
-				repositoryContext.getRepositoryInformation().getRepositoryInterface());
+					repositoryContext.getRepositoryInformation().getRepositoryInterface());
 		}
 	}
 
 	private boolean isRepositoryWithTypeParameters(ResolvableType type) {
-		return type != null && type.getGenerics().length == 3;
+		return type.getGenerics().length == 3;
 	}
 
 	/**
@@ -255,7 +242,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	 * @param moduleContribution {@link BiConsumer} used by data modules to submit contributions; can be {@literal null}.
 	 * @return this.
 	 */
-	@NonNull
+
 	@SuppressWarnings("unused")
 	public RepositoryRegistrationAotContribution withModuleContribution(
 			@Nullable BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution) {
@@ -264,29 +251,27 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	}
 
 	@Override
-	public void applyTo(@NonNull GenerationContext generationContext,
-			@NonNull BeanRegistrationCode beanRegistrationCode) {
+	public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
 
 		contributeRepositoryInfo(this.repositoryContext, generationContext);
 		getModuleContribution().ifPresent(it -> it.accept(getRepositoryContext(), generationContext));
 	}
 
-	private void contributeRepositoryInfo(@NonNull AotRepositoryContext repositoryContext,
-			@NonNull GenerationContext contribution) {
+	private void contributeRepositoryInfo(AotRepositoryContext repositoryContext, GenerationContext contribution) {
 
 		RepositoryInformation repositoryInformation = getRepositoryInformation();
 
-		logTrace("Contributing repository information for [%s]",
-				repositoryInformation.getRepositoryInterface());
+		logTrace("Contributing repository information for [%s]", repositoryInformation.getRepositoryInterface());
 
 		// TODO: is this the way?
 		contribution.getRuntimeHints().reflection()
-			.registerType(repositoryInformation.getRepositoryInterface(), hint ->
-				hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS))
-			.registerType(repositoryInformation.getRepositoryBaseClass(), hint ->
-				hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS))
-			.registerType(repositoryInformation.getDomainType(), hint ->
-				hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
+				.registerType(repositoryInformation.getRepositoryInterface(),
+						hint -> hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS))
+				.registerType(repositoryInformation.getRepositoryBaseClass(),
+						hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS))
+				.registerType(repositoryInformation.getDomainType(),
+						hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+								MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
 
 		// Repository Fragments
 		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
@@ -308,26 +293,26 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				SpringProxy.class, Advised.class, DecoratingProxy.class);
 
 		// Transactional Repository Proxy
-		//repositoryContext.ifTransactionManagerPresent(transactionManagerBeanNames -> {
+		// repositoryContext.ifTransactionManagerPresent(transactionManagerBeanNames -> {
 
-			// TODO: Is the following double JDK Proxy registration above necessary or would a single JDK Proxy
-			//  registration suffice?
-			//  In other words, simply having a single JDK Proxy registration either with or without
-			//  the additional Serializable TypeReference?
-			//  NOTE: Using a single JDK Proxy registration causes the
-			//  simpleRepositoryWithTxManagerNoKotlinNoReactiveButComponent() test case method to fail.
-			List<TypeReference> transactionalRepositoryProxyTypeReferences =
-					transactionalRepositoryProxyTypeReferences(repositoryInformation);
+		// TODO: Is the following double JDK Proxy registration above necessary or would a single JDK Proxy
+		// registration suffice?
+		// In other words, simply having a single JDK Proxy registration either with or without
+		// the additional Serializable TypeReference?
+		// NOTE: Using a single JDK Proxy registration causes the
+		// simpleRepositoryWithTxManagerNoKotlinNoReactiveButComponent() test case method to fail.
+		List<TypeReference> transactionalRepositoryProxyTypeReferences = transactionalRepositoryProxyTypeReferences(
+				repositoryInformation);
 
+		contribution.getRuntimeHints().proxies()
+				.registerJdkProxy(transactionalRepositoryProxyTypeReferences.toArray(new TypeReference[0]));
+
+		if (isComponentAnnotatedRepository(repositoryInformation)) {
+			transactionalRepositoryProxyTypeReferences.add(TypeReference.of(Serializable.class));
 			contribution.getRuntimeHints().proxies()
 					.registerJdkProxy(transactionalRepositoryProxyTypeReferences.toArray(new TypeReference[0]));
-
-			if (isComponentAnnotatedRepository(repositoryInformation)) {
-				transactionalRepositoryProxyTypeReferences.add(TypeReference.of(Serializable.class));
-				contribution.getRuntimeHints().proxies()
-						.registerJdkProxy(transactionalRepositoryProxyTypeReferences.toArray(new TypeReference[0]));
-			}
-		//});
+		}
+		// });
 
 		// Reactive Repositories
 		if (repositoryInformation.isReactiveRepository()) {
@@ -342,12 +327,10 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		}
 
 		// Repository query methods
-		repositoryInformation.getQueryMethods()
-				.map(repositoryInformation::getReturnedDomainClass)
-				.filter(Class::isInterface)
-				.forEach(type -> {
-					if (EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy()
-							.test(type, repositoryInformation.getDomainType())) {
+		repositoryInformation.getQueryMethods().map(repositoryInformation::getReturnedDomainClass)
+				.filter(Class::isInterface).forEach(type -> {
+					if (EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy().test(type,
+							repositoryInformation.getDomainType())) {
 						contributeProjection(type, contribution);
 					}
 				});
@@ -360,58 +343,52 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	private boolean isKotlinCoroutineRepository(AotRepositoryContext repositoryContext,
 			RepositoryInformation repositoryInformation) {
 
-		return repositoryContext.resolveType(KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME)
-				.filter(it -> ClassUtils.isAssignable(it, repositoryInformation.getRepositoryInterface()))
-				.isPresent();
+		return repositoryContext.introspectType(KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME).resolveType()
+				.filter(it -> ClassUtils.isAssignable(it, repositoryInformation.getRepositoryInterface())).isPresent();
 	}
 
 	private List<TypeReference> kotlinRepositoryReflectionTypeReferences() {
 
-		return new ArrayList<>(Arrays.asList(
-				TypeReference.of("org.springframework.data.repository.kotlin.CoroutineCrudRepository"),
-				TypeReference.of(Repository.class),
-				TypeReference.of(Iterable.class),
-				TypeReference.of("kotlinx.coroutines.flow.Flow"),
-				TypeReference.of("kotlin.collections.Iterable"),
-				TypeReference.of("kotlin.Unit"),
-				TypeReference.of("kotlin.Long"),
-				TypeReference.of("kotlin.Boolean")
-		));
+		return new ArrayList<>(
+				Arrays.asList(TypeReference.of("org.springframework.data.repository.kotlin.CoroutineCrudRepository"),
+						TypeReference.of(Repository.class), //
+						TypeReference.of(Iterable.class), //
+						TypeReference.of("kotlinx.coroutines.flow.Flow"), //
+						TypeReference.of("kotlin.collections.Iterable"), //
+						TypeReference.of("kotlin.Unit"), //
+						TypeReference.of("kotlin.Long"), //
+						TypeReference.of("kotlin.Boolean")));
 	}
 
 	private List<TypeReference> transactionalRepositoryProxyTypeReferences(RepositoryInformation repositoryInformation) {
 
-		return new ArrayList<>(Arrays.asList(
-				TypeReference.of(repositoryInformation.getRepositoryInterface()),
-				TypeReference.of(Repository.class),
-				TypeReference.of("org.springframework.transaction.interceptor.TransactionalProxy"),
-				TypeReference.of("org.springframework.aop.framework.Advised"),
-				TypeReference.of(DecoratingProxy.class)
-		));
+		return new ArrayList<>(Arrays.asList(TypeReference.of(repositoryInformation.getRepositoryInterface()),
+				TypeReference.of(Repository.class), //
+				TypeReference.of("org.springframework.transaction.interceptor.TransactionalProxy"), //
+				TypeReference.of("org.springframework.aop.framework.Advised"), //
+				TypeReference.of(DecoratingProxy.class)));
 	}
 
 	private void contributeProjection(Class<?> type, GenerationContext generationContext) {
 
-		generationContext.getRuntimeHints().proxies()
-			.registerJdkProxy(type, TargetAware.class, SpringProxy.class, DecoratingProxy.class);
+		generationContext.getRuntimeHints().proxies().registerJdkProxy(type, TargetAware.class, SpringProxy.class,
+				DecoratingProxy.class);
 	}
 
 	static boolean isJavaOrPrimitiveType(Class<?> type) {
-
-		return TypeUtils.type(type).isPartOf("java")
-			|| type.isPrimitive()
-			|| ClassUtils.isPrimitiveArray(type);
+		return TypeUtils.type(type).isPartOf("java") //
+				|| ClassUtils.isPrimitiveOrWrapper(type) //
+				|| ClassUtils.isPrimitiveArray(type); //
 	}
 
-	static boolean isSpringDataManagedAnnotation(MergedAnnotation<?> annotation) {
+	static boolean isSpringDataManagedAnnotation(@Nullable MergedAnnotation<?> annotation) {
 
-		return annotation != null
-				&& (isInSpringDataNamespace(annotation.getType()) || annotation.getMetaTypes().stream()
-						.anyMatch(RepositoryRegistrationAotContribution::isInSpringDataNamespace));
+		return annotation != null && (isInSpringDataNamespace(annotation.getType())
+				|| annotation.getMetaTypes().stream().anyMatch(RepositoryRegistrationAotContribution::isInSpringDataNamespace));
 	}
 
 	static boolean isInSpringDataNamespace(Class<?> type) {
-		return type != null && type.getPackage().getName().startsWith(TypeContributor.DATA_NAMESPACE);
+		return type.getPackage().getName().startsWith(TypeContributor.DATA_NAMESPACE);
 	}
 
 	static void contributeType(Class<?> type, GenerationContext generationContext) {
@@ -419,8 +396,8 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	}
 
 	// TODO What was this meant to be used for? Was this type filter maybe meant to be used in
-	//  the TypeContributor.contribute(:Class, :Predicate :GenerationContext) method
-	//  used in the contributeType(..) method above?
+	// the TypeContributor.contribute(:Class, :Predicate :GenerationContext) method
+	// used in the contributeType(..) method above?
 	public Predicate<Class<?>> typeFilter() { // like only document ones. // TODO: As in MongoDB?
 		return it -> true;
 	}

@@ -23,7 +23,7 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.ManagedTypes;
-import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 /**
  * {@link BeanRegistrationAotContribution} used to contribute a {@link ManagedTypes} registration.
@@ -38,8 +38,8 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 	private final ManagedTypes managedTypes;
 	private final BiConsumer<ResolvableType, GenerationContext> contributionAction;
 
-	public ManagedTypesRegistrationAotContribution(AotContext aotContext, ManagedTypes managedTypes,
-			@NonNull BiConsumer<ResolvableType, GenerationContext> contributionAction) {
+	public ManagedTypesRegistrationAotContribution(AotContext aotContext, @Nullable ManagedTypes managedTypes,
+			BiConsumer<ResolvableType, GenerationContext> contributionAction) {
 
 		this.aotContext = aotContext;
 		this.managedTypes = managedTypes;
@@ -50,14 +50,12 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 		return this.aotContext;
 	}
 
-	@NonNull
 	protected ManagedTypes getManagedTypes() {
 		return managedTypes == null ? ManagedTypes.empty() : managedTypes;
 	}
 
 	@Override
-	public void applyTo(@NonNull GenerationContext generationContext,
-			@NonNull BeanRegistrationCode beanRegistrationCode) {
+	public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
 
 		List<Class<?>> types = getManagedTypes().toList();
 

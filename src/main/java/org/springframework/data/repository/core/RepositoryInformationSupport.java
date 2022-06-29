@@ -164,7 +164,6 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 	 * @return
 	 */
 	protected boolean isQueryAnnotationPresentOn(Method method) {
-
 		return AnnotationUtils.findAnnotation(method, QueryAnnotation.class) != null;
 	}
 
