@@ -35,8 +35,8 @@ import org.springframework.util.Assert;
 /**
  * The context in which the AOT processing happens. Grants access to the {@link ConfigurableListableBeanFactory
  * beanFactory} and {@link ClassLoader}. Holds a few convenience methods to check if a type
- * {@link #isTypePresent(String) is present} and allows resolution of them throug {@link TypeIntrospector} and
- * {@link IntrospectedBeanDefinition}.
+ * {@link TypeIntrospector#isTypePresent() is present} and allows resolution of them through {@link TypeIntrospector}
+ * and {@link IntrospectedBeanDefinition}.
  * <p>
  * Mainly for internal use within the framework.
  *
