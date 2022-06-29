@@ -21,9 +21,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.core.MethodParameter;
@@ -38,8 +38,11 @@ import org.springframework.util.ObjectUtils;
 /**
  * @author Christoph Strobl
  */
-// TODO: Consider moving to the org.springframework.data.util package.
+// TODO: Consider moving to the org.springframework.data.util package or make this package-private if not used somewhere
+// else.
 public class TypeUtils {
+
+	public static String TRANSACTION_MANAGER_CLASS_NAME = "org.springframework.transaction.TransactionManager";
 
 	/**
 	 * Resolve ALL annotations present for a given type. Will inspect type, constructors, parameters, methods, fields,...
@@ -50,25 +53,25 @@ public class TypeUtils {
 	public static Set<MergedAnnotation<Annotation>> resolveUsedAnnotations(Class<?> type) {
 
 		Set<MergedAnnotation<Annotation>> annotations = new LinkedHashSet<>();
-		annotations.addAll(TypeUtils.resolveAnnotationsFor(type).collect(Collectors.toSet()));
+		annotations.addAll(TypeUtils.resolveAnnotationsFor(type).toList());
 		for (Constructor<?> ctor : type.getDeclaredConstructors()) {
-			annotations.addAll(TypeUtils.resolveAnnotationsFor(ctor).collect(Collectors.toSet()));
+			annotations.addAll(TypeUtils.resolveAnnotationsFor(ctor).toList());
 			for (Parameter parameter : ctor.getParameters()) {
-				annotations.addAll(TypeUtils.resolveAnnotationsFor(parameter).collect(Collectors.toSet()));
+				annotations.addAll(TypeUtils.resolveAnnotationsFor(parameter).toList());
 			}
 		}
 		for (Field field : type.getDeclaredFields()) {
-			annotations.addAll(TypeUtils.resolveAnnotationsFor(field).collect(Collectors.toSet()));
+			annotations.addAll(TypeUtils.resolveAnnotationsFor(field).toList());
 		}
 		try {
 			for (Method method : type.getDeclaredMethods()) {
-				annotations.addAll(TypeUtils.resolveAnnotationsFor(method).collect(Collectors.toSet()));
+				annotations.addAll(TypeUtils.resolveAnnotationsFor(method).toList());
 				for (Parameter parameter : method.getParameters()) {
-					annotations.addAll(TypeUtils.resolveAnnotationsFor(parameter).collect(Collectors.toSet()));
+					annotations.addAll(TypeUtils.resolveAnnotationsFor(parameter).toList());
 				}
 			}
 		} catch (NoClassDefFoundError e) {
-			// ignore an move on
+			// ignore and move on
 		}
 		return annotations;
 	}
@@ -83,13 +86,14 @@ public class TypeUtils {
 				.from(element, SearchStrategy.TYPE_HIERARCHY, RepeatableContainers.standardRepeatables(), filter).stream();
 	}
 
-	public static Set<Class<?>> resolveAnnotationTypesFor(AnnotatedElement element, AnnotationFilter filter) {
+	public static Collection<Class<Annotation>> resolveAnnotationTypesFor(AnnotatedElement element,
+			AnnotationFilter filter) {
 		return MergedAnnotations
 				.from(element, SearchStrategy.TYPE_HIERARCHY, RepeatableContainers.standardRepeatables(), filter).stream()
-				.map(MergedAnnotation::getType).collect(Collectors.toSet());
+				.map(MergedAnnotation::getType).toList();
 	}
 
-	public static Set<Class<?>> resolveAnnotationTypesFor(AnnotatedElement element) {
+	public static Collection<Class<Annotation>> resolveAnnotationTypesFor(AnnotatedElement element) {
 		return resolveAnnotationTypesFor(element, AnnotationFilter.PLAIN);
 	}
 
@@ -214,7 +218,7 @@ public class TypeUtils {
 
 	private static class TypeOpsImpl implements TypeOps {
 
-		private Class<?> type;
+		private final Class<?> type;
 
 		TypeOpsImpl(Class<?> type) {
 			this.type = type;

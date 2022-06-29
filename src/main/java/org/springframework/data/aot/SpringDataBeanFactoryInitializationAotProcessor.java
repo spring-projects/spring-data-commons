@@ -15,12 +15,12 @@
  */
 package org.springframework.data.aot;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -29,7 +29,6 @@ import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueH
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.data.domain.ManagedTypes;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -52,37 +51,36 @@ public class SpringDataBeanFactoryInitializationAotProcessor implements BeanFact
 
 	@Nullable
 	@Override
-	public BeanFactoryInitializationAotContribution processAheadOfTime(
-			@NonNull ConfigurableListableBeanFactory beanFactory) {
+	public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
 
 		processManagedTypes(beanFactory);
 		return null;
 	}
 
-	private void processManagedTypes(@NonNull ConfigurableListableBeanFactory beanFactory) {
+	private void processManagedTypes(ConfigurableListableBeanFactory beanFactory) {
 
 		if (beanFactory instanceof BeanDefinitionRegistry registry) {
 			for (String beanName : beanFactory.getBeanNamesForType(ManagedTypes.class)) {
 
 				BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
 
-				if(beanDefinition.getConstructorArgumentValues().isEmpty()) {
+				if (beanDefinition.getConstructorArgumentValues().isEmpty()) {
 					return;
 				}
 
 				ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, null, null, null);
 
-				if (argumentValue.getValue() instanceof Supplier supplier) {
+				if (argumentValue.getValue()instanceof Supplier supplier) {
 
 					if (logger.isDebugEnabled()) {
 						logger.info(String.format("Replacing ManagedType bean definition %s.", beanName));
 					}
 
 					Object value = supplier.get();
-					if(ObjectUtils.isArray(value)) {
+					if (ObjectUtils.isArray(value)) {
 						value = CollectionUtils.arrayToList(value);
 					}
-					if(!(value instanceof Iterable<?>)) {
+					if (!(value instanceof Iterable<?>)) {
 						value = Collections.singleton(value);
 					}
 

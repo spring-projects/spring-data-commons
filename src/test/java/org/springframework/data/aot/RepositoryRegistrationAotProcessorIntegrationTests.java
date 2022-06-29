@@ -15,8 +15,8 @@
  */
 package org.springframework.data.aot;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.data.aot.RepositoryRegistrationAotContributionAssert.assertThatContribution;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.aot.RepositoryRegistrationAotContributionAssert.*;
 
 import java.io.Serializable;
 
@@ -51,9 +51,6 @@ import org.springframework.transaction.interceptor.TransactionalProxy;
  * Integration Tests for {@link RepositoryRegistrationAotProcessor}.
  *
  * @author Christoph Strobl
- * @see org.junit.jupiter.api.Test
- * @see org.springframework.data.aot.RepositoryRegistrationAotProcessor
- * @see org.springframework.data.aot.RepositoryRegistrationAotContributionAssert
  * @author John Blum
  */
 public class RepositoryRegistrationAotProcessorIntegrationTests {
@@ -61,8 +58,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	@Test // GH-2593
 	void simpleRepositoryNoTxManagerNoKotlinNoReactiveNoComponent() {
 
-		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(ConfigWithSimpleCrudRepository.class)
-				.forRepository(ConfigWithSimpleCrudRepository.MyRepo.class);
+		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
+				ConfigWithSimpleCrudRepository.class).forRepository(ConfigWithSimpleCrudRepository.MyRepo.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(ConfigWithSimpleCrudRepository.MyRepo.class) //
@@ -123,8 +120,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 							// interface
 							.contributesReflectionFor(PagingAndSortingRepository.class) // base repository
 							.contributesReflectionFor(
-									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.Person.class) // repository domain
-																																																		// type
+									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.Person.class) // domain type
 
 							// proxies
 							.contributesJdkProxy(
@@ -142,8 +138,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	@Test // GH-2593
 	void contributesFragmentsCorrectly() {
 
-		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(ConfigWithFragments.class)
-				.forRepository(ConfigWithFragments.RepositoryWithFragments.class);
+		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
+				ConfigWithFragments.class).forRepository(ConfigWithFragments.RepositoryWithFragments.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(ConfigWithFragments.RepositoryWithFragments.class) //
@@ -175,8 +171,9 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	@Test // GH-2593
 	void contributesCustomImplementationCorrectly() {
 
-		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(ConfigWithCustomImplementation.class)
-				.forRepository(ConfigWithCustomImplementation.RepositoryWithCustomImplementation.class);
+		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
+				ConfigWithCustomImplementation.class)
+						.forRepository(ConfigWithCustomImplementation.RepositoryWithCustomImplementation.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(ConfigWithCustomImplementation.RepositoryWithCustomImplementation.class) //
@@ -197,12 +194,11 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	@Test // GH-2593
 	void contributesDomainTypeAndReachableTypesCorrectly() {
 
-		RepositoryRegistrationAotContribution repositoryBeanContribution =
-				computeAotConfiguration(ConfigWithSimpleCrudRepository.class)
-						.forRepository(ConfigWithSimpleCrudRepository.MyRepo.class);
+		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
+				ConfigWithSimpleCrudRepository.class).forRepository(ConfigWithSimpleCrudRepository.MyRepo.class);
 
-		assertThatContribution(repositoryBeanContribution).codeContributionSatisfies(contribution ->
-				contribution.contributesReflectionFor(ConfigWithSimpleCrudRepository.Person.class,
+		assertThatContribution(repositoryBeanContribution).codeContributionSatisfies(
+				contribution -> contribution.contributesReflectionFor(ConfigWithSimpleCrudRepository.Person.class,
 						ConfigWithSimpleCrudRepository.Address.class));
 	}
 
@@ -245,19 +241,18 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	@Test // GH-2593
 	void contributesTypesFromQueryMethods() {
 
-		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(ConfigWithQueryMethods.class)
-				.forRepository(ConfigWithQueryMethods.CustomerRepositoryWithQueryMethods.class);
+		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
+				ConfigWithQueryMethods.class).forRepository(ConfigWithQueryMethods.CustomerRepositoryWithQueryMethods.class);
 
 		assertThatContribution(repositoryBeanContribution)
-				.codeContributionSatisfies(contribution ->
-						contribution.contributesReflectionFor(ProjectionInterface.class));
+				.codeContributionSatisfies(contribution -> contribution.contributesReflectionFor(ProjectionInterface.class));
 	}
 
 	@Test // GH-2593
 	void contributesProxiesForPotentialProjections() {
 
-		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(ConfigWithQueryMethods.class)
-				.forRepository(ConfigWithQueryMethods.CustomerRepositoryWithQueryMethods.class);
+		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
+				ConfigWithQueryMethods.class).forRepository(ConfigWithQueryMethods.CustomerRepositoryWithQueryMethods.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.codeContributionSatisfies(contribution -> {
@@ -271,8 +266,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	@Test // GH-2593
 	void contributesProxiesForDataAnnotations() {
 
-		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(ConfigWithQueryMethods.class)
-				.forRepository(ConfigWithQueryMethods.CustomerRepositoryWithQueryMethods.class);
+		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
+				ConfigWithQueryMethods.class).forRepository(ConfigWithQueryMethods.CustomerRepositoryWithQueryMethods.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.codeContributionSatisfies(contribution -> {
@@ -286,8 +281,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	@Test // GH-2593
 	void doesNotCareAboutNonDataAnnotations() {
 
-		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(ConfigWithSimpleCrudRepository.class)
-				.forRepository(ConfigWithSimpleCrudRepository.MyRepo.class);
+		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
+				ConfigWithSimpleCrudRepository.class).forRepository(ConfigWithSimpleCrudRepository.MyRepo.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.codeContributionSatisfies(contribution -> {
@@ -311,16 +306,15 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 			String[] repositoryBeanNames = applicationContext.getBeanNamesForType(repositoryType);
 
 			assertThat(repositoryBeanNames)
-					.describedAs("Unable to find repository [%s] in configuration [%s]",
-							repositoryType, configuration)
+					.describedAs("Unable to find repository [%s] in configuration [%s]", repositoryType, configuration)
 					.hasSize(1);
 
 			String repositoryBeanName = repositoryBeanNames[0];
 
 			ConfigurableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
 
-			RepositoryRegistrationAotProcessor repositoryAotProcessor =
-					applicationContext.getBean(RepositoryRegistrationAotProcessor.class);
+			RepositoryRegistrationAotProcessor repositoryAotProcessor = applicationContext
+					.getBean(RepositoryRegistrationAotProcessor.class);
 
 			repositoryAotProcessor.setBeanFactory(beanFactory);
 

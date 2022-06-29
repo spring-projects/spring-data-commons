@@ -32,7 +32,11 @@ import java.util.function.Predicate;
 public abstract class Predicates {
 
 	public static final Predicate<Member> IS_ENUM_MEMBER = member -> member.getDeclaringClass().isEnum();
-	public static final Predicate<Member> IS_HIBERNATE_MEMBER = member -> member.getName().startsWith("$$_hibernate");
+	public static final Predicate<Member> IS_HIBERNATE_MEMBER = member -> member.getName().startsWith("$$_hibernate"); // this
+																																																											// should
+																																																											// go
+																																																											// into
+																																																											// JPA
 	public static final Predicate<Member> IS_OBJECT_MEMBER = member -> Object.class.equals(member.getDeclaringClass());
 	public static final Predicate<Member> IS_JAVA = member -> member.getDeclaringClass().getPackageName().startsWith("java.");
 	public static final Predicate<Member> IS_NATIVE = member -> Modifier.isNative(member.getModifiers());

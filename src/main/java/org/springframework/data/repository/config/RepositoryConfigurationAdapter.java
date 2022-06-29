@@ -27,12 +27,13 @@ import org.springframework.lang.Nullable;
  * @author Christoph Strobl
  * @since 3.0
  */
-public class RepositoryMetadata<T extends RepositoryConfigurationSource> implements RepositoryConfiguration<T> {
+class RepositoryConfigurationAdapter<T extends RepositoryConfigurationSource>
+		implements RepositoryConfiguration<T>, RepositoryFragmentConfigurationProvider {
 
 	RepositoryConfiguration<T> repositoryConfiguration;
 	List<RepositoryFragmentConfiguration> fragmentConfiguration;
 
-	public RepositoryMetadata(RepositoryConfiguration<T> repositoryConfiguration,
+	public RepositoryConfigurationAdapter(RepositoryConfiguration<T> repositoryConfiguration,
 			List<RepositoryFragmentConfiguration> fragmentConfiguration) {
 
 		this.repositoryConfiguration = repositoryConfiguration;
@@ -116,6 +117,7 @@ public class RepositoryMetadata<T extends RepositoryConfigurationSource> impleme
 		return repositoryConfiguration.getResourceDescription();
 	}
 
+	@Override
 	public List<RepositoryFragmentConfiguration> getFragmentConfiguration() {
 		return fragmentConfiguration;
 	}

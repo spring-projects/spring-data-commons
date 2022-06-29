@@ -26,7 +26,6 @@ import org.springframework.aot.hint.TypeReference;
 
 /**
  * @author Christoph Strobl
- * @since 2022/04
  */
 public class JdkProxyAssert extends AbstractAssert<JdkProxyAssert, JdkProxyHint> {
 

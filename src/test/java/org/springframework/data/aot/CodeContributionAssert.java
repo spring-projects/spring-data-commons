@@ -15,7 +15,7 @@
  */
 package org.springframework.data.aot;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -25,19 +25,17 @@ import org.assertj.core.api.AbstractAssert;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.ClassProxyHint;
 import org.springframework.aot.hint.JdkProxyHint;
-import org.springframework.aot.hint.ProxyHintsPredicates;
 import org.springframework.aot.hint.RuntimeHintsPredicates;
 
 /**
- * AssertJ {@link AbstractAssert Assertion} for code contributions originating from
- * Spring Data Repository infrastructure AOT processing.
+ * AssertJ {@link AbstractAssert Assertion} for code contributions originating from Spring Data Repository
+ * infrastructure AOT processing.
  *
  * @author Christoph Strobl
  * @author John Blum
- * @see org.assertj.core.api.AbstractAssert
- * @see org.springframework.aot.generate.GenerationContext
- * @since 3.0.0
+ * @since 3.0
  */
+@SuppressWarnings("UnusedReturnValue")
 public class CodeContributionAssert extends AbstractAssert<CodeContributionAssert, GenerationContext> {
 
 	public CodeContributionAssert(GenerationContext contribution) {
@@ -47,8 +45,7 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 	public CodeContributionAssert contributesReflectionFor(Class<?>... types) {
 
 		for (Class<?> type : types) {
-			assertThat(this.actual.getRuntimeHints())
-					.describedAs("No reflection entry found for [%s]", type)
+			assertThat(this.actual.getRuntimeHints()).describedAs("No reflection entry found for [%s]", type)
 					.matches(RuntimeHintsPredicates.reflection().onType(type));
 		}
 
@@ -58,8 +55,7 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 	public CodeContributionAssert doesNotContributeReflectionFor(Class<?>... types) {
 
 		for (Class<?> type : types) {
-			assertThat(this.actual.getRuntimeHints())
-					.describedAs("Reflection entry found for [%s]", type)
+			assertThat(this.actual.getRuntimeHints()).describedAs("Reflection entry found for [%s]", type)
 					.matches(RuntimeHintsPredicates.reflection().onType(type).negate());
 		}
 
@@ -68,8 +64,7 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 
 	public CodeContributionAssert contributesJdkProxyFor(Class<?> entryPoint) {
 
-		assertThat(jdkProxiesFor(entryPoint).findFirst())
-				.describedAs("No JDK proxy found for [%s]", entryPoint)
+		assertThat(jdkProxiesFor(entryPoint).findFirst()).describedAs("No JDK proxy found for [%s]", entryPoint)
 				.isPresent();
 
 		return this;
@@ -78,8 +73,7 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 	public CodeContributionAssert doesNotContributeJdkProxyFor(Class<?> entryPoint) {
 
 		assertThat(jdkProxiesFor(entryPoint).findFirst())
-				.describedAs("Found JDK proxy matching [%s] though it should not be present", entryPoint)
-				.isNotPresent();
+				.describedAs("Found JDK proxy matching [%s] though it should not be present", entryPoint).isNotPresent();
 
 		return this;
 	}
@@ -87,8 +81,8 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 	public CodeContributionAssert contributesJdkProxy(Class<?>... proxyInterfaces) {
 
 		assertThat(jdkProxiesFor(proxyInterfaces[0]))
-			.describedAs("Unable to find JDK proxy matching [%s]", Arrays.asList(proxyInterfaces))
-			.anySatisfy(it -> new JdkProxyAssert(it).matches(proxyInterfaces));
+				.describedAs("Unable to find JDK proxy matching [%s]", Arrays.asList(proxyInterfaces))
+				.anySatisfy(it -> new JdkProxyAssert(it).matches(proxyInterfaces));
 
 		return this;
 	}
@@ -96,8 +90,7 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 	public CodeContributionAssert doesNotContributeJdkProxy(Class<?>... proxyInterfaces) {
 
 		assertThat(jdkProxiesFor(proxyInterfaces[0]))
-				.describedAs("Found JDK proxy matching [%s] though it should not be present",
-					Arrays.asList(proxyInterfaces))
+				.describedAs("Found JDK proxy matching [%s] though it should not be present", Arrays.asList(proxyInterfaces))
 				.noneSatisfy(it -> new JdkProxyAssert(it).matches(proxyInterfaces));
 
 		return this;
@@ -105,9 +98,8 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 
 	private Stream<JdkProxyHint> jdkProxiesFor(Class<?> entryPoint) {
 
-		return this.actual.getRuntimeHints().proxies().jdkProxies()
-				.filter(jdkProxyHint -> jdkProxyHint.getProxiedInterfaces().get(0).getCanonicalName()
-						.equals(entryPoint.getCanonicalName()));
+		return this.actual.getRuntimeHints().proxies().jdkProxies().filter(jdkProxyHint -> jdkProxyHint
+				.getProxiedInterfaces().get(0).getCanonicalName().equals(entryPoint.getCanonicalName()));
 	}
 
 	public CodeContributionAssert contributesClassProxy(Class<?>... proxyInterfaces) {
@@ -121,8 +113,7 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 
 	private Stream<ClassProxyHint> classProxiesFor(Class<?> entryPoint) {
 
-		return this.actual.getRuntimeHints().proxies().classProxies()
-				.filter(jdkProxyHint -> jdkProxyHint.getProxiedInterfaces().get(0).getCanonicalName()
-						.equals(entryPoint.getCanonicalName()));
+		return this.actual.getRuntimeHints().proxies().classProxies().filter(jdkProxyHint -> jdkProxyHint
+				.getProxiedInterfaces().get(0).getCanonicalName().equals(entryPoint.getCanonicalName()));
 	}
 }

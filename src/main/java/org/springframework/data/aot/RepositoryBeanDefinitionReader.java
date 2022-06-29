@@ -17,13 +17,14 @@ package org.springframework.data.aot;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.data.repository.config.RepositoryFragmentConfiguration;
-import org.springframework.data.repository.config.RepositoryMetadata;
+import org.springframework.data.repository.config.RepositoryConfiguration;
+import org.springframework.data.repository.config.RepositoryFragmentConfigurationProvider;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFragment;
@@ -31,19 +32,15 @@ import org.springframework.data.util.Lazy;
 import org.springframework.util.ClassUtils;
 
 /**
- * Reader used to extract {@link RepositoryInformation} from {@link RepositoryMetadata}.
+ * Reader used to extract {@link RepositoryInformation} from {@link RepositoryConfiguration}.
  *
  * @author Christoph Strobl
  * @author John Blum
- * @see org.springframework.data.repository.config.RepositoryFragmentConfiguration
- * @see org.springframework.data.repository.config.RepositoryMetadata
- * @see org.springframework.data.repository.core.RepositoryInformation
- * @see org.springframework.data.repository.core.support.RepositoryFragment
  * @since 3.0.0
  */
 class RepositoryBeanDefinitionReader {
 
-	static RepositoryInformation readRepositoryInformation(RepositoryMetadata<?> metadata,
+	static RepositoryInformation readRepositoryInformation(RepositoryConfiguration<?> metadata,
 			ConfigurableListableBeanFactory beanFactory) {
 
 		return new AotRepositoryInformation(metadataSupplier(metadata, beanFactory),
@@ -51,33 +48,33 @@ class RepositoryBeanDefinitionReader {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static Supplier<Collection<RepositoryFragment<?>>> fragments(RepositoryMetadata metadata,
+	private static Supplier<Collection<RepositoryFragment<?>>> fragments(RepositoryConfiguration<?> metadata,
 			ConfigurableListableBeanFactory beanFactory) {
 
-		return Lazy.of(() -> (Collection<RepositoryFragment<?>>) metadata.getFragmentConfiguration().stream()
-				.flatMap(it -> {
+		if (metadata instanceof RepositoryFragmentConfigurationProvider provider) {
 
-						RepositoryFragmentConfiguration fragmentConfiguration = (RepositoryFragmentConfiguration) it;
-						List<RepositoryFragment> fragments = new ArrayList<>(2);
+			return Lazy.of(() -> {
+				return provider.getFragmentConfiguration().stream().flatMap(it -> {
 
-						if (fragmentConfiguration.getClassName() != null) {
-							fragments.add(RepositoryFragment.implemented(forName(fragmentConfiguration.getClassName(), beanFactory)));
-						}
-						if (fragmentConfiguration.getInterfaceName() != null) {
-							fragments.add(RepositoryFragment.structural(forName(fragmentConfiguration.getInterfaceName(), beanFactory)));
-						}
+					List<RepositoryFragment<?>> fragments = new ArrayList<>(1);
 
-						return fragments.stream();
-				})
-				.collect(Collectors.toList()));
+					// TODO: Implemented accepts an Object, not a class.
+					fragments.add(RepositoryFragment.implemented(forName(it.getClassName(), beanFactory)));
+					fragments.add(RepositoryFragment.structural(forName(it.getInterfaceName(), beanFactory)));
+
+					return fragments.stream();
+				}).collect(Collectors.toList());
+			});
+		}
+
+		return Lazy.of(Collections::emptyList);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static Supplier<Class<?>> repositoryBaseClass(RepositoryMetadata metadata,
+	private static Supplier<Class<?>> repositoryBaseClass(RepositoryConfiguration metadata,
 			ConfigurableListableBeanFactory beanFactory) {
 
-		return Lazy.of(() ->
-					(Class<?>) metadata.getRepositoryBaseClassName().map(it -> forName(it.toString(), beanFactory))
+		return Lazy.of(() -> (Class<?>) metadata.getRepositoryBaseClassName().map(it -> forName(it.toString(), beanFactory))
 				.orElseGet(() -> {
 					// TODO: retrieve the default without loading the actual RepositoryBeanFactory
 					return Object.class;
@@ -85,7 +82,7 @@ class RepositoryBeanDefinitionReader {
 	}
 
 	static Supplier<org.springframework.data.repository.core.RepositoryMetadata> metadataSupplier(
-			RepositoryMetadata<?> metadata, ConfigurableListableBeanFactory beanFactory) {
+			RepositoryConfiguration<?> metadata, ConfigurableListableBeanFactory beanFactory) {
 
 		return Lazy.of(() -> new DefaultRepositoryMetadata(forName(metadata.getRepositoryInterface(), beanFactory)));
 	}

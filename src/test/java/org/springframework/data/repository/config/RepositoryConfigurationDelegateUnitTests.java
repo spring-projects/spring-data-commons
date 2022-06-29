@@ -25,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -67,7 +68,7 @@ class RepositoryConfigurationDelegateUnitTests {
 
 			var beanDefinition = definition.getBeanDefinition();
 
-			assertThat(beanDefinition.getAttribute(RepositoryConfigurationDelegate.FACTORY_BEAN_OBJECT_TYPE).toString())
+			assertThat(beanDefinition.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE).toString())
 					.endsWith("Repository");
 		}
 	}

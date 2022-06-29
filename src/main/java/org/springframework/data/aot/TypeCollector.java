@@ -35,9 +35,9 @@ import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.data.util.Lazy;
-import org.springframework.lang.NonNull;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -62,39 +62,39 @@ public class TypeCollector {
 
 	private final Predicate<Method> methodFilter = method -> {
 
-		Predicate<Method> excludedDomainsPredicate = methodToTest ->
-			excludedDomainsFilter.test(methodToTest.getDeclaringClass());
+		// TODO: Eagerly construct predicate objects to avoid object allocations during test(…)
+		Predicate<Method> excludedDomainsPredicate = methodToTest -> excludedDomainsFilter
+				.test(methodToTest.getDeclaringClass());
 
-		Predicate<Method> excludedMethodsPredicate = Predicates.IS_BRIDGE_METHOD
-				.or(Predicates.IS_OBJECT_MEMBER)
-				.or(Predicates.IS_HIBERNATE_MEMBER)
-				.or(Predicates.IS_ENUM_MEMBER)
-				.or(Predicates.IS_NATIVE)
-				.or(Predicates.IS_PRIVATE)
-				.or(Predicates.IS_PROTECTED)
-				.or(Predicates.IS_SYNTHETIC)
-				.or(excludedDomainsPredicate.negate());
+		Predicate<Method> excludedMethodsPredicate = Predicates.IS_BRIDGE_METHOD //
+				.or(Predicates.IS_OBJECT_MEMBER) //
+				.or(Predicates.IS_HIBERNATE_MEMBER) //
+				.or(Predicates.IS_ENUM_MEMBER) //
+				.or(Predicates.IS_NATIVE) //
+				.or(Predicates.IS_PRIVATE) //
+				.or(Predicates.IS_PROTECTED) //
+				.or(Predicates.IS_SYNTHETIC) //
+				.or(excludedDomainsPredicate.negate()); //
 
 		return !excludedMethodsPredicate.test(method);
 	};
 
 	private Predicate<Field> fieldFilter = field -> {
 
-		Predicate<Member> excludedFieldPredicate = Predicates.IS_HIBERNATE_MEMBER
-			.or(Predicates.IS_SYNTHETIC)
-			.or(Predicates.IS_JAVA);
+		// TODO: Eagerly construct predicate objects to avoid object allocations during test(…)
+		Predicate<Member> excludedFieldPredicate = Predicates.IS_HIBERNATE_MEMBER //
+				.or(Predicates.IS_SYNTHETIC) //
+				.or(Predicates.IS_JAVA);
 
 		return !excludedFieldPredicate.test(field);
 	};
 
-	@NonNull
-	public TypeCollector filterFields(@NonNull Predicate<Field> filter) {
+	public TypeCollector filterFields(Predicate<Field> filter) {
 		this.fieldFilter = filter.and(filter);
 		return this;
 	}
 
-	@NonNull
-	public TypeCollector filterTypes(@NonNull Predicate<Class<?>> filter) {
+	public TypeCollector filterTypes(Predicate<Class<?>> filter) {
 		this.typeFilter = this.typeFilter.and(filter);
 		return this;
 	}
@@ -105,12 +105,10 @@ public class TypeCollector {
 	 * @param types the types to inspect
 	 * @return a type model collector for the type
 	 */
-	@NonNull
 	public static ReachableTypes inspect(Class<?>... types) {
 		return inspect(Arrays.asList(types));
 	}
 
-	@NonNull
 	public static ReachableTypes inspect(Collection<Class<?>> types) {
 		return new ReachableTypes(new TypeCollector(), types);
 	}
@@ -137,9 +135,11 @@ public class TypeCollector {
 		additionalTypes.addAll(visitConstructorsOfType(type));
 		additionalTypes.addAll(visitMethodsOfType(type));
 		additionalTypes.addAll(visitFieldsOfType(type));
+
 		if (!ObjectUtils.isEmpty(type.toClass().getDeclaredClasses())) {
 			additionalTypes.addAll(Arrays.asList(type.toClass().getDeclaredClasses()));
 		}
+
 		for (Type discoveredType : additionalTypes) {
 			processType(ResolvableType.forType(discoveredType, type), cache, callback);
 		}
@@ -204,7 +204,7 @@ public class TypeCollector {
 		private final Lazy<List<Class<?>>> reachableTypes = Lazy.of(this::collect);
 		private final TypeCollector typeCollector;
 
-		public ReachableTypes(@NonNull TypeCollector typeCollector, @NonNull Iterable<Class<?>> roots) {
+		public ReachableTypes(TypeCollector typeCollector, Iterable<Class<?>> roots) {
 
 			this.typeCollector = typeCollector;
 			this.roots = roots;
@@ -229,7 +229,7 @@ public class TypeCollector {
 
 		private final Map<String, ResolvableType> mutableCache = new LinkedHashMap<>();
 
-		public void add(@NonNull ResolvableType resolvableType) {
+		public void add(ResolvableType resolvableType) {
 			mutableCache.put(resolvableType.toString(), resolvableType);
 		}
 
@@ -237,7 +237,7 @@ public class TypeCollector {
 			mutableCache.clear();
 		}
 
-		public boolean contains(@NonNull ResolvableType key) {
+		public boolean contains(ResolvableType key) {
 			return mutableCache.containsKey(key.toString());
 		}
 

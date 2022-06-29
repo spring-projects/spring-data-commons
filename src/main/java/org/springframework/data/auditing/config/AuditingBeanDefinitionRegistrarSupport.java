@@ -56,27 +56,40 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 
-		AbstractBeanDefinition ahbd = registerAuditHandlerBeanDefinition(registry, getConfiguration(annotationMetadata));
+		AbstractBeanDefinition ahbd = registerAuditHandlerBeanDefinition(getConfiguration(annotationMetadata), registry);
 		registerAuditListenerBeanDefinition(ahbd, registry);
 	}
 
 	/**
 	 * Registers an appropriate BeanDefinition for an {@link AuditingHandler}.
 	 *
-	 * @param registry must not be {@literal null}.
 	 * @param configuration must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
 	 * @return
 	 */
-	private AbstractBeanDefinition registerAuditHandlerBeanDefinition(BeanDefinitionRegistry registry,
-			AuditingConfiguration configuration) {
+	protected AbstractBeanDefinition registerAuditHandlerBeanDefinition(AuditingConfiguration configuration,
+			BeanDefinitionRegistry registry) {
 
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		Assert.notNull(configuration, "AuditingConfiguration must not be null");
 
-		AbstractBeanDefinition ahbd = getAuditHandlerBeanDefinitionBuilder(configuration).getBeanDefinition();
+		BeanDefinitionBuilder builder = getAuditHandlerBeanDefinitionBuilder(configuration);
+		postProcess(builder, configuration, registry);
+		AbstractBeanDefinition ahbd = builder.getBeanDefinition();
 		registry.registerBeanDefinition(getAuditingHandlerBeanName(), ahbd);
 		return ahbd;
 	}
+
+	/**
+	 * Customization hook to post-process the AuditHandler BeanDefinition.
+	 *
+	 * @param builder must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
+	 * @param configuration must not be {@literal null}.
+	 * @since 3.0
+	 */
+	protected void postProcess(BeanDefinitionBuilder builder, AuditingConfiguration configuration,
+			BeanDefinitionRegistry registry) {}
 
 	/**
 	 * Creates a {@link BeanDefinitionBuilder} to ease the definition of store specific {@link AuditingHandler}
