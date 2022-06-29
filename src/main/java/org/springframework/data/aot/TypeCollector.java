@@ -51,7 +51,8 @@ public class TypeCollector {
 	private static final Log logger = LogFactory.getLog(TypeCollector.class);
 
 	static final Set<String> EXCLUDED_DOMAINS = new HashSet<>(Arrays.asList("java", "sun.", "jdk.", "reactor.",
-			"kotlinx.", "kotlin.", "org.springframework.core.", "org.springframework.boot."));
+			"kotlinx.", "kotlin.", "org.springframework.core.", "org.springframework.data.mapping.",
+			"org.springframework.data.repository.", "org.springframework.boot.", "org.springframework.core."));
 
 	private final Predicate<Class<?>> excludedDomainsFilter = type -> {
 		String packageName = type.getPackageName();
@@ -60,34 +61,9 @@ public class TypeCollector {
 
 	private Predicate<Class<?>> typeFilter = excludedDomainsFilter;
 
-	private final Predicate<Method> methodFilter = method -> {
+	private final Predicate<Method> methodFilter = createMethodFilter();
 
-		// TODO: Eagerly construct predicate objects to avoid object allocations during test(…)
-		Predicate<Method> excludedDomainsPredicate = methodToTest -> excludedDomainsFilter
-				.test(methodToTest.getDeclaringClass());
-
-		Predicate<Method> excludedMethodsPredicate = Predicates.IS_BRIDGE_METHOD //
-				.or(Predicates.IS_OBJECT_MEMBER) //
-				.or(Predicates.IS_HIBERNATE_MEMBER) //
-				.or(Predicates.IS_ENUM_MEMBER) //
-				.or(Predicates.IS_NATIVE) //
-				.or(Predicates.IS_PRIVATE) //
-				.or(Predicates.IS_PROTECTED) //
-				.or(Predicates.IS_SYNTHETIC) //
-				.or(excludedDomainsPredicate.negate()); //
-
-		return !excludedMethodsPredicate.test(method);
-	};
-
-	private Predicate<Field> fieldFilter = field -> {
-
-		// TODO: Eagerly construct predicate objects to avoid object allocations during test(…)
-		Predicate<Member> excludedFieldPredicate = Predicates.IS_HIBERNATE_MEMBER //
-				.or(Predicates.IS_SYNTHETIC) //
-				.or(Predicates.IS_JAVA);
-
-		return !excludedFieldPredicate.test(field);
-	};
+	private Predicate<Field> fieldFilter = createFieldFilter();
 
 	public TypeCollector filterFields(Predicate<Field> filter) {
 		this.fieldFilter = filter.and(filter);
@@ -196,6 +172,35 @@ public class TypeCollector {
 			}
 		});
 		return discoveredTypes;
+	}
+
+	private Predicate<Method> createMethodFilter() {
+
+		Predicate<Method> excludedDomainsPredicate = methodToTest -> excludedDomainsFilter
+				.test(methodToTest.getDeclaringClass());
+
+		Predicate<Method> excludedMethodsPredicate = Predicates.IS_BRIDGE_METHOD //
+				.or(Predicates.IS_STATIC) //
+				.or(Predicates.IS_SYNTHETIC) //
+				.or(Predicates.IS_NATIVE) //
+				.or(Predicates.IS_PRIVATE) //
+				.or(Predicates.IS_PROTECTED) //
+				.or(Predicates.IS_OBJECT_MEMBER) //
+				.or(Predicates.IS_HIBERNATE_MEMBER) //
+				.or(Predicates.IS_ENUM_MEMBER) //
+				.or(excludedDomainsPredicate.negate()); //
+
+		return excludedMethodsPredicate.negate();
+	}
+
+	@SuppressWarnings("rawtypes")
+	private Predicate<Field> createFieldFilter() {
+
+		Predicate<Member> excludedFieldPredicate = Predicates.IS_HIBERNATE_MEMBER //
+				.or(Predicates.IS_SYNTHETIC) //
+				.or(Predicates.IS_JAVA);
+
+		return (Predicate) excludedFieldPredicate.negate();
 	}
 
 	public static class ReachableTypes {

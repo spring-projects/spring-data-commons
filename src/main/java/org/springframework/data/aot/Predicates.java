@@ -44,6 +44,7 @@ public abstract class Predicates {
 	public static final Predicate<Member> IS_PROTECTED = member -> Modifier.isProtected(member.getModifiers());
 	public static final Predicate<Member> IS_PUBLIC = member -> Modifier.isPublic(member.getModifiers());
 	public static final Predicate<Member> IS_SYNTHETIC = Member::isSynthetic;
+	public static final Predicate<Member> IS_STATIC = member -> Modifier.isStatic(member.getModifiers());
 
 	public static final Predicate<Method> IS_BRIDGE_METHOD = Method::isBridge;
 
