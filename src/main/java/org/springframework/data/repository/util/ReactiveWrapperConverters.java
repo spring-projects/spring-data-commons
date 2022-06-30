@@ -64,9 +64,15 @@ public abstract class ReactiveWrapperConverters {
 	private static final List<ReactiveTypeWrapper<?>> REACTIVE_WRAPPERS = new ArrayList<>();
 	private static final GenericConversionService GENERIC_CONVERSION_SERVICE = new GenericConversionService();
 
+	private static final boolean RXJAVA3_PRESENT = ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA3);
+	private static final boolean REACTOR_PRESENT = ReactiveWrappers.isAvailable(ReactiveLibrary.PROJECT_REACTOR);
+	private static final boolean KOTLIN_COROUTNES_PRESENT = ReactiveWrappers
+			.isAvailable(ReactiveLibrary.KOTLIN_COROUTINES);
+	private static final boolean MUTINY_PRESENT = ReactiveWrappers.isAvailable(ReactiveLibrary.MUTINY);
+
 	static {
 
-		if (ReactiveWrappers.isAvailable(ReactiveLibrary.RXJAVA3)) {
+		if (RXJAVA3_PRESENT) {
 
 			REACTIVE_WRAPPERS.add(RxJava3SingleWrapper.INSTANCE);
 			REACTIVE_WRAPPERS.add(RxJava3MaybeWrapper.INSTANCE);
@@ -74,18 +80,18 @@ public abstract class ReactiveWrapperConverters {
 			REACTIVE_WRAPPERS.add(RxJava3FlowableWrapper.INSTANCE);
 		}
 
-		if (ReactiveWrappers.isAvailable(ReactiveLibrary.PROJECT_REACTOR)) {
+		if (REACTOR_PRESENT) {
 
 			REACTIVE_WRAPPERS.add(FluxWrapper.INSTANCE);
 			REACTIVE_WRAPPERS.add(MonoWrapper.INSTANCE);
 			REACTIVE_WRAPPERS.add(PublisherWrapper.INSTANCE);
 		}
 
-		if (ReactiveWrappers.isAvailable(ReactiveLibrary.KOTLIN_COROUTINES)) {
+		if (KOTLIN_COROUTNES_PRESENT) {
 			REACTIVE_WRAPPERS.add(FlowWrapper.INSTANCE);
 		}
 
-		if (ReactiveWrappers.isAvailable(ReactiveLibrary.MUTINY)) {
+		if (MUTINY_PRESENT) {
 			REACTIVE_WRAPPERS.add(UniWrapper.INSTANCE);
 			REACTIVE_WRAPPERS.add(MultiWrapper.INSTANCE);
 		}
@@ -104,12 +110,12 @@ public abstract class ReactiveWrapperConverters {
 
 		Assert.notNull(conversionService, "ConversionService must not be null");
 
-		if (ReactiveWrappers.isAvailable(ReactiveLibrary.PROJECT_REACTOR)) {
+		if (REACTOR_PRESENT) {
 
 			conversionService.addConverter(PublisherToMonoConverter.INSTANCE);
 			conversionService.addConverter(PublisherToFluxConverter.INSTANCE);
 
-			if (ReactiveWrappers.isAvailable(ReactiveLibrary.KOTLIN_COROUTINES)) {
+			if (KOTLIN_COROUTNES_PRESENT) {
 				conversionService.addConverter(PublisherToFlowConverter.INSTANCE);
 			}
 
@@ -438,7 +444,6 @@ public abstract class ReactiveWrapperConverters {
 			return ((io.smallrye.mutiny.Multi<?>) wrapper).map(function);
 		}
 	}
-
 
 	// -------------------------------------------------------------------------
 	// ReactiveStreams converters
