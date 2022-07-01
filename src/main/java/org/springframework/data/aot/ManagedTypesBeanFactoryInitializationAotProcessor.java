@@ -16,7 +16,6 @@
 package org.springframework.data.aot;
 
 import java.util.Collections;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
@@ -41,23 +40,11 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Christoph Strobl
  * @author John Blum
- * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
- * @see org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution
- * @see org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor
  * @since 3.0
  */
-public class SpringDataBeanFactoryInitializationAotProcessor implements BeanFactoryInitializationAotProcessor {
+public class ManagedTypesBeanFactoryInitializationAotProcessor implements BeanFactoryInitializationAotProcessor {
 
 	private static final Log logger = LogFactory.getLog(BeanFactoryInitializationAotProcessor.class);
-
-	private static final Function<Object, Object> arrayToListFunction = target ->
-		ObjectUtils.isArray(target) ? CollectionUtils.arrayToList(target) : target;
-
-	private static final Function<Object, Object> asSingletonSetFunction = target ->
-		!(target instanceof Iterable<?>) ? Collections.singleton(target) : target;
-
-	private static final Function<Object, Object> constructorArgumentFunction =
-		arrayToListFunction.andThen(asSingletonSetFunction);
 
 	@Nullable
 	@Override
@@ -70,42 +57,61 @@ public class SpringDataBeanFactoryInitializationAotProcessor implements BeanFact
 	private void processManagedTypes(ConfigurableListableBeanFactory beanFactory) {
 
 		if (beanFactory instanceof BeanDefinitionRegistry registry) {
+
 			for (String beanName : beanFactory.getBeanNamesForType(ManagedTypes.class)) {
-
-				BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-
-				if (hasConstructorArguments(beanDefinition)) {
-
-					ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues()
-						.getArgumentValue(0, null, null, null);
-
-					if (argumentValue.getValue() instanceof Supplier supplier) {
-
-						if (logger.isDebugEnabled()) {
-							logger.info(String.format("Replacing ManagedType bean definition %s.", beanName));
-						}
-
-						Object value = constructorArgumentFunction.apply(supplier.get());
-
-						BeanDefinition beanDefinitionReplacement = newManagedTypeBeanDefinition(value);
-
-						registry.removeBeanDefinition(beanName);
-						registry.registerBeanDefinition(beanName, beanDefinitionReplacement);
-					}
-				}
+				postProcessManagedTypes(beanFactory, registry, beanName);
 			}
 		}
+	}
+
+	private void postProcessManagedTypes(ConfigurableListableBeanFactory beanFactory, BeanDefinitionRegistry registry,
+			String beanName) {
+
+		BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+
+		if (hasConstructorArguments(beanDefinition)) {
+
+			ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, null, null, null);
+
+			if (argumentValue.getValue()instanceof Supplier supplier) {
+
+				if (logger.isDebugEnabled()) {
+					logger.info(String.format("Replacing ManagedType bean definition %s.", beanName));
+				}
+
+				Object value = potentiallyWrapToIterable(supplier.get());
+
+				BeanDefinition beanDefinitionReplacement = newManagedTypeBeanDefinition(beanDefinition.getBeanClassName(),
+						value);
+
+				registry.removeBeanDefinition(beanName);
+				registry.registerBeanDefinition(beanName, beanDefinitionReplacement);
+			}
+		}
+	}
+
+	private static Object potentiallyWrapToIterable(Object value) {
+
+		if (ObjectUtils.isArray(value)) {
+			return CollectionUtils.arrayToList(value);
+		}
+
+		if (value instanceof Iterable<?>) {
+			return value;
+		}
+
+		return Collections.singleton(value);
 	}
 
 	private boolean hasConstructorArguments(BeanDefinition beanDefinition) {
 		return !beanDefinition.getConstructorArgumentValues().isEmpty();
 	}
 
-	private BeanDefinition newManagedTypeBeanDefinition(Object constructorArgumentValue) {
+	private BeanDefinition newManagedTypeBeanDefinition(String managedTypesClassName, Object constructorArgumentValue) {
 
-		return BeanDefinitionBuilder.rootBeanDefinition(ManagedTypes.class)
-			.setFactoryMethod("fromIterable")
-			.addConstructorArgValue(constructorArgumentValue)
-			.getBeanDefinition();
+		return BeanDefinitionBuilder.rootBeanDefinition(managedTypesClassName) //
+				.setFactoryMethod("fromIterable") //
+				.addConstructorArgValue(constructorArgumentValue) //
+				.getBeanDefinition();
 	}
 }

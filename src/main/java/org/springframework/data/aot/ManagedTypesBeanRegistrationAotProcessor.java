@@ -43,7 +43,7 @@ import org.springframework.util.StringUtils;
 public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistrationAotProcessor {
 
 	private final Log logger = LogFactory.getLog(getClass());
-	@Nullable private String moduleIdentifier;
+	private @Nullable String moduleIdentifier;
 
 	@Override
 	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
