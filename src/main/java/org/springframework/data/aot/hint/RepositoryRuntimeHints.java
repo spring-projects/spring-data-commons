@@ -40,7 +40,7 @@ import org.springframework.lang.Nullable;
  * @author Christoph Strobl
  * @since 3.0
  */
-public class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
+class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
 
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {

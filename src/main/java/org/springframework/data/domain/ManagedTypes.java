@@ -16,6 +16,7 @@
 package org.springframework.data.domain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -31,6 +32,7 @@ import org.springframework.util.Assert;
  *
  * @author Christoph Strobl
  * @author John Blum
+ * @author Mark Paluch
  * @since 3.0
  */
 @FunctionalInterface
@@ -45,6 +47,16 @@ public interface ManagedTypes {
 	 */
 	static ManagedTypes empty() {
 		return fromIterable(Collections.emptySet());
+	}
+
+	/**
+	 * Factory method used to construct {@link ManagedTypes} from the given array of {@link Class types}.
+	 *
+	 * @param types array of {@link Class types} used to initialize the {@link ManagedTypes}; must not be {@literal null}.
+	 * @return new instance of {@link ManagedTypes} initialized from {@link Class types}.
+	 */
+	static ManagedTypes from(Class<?>... types) {
+		return fromIterable(Arrays.asList(types));
 	}
 
 	/**

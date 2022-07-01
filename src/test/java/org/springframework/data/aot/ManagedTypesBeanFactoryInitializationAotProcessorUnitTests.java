@@ -32,7 +32,7 @@ import org.springframework.data.domain.ManagedTypes;
 /**
  * @author Christoph Strobl
  */
-class SpringDataBeanFactoryInitializationAotProcessorUnitTests {
+class ManagedTypesBeanFactoryInitializationAotProcessorUnitTests {
 
 	@Test // Gh-2593
 	@SuppressWarnings("all")
@@ -47,7 +47,7 @@ class SpringDataBeanFactoryInitializationAotProcessorUnitTests {
 		beanFactory.registerBeanDefinition("data.managed-types", BeanDefinitionBuilder
 				.rootBeanDefinition(ManagedTypes.class).addConstructorArgValue(typesSupplier).getBeanDefinition());
 
-		new SpringDataBeanFactoryInitializationAotProcessor().processAheadOfTime(beanFactory);
+		new ManagedTypesBeanFactoryInitializationAotProcessor().processAheadOfTime(beanFactory);
 
 		assertThat(beanFactory.getBeanNamesForType(ManagedTypes.class)).hasSize(1);
 		verify(typesSupplier).get();
@@ -72,7 +72,7 @@ class SpringDataBeanFactoryInitializationAotProcessorUnitTests {
 
 		beanFactory.registerBeanDefinition("data.managed-types", sourceBeanDefinition);
 
-		new SpringDataBeanFactoryInitializationAotProcessor().processAheadOfTime(beanFactory);
+		new ManagedTypesBeanFactoryInitializationAotProcessor().processAheadOfTime(beanFactory);
 
 		assertThat(beanFactory.getBeanNamesForType(ManagedTypes.class)).hasSize(1);
 		verifyNoInteractions(types);
