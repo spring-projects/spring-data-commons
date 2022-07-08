@@ -37,7 +37,7 @@ public class ReactiveIsNewAwareAuditingHandler extends ReactiveAuditingHandler {
 	private final PersistentEntities entities;
 
 	/**
-	 * Creates a new {@link ReactiveIsNewAwareAuditingHandler} for the given {@link MappingContext}.
+	 * Creates a new {@link ReactiveIsNewAwareAuditingHandler} for the given {@link PersistentEntities}.
 	 *
 	 * @param entities must not be {@literal null}.
 	 */
@@ -46,6 +46,16 @@ public class ReactiveIsNewAwareAuditingHandler extends ReactiveAuditingHandler {
 		super(entities);
 
 		this.entities = entities;
+	}
+
+	/**
+	 * Factory method that creates a new {@link ReactiveIsNewAwareAuditingHandler} for the given {@link MappingContext}.
+	 *
+	 * @param mappingContext must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public static ReactiveIsNewAwareAuditingHandler from(MappingContext<?,?> mappingContext) {
+		return new ReactiveIsNewAwareAuditingHandler(PersistentEntities.of(mappingContext));
 	}
 
 	/**

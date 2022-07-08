@@ -36,7 +36,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	private final PersistentEntities entities;
 
 	/**
-	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
+	 * Creates a new {@link IsNewAwareAuditingHandler} for the given {@link PersistentEntities}.
 	 *
 	 * @param entities must not be {@literal null}.
 	 * @since 1.10
@@ -46,6 +46,16 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 		super(entities);
 
 		this.entities = entities;
+	}
+
+	/**
+	 * Factory method that creates a new {@link IsNewAwareAuditingHandler} for the given {@link MappingContext}.
+	 *
+	 * @param mappingContext must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public static IsNewAwareAuditingHandler from(MappingContext<?,?> mappingContext) {
+		return new IsNewAwareAuditingHandler(PersistentEntities.of(mappingContext));
 	}
 
 	/**
