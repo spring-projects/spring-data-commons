@@ -19,9 +19,9 @@ import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.util.Assert;
 
@@ -51,6 +51,16 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 		Assert.notNull(entities, "PersistentEntities must not be null");
 
 		this.auditorAware = Optional.empty();
+	}
+
+	/**
+	 * Factory method that creates a new {@link AuditingHandler} for the given {@link MappingContext}.
+	 *
+	 * @param mappingContext must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public static AuditingHandler from(MappingContext<?, ?> mappingContext) {
+		return new AuditingHandler(PersistentEntities.of(mappingContext));
 	}
 
 	/**

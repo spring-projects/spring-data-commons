@@ -18,6 +18,7 @@ package org.springframework.data.auditing;
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.domain.ReactiveAuditorAware;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.util.Assert;
 
@@ -40,6 +41,16 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 	 */
 	public ReactiveAuditingHandler(PersistentEntities entities) {
 		super(entities);
+	}
+
+	/**
+	 * Factory method that creates a new {@link ReactiveAuditingHandler} for the given {@link MappingContext}.
+	 *
+	 * @param mappingContext must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public static ReactiveAuditingHandler from(MappingContext<?, ?> mappingContext) {
+		return new ReactiveAuditingHandler(PersistentEntities.of(mappingContext));
 	}
 
 	/**
