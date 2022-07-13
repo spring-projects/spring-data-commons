@@ -15,17 +15,20 @@
  */
 package org.springframework.data.aot;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.aot.generate.GenerationContext;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
+import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
 import org.springframework.beans.factory.support.RegisteredBean;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.lang.Nullable;
@@ -53,8 +56,41 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 		}
 
 		BeanFactory beanFactory = registeredBean.getBeanFactory();
-		return contribute(AotContext.from(registeredBean.getBeanFactory()),
-				beanFactory.getBean(registeredBean.getBeanName(), ManagedTypes.class));
+		return contribute(AotContext.from(beanFactory), resolveManagedTypes(registeredBean));
+	}
+
+	ManagedTypes resolveManagedTypes(RegisteredBean registeredBean) {
+
+		RootBeanDefinition beanDefinition = registeredBean.getMergedBeanDefinition();
+		if (beanDefinition.hasConstructorArgumentValues()) {
+			ValueHolder indexedArgumentValue = beanDefinition.getConstructorArgumentValues().getIndexedArgumentValue(0, null);
+			Object value = indexedArgumentValue.getValue();
+			if (value instanceof Collection<?> values) {
+				if (values.stream().allMatch(it -> it instanceof Class)) {
+					return ManagedTypes.fromIterable((Collection<Class<?>>) values);
+				}
+			}
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug(
+					String.format("ManagedTypes BeanDefinition '%s' does serve arguments. Trying to resolve bean instance.",
+							registeredBean.getBeanName()));
+		}
+
+		if (registeredBean.getParent() == null) {
+			try {
+				return registeredBean.getBeanFactory().getBean(registeredBean.getBeanName(), ManagedTypes.class);
+			} catch (BeanCreationException e) {
+				if (logger.isInfoEnabled()) {
+					logger.info(String.format("Could not resolve ManagedTypes '%s'.", registeredBean.getBeanName()));
+				}
+				if (logger.isDebugEnabled()) {
+					logger.debug(e);
+				}
+			}
+		}
+
+		return ManagedTypes.empty();
 	}
 
 	protected boolean isMatch(@Nullable Class<?> beanType, @Nullable String beanName) {
