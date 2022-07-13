@@ -25,7 +25,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.ClassProxyHint;
 import org.springframework.aot.hint.JdkProxyHint;
-import org.springframework.aot.hint.RuntimeHintsPredicates;
+import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 
 /**
  * AssertJ {@link AbstractAssert Assertion} for code contributions originating from Spring Data Repository
