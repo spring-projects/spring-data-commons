@@ -13,13 +13,15 @@ In fact, Query by Example does not require you to write queries by using store-s
 [[query-by-example.usage]]
 == Usage
 
-The Query by Example API consists of three parts:
+The Query by Example API consists of four parts:
 
 * Probe: The actual example of a domain object with populated fields.
 * `ExampleMatcher`: The `ExampleMatcher` carries details on how to match particular fields.
 It can be reused across multiple Examples.
 * `Example`: An `Example` consists of the probe and the `ExampleMatcher`.
 It is used to create the query.
+* `FetchableFluentQuery`: A `FetchableFluentQuery`  offers a fluent API, that allows further customization of a query derived from an `Example`.
+   Using the fluent API allows you to specify ordering, projection and result processing for your query.
 
 Query by Example is well suited for several use cases:
 
@@ -56,7 +58,8 @@ The preceding example shows a simple domain object.
 You can use it to create an `Example`.
 By default, fields having `null` values are ignored, and strings are matched by using the store specific defaults.
 
-NOTE: Inclusion of properties into a Query by Example criteria is based on nullability. Properties using primitive types (`int`, `double`, …) are always included unless <<query-by-example.matchers,ignoring the property path>>.
+NOTE: Inclusion of properties into a Query by Example criteria is based on nullability.
+Properties using primitive types (`int`, `double`, …) are always included unless <<query-by-example.matchers,ignoring the property path>>.
 
 Examples can be built by either using the `of` factory method or by using <<query-by-example.matchers,`ExampleMatcher`>>. `Example` is immutable.
 The following listing shows a simple Example:
@@ -70,6 +73,7 @@ person.setFirstname("Dave");                          <2>
 
 Example<Person> example = Example.of(person);         <3>
 ----
+
 <1> Create a new instance of the domain object.
 <2> Set the properties to query.
 <3> Create the `Example`.
@@ -115,6 +119,7 @@ ExampleMatcher matcher = ExampleMatcher.matching()     <3>
 Example<Person> example = Example.of(person, matcher); <7>
 
 ----
+
 <1> Create a new instance of the domain object.
 <2> Set properties.
 <3> Create an `ExampleMatcher` to expect all values to match.
@@ -186,3 +191,28 @@ The following table describes the scope of the various `ExampleMatcher` settings
 | Property path
 
 |===
+
+[[query-by-example.fluent]]
+== Fluent API
+
+`QueryByExampleExecutor` offers one more method, which we did not mention so far: `<S extends T, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction)`.
+As with other methods it executes a query derived from an `Example`.
+But with the second argument you can control aspects of that execution, that you can't control dynamically otherwise.
+You do so by invoking the various methods of the `FetchableFluentQuery` in the second argument.
+`sortBy` allows you to specify an ordering for your result.
+`as` allows you to specify the type to which you want the result to be transformed.
+`project` limits the attributes queried.
+`first`, `firstValue`, `one`, `oneValue`, `all`, `page`, `stream`, `count`, `exists` define what kind of result you'll get and also how the query behaves when more than the expected number of results are available.
+
+
+.Use the fluent API to get the last of potentially many results, ordered by lastname.
+====
+[source,java]
+----
+Optional<Person> match = repository.findBy(example,
+    q -> q
+        .sortBy(Sort.by("lastname").descending())
+        .first()
+);
+----
+====
