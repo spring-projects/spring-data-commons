@@ -20,8 +20,8 @@ The Query by Example API consists of four parts:
 It can be reused across multiple Examples.
 * `Example`: An `Example` consists of the probe and the `ExampleMatcher`.
 It is used to create the query.
-* `FetchableFluentQuery`: A `FetchableFluentQuery`  offers a fluent API, that allows further customization of a query derived from an `Example`.
-   Using the fluent API allows you to specify ordering, projection and result processing for your query.
+* `FetchableFluentQuery`: A `FetchableFluentQuery` offers a fluent API, that allows further customization of a query derived from an `Example`.
+   Using the fluent API lets you to specify ordering projection and result processing for your query.
 
 Query by Example is well suited for several use cases:
 
@@ -59,7 +59,7 @@ You can use it to create an `Example`.
 By default, fields having `null` values are ignored, and strings are matched by using the store specific defaults.
 
 NOTE: Inclusion of properties into a Query by Example criteria is based on nullability.
-Properties using primitive types (`int`, `double`, …) are always included unless <<query-by-example.matchers,ignoring the property path>>.
+Properties using primitive types (`int`, `double`, …) are always included unless  the <<query-by-example.matchers, `ExampleMatcher` ignores the property path>>.
 
 Examples can be built by either using the `of` factory method or by using <<query-by-example.matchers,`ExampleMatcher`>>. `Example` is immutable.
 The following listing shows a simple Example:
@@ -196,13 +196,13 @@ The following table describes the scope of the various `ExampleMatcher` settings
 == Fluent API
 
 `QueryByExampleExecutor` offers one more method, which we did not mention so far: `<S extends T, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction)`.
-As with other methods it executes a query derived from an `Example`.
-But with the second argument you can control aspects of that execution, that you can't control dynamically otherwise.
+As with other methods, it executes a query derived from an `Example`.
+However, with the second argument, you can control aspects of that execution that you cannot dynamically control otherwise.
 You do so by invoking the various methods of the `FetchableFluentQuery` in the second argument.
-`sortBy` allows you to specify an ordering for your result.
-`as` allows you to specify the type to which you want the result to be transformed.
-`project` limits the attributes queried.
-`first`, `firstValue`, `one`, `oneValue`, `all`, `page`, `stream`, `count`, `exists` define what kind of result you'll get and also how the query behaves when more than the expected number of results are available.
+`sortBy` lets you specify an ordering for your result.
+`as` lets you specify the type to which you want the result to be transformed.
+`project` limits the queried attributes.
+`first`, `firstValue`, `one`, `oneValue`, `all`, `page`, `stream`, `count`, and `exists` define what kind of result you get and how the query behaves when more than the expected number of results are available.
 
 
 .Use the fluent API to get the last of potentially many results, ordered by lastname.
