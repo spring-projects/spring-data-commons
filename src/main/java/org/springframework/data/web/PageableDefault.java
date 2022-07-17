@@ -21,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
 
@@ -43,6 +44,7 @@ public @interface PageableDefault {
 	 *
 	 * @return
 	 */
+	@AliasFor("size")
 	int value() default 10;
 
 	/**
