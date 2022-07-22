@@ -13,7 +13,10 @@ _Spring Data repository documentation and your module_
 This chapter explains the core concepts and interfaces of Spring Data repositories.
 The information in this chapter is pulled from the Spring Data Commons module.
 It uses the configuration and code samples for the Java Persistence API (JPA) module.
-You should adapt the XML namespace declaration and the types to be extended to the equivalents of the particular module that you use. "`<<repositories.namespace-reference>>`" covers XML configuration, which is supported across all Spring Data modules that support the repository API. "`<<repository-query-keywords>>`" covers the query method keywords supported by the repository abstraction in general.
+ifeval::[{include-xml-namespaces} != false]
+You should adapt the XML namespace declaration and the types to be extended to the equivalents of the particular module that you use. "`<<repositories.namespace-reference>>`" covers XML configuration, which is supported across all Spring Data modules that support the repository API.
+endif::[]
+"`<<repository-query-keywords>>`" covers the query method keywords supported by the repository abstraction in general.
 For detailed information on the specific features of your module, see the chapter on that module of this document.
 ====
 
@@ -154,6 +157,7 @@ class Config { … }
 ----
 ====
 
+ifeval::[{include-xml-namespaces} != false]
 .. To use XML configuration, define a bean similar to the following:
 +
 ====
@@ -177,8 +181,9 @@ class Config { … }
 The JPA namespace is used in this example.
 If you use the repository abstraction for any other store, you need to change this to the appropriate namespace declaration of your store module.
 In other words, you should exchange `jpa` in favor of, for example, `mongodb`.
+endif::[]
 +
-Also, note that the JavaConfig variant does not configure a package explicitly, because the package of the annotated class is used by default.
+Note that the JavaConfig variant does not configure a package explicitly, because the package of the annotated class is used by default.
 To customize the package to scan, use one of the `basePackage…` attributes of the data-store-specific repository's `@Enable${store}Repositories`-annotation.
 . Inject the repository instance and use it, as shown in the following example:
 +
@@ -397,7 +402,9 @@ The next section describes the available options.
 === Query Lookup Strategies
 
 The following strategies are available for the repository infrastructure to resolve the query.
+ifeval::[{include-xml-namespaces} != false]
 With XML configuration, you can configure the strategy at the namespace through the `query-lookup-strategy` attribute.
+endif::[]
 For Java configuration, you can use the `queryLookupStrategy` attribute of the `Enable${store}Repositories` annotation.
 Some strategies may not be supported for particular datastores.
 
@@ -878,9 +885,13 @@ ListenableFuture<User> findOneByLastname(String lastname);    <3>
 [[repositories.create-instances]]
 == Creating Repository Instances
 
-This section covers how to create instances and bean definitions for the defined repository interfaces. One way to do so is by using the Spring namespace that is shipped with each Spring Data module that supports the repository mechanism, although we generally recommend using Java configuration.
+This section covers how to create instances and bean definitions for the defined repository interfaces.
+ifeval::[{include-xml-namespaces} != false]
+One way to do so is by using the Spring namespace that is shipped with each Spring Data module that supports the repository mechanism, although we generally recommend using Java configuration.
+endif::[]
 
 [[repositories.create-instances.spring]]
+ifeval::[{include-xml-namespaces} != false]
 === XML Configuration
 
 Each Spring Data module includes a `repositories` element that lets you define a base package that Spring scans for you, as shown in the following example:
@@ -932,6 +943,7 @@ For example, to exclude certain interfaces from instantiation as repository bean
 ====
 
 The preceding example excludes all interfaces ending in `SomeRepository` from being instantiated.
+endif::[]
 
 [[repositories.create-instances.java-config]]
 === Java Configuration
@@ -1124,9 +1136,15 @@ interface PersonRepository extends CrudRepository<Person, Long>, CustomizedSave<
 [[repositories.configuration]]
 ==== Configuration
 
-If you use namespace configuration, the repository infrastructure tries to autodetect custom implementation fragments by scanning for classes below the package in which it found a repository.
-These classes need to follow the naming convention of appending the namespace element's `repository-impl-postfix` attribute to the fragment interface name.
+The repository infrastructure tries to autodetect custom implementation fragments by scanning for classes below the package in which it found a repository.
+These classes need to follow the naming convention of appending
+ifeval::[{include-xml-namespaces} != false]
+the namespace element's `repository-impl-postfix` attribute to the fragment interface name.
 This postfix defaults to `Impl`.
+endif::[]
+ifeval::[{include-xml-namespaces} == false]
+`Impl` to the fragment interface name.
+endif::[]
 The following example shows a repository that uses the default postfix and a repository that sets a custom value for the postfix:
 
 .Configuration example
@@ -1244,6 +1262,7 @@ class ApplicationConfiguration { … }
 ----
 ====
 
+ifeval::[{include-xml-namespaces} != false]
 A corresponding attribute is available in the XML namespace, as shown in the following example:
 
 .Configuring a custom repository base class using XML
@@ -1254,6 +1273,7 @@ A corresponding attribute is available in the XML namespace, as shown in the fol
      base-class="….MyRepositoryImpl" />
 ----
 ====
+endif::[]
 
 [[core.domain-events]]
 == Publishing Events from Aggregate Roots
@@ -1697,6 +1717,7 @@ interface UserRepository extends CrudRepository<User, String>,
 
 TIP: You can register a `QuerydslBinderCustomizerDefaults` bean holding default Querydsl bindings before applying specific bindings from the repository or `@QuerydslPredicate`.
 
+ifeval::[{include-xml-namespaces} != false]
 [[core.repository-populators]]
 === Repository Populators
 
@@ -1774,3 +1795,4 @@ The following example shows how to unmarshall a repository populator with JAXB:
 </beans>
 ----
 ====
+endif::[]
