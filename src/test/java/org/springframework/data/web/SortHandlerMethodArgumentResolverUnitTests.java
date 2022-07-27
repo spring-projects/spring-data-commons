@@ -324,7 +324,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
 		void containeredDefault(@SortDefaults(@SortDefault({ "foo", "bar" })) Sort sort);
 
-		void invalid(@SortDefaults(@SortDefault({ "foo", "bar" })) @SortDefault({ "bar", "foo" }) Sort sort);
+		void repeatable(@SortDefault({ "one", "two" }) @SortDefault({ "three" }) Sort sort);
 
 		void emptyQualifier(@Qualifier Sort sort);
 

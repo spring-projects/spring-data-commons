@@ -91,8 +91,10 @@ abstract class SpringDataAnnotationUtils {
 	 * @param annotation must not be {@literal null}.
 	 * @param property must not be {@literal null} or empty.
 	 * @return
+	 * @deprecated since 3.0 as this method is no longer used within the Framework.
 	 */
 	@SuppressWarnings("unchecked")
+	@Deprecated
 	public static <T> T getSpecificPropertyOrDefaultFromValue(Annotation annotation, String property) {
 
 		Object propertyDefaultValue = AnnotationUtils.getDefaultValue(annotation, property);

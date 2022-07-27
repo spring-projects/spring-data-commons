@@ -96,7 +96,7 @@ abstract class PageableDefaultUnitTests {
 	}
 
 	@Test
-	void rejectsInvalidQulifiers() throws Exception {
+	void rejectsInvalidQualifiers() {
 
 		var parameter = TestUtils.getParameterOfMethod(getControllerClass(), "invalidQualifiers",
 				Pageable.class, Pageable.class);
@@ -110,7 +110,7 @@ abstract class PageableDefaultUnitTests {
 	}
 
 	@Test
-	void rejectsNoQualifiers() throws Exception {
+	void rejectsNoQualifiers() {
 
 		var parameter = TestUtils.getParameterOfMethod(getControllerClass(), "noQualifiers", Pageable.class,
 				Pageable.class);

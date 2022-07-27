@@ -25,7 +25,6 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 /**
@@ -91,19 +90,9 @@ abstract class SortDefaultUnitTests {
 		assertThat(getResolver().supportsParameter(parameter)).isFalse();
 	}
 
-	@Test
-	void rejectsDoubleAnnotatedMethod() {
-
-		var parameter = getParameterOfMethod("invalid");
-
-		HandlerMethodArgumentResolver resolver = new SortHandlerMethodArgumentResolver();
-		assertThat(resolver.supportsParameter(parameter)).isTrue();
-
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> resolver.resolveArgument(parameter, null, TestUtils.getWebRequest(), null)) //
-				.withMessageContaining(SortDefault.class.getSimpleName()) //
-				.withMessageContaining(SortDefaults.class.getSimpleName()) //
-				.withMessageContaining(parameter.toString());
+	@Test // GH-2657
+	void considersRepeatableAnnotation() throws Exception {
+		assertSupportedAndResolvedTo(getParameterOfMethod("repeatable"), Sort.by("one", "two", "three").ascending());
 	}
 
 	@Test

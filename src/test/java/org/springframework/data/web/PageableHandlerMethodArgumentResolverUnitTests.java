@@ -36,6 +36,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Vedran Pavic
+ * @author Mark Paluch
  */
 class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
@@ -106,11 +107,18 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 	@Test // DATACMNS-377
 	void rejectsInvalidCustomDefaultForPageSize() throws Exception {
 
-		var parameter = new MethodParameter(Sample.class.getMethod("invalidDefaultPageSize", Pageable.class),
-				0);
+		var parameter = new MethodParameter(Sample.class.getMethod("invalidDefaultPageSize", Pageable.class), 0);
 
 		assertThatIllegalStateException().isThrownBy(() -> assertSupportedAndResult(parameter, DEFAULT_PAGE_REQUEST)) //
 				.withMessageContaining("invalidDefaultPageSize");
+	}
+
+	@Test // GH-2657
+	void considersValueAlias() throws Exception {
+
+		var parameter = new MethodParameter(Sample.class.getMethod("valuePageSize", Pageable.class), 0);
+
+		assertSupportedAndResult(parameter, PageRequest.of(0, 2));
 	}
 
 	@Test // DATACMNS-408
@@ -288,6 +296,8 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 		void unsupportedMethod(String string);
 
 		void invalidDefaultPageSize(@PageableDefault(size = 0) Pageable pageable);
+
+		void valuePageSize(@PageableDefault(2) Pageable pageable);
 
 		void simpleDefault(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER) Pageable pageable);
 

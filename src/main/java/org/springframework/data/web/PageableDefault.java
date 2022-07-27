@@ -21,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
 
@@ -31,6 +32,7 @@ import org.springframework.data.web.SortDefault.SortDefaults;
  *
  * @since 1.6
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -43,22 +45,24 @@ public @interface PageableDefault {
 	 *
 	 * @return
 	 */
+	@AliasFor("size")
 	int value() default 10;
 
 	/**
 	 * The default-size the injected {@link org.springframework.data.domain.Pageable} should get if no corresponding
-	 * parameter defined in request (default is 10).
+	 * parameter defined in request (default is {@code 10}).
 	 */
+	@AliasFor("value")
 	int size() default 10;
 
 	/**
-	 * The default-pagenumber the injected {@link org.springframework.data.domain.Pageable} should get if no corresponding
-	 * parameter defined in request (default is 0).
+	 * The default page number the injected {@link org.springframework.data.domain.Pageable} should use if no
+	 * corresponding parameter defined in request (default is {@code 0}).
 	 */
 	int page() default 0;
 
 	/**
-	 * The properties to sort by by default. If unset, no sorting will be applied at all.
+	 * The properties to sort by default. If unset, no sorting will be applied at all.
 	 *
 	 * @return
 	 */

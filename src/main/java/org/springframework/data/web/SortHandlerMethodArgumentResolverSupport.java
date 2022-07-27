@@ -23,6 +23,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.core.annotation.RepeatableContainers;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -121,31 +124,26 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 	 */
 	protected Sort getDefaultFromAnnotationOrFallback(MethodParameter parameter) {
 
-		SortDefaults annotatedDefaults = parameter.getParameterAnnotation(SortDefaults.class);
-		SortDefault annotatedDefault = parameter.getParameterAnnotation(SortDefault.class);
+		MergedAnnotations mergedAnnotations = MergedAnnotations.from(parameter, parameter.getParameterAnnotations(),
+				RepeatableContainers.of(SortDefault.class, SortDefaults.class));
 
-		if (annotatedDefault != null && annotatedDefaults != null) {
-			throw new IllegalArgumentException(
-					String.format("Cannot use both @%s and @%s on parameter %s; Move %s into %s to define sorting order",
-							SORT_DEFAULTS_NAME, SORT_DEFAULT_NAME, parameter.toString(), SORT_DEFAULT_NAME, SORT_DEFAULTS_NAME));
+		List<MergedAnnotation<SortDefault>> annotations = mergedAnnotations.stream(SortDefault.class).toList();
+
+		if (annotations.isEmpty()) {
+			return fallbackSort;
 		}
 
-		if (annotatedDefault != null) {
-			return appendOrCreateSortTo(annotatedDefault, Sort.unsorted());
+		if (annotations.size() == 1) {
+			return appendOrCreateSortTo(annotations.get(0), Sort.unsorted());
 		}
 
-		if (annotatedDefaults != null) {
+		Sort sort = Sort.unsorted();
 
-			Sort sort = Sort.unsorted();
-
-			for (SortDefault currentAnnotatedDefault : annotatedDefaults.value()) {
-				sort = appendOrCreateSortTo(currentAnnotatedDefault, sort);
-			}
-
-			return sort;
+		for (MergedAnnotation<SortDefault> currentAnnotatedDefault : annotations) {
+			sort = appendOrCreateSortTo(currentAnnotatedDefault, sort);
 		}
 
-		return fallbackSort;
+		return sort;
 	}
 
 	/**
@@ -156,9 +154,9 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 	 * @param sortOrNull
 	 * @return
 	 */
-	private Sort appendOrCreateSortTo(SortDefault sortDefault, Sort sortOrNull) {
+	private Sort appendOrCreateSortTo(MergedAnnotation<SortDefault> sortDefault, Sort sortOrNull) {
 
-		String[] fields = SpringDataAnnotationUtils.getSpecificPropertyOrDefaultFromValue(sortDefault, "sort");
+		String[] fields = sortDefault.getStringArray("sort");
 
 		if (fields.length == 0) {
 			return Sort.unsorted();
@@ -167,8 +165,8 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		List<Order> orders = new ArrayList<>(fields.length);
 		for (String field : fields) {
 
-			Order order = new Order(sortDefault.direction(), field);
-			orders.add(sortDefault.caseSensitive() ? order : order.ignoreCase());
+			Order order = new Order(sortDefault.getEnum("direction", Sort.Direction.class), field);
+			orders.add(sortDefault.getBoolean("caseSensitive") ? order : order.ignoreCase());
 		}
 
 		return sortOrNull.and(Sort.by(orders));

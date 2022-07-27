@@ -17,10 +17,12 @@ package org.springframework.data.web;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
@@ -30,10 +32,12 @@ import org.springframework.data.domain.Sort.Direction;
  *
  * @since 1.6
  * @author Oliver Gierke
+ * @author Mark Palich
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
+@Repeatable(SortDefault.SortDefaults.class)
 public @interface SortDefault {
 
 	/**
@@ -41,13 +45,15 @@ public @interface SortDefault {
 	 *
 	 * @return
 	 */
+	@AliasFor("sort")
 	String[] value() default {};
 
 	/**
-	 * The properties to sort by by default. If unset, no sorting will be applied at all.
+	 * The properties to sort by default. If unset, no sorting will be applied at all.
 	 *
 	 * @return
 	 */
+	@AliasFor("value")
 	String[] sort() default {};
 
 	/**

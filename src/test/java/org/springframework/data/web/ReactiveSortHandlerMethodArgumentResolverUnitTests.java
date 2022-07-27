@@ -153,20 +153,9 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 		assertThat(resolve(request, PARAMETER)).isEqualTo(Sort.by(DESC, "property1"));
 	}
 
-	@Test // DATACMNS-1211
-	void rejectsDoubleAnnotatedMethod() {
-
-		var parameter = getParameterOfMethod("invalid");
-
-		var resolver = new ReactiveSortHandlerMethodArgumentResolver();
-		assertThat(resolver.supportsParameter(parameter)).isTrue();
-
-		assertThatIllegalArgumentException()
-				.isThrownBy(() ->
-		resolver.resolveArgumentValue(parameter, null,
-						MockServerWebExchange.from(TestUtils.getWebfluxRequest())))
-				.withMessageContaining(SortDefault.class.getSimpleName())
-				.withMessageContaining(SortDefaults.class.getSimpleName()).withMessageContaining(parameter.toString());
+	@Test // GH-2657
+	void considersRepeatableAnnotation() {
+		assertSupportedAndResolvedTo(getParameterOfMethod("repeatable"), Sort.by("one", "two", "three").ascending());
 	}
 
 	@Test // DATACMNS-1211
@@ -261,6 +250,6 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 
 		void containeredDefault(@SortDefaults(@SortDefault({ "foo", "bar" })) Sort sort);
 
-		void invalid(@SortDefaults(@SortDefault({ "foo", "bar" })) @SortDefault({ "bar", "foo" }) Sort sort);
+		void repeatable(@SortDefault({ "one", "two" }) @SortDefault({ "three" }) Sort sort);
 	}
 }

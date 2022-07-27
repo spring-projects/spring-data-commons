@@ -22,6 +22,8 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -238,30 +240,34 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 
 	private Pageable getDefaultFromAnnotationOrFallback(MethodParameter methodParameter) {
 
-		PageableDefault defaults = methodParameter.getParameterAnnotation(PageableDefault.class);
+		MergedAnnotation<PageableDefault> defaults = MergedAnnotations.from(methodParameter.getParameterAnnotations())
+				.get(PageableDefault.class);
 
-		if (defaults != null) {
+		if (defaults.isPresent()) {
 			return getDefaultPageRequestFrom(methodParameter, defaults);
 		}
 
 		return fallbackPageable;
 	}
 
-	private static Pageable getDefaultPageRequestFrom(MethodParameter parameter, PageableDefault defaults) {
+	private static Pageable getDefaultPageRequestFrom(MethodParameter parameter,
+			MergedAnnotation<PageableDefault> defaults) {
 
-		int defaultPageNumber = defaults.page();
-		Integer defaultPageSize = getSpecificPropertyOrDefaultFromValue(defaults, "size");
+		int defaultPageNumber = defaults.getInt("page");
+		int defaultPageSize = defaults.getInt("size");
 
 		if (defaultPageSize < 1) {
 			Method annotatedMethod = parameter.getMethod();
 			throw new IllegalStateException(String.format(INVALID_DEFAULT_PAGE_SIZE, annotatedMethod));
 		}
 
-		if (defaults.sort().length == 0) {
+		String[] sort = defaults.getStringArray("sort");
+		if (sort.length == 0) {
 			return PageRequest.of(defaultPageNumber, defaultPageSize);
 		}
 
-		return PageRequest.of(defaultPageNumber, defaultPageSize, defaults.direction(), defaults.sort());
+		return PageRequest.of(defaultPageNumber, defaultPageSize, defaults.getEnum("direction", Sort.Direction.class),
+				sort);
 	}
 
 	/**
@@ -286,6 +292,5 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 			return Optional.of(0);
 		}
 	}
-
 
 }
