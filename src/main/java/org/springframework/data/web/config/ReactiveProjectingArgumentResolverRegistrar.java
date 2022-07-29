@@ -41,6 +41,7 @@ import org.springframework.web.reactive.result.method.annotation.RequestMappingH
  * @author Mark Paluch
  * @author Johannes Englmeier
  * @author Matías Hermosilla
+ * @since 3.0
  * @soundtrack Apparat With Soap & Skin - Goodbye (Dark Theme Song - https://www.youtube.com/watch?v=66VnOdk6oto)
  */
 @Configuration(proxyBeanMethods = false)

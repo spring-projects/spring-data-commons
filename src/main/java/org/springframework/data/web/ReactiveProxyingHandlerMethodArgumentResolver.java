@@ -42,7 +42,7 @@ import reactor.core.publisher.Mono;
  *
  * @author Oliver Gierke
  * @author Matias Hermosilla
- * @since 1.10
+ * @since 3.0
  */
 public class ReactiveProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodArgumentResolver
 		implements BeanFactoryAware, BeanClassLoaderAware {
