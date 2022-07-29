@@ -15,7 +15,6 @@
  */
 package org.springframework.data.web;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
@@ -39,13 +38,12 @@ import org.springframework.util.MimeType;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * {@link org.springframework.http.codec.HttpMessageDecoder} implementation to enable projected JSON binding to interfaces annotated with
- * {@link ProjectedPayload}.
+ * {@link org.springframework.http.codec.HttpMessageDecoder} implementation to enable projected JSON binding to
+ * interfaces annotated with {@link ProjectedPayload}.
  *
  * @author Matías Hermosilla
  * @since 3.0
@@ -138,8 +136,8 @@ public class ProjectingJackson2JsonDecoder extends Jackson2JsonDecoder
 	}
 
 	@Override
-	public Flux<Object> decode(Publisher<DataBuffer> input, ResolvableType elementType,
-			@Nullable MimeType mimeType, @Nullable Map<String, Object> hints) {
+	public Flux<Object> decode(Publisher<DataBuffer> input, ResolvableType elementType, @Nullable MimeType mimeType,
+			@Nullable Map<String, Object> hints) {
 
 		ObjectMapper mapper = selectObjectMapper(elementType, mimeType);
 		if (mapper == null) {
@@ -150,7 +148,7 @@ public class ProjectingJackson2JsonDecoder extends Jackson2JsonDecoder
 
 		return DataBufferUtils.join(processed, this.getMaxInMemorySize())
 				.flatMap(dataBuffer -> Mono.just(decode(dataBuffer, elementType, mimeType, hints)))
-				.expand(object -> {
+				.flatMapMany(object -> {
 					if (object instanceof Iterable) {
 						return Flux.fromIterable((Iterable) object);
 					}
@@ -159,8 +157,8 @@ public class ProjectingJackson2JsonDecoder extends Jackson2JsonDecoder
 	}
 
 	@Override
-	public Object decode(DataBuffer dataBuffer, ResolvableType targetType,
-			@Nullable MimeType mimeType, @Nullable Map<String, Object> hints) throws DecodingException {
+	public Object decode(DataBuffer dataBuffer, ResolvableType targetType, @Nullable MimeType mimeType,
+			@Nullable Map<String, Object> hints) throws DecodingException {
 
 		return projectionFactory.createProjection(ResolvableType.forType(targetType.getType()).resolve(Object.class),
 				dataBuffer.asInputStream());
