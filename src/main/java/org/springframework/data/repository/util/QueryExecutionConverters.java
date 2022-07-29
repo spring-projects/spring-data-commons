@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.util;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,7 +44,6 @@ import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
@@ -92,7 +90,9 @@ public abstract class QueryExecutionConverters {
 		WRAPPER_TYPES.add(WrapperType.singleValue(Future.class));
 		UNWRAPPER_TYPES.add(WrapperType.singleValue(Future.class));
 		WRAPPER_TYPES.add(WrapperType.singleValue(ListenableFuture.class));
+		WRAPPER_TYPES.add(WrapperType.singleValue(CompletableFuture.class));
 		UNWRAPPER_TYPES.add(WrapperType.singleValue(ListenableFuture.class));
+		UNWRAPPER_TYPES.add(WrapperType.singleValue(CompletableFuture.class));
 
 		ALLOWED_PAGEABLE_TYPES.add(Slice.class);
 		ALLOWED_PAGEABLE_TYPES.add(Page.class);
@@ -102,9 +102,7 @@ public abstract class QueryExecutionConverters {
 
 		UNWRAPPERS.addAll(CustomCollections.getUnwrappers());
 
-		CustomCollections.getCustomTypes().stream()
-				.map(WrapperType::multiValue)
-				.forEach(WRAPPER_TYPES::add);
+		CustomCollections.getCustomTypes().stream().map(WrapperType::multiValue).forEach(WRAPPER_TYPES::add);
 
 		CustomCollections.getPaginationReturnTypes().forEach(ALLOWED_PAGEABLE_TYPES::add);
 
@@ -302,8 +300,7 @@ public abstract class QueryExecutionConverters {
 			this.wrapperTypes = Collections.singleton(nullValue.getClass());
 		}
 
-		AbstractWrapperTypeConverter(Object nullValue,
-				Iterable<Class<?>> wrapperTypes) {
+		AbstractWrapperTypeConverter(Object nullValue, Iterable<Class<?>> wrapperTypes) {
 			this.nullValue = nullValue;
 			this.wrapperTypes = wrapperTypes;
 		}
@@ -345,13 +342,14 @@ public abstract class QueryExecutionConverters {
 	 *
 	 * @author Oliver Gierke
 	 */
+	@Deprecated(since = "3.0")
 	private static class NullableWrapperToFutureConverter extends AbstractWrapperTypeConverter {
 
 		/**
 		 * Creates a new {@link NullableWrapperToFutureConverter} using the given {@link ConversionService}.
 		 */
 		NullableWrapperToFutureConverter() {
-			super(new AsyncResult<>(null), Arrays.asList(Future.class, ListenableFuture.class));
+			super(new AsyncResult<>(null), List.of(ListenableFuture.class));
 		}
 
 		@Override
@@ -371,7 +369,7 @@ public abstract class QueryExecutionConverters {
 		 * Creates a new {@link NullableWrapperToCompletableFutureConverter} using the given {@link ConversionService}.
 		 */
 		NullableWrapperToCompletableFutureConverter() {
-			super(CompletableFuture.completedFuture(null));
+			super(CompletableFuture.completedFuture(null), List.of(Future.class));
 		}
 
 		@Override

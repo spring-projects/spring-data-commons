@@ -75,6 +75,7 @@ class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supports(java.util.Optional.class)).isTrue();
 		assertThat(QueryExecutionConverters.supports(Future.class)).isTrue();
 		assertThat(QueryExecutionConverters.supports(ListenableFuture.class)).isTrue();
+		assertThat(QueryExecutionConverters.supports(CompletableFuture.class)).isTrue();
 		assertThat(QueryExecutionConverters.supports(Option.class)).isTrue();
 		assertThat(QueryExecutionConverters.supports(io.vavr.control.Option.class)).isTrue();
 	}
@@ -85,6 +86,7 @@ class QueryExecutionConvertersUnitTests {
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Optional.class)).isTrue();
 		assertThat(QueryExecutionConverters.supportsUnwrapping(java.util.Optional.class)).isTrue();
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Future.class)).isTrue();
+		assertThat(QueryExecutionConverters.supportsUnwrapping(CompletableFuture.class)).isTrue();
 		assertThat(QueryExecutionConverters.supportsUnwrapping(ListenableFuture.class)).isTrue();
 		assertThat(QueryExecutionConverters.supportsUnwrapping(Option.class)).isTrue();
 	}

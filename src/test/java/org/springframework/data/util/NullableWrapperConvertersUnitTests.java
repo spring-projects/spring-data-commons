@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import scala.Option;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -54,6 +55,7 @@ class NullableWrapperConvertersUnitTests {
 		assertThat(NullableWrapperConverters.supports(java.util.Optional.class)).isTrue();
 		assertThat(NullableWrapperConverters.supports(Future.class)).isFalse();
 		assertThat(NullableWrapperConverters.supports(ListenableFuture.class)).isFalse();
+		assertThat(NullableWrapperConverters.supports(CompletableFuture.class)).isFalse();
 		assertThat(NullableWrapperConverters.supports(Option.class)).isTrue();
 		assertThat(NullableWrapperConverters.supports(io.vavr.control.Option.class)).isTrue();
 	}
@@ -65,6 +67,7 @@ class NullableWrapperConvertersUnitTests {
 		assertThat(NullableWrapperConverters.supportsUnwrapping(java.util.Optional.class)).isTrue();
 		assertThat(NullableWrapperConverters.supportsUnwrapping(Future.class)).isFalse();
 		assertThat(NullableWrapperConverters.supportsUnwrapping(ListenableFuture.class)).isFalse();
+		assertThat(NullableWrapperConverters.supportsUnwrapping(CompletableFuture.class)).isFalse();
 		assertThat(NullableWrapperConverters.supportsUnwrapping(Option.class)).isTrue();
 	}
 

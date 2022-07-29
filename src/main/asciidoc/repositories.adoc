@@ -873,13 +873,9 @@ Future<User> findByFirstname(String firstname);               <1>
 
 @Async
 CompletableFuture<User> findOneByFirstname(String firstname); <2>
-
-@Async
-ListenableFuture<User> findOneByLastname(String lastname);    <3>
 ----
 <1> Use `java.util.concurrent.Future` as the return type.
 <2> Use a Java 8 `java.util.concurrent.CompletableFuture` as the return type.
-<3> Use a `org.springframework.util.concurrent.ListenableFuture` as the return type.
 ====
 
 [[repositories.create-instances]]
