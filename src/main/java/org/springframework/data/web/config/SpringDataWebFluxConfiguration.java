@@ -21,6 +21,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
@@ -55,10 +56,11 @@ public class SpringDataWebFluxConfiguration implements WebFluxConfigurer, BeanCl
 	private final ObjectFactory<ConversionService> conversionService;
 	private @Nullable ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
-	private final Lazy<SortHandlerMethodArgumentResolver> sortResolver;
-	private final Lazy<PageableHandlerMethodArgumentResolver> pageableResolver;
-	private final Lazy<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
-	private final Lazy<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
+	private final Lazy<ReactiveSortHandlerMethodArgumentResolver> sortResolver;
+	private final Lazy<ReactivePageableHandlerMethodArgumentResolver> pageableResolver;
+	private final Lazy<ReactivePageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
+	private final Lazy<ReactiveSortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
+	private final Lazy<ReactiveAdapterRegistry> adapterRegistry;
 
 	public SpringDataWebFluxConfiguration(ApplicationContext context,
 			@Qualifier("webFluxConversionService") ObjectFactory<ConversionService> conversionService) {
@@ -69,39 +71,41 @@ public class SpringDataWebFluxConfiguration implements WebFluxConfigurer, BeanCl
 		this.context = context;
 
 		this.conversionService = conversionService;
-		this.sortResolver = Lazy.of(() -> context.getBean("sortResolver", SortHandlerMethodArgumentResolver.class));
+		this.sortResolver = Lazy.of(() -> context.getBean("sortResolver", ReactiveSortHandlerMethodArgumentResolver.class));
 		this.pageableResolver = Lazy.of( //
-				() -> context.getBean("pageableResolver", PageableHandlerMethodArgumentResolver.class));
+				() -> context.getBean("pageableResolver", ReactivePageableHandlerMethodArgumentResolver.class));
 		this.pageableResolverCustomizer = Lazy.of( //
-				() -> context.getBeanProvider(PageableHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
+				() -> context.getBeanProvider(ReactivePageableHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
 		this.sortResolverCustomizer = Lazy.of( //
-				() -> context.getBeanProvider(SortHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
+				() -> context.getBeanProvider(ReactiveSortHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
+		this.adapterRegistry = Lazy.of( //
+				() -> context.getBeanProvider(ReactiveAdapterRegistry.class).getIfAvailable());
 	}
 
 	@Override
-  public void setBeanClassLoader(ClassLoader classLoader) {
+	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
 	}
 
 	@Bean
-  public PageableHandlerMethodArgumentResolver pageableResolver() {
+	public ReactivePageableHandlerMethodArgumentResolver pageableResolver() {
 
-		PageableHandlerMethodArgumentResolver pageableResolver = //
-				new PageableHandlerMethodArgumentResolver(sortResolver.get());
+		ReactivePageableHandlerMethodArgumentResolver pageableResolver = //
+				new ReactivePageableHandlerMethodArgumentResolver(sortResolver.get());
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
 	}
 
 	@Bean
-  public SortHandlerMethodArgumentResolver sortResolver() {
+	public ReactiveSortHandlerMethodArgumentResolver sortResolver() {
 
-		SortHandlerMethodArgumentResolver sortResolver = new SortHandlerMethodArgumentResolver();
+		ReactiveSortHandlerMethodArgumentResolver sortResolver = new ReactiveSortHandlerMethodArgumentResolver();
 		customizeSortResolver(sortResolver);
 		return sortResolver;
 	}
 
 	@Override
-  public void addFormatters(FormatterRegistry registry) {
+	public void addFormatters(FormatterRegistry registry) {
 
 		registry.addFormatter(DistanceFormatter.INSTANCE);
 		registry.addFormatter(PointFormatter.INSTANCE);
@@ -116,12 +120,13 @@ public class SpringDataWebFluxConfiguration implements WebFluxConfigurer, BeanCl
 	}
 
 	@Override
-  public void configureArgumentResolvers(ArgumentResolverConfigurer configurer) {
+	public void configureArgumentResolvers(ArgumentResolverConfigurer configurer) {
 
-		configurer.addCustomResolver((HandlerMethodArgumentResolver) sortResolver.get());
-		configurer.addCustomResolver((HandlerMethodArgumentResolver) pageableResolver.get());
+		configurer.addCustomResolver(sortResolver.get());
+		configurer.addCustomResolver(pageableResolver.get());
 
-		ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(conversionService, true);
+		ReactiveProxyingHandlerMethodArgumentResolver resolver = new ReactiveProxyingHandlerMethodArgumentResolver(
+				conversionService, this.adapterRegistry.get(), true);
 		resolver.setBeanFactory(context);
 		forwardBeanClassLoader(resolver);
 
@@ -129,7 +134,7 @@ public class SpringDataWebFluxConfiguration implements WebFluxConfigurer, BeanCl
 	}
 
 	@Override
-  public void configureHttpMessageCodecs(ServerCodecConfigurer configurer) {
+	public void configureHttpMessageCodecs(ServerCodecConfigurer configurer) {
 
 		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader()) && ClassUtils.isPresent(
 				"com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
@@ -146,11 +151,11 @@ public class SpringDataWebFluxConfiguration implements WebFluxConfigurer, BeanCl
 
 	}
 
-	protected void customizePageableResolver(PageableHandlerMethodArgumentResolver pageableResolver) {
+	protected void customizePageableResolver(ReactivePageableHandlerMethodArgumentResolver pageableResolver) {
 		pageableResolverCustomizer.getOptional().ifPresent(c -> c.customize(pageableResolver));
 	}
 
-	protected void customizeSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
+	protected void customizeSortResolver(ReactiveSortHandlerMethodArgumentResolver sortResolver) {
 		sortResolverCustomizer.getOptional().ifPresent(c -> c.customize(sortResolver));
 	}
 
