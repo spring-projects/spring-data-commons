@@ -22,6 +22,13 @@ import reactor.core.publisher.Mono
 
 /**
  * Interface for generic CRUD operations using Kotlin Coroutines on a repository for a specific type.
+ * <p>
+ * Save and delete operations with entities that have a version attribute throw a {@link org.springframework.dao.OptimisticLockingFailureException} when they encounter a different version value in the persistence store than in the entity passed as an argument.
+ * </p>
+ * <p>
+ * Other delete operations that only receive ids or entities without version attribute do not trigger an error when no matching data is found in the persistence store.
+ * </p>
+
  *
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -86,7 +93,7 @@ interface CoroutineCrudRepository<T, ID> : Repository<T, ID> {
 	fun findAll(): Flow<T>
 
 	/**
-	 * Returns all instances of the type `T` with the given IDs.
+	 * Returns all instances of the type {@code T} with the given IDs.
 	 * If some or all ids are not found, no entities are returned for these IDs.
 	 * Note that the order of elements in the result is not guaranteed.
 	 *
@@ -98,7 +105,7 @@ interface CoroutineCrudRepository<T, ID> : Repository<T, ID> {
 	fun findAllById(ids: Iterable<ID>): Flow<T>
 
 	/**
-	 * Returns all instances of the type `T` with the given IDs.
+	 * Returns all instances of the type {@code T} with the given IDs.
 	 * If some or all ids are not found, no entities are returned for these IDs.
 	 * Note that the order of elements in the result is not guaranteed.
 	 *
@@ -133,7 +140,7 @@ interface CoroutineCrudRepository<T, ID> : Repository<T, ID> {
 	suspend fun delete(entity: T)
 
 	/**
-	 * Deletes all instances of the type `T` with the given IDs.
+	 * Deletes all instances of the type {@code T} with the given IDs.
 	 *
 	 * @param ids must not be null nor contain any null values.
 	 * @throws IllegalArgumentException in case the given [ids][Iterable] or one of its items is null.

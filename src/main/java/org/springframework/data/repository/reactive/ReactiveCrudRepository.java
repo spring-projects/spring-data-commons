@@ -25,6 +25,15 @@ import org.springframework.data.repository.Repository;
 /**
  * Interface for generic CRUD operations on a repository for a specific type. This repository follows reactive paradigms
  * and uses Project Reactor types which are built on top of Reactive Streams.
+ * <p>
+ * Save and delete operations with entities that have a version attribute trigger an {@code onError} with a
+ * {@link org.springframework.dao.OptimisticLockingFailureException} when they encounter a different version value in
+ * the persistence store than in the entity passed as an argument.
+ * </p>
+ * <p>
+ * Other delete operations that only receive ids or entities without version attribute do not trigger an error when no
+ * matching data is found in the persistence store.
+ * </p>
  *
  * @author Mark Paluch
  * @author Christph Strobl

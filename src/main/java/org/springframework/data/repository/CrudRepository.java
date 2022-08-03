@@ -17,6 +17,8 @@ package org.springframework.data.repository;
 
 import java.util.Optional;
 
+import org.springframework.dao.OptimisticLockingFailureException;
+
 /**
  * Interface for generic CRUD operations on a repository for a specific type.
  *
@@ -34,6 +36,9 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * @param entity must not be {@literal null}.
 	 * @return the saved entity; will never be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@literal entity} is {@literal null}.
+	 * @throws OptimisticLockingFailureException when the entity has a version attribute with a different value from that
+	 *           found in the persistence store. This also occurs when the entity which has a version attribute does no
+	 *           longer exist in the database.
 	 */
 	<S extends T> S save(S entity);
 
@@ -45,6 +50,9 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 *         as the {@literal Iterable} passed as an argument.
 	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
 	 *           {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity has a version attribute with a different value from that
+	 *           found in the persistence store. This also occurs when the entity which has a version attribute does no
+	 *           longer exist in the database.
 	 */
 	<S extends T> Iterable<S> saveAll(Iterable<S> entities);
 
@@ -96,6 +104,9 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Deletes the entity with the given id.
+	 * <p>
+	 * When no entity with the given id is available, <b>no</b> exception will be thrown.
+	 * </p>
 	 *
 	 * @param id must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@literal id} is {@literal null}
@@ -107,11 +118,18 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
+	 * @throws OptimisticLockingFailureException when the entity has a version attribute with a different value from that
+	 *           found in the persistence store. This also occurs when the entity which has a version attribute does no
+	 *           longer exist in the database.
 	 */
 	void delete(T entity);
 
 	/**
 	 * Deletes all instances of the type {@code T} with the given IDs.
+	 * <p>
+	 * When some or all of the ids aren't found in the persistence store this is silently ignored and <b>no</b> exception
+	 * is thrown.
+	 * </p>
 	 *
 	 * @param ids must not be {@literal null}. Must not contain {@literal null} elements.
 	 * @throws IllegalArgumentException in case the given {@literal ids} or one of its elements is {@literal null}.
@@ -124,6 +142,9 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 *
 	 * @param entities must not be {@literal null}. Must not contain {@literal null} elements.
 	 * @throws IllegalArgumentException in case the given {@literal entities} or one of its entities is {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one of the entities has a version attribute with a
+	 *           different value from that found in the persistence store. This also occurs when the entity which has a
+	 *           version attribute does no longer exist in the database.
 	 */
 	void deleteAll(Iterable<? extends T> entities);
 
