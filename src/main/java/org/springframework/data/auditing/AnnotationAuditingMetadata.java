@@ -58,7 +58,7 @@ final class AnnotationAuditingMetadata {
 
 	static {
 
-		List<String> types = new ArrayList<>(5);
+		List<String> types = new ArrayList<>(3);
 		types.add(Date.class.getName());
 		types.add(Long.class.getName());
 		types.add(long.class.getName());
