@@ -9,7 +9,7 @@ Please refer to the store-specific section for configuration samples.
 
 [NOTE]
 ====
-Applications that only track creation and modification dates do not need to specify an <<auditing.auditor-aware>>.
+Applications that only track creation and modification dates are not required do make their entities implement <<auditing.auditor-aware, `AuditorAware`>>.
 ====
 
 [[auditing.annotations]]
