@@ -19,6 +19,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.reactivestreams.Publisher;
+
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 
@@ -52,6 +54,9 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 * @param entity must not be {@literal null}.
 	 * @return {@link Mono} emitting the saved entity.
 	 * @throws IllegalArgumentException in case the given {@literal entity} is {@literal null}.
+	 * @throws OptimisticLockingFailureException when the entity uses optimistic locking and has a version attribute with
+	 *           a different value from that found in the persistence store. Also thrown if the entity is assumed to be
+	 *           present but does not exist in the database.
 	 */
 	<S extends T> Mono<S> save(S entity);
 
@@ -62,6 +67,9 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 * @return {@link Flux} emitting the saved entities.
 	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
 	 *           {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
+	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
+	 *           entity is assumed to be present but does not exist in the database.
 	 */
 	<S extends T> Flux<S> saveAll(Iterable<S> entities);
 
@@ -71,6 +79,9 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 * @param entityStream must not be {@literal null}.
 	 * @return {@link Flux} emitting the saved entities.
 	 * @throws IllegalArgumentException in case the given {@link Publisher entityStream} is {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
+	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
+	 *           entity is assumed to be present but does not exist in the database.
 	 */
 	<S extends T> Flux<S> saveAll(Publisher<S> entityStream);
 
@@ -154,6 +165,8 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Deletes the entity with the given id.
+	 * <p>
+	 * If the entity is not found in the persistence store it is silently ignored.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @return {@link Mono} signaling when operation has completed.
@@ -163,6 +176,8 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Deletes the entity with the given id supplied by a {@link Publisher}.
+	 * <p>
+	 * If the entity is not found in the persistence store it is silently ignored.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @return {@link Mono} signaling when operation has completed.
@@ -176,11 +191,16 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 * @param entity must not be {@literal null}.
 	 * @return {@link Mono} signaling when operation has completed.
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
+	 * @throws OptimisticLockingFailureException when the entity uses optimistic locking and has a version attribute with
+	 *           a different value from that found in the persistence store. Also thrown if the entity is assumed to be
+	 *           present but does not exist in the database.
 	 */
 	Mono<Void> delete(T entity);
 
 	/**
 	 * Deletes all instances of the type {@code T} with the given IDs.
+	 * <p>
+	 * Entities that aren't found in the persistence store are silently ignored.
 	 *
 	 * @param ids must not be {@literal null}.
 	 * @return {@link Mono} signaling when operation has completed.
@@ -197,6 +217,9 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 * @return {@link Mono} signaling when operation has completed.
 	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
 	 *           {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
+	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
+	 *           entity is assumed to be present but does not exist in the database.
 	 */
 	Mono<Void> deleteAll(Iterable<? extends T> entities);
 
@@ -206,6 +229,9 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 * @param entityStream must not be {@literal null}.
 	 * @return {@link Mono} signaling when operation has completed.
 	 * @throws IllegalArgumentException in case the given {@link Publisher entityStream} is {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
+	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
+	 *           entity is assumed to be present but does not exist in the database.
 	 */
 	Mono<Void> deleteAll(Publisher<? extends T> entityStream);
 

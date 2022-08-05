@@ -20,6 +20,7 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 
@@ -27,10 +28,13 @@ import org.springframework.data.repository.Repository;
  * Interface for generic CRUD operations on a repository for a specific type. This repository follows reactive paradigms
  * and uses RxJava 3 types.
  * <p>
- * Save and delete operations with entities that have a version attribute trigger an {@code onError} with a {@link org.springframework.dao.OptimisticLockingFailureException} when they encounter a different version value in the persistence store than in the entity passed as an argument.
+ * Save and delete operations with entities that have a version attribute trigger an {@code onError} with a
+ * {@link org.springframework.dao.OptimisticLockingFailureException} when they encounter a different version value in
+ * the persistence store than in the entity passed as an argument.
  * </p>
  * <p>
- * Other delete operations that only receive ids or entities without version attribute do not trigger an error when no matching data is found in the persistence store.
+ * Other delete operations that only receive ids or entities without version attribute do not trigger an error when no
+ * matching data is found in the persistence store.
  * </p>
  *
  * @author Mark Paluch
@@ -50,6 +54,9 @@ public interface RxJava3CrudRepository<T, ID> extends Repository<T, ID> {
 	 * @param entity must not be {@literal null}.
 	 * @return {@link Single} emitting the saved entity.
 	 * @throws IllegalArgumentException in case the given {@literal entity} is {@literal null}.
+	 * @throws OptimisticLockingFailureException when the entity uses optimistic locking and has a version attribute with
+	 *           a different value from that found in the persistence store. Also thrown if the entity is assumed to be
+	 *           present but does not exist in the database.
 	 */
 	<S extends T> Single<S> save(S entity);
 
@@ -60,6 +67,9 @@ public interface RxJava3CrudRepository<T, ID> extends Repository<T, ID> {
 	 * @return {@link Flowable} emitting the saved entities.
 	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
 	 *           {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
+	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
+	 *           entity is assumed to be present but does not exist in the database.
 	 */
 	<S extends T> Flowable<S> saveAll(Iterable<S> entities);
 
@@ -69,6 +79,9 @@ public interface RxJava3CrudRepository<T, ID> extends Repository<T, ID> {
 	 * @param entityStream must not be {@literal null}.
 	 * @return {@link Flowable} emitting the saved entities.
 	 * @throws IllegalArgumentException in case the given {@link Flowable entityStream} is {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
+	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
+	 *           entity is assumed to be present but does not exist in the database.
 	 */
 	<S extends T> Flowable<S> saveAll(Flowable<S> entityStream);
 
@@ -151,6 +164,8 @@ public interface RxJava3CrudRepository<T, ID> extends Repository<T, ID> {
 
 	/**
 	 * Deletes the entity with the given id.
+	 * <p>
+	 * If the entity is not found in the persistence store it is silently ignored.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @return {@link Completable} signaling when operation has completed.
@@ -164,11 +179,16 @@ public interface RxJava3CrudRepository<T, ID> extends Repository<T, ID> {
 	 * @param entity must not be {@literal null}.
 	 * @return {@link Completable} signaling when operation has completed.
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
+	 * @throws OptimisticLockingFailureException when the entity uses optimistic locking and has a version attribute with
+	 *           a different value from that found in the persistence store. Also thrown if the entity is assumed to be
+	 *           present but does not exist in the database.
 	 */
 	Completable delete(T entity);
 
 	/**
 	 * Deletes all instances of the type {@code T} with the given IDs.
+	 * <p>
+	 * Entities that aren't found in the persistence store are silently ignored.
 	 *
 	 * @param ids must not be {@literal null}.
 	 * @return {@link Completable} signaling when operation has completed.
@@ -185,6 +205,9 @@ public interface RxJava3CrudRepository<T, ID> extends Repository<T, ID> {
 	 * @return {@link Completable} signaling when operation has completed.
 	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
 	 *           {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
+	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
+	 *           entity is assumed to be present but does not exist in the database.
 	 */
 	Completable deleteAll(Iterable<? extends T> entities);
 
@@ -194,6 +217,9 @@ public interface RxJava3CrudRepository<T, ID> extends Repository<T, ID> {
 	 * @param entityStream must not be {@literal null}.
 	 * @return {@link Completable} signaling when operation has completed.
 	 * @throws IllegalArgumentException in case the given {@link Flowable entityStream} is {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
+	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
+	 *           entity is assumed to be present but does not exist in the database.
 	 */
 	Completable deleteAll(Flowable<? extends T> entityStream);
 

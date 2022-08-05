@@ -17,6 +17,8 @@ package org.springframework.data.repository;
 
 import java.util.List;
 
+import org.springframework.dao.OptimisticLockingFailureException;
+
 /**
  * Interface for generic CRUD operations on a repository for a specific type. This an extension to
  * {@link CrudRepository} returning {@link List} instead of {@link Iterable} where applicable.
@@ -36,6 +38,9 @@ public interface ListCrudRepository<T, ID> extends CrudRepository<T, ID> {
 	 *         as the {@literal Iterable} passed as an argument.
 	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
 	 *           {@literal null}.
+	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
+	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
+	 *           entity is assumed to be present but does not exist in the database.
 	 */
 	<S extends T> List<S> saveAll(Iterable<S> entities);
 
