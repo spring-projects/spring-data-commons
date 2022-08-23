@@ -20,16 +20,17 @@ import static org.mockito.Mockito.*;
 import java.util.function.Consumer;
 
 import org.assertj.core.api.AbstractAssert;
-import org.springframework.aot.generate.ClassNameGenerator;
-import org.springframework.aot.generate.DefaultGenerationContext;
-import org.springframework.aot.generate.InMemoryGeneratedFiles;
+
+import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
+import org.springframework.test.aot.generate.TestGenerationContext;
 
 /**
  * @author Christoph Strobl
  */
-public class BeanRegistrationContributionAssert extends AbstractAssert<BeanRegistrationContributionAssert, BeanRegistrationAotContribution> {
+public class BeanRegistrationContributionAssert
+		extends AbstractAssert<BeanRegistrationContributionAssert, BeanRegistrationAotContribution> {
 
 	protected BeanRegistrationContributionAssert(BeanRegistrationAotContribution beanRegistrationAotContribution) {
 		super(beanRegistrationAotContribution, BeanRegistrationContributionAssert.class);
@@ -38,13 +39,12 @@ public class BeanRegistrationContributionAssert extends AbstractAssert<BeanRegis
 	public static BeanRegistrationContributionAssert assertThatAotContribution(BeanRegistrationAotContribution actual) {
 		return new BeanRegistrationContributionAssert(actual);
 	}
-	public BeanRegistrationContributionAssert codeContributionSatisfies(
-			Consumer<CodeContributionAssert> assertWith) {
+
+	public BeanRegistrationContributionAssert codeContributionSatisfies(Consumer<CodeContributionAssert> assertWith) {
 
 		BeanRegistrationCode mockBeanRegistrationCode = mock(BeanRegistrationCode.class);
 
-		DefaultGenerationContext generationContext = new DefaultGenerationContext(new ClassNameGenerator(Object.class),
-				new InMemoryGeneratedFiles());
+		GenerationContext generationContext = new TestGenerationContext(Object.class);
 
 		this.actual.applyTo(generationContext, mockBeanRegistrationCode);
 

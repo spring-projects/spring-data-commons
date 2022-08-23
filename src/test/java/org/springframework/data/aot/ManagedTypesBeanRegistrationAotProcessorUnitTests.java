@@ -25,10 +25,7 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.aot.generate.ClassNameGenerator;
-import org.springframework.aot.generate.DefaultGenerationContext;
-import org.springframework.aot.generate.InMemoryGeneratedFiles;
-import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
@@ -37,6 +34,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.domain.ManagedTypes;
+import org.springframework.test.aot.generate.TestGenerationContext;
 
 /**
  * @author Christoph Strobl
@@ -86,8 +84,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
 				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
 
-		DefaultGenerationContext generationContext = new DefaultGenerationContext(new ClassNameGenerator(Object.class),
-				new InMemoryGeneratedFiles(), new RuntimeHints());
+		GenerationContext generationContext = new TestGenerationContext(Object.class);
 
 		contribution.applyTo(generationContext, null);
 
@@ -150,8 +147,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
 				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
 
-		DefaultGenerationContext generationContext = new DefaultGenerationContext(new ClassNameGenerator(Object.class),
-				new InMemoryGeneratedFiles(), new RuntimeHints());
+		GenerationContext generationContext = new TestGenerationContext(Object.class);
 
 		contribution.applyTo(generationContext, null);
 
