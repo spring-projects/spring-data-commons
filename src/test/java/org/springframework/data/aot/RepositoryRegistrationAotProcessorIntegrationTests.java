@@ -24,8 +24,9 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
+import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.DecoratingProxy;
@@ -299,7 +300,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 			AnnotationConfigApplicationContext applicationContext) {
 
 		applicationContext.register(configuration);
-		applicationContext.refreshForAotProcessing();
+		applicationContext.refreshForAotProcessing(new RuntimeHints());
 
 		return repositoryType -> {
 
@@ -311,7 +312,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 			String repositoryBeanName = repositoryBeanNames[0];
 
-			ConfigurableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
+			ConfigurableListableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
 
 			RepositoryRegistrationAotProcessor repositoryAotProcessor = applicationContext
 					.getBean(RepositoryRegistrationAotProcessor.class);
