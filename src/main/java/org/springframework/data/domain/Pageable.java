@@ -68,21 +68,27 @@ public interface Pageable {
 	/**
 	 * Returns the page to be returned.
 	 *
-	 * @return the page to be returned.
+	 * @return the page to be returned or throws {@link UnsupportedOperationException} if the object is
+	 *         {@link #isUnpaged()}.
+	 * @throws UnsupportedOperationException if the object is {@link #isUnpaged()}.
 	 */
 	int getPageNumber();
 
 	/**
 	 * Returns the number of items to be returned.
 	 *
-	 * @return the number of items of that page
+	 * @return the number of items of that page or throws {@link UnsupportedOperationException} if the object is
+	 *         {@link #isUnpaged()}.
+	 * @throws UnsupportedOperationException if the object is {@link #isUnpaged()}.
 	 */
 	int getPageSize();
 
 	/**
 	 * Returns the offset to be taken according to the underlying page and page size.
 	 *
-	 * @return the offset to be taken
+	 * @return the offset to be taken or throws {@link UnsupportedOperationException} if the object is
+	 *         {@link #isUnpaged()}.
+	 * @throws UnsupportedOperationException if the object is {@link #isUnpaged()}.
 	 */
 	long getOffset();
 
@@ -131,8 +137,10 @@ public interface Pageable {
 	 * Creates a new {@link Pageable} with {@code pageNumber} applied.
 	 *
 	 * @param pageNumber
-	 * @return a new {@link PageRequest}.
+	 * @return a new {@link PageRequest} or throws {@link UnsupportedOperationException} if the object is
+	 *         {@link #isUnpaged()} and the {@code pageNumber} is not zero.
 	 * @since 2.5
+	 * @throws UnsupportedOperationException if the object is {@link #isUnpaged()}.
 	 */
 	Pageable withPage(int pageNumber);
 
