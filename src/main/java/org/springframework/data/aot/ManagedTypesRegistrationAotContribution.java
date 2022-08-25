@@ -132,7 +132,7 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 					if (allPublic) {
 						method.addStatement("return $T.fromIterable($L)", beanType, "types");
 					} else {
-						method.addStatement("return $T.fromClassNames($L))", beanType, "types");
+						method.addStatement("return $T.fromClassNames($L)", beanType, "types");
 					}
 				}
 			});

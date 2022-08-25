@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,10 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.ManagedTypes;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Christoph Strobl
@@ -46,6 +50,9 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 
 	final RootBeanDefinition myManagedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
 			.rootBeanDefinition(MyManagedTypes.class).getBeanDefinition();
+
+	final RootBeanDefinition invocationCountingManagedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
+			.rootBeanDefinition(InvocationRecordingManagedTypes.class).getBeanDefinition();
 
 	DefaultListableBeanFactory beanFactory;
 
@@ -154,6 +161,25 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		verify(beanFactory).getBean(eq("commons.managed-types"), eq(ManagedTypes.class));
 	}
 
+	@Test // GH-2680
+	void generatesInstanceSupplierCodeFragment() {
+
+		beanFactory.registerBeanDefinition("commons.managed-types", invocationCountingManagedTypesDefinition);
+
+		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
+				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
+
+		AotTestCodeContributionBuilder.withContextFor(this.getClass()).writeContentFor(contribution).compile(it -> {
+
+			InvocationRecordingManagedTypes sourceTypes = beanFactory.getBean(InvocationRecordingManagedTypes.class);
+			assertThat(sourceTypes.getCounter()).isOne();
+
+			InvocationRecordingManagedTypes types = ReflectionTestUtils
+					.invokeMethod(it.getAllCompiledClasses().iterator().next(), "instance");
+			assertThat(types.source).isNotSameAs(sourceTypes);
+		});
+	}
+
 	private ManagedTypesBeanRegistrationAotProcessor createPostProcessor(String moduleIdentifier) {
 		ManagedTypesBeanRegistrationAotProcessor postProcessor = new ManagedTypesBeanRegistrationAotProcessor();
 		postProcessor.setModuleIdentifier(moduleIdentifier);
@@ -172,5 +198,39 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		}
 	}
 
+	public static class InvocationRecordingManagedTypes implements ManagedTypes {
+
+		private AtomicInteger counter = new AtomicInteger(0);
+		private ManagedTypes source = ManagedTypes.from(A.class, B.class);
+
+		public static InvocationRecordingManagedTypes from(ManagedTypes source) {
+
+			InvocationRecordingManagedTypes newInstance = new InvocationRecordingManagedTypes();
+			newInstance.source = source;
+			return newInstance;
+		}
+
+		@Override
+		public void forEach(Consumer<Class<?>> action) {
+
+			counter.getAndIncrement();
+			source.forEach(action);
+		}
+
+		public int getCounter() {
+			return counter.get();
+		}
+	}
+
 	static class NotManagedTypes {}
+
+	@Configuration(proxyBeanMethods = false)
+	public static class EntityManagerWithPackagesToScanConfiguration {
+
+		@Bean(name = "commons.managed-types")
+		ManagedTypes managedTypes() {
+			return ManagedTypes.from(A.class, B.class);
+		}
+	}
+
 }
