@@ -56,7 +56,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 		}
 
 		BeanFactory beanFactory = registeredBean.getBeanFactory();
-		return contribute(AotContext.from(beanFactory), resolveManagedTypes(registeredBean));
+		return contribute(AotContext.from(beanFactory), resolveManagedTypes(registeredBean), registeredBean);
 	}
 
 	ManagedTypes resolveManagedTypes(RegisteredBean registeredBean) {
@@ -114,8 +114,8 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	 * @return new instance of {@link ManagedTypesBeanRegistrationAotProcessor} or {@literal null} if nothing to do.
 	 */
 	@Nullable
-	protected BeanRegistrationAotContribution contribute(AotContext aotContext, ManagedTypes managedTypes) {
-		return new ManagedTypesRegistrationAotContribution(aotContext, managedTypes, this::contributeType);
+	protected BeanRegistrationAotContribution contribute(AotContext aotContext, ManagedTypes managedTypes, RegisteredBean registeredBean) {
+		return new ManagedTypesRegistrationAotContribution(aotContext, managedTypes, registeredBean, this::contributeType);
 	}
 
 	/**
