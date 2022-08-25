@@ -24,7 +24,9 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Types managed by a Spring Data implementation. Used to predefine a set of known entities that might need processing
@@ -75,6 +77,18 @@ public interface ManagedTypes {
 
 		Assert.notNull(types, "Types must not be null");
 		return types::forEach;
+	}
+
+	static ManagedTypes fromClassNames(Iterable<String> types) {
+
+		Assert.notNull(types, "Types must not be null");
+		return Streamable.of(types).map(it -> {
+			try {
+				return ClassUtils.forName(it, ManagedTypes.class.getClassLoader());
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+		})::forEach;
 	}
 
 	/**
