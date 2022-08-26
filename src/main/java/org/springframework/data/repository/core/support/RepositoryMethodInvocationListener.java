@@ -49,9 +49,7 @@ public interface RepositoryMethodInvocationListener {
 		private final long durationNs;
 		private final Class<?> repositoryInterface;
 		private final Method method;
-
 		private final Object[] arguments;
-
 		private final RepositoryMethodInvocationResult result;
 
 		/**
