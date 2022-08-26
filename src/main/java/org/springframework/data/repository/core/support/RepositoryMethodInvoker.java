@@ -377,7 +377,6 @@ abstract class RepositoryMethodInvoker {
 		private @Nullable Long endTime;
 		private final State state;
 		private final @Nullable Throwable error;
-
 		private final Object[] arguments;
 
 		protected RepositoryMethodInvocationCaptor(Class<?> repositoryInterface, long startTime, Long endTime, State state,
