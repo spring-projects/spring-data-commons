@@ -56,7 +56,7 @@ interface RepositoryInvocationMulticaster {
 
 	/**
 	 * {@link RepositoryInvocationMulticaster} implementation that notifies {@link RepositoryMethodInvocationListener}
-	 * upon {@link #notifyListeners(Method, Object[], RepositoryMethodInvocationResult)}.
+	 * upon {@link #notifyListeners(Method, Object[], RepositoryMethodInvocation)}.
 	 *
 	 * @author Mark Paluch
 	 */

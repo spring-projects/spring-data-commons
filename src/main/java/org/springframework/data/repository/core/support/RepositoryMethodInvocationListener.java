@@ -49,20 +49,25 @@ public interface RepositoryMethodInvocationListener {
 		private final long durationNs;
 		private final Class<?> repositoryInterface;
 		private final Method method;
+
+		private final Object[] arguments;
+
 		private final RepositoryMethodInvocationResult result;
 
 		/**
 		 * @param repositoryInterface the repository interface that was used to call {@link Method}.
 		 * @param method the actual method that was called.
+		 * @param arguments the actual arguments provided to the repository method.
 		 * @param result the outcome of the invocation. Must not be {@literal null}.
 		 * @param durationNs the duration in {@link TimeUnit#NANOSECONDS}.
 		 */
 		public RepositoryMethodInvocation(Class<?> repositoryInterface, Method method,
-				RepositoryMethodInvocationResult result, long durationNs) {
+				Object[] arguments, RepositoryMethodInvocationResult result, long durationNs) {
 
 			this.durationNs = durationNs;
 			this.repositoryInterface = repositoryInterface;
 			this.method = method;
+			this.arguments = arguments;
 			this.result = result;
 		}
 
@@ -79,6 +84,10 @@ public interface RepositoryMethodInvocationListener {
 
 		public Method getMethod() {
 			return method;
+		}
+
+		public Object[] getArguments() {
+			return arguments;
 		}
 
 		@Nullable
