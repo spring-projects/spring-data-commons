@@ -199,13 +199,24 @@ class QuerydslPredicateBuilderUnitTests {
 		assertThat(predicate).isEqualTo(QUser.user.dateOfBirth.eq(format.parseDateTime(date).toDate()));
 	}
 
-	@Test
+	@Test // GH-2649
 	void resolvesCommaSeparatedArgumentToListCorrectly() {
 
 		values.add("nickNames", "Walt,Heisenberg");
 
 		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
+		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(0);
+
+		assertThat(constant.getConstant()).isEqualTo(Arrays.asList("Walt", "Heisenberg"));
+	}
+
+	@Test // GH-2649
+	void resolvesCommaSeparatedArgumentToListCorrectlyForNestedPath() {
+
+		values.add("user.nickNames", "Walt,Heisenberg");
+
+		Predicate predicate = builder.getPredicate(ClassTypeInformation.from(UserWrapper.class), values, DEFAULT_BINDINGS);
 		Constant<Object> constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(0);
 
 		assertThat(constant.getConstant()).isEqualTo(Arrays.asList("Walt", "Heisenberg"));
