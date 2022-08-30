@@ -182,13 +182,24 @@ class QuerydslPredicateBuilderUnitTests {
 		assertThat(constant.getConstant()).isEqualTo("rivers,two");
 	}
 
-	@Test
+	@Test // GH-2649
 	void resolvesCommaSeparatedArgumentToListCorrectly() {
 
 		values.add("nickNames", "Walt,Heisenberg");
 
 		var predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
+		var constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(0);
+
+		assertThat(constant.getConstant()).isEqualTo(Arrays.asList("Walt", "Heisenberg"));
+	}
+
+	@Test // GH-2649
+	void resolvesCommaSeparatedArgumentToListCorrectlyForNestedPath() {
+
+		values.add("user.nickNames", "Walt,Heisenberg");
+
+		var predicate = builder.getPredicate(TypeInformation.of(UserWrapper.class), values, DEFAULT_BINDINGS);
 		var constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(0);
 
 		assertThat(constant.getConstant()).isEqualTo(Arrays.asList("Walt", "Heisenberg"));
