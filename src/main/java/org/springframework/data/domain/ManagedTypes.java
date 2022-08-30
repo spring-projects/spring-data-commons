@@ -79,6 +79,19 @@ public interface ManagedTypes {
 		return types::forEach;
 	}
 
+	/**
+	 * Factory method used to construct {@link ManagedTypes} from the given, required {@link Iterable} of {@link String
+	 * type names}.
+	 *
+	 * @param types {@link Iterable} of {@literal class names} used to initialize the {@link ManagedTypes}; must not be
+	 *          {@literal null}.
+	 * @return new instance of {@link ManagedTypes} initialized the given, required {@link Iterable} of {@link Class
+	 *         types}.
+	 * @throws IllegalStateException if class cannot be loaded.
+	 * @see java.lang.Iterable
+	 * @see #fromStream(Stream)
+	 * @see #fromSupplier(Supplier)
+	 */
 	static ManagedTypes fromClassNames(Iterable<String> types) {
 
 		Assert.notNull(types, "Types must not be null");
@@ -86,7 +99,7 @@ public interface ManagedTypes {
 			try {
 				return ClassUtils.forName(it, ManagedTypes.class.getClassLoader());
 			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(e);
+				throw new IllegalStateException(e);
 			}
 		})::forEach;
 	}

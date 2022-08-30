@@ -19,24 +19,30 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
+import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.aot.ManagedTypesRegistrationAotContribution.ManagedTypesInstanceCodeFragment;
 import org.springframework.data.domain.ManagedTypes;
+import org.springframework.javapoet.MethodSpec;
+import org.springframework.javapoet.MethodSpec.Builder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -162,7 +168,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 	}
 
 	@Test // GH-2680
-	void generatesInstanceSupplierCodeFragment() {
+	void generatesInstanceSupplierCodeFragmentToAvoidDuplicateInvocations() {
 
 		beanFactory.registerBeanDefinition("commons.managed-types", invocationCountingManagedTypesDefinition);
 
@@ -180,6 +186,45 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		});
 	}
 
+	@Test // GH-2680
+	void generatesInstanceSupplierCodeFragmentForTypeWithCustomFactoryMethod() {
+
+		beanFactory.registerBeanDefinition("commons.managed-types",
+				BeanDefinitionBuilder.rootBeanDefinition(StoreManagedTypesWithCustomFactoryMethod.class).getBeanDefinition());
+
+		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
+				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
+
+		AotTestCodeContributionBuilder.withContextFor(this.getClass()).writeContentFor(contribution).compile(it -> {
+
+			StoreManagedTypesWithCustomFactoryMethod types = ReflectionTestUtils
+					.invokeMethod(it.getAllCompiledClasses().iterator().next(), "instance");
+
+			assertThat(types.toList()).containsExactlyInAnyOrder(A.class, B.class);
+		});
+	}
+
+	@Test // GH-2680
+	void canGenerateCodeReturnsTrueIfFactoryMethodPresent() {
+
+		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(
+				ManagedTypes.from(A.class, B.class), StoreManagedTypesWithCustomFactoryMethod.class,
+				Mockito.mock(BeanRegistrationCodeFragments.class));
+		Builder methodBuilder = MethodSpec.methodBuilder("instance");
+		fragment.generateInstanceFactory(methodBuilder);
+
+		assertThat(fragment.canGenerateCode()).isTrue();
+	}
+
+	@Test // GH-2680
+	void canGenerateCodeReturnsFalseIfNoFactoryMethodPresent() {
+
+		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(
+				ManagedTypes.from(A.class, B.class), MyManagedTypes.class, Mockito.mock(BeanRegistrationCodeFragments.class));
+
+		assertThat(fragment.canGenerateCode()).isFalse();
+	}
+
 	private ManagedTypesBeanRegistrationAotProcessor createPostProcessor(String moduleIdentifier) {
 		ManagedTypesBeanRegistrationAotProcessor postProcessor = new ManagedTypesBeanRegistrationAotProcessor();
 		postProcessor.setModuleIdentifier(moduleIdentifier);
@@ -195,6 +240,35 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		@Override
 		public void forEach(Consumer<Class<?>> action) {
 			// just do nothing ¯\_(ツ)_/¯
+		}
+	}
+
+	static class StoreManagedTypesWithFactoryMethodOfClassNames implements ManagedTypes {
+		@Override
+		public void forEach(Consumer<Class<?>> action) {
+			// just do nothing ¯\_(ツ)_/¯
+		}
+	}
+
+	public static class StoreManagedTypesWithCustomFactoryMethod implements ManagedTypes {
+
+		private ManagedTypes source;
+
+		public StoreManagedTypesWithCustomFactoryMethod() {
+			source = it -> Arrays.asList(A.class, B.class).forEach(it);
+		}
+
+		public StoreManagedTypesWithCustomFactoryMethod(ManagedTypes source) {
+			this.source = source;
+		}
+
+		public static StoreManagedTypesWithCustomFactoryMethod of(ManagedTypes source) {
+			return new StoreManagedTypesWithCustomFactoryMethod(source);
+		}
+
+		@Override
+		public void forEach(Consumer<Class<?>> action) {
+			source.forEach(action);
 		}
 	}
 
