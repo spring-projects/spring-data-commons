@@ -25,14 +25,18 @@ import javax.lang.model.element.Modifier;
 import org.springframework.aot.generate.AccessVisibility;
 import org.springframework.aot.generate.GeneratedMethod;
 import org.springframework.aot.generate.GenerationContext;
+
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
+import org.springframework.beans.factory.support.InstanceSupplier;
+import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.util.Lazy;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec.Builder;
+import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -61,20 +65,20 @@ import org.springframework.util.ReflectionUtils;
  * @see org.springframework.beans.factory.aot.BeanRegistrationAotContribution
  * @since 3.0.0
  */
-public class ManagedTypesRegistrationAotContribution implements BeanRegistrationAotContribution {
+public class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContribution {
 
 	private final AotContext aotContext;
 	private final ManagedTypes managedTypes;
 	private final BiConsumer<ResolvableType, GenerationContext> contributionAction;
-	private final Class<?> beanType;
+	private final RegisteredBean source;
 
 	public ManagedTypesRegistrationAotContribution(AotContext aotContext, @Nullable ManagedTypes managedTypes,
-			Class<?> sourceType, BiConsumer<ResolvableType, GenerationContext> contributionAction) {
+			RegisteredBean registeredBean, BiConsumer<ResolvableType, GenerationContext> contributionAction) {
 
 		this.aotContext = aotContext;
 		this.managedTypes = managedTypes;
 		this.contributionAction = contributionAction;
-		this.beanType = sourceType;
+		this.source = registeredBean;
 	}
 
 	protected AotContext getAotContext() {
@@ -103,24 +107,29 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 			return codeFragments;
 		}
 
-		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(getManagedTypes(), beanType,
+		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(getManagedTypes(), source,
 				codeFragments);
 		return fragment.canGenerateCode() ? fragment : codeFragments;
+	}
+
+	@Override
+	public RegisteredBean getSource() {
+		return source;
 	}
 
 	static class ManagedTypesInstanceCodeFragment extends BeanRegistrationCodeFragments {
 
 		private ManagedTypes sourceTypes;
-		private Class<?> sourceBeanType;
+		private RegisteredBean source;
 		private Lazy<Method> instanceMethod = Lazy.of(this::findInstanceFactory);
 
-		protected ManagedTypesInstanceCodeFragment(ManagedTypes managedTypes, Class<?> beanType,
+		protected ManagedTypesInstanceCodeFragment(ManagedTypes managedTypes, RegisteredBean source,
 				BeanRegistrationCodeFragments codeFragments) {
 
 			super(codeFragments);
 
 			this.sourceTypes = managedTypes;
-			this.sourceBeanType = beanType;
+			this.source = source;
 		}
 
 		/**
@@ -128,11 +137,33 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 		 */
 		boolean canGenerateCode() {
 
-			if (ObjectUtils.nullSafeEquals(sourceBeanType, ManagedTypes.class)) {
+			if (ObjectUtils.nullSafeEquals(source.getBeanClass(), ManagedTypes.class)) {
 				return true;
 			}
 			return instanceMethod.getNullable() != null;
 		}
+
+		// @Override
+		// public CodeBlock generateSetBeanInstanceSupplierCode(GenerationContext generationContext, BeanRegistrationCode
+		// beanRegistrationCode, CodeBlock instanceSupplierCode, List<MethodReference> postProcessors) {
+		//
+		// GeneratedMethod instanceSupplier = beanRegistrationCode.getMethods().add("InstanceSupplier", builder -> {
+		// builder.addStatement(generateInstanceSupplierForFactoryMethod());
+		// });
+		//
+		// return CodeBlock.of("() -> $T.$L()", beanRegistrationCode.getClassName(), .getName());
+		// //return super.generateSetBeanInstanceSupplierCode(generationContext, beanRegistrationCode, instanceSupplierCode,
+		// postProcessors);
+		// }
+		//
+		// private CodeBlock generateInstanceSupplierForFactoryMethod(Class<?> beanClass,
+		// Method factoryMethod, Class<?> declaringClass, String factoryMethodName) {
+		//
+		// .withGenerator((registeredBean) -> registeredBean.getBeanFactory());
+		// return CodeBlock.of("return $T.<$T>forFactoryMethod($T.class, $S)",
+		// BeanInstanceSupplier.class, beanClass, declaringClass,
+		// factoryMethodName);
+		// }
 
 		@Override
 		public CodeBlock generateInstanceSupplierCode(GenerationContext generationContext,
@@ -142,7 +173,7 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 			GeneratedMethod generatedMethod = beanRegistrationCode.getMethods().add("Instance",
 					this::generateInstanceFactory);
 
-			return CodeBlock.of("() -> $T.$L()", beanRegistrationCode.getClassName(), generatedMethod.getName());
+			return CodeBlock.of("$T.$L()", beanRegistrationCode.getClassName(), generatedMethod.getName());
 		}
 
 		private CodeBlock toCodeBlock(List<Class<?>> values, boolean allPublic) {
@@ -155,11 +186,11 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 
 		private Method findInstanceFactory() {
 
-			for (Method beanMethod : ReflectionUtils.getDeclaredMethods(sourceBeanType)) {
+			for (Method beanMethod : ReflectionUtils.getDeclaredMethods(source.getBeanClass())) {
 
 				if (beanMethod.getParameterCount() == 1 && java.lang.reflect.Modifier.isPublic(beanMethod.getModifiers())
 						&& java.lang.reflect.Modifier.isStatic(beanMethod.getModifiers())) {
-					ResolvableType parameterType = ResolvableType.forMethodParameter(beanMethod, 0, sourceBeanType);
+					ResolvableType parameterType = ResolvableType.forMethodParameter(beanMethod, 0, source.getBeanClass());
 					if (parameterType.isAssignableFrom(ResolvableType.forType(List.class))
 							|| parameterType.isAssignableFrom(ResolvableType.forType(ManagedTypes.class))) {
 						return beanMethod;
@@ -175,16 +206,23 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 			boolean allSourceTypesVisible = sourceTypes.stream()
 					.allMatch(it -> AccessVisibility.PUBLIC.equals(AccessVisibility.forClass(it)));
 
-			method.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
-			method.returns(ManagedTypes.class);
-			method.addStatement("var types = $T.of($L)", List.class, toCodeBlock(sourceTypes, allSourceTypesVisible));
+			ParameterizedTypeName targetTypeName = ParameterizedTypeName.get(InstanceSupplier.class, source.getBeanClass());
 
-			if (ObjectUtils.nullSafeEquals(sourceBeanType, ManagedTypes.class)) {
+			method.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
+			method.returns(targetTypeName);
+
+			CodeBlock.Builder builder = CodeBlock.builder()
+					.add("return ")
+					.beginControlFlow("(registeredBean -> ");
+
+			builder.addStatement("var types = $T.of($L)", List.class, toCodeBlock(sourceTypes, allSourceTypesVisible));
+
+			if (ObjectUtils.nullSafeEquals(source.getBeanClass(), ManagedTypes.class)) {
 
 				if (allSourceTypesVisible) {
-					method.addStatement("return $T.fromIterable($L)", ManagedTypes.class, "types");
+					builder.addStatement("return $T.fromIterable($L)", ManagedTypes.class, "types");
 				} else {
-					method.addStatement("return $T.fromClassNames($L)", ManagedTypes.class, "types");
+					builder.addStatement("return $T.fromClassNames($L, registeredBean.getBeanFactory().getBeanClassLoader())", ManagedTypes.class, "types");
 				}
 			} else {
 
@@ -192,17 +230,20 @@ public class ManagedTypesRegistrationAotContribution implements BeanRegistration
 				if (ResolvableType.forMethodParameter(instanceFactoryMethod, 0)
 						.isAssignableFrom(ResolvableType.forType(ManagedTypes.class))) {
 					if (allSourceTypesVisible) {
-						method.addStatement("return $T." + instanceFactoryMethod.getName() + "($T.fromIterable($L))",
+						builder.addStatement("return $T." + instanceFactoryMethod.getName() + "($T.fromIterable($L))",
 								instanceFactoryMethod.getDeclaringClass(), ManagedTypes.class, "types");
 					} else {
-						method.addStatement("return $T." + instanceFactoryMethod.getName() + "($T.fromClassNames($L))",
+						builder.addStatement("return $T." + instanceFactoryMethod.getName() + "($T.fromClassNames($L, registeredBean.getBeanFactory().getBeanClassLoader()))",
 								instanceFactoryMethod.getDeclaringClass(), ManagedTypes.class, "types");
 					}
 				} else {
-					method.addStatement("return $T." + instanceFactoryMethod.getName() + "($L)",
+					builder.addStatement("return $T." + instanceFactoryMethod.getName() + "($L)",
 							instanceFactoryMethod.getDeclaringClass(), "types");
 				}
 			}
+
+			builder.endControlFlow(")");
+			method.addCode(builder.build());
 		}
 	}
 }

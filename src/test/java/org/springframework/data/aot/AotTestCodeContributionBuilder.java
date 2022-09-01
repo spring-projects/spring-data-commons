@@ -22,8 +22,11 @@ import java.util.function.Supplier;
 import org.mockito.Mockito;
 import org.springframework.aot.test.generator.compile.Compiled;
 import org.springframework.aot.test.generator.compile.TestCompiler;
+import org.springframework.beans.factory.aot.BeanInstanceSupplier;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
+import org.springframework.beans.factory.support.InstanceSupplier;
+import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
@@ -37,6 +40,7 @@ public class AotTestCodeContributionBuilder {
 
 	TestGenerationContext generationContext;
 	MockBeanRegistrationCode beanRegistrationCode;
+	BeanRegistrationAotContribution contribution;
 
 	static AotTestCodeContributionBuilder withContextFor(Class<?> type) {
 		return withContext(new TestGenerationContext(type));
@@ -51,6 +55,9 @@ public class AotTestCodeContributionBuilder {
 	}
 
 	BeanRegistrationCodeFragments getFragments(BeanRegistrationAotContribution contribution) {
+
+		this.contribution = contribution;
+
 		return contribution.customizeBeanRegistrationCodeFragments(generationContext,
 				Mockito.mock(BeanRegistrationCodeFragments.class));
 	}
@@ -60,7 +67,12 @@ public class AotTestCodeContributionBuilder {
 		CodeBlock codeBlock = getFragments(contribution).generateInstanceSupplierCode(generationContext,
 				beanRegistrationCode, null, false);
 
-		ParameterizedTypeName parameterizedReturnTypeName = ParameterizedTypeName.get(Supplier.class, ManagedTypes.class);
+		Class<?> beanType = Object.class;
+		try {
+			beanType = contribution instanceof RegisteredBeanAotContribution ? ((RegisteredBeanAotContribution) contribution).getSource().getBeanClass() : Object.class;
+		} catch (Exception e) {}
+
+		ParameterizedTypeName parameterizedReturnTypeName = ParameterizedTypeName.get(InstanceSupplier.class, beanType);
 		beanRegistrationCode.getTypeBuilder().set(type -> {
 			type.addModifiers(Modifier.PUBLIC);
 			type.addMethod(MethodSpec.methodBuilder("get").addModifiers(Modifier.PUBLIC)

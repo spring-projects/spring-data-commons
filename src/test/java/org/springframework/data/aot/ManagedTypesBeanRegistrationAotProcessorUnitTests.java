@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -31,10 +32,12 @@ import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.aot.BeanInstanceSupplier;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.InstanceSupplier;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.Bean;
@@ -171,6 +174,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 	void generatesInstanceSupplierCodeFragmentToAvoidDuplicateInvocations() {
 
 		beanFactory.registerBeanDefinition("commons.managed-types", invocationCountingManagedTypesDefinition);
+		RegisteredBean registeredBean = RegisteredBean.of(beanFactory, "commons.managed-types");
 
 		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
 				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
@@ -180,9 +184,13 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 			InvocationRecordingManagedTypes sourceTypes = beanFactory.getBean(InvocationRecordingManagedTypes.class);
 			assertThat(sourceTypes.getCounter()).isOne();
 
-			InvocationRecordingManagedTypes types = ReflectionTestUtils
+			InstanceSupplier<InvocationRecordingManagedTypes> types = ReflectionTestUtils
 					.invokeMethod(it.getAllCompiledClasses().iterator().next(), "instance");
-			assertThat(types.source).isNotSameAs(sourceTypes);
+			try {
+				assertThat(types.get(registeredBean).source).isNotSameAs(sourceTypes);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		});
 	}
 
@@ -192,23 +200,32 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		beanFactory.registerBeanDefinition("commons.managed-types",
 				BeanDefinitionBuilder.rootBeanDefinition(StoreManagedTypesWithCustomFactoryMethod.class).getBeanDefinition());
 
+		RegisteredBean registeredBean = RegisteredBean.of(beanFactory, "commons.managed-types");
+
 		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
-				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
+				.processAheadOfTime(registeredBean);
 
 		AotTestCodeContributionBuilder.withContextFor(this.getClass()).writeContentFor(contribution).compile(it -> {
 
-			StoreManagedTypesWithCustomFactoryMethod types = ReflectionTestUtils
+			InstanceSupplier<StoreManagedTypesWithCustomFactoryMethod> types = ReflectionTestUtils
 					.invokeMethod(it.getAllCompiledClasses().iterator().next(), "instance");
 
-			assertThat(types.toList()).containsExactlyInAnyOrder(A.class, B.class);
+			try {
+				assertThat(types.get(registeredBean).toList()).containsExactlyInAnyOrder(A.class, B.class);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		});
 	}
 
 	@Test // GH-2680
 	void canGenerateCodeReturnsTrueIfFactoryMethodPresent() {
 
+		beanFactory.registerBeanDefinition("managed-types", managedTypesDefinition);
+		RegisteredBean registeredBean = RegisteredBean.of(beanFactory, "managed-types");
+
 		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(
-				ManagedTypes.from(A.class, B.class), StoreManagedTypesWithCustomFactoryMethod.class,
+				ManagedTypes.from(A.class, B.class), registeredBean,
 				Mockito.mock(BeanRegistrationCodeFragments.class));
 		Builder methodBuilder = MethodSpec.methodBuilder("instance");
 		fragment.generateInstanceFactory(methodBuilder);
@@ -219,8 +236,11 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 	@Test // GH-2680
 	void canGenerateCodeReturnsFalseIfNoFactoryMethodPresent() {
 
+		beanFactory.registerBeanDefinition("managed-types", myManagedTypesDefinition);
+		RegisteredBean registeredBean = RegisteredBean.of(beanFactory, "managed-types");
+
 		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(
-				ManagedTypes.from(A.class, B.class), MyManagedTypes.class, Mockito.mock(BeanRegistrationCodeFragments.class));
+				ManagedTypes.from(A.class, B.class), registeredBean, Mockito.mock(BeanRegistrationCodeFragments.class));
 
 		assertThat(fragment.canGenerateCode()).isFalse();
 	}
@@ -307,4 +327,17 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		}
 	}
 
+	public class ManagedTypesBeanRegistrationAotProcessorUnitTests__TestCode {
+		public BeanInstanceSupplier<? extends ManagedTypes> get() {
+			return ManagedTypesBeanRegistrationAotProcessorUnitTests__TestCode.instance();
+		}
+
+		private static BeanInstanceSupplier<StoreManagedTypesWithCustomFactoryMethod> instance(
+		) {
+			return BeanInstanceSupplier.<ManagedTypesBeanRegistrationAotProcessorUnitTests.StoreManagedTypesWithCustomFactoryMethod>forFactoryMethod(Class.class, "managedTypes").withGenerator(registeredBean ->  {
+				var types = List.of("org.springframework.data.aot.ManagedTypesBeanRegistrationAotProcessorUnitTests$A", "org.springframework.data.aot.ManagedTypesBeanRegistrationAotProcessorUnitTests$B");
+				return ManagedTypesBeanRegistrationAotProcessorUnitTests.StoreManagedTypesWithCustomFactoryMethod.of(ManagedTypes.fromClassNames(types, registeredBean.getBeanFactory().getBeanClassLoader()));
+			} );
+		}
+	}
 }
