@@ -24,10 +24,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.Streamable;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * Types managed by a Spring Data implementation. Used to predefine a set of known entities that might need processing
@@ -78,33 +75,6 @@ public interface ManagedTypes {
 
 		Assert.notNull(types, "Types must not be null");
 		return types::forEach;
-	}
-
-	/**
-	 * Factory method used to construct {@link ManagedTypes} from the given, required {@link Iterable} of {@link String
-	 * type names}.
-	 *
-	 * @param types {@link Iterable} of {@literal class names} used to initialize the {@link ManagedTypes}; must not be
-	 *          {@literal null}.
-	 * @param classLoader the class loader to use. Can be {@literal null}, which indicates the default class loader.
-	 * @return new instance of {@link ManagedTypes} initialized the given, required {@link Iterable} of {@link Class
-	 *         types}.
-	 * @throws IllegalStateException if class cannot be loaded.
-	 * @see java.lang.Iterable
-	 * @see #fromStream(Stream)
-	 * @see #fromSupplier(Supplier)
-	 * @see ClassUtils#forName(String, ClassLoader)
-	 */
-	static ManagedTypes fromClassNames(Iterable<String> types, @Nullable ClassLoader classLoader) {
-
-		Assert.notNull(types, "Types must not be null");
-		return Streamable.of(types).map(it -> {
-			try {
-				return ClassUtils.forName(it, classLoader);
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException(e);
-			}
-		})::forEach;
 	}
 
 	/**
