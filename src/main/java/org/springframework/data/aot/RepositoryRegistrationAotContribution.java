@@ -268,10 +268,9 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				.registerType(repositoryInformation.getRepositoryInterface(),
 						hint -> hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS))
 				.registerType(repositoryInformation.getRepositoryBaseClass(),
-						hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS))
-				.registerType(repositoryInformation.getDomainType(),
-						hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-								MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
+						hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
+
+		TypeContributor.contribute(repositoryInformation.getDomainType(), contribution);
 
 		// Repository Fragments
 		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {

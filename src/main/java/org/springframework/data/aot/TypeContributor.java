@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.springframework.aot.generate.GenerationContext;
+import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.SynthesizedAnnotation;
@@ -69,14 +70,7 @@ public class TypeContributor {
 			return;
 		}
 
-		if (type.isInterface()) {
-			contribution.getRuntimeHints().reflection().registerType(type, hint ->
-				hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS));
-			return;
-		}
-
-		contribution.getRuntimeHints().reflection().registerType(type, hint ->
-			hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.DECLARED_FIELDS));
+		new BindingReflectionHintsRegistrar().registerReflectionHints(contribution.getRuntimeHints().reflection(), type);
 	}
 
 	/**
