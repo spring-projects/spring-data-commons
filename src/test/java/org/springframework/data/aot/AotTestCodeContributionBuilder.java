@@ -15,23 +15,20 @@
  */
 package org.springframework.data.aot;
 
-import javax.lang.model.element.Modifier;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+
+import javax.lang.model.element.Modifier;
 
 import org.mockito.Mockito;
-import org.springframework.aot.test.generator.compile.Compiled;
-import org.springframework.aot.test.generator.compile.TestCompiler;
-import org.springframework.beans.factory.aot.BeanInstanceSupplier;
+import org.springframework.aot.test.generate.TestGenerationContext;
+import org.springframework.aot.test.generate.compile.Compiled;
+import org.springframework.aot.test.generate.compile.TestCompiler;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
 import org.springframework.beans.factory.support.InstanceSupplier;
-import org.springframework.beans.factory.support.RegisteredBean;
-import org.springframework.data.domain.ManagedTypes;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterizedTypeName;
-import org.springframework.test.aot.generate.TestGenerationContext;
 
 /**
  * @author Christoph Strobl
@@ -69,22 +66,23 @@ public class AotTestCodeContributionBuilder {
 
 		Class<?> beanType = Object.class;
 		try {
-			beanType = contribution instanceof RegisteredBeanAotContribution ? ((RegisteredBeanAotContribution) contribution).getSource().getBeanClass() : Object.class;
+			beanType = contribution instanceof RegisteredBeanAotContribution
+					? ((RegisteredBeanAotContribution) contribution).getSource().getBeanClass()
+					: Object.class;
 		} catch (Exception e) {}
 
 		ParameterizedTypeName parameterizedReturnTypeName = ParameterizedTypeName.get(InstanceSupplier.class, beanType);
 		beanRegistrationCode.getTypeBuilder().set(type -> {
 			type.addModifiers(Modifier.PUBLIC);
-			type.addMethod(MethodSpec.methodBuilder("get").addModifiers(Modifier.PUBLIC)
-					.returns(parameterizedReturnTypeName).addStatement("return $L", codeBlock).build());
+			type.addMethod(MethodSpec.methodBuilder("get").addModifiers(Modifier.PUBLIC).returns(parameterizedReturnTypeName)
+					.addStatement("return $L", codeBlock).build());
 		});
 
 		return this;
 	}
 
 	public void compile() {
-		compile(it -> {
-		});
+		compile(it -> {});
 	}
 
 	public void compile(Consumer<Compiled> compiled) {
