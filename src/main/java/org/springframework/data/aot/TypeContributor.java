@@ -23,7 +23,6 @@ import java.util.function.Predicate;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.core.annotation.SynthesizedAnnotation;
 
 /**
  * @author Christoph Strobl
@@ -51,7 +50,8 @@ public class TypeContributor {
 	 * @param contribution
 	 */
 	@SuppressWarnings("unchecked")
-	public static void contribute(Class<?> type, Predicate<Class<? extends Annotation>> filter, GenerationContext contribution) {
+	public static void contribute(Class<?> type, Predicate<Class<? extends Annotation>> filter,
+			GenerationContext contribution) {
 
 		if (type.isPrimitive()) {
 			return;
@@ -59,24 +59,21 @@ public class TypeContributor {
 
 		if (type.isAnnotation() && filter.test((Class<? extends Annotation>) type)) {
 
-			contribution.getRuntimeHints().reflection().registerType(type, hint ->
-				hint.withMembers(MemberCategory.INTROSPECT_PUBLIC_METHODS));
+			contribution.getRuntimeHints().reflection().registerType(type,
+					hint -> hint.withMembers(MemberCategory.INTROSPECT_PUBLIC_METHODS));
 
-			// TODO: do we need this if meta annotated with SD annotation?
-			if (type.getPackage().getName().startsWith(DATA_NAMESPACE)) {
-				contribution.getRuntimeHints().proxies().registerJdkProxy(type, SynthesizedAnnotation.class);
-			}
 			return;
 		}
 
 		if (type.isInterface()) {
-			contribution.getRuntimeHints().reflection().registerType(type, hint ->
-				hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS));
+			contribution.getRuntimeHints().reflection().registerType(type,
+					hint -> hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS));
 			return;
 		}
 
-		contribution.getRuntimeHints().reflection().registerType(type, hint ->
-			hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.DECLARED_FIELDS));
+		contribution.getRuntimeHints().reflection().registerType(type,
+				hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS,
+						MemberCategory.DECLARED_FIELDS));
 	}
 
 	/**

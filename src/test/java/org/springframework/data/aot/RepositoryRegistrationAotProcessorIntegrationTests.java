@@ -21,7 +21,6 @@ import static org.springframework.data.aot.RepositoryRegistrationAotContribution
 import java.io.Serializable;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.RuntimeHints;
@@ -30,8 +29,6 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.DecoratingProxy;
-import org.springframework.core.annotation.SynthesizedAnnotation;
-import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.aot.sample.ConfigWithCustomImplementation;
 import org.springframework.data.aot.sample.ConfigWithCustomRepositoryBaseClass;
 import org.springframework.data.aot.sample.ConfigWithFragments;
@@ -44,7 +41,6 @@ import org.springframework.data.aot.sample.ReactiveConfig;
 import org.springframework.data.domain.Page;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.transaction.interceptor.TransactionalProxy;
 
@@ -261,21 +257,6 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 					contribution.contributesJdkProxyFor(ProjectionInterface.class);
 					contribution.doesNotContributeJdkProxyFor(Page.class);
 					contribution.doesNotContributeJdkProxyFor(ConfigWithQueryMethods.Person.class);
-				});
-	}
-
-	@Test // GH-2593
-	void contributesProxiesForDataAnnotations() {
-
-		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
-				ConfigWithQueryMethods.class).forRepository(ConfigWithQueryMethods.CustomerRepositoryWithQueryMethods.class);
-
-		assertThatContribution(repositoryBeanContribution) //
-				.codeContributionSatisfies(contribution -> {
-
-					contribution.contributesJdkProxy(Param.class, SynthesizedAnnotation.class);
-					contribution.contributesJdkProxy(ConfigWithQueryMethods.CustomQuery.class, SynthesizedAnnotation.class);
-					contribution.contributesJdkProxy(QueryAnnotation.class, SynthesizedAnnotation.class);
 				});
 	}
 

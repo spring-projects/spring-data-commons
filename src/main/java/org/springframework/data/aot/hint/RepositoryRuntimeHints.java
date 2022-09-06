@@ -77,7 +77,6 @@ class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
 
 		// annotated queries
 		hints.proxies().registerJdkProxy( //
-				TypeReference.of("org.springframework.data.annotation.QueryAnnotation"), //
-				TypeReference.of("org.springframework.core.annotation.SynthesizedAnnotation"));
+				TypeReference.of("org.springframework.data.annotation.QueryAnnotation"));
 	}
 }
