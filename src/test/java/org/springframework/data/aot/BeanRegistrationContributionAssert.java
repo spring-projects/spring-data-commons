@@ -22,9 +22,9 @@ import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
 
 import org.springframework.aot.generate.GenerationContext;
+import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
-import org.springframework.test.aot.generate.TestGenerationContext;
 
 /**
  * @author Christoph Strobl

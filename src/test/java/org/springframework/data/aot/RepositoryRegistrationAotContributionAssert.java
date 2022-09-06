@@ -23,12 +23,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.assertj.core.api.AbstractAssert;
-
 import org.springframework.aot.generate.GenerationContext;
+import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
-import org.springframework.test.aot.generate.TestGenerationContext;
 
 /**
  * AssertJ {@link AbstractAssert Assertion} for {@link RepositoryRegistrationAotContribution}.
