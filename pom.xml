@@ -28,7 +28,7 @@
 	<properties>
 
 		<scala>2.11.7</scala>
-		<xmlbeam>1.4.23</xmlbeam>
+		<xmlbeam>1.4.24</xmlbeam>
 		<java-module-name>spring.data.commons</java-module-name>
 
 	</properties>
@@ -174,7 +174,7 @@
 			<version>${vavr}</version>
 			<optional>true</optional>
 		</dependency>
-		
+
 		<!-- Eclipse Collections -->
 
 		<dependency>
