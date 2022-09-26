@@ -17,6 +17,7 @@ package org.springframework.data.domain;
 
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -30,7 +31,7 @@ import org.springframework.util.ObjectUtils;
  */
 public final class Range<T> {
 
-	private final static Range<?> UNBOUNDED = Range.of(Bound.unbounded(), Bound.UNBOUNDED);
+	private final static Range<?> UNBOUNDED = Range.of(Bound.unbounded(), Bound.unbounded());
 
 	/**
 	 * The lower bound of the range.
@@ -217,6 +218,22 @@ public final class Range<T> {
 		return greaterThanLowerBound && lessThanUpperBound;
 	}
 
+	/**
+	 * Apply a mapping {@link Function} to the lower and upper boundary values.
+	 *
+	 * @param mapper must not be {@literal null}. If the mapper returns {@code null}, then the corresponding boundary
+	 *          value represents an {@link Bound#unbounded()} boundary.
+	 * @return a new {@link Range} after applying the value to the mapper.
+	 * @param <R>
+	 * @since 3.0
+	 */
+	public <R> Range<R> map(Function<? super T, ? extends R> mapper) {
+
+		Assert.notNull(mapper, "Mapping function must not be null");
+
+		return Range.of(lowerBound.map(mapper), upperBound.map(mapper));
+	}
+
 	@Override
 	public String toString() {
 		return String.format("%s-%s", lowerBound.toPrefixString(), upperBound.toSuffixString());
@@ -265,8 +282,7 @@ public final class Range<T> {
 	 */
 	public static final class Bound<T> {
 
-		@SuppressWarnings({ "rawtypes", "unchecked" }) //
-		private static final Bound<?> UNBOUNDED = new Bound(Optional.empty(), true);
+		private static final Bound<?> UNBOUNDED = new Bound<>(Optional.empty(), true);
 
 		private final Optional<T> value;
 		private final boolean inclusive;
@@ -302,7 +318,7 @@ public final class Range<T> {
 		public static <T> Bound<T> inclusive(T value) {
 
 			Assert.notNull(value, "Value must not be null");
-			return new Bound<>(Optional.of(value), true);
+			return Bound.of(Optional.of(value), true);
 		}
 
 		/**
@@ -354,7 +370,7 @@ public final class Range<T> {
 		public static <T> Bound<T> exclusive(T value) {
 
 			Assert.notNull(value, "Value must not be null");
-			return new Bound<>(Optional.of(value), false);
+			return Bound.of(Optional.of(value), false);
 		}
 
 		/**
@@ -437,6 +453,10 @@ public final class Range<T> {
 				return false;
 			}
 
+			if (!value.isPresent() && !bound.value.isPresent()) {
+				return true;
+			}
+
 			if (inclusive != bound.inclusive)
 				return false;
 
@@ -445,10 +465,41 @@ public final class Range<T> {
 
 		@Override
 		public int hashCode() {
+
+			if (!value.isPresent()) {
+				return ObjectUtils.nullSafeHashCode(value);
+			}
+
 			int result = ObjectUtils.nullSafeHashCode(value);
 			result = 31 * result + (inclusive ? 1 : 0);
 			return result;
 		}
+
+		/**
+		 * Apply a mapping {@link Function} to the boundary value.
+		 *
+		 * @param mapper must not be {@literal null}. If the mapper returns {@code null}, then the boundary value
+		 *          corresponds with {@link Bound#unbounded()}.
+		 * @return a new {@link Bound} after applying the value to the mapper.
+		 * @param <R>
+		 * @since 3.0
+		 */
+		public <R> Bound<R> map(Function<? super T, ? extends R> mapper) {
+
+			Assert.notNull(mapper, "Mapping function must not be null");
+
+			return Bound.of(value.map(mapper), inclusive);
+		}
+
+		private static <R> Bound<R> of(Optional<R> value, boolean inclusive) {
+
+			if (value.isPresent()) {
+				return new Bound<>(value, inclusive);
+			}
+
+			return unbounded();
+		}
+
 	}
 
 	/**

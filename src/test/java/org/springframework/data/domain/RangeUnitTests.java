@@ -253,6 +253,20 @@ class RangeUnitTests {
 		assertThat(range.contains(10L, Long::compareTo)).isFalse();
 	}
 
+	@Test // GH-2692
+	void mapsBoundaryValues() {
+
+		var range = Range.leftOpen(5L, 10L).map(it -> it * 10);
+
+		assertThat(range.getLowerBound()).isEqualTo(Bound.exclusive(50L));
+		assertThat(range.getUpperBound()).isEqualTo(Bound.inclusive(100L));
+
+		range = Range.leftOpen(5L, 10L).map(it -> null);
+
+		assertThat(range.getLowerBound()).isEqualTo(Bound.unbounded());
+		assertThat(range.getUpperBound()).isEqualTo(Bound.unbounded());
+	}
+
 	@Test // DATACMNS-1499
 	void createsLeftUnboundedRange() {
 		assertThat(Range.leftUnbounded(Bound.inclusive(10L)).contains(-10000L)).isTrue();
