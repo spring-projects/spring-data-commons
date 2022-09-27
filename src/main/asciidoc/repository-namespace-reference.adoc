@@ -4,7 +4,7 @@
 
 [[populator.namespace-dao-config]]
 == The `<repositories />` Element
-The `<repositories />` element triggers the setup of the Spring Data repository infrastructure. The most important attribute is `base-package`, which defines the package to scan for Spring Data repository interfaces. See "`<<repositories.create-instances.spring>>`". The following table describes the attributes of the `<repositories />` element:
+The `<repositories />` element triggers the setup of the Spring Data repository infrastructure. The most important attribute is `base-package`, which defines the package to scan for Spring Data repository interfaces. See "`<<repositories.create-instances.xml>>`". The following table describes the attributes of the `<repositories />` element:
 
 .Attributes
 [options="header", cols="1,3"]

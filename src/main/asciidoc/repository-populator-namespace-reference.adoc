@@ -4,7 +4,7 @@
 
 [[namespace-dao-config]]
 == The <populator /> element
-The `<populator />` element allows to populate the a data store via the Spring Data repository infrastructure.footnote:[see <<repositories.create-instances.spring>>]
+The `<populator />` element allows to populate a data store via the Spring Data repository infrastructure.footnote:[see <<repositories.create-instances.xml>>]
 
 .Attributes
 [options="header", cols="1,3"]
