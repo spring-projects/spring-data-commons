@@ -15,6 +15,11 @@
  */
 package org.springframework.data.repository.query;
 
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Range.Bound;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,13 +33,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.springframework.data.domain.Range;
-import org.springframework.data.domain.Range.Bound;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
 /**
- * Source of {@link SpelExtractor} encapsulating configuration often common for all queries.
+ * A {@literal SpelQueryContext} is able to find SpEL expressions in a query string and to replace them with bind variables.
+ * <p>
+ * Result o the parse process is a {@link SpelExtractor} which offers the transformed query string.
+ * Alternatively and preferred one may provide a {@link QueryMethodEvaluationContextProvider} via
+ * {@link #withEvaluationContextProvider(QueryMethodEvaluationContextProvider)} which will yield the more powerful
+ * {@link EvaluatingSpelQueryContext}.
+ * <p>
+ * Typical usage looks like
+ * <pre><code>
+     SpelQueryContext.EvaluatingSpelQueryContext queryContext = SpelQueryContext
+         .of((counter, expression) -> String.format("__$synthetic$__%d", counter), String::concat)
+         .withEvaluationContextProvider(evaluationContextProvider);
+
+     SpelEvaluator spelEvaluator = queryContext.parse(query, queryMethod.getParameters());
+
+     spelEvaluator.evaluate(objects).forEach(parameterMap::addValue);
+ * </code></pre>
  *
  * @author Jens Schauder
  * @author Gerrit Meier
@@ -63,7 +79,7 @@ public class SpelQueryContext {
 	private final BiFunction<String, String, String> replacementSource;
 
 	private SpelQueryContext(BiFunction<Integer, String, String> parameterNameSource,
-			BiFunction<String, String, String> replacementSource) {
+							 BiFunction<String, String, String> replacementSource) {
 
 		Assert.notNull(parameterNameSource, "Parameter name source must not be null");
 		Assert.notNull(replacementSource, "Replacement source must not be null");
@@ -73,7 +89,7 @@ public class SpelQueryContext {
 	}
 
 	public static SpelQueryContext of(BiFunction<Integer, String, String> parameterNameSource,
-			BiFunction<String, String, String> replacementSource) {
+									  BiFunction<String, String, String> replacementSource) {
 		return new SpelQueryContext(parameterNameSource, replacementSource);
 	}
 
@@ -83,13 +99,13 @@ public class SpelQueryContext {
 	 * <pre>
 	 * &lt;prefix&gt;#{&lt;spel&gt;}
 	 * </pre>
-	 *
+	 * <p>
 	 * with prefix being the character ':' or '?'. Parsing honors quoted {@literal String}s enclosed in single or double
 	 * quotation marks.
 	 *
 	 * @param query a query containing SpEL expressions in the format described above. Must not be {@literal null}.
 	 * @return A {@link SpelExtractor} which makes the query with SpEL expressions replaced by bind parameters and a map
-	 *         from bind parameter to SpEL expression available. Guaranteed to be not {@literal null}.
+	 * from bind parameter to SpEL expression available. Guaranteed to be not {@literal null}.
 	 */
 	public SpelExtractor parse(String query) {
 		return new SpelExtractor(query);
@@ -125,11 +141,11 @@ public class SpelQueryContext {
 		 * parameter name source and replacement source.
 		 *
 		 * @param evaluationContextProvider must not be {@literal null}.
-		 * @param parameterNameSource must not be {@literal null}.
-		 * @param replacementSource must not be {@literal null}.
+		 * @param parameterNameSource       must not be {@literal null}.
+		 * @param replacementSource         must not be {@literal null}.
 		 */
 		private EvaluatingSpelQueryContext(QueryMethodEvaluationContextProvider evaluationContextProvider,
-				BiFunction<Integer, String, String> parameterNameSource, BiFunction<String, String, String> replacementSource) {
+										   BiFunction<Integer, String, String> parameterNameSource, BiFunction<String, String, String> replacementSource) {
 
 			super(parameterNameSource, replacementSource);
 
@@ -142,11 +158,11 @@ public class SpelQueryContext {
 		 * <pre>
 		 * &lt;prefix&gt;#{&lt;spel&gt;}
 		 * </pre>
-		 *
+		 * <p>
 		 * with prefix being the character ':' or '?'. Parsing honors quoted {@literal String}s enclosed in single or double
 		 * quotation marks.
 		 *
-		 * @param query a query containing SpEL expressions in the format described above. Must not be {@literal null}.
+		 * @param query      a query containing SpEL expressions in the format described above. Must not be {@literal null}.
 		 * @param parameters a {@link Parameters} instance describing query method parameters
 		 * @return A {@link SpelEvaluator} which allows to evaluate the SpEL expressions. Will never be {@literal null}.
 		 */
