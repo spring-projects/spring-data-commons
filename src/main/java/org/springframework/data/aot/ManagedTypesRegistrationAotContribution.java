@@ -56,7 +56,7 @@ import org.springframework.util.ReflectionUtils;
  * public static InstanceSupplier&lt;ManagedTypes&gt; instance() {
  *   return (registeredBean) -> {
  *     var types = List.of("com.example.A", "com.example.B");
- *     return ManagedTypes.ofStream(types.stream().map(it -> ClassUtils.forName(it, registeredBean.getBeanFactory().getBeanClassLoader())));
+ *     return ManagedTypes.ofStream(types.stream().map(it -> ClassUtils.resolveClassName(it, registeredBean.getBeanFactory().getBeanClassLoader())));
  *   }
  * }
  * </code>
@@ -200,11 +200,8 @@ public class ManagedTypesRegistrationAotContribution implements RegisteredBeanAo
 			} else {
 				builder.add(CodeBlock.builder()
 						.beginControlFlow("var managedTypes = $T.fromStream(types.stream().map(it ->", ManagedTypes.class)
-						.beginControlFlow("try")
-						.addStatement("return $T.forName(it, registeredBean.getBeanFactory().getBeanClassLoader())",
+						.addStatement("return $T.resolveClassName(it, registeredBean.getBeanFactory().getBeanClassLoader())",
 								ClassUtils.class)
-						.nextControlFlow("catch ($T e)", ClassNotFoundException.class)
-						.addStatement("throw new $T($S, e)", IllegalArgumentException.class, "Cannot to load type").endControlFlow()
 						.endControlFlow("))").build());
 			}
 			if (ObjectUtils.nullSafeEquals(source.getBeanClass(), ManagedTypes.class)) {
