@@ -61,7 +61,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Christoph Strobl
  * @author John Blum
- * @since 3.0.0
+ * @since 3.0
  */
 @SuppressWarnings("unused")
 public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotProcessor, BeanFactoryAware {

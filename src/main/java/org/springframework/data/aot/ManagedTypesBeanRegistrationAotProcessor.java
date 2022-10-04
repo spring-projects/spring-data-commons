@@ -48,6 +48,15 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	private final Log logger = LogFactory.getLog(getClass());
 	private @Nullable String moduleIdentifier;
 
+	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
+		this.moduleIdentifier = moduleIdentifier;
+	}
+
+	@Nullable
+	public String getModuleIdentifier() {
+		return this.moduleIdentifier;
+	}
+
 	@Override
 	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
 
@@ -59,18 +68,20 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 		return contribute(AotContext.from(beanFactory), resolveManagedTypes(registeredBean), registeredBean);
 	}
 
-	ManagedTypes resolveManagedTypes(RegisteredBean registeredBean) {
+	private ManagedTypes resolveManagedTypes(RegisteredBean registeredBean) {
 
 		RootBeanDefinition beanDefinition = registeredBean.getMergedBeanDefinition();
+
 		if (beanDefinition.hasConstructorArgumentValues()) {
+
 			ValueHolder indexedArgumentValue = beanDefinition.getConstructorArgumentValues().getIndexedArgumentValue(0, null);
 			Object value = indexedArgumentValue.getValue();
-			if (value instanceof Collection<?> values) {
-				if (values.stream().allMatch(it -> it instanceof Class)) {
-					return ManagedTypes.fromIterable((Collection<Class<?>>) values);
-				}
+
+			if (value instanceof Collection<?> values && values.stream().allMatch(it -> it instanceof Class)) {
+				return ManagedTypes.fromIterable((Collection<Class<?>>) values);
 			}
 		}
+
 		if (logger.isDebugEnabled()) {
 			logger.debug(
 					String.format("ManagedTypes BeanDefinition '%s' does serve arguments. Trying to resolve bean instance.",
@@ -93,29 +104,18 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 		return ManagedTypes.empty();
 	}
 
-	protected boolean isMatch(@Nullable Class<?> beanType, @Nullable String beanName) {
-		return matchesByType(beanType) && matchesPrefix(beanName);
-	}
-
-	protected boolean matchesByType(@Nullable Class<?> beanType) {
-		return beanType != null && ClassUtils.isAssignable(ManagedTypes.class, beanType);
-	}
-
-	protected boolean matchesPrefix(@Nullable String beanName) {
-		return StringUtils.startsWithIgnoreCase(beanName, getModuleIdentifier());
-	}
-
 	/**
 	 * Hook to provide a customized flavor of {@link BeanRegistrationAotContribution}. By overriding this method calls to
 	 * {@link #contributeType(ResolvableType, GenerationContext)} might no longer be issued.
 	 *
 	 * @param aotContext never {@literal null}.
 	 * @param managedTypes never {@literal null}.
-	 * @return new instance of {@link ManagedTypesBeanRegistrationAotProcessor} or {@literal null} if nothing to do.
+	 * @return new instance of {@link BeanRegistrationAotContribution} or {@literal null} if nothing to do.
 	 */
 	@Nullable
-	protected BeanRegistrationAotContribution contribute(AotContext aotContext, ManagedTypes managedTypes, RegisteredBean registeredBean) {
-		return new ManagedTypesRegistrationAotContribution(aotContext, managedTypes, registeredBean, this::contributeType);
+	protected BeanRegistrationAotContribution contribute(AotContext aotContext, ManagedTypes managedTypes,
+			RegisteredBean registeredBean) {
+		return new ManagedTypesRegistrationAotContribution(managedTypes, registeredBean, this::contributeType);
 	}
 
 	/**
@@ -138,12 +138,15 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
 	}
 
-	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
-		this.moduleIdentifier = moduleIdentifier;
+	protected boolean isMatch(@Nullable Class<?> beanType, @Nullable String beanName) {
+		return matchesByType(beanType) && matchesPrefix(beanName);
 	}
 
-	@Nullable
-	public String getModuleIdentifier() {
-		return this.moduleIdentifier;
+	protected boolean matchesByType(@Nullable Class<?> beanType) {
+		return beanType != null && ClassUtils.isAssignable(ManagedTypes.class, beanType);
+	}
+
+	protected boolean matchesPrefix(@Nullable String beanName) {
+		return StringUtils.startsWithIgnoreCase(beanName, getModuleIdentifier());
 	}
 }

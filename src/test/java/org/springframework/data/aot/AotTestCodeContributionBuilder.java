@@ -31,6 +31,8 @@ import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterizedTypeName;
 
 /**
+ * Test utility to build and compile AOT code contributions.
+ *
  * @author Christoph Strobl
  */
 public class AotTestCodeContributionBuilder {

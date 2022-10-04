@@ -50,51 +50,42 @@ import org.springframework.util.ReflectionUtils;
  * {@link BeanRegistrationAotContribution#customizeBeanRegistrationCodeFragments(GenerationContext, BeanRegistrationCodeFragments)}.
  * The generated code resolves potential factory methods accepting either a {@link ManagedTypes} instance, or a
  * {@link List} of either {@link Class} or {@link String} (classname) values.
- * 
- * <pre>
- * <code>
+ *
+ * <pre class="code">
  * public static InstanceSupplier&lt;ManagedTypes&gt; instance() {
  *   return (registeredBean) -> {
  *     var types = List.of("com.example.A", "com.example.B");
  *     return ManagedTypes.ofStream(types.stream().map(it -> ClassUtils.forName(it, registeredBean.getBeanFactory().getBeanClassLoader())));
  *   }
  * }
- * </code>
  * </pre>
  *
  * @author John Blum
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @see org.springframework.beans.factory.aot.BeanRegistrationAotContribution
- * @since 3.0.0
+ * @since 3.0
  */
-public class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContribution {
+class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContribution {
 
-	private final AotContext aotContext;
 	private final ManagedTypes managedTypes;
+	private final Lazy<List<Class<?>>> sourceTypes;
 	private final BiConsumer<ResolvableType, GenerationContext> contributionAction;
 	private final RegisteredBean source;
 
-	public ManagedTypesRegistrationAotContribution(AotContext aotContext, @Nullable ManagedTypes managedTypes,
-			RegisteredBean registeredBean, BiConsumer<ResolvableType, GenerationContext> contributionAction) {
+	public ManagedTypesRegistrationAotContribution(ManagedTypes managedTypes, RegisteredBean registeredBean,
+			BiConsumer<ResolvableType, GenerationContext> contributionAction) {
 
-		this.aotContext = aotContext;
 		this.managedTypes = managedTypes;
+		this.sourceTypes = Lazy.of(managedTypes::toList);
 		this.contributionAction = contributionAction;
 		this.source = registeredBean;
-	}
-
-	protected AotContext getAotContext() {
-		return this.aotContext;
-	}
-
-	protected ManagedTypes getManagedTypes() {
-		return managedTypes == null ? ManagedTypes.empty() : managedTypes;
 	}
 
 	@Override
 	public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
 
-		List<Class<?>> types = getManagedTypes().toList();
+		List<Class<?>> types = sourceTypes.get();
 
 		if (!types.isEmpty()) {
 			TypeCollector.inspect(types).forEach(type -> contributionAction.accept(type, generationContext));
@@ -109,7 +100,7 @@ public class ManagedTypesRegistrationAotContribution implements RegisteredBeanAo
 			return codeFragments;
 		}
 
-		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(getManagedTypes(), source,
+		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(sourceTypes.get(), source,
 				codeFragments);
 		return fragment.canGenerateCode() ? fragment : codeFragments;
 	}
@@ -119,30 +110,25 @@ public class ManagedTypesRegistrationAotContribution implements RegisteredBeanAo
 		return source;
 	}
 
+	/**
+	 * Class used to generate the fragment of code needed to define a {@link ManagedTypes} bean from previously discovered
+	 * managed types.
+	 */
 	static class ManagedTypesInstanceCodeFragment extends BeanRegistrationCodeFragments {
 
-		private ManagedTypes sourceTypes;
-		private RegisteredBean source;
-		private Lazy<Method> instanceMethod = Lazy.of(this::findInstanceFactory);
+		public static final ResolvableType LIST_TYPE = ResolvableType.forType(List.class);
+		public static final ResolvableType MANAGED_TYPES_TYPE = ResolvableType.forType(ManagedTypes.class);
+		private final List<Class<?>> sourceTypes;
+		private final RegisteredBean source;
+		private final Lazy<Method> instanceMethod = Lazy.of(this::findInstanceFactory);
 
-		protected ManagedTypesInstanceCodeFragment(ManagedTypes managedTypes, RegisteredBean source,
+		protected ManagedTypesInstanceCodeFragment(List<Class<?>> sourceTypes, RegisteredBean source,
 				BeanRegistrationCodeFragments codeFragments) {
 
 			super(codeFragments);
 
-			this.sourceTypes = managedTypes;
+			this.sourceTypes = sourceTypes;
 			this.source = source;
-		}
-
-		/**
-		 * @return {@literal true} if the instance method code can be generated. {@literal false} otherwise.
-		 */
-		boolean canGenerateCode() {
-
-			if (ObjectUtils.nullSafeEquals(source.getBeanClass(), ManagedTypes.class)) {
-				return true;
-			}
-			return instanceMethod.getNullable() != null;
 		}
 
 		@Override
@@ -156,33 +142,20 @@ public class ManagedTypesRegistrationAotContribution implements RegisteredBeanAo
 			return CodeBlock.of("$T.$L()", beanRegistrationCode.getClassName(), generatedMethod.getName());
 		}
 
-		private CodeBlock toCodeBlock(List<Class<?>> values, boolean allPublic) {
+		/**
+		 * @return {@literal true} if the instance method code can be generated. {@literal false} otherwise.
+		 */
+		boolean canGenerateCode() {
 
-			if (allPublic) {
-				return CodeBlock.join(values.stream().map(value -> CodeBlock.of("$T.class", value)).toList(), ", ");
+			if (ObjectUtils.nullSafeEquals(source.getBeanClass(), ManagedTypes.class)) {
+				return true;
 			}
-			return CodeBlock.join(values.stream().map(value -> CodeBlock.of("$S", value.getName())).toList(), ", ");
-		}
 
-		private Method findInstanceFactory() {
-
-			for (Method beanMethod : ReflectionUtils.getDeclaredMethods(source.getBeanClass())) {
-
-				if (beanMethod.getParameterCount() == 1 && java.lang.reflect.Modifier.isPublic(beanMethod.getModifiers())
-						&& java.lang.reflect.Modifier.isStatic(beanMethod.getModifiers())) {
-					ResolvableType parameterType = ResolvableType.forMethodParameter(beanMethod, 0, source.getBeanClass());
-					if (parameterType.isAssignableFrom(ResolvableType.forType(List.class))
-							|| parameterType.isAssignableFrom(ResolvableType.forType(ManagedTypes.class))) {
-						return beanMethod;
-					}
-				}
-			}
-			return null;
+			return instanceMethod.getNullable() != null;
 		}
 
 		void generateInstanceFactory(Builder method) {
 
-			List<Class<?>> sourceTypes = this.sourceTypes.toList();
 			boolean allSourceTypesVisible = sourceTypes.stream()
 					.allMatch(it -> AccessVisibility.PUBLIC.equals(AccessVisibility.forClass(it)));
 
@@ -207,6 +180,7 @@ public class ManagedTypesRegistrationAotContribution implements RegisteredBeanAo
 						.addStatement("throw new $T($S, e)", IllegalArgumentException.class, "Cannot to load type").endControlFlow()
 						.endControlFlow("))").build());
 			}
+
 			if (ObjectUtils.nullSafeEquals(source.getBeanClass(), ManagedTypes.class)) {
 				builder.add("return managedTypes");
 			} else {
@@ -221,8 +195,42 @@ public class ManagedTypesRegistrationAotContribution implements RegisteredBeanAo
 							instanceFactoryMethod.getName(), "managedTypes");
 				}
 			}
+
 			builder.endControlFlow(")");
 			method.addCode(builder.build());
+		}
+
+		private CodeBlock toCodeBlock(List<Class<?>> values, boolean allPublic) {
+
+			if (allPublic) {
+				return CodeBlock.join(values.stream().map(value -> CodeBlock.of("$T.class", value)).toList(), ", ");
+			}
+			return CodeBlock.join(values.stream().map(value -> CodeBlock.of("$S", value.getName())).toList(), ", ");
+		}
+
+		@Nullable
+		private Method findInstanceFactory() {
+
+			for (Method beanMethod : ReflectionUtils.getDeclaredMethods(source.getBeanClass())) {
+
+				if (!isInstanceFactory(beanMethod)) {
+					continue;
+				}
+
+				ResolvableType parameterType = ResolvableType.forMethodParameter(beanMethod, 0, source.getBeanClass());
+
+				if (parameterType.isAssignableFrom(LIST_TYPE) || parameterType.isAssignableFrom(MANAGED_TYPES_TYPE)) {
+					return beanMethod;
+				}
+			}
+
+			return null;
+		}
+
+		private static boolean isInstanceFactory(Method beanMethod) {
+			return beanMethod.getParameterCount() == 1 //
+					&& java.lang.reflect.Modifier.isPublic(beanMethod.getModifiers()) //
+					&& java.lang.reflect.Modifier.isStatic(beanMethod.getModifiers());
 		}
 	}
 }

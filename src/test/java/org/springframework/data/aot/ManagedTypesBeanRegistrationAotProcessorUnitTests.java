@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -47,21 +48,23 @@ import org.springframework.javapoet.MethodSpec.Builder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
+ * Unit tests for {@link ManagedTypesBeanRegistrationAotProcessor}.
+ *
  * @author Christoph Strobl
  */
 class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 
-	final RootBeanDefinition managedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
+	private final RootBeanDefinition managedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
 			.rootBeanDefinition(ManagedTypes.class).setFactoryMethod("fromIterable")
 			.addConstructorArgValue(Collections.singleton(A.class)).getBeanDefinition();
 
-	final RootBeanDefinition myManagedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
+	private final RootBeanDefinition myManagedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
 			.rootBeanDefinition(MyManagedTypes.class).getBeanDefinition();
 
-	final RootBeanDefinition invocationCountingManagedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
+	private final RootBeanDefinition invocationCountingManagedTypesDefinition = (RootBeanDefinition) BeanDefinitionBuilder
 			.rootBeanDefinition(InvocationRecordingManagedTypes.class).getBeanDefinition();
 
-	DefaultListableBeanFactory beanFactory;
+	private DefaultListableBeanFactory beanFactory;
 
 	@BeforeEach
 	void beforeEach() {
@@ -221,8 +224,8 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		beanFactory.registerBeanDefinition("managed-types", managedTypesDefinition);
 		RegisteredBean registeredBean = RegisteredBean.of(beanFactory, "managed-types");
 
-		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(
-				ManagedTypes.from(A.class, B.class), registeredBean, Mockito.mock(BeanRegistrationCodeFragments.class));
+		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(List.of(A.class, B.class),
+				registeredBean, Mockito.mock(BeanRegistrationCodeFragments.class));
 		Builder methodBuilder = MethodSpec.methodBuilder("instance");
 		fragment.generateInstanceFactory(methodBuilder);
 
@@ -235,8 +238,8 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		beanFactory.registerBeanDefinition("managed-types", myManagedTypesDefinition);
 		RegisteredBean registeredBean = RegisteredBean.of(beanFactory, "managed-types");
 
-		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(
-				ManagedTypes.from(A.class, B.class), registeredBean, Mockito.mock(BeanRegistrationCodeFragments.class));
+		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(List.of(A.class, B.class),
+				registeredBean, Mockito.mock(BeanRegistrationCodeFragments.class));
 
 		assertThat(fragment.canGenerateCode()).isFalse();
 	}
@@ -290,7 +293,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 
 	public static class InvocationRecordingManagedTypes implements ManagedTypes {
 
-		private AtomicInteger counter = new AtomicInteger(0);
+		private final AtomicInteger counter = new AtomicInteger(0);
 		private ManagedTypes source = ManagedTypes.from(A.class, B.class);
 
 		public static InvocationRecordingManagedTypes from(ManagedTypes source) {
