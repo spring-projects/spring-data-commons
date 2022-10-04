@@ -20,7 +20,8 @@ The resolution algorithm works as follows:
 1. If there is a single static factory method annotated with `@PersistenceCreator` then it is used.
 2. If there is a single constructor, it is used.
 3. If there are multiple constructors and exactly one is annotated with `@PersistenceCreator`, it is used.
-4. If there's a no-argument constructor, it is used.
+4. If the type is a Java `Record` the canonical constructor is used.
+5. If there's a no-argument constructor, it is used.
 Other constructors will be ignored.
 
 The value resolution assumes constructor/factory method argument names to match the property names of the entity, i.e. the resolution will be performed as if the property was to be populated, including all customizations in mapping (different datastore column or field name etc.).
@@ -295,9 +296,23 @@ Using the same field/column name for different values typically leads to corrupt
 
 Spring Data adapts specifics of Kotlin to allow object creation and mutation.
 
+[[mapping.kotlin.creation]]
 === Kotlin object creation
 
-Kotlin classes are supported to be instantiated , all classes are immutable by default and require explicit property declarations to define mutable properties.
+Kotlin classes are supported to be instantiated, all classes are immutable by default and require explicit property declarations to define mutable properties.
+
+Spring Data automatically tries to detect a persistent entity's constructor to be used to materialize objects of that type.
+The resolution algorithm works as follows:
+
+1. If there is a constructor that is annotated with `@PersistenceCreator`, it is used.
+2. If the type is a <<mapping.kotlin,Kotlin data cass>> the primary constructor is used.
+3. If there is a single static factory method annotated with `@PersistenceCreator` then it is used.
+4. If there is a single constructor, it is used.
+5. If there are multiple constructors and exactly one is annotated with `@PersistenceCreator`, it is used.
+6. If the type is a Java `Record` the canonical constructor is used.
+7. If there's a no-argument constructor, it is used.
+Other constructors will be ignored.
+
 Consider the following `data` class `Person`:
 
 ====

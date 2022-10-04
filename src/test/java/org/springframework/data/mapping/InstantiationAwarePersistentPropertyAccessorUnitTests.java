@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import lombok.Value;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.EntityInstantiators;
@@ -44,8 +45,7 @@ class InstantiationAwarePersistentPropertyAccessorUnitTests {
 		var sample = new Sample("Dave", "Matthews", 42);
 
 		PersistentPropertyAccessor<Sample> wrapper = new InstantiationAwarePropertyAccessor<>(sample,
-				entity::getPropertyAccessor,
-				instantiators);
+				entity::getPropertyAccessor, instantiators);
 
 		wrapper.setProperty(entity.getRequiredPersistentProperty("firstname"), "Oliver August");
 
@@ -71,10 +71,38 @@ class InstantiationAwarePersistentPropertyAccessorUnitTests {
 		assertThat(wrapper.getBean()).isEqualTo(new Sample("Oliver August", "Heisenberg", 42));
 	}
 
+	@Test // GH-2625
+	void shouldSetPropertyOfRecordUsingCanonicalConstructor() {
+
+		var instantiators = new EntityInstantiators();
+		var context = new SampleMappingContext();
+
+		PersistentEntity<Object, SamplePersistentProperty> entity = context
+				.getRequiredPersistentEntity(WithSingleArgConstructor.class);
+
+		var bean = new WithSingleArgConstructor(42L, "Dave");
+
+		PersistentPropertyAccessor<WithSingleArgConstructor> wrapper = new InstantiationAwarePropertyAccessor<>(bean,
+				entity::getPropertyAccessor, instantiators);
+
+		wrapper.setProperty(entity.getRequiredPersistentProperty("name"), "Oliver August");
+		wrapper.setProperty(entity.getRequiredPersistentProperty("id"), 41L);
+
+		assertThat(wrapper.getBean()).isEqualTo(new WithSingleArgConstructor(41L, "Oliver August"));
+	}
+
 	@Value
 	static class Sample {
 
 		String firstname, lastname;
 		int age;
 	}
+
+	public record WithSingleArgConstructor(Long id, String name) {
+
+		public WithSingleArgConstructor(String name) {
+			this(null, name);
+		}
+	}
+
 }
