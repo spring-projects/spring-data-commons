@@ -28,10 +28,13 @@ import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
+import org.springframework.data.web.SlicedResourcesAssembler;
+import org.springframework.data.web.SlicedResourcesAssemblerArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 /**
- * JavaConfig class to register {@link PagedResourcesAssembler} and {@link PagedResourcesAssemblerArgumentResolver}.
+ * JavaConfig class to register {@link PagedResourcesAssembler}, {@link PagedResourcesAssemblerArgumentResolver},
+ * {@link SlicedResourcesAssembler} and {@link SlicedResourcesAssemblerArgumentResolver}.
  *
  * @since 1.6
  * @author Oliver Gierke
@@ -47,6 +50,7 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 	private final Lazy<HateoasSortHandlerMethodArgumentResolver> sortResolver;
 	private final Lazy<HateoasPageableHandlerMethodArgumentResolver> pageableResolver;
 	private final Lazy<PagedResourcesAssemblerArgumentResolver> argumentResolver;
+	private final Lazy<SlicedResourcesAssemblerArgumentResolver> slicedResourcesArgumentResolver;
 
 	/**
 	 * @param context must not be {@literal null}.
@@ -63,6 +67,8 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 				.of(() -> context.getBean("pageableResolver", HateoasPageableHandlerMethodArgumentResolver.class));
 		this.argumentResolver = Lazy.of(() -> context.getBean("pagedResourcesAssemblerArgumentResolver",
 				PagedResourcesAssemblerArgumentResolver.class));
+		this.slicedResourcesArgumentResolver = Lazy.of(() -> context.getBean("slicedResourcesAssemblerArgumentResolver",
+				SlicedResourcesAssemblerArgumentResolver.class));
 	}
 
 	@Override
@@ -94,11 +100,22 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 		return new PagedResourcesAssemblerArgumentResolver(pageableResolver.get());
 	}
 
+	@Bean
+	public SlicedResourcesAssembler<?> slicedResourcesAssembler() {
+		return new SlicedResourcesAssembler<>(pageableResolver.get(), null);
+	}
+
+	@Bean
+	public SlicedResourcesAssemblerArgumentResolver slicedResourcesAssemblerArgumentResolver() {
+		return new SlicedResourcesAssemblerArgumentResolver(pageableResolver.get());
+	}
+
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 
 		super.addArgumentResolvers(argumentResolvers);
 
 		argumentResolvers.add(argumentResolver.get());
+		argumentResolvers.add(slicedResourcesArgumentResolver.get());
 	}
 }
