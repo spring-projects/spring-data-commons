@@ -26,6 +26,7 @@ import java.util.Iterator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mapping.PreferredConstructorDiscovererUnitTests.Outer.Inner;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
@@ -149,6 +150,34 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 		});
 	}
 
+	@Test // GH-2332
+	void detectsCanonicalRecordConstructor() {
+
+		assertThat(PreferredConstructorDiscoverer.discover(RecordWithSingleArgConstructor.class)).satisfies(ctor -> {
+
+			assertThat(ctor.getParameters()).hasSize(2);
+			assertThat(ctor.getParameters().get(0).getRawType()).isEqualTo(Long.class);
+			assertThat(ctor.getParameters().get(1).getRawType()).isEqualTo(String.class);
+		});
+
+		assertThat(PreferredConstructorDiscoverer.discover(RecordWithNoArgConstructor.class)).satisfies(ctor -> {
+
+			assertThat(ctor.getParameters()).hasSize(2);
+			assertThat(ctor.getParameters().get(0).getRawType()).isEqualTo(Long.class);
+			assertThat(ctor.getParameters().get(1).getRawType()).isEqualTo(String.class);
+		});
+	}
+
+	@Test // GH-2332
+	void detectsAnnotatedRecordConstructor() {
+
+		assertThat(PreferredConstructorDiscoverer.discover(RecordWithPersistenceCreator.class)).satisfies(ctor -> {
+
+			assertThat(ctor.getParameters()).hasSize(1);
+			assertThat(ctor.getParameters().get(0).getRawType()).isEqualTo(String.class);
+		});
+	}
+
 	static class SyntheticConstructor {
 		@PersistenceConstructor
 		private SyntheticConstructor(String x) {}
@@ -227,5 +256,28 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Target(ElementType.PARAMETER)
 	@Retention(RetentionPolicy.RUNTIME)
 	@Value("${hello-world}")
-	@interface MyValue {}
+	@interface MyValue {
+	}
+
+	public record RecordWithSingleArgConstructor(Long id, String name) {
+
+		public RecordWithSingleArgConstructor(String name) {
+			this(null, name);
+		}
+	}
+
+	public record RecordWithNoArgConstructor(Long id, String name) {
+
+		public RecordWithNoArgConstructor(String name) {
+			this(null, null);
+		}
+	}
+
+	public record RecordWithPersistenceCreator(Long id, String name) {
+
+		@PersistenceCreator
+		public RecordWithPersistenceCreator(String name) {
+			this(null, name);
+		}
+	}
 }

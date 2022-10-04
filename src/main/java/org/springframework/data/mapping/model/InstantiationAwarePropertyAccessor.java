@@ -18,7 +18,6 @@ package org.springframework.data.mapping.model;
 import java.util.function.Function;
 
 import org.springframework.core.KotlinDetector;
-import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
@@ -28,9 +27,10 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * A {@link PersistentPropertyAccessor} that will use an entity's {@link PersistenceConstructor} to create a new
- * instance of it to apply a new value for a given {@link PersistentProperty}. Will only be used if the
- * {@link PersistentProperty} is to be applied on a completely immutable entity type exposing a persistence constructor.
+ * A {@link PersistentPropertyAccessor} that will use an entity's
+ * {@link org.springframework.data.annotation.PersistenceCreator} to create a new instance of it to apply a new value
+ * for a given {@link PersistentProperty}. Will only be used if the {@link PersistentProperty} is to be applied on a
+ * completely immutable entity type exposing a entity creator.
  *
  * @author Oliver Drotbohm
  * @author Mark Paluch
@@ -91,8 +91,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 		}
 
 		if (!creator.isCreatorParameter(property)) {
-			throw new IllegalStateException(
-					String.format(NO_CONSTRUCTOR_PARAMETER, property.getName(), creator));
+			throw new IllegalStateException(String.format(NO_CONSTRUCTOR_PARAMETER, property.getName(), creator));
 		}
 
 		creator.getParameters().forEach(it -> {

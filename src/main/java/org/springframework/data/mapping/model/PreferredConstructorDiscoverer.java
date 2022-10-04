@@ -22,6 +22,7 @@ import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,11 +35,11 @@ import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Helper class to find a {@link PreferredConstructor}.
@@ -49,7 +50,7 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author Xeno Amess
  */
-public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<P>> {
+public interface PreferredConstructorDiscoverer {
 
 	/**
 	 * Discovers the {@link PreferredConstructor} for the given type.
@@ -124,12 +125,45 @@ public interface PreferredConstructorDiscoverer<T, P extends PersistentProperty<
 					}
 				}
 
+				if (rawOwningType.isRecord() && (candidates.size() > 1 || (noArg != null && !candidates.isEmpty()))) {
+					return RECORD.discover(type, entity);
+				}
+
 				if (noArg != null) {
 					return buildPreferredConstructor(noArg, type, entity);
 				}
 
-				return candidates.size() > 1 || candidates.isEmpty() ? null
-						: buildPreferredConstructor(candidates.iterator().next(), type, entity);
+				if (candidates.size() == 1) {
+					return buildPreferredConstructor(candidates.iterator().next(), type, entity);
+				}
+
+				return null;
+			}
+		},
+
+		/**
+		 * Discovers the canonical constructor for Java Record types.
+		 *
+		 * @since 3.0
+		 */
+		RECORD {
+
+			@Nullable
+			@Override
+			<T, P extends PersistentProperty<P>> PreferredConstructor<T, P> discover(TypeInformation<T> type,
+					@Nullable PersistentEntity<T, P> entity) {
+
+				Class<?> rawOwningType = type.getType();
+
+				if (!rawOwningType.isRecord()) {
+					return null;
+				}
+
+				Class<?>[] paramTypes = Arrays.stream(rawOwningType.getRecordComponents()).map(RecordComponent::getType)
+						.toArray(Class<?>[]::new);
+				Constructor<?> canonicalConstructor = ClassUtils.getConstructorIfAvailable(rawOwningType, paramTypes);
+
+				return canonicalConstructor != null ? buildPreferredConstructor(canonicalConstructor, type, entity) : null;
 			}
 		},
 
