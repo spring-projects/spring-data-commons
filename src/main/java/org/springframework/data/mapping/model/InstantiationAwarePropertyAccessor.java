@@ -106,10 +106,6 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 
 		this.bean = (T) instantiator.createInstance(owner, new ParameterValueProvider() {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.mapping.model.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.PreferredConstructor.Parameter)
-			 */
 			@Override
 			@Nullable
 			@SuppressWarnings("null")

@@ -143,10 +143,6 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		return this.hasSpelExpression.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -173,10 +169,6 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		return ObjectUtils.nullSafeEquals(entity, parameter.entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		int result = ObjectUtils.nullSafeHashCode(name);

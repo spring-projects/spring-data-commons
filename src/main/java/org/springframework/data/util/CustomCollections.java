@@ -295,46 +295,26 @@ public class CustomCollections {
 
 		private static final TypeDescriptor OBJECT_DESCRIPTOR = TypeDescriptor.valueOf(Object.class);
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#isAvailable()
-		 */
 		@Override
 		public boolean isAvailable() {
 			return ClassUtils.isPresent("io.vavr.control.Option", VavrCollections.class.getClassLoader());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#getMapTypes()
-		 */
 		@Override
 		public Collection<Class<?>> getMapTypes() {
 			return Set.of(io.vavr.collection.Map.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#getCollectionTypes()
-		 */
 		@Override
 		public Collection<Class<?>> getCollectionTypes() {
 			return List.of(Seq.class, io.vavr.collection.Set.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#getAllowedPaginationReturnTypes()
-		 */
 		@Override
 		public Collection<Class<?>> getAllowedPaginationReturnTypes() {
 			return Set.of(Seq.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#registerConvertersIn(org.springframework.core.convert.converter.ConverterRegistry)
-		 */
 		@Override
 		public void registerConvertersIn(ConverterRegistry registry) {
 
@@ -342,10 +322,6 @@ public class CustomCollections {
 			registry.addConverter(VavrToJavaCollectionConverter.INSTANCE);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#toJavaNativeCollection()
-		 */
 		@Override
 		@SuppressWarnings("null")
 		public Function<Object, Object> toJavaNativeCollection() {
@@ -361,10 +337,6 @@ public class CustomCollections {
 
 			private static final TypeDescriptor TRAVERSAL_TYPE = TypeDescriptor.valueOf(Traversable.class);
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-			 */
 			@NonNull
 			@Override
 			public Set<ConvertiblePair> getConvertibleTypes() {
@@ -374,10 +346,6 @@ public class CustomCollections {
 						.collect(Collectors.toSet());
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-			 */
 			@Override
 			public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -385,10 +353,6 @@ public class CustomCollections {
 						&& COLLECTIONS_AND_MAP.contains(targetType.getType());
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-			 */
 			@Nullable
 			@Override
 			public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
@@ -428,20 +392,12 @@ public class CustomCollections {
 				CONVERTIBLE_PAIRS = Collections.unmodifiableSet(pairs);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-			 */
 			@NonNull
 			@Override
 			public java.util.Set<ConvertiblePair> getConvertibleTypes() {
 				return CONVERTIBLE_PAIRS;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-			 */
 			@Override
 			public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -459,10 +415,6 @@ public class CustomCollections {
 				return true;
 			}
 
-			/*
-			* (non-Javadoc)
-			* @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-			*/
 			@Nullable
 			@Override
 			public Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {
@@ -503,48 +455,28 @@ public class CustomCollections {
 
 	static class EclipseCollections implements CustomCollectionRegistrar {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#isAvailable()
-		 */
 		@Override
 		public boolean isAvailable() {
 			return ClassUtils.isPresent("org.eclipse.collections.api.list.ImmutableList",
 					EclipseCollections.class.getClassLoader());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#getCollectionTypes()
-		 */
 		@Override
 		public Collection<Class<?>> getCollectionTypes() {
 			return List.of(ImmutableList.class, ImmutableSet.class, ImmutableBag.class, MutableList.class, MutableSet.class,
 					MutableBag.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#getMapTypes()
-		 */
 		@Override
 		public Collection<Class<?>> getMapTypes() {
 			return List.of(ImmutableMap.class, MutableMap.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#getAllowedPaginationReturnTypes()
-		 */
 		@Override
 		public Collection<Class<?>> getAllowedPaginationReturnTypes() {
 			return List.of(ImmutableList.class, MutableList.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#toJavaNativeCollection()
-		 */
 		@Override
 		public Function<Object, Object> toJavaNativeCollection() {
 
@@ -553,10 +485,6 @@ public class CustomCollections {
 					: source;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.util.CustomCollectionRegistrar#registerConvertersIn(org.springframework.core.convert.converter.ConverterRegistry)
-		 */
 		@Override
 		public void registerConvertersIn(ConverterRegistry registry) {
 
@@ -570,10 +498,6 @@ public class CustomCollections {
 
 			private static final TypeDescriptor RICH_ITERABLE_DESCRIPTOR = TypeDescriptor.valueOf(RichIterable.class);
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-			 */
 			@Override
 			public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -581,10 +505,6 @@ public class CustomCollections {
 						&& COLLECTIONS_AND_MAP.contains(targetType.getType());
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-			 */
 			@Nullable
 			@Override
 			public Object convert(@Nullable Object source) {
@@ -635,20 +555,12 @@ public class CustomCollections {
 				CONVERTIBLE_PAIRS = Collections.unmodifiableSet(pairs);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-			 */
 			@NonNull
 			@Override
 			public Set<ConvertiblePair> getConvertibleTypes() {
 				return CONVERTIBLE_PAIRS;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-			 */
 			@Override
 			public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -667,10 +579,6 @@ public class CustomCollections {
 				return true;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-			 */
 			@Nullable
 			@Override
 			public Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {

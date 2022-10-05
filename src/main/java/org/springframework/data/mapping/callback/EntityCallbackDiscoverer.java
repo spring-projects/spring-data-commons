@@ -272,11 +272,6 @@ class EntityCallbackDiscoverer {
 				&& callbackType.isAssignableFrom(ResolvableType.forInstance(callback));
 	}
 
-	/**
-	 * (non-Javadoc)
-	 *
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware
-	 */
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
 	}

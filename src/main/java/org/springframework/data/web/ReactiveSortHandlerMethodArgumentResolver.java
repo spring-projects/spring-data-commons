@@ -41,10 +41,6 @@ public class ReactiveSortHandlerMethodArgumentResolver extends SortHandlerMethod
 		return Sort.class.equals(parameter.getParameterType());
 	}
 
-	/*
-	 *(non-Javadoc)
-	 * @see org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver#resolveArgumentValue(org.springframework.core.MethodParameter, org.springframework.web.reactive.BindingContext, org.springframework.web.server.ServerWebExchange)
-	 */
 	@NonNull
 	@Override
 	public Sort resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
