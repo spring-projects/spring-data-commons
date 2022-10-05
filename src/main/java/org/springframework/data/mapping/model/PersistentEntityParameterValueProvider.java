@@ -55,6 +55,11 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 			return (T) parent;
 		}
 
+		if (parameter.getType().getType().getName()
+				.equals("kotlin.jvm.internal.DefaultConstructorMarker")) {
+			return null;
+		}
+
 		String name = parameter.getName();
 
 		if (name == null) {

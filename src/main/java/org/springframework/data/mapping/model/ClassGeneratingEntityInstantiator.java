@@ -298,12 +298,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		int index = 0;
 		for (Parameter<?, P> parameter : constructor.getParameters()) {
-			if (parameter.getType().getType().getName()
-					.equals("kotlin.jvm.internal.DefaultConstructorMarker")) {
-				params[index++] = null;
-			} else {
-				params[index++] = provider.getParameterValue(parameter);
-			}
+			params[index++] = provider.getParameterValue(parameter);
 		}
 
 		return params;
