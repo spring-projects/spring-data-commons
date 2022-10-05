@@ -22,12 +22,13 @@ import java.util.function.BiConsumer;
 
 import javax.lang.model.element.Modifier;
 
-import org.springframework.aot.generate.AccessVisibility;
+import org.springframework.aot.generate.AccessControl;
 import org.springframework.aot.generate.GeneratedMethod;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
+import org.springframework.beans.factory.aot.BeanRegistrationCodeFragmentsDecorator;
 import org.springframework.beans.factory.support.InstanceSupplier;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.ResolvableType;
@@ -114,7 +115,7 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 	 * Class used to generate the fragment of code needed to define a {@link ManagedTypes} bean from previously discovered
 	 * managed types.
 	 */
-	static class ManagedTypesInstanceCodeFragment extends BeanRegistrationCodeFragments {
+	static class ManagedTypesInstanceCodeFragment extends BeanRegistrationCodeFragmentsDecorator {
 
 		public static final ResolvableType LIST_TYPE = ResolvableType.forType(List.class);
 		public static final ResolvableType MANAGED_TYPES_TYPE = ResolvableType.forType(ManagedTypes.class);
@@ -157,7 +158,7 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 		void generateInstanceFactory(Builder method) {
 
 			boolean allSourceTypesVisible = sourceTypes.stream()
-					.allMatch(it -> AccessVisibility.PUBLIC.equals(AccessVisibility.forClass(it)));
+					.allMatch(it -> AccessControl.forClass(it).isPublic());
 
 			ParameterizedTypeName targetTypeName = ParameterizedTypeName.get(InstanceSupplier.class, source.getBeanClass());
 

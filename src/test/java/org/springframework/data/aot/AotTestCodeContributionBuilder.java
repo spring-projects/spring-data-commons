@@ -21,11 +21,11 @@ import javax.lang.model.element.Modifier;
 
 import org.mockito.Mockito;
 import org.springframework.aot.test.generate.TestGenerationContext;
-import org.springframework.aot.test.generate.compile.Compiled;
-import org.springframework.aot.test.generate.compile.TestCompiler;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
 import org.springframework.beans.factory.support.InstanceSupplier;
+import org.springframework.core.test.tools.Compiled;
+import org.springframework.core.test.tools.TestCompiler;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterizedTypeName;
@@ -89,6 +89,6 @@ public class AotTestCodeContributionBuilder {
 
 	public void compile(Consumer<Compiled> compiled) {
 		generationContext.writeGeneratedContent();
-		TestCompiler.forSystem().withFiles(generationContext.getGeneratedFiles()).compile(compiled);
+		TestCompiler.forSystem().with(generationContext).compile(compiled);
 	}
 }
