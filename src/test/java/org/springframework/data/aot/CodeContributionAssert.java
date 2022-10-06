@@ -97,7 +97,7 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 
 	private Stream<JdkProxyHint> jdkProxiesFor(Class<?> entryPoint) {
 
-		return this.actual.getRuntimeHints().proxies().jdkProxies().filter(jdkProxyHint -> jdkProxyHint
+		return this.actual.getRuntimeHints().proxies().jdkProxyHints().filter(jdkProxyHint -> jdkProxyHint
 				.getProxiedInterfaces().get(0).getCanonicalName().equals(entryPoint.getCanonicalName()));
 	}
 
