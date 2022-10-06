@@ -39,6 +39,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  *
  * @author Mark Paluch
  */
+@SuppressWarnings("WeakerAccess") // public required for class generation due to visibility rules
 public class ClassGeneratingPropertyAccessorFactoryTests {
 
 	private final static ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
@@ -53,17 +54,17 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 				"privateProperty", "packageDefaultProperty", "protectedProperty", "publicProperty", "syntheticProperty",
 				"immutable", "wither");
 
-		parameters.addAll(parameters(new InnerPrivateType(), propertyNames, Object.class));
+		parameters.addAll(create(new InnerPrivateType(), propertyNames, Object.class));
 		parameters
-				.addAll(parameters(new InnerTypeWithPrivateAncestor(), propertyNames, InnerTypeWithPrivateAncestor.class));
-		parameters.addAll(parameters(new InnerPackageDefaultType(), propertyNames, InnerPackageDefaultType.class));
-		parameters.addAll(parameters(new InnerProtectedType(), propertyNames, InnerProtectedType.class));
-		parameters.addAll(parameters(new InnerPublicType(), propertyNames, InnerPublicType.class));
-		parameters.addAll(parameters(new ClassGeneratingPropertyAccessorPackageDefaultType(), propertyNames,
+				.addAll(create(new InnerTypeWithPrivateAncestor(), propertyNames, InnerTypeWithPrivateAncestor.class));
+		parameters.addAll(create(new InnerPackageDefaultType(), propertyNames, InnerPackageDefaultType.class));
+		parameters.addAll(create(new InnerProtectedType(), propertyNames, InnerProtectedType.class));
+		parameters.addAll(create(new InnerPublicType(), propertyNames, InnerPublicType.class));
+		parameters.addAll(create(new ClassGeneratingPropertyAccessorPackageDefaultType(), propertyNames,
 				ClassGeneratingPropertyAccessorPackageDefaultType.class));
-		parameters.addAll(parameters(new ClassGeneratingPropertyAccessorPublicType(), propertyNames,
+		parameters.addAll(create(new ClassGeneratingPropertyAccessorPublicType(), propertyNames,
 				ClassGeneratingPropertyAccessorPublicType.class));
-		parameters.addAll(parameters(new SubtypeOfTypeInOtherPackage(), propertyNames, SubtypeOfTypeInOtherPackage.class));
+		parameters.addAll(create(new SubtypeOfTypeInOtherPackage(), propertyNames, SubtypeOfTypeInOtherPackage.class));
 
 		Class<Object> defaultPackageClass = (Class) Class.forName("TypeInDefaultPackage");
 
@@ -73,7 +74,7 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		return parameters;
 	}
 
-	private static List<Object[]> parameters(Object bean, List<String> propertyNames, Class<?> expectedConstructorType) {
+	private static List<Object[]> create(Object bean, List<String> propertyNames, Class<?> expectedConstructorType) {
 
 		List<Object[]> parameters = new ArrayList<>();
 
