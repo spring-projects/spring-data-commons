@@ -16,7 +16,6 @@
 package org.springframework.data.convert;
 
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -65,7 +64,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @return can be {@literal null}.
 	 * @throws IllegalStateException if value cannot be written as an instance of {@link Class type}.
 	 * @see #write(Object, TypeInformation)
-	 * @see ClassTypeInformation
+	 * @see TypeInformation
 	 */
 	@Nullable
 	default <T> T write(@Nullable Object value, @NonNull Class<T> target) {
@@ -115,7 +114,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @return can be {@literal null}.
 	 * @throws IllegalStateException if value cannot be read as an instance of {@link Class type}.
 	 * @see #read(Object, TypeInformation)
-	 * @see ClassTypeInformation
+	 * @see TypeInformation
 	 */
 	@Nullable
 	default <T> T read(@Nullable Object value, @NonNull Class<T> target) {

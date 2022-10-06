@@ -42,15 +42,11 @@ import org.springframework.util.Assert;
 @SuppressWarnings({ "deprecation", "rawtypes" })
 public interface TypeInformation<S> {
 
-	public static final TypeInformation<Collection> COLLECTION = ClassTypeInformation.COLLECTION;
-	public static final TypeInformation<List> LIST = ClassTypeInformation.LIST;
-	public static final TypeInformation<Set> SET = ClassTypeInformation.SET;
-	public static final TypeInformation<Map> MAP = ClassTypeInformation.MAP;
-	public static final TypeInformation<Object> OBJECT = ClassTypeInformation.OBJECT;
-
-	static TypeInformation<?> orObject(@Nullable ResolvableType type) {
-		return type == null ? ClassTypeInformation.OBJECT : of(type);
-	}
+	TypeInformation<Collection> COLLECTION = ClassTypeInformation.COLLECTION;
+	TypeInformation<List> LIST = ClassTypeInformation.LIST;
+	TypeInformation<Set> SET = ClassTypeInformation.SET;
+	TypeInformation<Map> MAP = ClassTypeInformation.MAP;
+	TypeInformation<Object> OBJECT = ClassTypeInformation.OBJECT;
 
 	/**
 	 * Creates a new {@link TypeInformation} from the given {@link ResolvableType}.
@@ -63,11 +59,8 @@ public interface TypeInformation<S> {
 
 		Assert.notNull(type, "Type must not be null");
 
-		return type.hasGenerics()
-				|| (type.isArray() && type.getComponentType().hasGenerics()) //
-				|| (type.getType() instanceof TypeVariable)
-						? TypeDiscoverer.td(type)
-						: ClassTypeInformation.cti(type);
+		return type.hasGenerics() || (type.isArray() && type.getComponentType().hasGenerics()) //
+				|| (type.getType() instanceof TypeVariable) ? TypeDiscoverer.td(type) : ClassTypeInformation.from(type);
 	}
 
 	/**
@@ -108,8 +101,7 @@ public interface TypeInformation<S> {
 	 */
 	public static TypeInformation<?> fromReturnTypeOf(Method method, @Nullable Class<?> type) {
 
-		ResolvableType intermediate = type == null
-				? ResolvableType.forMethodReturnType(method)
+		ResolvableType intermediate = type == null ? ResolvableType.forMethodReturnType(method)
 				: ResolvableType.forMethodReturnType(method, type);
 
 		return TypeInformation.of(intermediate);
@@ -161,8 +153,7 @@ public interface TypeInformation<S> {
 			return typeInformation;
 		}
 
-		throw new IllegalArgumentException(
-				String.format("Could not find required property %s on %s", property, getType()));
+		throw new IllegalArgumentException(String.format("Could not find required property %s on %s", property, getType()));
 	}
 
 	/**
@@ -259,12 +250,11 @@ public interface TypeInformation<S> {
 	}
 
 	/**
-	 * Returns a {@link ClassTypeInformation} to represent the {@link TypeInformation} of the raw type of the current
-	 * instance.
+	 * Returns a {@link TypeInformation} to represent the {@link TypeInformation} of the raw type of the current instance.
 	 *
 	 * @return
 	 */
-	ClassTypeInformation<?> getRawTypeInformation();
+	TypeInformation<?> getRawTypeInformation();
 
 	/**
 	 * Transparently returns the {@link java.util.Map} value type if the type is a {@link java.util.Map}, returns the
@@ -338,8 +328,7 @@ public interface TypeInformation<S> {
 
 		if (result == null) {
 			throw new IllegalArgumentException(String.format(
-					"Can't retrieve super type information for %s; Does current type really implement the given one",
-					superType));
+					"Can't retrieve super type information for %s; Does current type really implement the given one", superType));
 		}
 
 		return result;
@@ -363,21 +352,6 @@ public interface TypeInformation<S> {
 	List<TypeInformation<?>> getTypeArguments();
 
 	/**
-	 * Specializes the given (raw) {@link ClassTypeInformation} using the context of the current potentially parameterized
-	 * type, basically turning the given raw type into a parameterized one. Will return the given type as is if no
-	 * generics are involved.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @return will never be {@literal null}.
-	 * @deprecated since 3.0. Use {@link #specialize(TypeInformation)} instead, i.e. switch the given parameter's type to
-	 *             {@link TypeInformation} in the first place.
-	 */
-	@Deprecated
-	default TypeInformation<? extends S> specialize(ClassTypeInformation<?> type) {
-		return specialize((TypeInformation<?>) type);
-	}
-
-	/**
 	 * Specializes the given (raw) {@link TypeInformation} using the context of the current potentially parameterized
 	 * type, basically turning the given raw type into a parameterized one. Will return the given type as is if no
 	 * generics are involved.
@@ -391,7 +365,7 @@ public interface TypeInformation<S> {
 	}
 
 	/**
-	 * Returns whether the current type is a sub type of the given one, i.e. whether it's assignable but not the same one.
+	 * Returns whether the current type is a subtype of the given one, i.e. whether it's assignable but not the same one.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return

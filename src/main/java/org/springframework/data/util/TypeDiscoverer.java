@@ -47,9 +47,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Jürgen Diez
  * @author Alessandro Nistico
  * @author Johannes Englmeier
- * @deprecated since 3.0 to go package protected at some point. Prefer to refer to {@link TypeInformation} instead.
  */
-@Deprecated
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private static final ConcurrentLruCache<ResolvableType, TypeInformation<?>> CACHE = new ConcurrentLruCache<>(64,
@@ -124,8 +122,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return type.isArray() //
 				|| Iterable.class.equals(type) //
 				|| Collection.class.isAssignableFrom(type) //
-				|| Streamable.class.isAssignableFrom(type)
-				|| CustomCollections.isCollection(type);
+				|| Streamable.class.isAssignableFrom(type) || CustomCollections.isCollection(type);
 	}
 
 	@Nullable
@@ -195,7 +192,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	@Override
-	public ClassTypeInformation<?> getRawTypeInformation() {
+	public TypeInformation<?> getRawTypeInformation() {
 		return new ClassTypeInformation<>(ResolvableType.forRawClass(resolvableType.toClass()));
 	}
 
@@ -257,13 +254,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return TypeInformation.of(resolvableSuperType);
 		}
 
-		var noGenericsResolvable = !Arrays.stream(resolvableSuperType.resolveGenerics())
-				.filter(it -> it != null)
-				.findAny()
+		var noGenericsResolvable = !Arrays.stream(resolvableSuperType.resolveGenerics()).filter(it -> it != null).findAny()
 				.isPresent();
 
-		return noGenericsResolvable
-				? new ClassTypeInformation<>(ResolvableType.forRawClass(superType))
+		return noGenericsResolvable ? new ClassTypeInformation<>(ResolvableType.forRawClass(superType))
 				: TypeInformation.of(resolvableSuperType);
 	}
 
@@ -299,8 +293,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		return Arrays.stream(resolvableType.getGenerics())
-				.<TypeInformation<?>> map(it -> it.resolve(Object.class) == null ? null : TypeInformation.of(it))
-				.toList();
+				.<TypeInformation<?>> map(it -> it.resolve(Object.class) == null ? null : TypeInformation.of(it)).toList();
 	}
 
 	@Override
@@ -308,8 +301,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	public TypeInformation<? extends S> specialize(TypeInformation<?> type) {
 
 		if (this.getTypeArguments().size() == type.getTypeArguments().size()) {
-			return (TypeInformation<? extends S>) TypeInformation.of(
-					ResolvableType.forClassWithGenerics(type.getType(), this.resolvableType.getGenerics()));
+			return (TypeInformation<? extends S>) TypeInformation
+					.of(ResolvableType.forClassWithGenerics(type.getType(), this.resolvableType.getGenerics()));
 		}
 
 		return TypeInformation.of((Class<S>) type.getType());
@@ -380,10 +373,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		var rawType = getType();
 		var field = ReflectionUtils.findField(rawType, fieldname);
 
-		return field != null
-				? Optional.of(TypeInformation.of(ResolvableType.forField(field, resolvableType)))
-				: Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname))
-						.map(it -> from(it, rawType))
+		return field != null ? Optional.of(TypeInformation.of(ResolvableType.forField(field, resolvableType)))
+				: Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname)).map(it -> from(it, rawType))
 						.map(TypeInformation::of);
 	}
 

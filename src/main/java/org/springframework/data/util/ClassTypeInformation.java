@@ -33,18 +33,18 @@ import org.springframework.util.ConcurrentLruCache;
  * @author Christoph Strobl
  * @deprecated since 3.0 to go package protected at some point. Refer to {@link TypeInformation} only.
  */
-@Deprecated
+@Deprecated(since = "3.0", forRemoval = true)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	private static final ConcurrentLruCache<ResolvableType, ClassTypeInformation<?>> cache = new ConcurrentLruCache<>(64,
 			ClassTypeInformation::new);
 
-	@Deprecated public static final ClassTypeInformation<Collection> COLLECTION;
-	@Deprecated public static final ClassTypeInformation<List> LIST;
-	@Deprecated public static final ClassTypeInformation<Set> SET;
-	@Deprecated public static final ClassTypeInformation<Map> MAP;
-	@Deprecated public static final ClassTypeInformation<Object> OBJECT;
+	public static final ClassTypeInformation<Collection> COLLECTION;
+	public static final ClassTypeInformation<List> LIST;
+	public static final ClassTypeInformation<Set> SET;
+	public static final ClassTypeInformation<Map> MAP;
+	public static final ClassTypeInformation<Object> OBJECT;
 
 	static {
 
@@ -62,11 +62,6 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		this.type = (Class<S>) type.resolve(Object.class);
 	}
 
-	private ClassTypeInformation(Class<S> type) {
-		super(ResolvableType.forClass(type));
-		this.type = type;
-	}
-
 	/**
 	 * @param <S>
 	 * @param type
@@ -75,10 +70,10 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 */
 	@Deprecated
 	public static <S> ClassTypeInformation<S> from(Class<S> type) {
-		return cti(ResolvableType.forClass(type));
+		return from(ResolvableType.forClass(type));
 	}
 
-	static <S> ClassTypeInformation<S> cti(ResolvableType type) {
+	static <S> ClassTypeInformation<S> from(ResolvableType type) {
 
 		Assert.notNull(type, "Type must not be null");
 
@@ -104,8 +99,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 */
 	static TypeInformation<?> fromReturnTypeOf(Method method, @Nullable Class<?> actualType) {
 
-		var type = actualType == null
-				? ResolvableType.forMethodReturnType(method)
+		var type = actualType == null ? ResolvableType.forMethodReturnType(method)
 				: ResolvableType.forMethodReturnType(method, actualType);
 
 		return TypeInformation.of(type);

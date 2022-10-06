@@ -38,6 +38,7 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.context.ApplicationContext;
@@ -52,7 +53,6 @@ import org.springframework.data.mapping.ShadowingPropertyType;
 import org.springframework.data.mapping.ShadowingPropertyTypeWithCtor;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.TypeInformation;
 
@@ -154,13 +154,13 @@ class AbstractMappingContextUnitTests {
 	void exposesCopyOfPersistentEntitiesToAvoidConcurrentModificationException() {
 
 		var context = new SampleMappingContext();
-		context.getPersistentEntity(ClassTypeInformation.MAP);
+		context.getPersistentEntity(TypeInformation.MAP);
 
 		var iterator = context.getPersistentEntities()
 				.iterator();
 
 		while (iterator.hasNext()) {
-			context.getPersistentEntity(ClassTypeInformation.SET);
+			context.getPersistentEntity(TypeInformation.SET);
 			iterator.next();
 		}
 	}

@@ -28,7 +28,6 @@ import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Pair;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.TypeInformation;

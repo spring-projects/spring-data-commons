@@ -25,7 +25,6 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;

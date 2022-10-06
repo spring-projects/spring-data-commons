@@ -22,7 +22,6 @@ import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -38,7 +37,7 @@ import org.springframework.util.Assert;
  */
 public class MappingContextTypeInformationMapper implements TypeInformationMapper {
 
-	private final Map<ClassTypeInformation<?>, Alias> typeMap;
+	private final Map<TypeInformation<?>, Alias> typeMap;
 	private final MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext;
 
 	/**
@@ -79,7 +78,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	 * @param key must not be {@literal null}.
 	 * @param alias can be {@literal null}.
 	 */
-	private Alias verify(ClassTypeInformation<?> key, Alias alias) {
+	private Alias verify(TypeInformation<?> key, Alias alias) {
 
 		// Reject second alias for same type
 
@@ -113,7 +112,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 	@Override
 	public TypeInformation<?> resolveTypeFrom(Alias alias) {
 
-		for (Map.Entry<ClassTypeInformation<?>, Alias> entry : typeMap.entrySet()) {
+		for (Map.Entry<TypeInformation<?>, Alias> entry : typeMap.entrySet()) {
 			if (entry.getValue().hasSamePresentValueAs(alias)) {
 				return entry.getKey();
 			}
