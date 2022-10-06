@@ -41,6 +41,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Mark Paluch
  * @author Oliver Gierke
  */
+@SuppressWarnings("WeakerAccess") // public required for class generation due to visibility rules
 public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 
 	private final ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
@@ -52,45 +53,45 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		List<Class<?>> types = Arrays.asList(FieldAccess.class, PropertyAccess.class, PrivateFinalFieldAccess.class,
 				PrivateFinalPropertyAccess.class);
 
-		parameters.addAll(parameters(types, "primitiveInteger", Integer.valueOf(1)));
-		parameters.addAll(parameters(types, "primitiveIntegerArray", new int[] { 1, 2, 3 }));
-		parameters.addAll(parameters(types, "boxedInteger", Integer.valueOf(1)));
-		parameters.addAll(parameters(types, "boxedIntegerArray", new Integer[] { Integer.valueOf(1) }));
-		parameters.addAll(parameters(types, "primitiveShort", Short.valueOf("1")));
-		parameters.addAll(parameters(types, "primitiveShortArray", new short[] { 1, 2, 3 }));
-		parameters.addAll(parameters(types, "boxedShort", Short.valueOf("1")));
-		parameters.addAll(parameters(types, "boxedShortArray", new Short[] { Short.valueOf("1") }));
-		parameters.addAll(parameters(types, "primitiveByte", Byte.valueOf("1")));
-		parameters.addAll(parameters(types, "primitiveByteArray", new byte[] { 1, 2, 3 }));
-		parameters.addAll(parameters(types, "boxedByte", Byte.valueOf("1")));
-		parameters.addAll(parameters(types, "boxedByteArray", new Byte[] { Byte.valueOf("1") }));
-		parameters.addAll(parameters(types, "primitiveChar", Character.valueOf('c')));
-		parameters.addAll(parameters(types, "primitiveCharArray", new char[] { 'a', 'b', 'c' }));
-		parameters.addAll(parameters(types, "boxedChar", Character.valueOf('c')));
-		parameters.addAll(parameters(types, "boxedCharArray", new Character[] { Character.valueOf('c') }));
-		parameters.addAll(parameters(types, "primitiveBoolean", Boolean.valueOf(true)));
-		parameters.addAll(parameters(types, "primitiveBooleanArray", new boolean[] { true, false }));
-		parameters.addAll(parameters(types, "boxedBoolean", Boolean.valueOf(true)));
-		parameters.addAll(parameters(types, "boxedBooleanArray", new Boolean[] { Boolean.valueOf(true) }));
-		parameters.addAll(parameters(types, "primitiveFloat", Float.valueOf(1f)));
-		parameters.addAll(parameters(types, "primitiveFloatArray", new float[] { 1f, 2f }));
-		parameters.addAll(parameters(types, "boxedFloat", Float.valueOf(1f)));
-		parameters.addAll(parameters(types, "boxedFloatArray", new Float[] { Float.valueOf(1f) }));
-		parameters.addAll(parameters(types, "primitiveDouble", Double.valueOf(1d)));
-		parameters.addAll(parameters(types, "primitiveDoubleArray", new double[] { 1d, 2d }));
-		parameters.addAll(parameters(types, "boxedDouble", Double.valueOf(1d)));
-		parameters.addAll(parameters(types, "boxedDoubleArray", new Double[] { Double.valueOf(1d) }));
-		parameters.addAll(parameters(types, "primitiveLong", Long.valueOf(1L)));
-		parameters.addAll(parameters(types, "primitiveLongArray", new long[] { 1L, 2L }));
-		parameters.addAll(parameters(types, "boxedLong", Long.valueOf(1L)));
-		parameters.addAll(parameters(types, "boxedLongArray", new Long[] { Long.valueOf(1L) }));
-		parameters.addAll(parameters(types, "string", "hello"));
-		parameters.addAll(parameters(types, "stringArray", new String[] { "hello", "world" }));
+		parameters.addAll(create(types, "primitiveInteger", Integer.valueOf(1)));
+		parameters.addAll(create(types, "primitiveIntegerArray", new int[] { 1, 2, 3 }));
+		parameters.addAll(create(types, "boxedInteger", Integer.valueOf(1)));
+		parameters.addAll(create(types, "boxedIntegerArray", new Integer[] { Integer.valueOf(1) }));
+		parameters.addAll(create(types, "primitiveShort", Short.valueOf("1")));
+		parameters.addAll(create(types, "primitiveShortArray", new short[] { 1, 2, 3 }));
+		parameters.addAll(create(types, "boxedShort", Short.valueOf("1")));
+		parameters.addAll(create(types, "boxedShortArray", new Short[] { Short.valueOf("1") }));
+		parameters.addAll(create(types, "primitiveByte", Byte.valueOf("1")));
+		parameters.addAll(create(types, "primitiveByteArray", new byte[] { 1, 2, 3 }));
+		parameters.addAll(create(types, "boxedByte", Byte.valueOf("1")));
+		parameters.addAll(create(types, "boxedByteArray", new Byte[] { Byte.valueOf("1") }));
+		parameters.addAll(create(types, "primitiveChar", Character.valueOf('c')));
+		parameters.addAll(create(types, "primitiveCharArray", new char[] { 'a', 'b', 'c' }));
+		parameters.addAll(create(types, "boxedChar", Character.valueOf('c')));
+		parameters.addAll(create(types, "boxedCharArray", new Character[] { Character.valueOf('c') }));
+		parameters.addAll(create(types, "primitiveBoolean", Boolean.valueOf(true)));
+		parameters.addAll(create(types, "primitiveBooleanArray", new boolean[] { true, false }));
+		parameters.addAll(create(types, "boxedBoolean", Boolean.valueOf(true)));
+		parameters.addAll(create(types, "boxedBooleanArray", new Boolean[] { Boolean.valueOf(true) }));
+		parameters.addAll(create(types, "primitiveFloat", Float.valueOf(1f)));
+		parameters.addAll(create(types, "primitiveFloatArray", new float[] { 1f, 2f }));
+		parameters.addAll(create(types, "boxedFloat", Float.valueOf(1f)));
+		parameters.addAll(create(types, "boxedFloatArray", new Float[] { Float.valueOf(1f) }));
+		parameters.addAll(create(types, "primitiveDouble", Double.valueOf(1d)));
+		parameters.addAll(create(types, "primitiveDoubleArray", new double[] { 1d, 2d }));
+		parameters.addAll(create(types, "boxedDouble", Double.valueOf(1d)));
+		parameters.addAll(create(types, "boxedDoubleArray", new Double[] { Double.valueOf(1d) }));
+		parameters.addAll(create(types, "primitiveLong", Long.valueOf(1L)));
+		parameters.addAll(create(types, "primitiveLongArray", new long[] { 1L, 2L }));
+		parameters.addAll(create(types, "boxedLong", Long.valueOf(1L)));
+		parameters.addAll(create(types, "boxedLongArray", new Long[] { Long.valueOf(1L) }));
+		parameters.addAll(create(types, "string", "hello"));
+		parameters.addAll(create(types, "stringArray", new String[] { "hello", "world" }));
 
 		return parameters;
 	}
 
-	private static List<Object[]> parameters(List<Class<?>> types, String propertyName, Object value) throws Exception {
+	private static List<Object[]> create(List<Class<?>> types, String propertyName, Object value) throws Exception {
 
 		List<Object[]> parameters = new ArrayList<>();
 
