@@ -127,6 +127,10 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 		private final RegisteredBean source;
 		private final Lazy<Method> instanceMethod = Lazy.of(this::findInstanceFactory);
 
+		private static final TypeName WILDCARD = WildcardTypeName.subtypeOf(Object.class);
+		private static final TypeName CLASS_OF_ANY = ParameterizedTypeName.get(ClassName.get(Class.class), WILDCARD);
+		private static final TypeName LIST_OF_ANY = ParameterizedTypeName.get(ClassName.get(List.class), CLASS_OF_ANY);
+
 		protected ManagedTypesInstanceCodeFragment(List<Class<?>> sourceTypes, RegisteredBean source,
 				BeanRegistrationCodeFragments codeFragments) {
 
@@ -161,8 +165,7 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 
 		void generateInstanceFactory(Builder method) {
 
-			boolean allSourceTypesVisible = sourceTypes.stream()
-					.allMatch(it -> AccessControl.forClass(it).isPublic());
+			boolean allSourceTypesVisible = sourceTypes.stream().allMatch(it -> AccessControl.forClass(it).isPublic());
 
 			ParameterizedTypeName targetTypeName = ParameterizedTypeName.get(InstanceSupplier.class, source.getBeanClass());
 
@@ -171,21 +174,25 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 
 			CodeBlock.Builder builder = CodeBlock.builder().add("return ").beginControlFlow("(registeredBean -> ");
 
-			if(sourceTypes.isEmpty()) {
-
-				TypeName wildcard = WildcardTypeName.subtypeOf(Object.class);
-				TypeName classOfAny = ParameterizedTypeName.get(ClassName.get(Class.class), wildcard);
-
-				builder.addStatement("var types = $T.<$T>emptyList()", Collections.class, classOfAny);
+			if (sourceTypes.isEmpty()) {
+				builder.addStatement("$T types = $T.emptyList()", LIST_OF_ANY, Collections.class);
 			} else {
-				builder.addStatement("var types = $T.of($L)", List.class, toCodeBlock(sourceTypes, allSourceTypesVisible));
+				if (allSourceTypesVisible) {
+					builder.addStatement("$T types = $T.of($L)", LIST_OF_ANY, List.class,
+							toCodeBlock(sourceTypes, allSourceTypesVisible));
+				} else {
+					TypeName listOfString = ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(String.class));
+					builder.addStatement("$T types = $T.of($L)", listOfString, List.class,
+							toCodeBlock(sourceTypes, allSourceTypesVisible));
+				}
 			}
 
 			if (allSourceTypesVisible) {
-				builder.addStatement("var managedTypes = $T.fromIterable($L)", ManagedTypes.class, "types");
+				builder.addStatement("$T managedTypes = $T.fromIterable($L)", ManagedTypes.class, ManagedTypes.class, "types");
 			} else {
 				builder.add(CodeBlock.builder()
-						.beginControlFlow("var managedTypes = $T.fromStream(types.stream().map(it ->", ManagedTypes.class)
+						.beginControlFlow("$T managedTypes = $T.fromStream(types.stream().map(it ->", ManagedTypes.class,
+								ManagedTypes.class)
 						.beginControlFlow("try")
 						.addStatement("return $T.forName(it, registeredBean.getBeanFactory().getBeanClassLoader())",
 								ClassUtils.class)
