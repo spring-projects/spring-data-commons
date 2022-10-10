@@ -38,6 +38,7 @@ import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.aot.TypeContributor;
 import org.springframework.data.repository.config.RepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
+import org.springframework.data.repository.config.RepositoryConfigurationPostProcessor;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -56,16 +57,14 @@ import org.springframework.util.StringUtils;
  * provide custom logic for contributing additional (eg. reflection) configuration. By default, reflection configuration
  * will be added for types reachable from the repository declaration and query methods as well as all used
  * {@link Annotation annotations} from the {@literal org.springframework.data} namespace.
- * </p>
- * The processor is typically configured via {@link RepositoryConfigurationExtension#getRepositoryAotProcessor()} and
- * gets added by the {@link org.springframework.data.repository.config.RepositoryConfigurationDelegate}.
+
  *
  * @author Christoph Strobl
  * @author John Blum
  * @since 3.0
  */
 @SuppressWarnings("unused")
-public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotProcessor, BeanFactoryAware {
+public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotProcessor, BeanFactoryAware, RepositoryConfigurationPostProcessor {
 
 	private ConfigurableListableBeanFactory beanFactory;
 
@@ -117,6 +116,7 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 		return this.beanFactory;
 	}
 
+	@Override
 	public void setConfigMap(@Nullable Map<String, RepositoryConfiguration<?>> configMap) {
 		this.configMap = configMap;
 	}

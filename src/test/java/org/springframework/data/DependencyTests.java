@@ -15,29 +15,160 @@
  */
 package org.springframework.data;
 
-import static de.schauderhaft.degraph.check.JCheck.*;
-import static org.junit.Assert.*;
-
-import org.junit.jupiter.api.Disabled;
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.library.dependencies.SliceAssignment;
+import com.tngtech.archunit.library.dependencies.SliceIdentifier;
+import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.repository.core.RepositoryMetadata;
 
 /**
+ * Tests for package and slice cycles.
+ *
+ * All packages that have the same start including the part after {@literal data} are considered one slice.
+ * For example {@literal org.springframework.data.repository} and {@literal org.springframework.data.repository.support}
+ * are part of the same slice {@literal repository}.
+ *
  * @author Jens Schauder
  */
-@Disabled("Requires newer version of ASM 5.1")
 public class DependencyTests {
 
-	@Test
-	public void noInternalPackageCycles() {
+	JavaClasses importedClasses = new ClassFileImporter() //
+			.withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS) //
+			.withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_JARS) // we just analyze the code of this module.
+			.importPackages("org.springframework.data") //
+			.that(onlySpringData()) //
+			.that(ignore(RepositoryMetadata.class)) // new cycle
+			;
 
-		assertThat(
-				classpath() //
-						.noJars() //
-						.including("org.springframework.data.**") //
-						.filterClasspath("*target/classes") //
-						.printOnFailure("degraph.graphml"), //
-				violationFree() //
-		);
+	@Test
+	void cycleFreeSlices() {
+
+		ArchRule rule = SlicesRuleDefinition.slices() //
+				.matching("org.springframework.data.(*)..") //
+				.should() //
+				.beFreeOfCycles();
+
+		rule.check(importedClasses);
+	}
+
+	@Test
+	void cycleFreePackages() {
+
+		ArchRule rule = SlicesRuleDefinition.slices() //
+				.matching("org.springframework.data.(**)") //
+				.should() //
+				.beFreeOfCycles();
+
+		rule.check(importedClasses);
+	}
+
+	@Test
+	void testGetFirstPackagePart() {
+
+		SoftAssertions.assertSoftly(softly -> {
+			softly.assertThat(getFirstPackagePart("a.b.c")).isEqualTo("a");
+			softly.assertThat(getFirstPackagePart("a")).isEqualTo("a");
+		});
+	}
+
+	@Test
+	void testSubModule() {
+
+		SoftAssertions.assertSoftly(softly -> {
+			softly.assertThat(subModule("a.b", "a.b.c.d")).isEqualTo("c");
+			softly.assertThat(subModule("a.b", "a.b.c")).isEqualTo("c");
+			softly.assertThat(subModule("a.b", "a.b")).isEqualTo("");
+		});
+	}
+
+	private DescribedPredicate<JavaClass> onlySpringData() {
+
+		return new DescribedPredicate<>("Spring Data Classes") {
+			@Override
+			public boolean test(JavaClass input) {
+				return input.getPackageName().startsWith("org.springframework.data");
+			}
+		};
+	}
+
+	private DescribedPredicate<JavaClass> ignore(Class<?> type) {
+
+		return new DescribedPredicate<>("ignored class " + type.getName()) {
+			@Override
+			public boolean test(JavaClass input) {
+				return !input.getFullName().startsWith(type.getName());
+			}
+		};
+	}
+
+	private DescribedPredicate<JavaClass> ignorePackage(String type) {
+
+		return new DescribedPredicate<>("ignored class " + type) {
+			@Override
+			public boolean test(JavaClass input) {
+				return !input.getPackageName().equals(type);
+			}
+		};
+	}
+
+	private String getFirstPackagePart(String subpackage) {
+
+		int index = subpackage.indexOf(".");
+		if (index < 0) {
+			return subpackage;
+		}
+		return subpackage.substring(0, index);
+	}
+
+	private String subModule(String basePackage, String packageName) {
+
+		if (packageName.startsWith(basePackage) && packageName.length() > basePackage.length()) {
+
+			final int index = basePackage.length() + 1;
+			String subpackage = packageName.substring(index);
+			return getFirstPackagePart(subpackage);
+		}
+		return "";
+	}
+
+	private SliceAssignment subModuleSlicing() {
+		return new SliceAssignment() {
+
+			@Override
+			public SliceIdentifier getIdentifierOf(JavaClass javaClass) {
+
+				String packageName = javaClass.getPackageName();
+
+				String subModule = subModule("org.springframework.data.jdbc", packageName);
+				if (!subModule.isEmpty()) {
+					return SliceIdentifier.of(subModule);
+				}
+
+				subModule = subModule("org.springframework.data.relational", packageName);
+				if (!subModule.isEmpty()) {
+					return SliceIdentifier.of(subModule);
+				}
+
+				subModule = subModule("org.springframework.data", packageName);
+				if (!subModule.isEmpty()) {
+					return SliceIdentifier.of(subModule);
+				}
+
+				return SliceIdentifier.ignore();
+			}
+
+			@Override
+			public String getDescription() {
+				return "Submodule";
+			}
+		};
 	}
 
 }

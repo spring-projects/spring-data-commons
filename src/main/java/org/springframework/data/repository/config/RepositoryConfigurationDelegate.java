@@ -46,6 +46,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
+import org.springframework.data.repository.config.RepositoryConfigurationPostProcessor.FallbackRepositoryConfigurationPostProcessor;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -83,11 +84,11 @@ public class RepositoryConfigurationDelegate {
 	 * {@link ResourceLoader} and {@link Environment}.
 	 *
 	 * @param configurationSource must not be {@literal null}.
-	 * @param resourceLoader must not be {@literal null}.
-	 * @param environment must not be {@literal null}.
+	 * @param resourceLoader      must not be {@literal null}.
+	 * @param environment         must not be {@literal null}.
 	 */
 	public RepositoryConfigurationDelegate(RepositoryConfigurationSource configurationSource,
-			ResourceLoader resourceLoader, Environment environment) {
+										   ResourceLoader resourceLoader, Environment environment) {
 
 		this.isXml = configurationSource instanceof XmlRepositoryConfigurationSource;
 		boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
@@ -106,13 +107,13 @@ public class RepositoryConfigurationDelegate {
 	 * Defaults the environment in case the given one is null. Used as fallback, in case the legacy constructor was
 	 * invoked.
 	 *
-	 * @param environment can be {@literal null}.
+	 * @param environment    can be {@literal null}.
 	 * @param resourceLoader can be {@literal null}.
 	 * @return the given {@link Environment} if not {@literal null}, a configured {@link Environment}, or a default
-	 *         {@link Environment}.
+	 * {@link Environment}.
 	 */
 	private static Environment defaultEnvironment(@Nullable Environment environment,
-			@Nullable ResourceLoader resourceLoader) {
+												  @Nullable ResourceLoader resourceLoader) {
 
 		if (environment != null) {
 			return environment;
@@ -125,14 +126,14 @@ public class RepositoryConfigurationDelegate {
 	/**
 	 * Registers the discovered repositories in the given {@link BeanDefinitionRegistry}.
 	 *
-	 * @param registry {@link BeanDefinitionRegistry} in which to register the repository bean.
+	 * @param registry  {@link BeanDefinitionRegistry} in which to register the repository bean.
 	 * @param extension {@link RepositoryConfigurationExtension} for the module.
 	 * @return {@link BeanComponentDefinition}s for all repository bean definitions found.
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension
 	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
 	 */
 	public List<BeanComponentDefinition> registerRepositoriesIn(BeanDefinitionRegistry registry,
-			RepositoryConfigurationExtension extension) {
+																RepositoryConfigurationExtension extension) {
 
 		if (logger.isInfoEnabled()) {
 			logger.info(LogMessage.format("Bootstrapping Spring Data %s repositories in %s mode.", //
@@ -210,29 +211,52 @@ public class RepositoryConfigurationDelegate {
 							watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName()));
 		}
 
-		// TODO: AOT Processing -> guard this one with a flag so it's not always present
-		// TODO: With regard to AOT Processing, perhaps we need to be smart and detect whether "core" AOT components are
-		// (or rather configuration is) present on the classpath to enable Spring Data AOT component registration.
-		registerAotComponents(registry, extension, metadataByRepositoryBeanName);
+		registerPostProcessorComponents(registry, extension, metadataByRepositoryBeanName);
 
 		return definitions;
 	}
 
-	private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
-			Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
+	private void registerPostProcessorComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
+									Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
 
-		// module-specific repository aot processor
-		String repositoryAotProcessorBeanName = String.format("data-%s.repository-aot-processor" /* might be duplicate */,
-				extension.getModuleIdentifier());
+		boolean hasPostProcessors = false;
+		List<RepositoryConfigurationPostProcessor> processors = SpringFactoriesLoader.loadFactories(RepositoryConfigurationPostProcessor.class, resourceLoader.getClassLoader());
+		for (RepositoryConfigurationPostProcessor processor : processors) {
 
-		if (!registry.isBeanNameInUse(repositoryAotProcessorBeanName)) {
+			if (!processor.supports(extension)) {
+				continue;
+			}
 
-			BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
-					.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			hasPostProcessors = true;
+			registerRepositoryPostProcessor(registry, extension, processor.getClass().getName(), metadataByRepositoryBeanName);
+		}
 
-			repositoryAotProcessor.addPropertyValue("configMap", metadataByRepositoryBeanName);
+		if (!hasPostProcessors) {
 
-			registry.registerBeanDefinition(repositoryAotProcessorBeanName, repositoryAotProcessor.getBeanDefinition());
+			List<FallbackRepositoryConfigurationPostProcessor> fallback = SpringFactoriesLoader.loadFactories(FallbackRepositoryConfigurationPostProcessor.class, resourceLoader.getClassLoader());
+
+			for (RepositoryConfigurationPostProcessor processor : fallback) {
+
+				if (!processor.supports(extension)) {
+					continue;
+				}
+
+				registerRepositoryPostProcessor(registry, extension, processor.getClass().getName(), metadataByRepositoryBeanName);
+			}
+		}
+	}
+
+	private static void registerRepositoryPostProcessor(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension, String className, Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
+
+		String repositoryProcessorBeanName = String.format("data-%s.repository-post-processor.%s",
+				extension.getModuleIdentifier(), className);
+
+		if (!registry.isBeanNameInUse(repositoryProcessorBeanName)) {
+			BeanDefinitionBuilder repositoryPostProcessor = BeanDefinitionBuilder
+					.rootBeanDefinition(className).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+
+			repositoryPostProcessor.addPropertyValue("configMap", metadataByRepositoryBeanName);
+			registry.registerBeanDefinition(repositoryProcessorBeanName, repositoryPostProcessor.getBeanDefinition());
 		}
 	}
 
@@ -242,10 +266,10 @@ public class RepositoryConfigurationDelegate {
 	 * augment the {@link LazyRepositoryInjectionPointResolver}'s configuration if there already is one configured.
 	 *
 	 * @param configurations must not be {@literal null}.
-	 * @param registry must not be {@literal null}.
+	 * @param registry       must not be {@literal null}.
 	 */
 	private static void potentiallyLazifyRepositories(Map<String, RepositoryConfiguration<?>> configurations,
-			BeanDefinitionRegistry registry, BootstrapMode mode) {
+													  BeanDefinitionRegistry registry, BootstrapMode mode) {
 
 		if (!DefaultListableBeanFactory.class.isInstance(registry) || BootstrapMode.DEFAULT.equals(mode)) {
 			return;
@@ -283,7 +307,7 @@ public class RepositoryConfigurationDelegate {
 	 * scanning.
 	 *
 	 * @return {@literal true} if multiple data store repository implementations are present in the application. This
-	 *         typically means an Spring application is using more than 1 type of data store.
+	 * typically means an Spring application is using more than 1 type of data store.
 	 */
 	private boolean multipleStoresDetected() {
 
@@ -333,7 +357,7 @@ public class RepositoryConfigurationDelegate {
 		 *
 		 * @param configurations must not be {@literal null}.
 		 * @return a new {@link LazyRepositoryInjectionPointResolver} that will have its configurations augmented with the
-		 *         given ones.
+		 * given ones.
 		 */
 		LazyRepositoryInjectionPointResolver withAdditionalConfigurations(
 				Map<String, RepositoryConfiguration<?>> configurations) {

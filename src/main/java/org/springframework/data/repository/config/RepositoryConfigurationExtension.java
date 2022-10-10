@@ -18,13 +18,10 @@ package org.springframework.data.repository.config;
 import java.util.Collection;
 import java.util.Locale;
 
-import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.data.repository.aot.RepositoryRegistrationAotProcessor;
-import org.springframework.lang.NonNull;
 
 /**
  * SPI to implement store specific extension to the repository bean definition registration process.
@@ -53,20 +50,6 @@ public interface RepositoryConfigurationExtension {
 	 * @return will never be {@literal null}.
 	 */
 	String getModuleName();
-
-	/**
-	 * Returns the {@link BeanRegistrationAotProcessor} type responsible for contributing AOT/native configuration
-	 * required by the Spring Data Repository infrastructure components at native runtime.
-	 *
-	 * @return the {@link BeanRegistrationAotProcessor} type responsible for contributing AOT/native configuration.
-	 *         Defaults to {@link RepositoryRegistrationAotProcessor}. Must not be {@literal null}.
-	 * @see org.springframework.beans.factory.aot.BeanRegistrationAotProcessor
-	 * @since 3.0
-	 */
-	@NonNull
-	default Class<? extends BeanRegistrationAotProcessor> getRepositoryAotProcessor() {
-		return RepositoryRegistrationAotProcessor.class;
-	}
 
 	/**
 	 * Returns all {@link RepositoryConfiguration}s obtained through the given {@link RepositoryConfigurationSource}.

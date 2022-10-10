@@ -32,6 +32,7 @@
 
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.24</xmlbeam>
+		<archunit.version>1.0.0</archunit.version>
 		<java-module-name>spring.data.commons</java-module-name>
 
 	</properties>
@@ -335,17 +336,17 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.schauderhaft.degraph</groupId>
-			<artifactId>degraph-check</artifactId>
-			<version>0.1.4</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>org.jmolecules.integrations</groupId>
 			<artifactId>jmolecules-spring</artifactId>
 			<version>${jmolecules-integration}</version>
 			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit</artifactId>
+			<version>${archunit.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
