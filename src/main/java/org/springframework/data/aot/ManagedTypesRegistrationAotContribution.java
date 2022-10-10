@@ -169,6 +169,7 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 
 			ParameterizedTypeName targetTypeName = ParameterizedTypeName.get(InstanceSupplier.class, source.getBeanClass());
 
+			method.addJavadoc("Get the bean instance for '$L'.", source.getBeanName());
 			method.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
 			method.returns(targetTypeName);
 
@@ -177,14 +178,15 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 			if (sourceTypes.isEmpty()) {
 				builder.addStatement("$T types = $T.emptyList()", LIST_OF_ANY, Collections.class);
 			} else {
+
+				TypeName variableTypeName;
 				if (allSourceTypesVisible) {
-					builder.addStatement("$T types = $T.of($L)", LIST_OF_ANY, List.class,
-							toCodeBlock(sourceTypes, allSourceTypesVisible));
+					variableTypeName = LIST_OF_ANY;
 				} else {
-					TypeName listOfString = ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(String.class));
-					builder.addStatement("$T types = $T.of($L)", listOfString, List.class,
-							toCodeBlock(sourceTypes, allSourceTypesVisible));
+					variableTypeName = ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(String.class));
 				}
+				builder.addStatement("$T types = $T.of($L)", variableTypeName, List.class,
+						toCodeBlock(sourceTypes, allSourceTypesVisible));
 			}
 
 			if (allSourceTypesVisible) {
