@@ -17,6 +17,7 @@ package org.springframework.data.aot;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -34,9 +35,12 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.util.Lazy;
+import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec.Builder;
 import org.springframework.javapoet.ParameterizedTypeName;
+import org.springframework.javapoet.TypeName;
+import org.springframework.javapoet.WildcardTypeName;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -167,7 +171,15 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 
 			CodeBlock.Builder builder = CodeBlock.builder().add("return ").beginControlFlow("(registeredBean -> ");
 
-			builder.addStatement("var types = $T.of($L)", List.class, toCodeBlock(sourceTypes, allSourceTypesVisible));
+			if(sourceTypes.isEmpty()) {
+
+				TypeName wildcard = WildcardTypeName.subtypeOf(Object.class);
+				TypeName classOfAny = ParameterizedTypeName.get(ClassName.get(Class.class), wildcard);
+
+				builder.addStatement("var types = $T.<$T>emptyList()", Collections.class, classOfAny);
+			} else {
+				builder.addStatement("var types = $T.of($L)", List.class, toCodeBlock(sourceTypes, allSourceTypesVisible));
+			}
 
 			if (allSourceTypesVisible) {
 				builder.addStatement("var managedTypes = $T.fromIterable($L)", ManagedTypes.class, "types");

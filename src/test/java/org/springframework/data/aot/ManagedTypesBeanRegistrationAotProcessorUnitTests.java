@@ -196,6 +196,28 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 	}
 
 	@Test // GH-2680
+	void generatesInstanceSupplierCodeFragmentToAvoidDuplicateInvocationsForEmptyManagedTypes() {
+
+		beanFactory.registerBeanDefinition("commons.managed-types", BeanDefinitionBuilder.rootBeanDefinition(EmptyManagedTypes.class).getBeanDefinition());
+		RegisteredBean registeredBean = RegisteredBean.of(beanFactory, "commons.managed-types");
+
+		BeanRegistrationAotContribution contribution = createPostProcessor("commons")
+				.processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
+
+		AotTestCodeContributionBuilder.withContextFor(this.getClass()).writeContentFor(contribution).compile(it -> {
+
+
+			InstanceSupplier<ManagedTypes> types = ReflectionTestUtils
+					.invokeMethod(it.getAllCompiledClasses().iterator().next(), "instance");
+			try {
+				assertThat(types.get(registeredBean).toList()).isEmpty();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	@Test // GH-2680
 	void generatesInstanceSupplierCodeFragmentForTypeWithCustomFactoryMethod() {
 
 		beanFactory.registerBeanDefinition("commons.managed-types",
@@ -266,6 +288,22 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		@Override
 		public void forEach(Consumer<Class<?>> action) {
 			// just do nothing ¯\_(ツ)_/¯
+		}
+	}
+
+	public static class EmptyManagedTypes implements ManagedTypes {
+
+		public EmptyManagedTypes() {
+
+		}
+
+		public static EmptyManagedTypes of(ManagedTypes source) {
+			return new EmptyManagedTypes();
+		}
+
+		@Override
+		public void forEach(Consumer<Class<?>> action) {
+
 		}
 	}
 
