@@ -88,7 +88,7 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 * Returns the custom implementation bean name to be used.
 	 *
 	 * @return
-	 * @since 2.6
+	 * @since 3.0
 	 */
 	String getImplementationBeanName();
 
@@ -96,7 +96,7 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	 * Returns the bean name of the repository to be used.
 	 *
 	 * @return
-	 * @since 2.6
+	 * @since 3.0
 	 */
 	String getRepositoryBeanName();
 

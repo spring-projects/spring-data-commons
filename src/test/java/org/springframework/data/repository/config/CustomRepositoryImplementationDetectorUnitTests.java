@@ -20,7 +20,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.beans.Introspector;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,8 +66,7 @@ class CustomRepositoryImplementationDetectorUnitTests {
 		RepositoryConfiguration<?> mock = mock(RepositoryConfiguration.class);
 		when(mock.getImplementationBeanName()).thenReturn("NoImplementationRepositoryImpl");
 
-		var lookup = configuration
-				.forRepositoryConfiguration(configFor(NoImplementationRepository.class));
+		var lookup = configuration.forRepositoryConfiguration(configFor(NoImplementationRepository.class));
 
 		var beanDefinition = detector.detectCustomImplementation(lookup);
 
@@ -78,8 +76,7 @@ class CustomRepositoryImplementationDetectorUnitTests {
 	@Test // DATACMNS-764, DATACMNS-1371
 	void returnsBeanDefinitionWhenOneImplementationIsFound() {
 
-		var lookup = configuration
-				.forRepositoryConfiguration(configFor(SingleSampleRepository.class));
+		var lookup = configuration.forRepositoryConfiguration(configFor(SingleSampleRepository.class));
 
 		var beanDefinition = detector.detectCustomImplementation(lookup);
 
@@ -98,9 +95,7 @@ class CustomRepositoryImplementationDetectorUnitTests {
 			return className.contains("$First$") ? "canonicalSampleRepositoryTestImpl" : "otherBeanName";
 		});
 
-
-		var lookup = configuration
-				.forRepositoryConfiguration(configFor(CanonicalSampleRepository.class));
+		var lookup = configuration.forRepositoryConfiguration(configFor(CanonicalSampleRepository.class));
 
 		assertThat(detector.detectCustomImplementation(lookup)) //
 				.hasValueSatisfying(

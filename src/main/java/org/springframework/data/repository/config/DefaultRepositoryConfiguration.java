@@ -93,8 +93,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	}
 
 	public String getImplementationBeanName() {
-		return beanName.get()
-				+ configurationSource.getRepositoryImplementationPostfix().orElse("Impl");
+		return beanName.get() + configurationSource.getRepositoryImplementationPostfix().orElse("Impl");
 	}
 
 	@Nullable

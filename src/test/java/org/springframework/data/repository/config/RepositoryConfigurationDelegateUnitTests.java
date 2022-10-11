@@ -23,11 +23,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -78,8 +77,7 @@ class RepositoryConfigurationDelegateUnitTests {
 
 			var beanDefinition = definition.getBeanDefinition();
 
-			assertThat(beanDefinition.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE).toString())
-					.endsWith("Repository");
+			assertThat(beanDefinition.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE).toString()).endsWith("Repository");
 		}
 	}
 
@@ -95,25 +93,6 @@ class RepositoryConfigurationDelegateUnitTests {
 
 		assertThat(beanFactory.getBeanNamesForType(DeferredRepositoryInitializationListener.class)).isNotEmpty();
 
-	}
-
-	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
-
-		var environment = new StandardEnvironment();
-		var context = new AnnotationConfigApplicationContext(configClass);
-
-		assertThat(context.getDefaultListableBeanFactory().getAutowireCandidateResolver())
-				.isInstanceOf(LazyRepositoryInjectionPointResolver.class);
-
-		var client = context.getBean(AddressRepositoryClient.class);
-		var repository = client.getRepository();
-
-		assertThat(Advised.class.isInstance(repository)).isTrue();
-
-		var targetSource = Advised.class.cast(repository).getTargetSource();
-		assertThat(targetSource).isNotNull();
-
-		return context.getDefaultListableBeanFactory();
 	}
 
 	@Test // DATACMNS-1832
@@ -139,14 +118,14 @@ class RepositoryConfigurationDelegateUnitTests {
 	@Test // GH-2487
 	void considersDefaultBeanNames() {
 
-		StandardEnvironment environment = new StandardEnvironment();
-		GenericApplicationContext context = new GenericApplicationContext();
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
 
 		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
 				AnnotationMetadata.introspect(DefaultBeanNamesConfig.class), EnableRepositories.class, context, environment,
 				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
 
-		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
 
 		delegate.registerRepositoriesIn(context, extension);
 
@@ -157,15 +136,14 @@ class RepositoryConfigurationDelegateUnitTests {
 	@Test // GH-2487
 	void considersAnnotatedBeanNamesFromRepository() {
 
-		StandardEnvironment environment = new StandardEnvironment();
-		GenericApplicationContext context = new GenericApplicationContext();
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
 
 		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
 				AnnotationMetadata.introspect(AnnotatedDerivedBeanNamesConfig.class), EnableRepositories.class, context,
-				environment,
-				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
+				environment, context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
 
-		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
 
 		delegate.registerRepositoriesIn(context, extension);
 
@@ -176,14 +154,14 @@ class RepositoryConfigurationDelegateUnitTests {
 	@Test // GH-2487
 	void considersAnnotatedBeanNamesFromAtComponent() {
 
-		StandardEnvironment environment = new StandardEnvironment();
-		GenericApplicationContext context = new GenericApplicationContext();
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
 
 		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
 				AnnotationMetadata.introspect(AnnotatedBeanNamesConfig.class), EnableRepositories.class, context, environment,
 				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
 
-		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
 
 		delegate.registerRepositoriesIn(context, extension);
 
@@ -196,8 +174,8 @@ class RepositoryConfigurationDelegateUnitTests {
 	@Test // GH-2487
 	void skipsRegistrationOnAlreadyRegisteredBeansUsingAtComponentNames() {
 
-		StandardEnvironment environment = new StandardEnvironment();
-		GenericApplicationContext context = new GenericApplicationContext();
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
 		context.setAllowBeanDefinitionOverriding(false);
 		context.registerBean("fragment", MyFragmentImpl.class);
 		context.registerBean("anotherBeanName", MyAnnotatedRepositoryImpl.class);
@@ -206,7 +184,7 @@ class RepositoryConfigurationDelegateUnitTests {
 				AnnotationMetadata.introspect(AnnotatedBeanNamesConfig.class), EnableRepositories.class, context, environment,
 				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
 
-		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
 
 		delegate.registerRepositoriesIn(context, extension);
 
@@ -218,17 +196,17 @@ class RepositoryConfigurationDelegateUnitTests {
 
 	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
 
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(configClass);
+		var context = new AnnotationConfigApplicationContext(configClass);
 
 		assertThat(context.getDefaultListableBeanFactory().getAutowireCandidateResolver())
 				.isInstanceOf(LazyRepositoryInjectionPointResolver.class);
 
-		AddressRepositoryClient client = context.getBean(AddressRepositoryClient.class);
-		AddressRepository repository = client.getRepository();
+		var client = context.getBean(AddressRepositoryClient.class);
+		var repository = client.getRepository();
 
 		assertThat(Advised.class.isInstance(repository)).isTrue();
 
-		TargetSource targetSource = Advised.class.cast(repository).getTargetSource();
+		var targetSource = Advised.class.cast(repository).getTargetSource();
 		assertThat(targetSource).isNotNull();
 
 		return context.getDefaultListableBeanFactory();

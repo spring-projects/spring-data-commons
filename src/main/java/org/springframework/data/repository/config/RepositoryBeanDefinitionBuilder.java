@@ -30,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
-
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
@@ -148,7 +147,7 @@ class RepositoryBeanDefinitionBuilder {
 
 		List<RepositoryFragmentConfiguration> repositoryFragmentConfigurationStream = fragmentMetadata
 				.getFragmentInterfaces(configuration.getRepositoryInterface()) //
-				.map(it -> detectRepositoryFragmentConfiguration(it, config)) //
+				.map(it -> detectRepositoryFragmentConfiguration(it, config, configuration)) //
 				.flatMap(Optionals::toStream).toList();
 
 		if (repositoryFragmentConfigurationStream.isEmpty()) {

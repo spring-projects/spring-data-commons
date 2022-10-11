@@ -46,7 +46,7 @@ public final class RepositoryFragmentConfiguration {
 	 * @param className must not be {@literal null} or empty.
 	 */
 	public RepositoryFragmentConfiguration(String interfaceName, String className) {
-		this(interfaceName, className, null, generateBeanName(className));
+		this(interfaceName, className, Optional.empty(), generateBeanName(className));
 	}
 
 	/**
@@ -65,11 +65,6 @@ public final class RepositoryFragmentConfiguration {
 		this.className = ConfigurationUtils.getRequiredBeanClassName(beanDefinition);
 		this.beanDefinition = Optional.of(beanDefinition);
 		this.beanName = generateBeanName();
-	}
-
-	public RepositoryFragmentConfiguration(String interfaceName, String className,
-			Optional<AbstractBeanDefinition> beanDefinition) {
-		this(interfaceName, className, beanDefinition, generateBeanName(className));
 	}
 
 	RepositoryFragmentConfiguration(String interfaceName, AbstractBeanDefinition beanDefinition, String beanName) {

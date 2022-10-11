@@ -53,21 +53,20 @@ class DefaultImplementationLookupConfigurationUnitTests {
 	@Test // DATACMNS-1754
 	void shouldUseSimpleClassNameWhenDefiningImplementationNames() {
 
-		ImplementationLookupConfiguration lookupConfiguration = idcMock
-				.forFragment("com.acme.Repositories$NestedRepository");
+		var lookupConfiguration = idcMock.forFragment("com.acme.Repositories$NestedRepository");
 		assertThat(lookupConfiguration.getImplementationBeanName()).isEqualTo("repositories.NestedRepositoryImpl");
 		assertThat(lookupConfiguration.getImplementationClassName()).isEqualTo("NestedRepositoryImpl");
 	}
 
 	private static String getImplementationBeanName(ImplementationDetectionConfiguration idcMock, String interfaceName) {
 
-		RepositoryConfigurationSource source = mock(RepositoryConfigurationSource.class);
+		var source = mock(RepositoryConfigurationSource.class);
 		when(source.generateBeanName(any())).thenReturn(Introspector.decapitalize(ClassUtils.getShortName(interfaceName)));
 
 		RepositoryConfiguration<?> repoConfig = new DefaultRepositoryConfiguration<>(source,
 				BeanDefinitionBuilder.rootBeanDefinition(interfaceName).getBeanDefinition(), null);
 
-		ImplementationLookupConfiguration configuration = idcMock.forRepositoryConfiguration(repoConfig);
+		var configuration = idcMock.forRepositoryConfiguration(repoConfig);
 		return configuration.getImplementationBeanName();
 	}
 }
