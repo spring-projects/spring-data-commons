@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.aot.hint;
+package org.springframework.data.repository.aot.hint;
 
 import java.util.Arrays;
 import java.util.Properties;

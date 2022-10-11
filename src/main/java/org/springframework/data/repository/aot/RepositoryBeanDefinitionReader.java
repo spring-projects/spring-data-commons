@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.aot;
+package org.springframework.data.repository.aot;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -81,9 +81,8 @@ class RepositoryBeanDefinitionReader {
 				}));
 	}
 
-	static Supplier<org.springframework.data.repository.core.RepositoryMetadata> metadataSupplier(
+	private static Supplier<org.springframework.data.repository.core.RepositoryMetadata> metadataSupplier(
 			RepositoryConfiguration<?> metadata, ConfigurableListableBeanFactory beanFactory) {
-
 		return Lazy.of(() -> new DefaultRepositoryMetadata(forName(metadata.getRepositoryInterface(), beanFactory)));
 	}
 

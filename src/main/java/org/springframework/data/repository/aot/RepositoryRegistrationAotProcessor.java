@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.aot;
+package org.springframework.data.repository.aot;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -35,6 +35,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.data.aot.TypeContributor;
 import org.springframework.data.repository.config.RepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -83,11 +84,11 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 
 		repositoryContext.getResolvedTypes().stream()
 				.filter(it -> !RepositoryRegistrationAotContribution.isJavaOrPrimitiveType(it))
-				.forEach(it -> RepositoryRegistrationAotContribution.contributeType(it, generationContext));
+				.forEach(it -> RepositoryRegistrationAotProcessor.contributeType(it, generationContext));
 
 		repositoryContext.getResolvedAnnotations().stream()
-				.filter(RepositoryRegistrationAotContribution::isSpringDataManagedAnnotation).map(MergedAnnotation::getType)
-				.forEach(it -> RepositoryRegistrationAotContribution.contributeType(it, generationContext));
+				.filter(RepositoryRegistrationAotProcessor::isSpringDataManagedAnnotation).map(MergedAnnotation::getType)
+				.forEach(it -> RepositoryRegistrationAotProcessor.contributeType(it, generationContext));
 	}
 
 	private boolean isRepositoryBean(RegisteredBean bean) {
@@ -160,5 +161,19 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 
 	protected void logTrace(String message, Object... arguments) {
 		logAt(Log::isTraceEnabled, Log::trace, message, arguments);
+	}
+
+	private static boolean isSpringDataManagedAnnotation(@Nullable MergedAnnotation<?> annotation) {
+
+		return annotation != null && (isInSpringDataNamespace(annotation.getType())
+				|| annotation.getMetaTypes().stream().anyMatch(RepositoryRegistrationAotProcessor::isInSpringDataNamespace));
+	}
+
+	private static void contributeType(Class<?> type, GenerationContext generationContext) {
+		TypeContributor.contribute(type, it -> true, generationContext);
+	}
+
+	private static boolean isInSpringDataNamespace(Class<?> type) {
+		return type.getPackage().getName().startsWith(TypeContributor.DATA_NAMESPACE);
 	}
 }

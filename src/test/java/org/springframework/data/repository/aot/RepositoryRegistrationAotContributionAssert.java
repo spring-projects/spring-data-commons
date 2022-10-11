@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.aot;
+package org.springframework.data.repository.aot;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -26,6 +26,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
+import org.springframework.data.aot.CodeContributionAssert;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 

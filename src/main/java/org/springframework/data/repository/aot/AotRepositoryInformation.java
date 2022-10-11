@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.aot;
+package org.springframework.data.repository.aot;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -43,29 +43,29 @@ class AotRepositoryInformation extends RepositoryInformationSupport implements R
 		this.fragments = fragments;
 	}
 
+	/**
+	 * @return configured repository fragments.
+	 * @since 3.0
+	 */
+	@Override
+	public Set<RepositoryFragment<?>> getFragments() {
+		return new LinkedHashSet<>(fragments.get());
+	}
+
+	// Not required during AOT processing.
 	@Override
 	public boolean isCustomMethod(Method method) {
-		// TODO:
 		return false;
 	}
 
 	@Override
 	public boolean isBaseClassMethod(Method method) {
-		// TODO
 		return false;
 	}
 
 	@Override
 	public Method getTargetClassMethod(Method method) {
-		// TODO
 		return method;
 	}
 
-	/**
-	 * @return configured repository fragments.
-	 * @since 3.0
-	 */
-	public Set<RepositoryFragment<?>> getFragments() {
-		return new LinkedHashSet<>(fragments.get());
-	}
 }

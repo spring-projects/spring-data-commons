@@ -2,7 +2,7 @@ org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor=\
 	org.springframework.data.aot.ManagedTypesBeanFactoryInitializationAotProcessor
 
 org.springframework.aot.hint.RuntimeHintsRegistrar=\
-	org.springframework.data.aot.hint.RepositoryRuntimeHints
+	org.springframework.data.repository.aot.hint.RepositoryRuntimeHints
 
 org.springframework.beans.factory.aot.BeanRegistrationAotProcessor=\
     org.springframework.data.aot.AuditingBeanRegistrationAotProcessor

@@ -18,15 +18,13 @@ package org.springframework.data.repository.config;
 import java.util.Collection;
 import java.util.Locale;
 
-import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.data.aot.RepositoryRegistrationAotProcessor;
+import org.springframework.data.repository.aot.RepositoryRegistrationAotProcessor;
 import org.springframework.lang.NonNull;
-import org.springframework.util.StringUtils;
 
 /**
  * SPI to implement store specific extension to the repository bean definition registration process.
@@ -46,9 +44,7 @@ public interface RepositoryConfigurationExtension {
 	 */
 	default String getModuleIdentifier() {
 
-		return getModuleName()
-				.toLowerCase(Locale.ENGLISH)
-				.replace(' ', '-');
+		return getModuleName().toLowerCase(Locale.ENGLISH).replace(' ', '-');
 	}
 
 	/**
@@ -63,7 +59,7 @@ public interface RepositoryConfigurationExtension {
 	 * required by the Spring Data Repository infrastructure components at native runtime.
 	 *
 	 * @return the {@link BeanRegistrationAotProcessor} type responsible for contributing AOT/native configuration.
-	 * Defaults to {@link RepositoryRegistrationAotProcessor}. Must not be {@literal null}.
+	 *         Defaults to {@link RepositoryRegistrationAotProcessor}. Must not be {@literal null}.
 	 * @see org.springframework.beans.factory.aot.BeanRegistrationAotProcessor
 	 * @since 3.0
 	 */
@@ -75,8 +71,8 @@ public interface RepositoryConfigurationExtension {
 	/**
 	 * Returns all {@link RepositoryConfiguration}s obtained through the given {@link RepositoryConfigurationSource}.
 	 *
-	 * @param configSource {@link RepositoryConfigurationSource} encapsulating the source (XML, Annotation) of
-	 * the repository configuration.
+	 * @param configSource {@link RepositoryConfigurationSource} encapsulating the source (XML, Annotation) of the
+	 *          repository configuration.
 	 * @param loader {@link ResourceLoader} used to load resources.
 	 * @param strictMatchesOnly whether to return strict repository matches only. Handing in {@literal true} will cause
 	 *          the repository interfaces and domain types handled to be checked whether they are managed by the current
@@ -107,8 +103,8 @@ public interface RepositoryConfigurationExtension {
 	 * repositories bean definitions have been registered.
 	 *
 	 * @param registry {@link BeanDefinitionRegistry} containing bean definitions.
-	 * @param configurationSource {@link RepositoryConfigurationSource} encapsulating the source (e.g. XML, Annotation)
-	 * of the repository configuration.
+	 * @param configurationSource {@link RepositoryConfigurationSource} encapsulating the source (e.g. XML, Annotation) of
+	 *          the repository configuration.
 	 */
 	void registerBeansForRoot(BeanDefinitionRegistry registry, RepositoryConfigurationSource configurationSource);
 

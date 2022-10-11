@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.aot;
+package org.springframework.data.repository.aot;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -41,7 +41,9 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.DecoratingProxy;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.data.aot.AotContext;
+import org.springframework.data.aot.TypeContributor;
+import org.springframework.data.aot.TypeUtils;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
@@ -73,7 +75,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	 *          which this contribution was created.
 	 * @return a new instance of {@link RepositoryRegistrationAotContribution}.
 	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
-	 * @see org.springframework.data.aot.RepositoryRegistrationAotProcessor
+	 * @see RepositoryRegistrationAotProcessor
 	 */
 	public static RepositoryRegistrationAotContribution fromProcessor(
 			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
@@ -94,7 +96,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
 	 *          which this contribution was created.
 	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
-	 * @see org.springframework.data.aot.RepositoryRegistrationAotProcessor
+	 * @see RepositoryRegistrationAotProcessor
 	 */
 	protected RepositoryRegistrationAotContribution(
 			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
@@ -230,10 +232,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 			repositoryBeanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE,
 					repositoryContext.getRepositoryInformation().getRepositoryInterface());
 		}
-	}
-
-	private boolean isRepositoryWithTypeParameters(ResolvableType type) {
-		return type.getGenerics().length == 3;
 	}
 
 	/**
@@ -380,24 +378,14 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				|| ClassUtils.isPrimitiveArray(type); //
 	}
 
-	static boolean isSpringDataManagedAnnotation(@Nullable MergedAnnotation<?> annotation) {
-
-		return annotation != null && (isInSpringDataNamespace(annotation.getType())
-				|| annotation.getMetaTypes().stream().anyMatch(RepositoryRegistrationAotContribution::isInSpringDataNamespace));
-	}
-
-	static boolean isInSpringDataNamespace(Class<?> type) {
-		return type.getPackage().getName().startsWith(TypeContributor.DATA_NAMESPACE);
-	}
-
-	static void contributeType(Class<?> type, GenerationContext generationContext) {
-		TypeContributor.contribute(type, it -> true, generationContext);
-	}
-
 	// TODO What was this meant to be used for? Was this type filter maybe meant to be used in
 	// the TypeContributor.contribute(:Class, :Predicate :GenerationContext) method
 	// used in the contributeType(..) method above?
 	public Predicate<Class<?>> typeFilter() { // like only document ones. // TODO: As in MongoDB?
 		return it -> true;
+	}
+
+	private static boolean isRepositoryWithTypeParameters(ResolvableType type) {
+		return type.getGenerics().length == 3;
 	}
 }

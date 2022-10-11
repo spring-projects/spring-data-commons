@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.aot;
+package org.springframework.data.repository.aot;
 
 import java.lang.annotation.Annotation;
 import java.util.LinkedHashSet;
@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.data.aot.AotContext;
+import org.springframework.data.aot.TypeCollector;
+import org.springframework.data.aot.TypeUtils;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
 
@@ -104,12 +107,12 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	}
 
 	@Override
-	public TypeIntrospector introspectType(String typeName) {
+	public AotContext.TypeIntrospector introspectType(String typeName) {
 		return aotContext.introspectType(typeName);
 	}
 
 	@Override
-	public IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
+	public AotContext.IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
 		return aotContext.introspectBeanDefinition(beanName);
 	}
 

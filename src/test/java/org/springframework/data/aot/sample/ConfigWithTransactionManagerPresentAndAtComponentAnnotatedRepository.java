@@ -19,7 +19,7 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.MyComponentTxRepo;
+import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.config.EnableRepositories;
 import org.springframework.stereotype.Component;
@@ -29,9 +29,9 @@ import org.springframework.transaction.TransactionManager;
  * @author Christoph Strobl
  */
 @EnableRepositories(includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = MyComponentTxRepo.class) },
-		basePackageClasses = ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.class,
+		basePackageClasses = ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.class,
 		considerNestedRepositories = true)
-public class ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty {
+public class ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository {
 
 	@Component
 	public interface MyComponentTxRepo extends CrudRepository<Person, String> {

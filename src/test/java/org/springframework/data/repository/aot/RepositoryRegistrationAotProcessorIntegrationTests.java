@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.aot;
+package org.springframework.data.repository.aot;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.aot.RepositoryRegistrationAotContributionAssert.*;
+import static org.springframework.data.repository.aot.RepositoryRegistrationAotContributionAssert.*;
 
 import java.io.Serializable;
 
@@ -36,7 +36,7 @@ import org.springframework.data.aot.sample.ConfigWithQueryMethods;
 import org.springframework.data.aot.sample.ConfigWithQueryMethods.ProjectionInterface;
 import org.springframework.data.aot.sample.ConfigWithSimpleCrudRepository;
 import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresent;
-import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty;
+import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository;
 import org.springframework.data.aot.sample.ReactiveConfig;
 import org.springframework.data.domain.Page;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -103,31 +103,31 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	void simpleRepositoryWithTxManagerNoKotlinNoReactiveButComponent() {
 
 		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
-				ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.class)
-						.forRepository(ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.MyComponentTxRepo.class);
+				ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.class).forRepository(
+						ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(
-						ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.MyComponentTxRepo.class) //
+						ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class) //
 				.hasNoFragments() //
 				.codeContributionSatisfies(contribution -> { //
 					contribution
 							.contributesReflectionFor(
-									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.MyComponentTxRepo.class) // repository
+									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class) // repository
 							// interface
 							.contributesReflectionFor(PagingAndSortingRepository.class) // base repository
 							.contributesReflectionFor(
-									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.Person.class) // domain type
+									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.Person.class) // domain type
 
 							// proxies
 							.contributesJdkProxy(
-									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.MyComponentTxRepo.class,
+									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class,
 									SpringProxy.class, Advised.class, DecoratingProxy.class)
 							.contributesJdkProxy(
-									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.MyComponentTxRepo.class,
+									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class,
 									Repository.class, TransactionalProxy.class, Advised.class, DecoratingProxy.class)
 							.contributesJdkProxy(
-									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.MyComponentTxRepo.class,
+									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class,
 									Repository.class, TransactionalProxy.class, Advised.class, DecoratingProxy.class, Serializable.class);
 				});
 	}
@@ -157,10 +157,10 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 							.contributesJdkProxy(ConfigWithFragments.RepositoryWithFragments.class, SpringProxy.class, Advised.class,
 									DecoratingProxy.class)
 							.doesNotContributeJdkProxy(
-									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.MyComponentTxRepo.class,
+									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class,
 									Repository.class, TransactionalProxy.class, Advised.class, DecoratingProxy.class)
 							.doesNotContributeJdkProxy(
-									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepoisoty.MyComponentTxRepo.class,
+									ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class,
 									Repository.class, TransactionalProxy.class, Advised.class, DecoratingProxy.class, Serializable.class);
 				});
 	}
