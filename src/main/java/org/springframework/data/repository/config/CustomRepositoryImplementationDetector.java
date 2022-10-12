@@ -108,25 +108,21 @@ public class CustomRepositoryImplementationDetector {
 				.filter(lookup::matches) //
 				.collect(StreamUtils.toUnmodifiableSet());
 
-		return selectImplementationCandidate(lookup, definitions, () -> {
-
-			if (definitions.isEmpty()) {
-				return Optional.empty();
-			}
-
-			return Optional.of(definitions.iterator().next());
-		});
+		return selectImplementationCandidate(lookup, definitions);
 	}
 
 	private static Optional<AbstractBeanDefinition> selectImplementationCandidate(
-			ImplementationLookupConfiguration lookup, Set<BeanDefinition> definitions,
-			Supplier<Optional<BeanDefinition>> fallback) {
+			ImplementationLookupConfiguration lookup, Set<BeanDefinition> definitions) {
 
 		return SelectionSet //
-				.of(definitions, c -> c.isEmpty() ? fallback.get() : throwAmbiguousCustomImplementationException(c)) //
+				.of(definitions, c -> c.isEmpty() ? firstOrEmptyBeanDefinition(definitions) : throwAmbiguousCustomImplementationException(c)) //
 				.filterIfNecessary(lookup::hasMatchingBeanName) //
 				.uniqueResult() //
 				.map(AbstractBeanDefinition.class::cast);
+	}
+
+	static Optional<BeanDefinition> firstOrEmptyBeanDefinition(Set<BeanDefinition> definitions) {
+		return definitions.isEmpty() ? Optional.empty() : Optional.of(definitions.iterator().next());
 	}
 
 	private Set<BeanDefinition> findCandidateBeanDefinitions(ImplementationDetectionConfiguration config) {

@@ -46,8 +46,8 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 
 	public RepositoryInformationSupport(Supplier<RepositoryMetadata> metadata, Supplier<Class<?>> repositoryBaseClass) {
 
-		Assert.notNull(metadata, "Repository metadata must not be null!");
-		Assert.notNull(repositoryBaseClass, "Repository base class must not be null!");
+		Assert.notNull(metadata, "Repository metadata must not be null");
+		Assert.notNull(repositoryBaseClass, "Repository base class must not be null");
 
 		this.metadata = Lazy.of(metadata);
 		this.repositoryBaseClass = Lazy.of(repositoryBaseClass);

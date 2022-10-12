@@ -46,7 +46,7 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 
 		Assert.notNull(config, "ImplementationDetectionConfiguration must not be null");
 		Assert.hasText(interfaceName, "Interface name must not be null or empty");
-		Assert.hasText(beanName, "Bean name must not be null or empty!");
+		Assert.hasText(beanName, "Bean name must not be null or empty");
 
 		this.config = config;
 		this.interfaceName = interfaceName;
