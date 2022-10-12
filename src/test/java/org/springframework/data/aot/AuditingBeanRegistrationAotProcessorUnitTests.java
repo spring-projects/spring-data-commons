@@ -58,7 +58,7 @@ class AuditingBeanRegistrationAotProcessorUnitTests {
 	}
 
 	@Test // GH-2593
-	void contributesProxyForReactriveAuditorAwareInterface() {
+	void contributesProxyForReactiveAuditorAwareInterface() {
 
 		String beanName = "auditorAware";
 		beanFactory.registerBeanDefinition("auditorAware",
