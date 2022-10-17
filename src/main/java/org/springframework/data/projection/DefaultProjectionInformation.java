@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.type.MethodMetadata;
@@ -171,7 +170,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 			Stream<PropertyDescriptor> allButDefaultGetters = Arrays.stream(BeanUtils.getPropertyDescriptors(type)) //
 					.filter(it -> !hasDefaultGetter(it));
 
-			Stream<PropertyDescriptor> ownDescriptors = metadata.map(it -> filterAndOrder(allButDefaultGetters, it))
+			Stream<PropertyDescriptor> ownDescriptors = metadata.map(it -> filterAndOrder(allButDefaultGetters, it)) //
 					.orElse(allButDefaultGetters);
 
 			Stream<PropertyDescriptor> superTypeDescriptors = metadata.map(this::fromMetadata) //
@@ -189,18 +188,16 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		 * @param metadata must not be {@literal null}.
 		 * @return
 		 */
-		private static Stream<PropertyDescriptor> filterAndOrder(Stream<PropertyDescriptor> source,
-				MethodsMetadata metadata) {
+		private Stream<PropertyDescriptor> filterAndOrder(Stream<PropertyDescriptor> source, MethodsMetadata metadata) {
 
 			Map<String, Integer> orderedMethods = getMethodOrder(metadata);
 
-			if (orderedMethods.isEmpty()) {
-				return source;
-			}
+			Stream<PropertyDescriptor> filtered = source.filter(it -> it.getReadMethod() != null)
+					.filter(it -> it.getReadMethod().getDeclaringClass().equals(type));
 
-			return source.filter(descriptor -> descriptor.getReadMethod() != null)
-					.filter(descriptor -> orderedMethods.containsKey(descriptor.getReadMethod().getName()))
-					.sorted(Comparator.comparingInt(left -> orderedMethods.get(left.getReadMethod().getName())));
+			return orderedMethods.isEmpty()
+					? filtered
+					: filtered.sorted(Comparator.comparingInt(left -> orderedMethods.get(left.getReadMethod().getName())));
 		}
 
 		/**
@@ -240,7 +237,8 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 			} catch (IOException e) {
 
-				logger.info(LogMessage.format("Couldn't read class metadata for %s. Input property calculation might fail", type));
+				logger.info(
+						LogMessage.format("Couldn't read class metadata for %s. Input property calculation might fail", type));
 				return Optional.empty();
 			}
 		}
