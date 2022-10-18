@@ -30,6 +30,9 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.core.support.RepositoryFragmentsFactoryBean;
 import org.springframework.data.repository.core.support.TransactionalRepositoryFactoryBeanSupport;
+import org.springframework.data.repository.query.FluentQuery;
+import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
+import org.springframework.data.repository.query.FluentQuery.ReactiveFluentQuery;
 import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.lang.Nullable;
 
@@ -53,7 +56,10 @@ class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
 				TypeReference.of(TransactionalRepositoryFactoryBeanSupport.class), //
 				TypeReference.of(QueryByExampleExecutor.class), //
 				TypeReference.of(MappingContext.class), //
-				TypeReference.of(RepositoryMetadata.class) //
+				TypeReference.of(RepositoryMetadata.class), //
+				TypeReference.of(FluentQuery.class), //
+				TypeReference.of(FetchableFluentQuery.class), //
+				TypeReference.of(ReactiveFluentQuery.class) //
 		), builder -> {
 			builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
 		});
