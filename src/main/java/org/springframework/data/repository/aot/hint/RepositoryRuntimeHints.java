@@ -24,7 +24,11 @@ import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.io.InputStreamSource;
+import org.springframework.data.domain.Example;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.querydsl.QuerydslUtils;
+import org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
@@ -34,16 +38,24 @@ import org.springframework.data.repository.query.FluentQuery;
 import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.data.repository.query.FluentQuery.ReactiveFluentQuery;
 import org.springframework.data.repository.query.QueryByExampleExecutor;
+import org.springframework.data.repository.query.ReactiveQueryByExampleExecutor;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ClassUtils;
+
+import com.querydsl.core.types.Predicate;
 
 /**
  * {@link RuntimeHintsRegistrar} holding required hints to bootstrap data repositories. <br />
  * Already registered via {@literal aot.factories}.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 3.0
  */
 class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
+
+	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Flux",
+			RepositoryRuntimeHints.class.getClassLoader());
 
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
@@ -54,15 +66,44 @@ class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
 				TypeReference.of(RepositoryFragmentsFactoryBean.class), //
 				TypeReference.of(RepositoryFragment.class), //
 				TypeReference.of(TransactionalRepositoryFactoryBeanSupport.class), //
+				TypeReference.of(Example.class), //
 				TypeReference.of(QueryByExampleExecutor.class), //
 				TypeReference.of(MappingContext.class), //
 				TypeReference.of(RepositoryMetadata.class), //
 				TypeReference.of(FluentQuery.class), //
-				TypeReference.of(FetchableFluentQuery.class), //
-				TypeReference.of(ReactiveFluentQuery.class) //
+				TypeReference.of(FetchableFluentQuery.class) //
 		), builder -> {
 			builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
 		});
+
+		if (PROJECT_REACTOR_PRESENT) {
+
+			// repository infrastructure
+			hints.reflection().registerTypes(Arrays.asList( //
+					TypeReference.of(ReactiveFluentQuery.class), //
+					TypeReference.of(ReactiveQueryByExampleExecutor.class)), //
+					builder -> {
+						builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+					});
+		}
+
+		if (QuerydslUtils.QUERY_DSL_PRESENT) {
+
+			// repository infrastructure
+			hints.reflection().registerTypes(Arrays.asList( //
+					TypeReference.of(Predicate.class), //
+					TypeReference.of(QuerydslPredicateExecutor.class)), builder -> {
+						builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+					});
+
+			if (PROJECT_REACTOR_PRESENT) {
+				// repository infrastructure
+				hints.reflection().registerTypes(Arrays.asList( //
+						TypeReference.of(ReactiveQuerydslPredicateExecutor.class)), builder -> {
+							builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+						});
+			}
+		}
 
 		// named queries
 		hints.reflection().registerTypes(Arrays.asList( //
