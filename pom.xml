@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>3.0.0-unified-release-notes-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 	<description>Core Spring concepts underpinning every Spring Data module.</description>
@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0.0-unified-release-notes-SNAPSHOT</version>
 	</parent>
 
 	<properties>
