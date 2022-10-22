@@ -39,56 +39,55 @@ import org.springframework.data.util.TypeInformation;
  * @author Roman Rodov
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Pavel Anisimov
  */
 class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 	@Test // DATACMNS-1126
 	void findsNoArgConstructorForClassWithoutExplicitConstructor() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(EntityWithoutConstructor.class)).satisfies(constructor -> {
+		var constructor = PreferredConstructorDiscoverer.discover(EntityWithoutConstructor.class);
 
-			assertThat(constructor).isNotNull();
-			assertThat(constructor.isNoArgConstructor()).isTrue();
-			assertThat(constructor.isExplicitlyAnnotated()).isFalse();
-		});
+		assertThat(constructor).isNotNull();
+		assertThat(constructor.isNoArgConstructor()).isTrue();
+		assertThat(constructor.isExplicitlyAnnotated()).isFalse();
 	}
 
 	@Test // DATACMNS-1126
 	void findsNoArgConstructorForClassWithMultipleConstructorsAndNoArgOne() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(ClassWithEmptyConstructor.class)).satisfies(constructor -> {
+		var constructor = PreferredConstructorDiscoverer.discover(ClassWithEmptyConstructor.class);
 
-			assertThat(constructor).isNotNull();
-			assertThat(constructor.isNoArgConstructor()).isTrue();
-			assertThat(constructor.isExplicitlyAnnotated()).isFalse();
-		});
+		assertThat(constructor).isNotNull();
+		assertThat(constructor.isNoArgConstructor()).isTrue();
+		assertThat(constructor.isExplicitlyAnnotated()).isFalse();
 	}
 
 	@Test // DATACMNS-1126
 	void doesNotThrowExceptionForMultipleConstructorsAndNoNoArgConstructorWithoutAnnotation() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(ClassWithMultipleConstructorsWithoutEmptyOne.class)).isNull();
+		var constructor = PreferredConstructorDiscoverer.discover(ClassWithMultipleConstructorsWithoutEmptyOne.class);
+
+		assertThat(constructor).isNull();
 	}
 
 	@Test // DATACMNS-1126
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void usesConstructorWithAnnotationOverEveryOther() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(ClassWithMultipleConstructorsAndAnnotation.class))
-				.satisfies(constructor -> {
+		PreferredConstructor<ClassWithMultipleConstructorsAndAnnotation, P> constructor = PreferredConstructorDiscoverer
+				.discover(ClassWithMultipleConstructorsAndAnnotation.class);
 
-					assertThat(constructor).isNotNull();
-					assertThat(constructor.isNoArgConstructor()).isFalse();
-					assertThat(constructor.isExplicitlyAnnotated()).isTrue();
+		assertThat(constructor).isNotNull();
+		assertThat(constructor.isNoArgConstructor()).isFalse();
+		assertThat(constructor.isExplicitlyAnnotated()).isTrue();
 
-					assertThat(constructor.hasParameters()).isTrue();
+		assertThat(constructor.hasParameters()).isTrue();
 
-					Iterator<Parameter<Object, P>> parameters = (Iterator) constructor.getParameters().iterator();
+		Iterator<Parameter<Object, P>> parameters = constructor.getParameters().iterator();
 
-					Parameter<?, P> parameter = parameters.next();
-					assertThat(parameter.getType().getType()).isEqualTo(Long.class);
-					assertThat(parameters.hasNext()).isFalse();
-				});
+		Parameter<?, P> parameter = parameters.next();
+		assertThat(parameter.getType().getType()).isEqualTo(Long.class);
+		assertThat(parameters.hasNext()).isFalse();
 	}
 
 	@Test // DATACMNS-134, DATACMNS-1126
@@ -96,11 +95,12 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(TypeInformation.of(Inner.class));
 
-		assertThat(PreferredConstructorDiscoverer.discover(entity)).satisfies(constructor -> {
+		var constructor = PreferredConstructorDiscoverer.discover(entity);
 
-			Parameter<?, P> parameter = constructor.getParameters().iterator().next();
-			assertThat(constructor.isParentParameter(parameter)).isTrue();
-		});
+		assertThat(constructor).isNotNull();
+
+		Parameter<?, P> parameter = constructor.getParameters().iterator().next();
+		assertThat(constructor.isParentParameter(parameter)).isTrue();
 	}
 
 	@Test // DATACMNS-1082, DATACMNS-1126
@@ -109,73 +109,76 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 		PersistentEntity<SyntheticConstructor, P> entity = new BasicPersistentEntity<>(
 				TypeInformation.of(SyntheticConstructor.class));
 
-		assertThat(PreferredConstructorDiscoverer.discover(entity)).satisfies(constructor -> {
+		var constructor = PreferredConstructorDiscoverer.discover(entity);
+		assertThat(constructor).isNotNull();
 
-			var annotation = constructor.getConstructor().getAnnotation(PersistenceConstructor.class);
-			assertThat(annotation).isNotNull();
-			assertThat(constructor.getConstructor().isSynthetic()).isFalse();
-		});
+		var annotation = constructor.getConstructor().getAnnotation(PersistenceConstructor.class);
+		assertThat(annotation).isNotNull();
+		assertThat(constructor.getConstructor().isSynthetic()).isFalse();
 	}
 
 	@Test // GH-2313
 	void capturesEnclosingTypeParameterOfNonStaticInnerClass() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(NonStaticWithGenericTypeArgUsedInCtor.class)).satisfies(ctor -> {
+		var constructor = PreferredConstructorDiscoverer.discover(NonStaticWithGenericTypeArgUsedInCtor.class);
 
-			assertThat(ctor.getParameters()).hasSize(2);
-			assertThat(ctor.getParameters().get(0).getName()).isEqualTo("this$0");
-			assertThat(ctor.getParameters().get(1).getName()).isEqualTo("value");
-		});
+		assertThat(constructor).isNotNull();
+		assertThat(constructor.getParameters()).hasSize(2);
+		assertThat(constructor.getParameters().get(0).getName()).isEqualTo("this$0");
+		assertThat(constructor.getParameters().get(1).getName()).isEqualTo("value");
 	}
 
 	@Test // GH-2313
 	void capturesSuperClassEnclosingTypeParameterOfNonStaticInnerClass() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(NonStaticInnerWithGenericArgUsedInCtor.class))
-				.satisfies(ctor -> {
+		var constructor = PreferredConstructorDiscoverer.discover(NonStaticInnerWithGenericArgUsedInCtor.class);
 
-					assertThat(ctor.getParameters()).hasSize(2);
-					assertThat(ctor.getParameters().get(0).getName()).isEqualTo("this$0");
-					assertThat(ctor.getParameters().get(1).getName()).isEqualTo("value");
-				});
+		assertThat(constructor).isNotNull();
+		assertThat(constructor.getParameters()).hasSize(2);
+		assertThat(constructor.getParameters().get(0).getName()).isEqualTo("this$0");
+		assertThat(constructor.getParameters().get(1).getName()).isEqualTo("value");
 	}
 
 	@Test // GH-2332
 	void detectsMetaAnnotatedValueAnnotation() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(ClassWithMetaAnnotatedParameter.class)).satisfies(ctor -> {
+		var constructor = PreferredConstructorDiscoverer.discover(ClassWithMetaAnnotatedParameter.class);
 
-			assertThat(ctor.getParameters().get(0).getSpelExpression()).isEqualTo("${hello-world}");
-			assertThat(ctor.getParameters().get(0).getAnnotations()).isNotNull();
-		});
+		assertThat(constructor).isNotNull();
+		assertThat(constructor.getParameters().get(0).getSpelExpression()).isEqualTo("${hello-world}");
+		assertThat(constructor.getParameters().get(0).getAnnotations()).isNotNull();
 	}
 
 	@Test // GH-2332
-	void detectsCanonicalRecordConstructor() {
+	void detectsCanonicalRecordConstructorWhenRecordHasSingleArgConstructor() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(RecordWithSingleArgConstructor.class)).satisfies(ctor -> {
+		var constructor = PreferredConstructorDiscoverer.discover(RecordWithSingleArgConstructor.class);
 
-			assertThat(ctor.getParameters()).hasSize(2);
-			assertThat(ctor.getParameters().get(0).getRawType()).isEqualTo(Long.class);
-			assertThat(ctor.getParameters().get(1).getRawType()).isEqualTo(String.class);
-		});
+		assertThat(constructor).isNotNull();
+		assertThat(constructor.getParameters()).hasSize(2);
+		assertThat(constructor.getParameters().get(0).getRawType()).isEqualTo(Long.class);
+		assertThat(constructor.getParameters().get(1).getRawType()).isEqualTo(String.class);
+	}
 
-		assertThat(PreferredConstructorDiscoverer.discover(RecordWithNoArgConstructor.class)).satisfies(ctor -> {
+	@Test // GH-2332
+	void detectsCanonicalRecordConstructorWhenRecordHasNoArgConstructor() {
 
-			assertThat(ctor.getParameters()).hasSize(2);
-			assertThat(ctor.getParameters().get(0).getRawType()).isEqualTo(Long.class);
-			assertThat(ctor.getParameters().get(1).getRawType()).isEqualTo(String.class);
-		});
+		var constructor = PreferredConstructorDiscoverer.discover(RecordWithNoArgConstructor.class);
+
+		assertThat(constructor).isNotNull();
+		assertThat(constructor.getParameters()).hasSize(2);
+		assertThat(constructor.getParameters().get(0).getRawType()).isEqualTo(Long.class);
+		assertThat(constructor.getParameters().get(1).getRawType()).isEqualTo(String.class);
 	}
 
 	@Test // GH-2332
 	void detectsAnnotatedRecordConstructor() {
 
-		assertThat(PreferredConstructorDiscoverer.discover(RecordWithPersistenceCreator.class)).satisfies(ctor -> {
+		var constructor = PreferredConstructorDiscoverer.discover(RecordWithPersistenceCreator.class);
 
-			assertThat(ctor.getParameters()).hasSize(1);
-			assertThat(ctor.getParameters().get(0).getRawType()).isEqualTo(String.class);
-		});
+		assertThat(constructor).isNotNull();
+		assertThat(constructor.getParameters()).hasSize(1);
+		assertThat(constructor.getParameters().get(0).getRawType()).isEqualTo(String.class);
 	}
 
 	static class SyntheticConstructor {
