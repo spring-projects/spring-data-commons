@@ -45,8 +45,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // DATACMNS-1126
 	void findsNoArgConstructorForClassWithoutExplicitConstructor() {
 
-		PreferredConstructor<EntityWithoutConstructor, P> constructor =
-				PreferredConstructorDiscoverer.discover(EntityWithoutConstructor.class);
+		var constructor = PreferredConstructorDiscoverer.discover(EntityWithoutConstructor.class);
 
 		assertThat(constructor).isNotNull();
 		assertThat(constructor.isNoArgConstructor()).isTrue();
@@ -56,8 +55,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // DATACMNS-1126
 	void findsNoArgConstructorForClassWithMultipleConstructorsAndNoArgOne() {
 
-		PreferredConstructor<ClassWithEmptyConstructor, P> constructor =
-				PreferredConstructorDiscoverer.discover(ClassWithEmptyConstructor.class);
+		var constructor = PreferredConstructorDiscoverer.discover(ClassWithEmptyConstructor.class);
 
 		assertThat(constructor).isNotNull();
 		assertThat(constructor.isNoArgConstructor()).isTrue();
@@ -67,8 +65,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // DATACMNS-1126
 	void doesNotThrowExceptionForMultipleConstructorsAndNoNoArgConstructorWithoutAnnotation() {
 
-		PreferredConstructor<ClassWithMultipleConstructorsWithoutEmptyOne, P> constructor =
-				PreferredConstructorDiscoverer.discover(ClassWithMultipleConstructorsWithoutEmptyOne.class);
+		var constructor = PreferredConstructorDiscoverer.discover(ClassWithMultipleConstructorsWithoutEmptyOne.class);
 
 		assertThat(constructor).isNull();
 	}
@@ -97,8 +94,8 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 		PersistentEntity<Inner, P> entity = new BasicPersistentEntity<>(TypeInformation.of(Inner.class));
 
-		PreferredConstructor<PreferredConstructorDiscovererUnitTests.Outer.Inner, P> constructor =
-				PreferredConstructorDiscoverer.discover(entity);
+		var constructor = PreferredConstructorDiscoverer.discover(entity);
+
 		assertThat(constructor).isNotNull();
 
 		Parameter<?, P> parameter = constructor.getParameters().iterator().next();
@@ -111,7 +108,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 		PersistentEntity<SyntheticConstructor, P> entity = new BasicPersistentEntity<>(
 				TypeInformation.of(SyntheticConstructor.class));
 
-		PreferredConstructor<SyntheticConstructor, P> constructor = PreferredConstructorDiscoverer.discover(entity);
+		var constructor = PreferredConstructorDiscoverer.discover(entity);
 		assertThat(constructor).isNotNull();
 
 		var annotation = constructor.getConstructor().getAnnotation(PersistenceCreator.class);
@@ -122,8 +119,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // GH-2313
 	void capturesEnclosingTypeParameterOfNonStaticInnerClass() {
 
-		PreferredConstructor<PreferredConstructorDiscovererUnitTests.NonStaticWithGenericTypeArgUsedInCtor, P> constructor =
-				PreferredConstructorDiscoverer.discover(NonStaticWithGenericTypeArgUsedInCtor.class);
+		var constructor = PreferredConstructorDiscoverer.discover(NonStaticWithGenericTypeArgUsedInCtor.class);
 
 		assertThat(constructor).isNotNull();
 		assertThat(constructor.getParameters()).hasSize(2);
@@ -134,8 +130,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // GH-2313
 	void capturesSuperClassEnclosingTypeParameterOfNonStaticInnerClass() {
 
-		PreferredConstructor<PreferredConstructorDiscovererUnitTests.NonStaticInnerWithGenericArgUsedInCtor, P> constructor =
-				PreferredConstructorDiscoverer.discover(NonStaticInnerWithGenericArgUsedInCtor.class);
+		var constructor = PreferredConstructorDiscoverer.discover(NonStaticInnerWithGenericArgUsedInCtor.class);
 
 		assertThat(constructor).isNotNull();
 		assertThat(constructor.getParameters()).hasSize(2);
@@ -146,8 +141,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // GH-2332
 	void detectsMetaAnnotatedValueAnnotation() {
 
-		PreferredConstructor<ClassWithMetaAnnotatedParameter, P> constructor =
-				PreferredConstructorDiscoverer.discover(ClassWithMetaAnnotatedParameter.class);
+		var constructor = PreferredConstructorDiscoverer.discover(ClassWithMetaAnnotatedParameter.class);
 
 		assertThat(constructor).isNotNull();
 		assertThat(constructor.getParameters().get(0).getSpelExpression()).isEqualTo("${hello-world}");
@@ -157,8 +151,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // GH-2332
 	void detectsCanonicalRecordConstructorWhenRecordHasSingleArgConstructor() {
 
-		PreferredConstructor<RecordWithSingleArgConstructor, P> constructor =
-				PreferredConstructorDiscoverer.discover(RecordWithSingleArgConstructor.class);
+		var constructor = PreferredConstructorDiscoverer.discover(RecordWithSingleArgConstructor.class);
 
 		assertThat(constructor).isNotNull();
 		assertThat(constructor.getParameters()).hasSize(2);
@@ -169,8 +162,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // GH-2332
 	void detectsCanonicalRecordConstructorWhenRecordHasNoArgConstructor() {
 
-		PreferredConstructor<RecordWithNoArgConstructor, P> constructor =
-				PreferredConstructorDiscoverer.discover(RecordWithNoArgConstructor.class);
+		var constructor = PreferredConstructorDiscoverer.discover(RecordWithNoArgConstructor.class);
 
 		assertThat(constructor).isNotNull();
 		assertThat(constructor.getParameters()).hasSize(2);
@@ -181,8 +173,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	@Test // GH-2332
 	void detectsAnnotatedRecordConstructor() {
 
-		PreferredConstructor<RecordWithPersistenceCreator, P> constructor =
-				PreferredConstructorDiscoverer.discover(RecordWithPersistenceCreator.class);
+		var constructor = PreferredConstructorDiscoverer.discover(RecordWithPersistenceCreator.class);
 
 		assertThat(constructor).isNotNull();
 		assertThat(constructor.getParameters()).hasSize(1);
