@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -34,6 +34,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Mark Paluch
  * @author Myeonghyeon Lee
  * @author Xeno Amess
+ * @author Pavel Anisimov
  */
 public final class PreferredConstructor<T, P extends PersistentProperty<P>> extends InstanceCreatorMetadataSupport<T, P> {
 
@@ -75,12 +76,12 @@ public final class PreferredConstructor<T, P extends PersistentProperty<P>> exte
 	}
 
 	/**
-	 * Returns whether the constructor was explicitly selected (by {@link PersistenceConstructor}).
+	 * Returns whether the constructor was explicitly selected (by {@link PersistenceCreator}).
 	 *
 	 * @return
 	 */
 	public boolean isExplicitlyAnnotated() {
-		return MergedAnnotations.from(getExecutable()).isPresent(PersistenceConstructor.class);
+		return MergedAnnotations.from(getExecutable()).isPresent(PersistenceCreator.class);
 	}
 
 	/**
