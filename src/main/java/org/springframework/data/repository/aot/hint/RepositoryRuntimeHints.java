@@ -26,9 +26,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.data.domain.Example;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.querydsl.QuerydslPredicateExecutor;
-import org.springframework.data.querydsl.QuerydslUtils;
-import org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
@@ -41,8 +38,6 @@ import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.data.repository.query.ReactiveQueryByExampleExecutor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
-
-import com.querydsl.core.types.Predicate;
 
 /**
  * {@link RuntimeHintsRegistrar} holding required hints to bootstrap data repositories. <br />
@@ -85,24 +80,6 @@ class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
 					builder -> {
 						builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
 					});
-		}
-
-		if (QuerydslUtils.QUERY_DSL_PRESENT) {
-
-			// repository infrastructure
-			hints.reflection().registerTypes(Arrays.asList( //
-					TypeReference.of(Predicate.class), //
-					TypeReference.of(QuerydslPredicateExecutor.class)), builder -> {
-						builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
-					});
-
-			if (PROJECT_REACTOR_PRESENT) {
-				// repository infrastructure
-				hints.reflection().registerTypes(Arrays.asList( //
-						TypeReference.of(ReactiveQuerydslPredicateExecutor.class)), builder -> {
-							builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
-						});
-			}
 		}
 
 		// named queries

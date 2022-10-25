@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.aot;
+package org.springframework.data.repository.config;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -42,13 +42,11 @@ import org.springframework.core.DecoratingProxy;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.aot.AotContext;
-import org.springframework.data.aot.TypeContributor;
-import org.springframework.data.aot.TypeUtils;
+import org.springframework.data.util.TypeContributor;
+import org.springframework.data.util.TypeUtils;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.config.RepositoryConfiguration;
-import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;

@@ -31,6 +31,8 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.ManagedTypes;
+import org.springframework.data.util.TypeContributor;
+import org.springframework.data.util.TypeUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;

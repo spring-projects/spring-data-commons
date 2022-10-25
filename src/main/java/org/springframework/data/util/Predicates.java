@@ -15,6 +15,9 @@
  */
 package org.springframework.data.util;
 
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.function.Predicate;
 
 import org.springframework.util.Assert;
@@ -26,6 +29,23 @@ import org.springframework.util.Assert;
  * @since 2.7
  */
 public interface Predicates {
+
+	public static final Predicate<Member> IS_ENUM_MEMBER = member -> member.getDeclaringClass().isEnum();
+	public static final Predicate<Member> IS_HIBERNATE_MEMBER = member -> member.getName().startsWith("$$_hibernate"); // this
+	// should
+	// go
+	// into
+	// JPA
+	public static final Predicate<Member> IS_OBJECT_MEMBER = member -> Object.class.equals(member.getDeclaringClass());
+	public static final Predicate<Member> IS_JAVA = member -> member.getDeclaringClass().getPackageName().startsWith("java.");
+	public static final Predicate<Member> IS_NATIVE = member -> Modifier.isNative(member.getModifiers());
+	public static final Predicate<Member> IS_PRIVATE = member -> Modifier.isPrivate(member.getModifiers());
+	public static final Predicate<Member> IS_PROTECTED = member -> Modifier.isProtected(member.getModifiers());
+	public static final Predicate<Member> IS_PUBLIC = member -> Modifier.isPublic(member.getModifiers());
+	public static final Predicate<Member> IS_SYNTHETIC = Member::isSynthetic;
+	public static final Predicate<Member> IS_STATIC = member -> Modifier.isStatic(member.getModifiers());
+
+	public static final Predicate<Method> IS_BRIDGE_METHOD = Method::isBridge;
 
 	/**
 	 * A {@link Predicate} that yields always {@code true}.

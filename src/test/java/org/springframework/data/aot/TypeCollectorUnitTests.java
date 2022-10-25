@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.aot.types.*;
+import org.springframework.data.util.TypeCollector;
 
 /**
  * @author Christoph Strobl

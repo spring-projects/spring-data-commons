@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.aot;
+package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -35,9 +35,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.data.aot.TypeContributor;
-import org.springframework.data.repository.config.RepositoryConfiguration;
-import org.springframework.data.repository.config.RepositoryConfigurationExtension;
+import org.springframework.data.util.TypeContributor;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;

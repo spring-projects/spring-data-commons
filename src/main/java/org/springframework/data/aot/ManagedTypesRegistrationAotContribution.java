@@ -35,6 +35,7 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.TypeCollector;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec.Builder;
