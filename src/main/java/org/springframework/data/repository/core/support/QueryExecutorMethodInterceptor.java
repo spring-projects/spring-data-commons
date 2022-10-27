@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,9 +79,9 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 		if (!queryLookupStrategy.isPresent() && repositoryInformation.hasQueryMethods()) {
 
-			throw new IllegalStateException("You have defined query methods in the repository"
-					+ " but do not have any query lookup strategy defined."
-					+ " The infrastructure apparently does not support query methods");
+			throw new IllegalStateException(
+					"You have defined query methods in the repository" + " but do not have any query lookup strategy defined."
+							+ " The infrastructure apparently does not support query methods");
 		}
 
 		this.queries = queryLookupStrategy //
@@ -91,10 +92,17 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	private Map<Method, RepositoryQuery> mapMethodsToQuery(RepositoryInformation repositoryInformation,
 			QueryLookupStrategy lookupStrategy, ProjectionFactory projectionFactory) {
 
-		return repositoryInformation.getQueryMethods().stream() //
-				.map(method -> lookupQuery(method, repositoryInformation, lookupStrategy, projectionFactory)) //
-				.peek(pair -> invokeListeners(pair.getSecond())) //
-				.collect(Pair.toMap());
+		Map<Method, RepositoryQuery> result = new HashMap<>();
+
+		for (Method method : repositoryInformation.getQueryMethods()) {
+
+			Pair<Method, RepositoryQuery> pair = lookupQuery(method, repositoryInformation, lookupStrategy,
+					projectionFactory);
+			invokeListeners(pair.getSecond());
+			result.put(pair.getFirst(), pair.getSecond());
+		}
+
+		return result;
 	}
 
 	private Pair<Method, RepositoryQuery> lookupQuery(Method method, RepositoryInformation information,
