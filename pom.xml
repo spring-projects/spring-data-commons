@@ -335,9 +335,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.schauderhaft.degraph</groupId>
-			<artifactId>degraph-check</artifactId>
-			<version>0.1.4</version>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit</artifactId>
+			<version>${archunit}</version>
 			<scope>test</scope>
 		</dependency>
 
