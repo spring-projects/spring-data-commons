@@ -35,7 +35,6 @@ import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -178,15 +177,15 @@ public class TypeCollector {
 		Predicate<Method> excludedDomainsPredicate = methodToTest -> excludedDomainsFilter
 				.test(methodToTest.getDeclaringClass());
 
-		Predicate<Method> excludedMethodsPredicate = org.springframework.data.util.Predicates.IS_BRIDGE_METHOD //
-				.or(org.springframework.data.util.Predicates.IS_STATIC) //
-				.or(org.springframework.data.util.Predicates.IS_SYNTHETIC) //
-				.or(org.springframework.data.util.Predicates.IS_NATIVE) //
-				.or(org.springframework.data.util.Predicates.IS_PRIVATE) //
-				.or(org.springframework.data.util.Predicates.IS_PROTECTED) //
-				.or(org.springframework.data.util.Predicates.IS_OBJECT_MEMBER) //
-				.or(org.springframework.data.util.Predicates.IS_HIBERNATE_MEMBER) //
-				.or(org.springframework.data.util.Predicates.IS_ENUM_MEMBER) //
+		Predicate<Method> excludedMethodsPredicate = Predicates.IS_BRIDGE_METHOD //
+				.or(Predicates.IS_STATIC) //
+				.or(Predicates.IS_SYNTHETIC) //
+				.or(Predicates.IS_NATIVE) //
+				.or(Predicates.IS_PRIVATE) //
+				.or(Predicates.IS_PROTECTED) //
+				.or(Predicates.IS_OBJECT_MEMBER) //
+				.or(Predicates.IS_HIBERNATE_MEMBER) //
+				.or(Predicates.IS_ENUM_MEMBER) //
 				.or(excludedDomainsPredicate.negate()); //
 
 		return excludedMethodsPredicate.negate();
@@ -195,8 +194,8 @@ public class TypeCollector {
 	@SuppressWarnings("rawtypes")
 	private Predicate<Field> createFieldFilter() {
 
-		Predicate<Member> excludedFieldPredicate = org.springframework.data.util.Predicates.IS_HIBERNATE_MEMBER //
-				.or(org.springframework.data.util.Predicates.IS_SYNTHETIC) //
+		Predicate<Member> excludedFieldPredicate = Predicates.IS_HIBERNATE_MEMBER //
+				.or(Predicates.IS_SYNTHETIC) //
 				.or(Predicates.IS_JAVA);
 
 		return (Predicate) excludedFieldPredicate.negate();

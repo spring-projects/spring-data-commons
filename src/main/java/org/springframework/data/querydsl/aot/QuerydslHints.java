@@ -22,6 +22,7 @@ import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
@@ -29,15 +30,18 @@ import org.springframework.util.ClassUtils;
 import com.querydsl.core.types.Predicate;
 
 /**
+ * {@link RuntimeHintsRegistrar} holding required hints to bootstrap Querydsl repositories. <br />
+ * Already registered via {@literal aot.factories}.
+ *
  * @author Christoph Strobl
- * @since 4.0
+ * @since 3.0
  */
-public class QuerydslHints implements RuntimeHintsRegistrar {
+class QuerydslHints implements RuntimeHintsRegistrar {
 
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
 
-		if (ClassUtils.isPresent("com.querydsl.core.types.Predicate", classLoader)) {
+		if (QuerydslUtils.QUERY_DSL_PRESENT) {
 
 			// repository infrastructure
 			hints.reflection().registerTypes(Arrays.asList( //
@@ -47,6 +51,7 @@ public class QuerydslHints implements RuntimeHintsRegistrar {
 					});
 
 			if (ClassUtils.isPresent("reactor.core.publisher.Flux", classLoader)) {
+
 				// repository infrastructure
 				hints.reflection().registerTypes(Arrays.asList( //
 						TypeReference.of(ReactiveQuerydslPredicateExecutor.class)), builder -> {
