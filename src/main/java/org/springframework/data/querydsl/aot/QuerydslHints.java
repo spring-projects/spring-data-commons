@@ -24,8 +24,8 @@ import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.lang.Nullable;
-import org.springframework.util.ClassUtils;
 
 import com.querydsl.core.types.Predicate;
 
@@ -50,7 +50,7 @@ class QuerydslHints implements RuntimeHintsRegistrar {
 						builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
 					});
 
-			if (ClassUtils.isPresent("reactor.core.publisher.Flux", classLoader)) {
+			if (ReactiveWrappers.PROJECT_REACTOR_PRESENT) {
 
 				// repository infrastructure
 				hints.reflection().registerTypes(Arrays.asList( //

@@ -19,13 +19,12 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.util.ClassUtils;
 
 /**

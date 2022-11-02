@@ -13,12 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.util;
+package org.springframework.data.util;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.core.ReactiveAdapter;
+import org.springframework.core.ReactiveAdapterRegistry;
+import org.springframework.core.ReactiveTypeDescriptor;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Utility class to expose details about reactive wrapper types. This class exposes whether a reactive wrapper is
@@ -32,7 +42,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Gerrit Meier
  * @author Hantsy Bai
- * @since 2.0
+ * @since 3.0
  * @see org.reactivestreams.Publisher
  * @see io.reactivex.rxjava3.core.Single
  * @see io.reactivex.rxjava3.core.Maybe
@@ -43,11 +53,24 @@ import org.springframework.util.Assert;
  * @see io.smallrye.mutiny.Uni
  * @see Mono
  * @see Flux
- * @deprecated since 3.0, use {@link org.springframework.data.util.ReactiveWrappers} instead as the utility was moved
- *             into the {@code org.springframework.data.util} package.
  */
-@Deprecated(since = "3.0", forRemoval = true)
 public abstract class ReactiveWrappers {
+
+	public static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Flux",
+			ReactiveWrappers.class.getClassLoader());
+
+	public static final boolean RXJAVA3_PRESENT = ClassUtils.isPresent("io.reactivex.rxjava3.core.Flowable",
+			ReactiveWrappers.class.getClassLoader());
+
+	public static final boolean KOTLIN_COROUTINES_PRESENT = ClassUtils.isPresent("kotlinx.coroutines.reactor.MonoKt",
+			ReactiveWrappers.class.getClassLoader());
+
+	public static final boolean MUTINY_PRESENT = ClassUtils.isPresent("io.smallrye.mutiny.Multi",
+			ReactiveWrappers.class.getClassLoader());
+
+	public static final boolean IS_REACTIVE_AVAILABLE = Arrays.stream(ReactiveLibrary.values())
+			.anyMatch(ReactiveWrappers::isAvailable);
+	private static final Map<Class<?>, Boolean> IS_REACTIVE_TYPE = new ConcurrentReferenceHashMap<>();
 
 	private ReactiveWrappers() {}
 
@@ -55,9 +78,7 @@ public abstract class ReactiveWrappers {
 	 * Enumeration of supported reactive libraries.
 	 *
 	 * @author Mark Paluch
-	 * @deprecated use {@link org.springframework.data.util.ReactiveWrappers.ReactiveLibrary} instead.
 	 */
-	@Deprecated(since = "3.0", forRemoval = true)
 	public enum ReactiveLibrary {
 
 		PROJECT_REACTOR, RXJAVA3, KOTLIN_COROUTINES, MUTINY;
@@ -70,7 +91,7 @@ public abstract class ReactiveWrappers {
 	 * @return {@literal true} if reactive support is available.
 	 */
 	public static boolean isAvailable() {
-		return org.springframework.data.util.ReactiveWrappers.isAvailable();
+		return IS_REACTIVE_AVAILABLE;
 	}
 
 	/**
@@ -85,14 +106,13 @@ public abstract class ReactiveWrappers {
 
 		switch (reactiveLibrary) {
 			case PROJECT_REACTOR:
-				return org.springframework.data.util.ReactiveWrappers.PROJECT_REACTOR_PRESENT;
+				return PROJECT_REACTOR_PRESENT;
 			case RXJAVA3:
-				return org.springframework.data.util.ReactiveWrappers.RXJAVA3_PRESENT;
+				return RXJAVA3_PRESENT;
 			case KOTLIN_COROUTINES:
-				return org.springframework.data.util.ReactiveWrappers.PROJECT_REACTOR_PRESENT
-						&& org.springframework.data.util.ReactiveWrappers.KOTLIN_COROUTINES_PRESENT;
+				return PROJECT_REACTOR_PRESENT && KOTLIN_COROUTINES_PRESENT;
 			case MUTINY:
-				return org.springframework.data.util.ReactiveWrappers.MUTINY_PRESENT;
+				return MUTINY_PRESENT;
 			default:
 				throw new IllegalArgumentException(String.format("Reactive library %s not supported", reactiveLibrary));
 		}
@@ -105,7 +125,7 @@ public abstract class ReactiveWrappers {
 	 * @return {@literal true} if the {@code type} is a supported reactive wrapper type.
 	 */
 	public static boolean supports(Class<?> type) {
-		return org.springframework.data.util.ReactiveWrappers.supports(type);
+		return isAvailable() && IS_REACTIVE_TYPE.computeIfAbsent(type, key -> isWrapper(ProxyUtils.getUserClass(key)));
 	}
 
 	/**
@@ -118,7 +138,9 @@ public abstract class ReactiveWrappers {
 
 		Assert.notNull(type, "Type must not be null");
 
-		return org.springframework.data.util.ReactiveWrappers.usesReactiveType(type);
+		return Arrays.stream(type.getMethods())//
+				.flatMap(ReflectionUtils::returnTypeAndParameters)//
+				.anyMatch(ReactiveWrappers::supports);
 	}
 
 	/**
@@ -131,7 +153,7 @@ public abstract class ReactiveWrappers {
 
 		Assert.notNull(type, "Candidate type must not be null");
 
-		return org.springframework.data.util.ReactiveWrappers.isNoValueType(type);
+		return findDescriptor(type).map(ReactiveTypeDescriptor::isNoValue).orElse(false);
 	}
 
 	/**
@@ -144,7 +166,7 @@ public abstract class ReactiveWrappers {
 
 		Assert.notNull(type, "Candidate type must not be null");
 
-		return org.springframework.data.util.ReactiveWrappers.isSingleValueType(type);
+		return findDescriptor(type).map(it -> !it.isMultiValue() && !it.isNoValue()).orElse(false);
 	}
 
 	/**
@@ -159,7 +181,65 @@ public abstract class ReactiveWrappers {
 
 		Assert.notNull(type, "Candidate type must not be null");
 
-		return org.springframework.data.util.ReactiveWrappers.isMultiValueType(type);
+		// Prevent single-types with a multi-hierarchy supertype to be reported as multi type
+		// See Mono implements Publisher
+		return isSingleValueType(type) ? false
+				: findDescriptor(type).map(ReactiveTypeDescriptor::isMultiValue).orElse(false);
 	}
 
+	/**
+	 * Returns whether the given type is a reactive wrapper type.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean isWrapper(Class<?> type) {
+
+		Assert.notNull(type, "Candidate type must not be null");
+
+		return isNoValueType(type) || isSingleValueType(type) || isMultiValueType(type);
+	}
+
+	/**
+	 * Looks up a {@link ReactiveTypeDescriptor} for the given wrapper type.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private static Optional<ReactiveTypeDescriptor> findDescriptor(Class<?> type) {
+
+		Assert.notNull(type, "Wrapper type must not be null");
+
+		ReactiveAdapterRegistry adapterRegistry = RegistryHolder.REACTIVE_ADAPTER_REGISTRY;
+
+		if (adapterRegistry == null) {
+			return Optional.empty();
+		}
+
+		ReactiveAdapter adapter = adapterRegistry.getAdapter(type);
+		if (adapter != null && adapter.getDescriptor().isDeferred()) {
+			return Optional.of(adapter.getDescriptor());
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * Holder for delayed initialization of {@link ReactiveAdapterRegistry}.
+	 *
+	 * @author Mark Paluch
+	 */
+	static class RegistryHolder {
+
+		static final @Nullable ReactiveAdapterRegistry REACTIVE_ADAPTER_REGISTRY;
+
+		static {
+
+			if (ReactiveWrappers.isAvailable(ReactiveWrappers.ReactiveLibrary.PROJECT_REACTOR)) {
+				REACTIVE_ADAPTER_REGISTRY = ReactiveAdapterRegistry.getSharedInstance();
+			} else {
+				REACTIVE_ADAPTER_REGISTRY = null;
+			}
+		}
+	}
 }

@@ -27,15 +27,14 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult.State;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.KotlinReflectionUtils;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.lang.Nullable;
 
 /**

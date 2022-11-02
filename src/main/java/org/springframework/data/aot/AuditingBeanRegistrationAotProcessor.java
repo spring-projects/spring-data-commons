@@ -25,6 +25,7 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.DecoratingProxy;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.domain.ReactiveAuditorAware;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
@@ -38,8 +39,6 @@ import org.springframework.util.ClassUtils;
  */
 class AuditingBeanRegistrationAotProcessor implements BeanRegistrationAotProcessor {
 
-	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Flux",
-			AuditingBeanRegistrationAotProcessor.class.getClassLoader());
 
 	@Nullable
 	@Override
@@ -50,7 +49,7 @@ class AuditingBeanRegistrationAotProcessor implements BeanRegistrationAotProcess
 					generationContext.getRuntimeHints());
 		}
 
-		if (PROJECT_REACTOR_PRESENT && isReactiveAuditorAware(registeredBean)) {
+		if (ReactiveWrappers.PROJECT_REACTOR_PRESENT && isReactiveAuditorAware(registeredBean)) {
 			return (generationContext, beanRegistrationCode) -> registerSpringProxy(ReactiveAuditorAware.class,
 					generationContext.getRuntimeHints());
 		}

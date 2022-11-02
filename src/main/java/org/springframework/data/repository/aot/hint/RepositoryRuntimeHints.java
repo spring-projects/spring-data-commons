@@ -36,8 +36,8 @@ import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuer
 import org.springframework.data.repository.query.FluentQuery.ReactiveFluentQuery;
 import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.data.repository.query.ReactiveQueryByExampleExecutor;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.lang.Nullable;
-import org.springframework.util.ClassUtils;
 
 /**
  * {@link RuntimeHintsRegistrar} holding required hints to bootstrap data repositories. <br />
@@ -48,9 +48,6 @@ import org.springframework.util.ClassUtils;
  * @since 3.0
  */
 class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
-
-	private static final boolean PROJECT_REACTOR_PRESENT = ClassUtils.isPresent("reactor.core.publisher.Flux",
-			RepositoryRuntimeHints.class.getClassLoader());
 
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
@@ -71,7 +68,7 @@ class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
 			builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
 		});
 
-		if (PROJECT_REACTOR_PRESENT) {
+		if (ReactiveWrappers.PROJECT_REACTOR_PRESENT) {
 
 			// repository infrastructure
 			hints.reflection().registerTypes(Arrays.asList( //
