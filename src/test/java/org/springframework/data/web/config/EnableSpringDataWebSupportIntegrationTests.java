@@ -15,29 +15,22 @@
  */
 package org.springframework.data.web.config;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.util.Arrays;
-
+import com.custom.querydslpredicatebuilder.QuerydslPredicateBuilderCustom;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.querydsl.EntityPathResolver;
+import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
-import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
-import org.springframework.data.web.SortHandlerMethodArgumentResolver;
-import org.springframework.data.web.WebTestUtils;
+import org.springframework.data.web.*;
 import org.springframework.hateoas.Link;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -45,7 +38,12 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for {@link EnableSpringDataWebSupport}.
@@ -98,6 +96,17 @@ class EnableSpringDataWebSupportIntegrationTests {
 		@Bean
 		SimpleEntityPathResolver entityPathResolver() {
 			return resolver;
+		}
+	}
+
+	@Configuration
+	@EnableWebMvc
+	@EnableSpringDataWebSupport
+	@ComponentScan(basePackageClasses = QuerydslPredicateBuilderCustom.class)
+	static class SampleConfigWithCustomQuerydslPredicateBuilder {
+		@Bean
+		SampleController controller() {
+			return new SampleController();
 		}
 	}
 
@@ -185,6 +194,29 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 		mvc.perform(post(builder.build().toString())).//
 				andExpect(status().isOk());
+	}
+
+	@Test
+	void createsTestForCustomPredicate() throws Exception {
+
+		var applicationContext = WebTestUtils.createApplicationContext(SampleConfigWithCustomQuerydslPredicateBuilder.class);
+		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+
+		var builder = UriComponentsBuilder.fromUriString("/predicate");
+		builder.queryParam("firstname", "Foo");
+		builder.queryParam("lastname", "Bar");
+
+		mvc.perform(post(builder.build().toString())).
+				andExpect(status().isOk())
+				.andExpect(content().string(QUser.user.firstname.eq("Foo").or(QUser.user.lastname.eq("Bar")).toString()));
+
+		//Default should be and
+		applicationContext = WebTestUtils.createApplicationContext(SampleConfig.class);
+		mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+
+		mvc.perform(post(builder.build().toString())).
+				andExpect(status().isOk())
+				.andExpect(content().string(QUser.user.firstname.eq("Foo").and(QUser.user.lastname.eq("Bar")).toString()));
 	}
 
 	@Test // DATACMNS-660

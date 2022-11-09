@@ -140,8 +140,8 @@ public class QuerydslPredicateBuilder {
 	 * @param values must not be {@literal null}.
 	 * @return
 	 */
-	private Optional<Predicate> invokeBinding(PathInformation dotPath, QuerydslBindings bindings,
-			Collection<Object> values) {
+	protected Optional<Predicate> invokeBinding(PathInformation dotPath, QuerydslBindings bindings,
+												Collection<Object> values) {
 
 		Path<?> path = getPath(dotPath, bindings);
 
@@ -173,7 +173,7 @@ public class QuerydslPredicateBuilder {
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
-	private Collection<Object> convertToPropertyPathSpecificType(List<?> source, PathInformation path) {
+	protected Collection<Object> convertToPropertyPathSpecificType(List<?> source, PathInformation path) {
 
 		if (source.isEmpty() || isSingleElementCollectionWithEmptyItem(source)) {
 			return Collections.emptyList();
@@ -237,7 +237,7 @@ public class QuerydslPredicateBuilder {
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
-	private static boolean isSingleElementCollectionWithEmptyItem(List<?> source) {
+	protected static boolean isSingleElementCollectionWithEmptyItem(List<?> source) {
 		return source.size() == 1 && ObjectUtils.isEmpty(source.get(0));
 	}
 
@@ -247,7 +247,7 @@ public class QuerydslPredicateBuilder {
 	 * @param builder
 	 * @return
 	 */
-	private static Predicate getPredicate(BooleanBuilder builder) {
+	protected static Predicate getPredicate(BooleanBuilder builder) {
 
 		Predicate predicate = builder.getValue();
 		return predicate == null ? new BooleanBuilder() : predicate;

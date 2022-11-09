@@ -184,7 +184,7 @@ public class QuerydslBindings {
 	 * @param type
 	 * @return
 	 */
-	boolean isPathAvailable(String path, TypeInformation<?> type) {
+	public boolean isPathAvailable(String path, TypeInformation<?> type) {
 
 		Assert.notNull(path, "Path must not be null");
 		Assert.notNull(type, "Type must not be null");
@@ -241,7 +241,7 @@ public class QuerydslBindings {
 	 * @return
 	 */
 	@Nullable
-	PathInformation getPropertyPath(String path, TypeInformation<?> type) {
+	public PathInformation getPropertyPath(String path, TypeInformation<?> type) {
 
 		Assert.notNull(path, "Path must not be null");
 		Assert.notNull(type, "Type information must not be null");

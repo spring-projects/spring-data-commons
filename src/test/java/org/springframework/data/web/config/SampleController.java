@@ -15,16 +15,20 @@
  */
 package org.springframework.data.web.config;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.Collection;
-import java.util.Date;
-
+import com.querydsl.core.types.Predicate;
+import org.springframework.data.querydsl.User;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.web.ProjectedPayload;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.Collection;
+import java.util.Date;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Oliver Gierke
@@ -50,6 +54,12 @@ class SampleController {
 		assertThat(sampleDto.getBillingAddress().getCity()).isEqualTo("City");
 
 		return "view";
+	}
+
+	@RequestMapping("/predicate")
+	@ResponseBody
+	String generateCustomPredicate(@QuerydslPredicate(root = User.class) Predicate predicate) {
+		return predicate.toString();
 	}
 
 	@ProjectedPayload

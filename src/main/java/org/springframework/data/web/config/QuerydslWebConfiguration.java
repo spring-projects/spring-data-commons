@@ -15,8 +15,7 @@
  */
 package org.springframework.data.web.config;
 
-import java.util.List;
-
+import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +28,12 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.querydsl.core.types.Predicate;
+import java.util.List;
 
 /**
  * Querydsl-specific web configuration for Spring Data. Registers a {@link HandlerMethodArgumentResolver} that builds up
@@ -60,9 +60,15 @@ public class QuerydslWebConfiguration implements WebMvcConfigurer {
 	@Lazy
 	@Bean
 	public QuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
-		return new QuerydslPredicateArgumentResolver(
-				beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
-				conversionService.getIfUnique(DefaultConversionService::getSharedInstance));
+		if (beanFactory.containsBean("querydslPredicateBuilder")) { //TODO It might have a better way to check if object exists...
+			return new QuerydslPredicateArgumentResolver(
+					beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
+					beanFactory.getBean(QuerydslPredicateBuilder.class));
+		} else {
+			return new QuerydslPredicateArgumentResolver(
+					beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
+					conversionService.getIfUnique(DefaultConversionService::getSharedInstance));
+		}
 	}
 
 	@Lazy

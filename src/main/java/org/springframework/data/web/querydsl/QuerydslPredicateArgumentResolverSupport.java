@@ -72,6 +72,21 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		this.predicateBuilder = new QuerydslPredicateBuilder(conversionService, factory.getEntityPathResolver());
 	}
 
+	/**
+	 * Creates a new {@link QuerydslPredicateArgumentResolver} using the given {@link QuerydslPredicateBuilder}.
+	 * @param factory
+	 * @param querydslPredicateBuilder
+	 */
+	public QuerydslPredicateArgumentResolverSupport(QuerydslBindingsFactory factory,
+													   QuerydslPredicateBuilder querydslPredicateBuilder) {
+
+		Assert.notNull(factory, "QuerydslBindingsFactory must not be null");
+		Assert.notNull(querydslPredicateBuilder, "querydslPredicateBuilder must not be null");
+
+		this.bindingsFactory = factory;
+		this.predicateBuilder = querydslPredicateBuilder;
+	}
+
 	public boolean supportsParameter(MethodParameter parameter) {
 
 		ResolvableType type = ResolvableType.forMethodParameter(parameter);

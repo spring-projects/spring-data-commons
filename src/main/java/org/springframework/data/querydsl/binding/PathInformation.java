@@ -29,7 +29,7 @@ import com.querydsl.core.types.Path;
  * @author Oliver Gierke
  * @since 1.13
  */
-interface PathInformation {
+public interface PathInformation {
 
 	/**
 	 * The root property owner type.
