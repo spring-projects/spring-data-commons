@@ -22,8 +22,10 @@ import org.springframework.data.web.ProjectedPayload;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 import java.util.Date;
@@ -60,6 +62,12 @@ class SampleController {
 	@ResponseBody
 	String generateCustomPredicate(@QuerydslPredicate(root = User.class) Predicate predicate) {
 		return predicate.toString();
+	}
+
+	@GetMapping("/predicateMono")
+	@ResponseBody
+	Mono<String> generateCustomPredicateMono(@QuerydslPredicate(root = User.class) Predicate predicate) {
+		return Mono.just(generateCustomPredicate(predicate));
 	}
 
 	@ProjectedPayload

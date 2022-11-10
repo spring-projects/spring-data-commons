@@ -17,8 +17,17 @@ package org.springframework.data.web.querydsl;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+import com.custom.querydslpredicatebuilder.QuerydslPredicateBuilderCustom;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Ops;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.SimplePath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,15 +36,15 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
-import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
-import org.springframework.data.querydsl.binding.QuerydslBindings;
-import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
-import org.springframework.data.querydsl.binding.QuerydslPredicate;
+import org.springframework.data.querydsl.binding.*;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 
 import com.querydsl.core.types.Predicate;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.context.request.ServletWebRequest;
 
 /**
  * Unit tests for {@link ReactiveQuerydslPredicateArgumentResolver}.
@@ -130,6 +139,51 @@ class ReactiveQuerydslPredicateArgumentResolverUnitTests {
 
 		assertThat(resolver.resolveArgumentValue(parameter, null, MockServerWebExchange.from(request))) //
 				.isInstanceOfSatisfying(Optional.class, it -> assertThat(it).isPresent());
+	}
+
+	@Test
+	void resolveArgumentCustomQuerydslPredicateBuilder() throws Exception {
+		QuerydslPredicateBuilder querydslPredicateBuilder = new QuerydslPredicateBuilderCustom();
+
+		var request = MockServerHttpRequest.get("")
+				.queryParam("firstname", "rand")
+				.queryParam("lastname", "something")
+				.build();
+
+		ReactiveQuerydslPredicateArgumentResolver resolverQuerydslPredicateBuilder = new ReactiveQuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), querydslPredicateBuilder);
+
+		var predicate = resolverQuerydslPredicateBuilder.resolveArgumentValue(getMethodParameterFor("simpleFind", Predicate.class), null,
+				MockServerWebExchange.from(request));
+
+		// Using new querydslPredicateBuilder predicate would be with OR operator.
+		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand").or(QUser.user.lastname.eq("something")));
+
+		// Using the default predicate is with AND operator.
+		predicate = resolver.resolveArgumentValue(getMethodParameterFor("simpleFind", Predicate.class), null,
+				MockServerWebExchange.from(request));
+
+		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("something")));
+
+		//Apply something fancy
+		querydslPredicateBuilder = new QuerydslPredicateBuilder(DefaultConversionService.getSharedInstance(), new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE).getEntityPathResolver()) {
+			@Override
+			public Predicate getPredicate(TypeInformation<?> type, MultiValueMap<String, ?> values, QuerydslBindings bindings) {
+				BooleanBuilder builder = new BooleanBuilder();
+				SimplePath<QUser> pathUser = Expressions.path(QUser.class, "user");
+				for (var entry : values.entrySet()) {
+					Path<String> path = ExpressionUtils.path(String.class, pathUser, entry.getKey());
+					builder.or(Expressions.predicate(Ops.STARTS_WITH_IC, path, Expressions.constant(entry.getValue())));
+				}
+				return builder.getValue();
+			}
+		};
+
+		resolverQuerydslPredicateBuilder = new ReactiveQuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), querydslPredicateBuilder);
+
+		predicate = resolverQuerydslPredicateBuilder.resolveArgumentValue(getMethodParameterFor("simpleFind", Predicate.class), null,
+				MockServerWebExchange.from(request));
+
+		assertThat(predicate.toString()).isEqualTo(QUser.user.firstname.startsWithIgnoreCase("[rand]").or(QUser.user.lastname.startsWithIgnoreCase("[something]")).toString());
 	}
 
 	private static MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {

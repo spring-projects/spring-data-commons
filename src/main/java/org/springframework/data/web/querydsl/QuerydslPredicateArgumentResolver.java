@@ -24,6 +24,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilderCustomizer;
 import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -74,10 +75,10 @@ public class QuerydslPredicateArgumentResolver extends QuerydslPredicateArgument
 	 * Create a new {@link QuerydslPredicateArgumentResolver}.
 	 *
 	 * @param factory the {@link QuerydslBindingsFactory} to use, must not be {@literal null}.
-	 * @param querydslPredicateBuilder the {@link QuerydslPredicateBuilder} to use, must not be {@literal null}.
+	 * @param querydslPredicateBuilderCustomizer the {@link QuerydslPredicateBuilder} to use, must not be {@literal null}.
 	 */
-	public QuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory, QuerydslPredicateBuilder querydslPredicateBuilder) {
-		super(factory, querydslPredicateBuilder);
+	public QuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory, QuerydslPredicateBuilderCustomizer querydslPredicateBuilderCustomizer) {
+		super(factory, querydslPredicateBuilderCustomizer);
 	}
 
 	@Nullable

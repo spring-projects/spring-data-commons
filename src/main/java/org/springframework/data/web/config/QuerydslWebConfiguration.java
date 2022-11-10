@@ -60,11 +60,12 @@ public class QuerydslWebConfiguration implements WebMvcConfigurer {
 	@Lazy
 	@Bean
 	public QuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
-		if (beanFactory.containsBean("querydslPredicateBuilder")) { //TODO It might have a better way to check if object exists...
+		try {
+			//TODO It might have a better way to check if object exists...
 			return new QuerydslPredicateArgumentResolver(
 					beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
 					beanFactory.getBean(QuerydslPredicateBuilder.class));
-		} else {
+		} catch (Exception ignored) {
 			return new QuerydslPredicateArgumentResolver(
 					beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
 					conversionService.getIfUnique(DefaultConversionService::getSharedInstance));

@@ -27,6 +27,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.web.querydsl.ReactiveQuerydslPredicateArgumentResolver;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.result.method.annotation.ArgumentResolverConfigurer;
@@ -56,9 +57,16 @@ public class ReactiveQuerydslWebConfiguration implements WebFluxConfigurer {
 	@Lazy
 	@Bean
 	public ReactiveQuerydslPredicateArgumentResolver querydslPredicateArgumentResolver() {
-		return new ReactiveQuerydslPredicateArgumentResolver(
-				beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
-				conversionService.getIfUnique(DefaultConversionService::getSharedInstance));
+		try {
+			//TODO It might have a better way to check if object exists...
+			return new ReactiveQuerydslPredicateArgumentResolver(
+					beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
+					beanFactory.getBean(QuerydslPredicateBuilder.class));
+		} catch (Exception ignored) {
+			return new ReactiveQuerydslPredicateArgumentResolver(
+					beanFactory.getBean("querydslBindingsFactory", QuerydslBindingsFactory.class),
+					conversionService.getIfUnique(DefaultConversionService::getSharedInstance));
+		}
 	}
 
 	@Lazy

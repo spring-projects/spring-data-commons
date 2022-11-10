@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.QUser;
@@ -110,51 +109,6 @@ class QuerydslPredicateArgumentResolverUnitTests {
 				new ServletWebRequest(request), null);
 
 		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand"));
-	}
-
-	@Test
-	void resolveArgumentCustomQuerydslPredicateBuilder() throws Exception {
-		QuerydslPredicateBuilder querydslPredicateBuilder = new QuerydslPredicateBuilderCustom();
-
-		Map<String, String> map = new HashMap<>();
-		map.put("firstname", "rand");
-		map.put("lastname", "something");
-		request.addParameters(map);
-
-		QuerydslPredicateArgumentResolver resolverQuerydslPredicateBuilder = new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), querydslPredicateBuilder);
-
-		var predicate = resolverQuerydslPredicateBuilder.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
-				new ServletWebRequest(request), null);
-
-		// Using new querydslPredicateBuilder predicate would be with OR operator.
-		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand").or(QUser.user.lastname.eq("something")));
-
-		// Using the default predicate is with AND operator.
-		predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
-				new ServletWebRequest(request), null);
-
-		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("something")));
-
-		//Apply something fancy
-		querydslPredicateBuilder = new QuerydslPredicateBuilder(DefaultConversionService.getSharedInstance(), new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE).getEntityPathResolver()) {
-			@Override
-			public Predicate getPredicate(TypeInformation<?> type, MultiValueMap<String, ?> values, QuerydslBindings bindings) {
-				BooleanBuilder builder = new BooleanBuilder();
-				SimplePath<QUser> pathUser = Expressions.path(QUser.class, "user");
-				for (var entry : values.entrySet()) {
-					Path<String> path = ExpressionUtils.path(String.class, pathUser, entry.getKey());
-					builder.or(Expressions.predicate(Ops.STARTS_WITH_IC, path, Expressions.constant(entry.getValue())));
-				}
-				return builder.getValue();
-			}
-		};
-
-		resolverQuerydslPredicateBuilder = new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), querydslPredicateBuilder);
-
-		predicate = resolverQuerydslPredicateBuilder.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
-				new ServletWebRequest(request), null);
-
-		assertThat(predicate.toString()).isEqualTo(QUser.user.firstname.startsWithIgnoreCase("[rand]").or(QUser.user.lastname.startsWithIgnoreCase("[something]")).toString());
 	}
 
 	@Test // DATACMNS-669
@@ -313,6 +267,51 @@ class QuerydslPredicateArgumentResolverUnitTests {
 
 		assertThat(resolver.resolveArgument(parameter, null, new ServletWebRequest(request), null)) //
 				.isInstanceOfSatisfying(Optional.class, it -> assertThat(it).isPresent());
+	}
+
+	@Test
+	void resolveArgumentCustomQuerydslPredicateBuilder() throws Exception {
+		QuerydslPredicateBuilder querydslPredicateBuilder = new QuerydslPredicateBuilderCustom();
+
+		Map<String, String> map = new HashMap<>();
+		map.put("firstname", "rand");
+		map.put("lastname", "something");
+		request.addParameters(map);
+
+		QuerydslPredicateArgumentResolver resolverQuerydslPredicateBuilder = new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), querydslPredicateBuilder);
+
+		var predicate = resolverQuerydslPredicateBuilder.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
+
+		// Using new querydslPredicateBuilder predicate would be with OR operator.
+		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand").or(QUser.user.lastname.eq("something")));
+
+		// Using the default predicate is with AND operator.
+		predicate = resolver.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
+
+		assertThat(predicate).isEqualTo(QUser.user.firstname.eq("rand").and(QUser.user.lastname.eq("something")));
+
+		//Apply something fancy
+		QuerydslPredicateBuilderCustomizer queryDslCustomizer = new QuerydslPredicateBuilderCustomizer() {
+			@Override
+			public Predicate getPredicate(TypeInformation<?> type, MultiValueMap<String, ?> values, QuerydslBindings bindings) {
+				BooleanBuilder builder = new BooleanBuilder();
+				SimplePath<QUser> pathUser = Expressions.path(QUser.class, "user");
+				for (var entry : values.entrySet()) {
+					Path<String> path = ExpressionUtils.path(String.class, pathUser, entry.getKey());
+					builder.or(Expressions.predicate(Ops.STARTS_WITH_IC, path, Expressions.constant(entry.getValue())));
+				}
+				return getPredicate(builder);
+			}
+		};
+
+		resolverQuerydslPredicateBuilder = new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), queryDslCustomizer);
+
+		predicate = resolverQuerydslPredicateBuilder.resolveArgument(getMethodParameterFor("simpleFind", Predicate.class), null,
+				new ServletWebRequest(request), null);
+
+		assertThat(predicate.toString()).isEqualTo(QUser.user.firstname.startsWithIgnoreCase("[rand]").or(QUser.user.lastname.startsWithIgnoreCase("[something]")).toString());
 	}
 
 	private static MethodParameter getMethodParameterFor(String methodName, Class<?>... args) throws RuntimeException {

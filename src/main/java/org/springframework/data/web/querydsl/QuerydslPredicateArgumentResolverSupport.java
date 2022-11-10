@@ -15,19 +15,13 @@
  */
 package org.springframework.data.web.querydsl;
 
-import java.lang.reflect.Method;
-import java.util.Optional;
-
+import com.querydsl.core.types.Predicate;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
-import org.springframework.data.querydsl.binding.QuerydslBindings;
-import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
-import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
+import org.springframework.data.querydsl.binding.*;
 import org.springframework.data.util.CastUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -35,7 +29,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
-import com.querydsl.core.types.Predicate;
+import java.lang.reflect.Method;
+import java.util.Optional;
 
 /**
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link com.querydsl.core.types.Predicate} into Spring MVC
@@ -54,7 +49,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 	static final ResolvableType OPTIONAL_OF_PREDICATE = ResolvableType.forClassWithGenerics(Optional.class, PREDICATE);
 
 	protected final QuerydslBindingsFactory bindingsFactory;
-	protected final QuerydslPredicateBuilder predicateBuilder;
+	protected final QuerydslPredicateBuilderCustomizer predicateBuilderCustomizer;
 
 	/**
 	 * Creates a new {@link QuerydslPredicateArgumentResolver} using the given {@link ConversionService}.
@@ -69,22 +64,22 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		this.bindingsFactory = factory;
-		this.predicateBuilder = new QuerydslPredicateBuilder(conversionService, factory.getEntityPathResolver());
+		this.predicateBuilderCustomizer = new QuerydslPredicateBuilder(conversionService, factory.getEntityPathResolver());
 	}
 
 	/**
 	 * Creates a new {@link QuerydslPredicateArgumentResolver} using the given {@link QuerydslPredicateBuilder}.
 	 * @param factory
-	 * @param querydslPredicateBuilder
+	 * @param querydslPredicateBuilderCustomizer
 	 */
 	public QuerydslPredicateArgumentResolverSupport(QuerydslBindingsFactory factory,
-													   QuerydslPredicateBuilder querydslPredicateBuilder) {
+													QuerydslPredicateBuilderCustomizer querydslPredicateBuilderCustomizer) {
 
 		Assert.notNull(factory, "QuerydslBindingsFactory must not be null");
-		Assert.notNull(querydslPredicateBuilder, "querydslPredicateBuilder must not be null");
+		Assert.notNull(querydslPredicateBuilderCustomizer, "querydslPredicateBuilderCustomizer must not be null");
 
 		this.bindingsFactory = factory;
-		this.predicateBuilder = querydslPredicateBuilder;
+		this.predicateBuilderCustomizer = querydslPredicateBuilderCustomizer;
 	}
 
 	public boolean supportsParameter(MethodParameter parameter) {
@@ -119,7 +114,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 				.map(it -> bindingsFactory.createBindingsFor(domainType, it)) //
 				.orElseGet(() -> bindingsFactory.createBindingsFor(domainType));
 
-		return predicateBuilder.getPredicate(domainType, queryParameters, bindings);
+		return predicateBuilderCustomizer.getPredicate(domainType, queryParameters, bindings);
 	}
 
 	@Nullable
@@ -130,10 +125,10 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		}
 
 		if (OPTIONAL_OF_PREDICATE.isAssignableFrom(ResolvableType.forMethodParameter(parameter))) {
-			return QuerydslPredicateBuilder.isEmpty(predicate) ? Optional.empty() : Optional.of(predicate);
+			return QuerydslPredicateBuilderCustomizer.isEmpty(predicate) ? Optional.empty() : Optional.of(predicate);
 		}
 
-		return QuerydslPredicateBuilder.isEmpty(predicate) ? null : predicate;
+		return QuerydslPredicateBuilderCustomizer.isEmpty(predicate) ? null : predicate;
 	}
 
 	/**

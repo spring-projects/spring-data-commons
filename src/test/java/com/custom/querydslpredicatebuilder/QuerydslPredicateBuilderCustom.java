@@ -55,8 +55,8 @@ public class QuerydslPredicateBuilderCustom extends QuerydslPredicateBuilder {
                 continue;
             }
 
-            Collection<Object> value = convertToPropertyPathSpecificType(entry.getValue(), propertyPath);
-            Optional<Predicate> predicate = invokeBinding(propertyPath, bindings, value);
+            Collection<Object> value = convertToPropertyPathSpecificType(entry.getValue(), propertyPath, conversionService);
+            Optional<Predicate> predicate = invokeBinding(propertyPath, bindings, value, resolver, defaultBinding);
 
             predicate.ifPresent(builder::or);
         }

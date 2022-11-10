@@ -21,6 +21,7 @@ import java.util.Map;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -45,6 +46,11 @@ public class ReactiveQuerydslPredicateArgumentResolver extends QuerydslPredicate
 	public ReactiveQuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory,
 			ConversionService conversionService) {
 		super(factory, conversionService);
+	}
+
+	public ReactiveQuerydslPredicateArgumentResolver(QuerydslBindingsFactory factory,
+													QuerydslPredicateBuilder querydslPredicateBuilder) {
+		super(factory, querydslPredicateBuilder);
 	}
 
 	@Override

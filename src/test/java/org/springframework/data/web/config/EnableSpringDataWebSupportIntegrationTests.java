@@ -17,11 +17,18 @@ package org.springframework.data.web.config;
 
 import com.custom.querydslpredicatebuilder.QuerydslPredicateBuilderCustom;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Ops;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.SimplePath;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.geo.Distance;
@@ -30,14 +37,18 @@ import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilderCustomizer;
 import org.springframework.data.web.*;
 import org.springframework.hateoas.Link;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.reactive.config.EnableWebFlux;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +73,45 @@ class EnableSpringDataWebSupportIntegrationTests {
 		@Bean
 		SampleController controller() {
 			return new SampleController();
+		}
+	}
+
+	@Configuration
+	@EnableWebFlux
+	@Import(ReactiveQuerydslWebConfiguration.class)
+	static class WebFluxSampleConfig {
+
+		@Bean
+		SampleController controller() {
+			return new SampleController();
+		}
+	}
+
+	@Configuration
+	@EnableWebFlux
+	@ComponentScan(basePackageClasses = QuerydslPredicateBuilderCustom.class)
+	@Import(ReactiveQuerydslWebConfiguration.class)
+	static class WebFluxSampleConfigWithCustomQuerydslPredicateBuilder {
+
+		@Bean
+		SampleController controller() {
+			return new SampleController();
+		}
+	}
+
+	@Configuration
+	static class QuerydslPredicateBuilderConfig {
+		@Bean
+		QuerydslPredicateBuilderCustomizer querydslPredicateBuilderCustomizer() {
+			return (type, values, bindings) -> {
+				BooleanBuilder builder = new BooleanBuilder();
+				SimplePath<QUser> pathUser = Expressions.path(QUser.class, "user");
+				for (var entry : values.entrySet()) {
+					Path<String> path = ExpressionUtils.path(String.class, pathUser, entry.getKey());
+					builder.or(Expressions.predicate(Ops.STARTS_WITH_IC, path, Expressions.constant(entry.getValue())));
+				}
+				return builder.getValue();
+			};
 		}
 	}
 
@@ -196,29 +246,6 @@ class EnableSpringDataWebSupportIntegrationTests {
 				andExpect(status().isOk());
 	}
 
-	@Test
-	void createsTestForCustomPredicate() throws Exception {
-
-		var applicationContext = WebTestUtils.createApplicationContext(SampleConfigWithCustomQuerydslPredicateBuilder.class);
-		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
-
-		var builder = UriComponentsBuilder.fromUriString("/predicate");
-		builder.queryParam("firstname", "Foo");
-		builder.queryParam("lastname", "Bar");
-
-		mvc.perform(post(builder.build().toString())).
-				andExpect(status().isOk())
-				.andExpect(content().string(QUser.user.firstname.eq("Foo").or(QUser.user.lastname.eq("Bar")).toString()));
-
-		//Default should be and
-		applicationContext = WebTestUtils.createApplicationContext(SampleConfig.class);
-		mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
-
-		mvc.perform(post(builder.build().toString())).
-				andExpect(status().isOk())
-				.andExpect(content().string(QUser.user.firstname.eq("Foo").and(QUser.user.lastname.eq("Bar")).toString()));
-	}
-
 	@Test // DATACMNS-660
 	void picksUpWebConfigurationMixins() {
 
@@ -268,6 +295,49 @@ class EnableSpringDataWebSupportIntegrationTests {
 		assertThat(context.getBean(EntityPathResolver.class)).isEqualTo(CustomEntityPathResolver.resolver);
 		assertThat(context.getBean(QuerydslBindingsFactory.class).getEntityPathResolver())
 				.isEqualTo(CustomEntityPathResolver.resolver);
+	}
+
+	@Test
+	void createsTestForCustomPredicate() throws Exception {
+
+		var applicationContext = WebTestUtils.createApplicationContext(SampleConfigWithCustomQuerydslPredicateBuilder.class);
+		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+
+		var builder = UriComponentsBuilder.fromUriString("/predicate");
+		builder.queryParam("firstname", "Foo");
+		builder.queryParam("lastname", "Bar");
+
+		mvc.perform(post(builder.build().toString())).
+				andExpect(status().isOk())
+				.andExpect(content().string(QUser.user.firstname.eq("Foo").or(QUser.user.lastname.eq("Bar")).toString()));
+
+		//Default should be and
+		applicationContext = WebTestUtils.createApplicationContext(SampleConfig.class);
+		mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+
+		mvc.perform(post(builder.build().toString())).
+				andExpect(status().isOk())
+				.andExpect(content().string(QUser.user.firstname.eq("Foo").and(QUser.user.lastname.eq("Bar")).toString()));
+
+		applicationContext = WebTestUtils.createApplicationContext(WebFluxSampleConfigWithCustomQuerydslPredicateBuilder.class);
+
+		var client = WebTestClient.bindToApplicationContext(applicationContext).build();
+		client.get().uri(URI.create("/predicateMono?firstname=Foo&lastname=Bar"))
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.isEqualTo(QUser.user.firstname.eq("Foo").or(QUser.user.lastname.eq("Bar")).toString());
+
+		//Default query is AND operator
+		applicationContext = WebTestUtils.createApplicationContext(WebFluxSampleConfig.class);
+		client = WebTestClient.bindToApplicationContext(applicationContext).build();
+
+		client.get().uri(URI.create("/predicateMono?firstname=Foo&lastname=Bar"))
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.isEqualTo(QUser.user.firstname.eq("Foo").and(QUser.user.lastname.eq("Bar")).toString());
+
 	}
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
