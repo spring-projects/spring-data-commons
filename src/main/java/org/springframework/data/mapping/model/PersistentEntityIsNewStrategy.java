@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * An {@link IsNewStrategy} to use a {@link PersistentEntity}'s version property followed by it
+ * An {@link IsNewStrategy} to use a {@link PersistentEntity}'s version property followed by identifier
  *
  * @author Oliver Gierke
  * @author Mark Paluch
