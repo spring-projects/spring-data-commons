@@ -34,9 +34,12 @@ import org.springframework.data.aot.sample.ConfigWithCustomRepositoryBaseClass;
 import org.springframework.data.aot.sample.ConfigWithFragments;
 import org.springframework.data.aot.sample.ConfigWithQueryMethods;
 import org.springframework.data.aot.sample.ConfigWithQueryMethods.ProjectionInterface;
+import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor;
+import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor.Person;
 import org.springframework.data.aot.sample.ConfigWithSimpleCrudRepository;
 import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresent;
 import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository;
+import org.springframework.data.aot.sample.QConfigWithQuerydslPredicateExecutor_Person;
 import org.springframework.data.aot.sample.ReactiveConfig;
 import org.springframework.data.domain.Page;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -272,6 +275,20 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 				.codeContributionSatisfies(contribution -> {
 					contribution.doesNotContributeReflectionFor(javax.annotation.Nullable.class);
 					contribution.doesNotContributeJdkProxyFor(javax.annotation.Nullable.class);
+				});
+	}
+
+	@Test // GH-2721
+	void registersQTypeIfPresent() {
+
+		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
+				ConfigWithQuerydslPredicateExecutor.class).forRepository(ConfigWithQuerydslPredicateExecutor.MyRepo.class);
+
+		assertThatContribution(repositoryBeanContribution) //
+				.codeContributionSatisfies(contribution -> {
+					contribution.contributesReflectionFor(Person.class);
+					contribution.contributesReflectionFor(
+							QConfigWithQuerydslPredicateExecutor_Person.class);
 				});
 	}
 
