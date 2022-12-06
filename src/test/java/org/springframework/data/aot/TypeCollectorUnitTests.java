@@ -61,4 +61,9 @@ public class TypeCollectorUnitTests {
 				WithDeclaredClass.SomeEnum.class);
 	}
 
+	@Test // GH-2744
+	void skipsCoreFrameworkType() {
+		assertThat(TypeCollector.inspect(org.springframework.core.AliasRegistry.class).list()).isEmpty();
+	}
+
 }
