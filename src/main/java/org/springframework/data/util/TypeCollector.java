@@ -127,6 +127,10 @@ public class TypeCollector {
 		}
 		Set<Type> discoveredTypes = new LinkedHashSet<>();
 		for (Constructor<?> constructor : type.toClass().getDeclaredConstructors()) {
+
+			if (constructor.isSynthetic()) {
+				continue;
+			}
 			for (Class<?> signatureType : TypeUtils.resolveTypesInSignature(type.toClass(), constructor)) {
 				if (typeFilter.test(signatureType)) {
 					discoveredTypes.add(signatureType);
