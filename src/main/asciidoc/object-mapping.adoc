@@ -202,8 +202,8 @@ The wither method is optional as the persistence constructor (see 6) is effectiv
 <3> The `age` property is an immutable but derived one from the `birthday` property.
 With the design shown, the database value will trump the defaulting as Spring Data uses the only declared constructor.
 Even if the intent is that the calculation should be preferred, it's important that this constructor also takes `age` as parameter (to potentially ignore it) as otherwise the property population step will attempt to set the age field and fail due to it being immutable and no `with…` method being present.
-<4> The `comment` property is mutable is populated by setting its field directly.
-<5> The `remarks` properties are mutable and populated by setting the `comment` field directly or by invoking the setter method for
+<4> The `comment` property is mutable and is populated by setting its field directly.
+<5> The `remarks` property is mutable and is populated by invoking the setter method.
 <6> The class exposes a factory method and a constructor for object creation.
 The core idea here is to use factory methods instead of additional constructors to avoid the need for constructor disambiguation through `@PersistenceCreator`.
 Instead, defaulting of properties is handled within the factory method.
