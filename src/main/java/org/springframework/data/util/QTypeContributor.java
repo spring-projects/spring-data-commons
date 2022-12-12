@@ -15,10 +15,6 @@
  */
 package org.springframework.data.util;
 
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.function.Function;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.GenerationContext;
@@ -29,23 +25,25 @@ import org.springframework.util.ClassUtils;
 
 /**
  * @author Christoph Strobl
- * @since 4.1
+ * @since 3.0.1
  */
 public class QTypeContributor {
 
 	private final static Log logger = LogFactory.getLog(QTypeContributor.class);
-	private static Function<ClassLoader, Class<?>> entityPathType = cacheOf(QTypeContributor::getEntityPathType);
 
 	public static void contributeEntityPath(Class<?> type, GenerationContext context, @Nullable ClassLoader classLoader) {
 
-		Class<?> entityPathType = QTypeContributor.entityPathType.apply(classLoader);
-		if (entityPathType == null) {
-			return;
-		}
+		try {
 
-		String queryClassName = getQueryClassName(type);
-		if (ClassUtils.isPresent(queryClassName, classLoader)) {
-			try {
+			Class<?> entityPathType = getEntityPathType(classLoader);
+
+			if (entityPathType == null) {
+				return;
+			}
+
+			String queryClassName = getQueryClassName(type);
+			if (ClassUtils.isPresent(queryClassName, classLoader)) {
+
 				if (ClassUtils.isAssignable(entityPathType, ClassUtils.forName(queryClassName, classLoader))) {
 
 					logger.debug("Registering Q type %s for %s.");
@@ -55,33 +53,26 @@ public class QTypeContributor {
 				} else {
 					logger.debug("Skipping Q type %s. Not an EntityPath.");
 				}
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException("%s could not be loaded".formatted(queryClassName), e);
 			}
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException("Cannot contribute Q class for domain type %s".formatted(type.getName()), e);
 		}
 	}
 
 	@Nullable
-	private static Class<?> getEntityPathType(ClassLoader classLoader) {
+	private static Class<?> getEntityPathType(@Nullable ClassLoader classLoader) throws ClassNotFoundException {
 
-		if (!ClassUtils.isPresent("com.querydsl.core.types.EntityPath", classLoader)) {
+		String entityPathClassName = "com.querydsl.core.types.EntityPath";
+		if (!ClassUtils.isPresent(entityPathClassName, classLoader)) {
 			return null;
 		}
 
-		try {
-			return ClassUtils.forName("com.querydsl.core.types.EntityPath", classLoader);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static Function<ClassLoader, Class<?>> cacheOf(Function<ClassLoader, Class<?>> inFunction) {
-		Map<ClassLoader, Class<?>> cache = new WeakHashMap<>();
-		return in -> cache.computeIfAbsent(in, inFunction::apply);
+		return ClassUtils.forName(entityPathClassName, classLoader);
 	}
 
 	/**
-	 * Returns the name of the query class for the given domain class.
+	 * Returns the name of the query class for the given domain class following {@code SimpleEntityPathResolver}
+	 * conventions.
 	 *
 	 * @param domainClass
 	 * @return
