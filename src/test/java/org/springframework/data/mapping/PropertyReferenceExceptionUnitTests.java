@@ -15,7 +15,8 @@
  */
 package org.springframework.data.mapping;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +32,7 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author John Blum
  */
 public class PropertyReferenceExceptionUnitTests {
 
@@ -68,6 +70,33 @@ public class PropertyReferenceExceptionUnitTests {
 		assertThat(matches).containsExactly("name");
 	}
 
+	@Test // GH-2750
+	public void formatsMessageWithTypeInfoAndHintsCorrectly() {
+
+		PropertyReferenceException exception = new PropertyReferenceException("nme", TYPE_INFO, NO_PATHS);
+
+		String expectedMessage = String.format("%s; %s", PropertyReferenceException.ERROR_TEMPLATE,
+				PropertyReferenceException.HINTS_TEMPLATE);
+
+		assertThat(exception)
+				.hasMessage(expectedMessage,"nme", TYPE_INFO.getType().getSimpleName(), "'name'");
+	}
+
+	@Test // GH-2750
+	public void formatsMessageWithTypeInfoHintsAndPathCorrectly() {
+
+		TypeInformation<C> ctype = ClassTypeInformation.from(C.class);
+
+		PropertyReferenceException exception = new PropertyReferenceException("nme", TYPE_INFO,
+				Collections.singletonList(PropertyPath.from("b.a", ctype)));
+
+		String expectedMessage = String.format("%s; %s; %s", PropertyReferenceException.ERROR_TEMPLATE,
+				PropertyReferenceException.HINTS_TEMPLATE, "Traversed path: C.b.a");
+
+		assertThat(exception)
+				.hasMessage(expectedMessage,"nme", TYPE_INFO.getType().getSimpleName(), "'name'");
+	}
+
 	static class Sample {
 
 		String name;
@@ -79,5 +108,17 @@ public class PropertyReferenceExceptionUnitTests {
 		public void setName(String name) {
 			this.name = name;
 		}
+	}
+
+	static class A {
+
+	}
+
+	static class B {
+		A a;
+	}
+
+	static class C {
+		B b;
 	}
 }
