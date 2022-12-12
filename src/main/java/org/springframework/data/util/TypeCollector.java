@@ -20,16 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -40,9 +31,15 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
+ * Collector to inspect domain types and discover the type graph that is relevant for Spring Data operations.
+ * <p>
+ * Type inspection walks through all class members (fields, methods, constructors) and introspects those for additional
+ * types that are part of the domain model.
+ *
  * @author Christoph Strobl
  * @author Sebastien Deleuze
  * @author John Blum
+ * @since 3.0
  */
 public class TypeCollector {
 
@@ -122,13 +119,16 @@ public class TypeCollector {
 	}
 
 	Set<Type> visitConstructorsOfType(ResolvableType type) {
+
 		if (!typeFilter.test(type.toClass())) {
 			return Collections.emptySet();
 		}
+
 		Set<Type> discoveredTypes = new LinkedHashSet<>();
+
 		for (Constructor<?> constructor : type.toClass().getDeclaredConstructors()) {
 
-			if (constructor.isSynthetic()) {
+			if (Predicates.isExcluded(constructor)) {
 				continue;
 			}
 			for (Class<?> signatureType : TypeUtils.resolveTypesInSignature(type.toClass(), constructor)) {
@@ -137,10 +137,12 @@ public class TypeCollector {
 				}
 			}
 		}
+
 		return new HashSet<>(discoveredTypes);
 	}
 
 	Set<Type> visitMethodsOfType(ResolvableType type) {
+
 		if (!typeFilter.test(type.toClass())) {
 			return Collections.emptySet();
 		}
@@ -160,11 +162,14 @@ public class TypeCollector {
 		} catch (Exception cause) {
 			logger.warn(cause);
 		}
+
 		return new HashSet<>(discoveredTypes);
 	}
 
 	Set<Type> visitFieldsOfType(ResolvableType type) {
+
 		Set<Type> discoveredTypes = new LinkedHashSet<>();
+
 		ReflectionUtils.doWithLocalFields(type.toClass(), field -> {
 			if (!fieldFilter.test(field)) {
 				return;
@@ -175,6 +180,7 @@ public class TypeCollector {
 				}
 			}
 		});
+
 		return discoveredTypes;
 	}
 
