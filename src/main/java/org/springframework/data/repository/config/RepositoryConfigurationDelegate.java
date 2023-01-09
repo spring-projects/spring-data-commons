@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -34,6 +33,7 @@ import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.AutowireCandidateResolver;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
@@ -225,15 +225,13 @@ public class RepositoryConfigurationDelegate {
 		String repositoryAotProcessorBeanName = String.format("data-%s.repository-aot-processor" /* might be duplicate */,
 				extension.getModuleIdentifier());
 
-		if (!registry.isBeanNameInUse(repositoryAotProcessorBeanName)) {
+		BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
+				.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 
-			BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
-					.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		repositoryAotProcessor.addPropertyValue("configMap", metadataByRepositoryBeanName);
 
-			repositoryAotProcessor.addPropertyValue("configMap", metadataByRepositoryBeanName);
-
-			registry.registerBeanDefinition(repositoryAotProcessorBeanName, repositoryAotProcessor.getBeanDefinition());
-		}
+		registry.registerBeanDefinition(BeanDefinitionReaderUtils.uniqueBeanName(repositoryAotProcessorBeanName, registry),
+				repositoryAotProcessor.getBeanDefinition());
 	}
 
 	/**
