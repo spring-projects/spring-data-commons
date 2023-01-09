@@ -23,8 +23,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.Advised;
+import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
@@ -192,6 +192,29 @@ class RepositoryConfigurationDelegateUnitTests {
 		assertThat(context.getBeanFactory().getBeanDefinition("anotherBeanName")).isNotNull();
 		assertThat(context.getBeanFactory().getBeanDefinition("fragment")).isNotNull();
 		assertThat(context.getBeanFactory().getBeanDefinition("fragmentFragment")).isNotNull();
+	}
+
+	@Test // GH-2760
+	void registersAotPostProcessorForDifferentConfigurations() {
+
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
+		context.setAllowBeanDefinitionOverriding(false);
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(AnnotatedBeanNamesConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
+
+		new RepositoryConfigurationDelegate(configSource, context, environment).registerRepositoriesIn(context, extension);
+
+		RepositoryConfigurationSource configSource2 = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
+
+		new RepositoryConfigurationDelegate(configSource2, context, environment).registerRepositoriesIn(context, extension);
+
+		context.refreshForAotProcessing(new RuntimeHints());
+		assertThat(context.getBeanNamesForType(RepositoryRegistrationAotProcessor.class)).hasSize(2);
 	}
 
 	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
