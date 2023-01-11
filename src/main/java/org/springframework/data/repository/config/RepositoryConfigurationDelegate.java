@@ -221,15 +221,14 @@ public class RepositoryConfigurationDelegate {
 	private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
 			Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
 
-		// module-specific repository aot processor
-		String repositoryAotProcessorBeanName = String.format("data-%s.repository-aot-processor" /* might be duplicate */,
-				extension.getModuleIdentifier());
-
 		BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
 				.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 
 		repositoryAotProcessor.addPropertyValue("configMap", metadataByRepositoryBeanName);
 
+		// module-specific repository aot processor
+		String repositoryAotProcessorBeanName = String.format("data-%s.repository-aot-processor",
+				extension.getModuleIdentifier());
 		registry.registerBeanDefinition(BeanDefinitionReaderUtils.uniqueBeanName(repositoryAotProcessorBeanName, registry),
 				repositoryAotProcessor.getBeanDefinition());
 	}
