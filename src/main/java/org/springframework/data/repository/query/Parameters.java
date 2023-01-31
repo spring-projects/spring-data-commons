@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
@@ -62,10 +63,27 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * Creates a new instance of {@link Parameters}.
 	 *
 	 * @param method must not be {@literal null}.
+	 * @deprecated since 3.1, use {@link #Parameters(Method, Function)} instead.
 	 */
+	@SuppressWarnings("null")
+	@Deprecated(since = "3.1", forRemoval = true)
 	public Parameters(Method method) {
+		this(method, null);
+	}
+
+	/**
+	 * Creates a new {@link Parameters} instance for the given {@link Method} and {@link Function} to create a
+	 * {@link Parameter} instance from a {@link MethodParameter}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param parameterFactory must not be {@literal null}.
+	 */
+	protected Parameters(Method method, Function<MethodParameter, T> parameterFactory) {
 
 		Assert.notNull(method, "Method must not be null");
+
+		// Factory nullability not enforced yet to support falling back to the deprecated
+		// createParameter(MethodParameter). Add assertion when the deprecation is removed.
 
 		int parameterCount = method.getParameterCount();
 
@@ -80,7 +98,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			MethodParameter methodParameter = new MethodParameter(method, i);
 			methodParameter.initParameterNameDiscovery(PARAMETER_NAME_DISCOVERER);
 
-			T parameter = createParameter(methodParameter);
+			T parameter = parameterFactory == null //
+					? createParameter(methodParameter) //
+					: parameterFactory.apply(methodParameter);
 
 			if (parameter.isSpecialParameter() && parameter.isNamedParameter()) {
 				throw new IllegalArgumentException(PARAM_ON_SPECIAL);
@@ -156,8 +176,13 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 *
 	 * @param parameter will never be {@literal null}.
 	 * @return
+	 * @deprecated since 3.1, in your extension, call {@link #Parameters(Method, ParameterFactory)} instead.
 	 */
-	protected abstract T createParameter(MethodParameter parameter);
+	@SuppressWarnings("unchecked")
+	@Deprecated(since = "3.1", forRemoval = true)
+	protected T createParameter(MethodParameter parameter) {
+		return (T) new Parameter(parameter);
+	}
 
 	/**
 	 * Returns whether the method the {@link Parameters} was created for contains a {@link Pageable} argument.
@@ -169,8 +194,8 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	}
 
 	/**
-	 * Returns the index of the {@link Pageable} {@link Method} parameter if available. Will return {@literal -1} if there
-	 * is no {@link Pageable} argument in the {@link Method}'s parameter list.
+	 * Returns the index of the {@link Pageable} {@link Method} parameter if available. Will return {@literal -1} if
+	 * there is no {@link Pageable} argument in the {@link Method}'s parameter list.
 	 *
 	 * @return the pageableIndex
 	 */
@@ -179,8 +204,8 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	}
 
 	/**
-	 * Returns the index of the {@link Sort} {@link Method} parameter if available. Will return {@literal -1} if there is
-	 * no {@link Sort} argument in the {@link Method}'s parameter list.
+	 * Returns the index of the {@link Sort} {@link Method} parameter if available. Will return {@literal -1} if there
+	 * is no {@link Sort} argument in the {@link Method}'s parameter list.
 	 *
 	 * @return
 	 */
@@ -289,8 +314,8 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns a bindable parameter with the given index. So for a method with a signature of
-	 * {@code (Pageable pageable, String name)} a call to {@code #getBindableParameter(0)} will return the {@link String}
-	 * parameter.
+	 * {@code (Pageable pageable, String name)} a call to {@code #getBindableParameter(0)} will return the
+	 * {@link String} parameter.
 	 *
 	 * @param bindableIndex
 	 * @return

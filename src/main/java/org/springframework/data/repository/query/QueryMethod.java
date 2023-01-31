@@ -79,8 +79,8 @@ public class QueryMethod {
 
 		this.method = method;
 		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(metadata, method);
-		this.parameters = createParameters(method);
 		this.metadata = metadata;
+		this.parameters = createParameters(method);
 
 		if (hasParameterOfType(method, Pageable.class)) {
 
@@ -107,7 +107,7 @@ public class QueryMethod {
 			Class<?> repositoryDomainClass = metadata.getDomainType();
 			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
 
-			return (repositoryDomainClass == null) || repositoryDomainClass.isAssignableFrom(methodDomainClass)
+			return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)
 					? methodDomainClass
 					: repositoryDomainClass;
 		});
@@ -119,11 +119,24 @@ public class QueryMethod {
 	/**
 	 * Creates a {@link Parameters} instance.
 	 *
-	 * @param method
+	 * @param method must not be {@literal null}.
+	 * @return must not return {@literal null}.
+	 * @deprecated since 3.1, call or override {@link #createParameters(Method, TypeInformation)} instead.
+	 */
+	@Deprecated(since = "3.1", forRemoval = true)
+	protected Parameters<?, ?> createParameters(Method method) {
+		return createParameters(method, metadata.getDomainTypeInformation());
+	}
+
+	/**
+	 * Creates a {@link Parameters} instance.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param aggregateType must not be {@literal null}.
 	 * @return must not return {@literal null}.
 	 */
-	protected Parameters<?, ?> createParameters(Method method) {
-		return new DefaultParameters(method);
+	protected Parameters<?, ?> createParameters(Method method, TypeInformation<?> aggregateType) {
+		return new DefaultParameters(method, aggregateType);
 	}
 
 	/**
