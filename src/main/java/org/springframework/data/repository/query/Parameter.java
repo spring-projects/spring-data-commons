@@ -17,7 +17,6 @@ package org.springframework.data.repository.query;
 
 import static java.lang.String.*;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -72,14 +71,27 @@ public class Parameter {
 	 * Creates a new {@link Parameter} for the given {@link MethodParameter}.
 	 *
 	 * @param parameter must not be {@literal null}.
+	 * @deprecated since 3.1, use {@link #Parameter(MethodParameter, TypeInformation)} instead.
 	 */
+	@Deprecated(since = "3.1", forRemoval = true)
 	protected Parameter(MethodParameter parameter) {
+		this(parameter, TypeInformation.of(Parameter.class));
+	}
+
+	/**
+	 * Creates a new {@link Parameter} for the given {@link MethodParameter} and aggregate {@link TypeInformation}.
+	 *
+	 * @param parameter must not be {@literal null}.
+	 * @param aggregateType must not be {@literal null}.
+	 */
+	protected Parameter(MethodParameter parameter, TypeInformation<?> aggregateType) {
 
 		Assert.notNull(parameter, "MethodParameter must not be null");
+		Assert.notNull(aggregateType, "TypeInformation must not be null!");
 
 		this.parameter = parameter;
 		this.parameterType = potentiallyUnwrapParameterType(parameter);
-		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter);
+		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter, aggregateType);
 		this.name = isSpecialParameterType(parameter.getParameterType()) ? Lazy.of(Optional.empty()) : Lazy.of(() -> {
 			Param annotation = parameter.getParameterAnnotation(Param.class);
 			return Optional.ofNullable(annotation == null ? parameter.getParameterName() : annotation.value());
@@ -206,23 +218,32 @@ public class Parameter {
 	 * </code>
 	 *
 	 * @param parameter must not be {@literal null}.
+	 * @param aggregateType the reference aggregate type, must not be {@literal null}.
 	 * @return
 	 */
-	private static boolean isDynamicProjectionParameter(MethodParameter parameter) {
+	private static boolean isDynamicProjectionParameter(MethodParameter parameter, TypeInformation<?> aggregateType) {
 
 		if (!parameter.getParameterType().equals(Class.class)) {
 			return false;
 		}
 
-		Method method = parameter.getMethod();
+		if (parameter.hasParameterAnnotation(Param.class)) {
+			return false;
+		}
+
+		var method = parameter.getMethod();
 
 		if (method == null) {
 			throw new IllegalArgumentException("Parameter is not associated with any method");
 		}
 
-		TypeInformation<?> returnType = TypeInformation.fromReturnTypeOf(method);
-		TypeInformation<?> unwrapped = QueryExecutionConverters.unwrapWrapperTypes(returnType);
-		TypeInformation<?> reactiveUnwrapped = ReactiveWrapperConverters.unwrapWrapperTypes(unwrapped);
+		var returnType = TypeInformation.fromReturnTypeOf(method);
+		var unwrapped = QueryExecutionConverters.unwrapWrapperTypes(returnType);
+		var reactiveUnwrapped = ReactiveWrapperConverters.unwrapWrapperTypes(unwrapped);
+
+		if (aggregateType.isAssignableFrom(reactiveUnwrapped)) {
+			return false;
+		}
 
 		return reactiveUnwrapped.equals(TypeInformation.fromMethodParameter(parameter).getComponentType());
 	}
