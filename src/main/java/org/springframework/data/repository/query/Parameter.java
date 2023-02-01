@@ -215,6 +215,10 @@ public class Parameter {
 	 */
 	private static boolean isDynamicProjectionParameter(MethodParameter parameter) {
 
+		if (parameter.hasParameterAnnotation(Param.class)) {
+			return false;
+		}
+
 		Method method = parameter.getMethod();
 
 		if (method == null) {
@@ -232,7 +236,8 @@ public class Parameter {
 		TypeInformation<Object> returnType = ClassTypeInformation.fromReturnTypeOf(method);
 
 		return bound
-				.equals(QueryExecutionConverters.unwrapWrapperTypes(ReactiveWrapperConverters.unwrapWrapperTypes(returnType)));
+				.equals(QueryExecutionConverters
+						.unwrapWrapperTypes(ReactiveWrapperConverters.unwrapWrapperTypes(returnType)));
 	}
 
 	/**

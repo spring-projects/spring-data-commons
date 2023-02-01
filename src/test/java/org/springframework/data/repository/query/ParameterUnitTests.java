@@ -17,6 +17,7 @@ package org.springframework.data.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -48,14 +49,20 @@ class ParameterUnitTests {
 		assertThat(parameter.isDynamicProjectionParameter()).isTrue();
 	}
 
+	@Test // #1452
+	void doesNotConsiderAtParamAnnotatedClassParameterDynamicProjectionOne() throws Exception {
+
+		Parameter parameter = new Parameter(getMethodParameter("atParamOnClass"));
+
+		assertThat(parameter.isDynamicProjectionParameter()).isFalse();
+	}
+
 	@NotNull
 	private MethodParameter getMethodParameter(String methodName) throws NoSuchMethodException {
-		return new MethodParameter( //
-				this.getClass().getDeclaredMethod( //
-						methodName, //
-						Class.class //
-				), //
-				0);
+
+		Method method = getClass().getDeclaredMethod(methodName, Class.class);
+
+		return new MethodParameter(method, 0);
 	}
 
 	<T> List<T> dynamicProjectionWithList(Class<T> type) {
@@ -64,5 +71,9 @@ class ParameterUnitTests {
 
 	<T> Stream<T> dynamicProjectionWithStream(Class<T> type) {
 		return Stream.empty();
+	}
+
+	<T> T atParamOnClass(@Param("type") Class<T> type) {
+		return null;
 	}
 }
