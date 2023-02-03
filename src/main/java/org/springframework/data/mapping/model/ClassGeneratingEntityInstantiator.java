@@ -298,7 +298,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 
 		int index = 0;
 		for (Parameter<?, P> parameter : constructor.getParameters()) {
-			params[index++] = provider.getParameterValue(parameter);
+			params[index++] = !parameter.isNullableMarker() ? provider.getParameterValue(parameter) : null;
 		}
 
 		return params;

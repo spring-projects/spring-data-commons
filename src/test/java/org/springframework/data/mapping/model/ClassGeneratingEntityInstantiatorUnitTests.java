@@ -439,6 +439,33 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 				.createInstance(new BasicPersistentEntity<>(TypeInformation.of(AbstractDto.class)), provider));
 	}
 
+	@Test // GH-1947
+	void skipsValueRetrievalForKotlinDefaultConstructorMarker() {
+
+		doReturn(TheTypeConsumingAnInlineClass.class).when(entity).getType();
+		doReturn(PreferredConstructorDiscoverer.discover(TheTypeConsumingAnInlineClass.class))//
+				.when(entity).getInstanceCreatorMetadata();
+
+		ParameterValueProvider<P> valueProvider = new ParameterValueProvider<>() {
+
+			public Object getParameterValue(Parameter parameter) {
+
+				if (parameter.getName() == null || "$defaultConstructorMarker".equals(parameter.getName())) {
+					throw new RuntimeException("Stop, Hammer time! You can't touch this! Break id down!");
+				}
+				return parameter.getName();
+			}
+		};
+
+		Object instance = new ClassGeneratingEntityInstantiator().createInstance(entity, valueProvider);
+		assertThat(instance).isInstanceOf(TheTypeConsumingAnInlineClass.class).satisfies(it -> {
+			assertThat(it.toString()) //
+					.contains("inlineTypeParam=TheActualInlineClass(id=inlineTypeParam)") //
+					.contains("someStringParam=someStringParam") //
+					.contains("id=id");
+		});
+	}
+
 	private void prepareMocks(Class<?> type) {
 
 		doReturn(type).when(entity).getType();

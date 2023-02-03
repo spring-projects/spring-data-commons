@@ -42,6 +42,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 
 	private final Lazy<Boolean> enclosingClassCache;
 	private final Lazy<Boolean> hasSpelExpression;
+	private boolean isNullableMarker;
 
 	/**
 	 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
@@ -55,13 +56,28 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 */
 	public Parameter(@Nullable String name, TypeInformation<T> type, Annotation[] annotations,
 			@Nullable PersistentEntity<T, P> entity) {
+		this(name, type, MergedAnnotations.from(annotations), entity, false);
+	}
+
+	/**
+	 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
+	 * {@link Annotation}s. Will inspect the annotations for an {@link Value} annotation to lookup a key or an SpEL
+	 * expression to be evaluated.
+	 *
+	 * @param name the name of the parameter, can be {@literal null}
+	 * @param type must not be {@literal null}
+	 * @param annotations must not be {@literal null} but can be empty
+	 * @param entity must not be {@literal null}.
+	 */
+	private Parameter(@Nullable String name, TypeInformation<T> type, MergedAnnotations annotations,
+			@Nullable PersistentEntity<T, P> entity, boolean isNullableMarker) {
 
 		Assert.notNull(type, "Type must not be null");
 		Assert.notNull(annotations, "Annotations must not be null");
 
 		this.name = name;
 		this.type = type;
-		this.annotations = MergedAnnotations.from(annotations);
+		this.annotations = annotations;
 		this.key = getValue(this.annotations);
 		this.entity = entity;
 
@@ -75,7 +91,8 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 			return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
 		});
 
-		this.hasSpelExpression = Lazy.of(() -> StringUtils.hasText(getSpelExpression()));
+		this.hasSpelExpression = isNullableMarker ? Lazy.of(false) : Lazy.of(() -> StringUtils.hasText(getSpelExpression()));
+		this.isNullableMarker = isNullableMarker;
 	}
 
 	@Nullable
@@ -85,6 +102,10 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 				.getValue("value", String.class) //
 				.filter(StringUtils::hasText) //
 				.orElse(null);
+	}
+
+	public Parameter nullableMarker() {
+		return new Parameter(name, type, annotations, entity, true);
 	}
 
 	/**
@@ -141,6 +162,10 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 */
 	public boolean hasSpelExpression() {
 		return this.hasSpelExpression.get();
+	}
+
+	public boolean isNullableMarker() {
+		return isNullableMarker;
 	}
 
 	@Override

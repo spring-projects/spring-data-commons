@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.model;
 
 import kotlin.jvm.JvmClassMappingKt;
+import kotlin.jvm.internal.DefaultConstructorMarker;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.full.KClasses;
 import kotlin.reflect.jvm.ReflectJvmMapping;
@@ -195,9 +196,23 @@ public interface PreferredConstructorDiscoverer {
 							}
 
 							Constructor<T> javaConstructor = ReflectJvmMapping.getJavaConstructor(primaryConstructor);
-
 							return javaConstructor != null ? buildPreferredConstructor(javaConstructor, type, entity) : null;
 						});
+			}
+
+			@Override
+			<T, P extends PersistentProperty<P>> Parameter buildParameter(PersistentEntity<T, P> owingEntity, String name,
+					TypeInformation<?> type, Annotation[] annotations) {
+
+				if (name != null) {
+					return super.buildParameter(owingEntity, name, type, annotations);
+				}
+
+				if (ClassUtils.isAssignable(DefaultConstructorMarker.class, type.getType())) {
+					return super.buildParameter(owingEntity, "$defaultConstructorMarker", type, annotations).nullableMarker();
+				}
+
+				throw new IllegalStateException("oh no - cannot build parameter for " + name);
 			}
 		};
 
@@ -224,8 +239,13 @@ public interface PreferredConstructorDiscoverer {
 		abstract <T, P extends PersistentProperty<P>> PreferredConstructor<T, P> discover(TypeInformation<T> type,
 				@Nullable PersistentEntity<T, P> entity);
 
+		<T, P extends PersistentProperty<P>> Parameter buildParameter(PersistentEntity<T, P> owingEntity, String name,
+				TypeInformation<?> type, Annotation[] annotations) {
+			return new Parameter(name, type, annotations, owingEntity);
+		}
+
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		private static <T, P extends PersistentProperty<P>> PreferredConstructor<T, P> buildPreferredConstructor(
+		<T, P extends PersistentProperty<P>> PreferredConstructor<T, P> buildPreferredConstructor(
 				Constructor<?> constructor, TypeInformation<T> typeInformation, @Nullable PersistentEntity<T, P> entity) {
 
 			if (constructor.getParameterCount() == 0) {
@@ -244,7 +264,7 @@ public interface PreferredConstructorDiscoverer {
 				TypeInformation<?> type = parameterTypes.get(i);
 				Annotation[] annotations = parameterAnnotations[i];
 
-				parameters[i] = new Parameter(name, type, annotations, entity);
+				parameters[i] = buildParameter(entity, name, type, annotations);
 			}
 
 			return new PreferredConstructor<>((Constructor<T>) constructor, parameters);
