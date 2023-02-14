@@ -77,6 +77,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param parameterFactory must not be {@literal null}.
+	 * @since 3.0.2
 	 */
 	protected Parameters(Method method, Function<MethodParameter, T> parameterFactory) {
 
@@ -176,7 +177,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 *
 	 * @param parameter will never be {@literal null}.
 	 * @return
-	 * @deprecated since 3.1, in your extension, call {@link #Parameters(Method, ParameterFactory)} instead.
+	 * @deprecated since 3.1, in your extension, call {@link #Parameters(Method, Function)} instead.
 	 */
 	@SuppressWarnings("unchecked")
 	@Deprecated(since = "3.1", forRemoval = true)

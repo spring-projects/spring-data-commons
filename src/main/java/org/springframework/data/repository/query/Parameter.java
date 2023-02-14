@@ -79,19 +79,20 @@ public class Parameter {
 	}
 
 	/**
-	 * Creates a new {@link Parameter} for the given {@link MethodParameter} and aggregate {@link TypeInformation}.
+	 * Creates a new {@link Parameter} for the given {@link MethodParameter} and domain {@link TypeInformation}.
 	 *
 	 * @param parameter must not be {@literal null}.
-	 * @param aggregateType must not be {@literal null}.
+	 * @param domainType must not be {@literal null}.
+	 * @since 3.0.2
 	 */
-	protected Parameter(MethodParameter parameter, TypeInformation<?> aggregateType) {
+	protected Parameter(MethodParameter parameter, TypeInformation<?> domainType) {
 
 		Assert.notNull(parameter, "MethodParameter must not be null");
-		Assert.notNull(aggregateType, "TypeInformation must not be null!");
+		Assert.notNull(domainType, "TypeInformation must not be null!");
 
 		this.parameter = parameter;
 		this.parameterType = potentiallyUnwrapParameterType(parameter);
-		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter, aggregateType);
+		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter, domainType);
 		this.name = isSpecialParameterType(parameter.getParameterType()) ? Lazy.of(Optional.empty()) : Lazy.of(() -> {
 			Param annotation = parameter.getParameterAnnotation(Param.class);
 			return Optional.ofNullable(annotation == null ? parameter.getParameterName() : annotation.value());
@@ -218,10 +219,10 @@ public class Parameter {
 	 * </code>
 	 *
 	 * @param parameter must not be {@literal null}.
-	 * @param aggregateType the reference aggregate type, must not be {@literal null}.
+	 * @param domainType the reference domain type, must not be {@literal null}.
 	 * @return
 	 */
-	private static boolean isDynamicProjectionParameter(MethodParameter parameter, TypeInformation<?> aggregateType) {
+	private static boolean isDynamicProjectionParameter(MethodParameter parameter, TypeInformation<?> domainType) {
 
 		if (!parameter.getParameterType().equals(Class.class)) {
 			return false;
@@ -241,7 +242,7 @@ public class Parameter {
 		var unwrapped = QueryExecutionConverters.unwrapWrapperTypes(returnType);
 		var reactiveUnwrapped = ReactiveWrapperConverters.unwrapWrapperTypes(unwrapped);
 
-		if (aggregateType.isAssignableFrom(reactiveUnwrapped)) {
+		if (domainType.isAssignableFrom(reactiveUnwrapped)) {
 			return false;
 		}
 
