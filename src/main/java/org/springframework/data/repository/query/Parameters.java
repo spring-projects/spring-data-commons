@@ -63,10 +63,8 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * Creates a new instance of {@link Parameters}.
 	 *
 	 * @param method must not be {@literal null}.
-	 * @deprecated since 3.1, use {@link #Parameters(Method, Function)} instead.
 	 */
 	@SuppressWarnings("null")
-	@Deprecated(since = "3.1", forRemoval = true)
 	public Parameters(Method method) {
 		this(method, null);
 	}
@@ -77,6 +75,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param parameterFactory must not be {@literal null}.
+	 * @since 3.0.2
 	 */
 	protected Parameters(Method method, Function<MethodParameter, T> parameterFactory) {
 
@@ -176,10 +175,8 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 *
 	 * @param parameter will never be {@literal null}.
 	 * @return
-	 * @deprecated since 3.1, in your extension, call {@link #Parameters(Method, ParameterFactory)} instead.
 	 */
 	@SuppressWarnings("unchecked")
-	@Deprecated(since = "3.1", forRemoval = true)
 	protected T createParameter(MethodParameter parameter) {
 		return (T) new Parameter(parameter);
 	}

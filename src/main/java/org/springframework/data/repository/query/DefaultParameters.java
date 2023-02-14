@@ -31,9 +31,7 @@ public final class DefaultParameters extends Parameters<DefaultParameters, Param
 	 * Creates a new {@link DefaultParameters} instance from the given {@link Method}.
 	 *
 	 * @param method must not be {@literal null}.
-	 * @deprecated since 3.1, use {@link #DefaultParameters(Method, TypeInformation)} instead.
 	 */
-	@Deprecated(since = "3.1", forRemoval = true)
 	public DefaultParameters(Method method) {
 		super(method);
 	}

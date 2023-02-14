@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +35,7 @@ import org.springframework.data.util.TypeInformation;
  * Unit tests for {@link Parameter}.
  *
  * @author Jens Schauder
+ * @author Oliver Drotbohm
  */
 class ParameterUnitTests {
 
@@ -69,9 +71,9 @@ class ParameterUnitTests {
 				"staticReturnNonDynamicBindWildcard", //
 				"staticReturnNonDynamicBindWildcardExtends");
 
-		return DynamicTest.stream(methods, it -> it, it -> {
-			assertThat(new Parameter(getMethodParameter(it), TypeInformation.of(User.class))
-					.isDynamicProjectionParameter()).isFalse();
+		return DynamicTest.stream(methods, Function.identity(), it -> {
+			Parameter parameter = new Parameter(getMethodParameter(it), TypeInformation.of(User.class));
+			assertThat(parameter.isDynamicProjectionParameter()).isFalse();
 		});
 	}
 

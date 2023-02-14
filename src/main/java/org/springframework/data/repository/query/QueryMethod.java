@@ -69,12 +69,10 @@ public class QueryMethod {
 		Assert.notNull(metadata, "Repository metadata must not be null");
 		Assert.notNull(factory, "ProjectionFactory must not be null");
 
-		Parameters.TYPES.stream()
-				.filter(type -> getNumberOfOccurrences(method, type) > 1)
-				.findFirst().ifPresent(type -> {
-					throw new IllegalStateException(
-							String.format("Method must have only one argument of type %s; Offending method: %s",
-									type.getSimpleName(), method));
+		Parameters.TYPES.stream() //
+				.filter(type -> getNumberOfOccurrences(method, type) > 1).findFirst().ifPresent(type -> {
+					throw new IllegalStateException(String.format(
+							"Method must have only one argument of type %s; Offending method: %s", type.getSimpleName(), method));
 				});
 
 		this.method = method;
@@ -121,9 +119,7 @@ public class QueryMethod {
 	 *
 	 * @param method must not be {@literal null}.
 	 * @return must not return {@literal null}.
-	 * @deprecated since 3.1, call or override {@link #createParameters(Method, TypeInformation)} instead.
 	 */
-	@Deprecated(since = "3.1", forRemoval = true)
 	protected Parameters<?, ?> createParameters(Method method) {
 		return createParameters(method, metadata.getDomainTypeInformation());
 	}
@@ -132,11 +128,12 @@ public class QueryMethod {
 	 * Creates a {@link Parameters} instance.
 	 *
 	 * @param method must not be {@literal null}.
-	 * @param aggregateType must not be {@literal null}.
+	 * @param domainType must not be {@literal null}.
 	 * @return must not return {@literal null}.
+	 * @since 3.0.2
 	 */
-	protected Parameters<?, ?> createParameters(Method method, TypeInformation<?> aggregateType) {
-		return new DefaultParameters(method, aggregateType);
+	protected Parameters<?, ?> createParameters(Method method, TypeInformation<?> domainType) {
+		return new DefaultParameters(method, domainType);
 	}
 
 	/**
