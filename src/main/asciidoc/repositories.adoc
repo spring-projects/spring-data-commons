@@ -1,5 +1,5 @@
-:spring-framework-docs: https://docs.spring.io/spring-framework/docs/{springVersion}/reference/html
-:spring-framework-javadoc: https://docs.spring.io/spring/docs/{springVersion}/javadoc-api
+:spring-framework-docs: {springDocsUrl}
+:spring-framework-javadoc: {springJavadocUrl}
 
 ifndef::store[]
 :store: Jpa
@@ -751,7 +751,7 @@ They provide a tooling-friendly approach and opt-in `null` checks during runtime
 * {spring-framework-javadoc}/org/springframework/lang/Nullable.html[`@Nullable`]: Used on a parameter or return value that can be `null`.
 
 Spring annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR 305] annotations (a dormant but widely used JSR).
-JSR 305 meta-annotations let tooling vendors (such as https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], https://help.eclipse.org/oxygen/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], and link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin]) provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
+JSR 305 meta-annotations let tooling vendors (such as https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], https://help.eclipse.org/latest/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], and link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin]) provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
 To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on the package level by using Spring’s `@NonNullApi` in `package-info.java`, as shown in the following example:
 
 .Declaring Non-nullability in `package-info.java`
@@ -1661,7 +1661,7 @@ If the method returns a complex, non-interface type, a Jackson `ObjectMapper` is
 For Spring MVC, the necessary converters are registered automatically as soon as `@EnableSpringDataWebSupport` is active and the required dependencies are available on the classpath.
 For usage with `RestTemplate`, register a `ProjectingJackson2HttpMessageConverter` (JSON) or `XmlBeamHttpMessageConverter` manually.
 
-For more information, see the https://github.com/spring-projects/spring-data-examples/tree/master/web/projection[web projection example] in the canonical https://github.com/spring-projects/spring-data-examples[Spring Data Examples repository].
+For more information, see the https://github.com/spring-projects/spring-data-examples/tree/main/web/projection[web projection example] in the canonical https://github.com/spring-projects/spring-data-examples[Spring Data Examples repository].
 
 [[core.web.type-safe]]
 ==== Querydsl Web Support
