@@ -44,13 +44,14 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 	 *
 	 * @param delegate must not be {@literal null}.
 	 * @param executor must not be {@literal null}.
-	 * @param predicate can be {@literal null}.
+	 * @param predicate must not be {@literal null}.
 	 */
 	public QuerydslRepositoryInvokerAdapter(RepositoryInvoker delegate, QuerydslPredicateExecutor<Object> executor,
 			Predicate predicate) {
 
 		Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null");
 		Assert.notNull(executor, "QuerydslPredicateExecutor must not be null");
+		Assert.notNull(predicate, "Predicate must not be null");
 
 		this.delegate = delegate;
 		this.executor = executor;

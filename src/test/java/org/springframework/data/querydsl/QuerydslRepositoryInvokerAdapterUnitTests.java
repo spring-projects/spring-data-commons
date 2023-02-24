@@ -15,6 +15,7 @@
  */
 package org.springframework.data.querydsl;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -35,6 +35,7 @@ import com.querydsl.core.types.Predicate;
  * Unit tests for {@link QuerydslRepositoryInvokerAdapter}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Emilie Nicolas - Grown Up
  */
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +50,13 @@ class QuerydslRepositoryInvokerAdapterUnitTests {
 	@BeforeEach
 	void setUp() {
 		this.adapter = new QuerydslRepositoryInvokerAdapter(delegate, executor, predicate);
+	}
+
+	@Test // GH-1501
+	void rejectsNullPredicate() {
+
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new QuerydslRepositoryInvokerAdapter(delegate, executor, null));
 	}
 
 	@Test // DATACMNS-669
