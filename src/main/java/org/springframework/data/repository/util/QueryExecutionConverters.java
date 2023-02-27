@@ -36,6 +36,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Scroll;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.util.CustomCollections;
@@ -97,6 +98,7 @@ public abstract class QueryExecutionConverters {
 		ALLOWED_PAGEABLE_TYPES.add(Slice.class);
 		ALLOWED_PAGEABLE_TYPES.add(Page.class);
 		ALLOWED_PAGEABLE_TYPES.add(List.class);
+		ALLOWED_PAGEABLE_TYPES.add(Scroll.class);
 
 		WRAPPER_TYPES.add(NullableWrapperToCompletableFutureConverter.getWrapperType());
 

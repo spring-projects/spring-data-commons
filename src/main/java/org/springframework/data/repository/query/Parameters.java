@@ -28,6 +28,7 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
@@ -42,7 +43,7 @@ import org.springframework.util.Assert;
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Streamable<T> {
 
-	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
+	public static final List<Class<?>> TYPES = Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class);
 
 	private static final String PARAM_ON_SPECIAL = format("You must not use @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
@@ -52,6 +53,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
+	private final int scrollPositionIndex;
 	private final int pageableIndex;
 	private final int sortIndex;
 	private final List<T> parameters;
@@ -91,6 +93,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		this.parameters = new ArrayList<>(parameterCount);
 		this.dynamicProjectionIndex = -1;
 
+		int scrollPositionIndex = -1;
 		int pageableIndex = -1;
 		int sortIndex = -1;
 
@@ -111,6 +114,10 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 				this.dynamicProjectionIndex = parameter.getIndex();
 			}
 
+			if (ScrollPosition.class.isAssignableFrom(parameter.getType())) {
+				scrollPositionIndex = i;
+			}
+
 			if (Pageable.class.isAssignableFrom(parameter.getType())) {
 				pageableIndex = i;
 			}
@@ -122,6 +129,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			parameters.add(parameter);
 		}
 
+		this.scrollPositionIndex = scrollPositionIndex;
 		this.pageableIndex = pageableIndex;
 		this.sortIndex = sortIndex;
 		this.bindable = Lazy.of(this::getBindable);
@@ -138,6 +146,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		this.parameters = new ArrayList<>(originals.size());
 
+		int scrollPositionIndexTemp = -1;
 		int pageableIndexTemp = -1;
 		int sortIndexTemp = -1;
 		int dynamicProjectionTemp = -1;
@@ -147,11 +156,13 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			T original = originals.get(i);
 			this.parameters.add(original);
 
+			scrollPositionIndexTemp = original.isScrollPosition() ? i : -1;
 			pageableIndexTemp = original.isPageable() ? i : -1;
 			sortIndexTemp = original.isSort() ? i : -1;
 			dynamicProjectionTemp = original.isDynamicProjectionParameter() ? i : -1;
 		}
 
+		this.scrollPositionIndex = scrollPositionIndexTemp;
 		this.pageableIndex = pageableIndexTemp;
 		this.sortIndex = sortIndexTemp;
 		this.dynamicProjectionIndex = dynamicProjectionTemp;
@@ -186,6 +197,27 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	}
 
 	/**
+	 * Returns whether the method the {@link Parameters} was created for contains a {@link ScrollPosition} argument.
+	 *
+	 * @return
+	 * @since 3.1
+	 */
+	public boolean hasScrollPositionParameter() {
+		return scrollPositionIndex != -1;
+	}
+
+	/**
+	 * Returns the index of the {@link ScrollPosition} {@link Method} parameter if available. Will return {@literal -1} if
+	 * there is no {@link ScrollPosition} argument in the {@link Method}'s parameter list.
+	 *
+	 * @return the scrollPositionIndex
+	 * @since 3.1
+	 */
+	public int getScrollPositionIndex() {
+		return scrollPositionIndex;
+	}
+
+	/**
 	 * Returns whether the method the {@link Parameters} was created for contains a {@link Pageable} argument.
 	 *
 	 * @return
@@ -195,8 +227,8 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	}
 
 	/**
-	 * Returns the index of the {@link Pageable} {@link Method} parameter if available. Will return {@literal -1} if
-	 * there is no {@link Pageable} argument in the {@link Method}'s parameter list.
+	 * Returns the index of the {@link Pageable} {@link Method} parameter if available. Will return {@literal -1} if there
+	 * is no {@link Pageable} argument in the {@link Method}'s parameter list.
 	 *
 	 * @return the pageableIndex
 	 */
@@ -205,8 +237,8 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	}
 
 	/**
-	 * Returns the index of the {@link Sort} {@link Method} parameter if available. Will return {@literal -1} if there
-	 * is no {@link Sort} argument in the {@link Method}'s parameter list.
+	 * Returns the index of the {@link Sort} {@link Method} parameter if available. Will return {@literal -1} if there is
+	 * no {@link Sort} argument in the {@link Method}'s parameter list.
 	 *
 	 * @return
 	 */
@@ -288,7 +320,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * @return
 	 */
 	public boolean hasSpecialParameter() {
-		return hasSortParameter() || hasPageableParameter();
+		return hasScrollPositionParameter() || hasSortParameter() || hasPageableParameter();
 	}
 
 	/**
@@ -315,8 +347,8 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	/**
 	 * Returns a bindable parameter with the given index. So for a method with a signature of
-	 * {@code (Pageable pageable, String name)} a call to {@code #getBindableParameter(0)} will return the
-	 * {@link String} parameter.
+	 * {@code (Pageable pageable, String name)} a call to {@code #getBindableParameter(0)} will return the {@link String}
+	 * parameter.
 	 *
 	 * @param bindableIndex
 	 * @return

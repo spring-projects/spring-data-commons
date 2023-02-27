@@ -25,9 +25,10 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
-
+import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Scroll;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -182,6 +183,14 @@ class ParametersUnitTests {
 		assertThat(parameters.hasPageableParameter()).isTrue();
 	}
 
+	@Test // GH-2151
+	void acceptsScrollPositionSubtypeParameter() throws Exception {
+
+		var parameters = getParametersFor("customScrollPosition", OffsetScrollPosition.class);
+
+		assertThat(parameters.hasScrollPositionParameter()).isTrue();
+	}
+
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
@@ -221,6 +230,8 @@ class ParametersUnitTests {
 		void methodWithSingle(Single<String> single);
 
 		Page<Object> customPageable(SomePageable pageable);
+
+		Scroll<Object> customScrollPosition(OffsetScrollPosition request);
 	}
 
 	interface SomePageable extends Pageable {}
