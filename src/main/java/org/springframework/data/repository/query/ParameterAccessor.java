@@ -18,6 +18,7 @@ package org.springframework.data.repository.query;
 import java.util.Iterator;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 
@@ -28,6 +29,14 @@ import org.springframework.lang.Nullable;
  * @author Mark Paluch
  */
 public interface ParameterAccessor extends Iterable<Object> {
+
+	/**
+	 * Returns the {@link ScrollPosition} of the parameters, if available. Returns {@code null} otherwise.
+	 *
+	 * @return
+	 */
+	@Nullable
+	ScrollPosition getScrollPosition();
 
 	/**
 	 * Returns the {@link Pageable} of the parameters, if available. Returns {@link Pageable#unpaged()} otherwise.

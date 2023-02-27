@@ -161,4 +161,20 @@ public interface Pageable {
 		return isUnpaged() ? Optional.empty() : Optional.of(this);
 	}
 
+	/**
+	 * Returns an {@link OffsetScrollPosition} from this pageable if the page request {@link #isPaged() is paged}.
+	 *
+	 * @return
+	 * @throws IllegalStateException if the request is {@link #isUnpaged()}
+	 * @since 3.1
+	 */
+	default OffsetScrollPosition toScrollPosition() {
+
+		if (isUnpaged()) {
+			throw new IllegalStateException("Cannot create OffsetScrollPosition from an unpaged instance");
+		}
+
+		return OffsetScrollPosition.of(getOffset());
+	}
+
 }

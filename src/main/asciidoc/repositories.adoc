@@ -92,6 +92,10 @@ Page<User> users = repository.findAll(PageRequest.of(1, 20));
 ----
 ====
 
+ifdef::feature-scroll[]
+In addition to pagination, scrolling provides a more fine-grained access to iterate through chunks of larger result sets.
+endif::[]
+
 In addition to query methods, query derivation for both count and delete queries is available.
 The following list shows the interface definition for a derived count query:
 
@@ -517,118 +521,7 @@ List<Person> findByAddress_ZipCode(ZipCode zipCode);
 
 Because we treat the underscore character as a reserved character, we strongly advise following standard Java naming conventions (that is, not using underscores in property names but using camel case instead).
 
-[[repositories.special-parameters]]
-=== Special parameter handling
-
-To handle parameters in your query, define method parameters as already seen in the preceding examples.
-Besides that, the infrastructure recognizes certain specific types like `Pageable` and `Sort`, to apply pagination and sorting to your queries dynamically.
-The following example demonstrates these features:
-
-.Using `Pageable`, `Slice`, and `Sort` in query methods
-====
-[source,java]
-----
-Page<User> findByLastname(String lastname, Pageable pageable);
-
-Slice<User> findByLastname(String lastname, Pageable pageable);
-
-List<User> findByLastname(String lastname, Sort sort);
-
-List<User> findByLastname(String lastname, Pageable pageable);
-----
-====
-
-IMPORTANT: APIs taking `Sort` and `Pageable` expect non-`null` values to be handed into methods.
-If you do not want to apply any sorting or pagination, use `Sort.unsorted()` and `Pageable.unpaged()`.
-
-The first method lets you pass an `org.springframework.data.domain.Pageable` instance to the query method to dynamically add paging to your statically defined query.
-A `Page` knows about the total number of elements and pages available.
-It does so by the infrastructure triggering a count query to calculate the overall number.
-As this might be expensive (depending on the store used), you can instead return a `Slice`.
-A `Slice` knows only about whether a next `Slice` is available, which might be sufficient when walking through a larger result set.
-
-Sorting options are handled through the `Pageable` instance, too.
-If you need only sorting, add an `org.springframework.data.domain.Sort` parameter to your method.
-As you can see, returning a `List` is also possible.
-In this case, the additional metadata required to build the actual `Page` instance is not created (which, in turn, means that the additional count query that would have been necessary is not issued).
-Rather, it restricts the query to look up only the given range of entities.
-
-NOTE: To find out how many pages you get for an entire query, you have to trigger an additional count query.
-By default, this query is derived from the query you actually trigger.
-
-[[repositories.paging-and-sorting]]
-==== Paging and Sorting
-
-You can define simple sorting expressions by using property names.
-You can concatenate expressions to collect multiple criteria into one expression.
-
-.Defining sort expressions
-====
-[source,java]
-----
-Sort sort = Sort.by("firstname").ascending()
-  .and(Sort.by("lastname").descending());
-----
-====
-
-For a more type-safe way to define sort expressions, start with the type for which to define the sort expression and use method references to define the properties on which to sort.
-
-.Defining sort expressions by using the type-safe API
-====
-[source,java]
-----
-TypedSort<Person> person = Sort.sort(Person.class);
-
-Sort sort = person.by(Person::getFirstname).ascending()
-  .and(person.by(Person::getLastname).descending());
-----
-====
-
-NOTE: `TypedSort.by(…)` makes use of runtime proxies by (typically) using CGlib, which may interfere with native image compilation when using tools such as Graal VM Native.
-
-If your store implementation supports Querydsl, you can also use the generated metamodel types to define sort expressions:
-
-.Defining sort expressions by using the Querydsl API
-====
-[source,java]
-----
-QSort sort = QSort.by(QPerson.firstname.asc())
-  .and(QSort.by(QPerson.lastname.desc()));
-----
-====
-
-[[repositories.limit-query-result]]
-=== Limiting Query Results
-
-You can limit the results of query methods by using the `first` or `top` keywords, which you can use interchangeably.
-You can append an optional numeric value to `top` or `first` to specify the maximum result size to be returned.
-If the number is left out, a result size of 1 is assumed.
-The following example shows how to limit the query size:
-
-.Limiting the result size of a query with `Top` and `First`
-====
-[source,java]
-----
-User findFirstByOrderByLastnameAsc();
-
-User findTopByOrderByAgeDesc();
-
-Page<User> queryFirst10ByLastname(String lastname, Pageable pageable);
-
-Slice<User> findTop3ByLastname(String lastname, Pageable pageable);
-
-List<User> findFirst10ByLastname(String lastname, Sort sort);
-
-List<User> findTop10ByLastname(String lastname, Pageable pageable);
-----
-====
-
-The limiting expressions also support the `Distinct` keyword for datastores that support distinct queries.
-Also, for the queries that limit the result set to one instance, wrapping the result into with the `Optional` keyword is supported.
-
-If pagination or slicing is applied to a limiting query pagination (and the calculation of the number of available pages), it is applied within the limited result.
-
-NOTE: Limiting the results in combination with dynamic sorting by using a `Sort` parameter lets you express query methods for the 'K' smallest as well as for the 'K' biggest elements.
+include::repositories-paging-sorting.adoc[]
 
 [[repositories.collections-and-iterables]]
 === Repository Methods Returning Collections or Iterables

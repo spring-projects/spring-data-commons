@@ -19,23 +19,27 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 
 /**
  * Unit tests for {@link ParametersParameterAccessor}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 class SimpleParameterAccessorUnitTests {
 
-	Parameters<?, ?> parameters, sortParameters, pageableParameters;
+	Parameters<?, ?> parameters, cursorRequestParameters, sortParameters, pageableParameters;
 
 	@BeforeEach
 	void setUp() throws SecurityException, NoSuchMethodException {
 
 		parameters = new DefaultParameters(Sample.class.getMethod("sample", String.class));
+		cursorRequestParameters = new DefaultParameters(Sample.class.getMethod("sample", ScrollPosition.class));
 		sortParameters = new DefaultParameters(Sample.class.getMethod("sample1", String.class, Sort.class));
 		pageableParameters = new DefaultParameters(Sample.class.getMethod("sample2", String.class, Pageable.class));
 	}
@@ -75,6 +79,16 @@ class SimpleParameterAccessorUnitTests {
 		assertThat(accessor.getSort().isSorted()).isFalse();
 	}
 
+	@Test // GH-2151
+	void returnsScrollPositionIfAvailable() {
+
+		var cursorRequest = OffsetScrollPosition.of(1);
+		ParameterAccessor accessor = new ParametersParameterAccessor(cursorRequestParameters,
+				new Object[] { cursorRequest });
+
+		assertThat(accessor.getScrollPosition()).isEqualTo(cursorRequest);
+	}
+
 	@Test
 	void returnsSortIfAvailable() {
 
@@ -109,6 +123,8 @@ class SimpleParameterAccessorUnitTests {
 	interface Sample {
 
 		void sample(String firstname);
+
+		void sample(ScrollPosition scrollPosition);
 
 		void sample1(String firstname, Sort sort);
 

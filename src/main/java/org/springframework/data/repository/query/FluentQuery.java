@@ -26,6 +26,8 @@ import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Scroll;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 
@@ -44,9 +46,22 @@ public interface FluentQuery<T> {
 	 * @param sort the {@link Sort} specification to sort the results by, may be {@link Sort#unsorted()}, must not be
 	 *          {@literal null}.
 	 * @return a new instance of {@link FluentQuery}.
-	 * @throws IllegalArgumentException if resultType is {@code null}.
+	 * @throws IllegalArgumentException if {@code sort} is {@code null}.
 	 */
 	FluentQuery<T> sortBy(Sort sort);
+
+	/**
+	 * Define the query limit.
+	 *
+	 * @param limit the limit to apply to the query to limit results. Must not be negative.
+	 * @return a new instance of {@link FluentQuery}.
+	 * @throws IllegalArgumentException if {@code limit} is less than zero.
+	 * @throws UnsupportedOperationException if not supported by the underlying implementation.
+	 * @since 3.1
+	 */
+	default FluentQuery<T> limit(int limit) {
+		throw new UnsupportedOperationException("Limit not supported");
+	}
 
 	/**
 	 * Define the target type the result should be mapped to. Skip this step if you are only interested in the original
@@ -55,7 +70,7 @@ public interface FluentQuery<T> {
 	 * @param resultType must not be {@code null}.
 	 * @param <R> result type.
 	 * @return a new instance of {@link FluentQuery}.
-	 * @throws IllegalArgumentException if resultType is {@code null}.
+	 * @throws IllegalArgumentException if {@code resultType} is {@code null}.
 	 */
 	<R> FluentQuery<R> as(Class<R> resultType);
 
@@ -64,7 +79,7 @@ public interface FluentQuery<T> {
 	 *
 	 * @param properties must not be {@code null}.
 	 * @return a new instance of {@link FluentQuery}.
-	 * @throws IllegalArgumentException if fields is {@code null}.
+	 * @throws IllegalArgumentException if {@code properties} is {@code null}.
 	 */
 	default FluentQuery<T> project(String... properties) {
 		return project(Arrays.asList(properties));
@@ -75,7 +90,7 @@ public interface FluentQuery<T> {
 	 *
 	 * @param properties must not be {@code null}.
 	 * @return a new instance of {@link FluentQuery}.
-	 * @throws IllegalArgumentException if fields is {@code null}.
+	 * @throws IllegalArgumentException if {@code properties} is {@code null}.
 	 */
 	FluentQuery<T> project(Collection<String> properties);
 
@@ -89,6 +104,11 @@ public interface FluentQuery<T> {
 
 		@Override
 		FetchableFluentQuery<T> sortBy(Sort sort);
+
+		@Override
+		default FetchableFluentQuery<T> limit(int limit) {
+			throw new UnsupportedOperationException("Limit not supported");
+		}
 
 		@Override
 		<R> FetchableFluentQuery<R> as(Class<R> resultType);
@@ -145,11 +165,26 @@ public interface FluentQuery<T> {
 		List<T> all();
 
 		/**
+		 * Get all matching elements as {@link Scroll} to start result scrolling or resume scrolling at
+		 * {@code scrollPosition}.
+		 *
+		 * @param scrollPosition must not be {@literal null}.
+		 * @return
+		 * @throws IllegalArgumentException if {@code scrollPosition} is {@literal null}.
+		 * @throws UnsupportedOperationException if not supported by the underlying implementation.
+		 * @since 3.1
+		 */
+		default Scroll<T> scroll(ScrollPosition scrollPosition) {
+			throw new UnsupportedOperationException("Scrolling not supported");
+		}
+
+		/**
 		 * Get a page of matching elements for {@link Pageable}.
 		 *
 		 * @param pageable the pageable to request a paged result, can be {@link Pageable#unpaged()}, must not be
 		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort} if
-		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}.
+		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}. Any potentially specified {@link #limit(int)}
+		 *          will be overridden by {@link Pageable#getPageSize()}.
 		 * @return
 		 */
 		Page<T> page(Pageable pageable);
@@ -188,6 +223,11 @@ public interface FluentQuery<T> {
 		ReactiveFluentQuery<T> sortBy(Sort sort);
 
 		@Override
+		default ReactiveFluentQuery<T> limit(int limit) {
+			throw new UnsupportedOperationException("Limit not supported");
+		}
+
+		@Override
 		<R> ReactiveFluentQuery<R> as(Class<R> resultType);
 
 		@Override
@@ -221,11 +261,26 @@ public interface FluentQuery<T> {
 		Flux<T> all();
 
 		/**
+		 * Get all matching elements as {@link Scroll} to start result scrolling or resume scrolling at
+		 * {@code scrollPosition}.
+		 *
+		 * @param scrollPosition must not be {@literal null}.
+		 * @return
+		 * @throws IllegalArgumentException if {@code scrollPosition} is {@literal null}.
+		 * @throws UnsupportedOperationException if not supported by the underlying implementation.
+		 * @since 3.1
+		 */
+		default Mono<Scroll<T>> scroll(ScrollPosition scrollPosition) {
+			throw new UnsupportedOperationException("Scrolling not supported");
+		}
+
+		/**
 		 * Get a page of matching elements for {@link Pageable}.
 		 *
 		 * @param pageable the pageable to request a paged result, can be {@link Pageable#unpaged()}, must not be
 		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort} if
-		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}.
+		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}. Any potentially specified {@link #limit(int)}
+		 *          will be overridden by {@link Pageable#getPageSize()}.
 		 * @return
 		 */
 		Mono<Page<T>> page(Pageable pageable);

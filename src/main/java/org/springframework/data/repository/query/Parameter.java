@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
@@ -57,7 +58,7 @@ public class Parameter {
 
 	static {
 
-		List<Class<?>> types = new ArrayList<>(Arrays.asList(Pageable.class, Sort.class));
+		List<Class<?>> types = new ArrayList<>(Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class));
 
 		// consider Kotlin Coroutines Continuation a special parameter. That parameter is synthetic and should not get
 		// bound to any query.
@@ -190,6 +191,16 @@ public class Parameter {
 	@Override
 	public String toString() {
 		return format("%s:%s", isNamedParameter() ? getName() : "#" + getIndex(), getType().getName());
+	}
+
+	/**
+	 * Returns whether the {@link Parameter} is a {@link ScrollPosition} parameter.
+	 *
+	 * @return
+	 * @since 3.1
+	 */
+	boolean isScrollPosition() {
+		return ScrollPosition.class.isAssignableFrom(getType());
 	}
 
 	/**

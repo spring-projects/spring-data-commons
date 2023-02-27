@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.domain.Sort.Direction;
 
 /**
@@ -66,5 +65,13 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> PageRequest.of(0, 10, null));
+	}
+
+	@Test // GH-2151
+	void createsOffsetScrollPosition() {
+
+		PageRequest request = PageRequest.of(1, 10);
+
+		assertThat(request.toScrollPosition()).isEqualTo(OffsetScrollPosition.of(10));
 	}
 }

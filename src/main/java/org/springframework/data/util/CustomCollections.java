@@ -223,7 +223,7 @@ public class CustomCollections {
 		/**
 		 * Returns whether the current's raw type is one of the given ones.
 		 *
-		 * @param candidates must not be {@literal null}.
+		 * @param type must not be {@literal null}.
 		 * @return
 		 */
 		public boolean has(Class<?> type) {

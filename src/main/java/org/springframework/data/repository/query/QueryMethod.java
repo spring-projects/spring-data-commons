@@ -18,11 +18,14 @@ package org.springframework.data.repository.query;
 import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Scroll;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.projection.ProjectionFactory;
@@ -31,6 +34,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -92,12 +96,22 @@ public class QueryMethod {
 			}
 		}
 
+		if (hasParameterOfType(method, ScrollPosition.class)) {
+			assertReturnTypeAssignable(method, Collections.singleton(Scroll.class));
+		}
+
 		Assert.notNull(this.parameters,
 				() -> String.format("Parameters extracted from method '%s' must not be null", method.getName()));
 
 		if (isPageQuery()) {
 			Assert.isTrue(this.parameters.hasPageableParameter(),
 					String.format("Paging query needs to have a Pageable parameter; Offending method: %s", method));
+		}
+
+		if (isScrollQuery()) {
+
+			Assert.isTrue(this.parameters.hasScrollPositionParameter() || this.parameters.hasPageableParameter(),
+					String.format("Scroll query needs to have a ScrollPosition parameter; Offending method: %s", method));
 		}
 
 		this.domainClass = Lazy.of(() -> {
@@ -189,6 +203,16 @@ public class QueryMethod {
 	}
 
 	/**
+	 * Returns whether the query method will return a {@link Scroll}.
+	 *
+	 * @return
+	 * @since 3.1
+	 */
+	public boolean isScrollQuery() {
+		return org.springframework.util.ClassUtils.isAssignable(Scroll.class, unwrappedReturnType);
+	}
+
+	/**
 	 * Returns whether the query method will return a {@link Slice}.
 	 *
 	 * @return
@@ -268,7 +292,7 @@ public class QueryMethod {
 
 	private boolean calculateIsCollectionQuery() {
 
-		if (isPageQuery() || isSliceQuery()) {
+		if (isPageQuery() || isSliceQuery() || isScrollQuery()) {
 			return false;
 		}
 
@@ -314,6 +338,10 @@ public class QueryMethod {
 		// TODO: to resolve generics fully we'd need the actual repository interface here
 		TypeInformation<?> returnType = TypeInformation.fromReturnTypeOf(method);
 
+		returnType = ReactiveWrappers.isSingleValueType(returnType.getType()) //
+				? returnType.getRequiredComponentType() //
+				: returnType;
+
 		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) //
 				? returnType.getRequiredComponentType() //
 				: returnType;
@@ -324,6 +352,6 @@ public class QueryMethod {
 			}
 		}
 
-		throw new IllegalStateException("Method has to have one of the following return types" + types);
+		throw new IllegalStateException("Method has to have one of the following return types " + types);
 	}
 }
