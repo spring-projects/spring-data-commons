@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.web;
 
-import static org.springframework.web.util.UriComponentsBuilder.fromUri;
+import static org.springframework.web.util.UriComponentsBuilder.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,8 +26,14 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.hateoas.*;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.SlicedModel;
 import org.springframework.hateoas.SlicedModel.SliceMetadata;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.hateoas.server.core.EmbeddedWrappers;
@@ -38,51 +44,63 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * {@link RepresentationModelAssembler} to easily convert {@link Slice} instances into
- * {@link SlicedModel}.
+ * {@link RepresentationModelAssembler} to easily convert {@link Slice} instances into {@link SlicedModel}.
  *
  * @author Michael Schout
+ * @author Oliver Drotbohm
+ * @since 3.1
  */
 public class SlicedResourcesAssembler<T>
 		implements RepresentationModelAssembler<Slice<T>, SlicedModel<EntityModel<T>>> {
 
 	private final HateoasPageableHandlerMethodArgumentResolver pageableResolver;
-
 	private final Optional<UriComponents> baseUri;
 	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
 	private boolean forceFirstRel = false;
+	private @Nullable MethodParameter parameter;
 
 	/**
-	 * Creates a new {@link SlicedResourcesAssembler} using the given
-	 * {@link PageableHandlerMethodArgumentResolver} and base URI. If the former is
-	 * {@literal null}, a default one will be created. If the latter is {@literal null}, calls
-	 * to {@link #toModel(Slice)} will use the current request's URI to build the relevant
-	 * previous and next links.
+	 * Creates a new {@link SlicedResourcesAssembler} using the given {@link PageableHandlerMethodArgumentResolver} and
+	 * base URI. If the former is {@literal null}, a default one will be created. If the latter is {@literal null}, calls
+	 * to {@link #toModel(Slice)} will use the current request's URI to build the relevant previous and next links.
 	 *
 	 * @param resolver can be {@literal null}.
 	 * @param baseUri can be {@literal null}.
 	 */
 	public SlicedResourcesAssembler(@Nullable HateoasPageableHandlerMethodArgumentResolver resolver,
 			@Nullable UriComponents baseUri) {
-		this.pageableResolver = resolver == null ? new HateoasPageableHandlerMethodArgumentResolver() : resolver;
-		this.baseUri = Optional.ofNullable(baseUri);
+		this(resolver, Optional.ofNullable(baseUri), null);
 	}
 
-	private static String currentRequest() {
-		return ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
+	private SlicedResourcesAssembler(@Nullable HateoasPageableHandlerMethodArgumentResolver resolver,
+			@Nullable Optional<UriComponents> baseUri, @Nullable MethodParameter parameter) {
+
+		this.pageableResolver = resolver == null ? new HateoasPageableHandlerMethodArgumentResolver() : resolver;
+		this.baseUri = baseUri;
+		this.parameter = parameter;
 	}
 
 	/**
-	 * Configures whether to always add {@code first} links to the {@link SlicedModel} *
-	 * created. Defaults to {@literal false} which means that {@code first} links onlys appear
-	 * in conjunction with {@code prev} and {@code next} links.
+	 * Configures whether to always add {@code first} links to the {@link SlicedModel} * created. Defaults to
+	 * {@literal false} which means that {@code first} links onlys appear in conjunction with {@code prev} and
+	 * {@code next} links.
 	 *
-	 * @param forceFirstRel whether to always add {@code first} links to the
-	 *     {@link SlicedModel} created.
+	 * @param forceFirstRel whether to always add {@code first} links to the {@link SlicedModel} created.
 	 */
 	public void setForceFirstRel(boolean forceFirstRel) {
 		this.forceFirstRel = forceFirstRel;
+	}
+
+	/**
+	 * Creates a new {@link SlicedResourcesAssembler} with the given reference {@link MethodParameter}.
+	 *
+	 * @param parameter can be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.1
+	 */
+	public SlicedResourcesAssembler<T> withParameter(@Nullable MethodParameter parameter) {
+		return new SlicedResourcesAssembler<>(pageableResolver, baseUri, parameter);
 	}
 
 	@Override
@@ -91,9 +109,9 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	/**
-	 * Creates a new {@link SlicedModel} by converting the given {@link Slice} into a
-	 * {@link SliceMetadata} instance and wrapping the contained elements into *
-	 * {@link SlicedModel} instances. Will add pagination links based on the given self link.
+	 * Creates a new {@link SlicedModel} by converting the given {@link Slice} into a {@link SliceMetadata} instance and
+	 * wrapping the contained elements into * {@link SlicedModel} instances. Will add pagination links based on the given
+	 * self link.
 	 *
 	 * @param slice must not be {@literal null}.
 	 * @param selfLink must not be {@literal null}.
@@ -104,9 +122,8 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	/**
-	 * Creates a new {@link SlicedModel} by converting the given {@link Slice} into a
-	 * {@link SliceMetadata} instance and using the given {@link SlicedModel} to turn elements
-	 * of the {@link Slice} into resources.
+	 * Creates a new {@link SlicedModel} by converting the given {@link Slice} into a {@link SliceMetadata} instance and
+	 * using the given {@link SlicedModel} to turn elements of the {@link Slice} into resources.
 	 *
 	 * @param slice must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
@@ -118,10 +135,9 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	/**
-	 * Creates a new {@link SlicedModel} by converting the given {@link Slice} into a
-	 * {@link SliceMetadata} instance and using the given {@link SlicedModel} to turn elements
-	 * of the {@link Slice} into resources. Will add pagination links based on the given the
-	 * self link.
+	 * Creates a new {@link SlicedModel} by converting the given {@link Slice} into a {@link SliceMetadata} instance and
+	 * using the given {@link SlicedModel} to turn elements of the {@link Slice} into resources. Will add pagination links
+	 * based on the given the self link.
 	 *
 	 * @param slice must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
@@ -134,8 +150,7 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	/**
-	 * Creates a {@link SlicedModel} with an empty collection {@link EmbeddedWrapper} for the
-	 * given domain type.
+	 * Creates a {@link SlicedModel} with an empty collection {@link EmbeddedWrapper} for the given domain type.
 	 *
 	 * @param slice must not be {@literal null}, content must be empty.
 	 * @param type must not be {@literal null}.
@@ -146,8 +161,7 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	/**
-	 * Creates a {@link SlicedModel} with an empty collection {@link EmbeddedWrapper} for the
-	 * given domain type.
+	 * Creates a {@link SlicedModel} with an empty collection {@link EmbeddedWrapper} for the given domain type.
 	 *
 	 * @param slice must not be {@literal null}, content must be empty.
 	 * @param type must not be {@literal null}.
@@ -159,6 +173,7 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	public SlicedModel<?> toEmptyModel(Slice<?> slice, Class<?> type, Optional<Link> link) {
+
 		Assert.notNull(slice, "Slice must not be null");
 		Assert.isTrue(!slice.hasContent(), "Slice must not have any content");
 		Assert.notNull(type, "Type must not be null");
@@ -175,8 +190,7 @@ public class SlicedResourcesAssembler<T>
 	/**
 	 * Creates the {@link SlicedModel} to be equipped with pagination links downstream.
 	 *
-	 * @param resources the original slices's elements mapped into {@link RepresentationModel}
-	 *     instances.
+	 * @param resources the original slices's elements mapped into {@link RepresentationModel} instances.
 	 * @param metadata the calculated {@link SliceMetadata}, must not be {@literal null}.
 	 * @param slice the original page handed to the assembler, must not be {@literal null}.
 	 * @return must not be {@literal null}.
@@ -233,8 +247,8 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	/**
-	 * Returns a default URI string either from the one configured on then assembler or by
-	 * looking it up from the current request.
+	 * Returns a default URI string either from the one configured on then assembler or by looking it up from the current
+	 * request.
 	 *
 	 * @return
 	 */
@@ -243,9 +257,8 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	/**
-	 * Creates a {@link Link} with the given {@link LinkRelation} that will be based on the
-	 * given {@link UriTemplate} but enriched with the values of the given {@link Pageable}
-	 * (if not {@literal null}).
+	 * Creates a {@link Link} with the given {@link LinkRelation} that will be based on the given {@link UriTemplate} but
+	 * enriched with the values of the given {@link Pageable} (if not {@literal null}).
 	 *
 	 * @param base must not be {@literal null}.
 	 * @param pageable can be {@literal null}
@@ -254,21 +267,9 @@ public class SlicedResourcesAssembler<T>
 	 */
 	private Link createLink(UriTemplate base, Pageable pageable, LinkRelation relation) {
 		UriComponentsBuilder builder = fromUri(base.expand());
-		pageableResolver.enhance(builder, getMethodParameter(), pageable);
+		pageableResolver.enhance(builder, parameter, pageable);
 
 		return Link.of(UriTemplate.of(builder.build().toString()), relation);
-	}
-
-	/**
-	 * Return the {@link MethodParameter} to be used to potentially qualify the paging and
-	 * sorting request parameters to. Default implementations returns {@literal null}, which
-	 * means the parameters will not be qualified.
-	 *
-	 * @return
-	 */
-	@Nullable
-	protected MethodParameter getMethodParameter() {
-		return null;
 	}
 
 	/**
@@ -287,5 +288,9 @@ public class SlicedResourcesAssembler<T>
 
 	private String baseUriOrCurrentRequest() {
 		return baseUri.map(Object::toString).orElseGet(SlicedResourcesAssembler::currentRequest);
+	}
+
+	private static String currentRequest() {
+		return ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
 	}
 }

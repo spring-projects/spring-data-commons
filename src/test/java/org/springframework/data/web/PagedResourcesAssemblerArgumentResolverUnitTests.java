@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -52,7 +53,6 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 		var result = resolver.resolveArgument(new MethodParameter(method, 0), null, null, null);
 
 		assertThat(result).isInstanceOf(PagedResourcesAssembler.class);
-		assertThat(result).isNotInstanceOf(MethodParameterAwarePagedResourcesAssembler.class);
 	}
 
 	@Test // DATACMNS-418
@@ -118,10 +118,9 @@ class PagedResourcesAssemblerArgumentResolverUnitTests {
 
 	private static void assertMethodParameterAwarePagedResourcesAssemblerFor(Object result, MethodParameter parameter) {
 
-		assertThat(result).isInstanceOf(MethodParameterAwarePagedResourcesAssembler.class);
-		var assembler = (MethodParameterAwarePagedResourcesAssembler<?>) result;
-
-		assertThat(assembler.getMethodParameter()).isEqualTo(parameter);
+		assertThat(result).isInstanceOfSatisfying(PagedResourcesAssembler.class, it -> {
+			assertThat(ReflectionTestUtils.getField(it, "parameter")).isEqualTo(parameter);
+		});
 	}
 
 	private void assertRejectsAmbiguity(String methodName) throws Exception {
