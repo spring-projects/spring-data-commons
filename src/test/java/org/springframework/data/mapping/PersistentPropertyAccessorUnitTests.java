@@ -82,15 +82,6 @@ public class PersistentPropertyAccessorUnitTests {
 	}
 
 	@Test // DATACMNS-1275
-	public void rejectsEmptyPathToSetValues() {
-
-		setUp(new Order(null), "");
-
-		assertThatIllegalArgumentException() //
-				.isThrownBy(() -> accessor.setProperty(path, "Oliver August"));
-	}
-
-	@Test // DATACMNS-1275
 	public void rejectsIntermediateNullValuesForRead() {
 
 		setUp(new Order(null), "customer.firstname");

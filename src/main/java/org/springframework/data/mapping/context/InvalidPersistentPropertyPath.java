@@ -54,7 +54,7 @@ public class InvalidPersistentPropertyPath extends MappingException {
 	public InvalidPersistentPropertyPath(String source, TypeInformation<?> type, String unresolvableSegment,
 			PersistentPropertyPath<? extends PersistentProperty<?>> resolvedPath) {
 
-		super(createMessage(resolvedPath.isEmpty() ? type : resolvedPath.getRequiredLeafProperty().getTypeInformation(),
+		super(createMessage(resolvedPath.isEmpty() ? type : resolvedPath.getLeafProperty().getTypeInformation(),
 				unresolvableSegment));
 
 		Assert.notNull(source, "Source property path must not be null");

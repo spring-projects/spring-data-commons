@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.core.CollectionFactory;
 import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.AccessOptions.GetOptions;
@@ -114,8 +113,8 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 		setProperty(path, value, AccessOptions.defaultSetOptions());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
+	@SuppressWarnings("unchecked")
 	public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value,
 			SetOptions options) {
 
@@ -123,7 +122,13 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty");
 
 		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
-		PersistentProperty<? extends PersistentProperty<?>> leafProperty = path.getRequiredLeafProperty();
+
+		if (parentPath == null) {
+			setProperty(path.getLeafProperty(), value);
+			return;
+		}
+
+		PersistentProperty<? extends PersistentProperty<?>> leafProperty = path.getLeafProperty();
 
 		if (!options.propagate(parentPath.getLeafProperty())) {
 			return;
@@ -133,7 +138,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 				? DEFAULT_GET_OPTIONS.withNullValues(GetNulls.EARLY_RETURN)
 				: DEFAULT_GET_OPTIONS;
 
-		Object parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath, lookupOptions);
+		Object parent = getProperty(parentPath, lookupOptions);
 
 		if (parent == null) {
 			handleNull(path, options.getNullHandling());
@@ -146,7 +151,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 			return;
 		}
 
-		PersistentProperty<? extends PersistentProperty<?>> parentProperty = parentPath.getRequiredLeafProperty();
+		PersistentProperty<? extends PersistentProperty<?>> parentProperty = parentPath.getLeafProperty();
 
 		Object newValue;
 
@@ -193,6 +198,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 	 * @return
 	 */
 	@Nullable
+	@SuppressWarnings("null")
 	private Object handleNull(PersistentPropertyPath<? extends PersistentProperty<?>> path, SetNulls handling) {
 
 		if (SKIP.equals(handling)) {

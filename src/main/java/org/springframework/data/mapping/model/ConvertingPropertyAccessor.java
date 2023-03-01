@@ -63,7 +63,7 @@ public class ConvertingPropertyAccessor<T> extends SimplePersistentPropertyPathA
 	@Override
 	public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value) {
 
-		Object converted = convertIfNecessary(value, path.getRequiredLeafProperty().getType());
+		Object converted = convertIfNecessary(value, path.getLeafProperty().getType());
 
 		super.setProperty(path, converted);
 	}

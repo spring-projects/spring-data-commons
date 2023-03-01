@@ -62,24 +62,28 @@ public interface PersistentPropertyAccessor<T> {
 		Assert.notNull(path, "PersistentPropertyPath must not be null");
 		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty");
 
+		PersistentProperty<? extends PersistentProperty<?>> leafProperty = path.getLeafProperty();
 		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
-		PersistentProperty<? extends PersistentProperty<?>> leafProperty = path.getRequiredLeafProperty();
-		PersistentProperty<? extends PersistentProperty<?>> parentProperty = parentPath.isEmpty() ? null
-				: parentPath.getLeafProperty();
 
-		if (parentProperty != null && (parentProperty.isCollectionLike() || parentProperty.isMap())) {
-			throw new MappingException(
-					String.format("Cannot traverse collection or map intermediate %s", parentPath.toDotPath()));
+		if (parentPath != null) {
+
+			PersistentProperty<? extends PersistentProperty<?>> parentProperty = parentPath.getLeafProperty();
+
+			if (parentProperty.isCollectionLike() || parentProperty.isMap()) {
+				throw new MappingException(
+						"Cannot traverse collection or map intermediate %s".formatted(parentPath.toDotPath()));
+			}
 		}
 
-		Object parent = parentPath.isEmpty() ? getBean() : getProperty(parentPath);
+		Object parent = parentPath == null ? getBean() : getProperty(parentPath);
 
 		if (parent == null) {
 
 			String nullIntermediateMessage = "Cannot lookup property %s on null intermediate; Original path was: %s on %s";
 
 			throw new MappingException(
-					String.format(nullIntermediateMessage, parentProperty, path.toDotPath(), getBean().getClass().getName()));
+					String.format(nullIntermediateMessage, path.getParentPath(), path.toDotPath(),
+							getBean().getClass().getName()));
 		}
 
 		PersistentPropertyAccessor<?> accessor = parent == getBean() //
@@ -88,7 +92,7 @@ public interface PersistentPropertyAccessor<T> {
 
 		accessor.setProperty(leafProperty, value);
 
-		if (parentPath.isEmpty()) {
+		if (parentPath == null) {
 			return;
 		}
 

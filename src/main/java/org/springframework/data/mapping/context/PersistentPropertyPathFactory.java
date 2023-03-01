@@ -59,13 +59,13 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 * Creates a new {@link PersistentPropertyPath} for the given property path on the given type.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @param propertyPath must not be {@literal null}.
+	 * @param propertyPath must not be {@literal null} or empty.
 	 * @return
 	 */
 	public PersistentPropertyPath<P> from(Class<?> type, String propertyPath) {
 
 		Assert.notNull(type, "Type must not be null");
-		Assert.notNull(propertyPath, "Property path must not be null");
+		Assert.hasText(propertyPath, "Property path must not be null or empty");
 
 		return getPersistentPropertyPath(TypeInformation.of(type), propertyPath);
 	}
@@ -74,13 +74,13 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 * Creates a new {@link PersistentPropertyPath} for the given property path on the given type.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @param propertyPath must not be {@literal null}.
+	 * @param propertyPath must not be {@literal null} or empty.
 	 * @return
 	 */
 	public PersistentPropertyPath<P> from(TypeInformation<?> type, String propertyPath) {
 
 		Assert.notNull(type, "Type must not be null");
-		Assert.notNull(propertyPath, "Property path must not be null");
+		Assert.hasText(propertyPath, "Property path must not be null or empty");
 
 		return getPersistentPropertyPath(type, propertyPath);
 	}
@@ -181,10 +181,9 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	private PersistentPropertyPath<P> createPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
 
 		String trimmedPath = propertyPath.trim();
+		List<String> parts = trimmedPath.isEmpty() ? Collections.emptyList() : List.of(trimmedPath.split("\\."));
 
-		List<String> parts = trimmedPath.isEmpty() //
-				? Collections.emptyList() //
-				: Arrays.asList(trimmedPath.split("\\."));
+		Assert.notEmpty(parts, "Cannot create PersistentPropertyPath from empty segments");
 
 		DefaultPersistentPropertyPath<P> path = DefaultPersistentPropertyPath.empty();
 		Iterator<String> iterator = parts.iterator();
@@ -193,8 +192,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		while (iterator.hasNext()) {
 
 			String segment = iterator.next();
-			final DefaultPersistentPropertyPath<P> currentPath = path;
-
+			DefaultPersistentPropertyPath<P> currentPath = path;
 			Pair<DefaultPersistentPropertyPath<P>, E> pair = getPair(path, iterator, segment, current);
 
 			if (pair == null) {
@@ -233,8 +231,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			return Collections.emptyList();
 		}
 
-		E entity = context.getRequiredPersistentEntity(actualType);
-		return from(entity, filter, traversalGuard, basePath);
+		return from(context.getRequiredPersistentEntity(actualType), filter, traversalGuard, basePath);
 	}
 
 	private Collection<PersistentPropertyPath<P>> from(E entity, Predicate<? super P> filter, Predicate<P> traversalGuard,
@@ -258,7 +255,8 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			}
 
 			if (traversalGuard.and(IS_ENTITY).test(persistentProperty)) {
-				properties.addAll(from(context.getPersistentEntity(persistentProperty), filter, traversalGuard, currentPath));
+				var persistentEntity = context.getRequiredPersistentEntity(persistentProperty);
+				properties.addAll(from(persistentEntity, filter, traversalGuard, currentPath));
 			}
 		};
 
@@ -294,7 +292,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (this == o) {
 				return true;

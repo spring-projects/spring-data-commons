@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
@@ -110,18 +109,10 @@ class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty<P>> {
 	}
 
 	@Test
-	void returnsEmptyPathForRootLevelProperty() {
-		assertThat(oneLeg.getParentPath()).isEmpty();
-	}
+	void returnsNullForRootLevelProperty() {
 
-	@Test
-	void returnItselfForEmptyPath() {
-
-		var parent = oneLeg.getParentPath();
-		var parentsParent = parent.getParentPath();
-
-		assertThat(parentsParent).isEmpty();
-		assertThat(parentsParent).isSameAs(parent);
+		assertThat(oneLeg.isRootPath()).isTrue();
+		assertThat(oneLeg.getParentPath()).isNull();
 	}
 
 	@Test
@@ -132,27 +123,27 @@ class DefaultPersistentPropertyPathUnitTests<P extends PersistentProperty<P>> {
 
 	@Test // DATACMNS-444
 	void skipsMappedPropertyNameIfConverterReturnsNull() {
-		assertThat(twoLegs.toDotPath(source -> null)).isNull();
+		assertThat(twoLegs.toDotPath(source -> null)).isEmpty();
 	}
 
 	@Test // DATACMNS-444
 	void skipsMappedPropertyNameIfConverterReturnsEmptyStrings() {
-		assertThat(twoLegs.toDotPath(source -> "")).isNull();
+		assertThat(twoLegs.toDotPath(source -> "")).isEmpty();
 	}
 
 	@Test // DATACMNS-1466
-	void returnsNullForLeafPropertyOnEmptyPath() {
+	void throwsExceptionForLeafPropertyOnEmptyPath() {
 
 		PersistentPropertyPath<P> path = new DefaultPersistentPropertyPath<P>(Collections.emptyList());
 
-		assertThat(path.getLeafProperty()).isNull();
+		assertThatIllegalStateException().isThrownBy(() -> path.getLeafProperty());
 	}
 
 	@Test // DATACMNS-1466
-	void returnsNullForBasePropertyOnEmptyPath() {
+	void throwsExceptionForBasePropertyOnEmptyPath() {
 
 		PersistentPropertyPath<P> path = new DefaultPersistentPropertyPath<P>(Collections.emptyList());
 
-		assertThat(path.getBaseProperty()).isNull();
+		assertThatIllegalStateException().isThrownBy(() -> path.getBaseProperty());
 	}
 }

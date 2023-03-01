@@ -238,7 +238,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 			property.forEach(it -> {
 
-				Class<?> type = it.getRequiredLeafProperty().getType();
+				Class<?> type = it.getLeafProperty().getType();
 
 				this.accessor.setProperty(it, getDateValueToSet(value, type, accessor.getBean()), OPTIONS);
 			});
