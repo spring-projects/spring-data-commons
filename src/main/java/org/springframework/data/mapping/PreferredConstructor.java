@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -35,7 +36,9 @@ import org.springframework.util.ReflectionUtils;
  * @author Myeonghyeon Lee
  * @author Xeno Amess
  */
-public final class PreferredConstructor<T, P extends PersistentProperty<P>> extends InstanceCreatorMetadataSupport<T, P> {
+@SuppressWarnings("deprecation")
+public final class PreferredConstructor<T, P extends PersistentProperty<P>>
+		extends InstanceCreatorMetadataSupport<T, P> {
 
 	private final List<Parameter<Object, P>> parameters;
 
@@ -59,10 +62,10 @@ public final class PreferredConstructor<T, P extends PersistentProperty<P>> exte
 	 *
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public Constructor<T> getConstructor() {
 		return (Constructor<T>) getExecutable();
 	}
-
 
 	/**
 	 * Returns whether the constructor does not have any arguments.
@@ -80,7 +83,11 @@ public final class PreferredConstructor<T, P extends PersistentProperty<P>> exte
 	 * @return
 	 */
 	public boolean isExplicitlyAnnotated() {
-		return MergedAnnotations.from(getExecutable()).isPresent(PersistenceConstructor.class);
+
+		var annotations = MergedAnnotations.from(getExecutable());
+
+		return annotations.isPresent(PersistenceConstructor.class)
+				|| annotations.isPresent(PersistenceCreator.class);
 	}
 
 	/**

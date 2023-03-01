@@ -15,9 +15,10 @@
  */
 package org.springframework.data.mapping;
 
+import java.util.Objects;
+
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 /**
  * A container object which may or may not contain a type alias value. If a value is present, {@code isPresent()} will
@@ -144,21 +145,21 @@ public final class Alias {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;
 		}
 
-		if (!(o instanceof Alias alias)) {
+		if (!(o instanceof Alias that)) {
 			return false;
 		}
 
-		return ObjectUtils.nullSafeEquals(value, alias.value);
+		return Objects.equals(this.value, that.value);
 	}
 
 	@Override
 	public int hashCode() {
-		return ObjectUtils.nullSafeHashCode(value);
+		return Objects.hashCode(value);
 	}
 }

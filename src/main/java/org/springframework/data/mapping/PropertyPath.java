@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,7 +31,6 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -244,7 +244,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;
@@ -258,34 +258,16 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			return false;
 		}
 
-		if (!ObjectUtils.nullSafeEquals(owningType, that.owningType)) {
-			return false;
-		}
-
-		if (!ObjectUtils.nullSafeEquals(name, that.name)) {
-			return false;
-		}
-
-		if (!ObjectUtils.nullSafeEquals(typeInformation, that.typeInformation)) {
-			return false;
-		}
-
-		if (!ObjectUtils.nullSafeEquals(actualTypeInformation, that.actualTypeInformation)) {
-			return false;
-		}
-
-		return ObjectUtils.nullSafeEquals(next, that.next);
+		return Objects.equals(this.owningType, that.owningType)
+				&& Objects.equals(this.name, that.name)
+				&& Objects.equals(this.typeInformation, that.typeInformation)
+				&& Objects.equals(this.actualTypeInformation, that.actualTypeInformation)
+				&& Objects.equals(next, that.next);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(owningType);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(name);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(typeInformation);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(actualTypeInformation);
-		result = 31 * result + (isCollection ? 1 : 0);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(next);
-		return result;
+		return Objects.hash(owningType, name, typeInformation, actualTypeInformation, isCollection, next);
 	}
 
 	/**
@@ -331,7 +313,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.hasText(source, "Source must not be null or empty");
 		Assert.notNull(type, "TypeInformation must not be null or empty");
 
-		return cache.computeIfAbsent(Key.of(type, source), it -> {
+		return cache.computeIfAbsent(new Key(type, source), it -> {
 
 			List<String> iteratorSource = new ArrayList<>();
 
@@ -467,56 +449,5 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
 	}
 
-	private static final class Key {
-
-		private final TypeInformation<?> type;
-		private final String path;
-
-		private Key(TypeInformation<?> type, String path) {
-			this.type = type;
-			this.path = path;
-		}
-
-		public static Key of(TypeInformation<?> type, String path) {
-			return new Key(type, path);
-		}
-
-		public TypeInformation<?> getType() {
-			return this.type;
-		}
-
-		public String getPath() {
-			return this.path;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-
-			if (this == o) {
-				return true;
-			}
-
-			if (!(o instanceof Key key)) {
-				return false;
-			}
-
-			if (!ObjectUtils.nullSafeEquals(type, key.type)) {
-				return false;
-			}
-
-			return ObjectUtils.nullSafeEquals(path, key.path);
-		}
-
-		@Override
-		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(type);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(path);
-			return result;
-		}
-
-		@Override
-		public String toString() {
-			return "PropertyPath.Key(type=" + this.getType() + ", path=" + this.getPath() + ")";
-		}
-	}
+	private record Key(TypeInformation<?> type, String path) {};
 }
