@@ -37,10 +37,7 @@ public interface PersistentPropertyPathAccessor<T> extends PersistentPropertyAcc
 	 * @return
 	 */
 	@Nullable
-	@SuppressWarnings("deprecation")
-	default Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path) {
-		return PersistentPropertyAccessor.super.getProperty(path);
-	}
+	Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path);
 
 	/**
 	 * Return the value pointed to by the given {@link PersistentPropertyPath}. If the given path is empty, the wrapped

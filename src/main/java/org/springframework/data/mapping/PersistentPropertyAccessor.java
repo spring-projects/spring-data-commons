@@ -17,7 +17,6 @@ package org.springframework.data.mapping;
 
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
 /**
  * Domain service to allow accessing and setting {@link PersistentProperty}s of an entity. Usually obtained through
@@ -47,63 +46,6 @@ public interface PersistentPropertyAccessor<T> {
 	void setProperty(PersistentProperty<?> property, @Nullable Object value);
 
 	/**
-	 * Sets the given value for the {@link PersistentProperty} pointed to by the given {@link PersistentPropertyPath}. The
-	 * lookup of intermediate values must not yield {@literal null}.
-	 *
-	 * @param path must not be {@literal null} or empty.
-	 * @param value can be {@literal null}.
-	 * @since 2.1
-	 * @deprecated since 2.3, use {@link PersistentPropertyPathAccessor#setProperty(PersistentPropertyPath, Object)}
-	 *             instead.
-	 */
-	@Deprecated
-	default void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, @Nullable Object value) {
-
-		Assert.notNull(path, "PersistentPropertyPath must not be null");
-		Assert.isTrue(!path.isEmpty(), "PersistentPropertyPath must not be empty");
-
-		PersistentProperty<? extends PersistentProperty<?>> leafProperty = path.getLeafProperty();
-		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
-
-		if (parentPath != null) {
-
-			PersistentProperty<? extends PersistentProperty<?>> parentProperty = parentPath.getLeafProperty();
-
-			if (parentProperty.isCollectionLike() || parentProperty.isMap()) {
-				throw new MappingException(
-						"Cannot traverse collection or map intermediate %s".formatted(parentPath.toDotPath()));
-			}
-		}
-
-		Object parent = parentPath == null ? getBean() : getProperty(parentPath);
-
-		if (parent == null) {
-
-			String nullIntermediateMessage = "Cannot lookup property %s on null intermediate; Original path was: %s on %s";
-
-			throw new MappingException(
-					String.format(nullIntermediateMessage, path.getParentPath(), path.toDotPath(),
-							getBean().getClass().getName()));
-		}
-
-		PersistentPropertyAccessor<?> accessor = parent == getBean() //
-				? this //
-				: leafProperty.getOwner().getPropertyAccessor(parent);
-
-		accessor.setProperty(leafProperty, value);
-
-		if (parentPath == null) {
-			return;
-		}
-
-		Object bean = accessor.getBean();
-
-		if (bean != parent) {
-			setProperty(parentPath, bean);
-		}
-	}
-
-	/**
 	 * Returns the value of the given {@link PersistentProperty} of the underlying bean instance.
 	 *
 	 * @param property must not be {@literal null}.
@@ -111,65 +53,6 @@ public interface PersistentPropertyAccessor<T> {
 	 */
 	@Nullable
 	Object getProperty(PersistentProperty<?> property);
-
-	/**
-	 * Return the value pointed to by the given {@link PersistentPropertyPath}. If the given path is empty, the wrapped
-	 * bean is returned.
-	 *
-	 * @param path must not be {@literal null}.
-	 * @return
-	 * @since 2.1
-	 * @deprecated since 2.3, use {@link PersistentPropertyPathAccessor#getProperty(PersistentPropertyPath)} instead
-	 */
-	@Deprecated
-	@Nullable
-	default Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path) {
-		return getProperty(path, new TraversalContext());
-	}
-
-	/**
-	 * Return the value pointed to by the given {@link PersistentPropertyPath}. If the given path is empty, the wrapped
-	 * bean is returned. On each path segment value lookup, the resulting value is post-processed by handlers registered
-	 * on the given {@link TraversalContext} context. This can be used to unwrap container types that are encountered
-	 * during the traversal.
-	 *
-	 * @param path must not be {@literal null}.
-	 * @param context must not be {@literal null}.
-	 * @return
-	 * @since 2.2
-	 * @deprecated since 2.3, use
-	 *             {@link PersistentPropertyPathAccessor#getProperty(PersistentPropertyPath, org.springframework.data.mapping.AccessOptions.GetOptions)}
-	 *             instead.
-	 */
-	@Nullable
-	@Deprecated
-	default Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, TraversalContext context) {
-
-		Object bean = getBean();
-		Object current = bean;
-
-		if (path.isEmpty()) {
-			return bean;
-		}
-
-		for (PersistentProperty<?> property : path) {
-
-			if (current == null) {
-
-				String nullIntermediateMessage = "Cannot lookup property %s on null intermediate; Original path was: %s on %s";
-
-				throw new MappingException(
-						String.format(nullIntermediateMessage, property, path.toDotPath(), bean.getClass().getName()));
-			}
-
-			PersistentEntity<?, ? extends PersistentProperty<?>> entity = property.getOwner();
-			PersistentPropertyAccessor<Object> accessor = entity.getPropertyAccessor(current);
-
-			current = context.postProcess(property, accessor.getProperty(property));
-		}
-
-		return current;
-	}
 
 	/**
 	 * Returns the underlying bean. The actual instance may change between
