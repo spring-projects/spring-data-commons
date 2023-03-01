@@ -1542,11 +1542,12 @@ You have to populate `thing1_page`, `thing2_page`, and so on.
 The default `Pageable` passed into the method is equivalent to a `PageRequest.of(0, 20)`, but you can customize it by using the `@PageableDefault` annotation on the `Pageable` parameter.
 
 [[core.web.pageables]]
-==== Hypermedia Support for Pageables
+==== Hypermedia Support for `Page` and `Slice`
 
-Spring HATEOAS ships with a representation model class (`PagedResources`) that allows enriching the content of a `Page` instance with the necessary `Page` metadata as well as links to let the clients easily navigate the pages.
-The conversion of a `Page` to a `PagedResources` is done by an implementation of the Spring HATEOAS `ResourceAssembler` interface, called the `PagedResourcesAssembler`.
-The following example shows how to use a `PagedResourcesAssembler` as a controller method argument:
+Spring HATEOAS ships with a representation model class (`PagedModel`/`SlicedModel`) that allows enriching the content of a `Page` or `Slice` instance with the necessary `Page`/`Slice` metadata as well as links to let the clients easily navigate the pages.
+The conversion of a `Page` to a `PagedModel` is done by an implementation of the Spring HATEOAS `RepresentationModelAssembler` interface, called the `PagedResourcesAssembler`.
+Similarly `Slice` instances can be converted to a `SlicedModel` using a `SlicedResourcesAssembler`.
+The following example shows how to use a `PagedResourcesAssembler` as a controller method argument, as the `SlicedResourcesAssembler` works exactly the same:
 
 .Using a PagedResourcesAssembler as controller method argument
 ====
@@ -1555,36 +1556,38 @@ The following example shows how to use a `PagedResourcesAssembler` as a controll
 @Controller
 class PersonController {
 
-  @Autowired PersonRepository repository;
+  private final PersonRepository repository;
 
-  @RequestMapping(value = "/persons", method = RequestMethod.GET)
-  HttpEntity<PagedResources<Person>> persons(Pageable pageable,
+  // Constructor omitted
+
+  @GetMapping("/people")
+  HttpEntity<PagedModel<Person>> people(Pageable pageable,
     PagedResourcesAssembler assembler) {
 
-    Page<Person> persons = repository.findAll(pageable);
-    return new ResponseEntity<>(assembler.toResources(persons), HttpStatus.OK);
+    Page<Person> people = repository.findAll(pageable);
+    return ResponseEntity.ok(assembler.toModel(people));
   }
 }
 ----
 ====
 
 Enabling the configuration, as shown in the preceding example, lets the `PagedResourcesAssembler` be used as a controller method argument.
-Calling `toResources(…)` on it has the following effects:
+Calling `toModel(…)` on it has the following effects:
 
-* The content of the `Page` becomes the content of the `PagedResources` instance.
-* The `PagedResources` object gets a `PageMetadata` instance attached, and it is populated with information from the `Page` and the underlying `PageRequest`.
-* The `PagedResources` may get `prev` and `next` links attached, depending on the page's state.
+* The content of the `Page` becomes the content of the `PagedModel` instance.
+* The `PagedModel` object gets a `PageMetadata` instance attached, and it is populated with information from the `Page` and the underlying `Pageable`.
+* The `PagedModel` may get `prev` and `next` links attached, depending on the page's state.
 The links point to the URI to which the method maps.
 The pagination parameters added to the method match the setup of the `PageableHandlerMethodArgumentResolver` to make sure the links can be resolved later.
 
 Assume we have 30 `Person` instances in the database.
-You can now trigger a request (`GET http://localhost:8080/persons`) and see output similar to the following:
+You can now trigger a request (`GET http://localhost:8080/people`) and see output similar to the following:
 
 ====
 [source,javascript]
 ----
-{ "links" : [ { "rel" : "next",
-                "href" : "http://localhost:8080/persons?page=1&size=20" }
+{ "links" : [
+    { "rel" : "next", "href" : "http://localhost:8080/persons?page=1&size=20" }
   ],
   "content" : [
      … // 20 Person instances rendered here
@@ -1599,9 +1602,14 @@ You can now trigger a request (`GET http://localhost:8080/persons`) and see outp
 ----
 ====
 
+WARNING: The JSON envelope format shown here doesn't follow any formally specified structure and it's not guaranteed stable and we might change it at any time.
+It's highly recommended to enable the rendering as a hypermedia-enabled, official media type, supported by Spring HATEOAS, like https://docs.spring.io/spring-hateoas/docs/{springHateoasVersion}/reference/html/#mediatypes.hal[HAL].
+Those can be activated by using its `@EnableHypermediaSupport` annotation.
+Find more information in the https://docs.spring.io/spring-hateoas/docs/{springHateoasVersion}/reference/html/#configuration.at-enable[Spring HATEOAS reference documentation].
+
 The assembler produced the correct URI and also picked up the default configuration to resolve the parameters into a `Pageable` for an upcoming request.
 This means that, if you change that configuration, the links automatically adhere to the change.
-By default, the assembler points to the controller method it was invoked in, but you can customize that by passing a custom `Link` to be used as base to build the pagination links, which overloads the `PagedResourcesAssembler.toResource(…)` method.
+By default, the assembler points to the controller method it was invoked in, but you can customize that by passing a custom `Link` to be used as base to build the pagination links, which overloads the `PagedResourcesAssembler.toModel(…)` method.
 
 [[core.web.basic.jackson-mappers]]
 ==== Spring Data Jackson Modules
