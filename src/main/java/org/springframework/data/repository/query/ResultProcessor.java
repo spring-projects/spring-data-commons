@@ -26,7 +26,7 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.domain.Scroll;
+import org.springframework.data.domain.Window;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
@@ -144,8 +144,8 @@ public class ResultProcessor {
 
 		ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
 
-		if (source instanceof Scroll<?> && method.isScrollQuery()) {
-			return (T) ((Scroll<?>) source).map(converter::convert);
+		if (source instanceof Window<?> && method.isScrollQuery()) {
+			return (T) ((Window<?>) source).map(converter::convert);
 		}
 
 		if (source instanceof Slice && (method.isPageQuery() || method.isSliceQuery())) {

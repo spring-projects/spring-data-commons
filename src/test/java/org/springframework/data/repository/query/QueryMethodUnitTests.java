@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
+import org.springframework.data.domain.Window;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -32,7 +33,6 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Scroll;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.projection.ProjectionFactory;
@@ -351,15 +351,15 @@ class QueryMethodUnitTests {
 
 		ImmutableList<User> returnsEclipseCollection();
 
-		Scroll<User> cursorWindow(ScrollPosition cursorRequest);
+		Window<User> cursorWindow(ScrollPosition cursorRequest);
 
-		Mono<Scroll<User>> reactiveCursorWindow(ScrollPosition cursorRequest);
+		Mono<Window<User>> reactiveCursorWindow(ScrollPosition cursorRequest);
 
-		Flux<Scroll<User>> invalidReactiveCursorWindow(ScrollPosition cursorRequest);
+		Flux<Window<User>> invalidReactiveCursorWindow(ScrollPosition cursorRequest);
 
 		Page<User> cursorWindowMethodWithInvalidReturnType(ScrollPosition cursorRequest);
 
-		Scroll<User> cursorWindowWithoutScrollPosition();
+		Window<User> cursorWindowWithoutScrollPosition();
 	}
 
 	class User {
