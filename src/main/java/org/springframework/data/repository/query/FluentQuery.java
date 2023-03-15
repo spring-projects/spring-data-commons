@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
+import org.springframework.data.domain.Window;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -26,7 +27,6 @@ import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Scroll;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
@@ -165,7 +165,7 @@ public interface FluentQuery<T> {
 		List<T> all();
 
 		/**
-		 * Get all matching elements as {@link Scroll} to start result scrolling or resume scrolling at
+		 * Get all matching elements as {@link Window} to start result scrolling or resume scrolling at
 		 * {@code scrollPosition}.
 		 *
 		 * @param scrollPosition must not be {@literal null}.
@@ -174,7 +174,7 @@ public interface FluentQuery<T> {
 		 * @throws UnsupportedOperationException if not supported by the underlying implementation.
 		 * @since 3.1
 		 */
-		default Scroll<T> scroll(ScrollPosition scrollPosition) {
+		default Window<T> scroll(ScrollPosition scrollPosition) {
 			throw new UnsupportedOperationException("Scrolling not supported");
 		}
 
@@ -261,7 +261,7 @@ public interface FluentQuery<T> {
 		Flux<T> all();
 
 		/**
-		 * Get all matching elements as {@link Scroll} to start result scrolling or resume scrolling at
+		 * Get all matching elements as {@link Window} to start result scrolling or resume scrolling at
 		 * {@code scrollPosition}.
 		 *
 		 * @param scrollPosition must not be {@literal null}.
@@ -270,7 +270,7 @@ public interface FluentQuery<T> {
 		 * @throws UnsupportedOperationException if not supported by the underlying implementation.
 		 * @since 3.1
 		 */
-		default Mono<Scroll<T>> scroll(ScrollPosition scrollPosition) {
+		default Mono<Window<T>> scroll(ScrollPosition scrollPosition) {
 			throw new UnsupportedOperationException("Scrolling not supported");
 		}
 

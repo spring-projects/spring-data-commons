@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Scroll;
+import org.springframework.data.domain.Window;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -97,7 +97,7 @@ public class QueryMethod {
 		}
 
 		if (hasParameterOfType(method, ScrollPosition.class)) {
-			assertReturnTypeAssignable(method, Collections.singleton(Scroll.class));
+			assertReturnTypeAssignable(method, Collections.singleton(Window.class));
 		}
 
 		Assert.notNull(this.parameters,
@@ -203,13 +203,13 @@ public class QueryMethod {
 	}
 
 	/**
-	 * Returns whether the query method will return a {@link Scroll}.
+	 * Returns whether the query method will return a {@link Window}.
 	 *
 	 * @return
 	 * @since 3.1
 	 */
 	public boolean isScrollQuery() {
-		return org.springframework.util.ClassUtils.isAssignable(Scroll.class, unwrappedReturnType);
+		return org.springframework.util.ClassUtils.isAssignable(Window.class, unwrappedReturnType);
 	}
 
 	/**

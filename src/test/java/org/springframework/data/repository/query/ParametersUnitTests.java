@@ -28,7 +28,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Scroll;
+import org.springframework.data.domain.Window;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -231,7 +231,7 @@ class ParametersUnitTests {
 
 		Page<Object> customPageable(SomePageable pageable);
 
-		Scroll<Object> customScrollPosition(OffsetScrollPosition request);
+		Window<Object> customScrollPosition(OffsetScrollPosition request);
 	}
 
 	interface SomePageable extends Pageable {}

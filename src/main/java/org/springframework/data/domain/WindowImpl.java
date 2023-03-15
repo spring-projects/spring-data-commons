@@ -26,19 +26,19 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * Default {@link Scroll} implementation.
+ * Default {@link Window} implementation.
  *
  * @author Mark Paluch
  * @since 3.1
  */
-class ScrollImpl<T> implements Scroll<T> {
+class WindowImpl<T> implements Window<T> {
 
 	private final List<T> items;
 	private final IntFunction<? extends ScrollPosition> positionFunction;
 
 	private final boolean hasNext;
 
-	ScrollImpl(List<T> items, IntFunction<? extends ScrollPosition> positionFunction, boolean hasNext) {
+	WindowImpl(List<T> items, IntFunction<? extends ScrollPosition> positionFunction, boolean hasNext) {
 
 		Assert.notNull(items, "List of items must not be null");
 		Assert.notNull(positionFunction, "Position function must not be null");
@@ -79,11 +79,11 @@ class ScrollImpl<T> implements Scroll<T> {
 	}
 
 	@Override
-	public <U> Scroll<U> map(Function<? super T, ? extends U> converter) {
+	public <U> Window<U> map(Function<? super T, ? extends U> converter) {
 
 		Assert.notNull(converter, "Function must not be null");
 
-		return new ScrollImpl<>(stream().map(converter).collect(Collectors.toList()), positionFunction, hasNext);
+		return new WindowImpl<>(stream().map(converter).collect(Collectors.toList()), positionFunction, hasNext);
 	}
 
 	@NotNull
@@ -98,7 +98,7 @@ class ScrollImpl<T> implements Scroll<T> {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		ScrollImpl<?> that = (ScrollImpl<?>) o;
+		WindowImpl<?> that = (WindowImpl<?>) o;
 		return ObjectUtils.nullSafeEquals(items, that.items)
 				&& ObjectUtils.nullSafeEquals(positionFunction, that.positionFunction)
 				&& ObjectUtils.nullSafeEquals(hasNext, that.hasNext);
