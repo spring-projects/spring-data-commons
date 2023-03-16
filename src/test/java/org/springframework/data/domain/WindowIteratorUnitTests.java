@@ -20,112 +20,110 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.data.domain.WindowIterator.WindowIteratorBuilder;
 
 /**
+ * Unit tests for {@link WindowIterator}.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class WindowIteratorUnitTests<T> {
-
-	@Mock Function<ScrollPosition, Window<T>> fkt;
-
-	@Mock Window<T> window;
-
-	@Mock ScrollPosition scrollPosition;
-
-	@Captor ArgumentCaptor<ScrollPosition> scrollCaptor;
-
-	@BeforeEach
-	void beforeEach() {
-		when(fkt.apply(any())).thenReturn(window);
-	}
+class WindowIteratorUnitTests {
 
 	@Test // GH-2151
-	void loadsDataOnCreation() {
+	void loadsDataOnNext() {
 
-		WindowIteratorBuilder<T> of = WindowIterator.of(fkt);
+		Function<ScrollPosition, Window<String>> fkt = mock(Function.class);
+		WindowIterator<String> iterator = WindowIterator.of(fkt).startingAt(OffsetScrollPosition.initial());
 		verifyNoInteractions(fkt);
 
-		of.startingAt(scrollPosition);
-		verify(fkt).apply(eq(scrollPosition));
+		when(fkt.apply(any())).thenReturn(Window.from(Collections.emptyList(), value -> OffsetScrollPosition.initial()));
+
+		iterator.hasNext();
+		verify(fkt).apply(OffsetScrollPosition.initial());
 	}
 
 	@Test // GH-2151
 	void hasNextReturnsFalseIfNoDataAvailable() {
 
-		when(window.isLast()).thenReturn(true);
-		when(window.isEmpty()).thenReturn(true);
+		Window<Object> window = Window.from(Collections.emptyList(), value -> OffsetScrollPosition.initial());
+		WindowIterator<Object> iterator = WindowIterator.of(it -> window).startingAt(OffsetScrollPosition.initial());
 
-		assertThat(WindowIterator.of(fkt).startingAt(scrollPosition).hasNext()).isFalse();
+		assertThat(iterator.hasNext()).isFalse();
+	}
+
+	@Test // GH-2151
+	void nextThrowsExceptionIfNoElementAvailable() {
+
+		Window<Object> window = Window.from(Collections.emptyList(), value -> OffsetScrollPosition.initial());
+		WindowIterator<Object> iterator = WindowIterator.of(it -> window).startingAt(OffsetScrollPosition.initial());
+
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(iterator::next);
 	}
 
 	@Test // GH-2151
 	void hasNextReturnsTrueIfDataAvailableButOnlyOnePage() {
 
-		when(window.isLast()).thenReturn(true);
-		when(window.isEmpty()).thenReturn(false);
+		Window<String> window = Window.from(List.of("a", "b"), value -> OffsetScrollPosition.initial());
+		WindowIterator<String> iterator = WindowIterator.of(it -> window).startingAt(OffsetScrollPosition.initial());
 
-		assertThat(WindowIterator.of(fkt).startingAt(scrollPosition).hasNext()).isTrue();
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("a");
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("b");
+		assertThat(iterator.hasNext()).isFalse();
+		assertThat(iterator.hasNext()).isFalse();
+	}
+
+	@Test // GH-2151
+	void hasNextReturnsCorrectlyIfNextPageIsEmpty() {
+
+		Window<String> window = Window.from(List.of("a", "b"), value -> OffsetScrollPosition.initial());
+		WindowIterator<String> iterator = WindowIterator.of(it -> {
+			if (it.isInitial()) {
+				return window;
+			}
+
+			return Window.from(Collections.emptyList(), OffsetScrollPosition::of, false);
+		}).startingAt(OffsetScrollPosition.initial());
+
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("a");
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo("b");
+		assertThat(iterator.hasNext()).isFalse();
+		assertThat(iterator.hasNext()).isFalse();
 	}
 
 	@Test // GH-2151
 	void allowsToIterateAllWindows() {
 
-		ScrollPosition p1 = mock(ScrollPosition.class);
-		ScrollPosition p2 = mock(ScrollPosition.class);
+		Window<String> window1 = Window.from(List.of("a", "b"), OffsetScrollPosition::of, true);
+		Window<String> window2 = Window.from(List.of("c", "d"), value -> OffsetScrollPosition.of(2 + value));
+		WindowIterator<String> iterator = WindowIterator.of(it -> {
+			if (it.isInitial()) {
+				return window1;
+			}
 
-		when(window.isEmpty()).thenReturn(false, false, false);
-		when(window.isLast()).thenReturn(false, false, true);
-		when(window.hasNext()).thenReturn(true, true, false);
-		when(window.size()).thenReturn(1, 1, 1);
-		when(window.positionAt(anyInt())).thenReturn(p1, p2);
-		when(window.getContent()).thenReturn(List.of((T) "0"), List.of((T) "1"), List.of((T) "2"));
+			return window2;
+		}).startingAt(OffsetScrollPosition.initial());
 
-		WindowIterator<T> iterator = WindowIterator.of(fkt).startingAt(scrollPosition);
-		List<T> capturedResult = new ArrayList<>(3);
+		List<String> capturedResult = new ArrayList<>(4);
 		while (iterator.hasNext()) {
-			capturedResult.addAll(iterator.next());
+			capturedResult.add(iterator.next());
 		}
 
-		verify(fkt, times(3)).apply(scrollCaptor.capture());
-		assertThat(scrollCaptor.getAllValues()).containsExactly(scrollPosition, p1, p2);
-		assertThat(capturedResult).containsExactly((T) "0", (T) "1", (T) "2");
-	}
-
-	@Test // GH-2151
-	void stopsAfterFirstPageIfOnlyOneWindowAvailable() {
-
-		ScrollPosition p1 = mock(ScrollPosition.class);
-
-		when(window.isEmpty()).thenReturn(false);
-		when(window.isLast()).thenReturn(true);
-		when(window.hasNext()).thenReturn(false);
-		when(window.size()).thenReturn(1);
-		when(window.positionAt(anyInt())).thenReturn(p1);
-		when(window.getContent()).thenReturn(List.of((T) "0"));
-
-		WindowIterator<T> iterator = WindowIterator.of(fkt).startingAt(scrollPosition);
-		List<T> capturedResult = new ArrayList<>(1);
-		while (iterator.hasNext()) {
-			capturedResult.addAll(iterator.next());
-		}
-
-		verify(fkt).apply(scrollCaptor.capture());
-		assertThat(scrollCaptor.getAllValues()).containsExactly(scrollPosition);
-		assertThat(capturedResult).containsExactly((T) "0");
+		assertThat(capturedResult).containsExactly("a", "b", "c", "d");
 	}
 }

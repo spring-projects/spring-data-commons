@@ -20,10 +20,10 @@ do {
 
   // obtain the next Scroll
   users = repository.findFirst10ByLastnameOrderByFirstname("Doe", users.positionAt(users.size() - 1));
-} while (!users.isEmpty() && !users.isLast());
+} while (!users.isEmpty() && users.hasNext());
 ----
 
-`WindowIterator` provides a specialized implementation that simplifies consumption of multiple `Window` instances by removing the need to check for the presence of a next `Window` and applying the `ScrollPosition`.
+`WindowIterator` provides a utility to simplify scrolling across ``Window``s by removing the need to check for the presence of a next `Window` and applying the `ScrollPosition`.
 
 [source,java]
 ----
@@ -31,9 +31,8 @@ WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst1
   .startingAt(OffsetScrollPosition.initial());
 
 while (users.hasNext()) {
-  users.next().forEach(user -> {
-    // consume the user
-  });
+  User u = users.next();
+  // consume the user
 }
 ----
 
@@ -56,7 +55,8 @@ interface UserRepository extends Repository<User, Long> {
 WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst10ByLastnameOrderByFirstname("Doe", position))
   .startingAt(OffsetScrollPosition.initial()); <1>
 ----
-<1> Start from the initial offset at position 0;
+
+<1> Start from the initial offset at position `0`.
 ====
 
 [[repositories.scrolling.keyset]]
@@ -76,7 +76,7 @@ The database needs only constructing a much smaller result from the given keyset
 
 [WARNING]
 ====
-Keyset-Filtering requires properties used for sorting to be non nullable.
+Keyset-Filtering requires the keyset properties (those used for sorting) to be non-nullable.
 This limitation applies due to the store specific `null` value handling of comparison operators as well as the need to run queries against an indexed source.
 Keyset-Filtering on nullable properties will lead to unexpected results.
 ====

@@ -129,7 +129,7 @@ public final class KeysetScrollPosition implements ScrollPosition {
 	/**
 	 * Keyset scrolling direction.
 	 */
-	enum Direction {
+	public enum Direction {
 
 		/**
 		 * Forward (default) direction to scroll from the beginning of the results to their end.

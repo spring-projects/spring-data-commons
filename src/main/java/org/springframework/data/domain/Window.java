@@ -24,8 +24,8 @@ import org.springframework.data.util.Streamable;
 
 /**
  * A set of data consumed from an underlying query result. A {@link Window} is similar to {@link Slice} in the sense
- * that it contains a subset of the actual query results for easier consumption of large result sets. The window is less
- * opinionated about the actual data retrieval, whether the query has used index/offset, keyset-based pagination or
+ * that it contains a subset of the actual query results for easier scrolling across large result sets. The window is
+ * less opinionated about the actual data retrieval, whether the query has used index/offset, keyset-based pagination or
  * cursor resume tokens.
  *
  * @author Mark Paluch
@@ -93,9 +93,24 @@ public interface Window<T> extends Streamable<T> {
 	/**
 	 * Returns if there is a next window.
 	 *
-	 * @return if there is a next window window.
+	 * @return if there is a next window.
 	 */
 	boolean hasNext();
+
+	/**
+	 * Returns whether the underlying scroll mechanism can provide a {@link ScrollPosition} at {@code index}.
+	 *
+	 * @param index
+	 * @return {@code true} if a {@link ScrollPosition} can be created; {@code false} otherwise.
+	 * @see #positionAt(int)
+	 */
+	default boolean hasPosition(int index) {
+		try {
+			return positionAt(index) != null;
+		} catch (IllegalStateException e) {
+			return false;
+		}
+	}
 
 	/**
 	 * Returns the {@link ScrollPosition} at {@code index}.
@@ -103,6 +118,8 @@ public interface Window<T> extends Streamable<T> {
 	 * @param index
 	 * @return
 	 * @throws IndexOutOfBoundsException if the index is out of range ({@code index < 0 || index >= size()}).
+	 * @throws IllegalStateException if the underlying scroll mechanism cannot provide a scroll position for the given
+	 *           object.
 	 */
 	ScrollPosition positionAt(int index);
 
@@ -112,6 +129,8 @@ public interface Window<T> extends Streamable<T> {
 	 * @param object
 	 * @return
 	 * @throws NoSuchElementException if the object is not part of the result.
+	 * @throws IllegalStateException if the underlying scroll mechanism cannot provide a scroll position for the given
+	 *           object.
 	 */
 	default ScrollPosition positionAt(T object) {
 
