@@ -11,15 +11,15 @@ This comprehensive https://spring.io/guides/tutorials/spring-boot-kotlin/[tutori
 [[kotlin.requirements]]
 == Requirements
 
-Spring Data supports Kotlin 1.3 and requires https://bintray.com/bintray/jcenter/org.jetbrains.kotlin%3Akotlin-stdlib[`kotlin-stdlib`] (or one of its variants, such as https://bintray.com/bintray/jcenter/org.jetbrains.kotlin%3Akotlin-stdlib-jdk8[`kotlin-stdlib-jdk8`]) and https://bintray.com/bintray/jcenter/org.jetbrains.kotlin%3Akotlin-reflect[`kotlin-reflect`] to be present on the classpath.
+Spring Data supports Kotlin 1.3 and requires `kotlin-stdlib` (or one of its variants, such as `kotlin-stdlib-jdk8`) and `kotlin-reflect` to be present on the classpath.
 Those are provided by default if you bootstrap a Kotlin project via https://start.spring.io/#!language=kotlin&type=gradle-project[start.spring.io].
 
 [[kotlin.null-safety]]
 == Null Safety
 
-One of Kotlin's key features is https://kotlinlang.org/docs/reference/null-safety.html[null safety], which cleanly deals with `null` values at compile time.
+One of Kotlin's key features is https://kotlinlang.org/docs/null-safety.html[null safety], which cleanly deals with `null` values at compile time.
 This makes applications safer through nullability declarations and the expression of "`value or no value`" semantics without paying the cost of wrappers, such as `Optional`.
-(Kotlin allows using functional constructs with nullable values. See this https://www.baeldung.com/kotlin-null-safety[comprehensive guide to Kotlin null safety].)
+(Kotlin allows using functional constructs with nullable values. See this https://www.baeldung.com/kotlin/null-safety[comprehensive guide to Kotlin null safety].)
 
 Although Java does not let you express null safety in its type system, Spring Data API is annotated with https://jcp.org/en/jsr/detail?id=305[JSR-305] tooling friendly annotations declared in the `org.springframework.lang` package.
 By default, types from Java APIs used in Kotlin are recognized as https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[platform types], for which null checks are relaxed.
