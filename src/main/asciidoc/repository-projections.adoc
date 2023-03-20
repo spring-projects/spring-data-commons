@@ -235,14 +235,16 @@ The following example shows a projecting DTO:
 
 .A projecting DTO
 ====
-[source, java]
+[source,java]
 ----
 record NamesOnly(String firstname, String lastname) {
 }
 ----
 ====
 
-Records are ideal DTOs since they adhere to value semantics (all fields are private final, `equals(…)` and `hashCode()` are provided by default), but you are free to use any class with a constructor listing the fields to be retrieved.
+Java Records are ideal to define DTO types since they adhere to value semantics:
+All fields are `private final` and ``equals(…)``/``hashCode()``/``toString()`` methods are created automatically.
+Alternatively, you can use any class that defines the properties you want to project.
 
 ifdef::repository-projections-trailing-dto-fragment[]
 include::{repository-projections-trailing-dto-fragment}[]
