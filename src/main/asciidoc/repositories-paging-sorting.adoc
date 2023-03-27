@@ -14,7 +14,7 @@ Page<User> findByLastname(String lastname, Pageable pageable);
 
 Slice<User> findByLastname(String lastname, Pageable pageable);
 
-Scroll<User> findTop10ByLastname(String lastname, ScrollPosition position, Sort sort);
+Window<User> findTop10ByLastname(String lastname, ScrollPosition position, Sort sort);
 
 List<User> findByLastname(String lastname, Sort sort);
 

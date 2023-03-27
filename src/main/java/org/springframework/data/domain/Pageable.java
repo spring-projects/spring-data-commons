@@ -174,7 +174,6 @@ public interface Pageable {
 			throw new IllegalStateException("Cannot create OffsetScrollPosition from an unpaged instance");
 		}
 
-		return OffsetScrollPosition.of(getOffset());
+		return ScrollPosition.offset(getOffset());
 	}
-
 }

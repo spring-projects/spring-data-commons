@@ -30,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.support.WindowIterator;
 
 /**
  * Unit tests for {@link WindowIterator}.
@@ -45,20 +46,20 @@ class WindowIteratorUnitTests {
 	void loadsDataOnNext() {
 
 		Function<ScrollPosition, Window<String>> fkt = mock(Function.class);
-		WindowIterator<String> iterator = WindowIterator.of(fkt).startingAt(OffsetScrollPosition.initial());
+		WindowIterator<String> iterator = WindowIterator.of(fkt).startingAt(ScrollPosition.offset());
 		verifyNoInteractions(fkt);
 
-		when(fkt.apply(any())).thenReturn(Window.from(Collections.emptyList(), value -> OffsetScrollPosition.initial()));
+		when(fkt.apply(any())).thenReturn(Window.from(Collections.emptyList(), value -> ScrollPosition.offset()));
 
 		iterator.hasNext();
-		verify(fkt).apply(OffsetScrollPosition.initial());
+		verify(fkt).apply(ScrollPosition.offset());
 	}
 
 	@Test // GH-2151
 	void hasNextReturnsFalseIfNoDataAvailable() {
 
-		Window<Object> window = Window.from(Collections.emptyList(), value -> OffsetScrollPosition.initial());
-		WindowIterator<Object> iterator = WindowIterator.of(it -> window).startingAt(OffsetScrollPosition.initial());
+		Window<Object> window = Window.from(Collections.emptyList(), value -> ScrollPosition.offset());
+		WindowIterator<Object> iterator = WindowIterator.of(it -> window).startingAt(ScrollPosition.offset());
 
 		assertThat(iterator.hasNext()).isFalse();
 	}
@@ -66,8 +67,8 @@ class WindowIteratorUnitTests {
 	@Test // GH-2151
 	void nextThrowsExceptionIfNoElementAvailable() {
 
-		Window<Object> window = Window.from(Collections.emptyList(), value -> OffsetScrollPosition.initial());
-		WindowIterator<Object> iterator = WindowIterator.of(it -> window).startingAt(OffsetScrollPosition.initial());
+		Window<Object> window = Window.from(Collections.emptyList(), value -> ScrollPosition.offset());
+		WindowIterator<Object> iterator = WindowIterator.of(it -> window).startingAt(ScrollPosition.offset());
 
 		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(iterator::next);
 	}
@@ -75,8 +76,8 @@ class WindowIteratorUnitTests {
 	@Test // GH-2151
 	void hasNextReturnsTrueIfDataAvailableButOnlyOnePage() {
 
-		Window<String> window = Window.from(List.of("a", "b"), value -> OffsetScrollPosition.initial());
-		WindowIterator<String> iterator = WindowIterator.of(it -> window).startingAt(OffsetScrollPosition.initial());
+		Window<String> window = Window.from(List.of("a", "b"), value -> ScrollPosition.offset());
+		WindowIterator<String> iterator = WindowIterator.of(it -> window).startingAt(ScrollPosition.offset());
 
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo("a");
@@ -89,14 +90,14 @@ class WindowIteratorUnitTests {
 	@Test // GH-2151
 	void hasNextReturnsCorrectlyIfNextPageIsEmpty() {
 
-		Window<String> window = Window.from(List.of("a", "b"), value -> OffsetScrollPosition.initial());
+		Window<String> window = Window.from(List.of("a", "b"), value -> ScrollPosition.offset());
 		WindowIterator<String> iterator = WindowIterator.of(it -> {
 			if (it.isInitial()) {
 				return window;
 			}
 
 			return Window.from(Collections.emptyList(), OffsetScrollPosition::of, false);
-		}).startingAt(OffsetScrollPosition.initial());
+		}).startingAt(ScrollPosition.offset());
 
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo("a");
@@ -109,15 +110,15 @@ class WindowIteratorUnitTests {
 	@Test // GH-2151
 	void allowsToIterateAllWindows() {
 
-		Window<String> window1 = Window.from(List.of("a", "b"), OffsetScrollPosition::of, true);
-		Window<String> window2 = Window.from(List.of("c", "d"), value -> OffsetScrollPosition.of(2 + value));
+		Window<String> window1 = Window.from(List.of("a", "b"), ScrollPosition::offset, true);
+		Window<String> window2 = Window.from(List.of("c", "d"), value -> ScrollPosition.offset(2 + value));
 		WindowIterator<String> iterator = WindowIterator.of(it -> {
 			if (it.isInitial()) {
 				return window1;
 			}
 
 			return window2;
-		}).startingAt(OffsetScrollPosition.initial());
+		}).startingAt(ScrollPosition.offset());
 
 		List<String> capturedResult = new ArrayList<>(4);
 		while (iterator.hasNext()) {

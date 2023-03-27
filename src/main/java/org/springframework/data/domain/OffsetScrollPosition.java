@@ -15,49 +15,54 @@
  */
 package org.springframework.data.domain;
 
+import java.util.Objects;
 import java.util.function.IntFunction;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 /**
  * A {@link ScrollPosition} based on the offsets within query results.
  *
  * @author Mark Paluch
+ * @author Oliver Drotbohm
  * @since 3.1
  */
 public final class OffsetScrollPosition implements ScrollPosition {
 
-	private static final OffsetScrollPosition initial = new OffsetScrollPosition(0);
+	private static final OffsetScrollPosition INITIAL = new OffsetScrollPosition(0);
 
 	private final long offset;
 
+	/**
+	 * Creates a new {@link OffsetScrollPosition} for the given non-negative offset.
+	 *
+	 * @param offset must be greater or equal to zero.
+	 */
 	private OffsetScrollPosition(long offset) {
+
+		Assert.isTrue(offset >= 0, "Offset must not be negative");
+
 		this.offset = offset;
 	}
 
 	/**
 	 * Creates a new initial {@link OffsetScrollPosition} to start scrolling using offset/limit.
 	 *
-	 * @return a new initial {@link OffsetScrollPosition} to start scrolling using offset/limit.
+	 * @return will never be {@literal null}.
 	 */
-	public static OffsetScrollPosition initial() {
-		return initial;
+	static OffsetScrollPosition initial() {
+		return INITIAL;
 	}
 
 	/**
 	 * Creates a new {@link OffsetScrollPosition} from an {@code offset}.
 	 *
-	 * @param offset
-	 * @return a new {@link OffsetScrollPosition} with the given {@code offset}.
+	 * @param offset the non-negative offset to start at.
+	 * @return will never be {@literal null}.
 	 */
-	public static OffsetScrollPosition of(long offset) {
-
-		if (offset == 0) {
-			return initial();
-		}
-
-		return new OffsetScrollPosition(offset);
+	static OffsetScrollPosition of(long offset) {
+		return offset == 0 ? initial() : new OffsetScrollPosition(offset);
 	}
 
 	/**
@@ -73,36 +78,51 @@ public final class OffsetScrollPosition implements ScrollPosition {
 		return startOffset == 0 ? OffsetPositionFunction.ZERO : new OffsetPositionFunction(startOffset);
 	}
 
-	@Override
-	public boolean isInitial() {
-		return offset == 0;
-	}
-
 	/**
+	 * The zero or positive offset.
+	 *
 	 * @return the offset.
 	 */
 	public long getOffset() {
 		return offset;
 	}
 
+	/**
+	 * Returns a new {@link OffsetScrollPosition} that has been advanced by the given value. Negative deltas will be
+	 * constrained so that the new offset is at least zero.
+	 *
+	 * @param delta the value to advance the current offset by.
+	 * @return will never be {@literal null}.
+	 */
+	public OffsetScrollPosition advanceBy(long delta) {
+
+		var value = offset + delta;
+
+		return new OffsetScrollPosition(value < 0 ? 0 : value);
+	}
+
 	@Override
-	public boolean equals(Object o) {
-		if (this == o)
+	public boolean isInitial() {
+		return offset == 0;
+	}
+
+	@Override
+	public boolean equals(@Nullable Object o) {
+
+		if (this == o) {
 			return true;
-		if (o == null || getClass() != o.getClass())
+		}
+
+		if (!(o instanceof OffsetScrollPosition that)) {
 			return false;
-		OffsetScrollPosition that = (OffsetScrollPosition) o;
+		}
+
 		return offset == that.offset;
 	}
 
 	@Override
 	public int hashCode() {
-
-		int result = 17;
-
-		result += 31 * ObjectUtils.nullSafeHashCode(offset);
-
-		return result;
+		return Objects.hash(offset);
 	}
 
 	@Override

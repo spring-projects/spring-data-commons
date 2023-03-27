@@ -15,6 +15,8 @@
  */
 package org.springframework.data.domain;
 
+import java.util.Map;
+
 /**
  * Interface to specify a position within a total query result. Scroll positions are used to start scrolling from the
  * beginning of a query result or to resume scrolling from a given position within the query result.
@@ -30,4 +32,83 @@ public interface ScrollPosition {
 	 * @return
 	 */
 	boolean isInitial();
+
+	/**
+	 * Creates a new initial {@link ScrollPosition} to start scrolling using keyset-queries.
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	public static KeysetScrollPosition keyset() {
+		return KeysetScrollPosition.initial();
+	}
+
+	/**
+	 * Creates a new initial {@link ScrollPosition} to start scrolling using offset / limit.
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	public static OffsetScrollPosition offset() {
+		return OffsetScrollPosition.initial();
+	}
+
+	/**
+	 * Creates a new {@link ScrollPosition} from an {@code offset}.
+	 *
+	 * @param offset
+	 * @return a new {@link OffsetScrollPosition} with the given {@code offset}.
+	 */
+	public static OffsetScrollPosition offset(long offset) {
+		return OffsetScrollPosition.of(offset);
+	}
+
+	/**
+	 * Creates a new {@link ScrollPosition} from a key set scrolling forward.
+	 *
+	 * @param keys must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	public static KeysetScrollPosition forward(Map<String, ?> keys) {
+		return of(keys, Direction.FORWARD);
+	}
+
+	/**
+	 * Creates a new {@link ScrollPosition} from a key set scrolling backward.
+	 *
+	 * @param keys must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	public static KeysetScrollPosition backward(Map<String, ?> keys) {
+		return of(keys, Direction.BACKWARD);
+	}
+
+	/**
+	 * Creates a new {@link ScrollPosition} from a key set and {@link Direction}.
+	 *
+	 * @param keys must not be {@literal null}.
+	 * @param direction must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	public static KeysetScrollPosition of(Map<String, ?> keys, Direction direction) {
+		return KeysetScrollPosition.of(keys, direction);
+	}
+
+	/**
+	 * Keyset scrolling direction.
+	 */
+	public enum Direction {
+
+		/**
+		 * Forward (default) direction to scroll from the beginning of the results to their end.
+		 */
+		FORWARD,
+
+		/**
+		 * Backward direction to scroll from the end of the results to their beginning.
+		 */
+		BACKWARD;
+
+		Direction reverse() {
+			return this == FORWARD ? BACKWARD : FORWARD;
+		}
+	}
 }

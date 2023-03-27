@@ -72,6 +72,6 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
 		PageRequest request = PageRequest.of(1, 10);
 
-		assertThat(request.toScrollPosition()).isEqualTo(OffsetScrollPosition.of(10));
+		assertThat(request.toScrollPosition()).isEqualTo(ScrollPosition.offset(10));
 	}
 }

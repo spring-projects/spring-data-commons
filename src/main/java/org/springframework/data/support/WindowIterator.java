@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.domain;
+package org.springframework.data.support;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Window;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -28,7 +30,7 @@ import org.springframework.util.Assert;
  *
  * <pre class="code">
  * WindowIterator&lt;User&gt; users = WindowIterator.of(position -> repository.findFirst10By…("spring", position))
- *   .startingAt(OffsetScrollPosition.initial());
+ *   .startingAt(ScrollPosition.offset());
  *
  * while (users.hasNext()) {
  *   User u = users.next();

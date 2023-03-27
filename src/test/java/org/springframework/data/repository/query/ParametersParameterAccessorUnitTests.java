@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
@@ -84,7 +83,7 @@ class ParametersParameterAccessorUnitTests {
 		var method = Sample.class.getMethod("method", ScrollPosition.class, String.class);
 		var parameters = new DefaultParameters(method);
 
-		var accessor = new ParametersParameterAccessor(parameters, new Object[] { OffsetScrollPosition.of(1), "Foo" });
+		var accessor = new ParametersParameterAccessor(parameters, new Object[] { ScrollPosition.offset(1), "Foo" });
 
 		assertThat(accessor).hasSize(1);
 		assertThat(accessor.getBindableValue(0)).isEqualTo("Foo");

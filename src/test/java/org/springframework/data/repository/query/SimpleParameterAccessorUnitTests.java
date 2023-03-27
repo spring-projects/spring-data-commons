@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
@@ -61,7 +60,8 @@ class SimpleParameterAccessorUnitTests {
 
 	@Test
 	void rejectsTooLittleNumberOfArguments() {
-		assertThatIllegalArgumentException().isThrownBy(() -> new ParametersParameterAccessor(parameters, new Object[0]));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new ParametersParameterAccessor(parameters, new Object[0]));
 	}
 
 	@Test
@@ -82,7 +82,7 @@ class SimpleParameterAccessorUnitTests {
 	@Test // GH-2151
 	void returnsScrollPositionIfAvailable() {
 
-		var cursorRequest = OffsetScrollPosition.of(1);
+		var cursorRequest = ScrollPosition.offset(1);
 		ParameterAccessor accessor = new ParametersParameterAccessor(cursorRequestParameters,
 				new Object[] { cursorRequest });
 
@@ -103,7 +103,8 @@ class SimpleParameterAccessorUnitTests {
 	void returnsPageableIfAvailable() {
 
 		Pageable pageable = PageRequest.of(0, 10);
-		ParameterAccessor accessor = new ParametersParameterAccessor(pageableParameters, new Object[] { "test", pageable });
+		ParameterAccessor accessor = new ParametersParameterAccessor(pageableParameters,
+				new Object[] { "test", pageable });
 
 		assertThat(accessor.getPageable()).isEqualTo(pageable);
 		assertThat(accessor.getSort().isSorted()).isFalse();
@@ -114,7 +115,8 @@ class SimpleParameterAccessorUnitTests {
 
 		var sort = Sort.by("foo");
 		Pageable pageable = PageRequest.of(0, 10, sort);
-		ParameterAccessor accessor = new ParametersParameterAccessor(pageableParameters, new Object[] { "test", pageable });
+		ParameterAccessor accessor = new ParametersParameterAccessor(pageableParameters,
+				new Object[] { "test", pageable });
 
 		assertThat(accessor.getPageable()).isEqualTo(pageable);
 		assertThat(accessor.getSort()).isEqualTo(sort);
