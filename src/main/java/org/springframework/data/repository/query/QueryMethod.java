@@ -281,7 +281,7 @@ public class QueryMethod {
 		return metadata;
 	}
 
-	Method getMethod() {
+	protected Method getMethod() {
 		return method;
 	}
 
