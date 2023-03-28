@@ -18,7 +18,7 @@ pipeline {
 	}
 
 	stages {
-		stage("test: baseline (Java 17)") {
+		stage("test: baseline (main)") {
 			when {
 				beforeAgent(true)
 				anyOf {
@@ -37,6 +37,36 @@ pipeline {
 				script {
 					docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
 						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list verify -Dsort -U -B'
+					}
+				}
+			}
+		}
+
+		stage("Test other configurations") {
+			when {
+				beforeAgent(true)
+				allOf {
+					branch(pattern: "main|(\\d\\.\\d\\.x)", comparator: "REGEXP")
+					not { triggeredBy 'UpstreamCause' }
+				}
+			}
+			parallel {
+				stage("test: baseline (next)") {
+					agent {
+						label 'data'
+					}
+					options { timeout(time: 30, unit: 'MINUTES') }
+					environment {
+						ARTIFACTORY = credentials("${p['artifactory.credentials']}")
+					}
+					steps {
+						script {
+							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
+								docker.image(p['docker.java.next.image']).inside(p['docker.java.inside.basic']) {
+									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list verify -Dsort -U -B'
+								}
+							}
+						}
 					}
 				}
 			}
