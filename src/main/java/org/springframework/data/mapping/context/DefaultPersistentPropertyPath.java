@@ -38,7 +38,7 @@ import org.springframework.util.StringUtils;
  */
 class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements PersistentPropertyPath<P> {
 
-	private static final Converter<PersistentProperty<?>, String> DEFAULT_CONVERTER = (source) -> source.getName();
+	private static final Converter<PersistentProperty<?>, String> DEFAULT_CONVERTER = PersistentProperty::getName;
 	private static final String DEFAULT_DELIMITER = ".";
 
 	private final List<P> properties;
@@ -158,18 +158,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 			return this;
 		}
 
-		List<P> result = new ArrayList<>();
-		Iterator<P> iterator = iterator();
-
-		for (int i = 0; i < base.getLength(); i++) {
-			iterator.next();
-		}
-
-		while (iterator.hasNext()) {
-			result.add(iterator.next());
-		}
-
-		return new DefaultPersistentPropertyPath<>(result);
+		return new DefaultPersistentPropertyPath<>(properties.subList(base.getLength(), properties.size()));
 	}
 
 	public PersistentPropertyPath<P> getParentPath() {
