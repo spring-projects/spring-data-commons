@@ -57,7 +57,6 @@ Rather, it restricts the query to look up only the given range of entities.
 NOTE: To find out how many pages you get for an entire query, you have to trigger an additional count query.
 By default, this query is derived from the query you actually trigger.
 
-
 [[repositories.scrolling.guidance]]
 ==== Which Method is Appropriate?
 
@@ -177,7 +176,6 @@ QSort sort = QSort.by(QPerson.firstname.asc())
 ifdef::feature-scroll[]
 include::repositories-scrolling.adoc[]
 endif::[]
-
 
 [[repositories.limit-query-result]]
 === Limiting Query Results
