@@ -1,5 +1,5 @@
 [[repositories.special-parameters]]
-=== Special parameter handling
+=== Paging, Iterating Large Results, Sorting
 
 To handle parameters in your query, define method parameters as already seen in the preceding examples.
 Besides that, the infrastructure recognizes certain specific types like `Pageable` and `Sort`, to apply pagination and sorting to your queries dynamically.
@@ -57,6 +57,82 @@ Rather, it restricts the query to look up only the given range of entities.
 NOTE: To find out how many pages you get for an entire query, you have to trigger an additional count query.
 By default, this query is derived from the query you actually trigger.
 
+
+[[repositories.scrolling.guidance]]
+==== Which Method is Appropriate?
+
+The value provided by the Spring Data abstractions is perhaps best shown by the possible query method return types outlined in the following table below.
+The table shows which types you can return from a query method
+
+.Consuming Large Query Results
+[cols="1,2,2,3"]
+|===
+| Method|Amount of Data Fetched|Query Structure|Constraints
+
+| <<repositories.collections-and-iterables,`List<T>`>>
+| All results.
+| Single query.
+| Query results can exhaust all memory. Fetching all data can be time-intensive.
+
+| <<repositories.collections-and-iterables.streamable,`Streamable<T>`>>
+| All results.
+| Single query.
+| Query results can exhaust all memory. Fetching all data can be time-intensive.
+
+| <<repositories.query-streaming,`Stream<T>`>>
+| Chunked (one-by-one or in batches) depending on `Stream` consumption.
+| Single query using typically cursors.
+| Streams must be closed after usage to avoid resource leaks.
+
+| `Flux<T>`
+| Chunked (one-by-one or in batches) depending on `Flux` consumption.
+| Single query using typically cursors.
+| Store module must provide reactive infrastructure.
+
+| `CloseableIterator<T>`
+| Chunked (one-by-one or in batches) depending on `CloseableIterator` consumption.
+| Single query using typically cursors.
+| `CloseableIterator` need to be closed after usage to avoid resource leaks.
+
+| `Slice<T>`
+| `Pageable.getPageSize() + 1` at `Pageable.getOffset()`
+| One to many queries fetching data starting at `Pageable.getOffset()` applying limiting.
+a| A `Slice` can only navigate to the next `Slice`.
+
+* `Slice` provides details whether there is more data to fetch.
+* Offset-based queries becomes inefficient when the offset is too large because the database still has to materialize the full result.
+
+ifdef::feature-scroll[]
+| Offset-based `Window<T>`
+| `limit + 1` at `OffsetScrollPosition.getOffset()`
+| One to many queries fetching data starting at `OffsetScrollPosition.getOffset()` applying limiting.
+a| A `Window` can only navigate to the next `Window`.
+endif::[]
+
+* `Window` provides details whether there is more data to fetch.
+* Offset-based queries becomes inefficient when the offset is too large because the database still has to materialize the full result.
+
+| `Page<T>`
+| `Pageable.getPageSize()`  at `Pageable.getOffset()`
+| One to many queries starting at `Pageable.getOffset()` applying limiting. Additionally, `COUNT(…)` query to determine the total number of elements can be required.
+a| Often times, `COUNT(…)` queries are required that are costly.
+
+* Offset-based queries becomes inefficient when the offset is too large because the database still has to materialize the full result.
+
+ifdef::feature-scroll[]
+| Keyset-based `Window<T>`
+| `limit + 1` using a rewritten `WHERE` condition
+| One to many queries fetching data starting at `KeysetScrollPosition.getKeys()` applying limiting.
+a| A `Window` can only navigate to the next `Window`.
+
+* `Window` provides details whether there is more data to fetch.
+* Keyset-based queries require a proper index structure for efficient querying.
+* Most data stores do not work well when Keyset-based query results contain `null` values.
+* Results must expose all sorting keys in their results requiring projections to select potentially more properties than required for the actual projection.
+endif::[]
+
+|===
+
 [[repositories.paging-and-sorting]]
 ==== Paging and Sorting
 
@@ -101,6 +177,7 @@ QSort sort = QSort.by(QPerson.firstname.asc())
 ifdef::feature-scroll[]
 include::repositories-scrolling.adoc[]
 endif::[]
+
 
 [[repositories.limit-query-result]]
 === Limiting Query Results

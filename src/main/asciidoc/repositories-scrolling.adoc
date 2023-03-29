@@ -100,3 +100,4 @@ Keyset-Filtering works best when your database contains an index that matches th
 Scroll queries applying Keyset-Filtering require to the properties used in the sort order to be returned by the query, and these must be mapped in the returned entity.
 
 You can use interface and DTO projections, however make sure to include all properties that you've sorted by to avoid keyset extraction failures.
+
