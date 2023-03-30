@@ -33,6 +33,7 @@
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.24</xmlbeam>
 		<java-module-name>spring.data.commons</java-module-name>
+		<kotlin.api.target>1.8</kotlin.api.target>
 
 	</properties>
 
@@ -124,6 +125,12 @@
 			<groupId>io.projectreactor</groupId>
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-maven-plugin</artifactId>
+			<version>${kotlin}</version>
 		</dependency>
 
 		<!--  RxJava -->

@@ -24,46 +24,46 @@ import org.springframework.data.mapping.context.SamplePersistentProperty
 import kotlin.reflect.KClass
 
 /**
- * Unit tests for [ReflectionEntityInstantiator] creating instances using Kotlin data classes.
+ * Unit tests for [ReflectionEntityInstantiator] creating instances using Kotlin inline classes.
  *
  * @author Mark Paluch
- * @author Sebastien Deleuze
+ * See also https://github.com/spring-projects/spring-framework/issues/28638
  */
-@Suppress("UNCHECKED_CAST")
-class ReflectionEntityInstantiatorDataClassUnitTests {
+class ReflectionEntityInstantiatorValueClassUnitTests {
 
 	val provider = mockk<ParameterValueProvider<SamplePersistentProperty>>()
 
-	@Test // DATACMNS-1126
+	@Test // GH-1947
 	fun `should create instance`() {
 
-		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "White")
+		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter")
 
-		val instance: Contact = construct(Contact::class)
+		val instance: WithMyValueClass =
+			construct(WithMyValueClass::class)
 
-		assertThat(instance.firstname).isEqualTo("Walter")
-		assertThat(instance.lastname).isEqualTo("White")
-	}
-
-	@Test // DATACMNS-1126
-	fun `should create instance and fill in defaults`() {
-
-		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", null)
-
-		val instance: ContactWithDefaulting = construct(ContactWithDefaulting::class)
-
-		assertThat(instance.firstname).isEqualTo("Walter")
-		assertThat(instance.lastname).isEqualTo("White")
+		assertThat(instance.id.id).isEqualTo("Walter")
 	}
 
 	@Test // GH-1947
-	fun `should instantiate type with value class defaulting`() {
+	fun `should create instance with defaulting without value`() {
 
-		every { provider.getParameterValue<Int>(any()) }.returns(1)
+		every { provider.getParameterValue<String>(any()) } returns null
 
-		val instance = construct(WithDefaultPrimitiveValue::class)
+		val instance: WithNestedMyNullableValueClass = construct(WithNestedMyNullableValueClass::class)
 
-		assertThat(instance.pvd.id).isEqualTo(1)
+		assertThat(instance.id?.id?.id).isEqualTo("foo")
+		assertThat(instance.baz?.id).isEqualTo("id")
+	}
+
+	@Test // GH-1947
+	fun `should use annotated constructor for types using nullable value class`() {
+
+		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", null)
+
+		val instance = construct(WithValueClassPreferredConstructor::class)
+
+		assertThat(instance.id?.id?.id).isEqualTo("foo")
+		assertThat(instance.baz?.id).isEqualTo("Walter-pref")
 	}
 
 	private fun <T : Any> construct(typeToCreate: KClass<T>): T {
@@ -81,8 +81,5 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 		return ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider)
 	}
 
-	data class Contact(val firstname: String, val lastname: String)
-
-	data class ContactWithDefaulting(val firstname: String, val lastname: String = "White")
 }
 

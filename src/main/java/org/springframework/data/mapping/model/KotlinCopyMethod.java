@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.core.ResolvableType;
@@ -67,10 +68,9 @@ class KotlinCopyMethod {
 	}
 
 	/**
-	 * Attempt to lookup the Kotlin {@code copy} method. Lookup happens in two stages: Find the synthetic copy method and
+	 * Attempt to look up the Kotlin {@code copy} method. Lookup happens in two stages: Find the synthetic copy method and
 	 * then attempt to resolve its public variant.
 	 *
-	 * @param property the property that must be included in the copy method.
 	 * @param type the class.
 	 * @return {@link Optional} {@link KotlinCopyMethod}.
 	 */
@@ -171,13 +171,27 @@ class KotlinCopyMethod {
 			return Optional.empty();
 		}
 
+		boolean usesValueClasses = KotlinValueUtils.hasValueClassProperty(type);
 		List<KParameter> constructorArguments = getComponentArguments(primaryConstructor);
+		Predicate<String> isCopyMethod;
 
-		return Arrays.stream(type.getDeclaredMethods()).filter(it -> it.getName().equals("copy") //
-				&& !it.isSynthetic() //
-				&& !Modifier.isStatic(it.getModifiers()) //
-				&& it.getReturnType().equals(type) //
-				&& it.getParameterCount() == constructorArguments.size()) //
+		if (usesValueClasses) {
+			String methodName = defaultKotlinMethod.getName();
+			Assert.isTrue(methodName.contains("$"), () -> "Cannot find $ marker in method name " + defaultKotlinMethod);
+
+			String methodNameWithHash = methodName.substring(0, methodName.indexOf("$"));
+			isCopyMethod = it -> it.equals(methodNameWithHash);
+		} else {
+			isCopyMethod = it -> it.equals("copy");
+		}
+
+		return Arrays.stream(type.getDeclaredMethods()).filter(it -> {
+			return isCopyMethod.test(it.getName()) //
+					&& !it.isSynthetic() //
+					&& !Modifier.isStatic(it.getModifiers()) //
+					&& it.getReturnType().equals(type) //
+					&& it.getParameterCount() == constructorArguments.size();
+		}) //
 				.filter(it -> {
 
 					KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(it);
@@ -228,13 +242,17 @@ class KotlinCopyMethod {
 			return Optional.empty();
 		}
 
+		boolean usesValueClasses = KotlinValueUtils.hasValueClassProperty(type);
+
+		Predicate<String> isCopyMethod = usesValueClasses ? (it -> it.startsWith("copy-") && it.endsWith("$default"))
+				: (it -> it.equals("copy$default"));
+
 		return Arrays.stream(type.getDeclaredMethods()) //
-				.filter(it -> it.getName().equals("copy$default") //
+				.filter(it -> isCopyMethod.test(it.getName()) //
 						&& Modifier.isStatic(it.getModifiers()) //
 						&& it.getReturnType().equals(type))
 				.filter(Method::isSynthetic) //
-				.filter(it -> matchesPrimaryConstructor(it.getParameterTypes(), primaryConstructor))
-				.findFirst();
+				.filter(it -> matchesPrimaryConstructor(it.getParameterTypes(), primaryConstructor)).findFirst();
 	}
 
 	/**
@@ -244,7 +262,7 @@ class KotlinCopyMethod {
 
 		List<KParameter> constructorArguments = getComponentArguments(primaryConstructor);
 
-		int defaultingArgs = KotlinDefaultMask.from(primaryConstructor, kParameter -> false).getDefaulting().length;
+		int defaultingArgs = KotlinDefaultMask.forCopy(primaryConstructor, kParameter -> false).getDefaulting().length;
 
 		if (parameterTypes.length != 1 /* $this */ + constructorArguments.size() + defaultingArgs + 1 /* object marker */) {
 			return false;
@@ -258,6 +276,12 @@ class KotlinCopyMethod {
 		for (int i = 0; i < constructorArguments.size(); i++) {
 
 			KParameter kParameter = constructorArguments.get(i);
+
+			if (KotlinValueUtils.isValueClass(kParameter.getType())) {
+				// sigh. This can require deep unwrapping because the public vs. the synthetic copy methods use different
+				// parameter types.
+				continue;
+			}
 
 			if (!isAssignableFrom(parameterTypes[i + 1], kParameter.getType())) {
 				return false;
@@ -297,7 +321,7 @@ class KotlinCopyMethod {
 
 			this.parameterPosition = findIndex(copyFunction, property.getName());
 			this.parameterCount = copyFunction.getParameters().size();
-			this.defaultMask = KotlinDefaultMask.from(copyFunction, it -> property.getName().equals(it.getName()));
+			this.defaultMask = KotlinDefaultMask.forCopy(copyFunction, it -> property.getName().equals(it.getName()));
 		}
 
 		static int findIndex(KFunction<?> function, String parameterName) {

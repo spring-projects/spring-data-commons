@@ -168,8 +168,8 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 			KCallable<?> copy = copyMethodCache.computeIfAbsent(type, it -> getCopyMethod(it, property));
 
 			if (copy == null) {
-				throw new UnsupportedOperationException(String.format(
-						"Kotlin class %s has no .copy(…) method for property %s", type.getName(), property.getName()));
+				throw new UnsupportedOperationException(String.format("Kotlin class %s has no .copy(…) method for property %s",
+						type.getName(), property.getName()));
 			}
 
 			return copy.callBy(getCallArgs(copy, property, bean, value));
@@ -179,7 +179,6 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 				T bean, @Nullable Object value) {
 
 			Map<KParameter, Object> args = new LinkedHashMap<>(2, 1);
-
 			List<KParameter> parameters = callable.getParameters();
 
 			for (KParameter parameter : parameters) {
@@ -190,7 +189,8 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 				if (parameter.getKind() == Kind.VALUE && parameter.getName() != null
 						&& parameter.getName().equals(property.getName())) {
-					args.put(parameter, value);
+
+					args.put(parameter, KotlinValueUtils.getCopyValueHierarchy(parameter).wrap(value));
 				}
 			}
 			return args;
