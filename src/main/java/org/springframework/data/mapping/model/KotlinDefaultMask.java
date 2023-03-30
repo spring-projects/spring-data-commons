@@ -54,10 +54,21 @@ public class KotlinDefaultMask {
 	 * Return the number of defaulting masks required to represent the number of {@code arguments}.
 	 *
 	 * @param arguments number of method arguments.
-	 * @return the number of defaulting masks required.
+	 * @return the number of defaulting masks required. Returns at least one to be used with {@code copy} methods.
 	 */
 	public static int getMaskCount(int arguments) {
 		return ((arguments - 1) / Integer.SIZE) + 1;
+	}
+
+	/**
+	 * Return the number of defaulting masks required to represent the number of {@code optionalParameterCount}.
+	 * In contrast to {@link #getMaskCount(int)}, this method can return zero if there are no optional parameters available.
+	 *
+	 * @param optionalParameterCount number of method arguments.
+	 * @return the number of defaulting masks required. Returns zero if no optional parameters are available.
+	 */
+	static int getExactMaskCount(int optionalParameterCount) {
+		return optionalParameterCount == 0 ? 0 : getMaskCount(optionalParameterCount);
 	}
 
 	/**
@@ -69,10 +80,47 @@ public class KotlinDefaultMask {
 	 * @return {@link KotlinDefaultMask}.
 	 */
 	public static KotlinDefaultMask from(KFunction<?> function, Predicate<KParameter> isPresent) {
+		return forCopy(function, isPresent);
+	}
+
+	/**
+	 * Creates defaulting mask(s) used to invoke Kotlin {@literal copy} methods that conditionally apply parameter values.
+	 *
+	 * @param function the {@link KFunction} that should be invoked.
+	 * @param isPresent {@link Predicate} for the presence/absence of parameters.
+	 * @return {@link KotlinDefaultMask}.
+	 */
+	static KotlinDefaultMask forCopy(KFunction<?> function, Predicate<KParameter> isPresent) {
+		return from(function, isPresent, true);
+	}
+
+	/**
+	 * Creates defaulting mask(s) used to invoke Kotlin constructors where a defaulting mask isn't required unless there's
+	 * one nullable argument.
+	 *
+	 * @param function the {@link KFunction} that should be invoked.
+	 * @param isPresent {@link Predicate} for the presence/absence of parameters.
+	 * @return {@link KotlinDefaultMask}.
+	 */
+	static KotlinDefaultMask forConstructor(KFunction<?> function, Predicate<KParameter> isPresent) {
+		return from(function, isPresent, false);
+	}
+
+	/**
+	 * Creates defaulting mask(s) used to invoke Kotlin {@literal default} methods that conditionally apply parameter
+	 * values.
+	 *
+	 * @param function the {@link KFunction} that should be invoked.
+	 * @param isPresent {@link Predicate} for the presence/absence of parameters.
+	 * @return {@link KotlinDefaultMask}.
+	 */
+	private static KotlinDefaultMask from(KFunction<?> function, Predicate<KParameter> isPresent,
+			boolean requiresAtLeastOneMask) {
 
 		List<Integer> masks = new ArrayList<>();
 		int index = 0;
 		int mask = 0;
+		boolean hasSeenParameter = false;
 
 		List<KParameter> parameters = function.getParameters();
 
@@ -83,8 +131,12 @@ public class KotlinDefaultMask {
 				mask = 0;
 			}
 
-			if (parameter.isOptional() && !isPresent.test(parameter)) {
-				mask = mask | (1 << (index % Integer.SIZE));
+			if (parameter.isOptional()) {
+				hasSeenParameter = true;
+
+				if (!isPresent.test(parameter)) {
+					mask = mask | (1 << (index % Integer.SIZE));
+				}
 			}
 
 			if (parameter.getKind() == Kind.VALUE) {
@@ -92,7 +144,9 @@ public class KotlinDefaultMask {
 			}
 		}
 
-		masks.add(mask);
+		if (hasSeenParameter || requiresAtLeastOneMask) {
+			masks.add(mask);
+		}
 
 		return new KotlinDefaultMask(masks.stream().mapToInt(i -> i).toArray());
 	}

@@ -26,6 +26,7 @@ import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
@@ -178,6 +179,16 @@ public interface PreferredConstructorDiscoverer {
 					@Nullable PersistentEntity<T, P> entity) {
 
 				Class<?> rawOwningType = type.getType();
+
+
+				// Kotlin can rewrite annotated constructors into synthetic ones so we need to inspect that first.
+				Optional<PreferredConstructor<T, P>> first = Arrays.stream(rawOwningType.getDeclaredConstructors()) //
+						.filter(it -> it.isSynthetic() && AnnotationUtils.findAnnotation(it, PersistenceCreator.class) != null)
+						.map(it -> buildPreferredConstructor(it, type, entity)).findFirst();
+
+				if(first.isPresent()){
+					return first.get();
+				}
 
 				return Arrays.stream(rawOwningType.getDeclaredConstructors()) //
 						.filter(it -> !it.isSynthetic()) // Synthetic constructors should not be considered

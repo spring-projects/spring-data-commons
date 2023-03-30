@@ -244,7 +244,7 @@ class KotlinCopyMethod {
 
 		List<KParameter> constructorArguments = getComponentArguments(primaryConstructor);
 
-		int defaultingArgs = KotlinDefaultMask.from(primaryConstructor, kParameter -> false).getDefaulting().length;
+		int defaultingArgs = KotlinDefaultMask.forCopy(primaryConstructor, kParameter -> false).getDefaulting().length;
 
 		if (parameterTypes.length != 1 /* $this */ + constructorArguments.size() + defaultingArgs + 1 /* object marker */) {
 			return false;
@@ -297,7 +297,7 @@ class KotlinCopyMethod {
 
 			this.parameterPosition = findIndex(copyFunction, property.getName());
 			this.parameterCount = copyFunction.getParameters().size();
-			this.defaultMask = KotlinDefaultMask.from(copyFunction, it -> property.getName().equals(it.getName()));
+			this.defaultMask = KotlinDefaultMask.forCopy(copyFunction, it -> property.getName().equals(it.getName()));
 		}
 
 		static int findIndex(KFunction<?> function, String parameterName) {

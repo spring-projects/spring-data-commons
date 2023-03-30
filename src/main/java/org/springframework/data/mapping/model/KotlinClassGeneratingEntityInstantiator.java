@@ -15,13 +15,20 @@
  */
 package org.springframework.data.mapping.model;
 
+import static org.springframework.data.mapping.model.KotlinClassGeneratingEntityInstantiator.DefaultingKotlinConstructorResolver.*;
+
+import kotlin.jvm.JvmClassMappingKt;
+import kotlin.reflect.KClass;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import org.springframework.data.mapping.InstanceCreatorMetadata;
@@ -53,14 +60,14 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 				&& creator instanceof PreferredConstructor<?, ?> constructor) {
 
 			PreferredConstructor<?, ? extends PersistentProperty<?>> defaultConstructor = new DefaultingKotlinConstructorResolver(
-					entity)
-					.getDefaultConstructor();
+					entity).getDefaultConstructor();
 
 			if (defaultConstructor != null) {
 
 				ObjectInstantiator instantiator = createObjectInstantiator(entity, defaultConstructor);
 
-				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, constructor);
+				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, constructor,
+						defaultConstructor.getConstructor());
 			}
 		}
 
@@ -95,12 +102,13 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		@Nullable
 		private static Constructor<?> resolveDefaultConstructor(PersistentEntity<?, ?> entity) {
 
-			if (!(entity.getInstanceCreatorMetadata() instanceof PreferredConstructor<?, ?> persistenceConstructor)) {
+			if (!(entity.getInstanceCreatorMetadata()instanceof PreferredConstructor<?, ?> persistenceConstructor)) {
 				return null;
 			}
 
 			Constructor<?> hit = null;
-			Constructor<?> constructor = persistenceConstructor.getConstructor();
+			Constructor<?> detectedConstructor = persistenceConstructor.getConstructor();
+			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(detectedConstructor);
 
 			for (Constructor<?> candidate : entity.getType().getDeclaredConstructors()) {
 
@@ -109,37 +117,85 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 					continue;
 				}
 
-				// candidates must contain at least two additional parameters (int, DefaultConstructorMarker).
-				// Number of defaulting masks derives from the original constructor arg count
-				int syntheticParameters = KotlinDefaultMask.getMaskCount(constructor.getParameterCount())
-						+ /* DefaultConstructorMarker */ 1;
-
-				if ((constructor.getParameterCount() + syntheticParameters) != candidate.getParameterCount()) {
-					continue;
-				}
-
-				java.lang.reflect.Parameter[] constructorParameters = constructor.getParameters();
+				java.lang.reflect.Parameter[] detectedConstructorParameters = detectedConstructor.getParameters();
 				java.lang.reflect.Parameter[] candidateParameters = candidate.getParameters();
 
-				if (!candidateParameters[candidateParameters.length - 1].getType().getName()
-						.equals("kotlin.jvm.internal.DefaultConstructorMarker")) {
+				if (!hasDefaultConstructorMarker(detectedConstructorParameters)) {
+
+					// candidates must contain at least two additional parameters (int, DefaultConstructorMarker).
+					// Number of defaulting masks derives from the original constructor arg count
+					int syntheticParameters = KotlinDefaultMask.getMaskCount(detectedConstructor.getParameterCount())
+							+ /* DefaultConstructorMarker */ 1;
+
+					if ((detectedConstructor.getParameterCount() + syntheticParameters) != candidate.getParameterCount()) {
+						continue;
+					}
+				} else {
+
+					int optionalParameterCount = (int) kotlinFunction.getParameters().stream().filter(it -> it.isOptional())
+							.count();
+					int syntheticParameters = KotlinDefaultMask.getExactMaskCount(optionalParameterCount);
+
+					if ((detectedConstructor.getParameterCount() + syntheticParameters) != candidate.getParameterCount()) {
+						continue;
+					}
+				}
+
+				if (!hasDefaultConstructorMarker(candidateParameters)) {
 					continue;
 				}
 
-				if (parametersMatch(constructorParameters, candidateParameters)) {
+				int userParameterCount = kotlinFunction != null ? kotlinFunction.getParameters().size()
+						: detectedConstructor.getParameterCount();
+				if (parametersMatch(detectedConstructorParameters, candidateParameters, userParameterCount)) {
 					hit = candidate;
-					break;
 				}
 			}
 
 			return hit;
 		}
 
-		private static boolean parametersMatch(java.lang.reflect.Parameter[] constructorParameters,
-				java.lang.reflect.Parameter[] candidateParameters) {
+		static boolean hasDefaultConstructorMarker(java.lang.reflect.Parameter[] parameters) {
 
-			return IntStream.range(0, constructorParameters.length)
-					.allMatch(i -> constructorParameters[i].getType().equals(candidateParameters[i].getType()));
+			return parameters.length > 0 && parameters[parameters.length - 1].getType().getName()
+					.equals("kotlin.jvm.internal.DefaultConstructorMarker");
+		}
+
+		private static boolean parametersMatch(java.lang.reflect.Parameter[] constructorParameters,
+				java.lang.reflect.Parameter[] candidateParameters, int userParameterCount) {
+
+			return IntStream.range(0, userParameterCount)
+					.allMatch(i -> parametersMatch(constructorParameters[i], candidateParameters[i]));
+		}
+
+		static boolean parametersMatch(java.lang.reflect.Parameter constructorParameter,
+				java.lang.reflect.Parameter candidateParameter) {
+
+			if (constructorParameter.getType().equals(candidateParameter.getType())) {
+				return true;
+			}
+
+			// candidate can be also a wrapper
+
+			Class<?> aClass = unwrapValueClass(candidateParameter.getType());
+
+			return constructorParameter.getType().equals(aClass);
+		}
+
+		private static Class<?> unwrapValueClass(Class<?> type) {
+
+			KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+			if (kotlinClass != null && kotlinClass.isValue()) {
+
+				KFunction<?> next = kotlinClass.getConstructors().iterator().next();
+				KParameter kParameter = next.getParameters().get(0);
+				Type javaType = ReflectJvmMapping.getJavaType(kParameter.getType());
+				if (javaType instanceof Class<?>) {
+					return unwrapValueClass((Class<?>) javaType);
+				}
+			}
+
+			return type;
 		}
 
 		@Nullable
@@ -171,21 +227,39 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		private final ObjectInstantiator instantiator;
 		private final KFunction<?> constructor;
 		private final List<KParameter> kParameters;
-		private final Constructor<?> synthetic;
+		private final List<Function<Object, Object>> wrappers = new ArrayList<>();
+		private final Constructor<?> constructorToInvoke;
+		private final boolean hasDefaultConstructorMarker;
 
-		DefaultingKotlinClassInstantiatorAdapter(ObjectInstantiator instantiator, PreferredConstructor<?, ?> constructor) {
+		DefaultingKotlinClassInstantiatorAdapter(ObjectInstantiator instantiator,
+				PreferredConstructor<?, ?> defaultConstructor, Constructor<?> constructorToInvoke) {
 
-			KFunction<?> kotlinConstructor = ReflectJvmMapping.getKotlinFunction(constructor.getConstructor());
+			KFunction<?> kotlinConstructor = ReflectJvmMapping.getKotlinFunction(defaultConstructor.getConstructor());
 
 			if (kotlinConstructor == null) {
 				throw new IllegalArgumentException(
-						"No corresponding Kotlin constructor found for " + constructor.getConstructor());
+						"No corresponding Kotlin constructor found for " + defaultConstructor.getConstructor());
 			}
 
 			this.instantiator = instantiator;
 			this.constructor = kotlinConstructor;
+			this.hasDefaultConstructorMarker = hasDefaultConstructorMarker(constructorToInvoke.getParameters());
 			this.kParameters = kotlinConstructor.getParameters();
-			this.synthetic = constructor.getConstructor();
+			this.constructorToInvoke = constructorToInvoke;
+
+			for (KParameter kParameter : kParameters) {
+
+				if (kParameter.getType().getClassifier()instanceof KClass<?> kc && kc.isValue() && kParameter.isOptional()) {
+
+					// using reflection to construct a value class wrapper. Everything
+					// else would require too many levels of indirections.
+					wrappers.add(o -> {
+						return kc.getConstructors().iterator().next().call(o);
+					});
+				} else {
+					wrappers.add(Function.identity());
+				}
+			}
 		}
 
 		@Override
@@ -209,8 +283,10 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 				throw new IllegalArgumentException("EntityCreator must not be null");
 			}
 
-			Object[] params = allocateArguments(synthetic.getParameterCount()
-					+ KotlinDefaultMask.getMaskCount(synthetic.getParameterCount()) + /* DefaultConstructorMarker */1);
+			Object[] params = allocateArguments(hasDefaultConstructorMarker ? constructorToInvoke.getParameterCount()
+					: (constructorToInvoke.getParameterCount()
+							+ KotlinDefaultMask.getMaskCount(constructorToInvoke.getParameterCount())
+							+ /* DefaultConstructorMarker */1));
 			int userParameterCount = kParameters.size();
 
 			List<Parameter<Object, P>> parameters = entityCreator.getParameters();
@@ -222,7 +298,7 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 				params[i] = provider.getParameterValue(parameter);
 			}
 
-			KotlinDefaultMask defaultMask = KotlinDefaultMask.from(constructor, it -> {
+			KotlinDefaultMask defaultMask = KotlinDefaultMask.forConstructor(constructor, it -> {
 
 				int index = kParameters.indexOf(it);
 
@@ -240,6 +316,11 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 
 				return true;
 			});
+
+			// late rewrapping to indicate potential absence of parameters for defaulting
+			for (int i = 0; i < userParameterCount; i++) {
+				params[i] = wrappers.get(i).apply(params[i]);
+			}
 
 			int[] defaulting = defaultMask.getDefaulting();
 			// append nullability masks to creation arguments
