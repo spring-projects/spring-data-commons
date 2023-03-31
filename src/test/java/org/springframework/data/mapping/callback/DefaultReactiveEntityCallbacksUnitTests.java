@@ -17,6 +17,9 @@ package org.springframework.data.mapping.callback;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -26,6 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mapping.Person;
 import org.springframework.data.mapping.PersonDocument;
+import org.springframework.data.mapping.PersonNoId;
 import org.springframework.data.mapping.callback.CapturingEntityCallback.FirstCallback;
 import org.springframework.data.mapping.callback.CapturingEntityCallback.SecondCallback;
 import org.springframework.data.mapping.callback.CapturingEntityCallback.ThirdCallback;
@@ -35,6 +39,7 @@ import org.springframework.data.mapping.callback.CapturingEntityCallback.ThirdCa
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Michael J. Simons
  */
 class DefaultReactiveEntityCallbacksUnitTests {
 
@@ -122,6 +127,24 @@ class DefaultReactiveEntityCallbacksUnitTests {
 		assertThat(first.capturedValue()).isSameAs(initial);
 		assertThat(second.capturedValue()).isNotNull().isNotSameAs(initial);
 		assertThat(third.capturedValues()).isEmpty();
+	}
+
+	@Test // GH-2808
+	void skipsInvocationUsingJava18ReflectiveTypeRejection() {
+
+		DefaultReactiveEntityCallbacks callbacks = new DefaultReactiveEntityCallbacks();
+		callbacks.addEntityCallback(new DefaultEntityCallbacksUnitTests.Java18ClassCastStyle());
+
+		Person person = new PersonNoId(42, "Walter", "White");
+		List<Person> capturedPerson = new ArrayList<>();
+
+		callbacks.callback(DefaultEntityCallbacksUnitTests.BeforeConvertCallback.class, person) //
+			.as(StepVerifier::create)
+			.recordWith(() -> capturedPerson)
+			.expectNextCount(1)
+			.verifyComplete();
+
+		assertThat(capturedPerson.get(0)).isSameAs(person);
 	}
 
 	@Configuration
