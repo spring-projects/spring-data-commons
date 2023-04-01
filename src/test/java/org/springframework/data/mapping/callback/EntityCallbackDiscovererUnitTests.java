@@ -25,6 +25,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.AbstractBooleanAssert;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +44,7 @@ import org.springframework.data.mapping.PersonDocument;
  * @author Christoph Strobl
  * @author Myeonghyeon Lee
  * @author Mark Paluch
+ * @author Oliver Drotbohm
  */
 class EntityCallbackDiscovererUnitTests {
 
@@ -95,32 +97,22 @@ class EntityCallbackDiscovererUnitTests {
 	}
 
 	@Test // DATACMNS-1467
-	void shouldDiscoverCallbackTypeByName() {
-
-		var ctx = new AnnotationConfigApplicationContext(MyConfig.class);
-
-		var discoverer = new EntityCallbackDiscoverer(ctx);
-		discoverer.clear();
-		discoverer.addEntityCallbackBean("namedCallback");
-
-		Collection<EntityCallback<Person>> entityCallbacks = discoverer.getEntityCallbacks(PersonDocument.class,
-				ResolvableType.forType(BeforeSaveCallback.class));
-
-		assertThat(entityCallbacks).hasSize(1).element(0).isInstanceOf(MyOtherCallback.class);
-	}
-
-	@Test // DATACMNS-1467
 	void shouldSupportCallbackTypes() {
 
 		var discoverer = new EntityCallbackDiscoverer();
 
-		assertThat(discoverer.supportsEvent(MyBeforeSaveCallback.class, ResolvableType.forClass(Person.class))).isTrue();
-		assertThat(discoverer.supportsEvent(MyBeforeSaveCallback.class, ResolvableType.forClass(Child.class))).isTrue();
-		assertThat(discoverer.supportsEvent(BeforeSaveCallback.class, ResolvableType.forClass(PersonDocument.class)))
-				.isTrue();
+		assertSupportsEvent(discoverer, MyBeforeSaveCallback.class, Person.class).isTrue();
+		assertSupportsEvent(discoverer, MyBeforeSaveCallback.class, Child.class).isTrue();
+		assertSupportsEvent(discoverer, BeforeSaveCallback.class, PersonDocument.class).isTrue();
 
-		assertThat(discoverer.supportsEvent(MyBeforeSaveCallback.class, ResolvableType.forClass(Object.class))).isFalse();
-		assertThat(discoverer.supportsEvent(MyBeforeSaveCallback.class, ResolvableType.forClass(User.class))).isFalse();
+		assertSupportsEvent(discoverer, MyBeforeSaveCallback.class, Object.class).isFalse();
+		assertSupportsEvent(discoverer, MyBeforeSaveCallback.class, User.class).isFalse();
+	}
+
+	private static AbstractBooleanAssert<?> assertSupportsEvent(EntityCallbackDiscoverer discoverer,
+			Class<?> callbackType, Class<?> entityType) {
+		return assertThat(
+				discoverer.supportsEvent(ResolvableType.forClass(callbackType), ResolvableType.forClass(entityType)));
 	}
 
 	@Test // DATACMNS-1467

@@ -21,7 +21,6 @@ import java.util.function.BiFunction;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
@@ -35,6 +34,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Oliver Drotbohm
  * @since 2.2
  */
 class DefaultEntityCallbacks implements EntityCallbacks {
@@ -93,7 +93,8 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 		this.callbackDiscoverer.addEntityCallback(callback);
 	}
 
-	static class SimpleEntityCallbackInvoker implements org.springframework.data.mapping.callback.EntityCallbackInvoker {
+	static class SimpleEntityCallbackInvoker
+			implements org.springframework.data.mapping.callback.EntityCallbackInvoker {
 
 		@Override
 		public <T> T invokeCallback(EntityCallback<T> callback, T entity,
@@ -108,11 +109,12 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 				}
 
 				throw new IllegalArgumentException(
-						String.format("Callback invocation on %s returned null value for %s", callback.getClass(), entity));
+						"Callback invocation on %s returned null value for %s".formatted(callback.getClass(), entity));
 
 			} catch (IllegalArgumentException | ClassCastException ex) {
 
 				String msg = ex.getMessage();
+
 				if (msg == null || EntityCallbackInvoker.matchesClassCastMessage(msg, entity.getClass())) {
 
 					// Possibly a lambda-defined listener which we could not resolve the generic event type for
