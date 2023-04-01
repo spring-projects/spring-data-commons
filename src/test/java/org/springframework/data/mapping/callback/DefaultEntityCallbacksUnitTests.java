@@ -65,6 +65,7 @@ class DefaultEntityCallbacksUnitTests {
 		var afterCallback = callbacks.callback(BeforeSaveCallback.class, personDocument);
 
 		assertThat(afterCallback).isSameAs(personDocument);
+		assertThat(afterCallback.getSsn()).isEqualTo(6);
 	}
 
 	@Test // DATACMNS-1467
@@ -73,7 +74,8 @@ class DefaultEntityCallbacksUnitTests {
 		var callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new GenericPersonCallback());
 
-		Person afterCallback = callbacks.callback(GenericPersonCallback.class, new PersonDocument(null, "Walter", null));
+		Person afterCallback = callbacks.callback(GenericPersonCallback.class,
+				new PersonDocument(null, "Walter", null));
 
 		assertThat(afterCallback.getSsn()).isEqualTo(6);
 	}
@@ -143,7 +145,8 @@ class DefaultEntityCallbacksUnitTests {
 
 		var initial = new PersonDocument(null, "Walter", null);
 
-		assertThatIllegalArgumentException().isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, initial));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, initial));
 
 		assertThat(first.capturedValue()).isSameAs(initial);
 		assertThat(second.capturedValue()).isNotNull().isNotSameAs(initial);
