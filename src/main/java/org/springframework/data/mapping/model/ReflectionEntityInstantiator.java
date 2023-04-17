@@ -16,18 +16,22 @@
 package org.springframework.data.mapping.model;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.KotlinDetector;
 import org.springframework.data.mapping.FactoryMethod;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -52,6 +56,18 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 		if (creator == null) {
 			return instantiateClass(entity);
 		}
+
+		if (KotlinDetector.isKotlinReflectPresent() && KotlinReflectionUtils.isSupportedKotlinClass(entity.getType())
+				&& creator instanceof PreferredConstructor<?, ?> constructor) {
+
+			PreferredConstructor<?, ? extends PersistentProperty<?>> kotlinJvmConstructor = KotlinInstantiationDelegate
+					.resolveKotlinJvmConstructor(constructor);
+
+			if (kotlinJvmConstructor != null) {
+				return instantiateKotlinClass(entity, provider, constructor, kotlinJvmConstructor);
+			}
+		}
+
 		int parameterCount = creator.getParameterCount();
 
 		Object[] params = parameterCount == 0 ? EMPTY_ARGS : new Object[parameterCount];
@@ -78,6 +94,29 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 			return BeanUtils.instantiateClass(((PreferredConstructor<T, ?>) creator).getConstructor(), params);
 		} catch (BeanInstantiationException e) {
 			throw new MappingInstantiationException(entity, new ArrayList<>(Arrays.asList(params)), e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T instantiateKotlinClass(
+			E entity, ParameterValueProvider<P> provider, PreferredConstructor<?, ?> preferredConstructor,
+			PreferredConstructor<?, ? extends PersistentProperty<?>> kotlinJvmConstructor) {
+
+		Constructor<?> ctor = kotlinJvmConstructor.getConstructor();
+		KotlinInstantiationDelegate delegate = new KotlinInstantiationDelegate(preferredConstructor, ctor);
+		Object[] params = new Object[delegate.getRequiredParameterCount()];
+		delegate.extractInvocationArguments(params, entity.getInstanceCreatorMetadata(), provider);
+
+		try {
+			return (T) ctor.newInstance(params);
+		} catch (InstantiationException ex) {
+			throw new BeanInstantiationException(ctor, "Is it an abstract class?", ex);
+		} catch (IllegalAccessException ex) {
+			throw new BeanInstantiationException(ctor, "Is the preferredConstructor accessible?", ex);
+		} catch (IllegalArgumentException ex) {
+			throw new BeanInstantiationException(ctor, "Illegal arguments for preferredConstructor", ex);
+		} catch (InvocationTargetException ex) {
+			throw new BeanInstantiationException(ctor, "Constructor threw exception", ex.getTargetException());
 		}
 	}
 

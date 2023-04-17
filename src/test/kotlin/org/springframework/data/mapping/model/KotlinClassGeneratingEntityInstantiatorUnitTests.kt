@@ -253,22 +253,5 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
         ), val baz: MyNullableInlineClass? = MyNullableInlineClass("id")
     )
 
-    class WithNestedAndPersistenceConstructorNullableInlineClass(
-        val id: MyNestedNullableInlineClass? = MyNestedNullableInlineClass(
-            MyNullableInlineClass("foo")
-        ), val baz: MyNullableInlineClass? = MyNullableInlineClass("id")
-    ) {
-
-        @PersistenceCreator
-        constructor(id: MyNestedNullableInlineClass?, baz: MyNullableInlineClass?=MyNullableInlineClass("aaa"), s: String) : this(id, baz) {
-            println(s)
-        }
-
-        constructor(id: MyNestedNullableInlineClass, baz: MyNullableInlineClass, i: Int) : this(id, baz) {
-        }
-
-    }
-
-
 }
 

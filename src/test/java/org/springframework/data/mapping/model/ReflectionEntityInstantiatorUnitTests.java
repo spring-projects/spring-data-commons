@@ -68,6 +68,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
 		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
+		doReturn(Foo.class).when(entity).getType();
 		doReturn(constructor).when(entity).getInstanceCreatorMetadata();
 
 		var instance = INSTANCE.createInstance(entity, provider);
@@ -78,7 +79,6 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 	}
 
 	@Test // DATACMNS-300
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void throwsExceptionOnBeanInstantiationException() {
 
 		doReturn(PersistentEntity.class).when(entity).getType();
