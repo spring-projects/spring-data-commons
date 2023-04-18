@@ -19,7 +19,6 @@ import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.data.annotation.PersistenceCreator
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
 import kotlin.reflect.KClass
@@ -82,23 +81,6 @@ class ReflectionEntityInstantiatorInlineClassUnitTests {
 
 		return ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider)
 	}
-
-	@JvmInline
-	value class MyInlineClass(val id: String)
-
-	data class WithMyValueClass(val id: MyInlineClass)
-
-	@JvmInline
-	value class MyNullableInlineClass(val id: String? = "id")
-
-	@JvmInline
-	value class MyNestedNullableInlineClass(val id: MyNullableInlineClass)
-
-	class WithNestedMyNullableInlineClass(
-		val id: MyNestedNullableInlineClass? = MyNestedNullableInlineClass(
-			MyNullableInlineClass("foo")
-		), val baz: MyNullableInlineClass? = MyNullableInlineClass("id")
-	)
 
 }
 

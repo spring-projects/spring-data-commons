@@ -190,6 +190,10 @@ class KotlinInstantiationDelegate {
 
 		Constructor<?> hit = doResolveKotlinConstructor(preferredConstructor.getConstructor());
 
+		if (hit == preferredConstructor.getConstructor()) {
+			return preferredConstructor;
+		}
+
 		if (hit != null) {
 			return new PreferredConstructor<>(hit, preferredConstructor.getParameters().toArray(new Parameter[0]));
 		}

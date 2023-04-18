@@ -236,22 +236,5 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
     data class Organisation(var id: String? = null)
 
-    @JvmInline
-    value class MyInlineClass(val id: String)
-
-    data class WithMyValueClass(val id: MyInlineClass)
-
-    @JvmInline
-    value class MyNullableInlineClass(val id: String? = "id")
-
-    @JvmInline
-    value class MyNestedNullableInlineClass(val id: MyNullableInlineClass)
-
-    class WithNestedMyNullableInlineClass(
-        val id: MyNestedNullableInlineClass? = MyNestedNullableInlineClass(
-            MyNullableInlineClass("foo")
-        ), val baz: MyNullableInlineClass? = MyNullableInlineClass("id")
-    )
-
 }
 
