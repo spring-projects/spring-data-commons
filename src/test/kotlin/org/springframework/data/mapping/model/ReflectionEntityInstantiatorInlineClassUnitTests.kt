@@ -38,8 +38,8 @@ class ReflectionEntityInstantiatorInlineClassUnitTests {
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter")
 
-		val instance: WithMyValueClass =
-			construct(WithMyValueClass::class)
+		val instance: WithMyInlineValueClass =
+			construct(WithMyInlineValueClass::class)
 
 		assertThat(instance.id.id).isEqualTo("Walter")
 	}
@@ -65,6 +65,17 @@ class ReflectionEntityInstantiatorInlineClassUnitTests {
 
 		assertThat(instance.id?.id?.id).isEqualTo("foo")
 		assertThat(instance.baz?.id).isEqualTo("id")
+	}
+
+	@Test // GH-2806
+	fun `should use annotated constructor for types using nullable value class`() {
+
+		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", null)
+
+		val instance = construct(WithInlineClassPreferredConstructor::class)
+
+		assertThat(instance.id?.id?.id).isEqualTo("foo")
+		assertThat(instance.baz?.id).isEqualTo("Walter-pref")
 	}
 
 	private fun <T : Any> construct(typeToCreate: KClass<T>): T {

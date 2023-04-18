@@ -15,13 +15,15 @@
  */
 package org.springframework.data.mapping.model
 
+import org.springframework.data.annotation.PersistenceCreator
+
 /**
  * @author Mark Paluch
  */
 @JvmInline
-value class MyInlineClass(val id: String)
+value class MyInlineValueClass(val id: String)
 
-data class WithMyValueClass(val id: MyInlineClass) {
+data class WithMyInlineValueClass(val id: MyInlineValueClass) {
 
 	// ByteCode explanation
 
@@ -57,15 +59,61 @@ class WithNestedMyNullableInlineClass(
 	// default constructor, detected by Discoverers.KOTLIN
 	// note that these constructors use boxed variants ("MyNestedNullableInlineClass")
 
-	// public WithNestedMyNullableInlineClass(MyNestedNullableInlineClass id, MyNullableInlineClass baz, DefaultConstructorMarker $constructor_marker) {}
+	// public synthetic WithNestedMyNullableInlineClass(MyNestedNullableInlineClass id, MyNullableInlineClass baz, DefaultConstructorMarker $constructor_marker) {}
 	// ---------
 
 	// ---------
 	// translated by KotlinInstantiationDelegate.resolveKotlinJvmConstructor as we require a constructor that we can use to
-	// provide the nullability mask. This constructor only gets generated when parameters are nullable, otherwise
+	// provide the defaulting mask. This constructor only gets generated when parameters are nullable, otherwise
 	// Kotlin doesn't create this constructor
 
-	// public WithNestedMyNullableInlineClass(MyNestedNullableInlineClass var1, MyNullableInlineClass var2, int var3, DefaultConstructorMarker var4) {}
+	// public synthetic WithNestedMyNullableInlineClass(MyNestedNullableInlineClass var1, MyNullableInlineClass var2, int var3, DefaultConstructorMarker var4) {}
+	// ---------
+)
+
+class WithInlineClassPreferredConstructor(
+	val id: MyNestedNullableInlineClass? = MyNestedNullableInlineClass(
+		MyNullableInlineClass("foo")
+	), val baz: MyNullableInlineClass? = MyNullableInlineClass("id")
+) {
+
+	@PersistenceCreator
+	constructor(
+		a: String, id: MyNestedNullableInlineClass? = MyNestedNullableInlineClass(
+			MyNullableInlineClass("foo")
+		)
+	) : this(id, MyNullableInlineClass(a + "-pref")) {
+
+	}
+
+	// ByteCode explanation
+
+	// ---------
+	// private WithPreferredConstructor(MyNestedNullableInlineClass id, MyNullableInlineClass baz) {}
 	// ---------
 
-)
+	// ---------
+	//    public WithPreferredConstructor(MyNestedNullableInlineClass var1, MyNullableInlineClass var2, int var3, DefaultConstructorMarker var4) {}
+	// ---------
+
+	// ---------
+	// private WithPreferredConstructor(String a, MyNestedNullableInlineClass id) {}
+	// ---------
+
+	// ---------
+	// this is the one we need to invoke to pass on the defaulting mask
+	// public synthetic WithPreferredConstructor(String var1, MyNestedNullableInlineClass var2, int var3, DefaultConstructorMarker var4) {}
+	// ---------
+
+	// ---------
+	// public synthetic WithPreferredConstructor(MyNestedNullableInlineClass id, MyNullableInlineClass baz, DefaultConstructorMarker $constructor_marker) {
+	// ---------
+
+	// ---------
+	// annotated constructor, detected by Discoverers.KOTLIN
+	// @PersistenceCreator
+	// public WithPreferredConstructor(String a, MyNestedNullableInlineClass id, DefaultConstructorMarker $constructor_marker) {
+	// ---------
+
+}
+
