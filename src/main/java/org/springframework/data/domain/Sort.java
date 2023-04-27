@@ -356,6 +356,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 *
 	 * @author Oliver Gierke
 	 * @author Kevin Raymond
+	 * @author Jens Schauder
 	 */
 	public static class Order implements Serializable {
 
@@ -434,7 +435,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @param nullHandling must not be {@literal null}.
 		 * @since 1.7
 		 */
-		private Order(@Nullable Direction direction, String property, boolean ignoreCase, NullHandling nullHandling) {
+		public Order(@Nullable Direction direction, String property, boolean ignoreCase, NullHandling nullHandling) {
 
 			if (!StringUtils.hasText(property)) {
 				throw new IllegalArgumentException("Property must not be null or empty");
