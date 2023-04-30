@@ -115,7 +115,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	}
 
 	/**
-	 * Creates a new {@link Sort} for the given {@link Order}s.
+	 * Creates a new {@link Sort} for the given {@link Direction} and properties.
 	 *
 	 * @param direction must not be {@literal null}.
 	 * @param properties must not be {@literal null}.
