@@ -33,9 +33,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.ResolvableType;
-import org.springframework.core.ResolvableTypeProvider;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -291,12 +289,9 @@ class EntityCallbackDiscoverer {
 	static boolean supportsEvent(EntityCallback<?> callback, ResolvableType entityType,
 			ResolvableType callbackType) {
 
-		ResolvableType callbackInstanceType = callback instanceof EntityCallbackAdapter<?> provider
-				? provider.getResolvableType()
-				: ResolvableType.forInstance(callback);
-
-		return supportsEvent(callbackInstanceType, entityType)
-				&& callbackType.isAssignableFrom(callbackInstanceType);
+		return callback instanceof EntityCallbackAdapter<?> provider
+				? provider.supports(callbackType, entityType)
+				: callbackType.isInstance(callback) && supportsEvent(ResolvableType.forInstance(callback), entityType);
 	}
 
 	/**
@@ -346,12 +341,10 @@ class EntityCallbackDiscoverer {
 	 * @author Oliver Drotbohm
 	 */
 	private static record EntityCallbackAdapter<T>(EntityCallback<T> delegate, ResolvableType type)
-			implements EntityCallback<T>, ResolvableTypeProvider {
+			implements EntityCallback<T> {
 
-		@NonNull
-		@Override
-		public ResolvableType getResolvableType() {
-			return type;
+		boolean supports(ResolvableType callbackType, ResolvableType entityType) {
+			return callbackType.isInstance(delegate) && supportsEvent(type, entityType);
 		}
 	}
 

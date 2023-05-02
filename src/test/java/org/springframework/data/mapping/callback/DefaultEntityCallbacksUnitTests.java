@@ -169,8 +169,7 @@ class DefaultEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void detectsMultipleCallbacksWithinOneClass() {
 
-		var ctx = new AnnotationConfigApplicationContext(
-				MultipleCallbacksInOneClassConfig.class);
+		var ctx = new AnnotationConfigApplicationContext(MultipleCallbacksInOneClassConfig.class);
 
 		var callbacks = new DefaultEntityCallbacks(ctx);
 
@@ -182,6 +181,17 @@ class DefaultEntityCallbacksUnitTests {
 		callbacks.callback(BeforeConvertCallback.class, personDocument);
 
 		assertThat(ctx.getBean("callbacks", MultipleCallbacks.class).invocations).containsExactly("save", "convert");
+	}
+
+	@Test // GH-2822
+	void genericCallbackDiscoveredForObjectDeclaration() {
+
+		var ctx = new AnnotationConfigApplicationContext(SomeConfiguration.class);
+		var callbacks = new DefaultEntityCallbacks(ctx);
+
+		callbacks.callback(BeforeSaveCallback.class, new PersonDocument(null, "Walter", null));
+
+		assertThat(ctx.getBean(SomeConfiguration.class).invoked).isTrue();
 	}
 
 	@Configuration
@@ -312,4 +322,18 @@ class DefaultEntityCallbacksUnitTests {
 
 	}
 
+	// GH-2822
+	@Configuration
+	static class SomeConfiguration {
+
+		boolean invoked = false;
+
+		@Bean
+		BeforeSaveCallback<Object> someGenericCallback() {
+			return it -> {
+				this.invoked = true;
+				return it;
+			};
+		}
+	}
 }
