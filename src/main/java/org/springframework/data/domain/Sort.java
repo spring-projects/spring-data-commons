@@ -194,13 +194,38 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		Assert.notNull(sort, "Sort must not be null");
 
-		ArrayList<Order> these = new ArrayList<Order>(this.toList());
+		List<Order> these = new ArrayList<Order>(this.toList());
 
 		for (Order order : sort) {
 			these.add(order);
 		}
 
 		return Sort.by(these);
+	}
+
+	/**
+	 * Returns a new {@link Sort} with reversed sort {@link Order}s turning effectively asccending into descending sort
+	 * order and vice versa.
+	 *
+	 * @return a new {@link Sort} object with reversed sort orders applied.
+	 * @since 3.1
+	 */
+	public Sort reverse() {
+
+		List<Order> reversed = doReverse();
+
+		return Sort.by(reversed);
+	}
+
+	protected List<Order> doReverse() {
+
+		List<Order> reversed = new ArrayList<>(orders.size());
+
+		for (Order order : this) {
+			reversed.add(order.reverse());
+		}
+
+		return reversed;
 	}
 
 	/**
@@ -260,7 +285,13 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	private Sort withDirection(Direction direction) {
 
-		return Sort.by(stream().map(it -> it.with(direction)).collect(Collectors.toList()));
+		List<Order> result = new ArrayList<>(orders.size());
+
+		for (Order order : this) {
+			result.add(order.with(direction));
+		}
+
+		return Sort.by(result);
 	}
 
 	/**
@@ -332,7 +363,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @author Thomas Darimont
 	 * @since 1.8
 	 */
-	public static enum NullHandling {
+	public enum NullHandling {
 
 		/**
 		 * Lets the data store decide what to do with nulls.
@@ -501,6 +532,16 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 */
 		public Order with(Direction direction) {
 			return new Order(direction, this.property, this.ignoreCase, this.nullHandling);
+		}
+
+		/**
+		 * Returns a new {@link Order} with the reversed {@link #getDirection()}.
+		 *
+		 * @return
+		 * @since 3.1
+		 */
+		public Order reverse() {
+			return with(this.direction == Direction.ASC ? Direction.DESC : Direction.ASC);
 		}
 
 		/**

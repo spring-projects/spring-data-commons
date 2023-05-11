@@ -201,6 +201,21 @@ class SortUnitTests {
 				.containsExactly(Order.by("center"), Order.by("radius"));
 	}
 
+	@Test // GH-2805
+	void reversesSortCorrectly() {
+		assertThat(Sort.by(Order.asc("center"), Order.desc("radius")).reverse()) //
+				.containsExactly(Order.desc("center"), Order.asc("radius"));
+	}
+
+	@Test // GH-2805
+	void reversesTypedSortCorrectly() {
+
+		Sort reverse = Sort.sort(Circle.class).by(Circle::getCenter).reverse();
+		assertThat(reverse) //
+				.containsExactly(Order.desc("center"));
+
+	}
+
 	@Getter
 	static class Sample {
 		Nested nested;
