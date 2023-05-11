@@ -393,6 +393,28 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
+		 * Creates a new {@link Order} instance. if order is {@literal null} then order defaults to
+		 * {@link Sort#DEFAULT_DIRECTION}
+		 *
+		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
+		 * @param property must not be {@literal null} or empty.
+		 * @param ignoreCase true if sorting should be case-insensitive. false if sorting should be case-sensitive.
+		 * @param nullHandling must not be {@literal null}.
+		 * @since 1.7
+		 */
+		public Order(@Nullable Direction direction, String property, boolean ignoreCase, NullHandling nullHandling) {
+
+			if (!StringUtils.hasText(property)) {
+				throw new IllegalArgumentException("Property must not be null or empty");
+			}
+
+			this.direction = direction == null ? DEFAULT_DIRECTION : direction;
+			this.property = property;
+			this.ignoreCase = ignoreCase;
+			this.nullHandling = nullHandling;
+		}
+
+		/**
 		 * Creates a new {@link Order} instance. Takes a single property. Direction defaults to
 		 * {@link Sort#DEFAULT_DIRECTION}.
 		 *
@@ -423,28 +445,6 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 */
 		public static Order desc(String property) {
 			return new Order(Direction.DESC, property, DEFAULT_NULL_HANDLING);
-		}
-
-		/**
-		 * Creates a new {@link Order} instance. if order is {@literal null} then order defaults to
-		 * {@link Sort#DEFAULT_DIRECTION}
-		 *
-		 * @param direction can be {@literal null}, will default to {@link Sort#DEFAULT_DIRECTION}
-		 * @param property must not be {@literal null} or empty.
-		 * @param ignoreCase true if sorting should be case-insensitive. false if sorting should be case-sensitive.
-		 * @param nullHandling must not be {@literal null}.
-		 * @since 1.7
-		 */
-		public Order(@Nullable Direction direction, String property, boolean ignoreCase, NullHandling nullHandling) {
-
-			if (!StringUtils.hasText(property)) {
-				throw new IllegalArgumentException("Property must not be null or empty");
-			}
-
-			this.direction = direction == null ? DEFAULT_DIRECTION : direction;
-			this.property = property;
-			this.ignoreCase = ignoreCase;
-			this.nullHandling = nullHandling;
 		}
 
 		/**
@@ -525,7 +525,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Returns a new {@link Order} with case insensitive sorting enabled.
+		 * Returns a new {@link Order} with case-insensitive sorting enabled.
 		 *
 		 * @return
 		 */
