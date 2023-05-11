@@ -114,6 +114,6 @@ class WindowImpl<T> implements Window<T> {
 
 	@Override
 	public String toString() {
-		return "Scroll " + items;
+		return "Window " + items;
 	}
 }

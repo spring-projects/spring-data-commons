@@ -38,7 +38,7 @@ public interface ScrollPosition {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	public static KeysetScrollPosition keyset() {
+	static KeysetScrollPosition keyset() {
 		return KeysetScrollPosition.initial();
 	}
 
@@ -47,7 +47,7 @@ public interface ScrollPosition {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	public static OffsetScrollPosition offset() {
+	static OffsetScrollPosition offset() {
 		return OffsetScrollPosition.initial();
 	}
 
@@ -57,7 +57,7 @@ public interface ScrollPosition {
 	 * @param offset
 	 * @return a new {@link OffsetScrollPosition} with the given {@code offset}.
 	 */
-	public static OffsetScrollPosition offset(long offset) {
+	static OffsetScrollPosition offset(long offset) {
 		return OffsetScrollPosition.of(offset);
 	}
 
@@ -67,7 +67,7 @@ public interface ScrollPosition {
 	 * @param keys must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	public static KeysetScrollPosition forward(Map<String, ?> keys) {
+	static KeysetScrollPosition forward(Map<String, ?> keys) {
 		return of(keys, Direction.FORWARD);
 	}
 
@@ -77,7 +77,7 @@ public interface ScrollPosition {
 	 * @param keys must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	public static KeysetScrollPosition backward(Map<String, ?> keys) {
+	static KeysetScrollPosition backward(Map<String, ?> keys) {
 		return of(keys, Direction.BACKWARD);
 	}
 
@@ -88,14 +88,14 @@ public interface ScrollPosition {
 	 * @param direction must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	public static KeysetScrollPosition of(Map<String, ?> keys, Direction direction) {
+	static KeysetScrollPosition of(Map<String, ?> keys, Direction direction) {
 		return KeysetScrollPosition.of(keys, direction);
 	}
 
 	/**
 	 * Keyset scrolling direction.
 	 */
-	public enum Direction {
+	enum Direction {
 
 		/**
 		 * Forward (default) direction to scroll from the beginning of the results to their end.
