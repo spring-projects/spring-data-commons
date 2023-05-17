@@ -29,6 +29,7 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.Jsr310Converters;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -37,9 +38,9 @@ import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * A {@link ProjectionFactory} to create JDK proxies to back interfaces and handle method invocations on them. By
- * default accessor methods are supported. In case the delegating lookups result in an object of different type that the
- * projection interface method's return type, another projection will be created to transparently mitigate between the
- * types.
+ * default, accessor methods are supported. In case the delegating lookups result in an object of different type that
+ * the projection interface method's return type, another projection will be created to transparently mitigate between
+ * the types.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -59,8 +60,11 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	}
 
 	private final List<MethodInterceptorFactory> factories;
-	private final Map<Class<?>, ProjectionInformation> projectionInformationCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Class<?>, ProjectionMetadata> projectionInformationCache = new ConcurrentReferenceHashMap<>();
 	private @Nullable ClassLoader classLoader;
+
+	private final Lazy<DefaultMethodInvokingMethodInterceptor> defaultMethodInvokingMethodInterceptor = Lazy
+			.of(DefaultMethodInvokingMethodInterceptor::new);
 
 	/**
 	 * Creates a new {@link ProxyProjectionFactory}.
@@ -116,7 +120,12 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		factory.setOpaque(true);
 		factory.setInterfaces(projectionType, TargetAware.class);
 
-		factory.addAdvice(new DefaultMethodInvokingMethodInterceptor());
+		ProjectionMetadata projectionMetadata = getProjectionMetadata(projectionType);
+
+		if (projectionMetadata.hasDefaultMethods) {
+			factory.addAdvice(defaultMethodInvokingMethodInterceptor.get());
+		}
+
 		factory.addAdvice(new TargetAwareMethodInterceptor(source.getClass()));
 		factory.addAdvice(getMethodInterceptor(source, projectionType));
 
@@ -141,8 +150,12 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	 */
 	@Override
 	public final ProjectionInformation getProjectionInformation(Class<?> projectionType) {
+		return getProjectionMetadata(projectionType).projectionInformation;
+	}
 
-		return projectionInformationCache.computeIfAbsent(projectionType, this::createProjectionInformation);
+	private ProjectionMetadata getProjectionMetadata(Class<?> projectionType) {
+		return projectionInformationCache.computeIfAbsent(projectionType,
+				it -> ProjectionMetadata.create(it, createProjectionInformation(it)));
 	}
 
 	/**
@@ -308,6 +321,29 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		@Override
 		public boolean supports(Object source, Class<?> targetType) {
 			return true;
+		}
+	}
+
+	/**
+	 * Holder for {@link ProjectionInformation} and whether the target projection type uses {@code default} interface
+	 * methods.
+	 *
+	 * @since 2.7.13
+	 */
+	static class ProjectionMetadata {
+
+		final boolean hasDefaultMethods;
+
+		final ProjectionInformation projectionInformation;
+
+		ProjectionMetadata(boolean hasDefaultMethods, ProjectionInformation projectionInformation) {
+			this.hasDefaultMethods = hasDefaultMethods;
+			this.projectionInformation = projectionInformation;
+		}
+
+		public static ProjectionMetadata create(Class<?> projectionType, ProjectionInformation projectionInformation) {
+			return new ProjectionMetadata(DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(projectionType),
+					projectionInformation);
 		}
 	}
 }

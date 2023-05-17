@@ -139,8 +139,20 @@ class ProxyProjectionFactoryUnitTests {
 		assertThat(result).hasSize(6);
 	}
 
-	@Test // DATACMNS-655
+	@Test // DATACMNS-655, GH-2831
 	void invokesDefaultMethodOnProxy() {
+
+		CustomerExcerptWithDefaultMethod excerpt = factory.createProjection(CustomerExcerptWithDefaultMethod.class);
+
+		Advised advised = (Advised) ReflectionTestUtils.getField(Proxy.getInvocationHandler(excerpt), "advised");
+		Advisor[] advisors = advised.getAdvisors();
+
+		assertThat(advisors.length).isGreaterThan(0);
+		assertThat(advisors[0].getAdvice()).isInstanceOf(DefaultMethodInvokingMethodInterceptor.class);
+	}
+
+	@Test // GH-2831
+	void doesNotRegisterDefaultMethodInvokingMethodInterceptor() {
 
 		CustomerExcerpt excerpt = factory.createProjection(CustomerExcerpt.class);
 
@@ -148,7 +160,10 @@ class ProxyProjectionFactoryUnitTests {
 		Advisor[] advisors = advised.getAdvisors();
 
 		assertThat(advisors.length).isGreaterThan(0);
-		assertThat(advisors[0].getAdvice()).isInstanceOf(DefaultMethodInvokingMethodInterceptor.class);
+
+		for (Advisor advisor : advisors) {
+			assertThat(advisor).isNotInstanceOf(DefaultMethodInvokingMethodInterceptor.class);
+		}
 	}
 
 	@Test // DATACMNS-648
@@ -273,8 +288,7 @@ class ProxyProjectionFactoryUnitTests {
 		customer.address.city = "New York";
 		customer.address.zipCode = "ZIP";
 
-		CustomerWithOptionalHavingProjection excerpt = factory.createProjection(CustomerWithOptionalHavingProjection.class,
-				customer);
+		CustomerWithOptionalHavingProjection excerpt = factory.createProjection(CustomerWithOptionalHavingProjection.class, customer);
 
 		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
 		assertThat(excerpt.getAddress()).hasValueSatisfying(addressExcerpt -> {
@@ -343,6 +357,13 @@ class ProxyProjectionFactoryUnitTests {
 		byte[] getPicture();
 
 		Map<String, Object> getData();
+	}
+
+	interface CustomerExcerptWithDefaultMethod extends CustomerExcerpt {
+
+		default String getFirstnameAndId() {
+			return getFirstname() + " " + getId();
+		}
 	}
 
 	interface AddressExcerpt {

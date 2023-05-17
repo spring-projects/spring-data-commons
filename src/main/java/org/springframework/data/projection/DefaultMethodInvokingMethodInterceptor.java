@@ -23,10 +23,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.aop.ProxyMethodInvocation;
 import org.springframework.data.util.Lazy;
 import org.springframework.lang.Nullable;
@@ -56,15 +56,10 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 	 */
 	public static boolean hasDefaultMethods(Class<?> interfaceClass) {
 
-		Method[] methods = ReflectionUtils.getAllDeclaredMethods(interfaceClass);
+		AtomicBoolean atomicBoolean = new AtomicBoolean();
+		ReflectionUtils.doWithMethods(interfaceClass, method -> atomicBoolean.set(true), Method::isDefault);
 
-		for (Method method : methods) {
-			if (method.isDefault()) {
-				return true;
-			}
-		}
-
-		return false;
+		return atomicBoolean.get();
 	}
 
 	/*
