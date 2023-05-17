@@ -29,6 +29,7 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.Jsr310Converters;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -37,9 +38,9 @@ import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * A {@link ProjectionFactory} to create JDK proxies to back interfaces and handle method invocations on them. By
- * default accessor methods are supported. In case the delegating lookups result in an object of different type that the
- * projection interface method's return type, another projection will be created to transparently mitigate between the
- * types.
+ * default, accessor methods are supported. In case the delegating lookups result in an object of different type that
+ * the projection interface method's return type, another projection will be created to transparently mitigate between
+ * the types.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -59,8 +60,11 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	}
 
 	private final List<MethodInterceptorFactory> factories;
-	private final Map<Class<?>, ProjectionInformation> projectionInformationCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Class<?>, ProjectionMetadata> projectionInformationCache = new ConcurrentReferenceHashMap<>();
 	private @Nullable ClassLoader classLoader;
+
+	private final Lazy<DefaultMethodInvokingMethodInterceptor> defaultMethodInvokingMethodInterceptor = Lazy
+			.of(DefaultMethodInvokingMethodInterceptor::new);
 
 	/**
 	 * Creates a new {@link ProxyProjectionFactory}.
@@ -108,7 +112,12 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		factory.setOpaque(true);
 		factory.setInterfaces(projectionType, TargetAware.class);
 
-		factory.addAdvice(new DefaultMethodInvokingMethodInterceptor());
+		ProjectionMetadata projectionMetadata = getProjectionMetadata(projectionType);
+
+		if (projectionMetadata.hasDefaultMethods) {
+			factory.addAdvice(defaultMethodInvokingMethodInterceptor.get());
+		}
+
 		factory.addAdvice(new TargetAwareMethodInterceptor(source.getClass()));
 		factory.addAdvice(getMethodInterceptor(source, projectionType));
 
@@ -125,8 +134,12 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 
 	@Override
 	public final ProjectionInformation getProjectionInformation(Class<?> projectionType) {
+		return getProjectionMetadata(projectionType).projectionInformation;
+	}
 
-		return projectionInformationCache.computeIfAbsent(projectionType, this::createProjectionInformation);
+	private ProjectionMetadata getProjectionMetadata(Class<?> projectionType) {
+		return projectionInformationCache.computeIfAbsent(projectionType,
+				it -> ProjectionMetadata.create(it, createProjectionInformation(it)));
 	}
 
 	/**
@@ -193,12 +206,10 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static class TargetAwareMethodInterceptor implements MethodInterceptor {
+	private record TargetAwareMethodInterceptor(Class<?> targetType) implements MethodInterceptor {
 
 		private static final Method GET_TARGET_CLASS_METHOD;
 		private static final Method GET_TARGET_METHOD;
-
-		private final Class<?> targetType;
 
 		static {
 			try {
@@ -214,10 +225,9 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		 *
 		 * @param targetType must not be {@literal null}.
 		 */
-		public TargetAwareMethodInterceptor(Class<?> targetType) {
+		private TargetAwareMethodInterceptor {
 
 			Assert.notNull(targetType, "Target type must not be null");
-			this.targetType = targetType;
 		}
 
 		@Nullable
@@ -239,7 +249,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static enum MapAccessingMethodInterceptorFactory implements MethodInterceptorFactory {
+	private enum MapAccessingMethodInterceptorFactory implements MethodInterceptorFactory {
 
 		INSTANCE;
 
@@ -260,7 +270,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static enum PropertyAccessingMethodInvokerFactory implements MethodInterceptorFactory {
+	private enum PropertyAccessingMethodInvokerFactory implements MethodInterceptorFactory {
 
 		INSTANCE;
 
@@ -272,6 +282,20 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 		@Override
 		public boolean supports(Object source, Class<?> targetType) {
 			return true;
+		}
+	}
+
+	/**
+	 * Holder for {@link ProjectionInformation} and whether the target projection type uses {@code default} interface
+	 * methods.
+	 *
+	 * @since 3.1.1
+	 */
+	record ProjectionMetadata(boolean hasDefaultMethods, ProjectionInformation projectionInformation) {
+
+		public static ProjectionMetadata create(Class<?> projectionType, ProjectionInformation projectionInformation) {
+			return new ProjectionMetadata(DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(projectionType),
+					projectionInformation);
 		}
 	}
 }
