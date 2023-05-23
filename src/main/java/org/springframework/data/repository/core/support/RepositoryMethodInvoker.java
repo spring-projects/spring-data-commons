@@ -181,7 +181,7 @@ abstract class RepositoryMethodInvoker {
 				result = (Publisher<?>) collectToList(result);
 			}
 
-			return AwaitKt.awaitSingleOrNull(result, continuation);
+			return AwaitKt.awaitFirstOrNull(result, continuation);
 		} catch (Exception e) {
 			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
 			throw e;
