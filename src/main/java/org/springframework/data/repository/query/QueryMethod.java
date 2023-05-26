@@ -20,8 +20,10 @@ import static org.springframework.data.repository.util.ClassUtils.*;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
@@ -85,36 +87,6 @@ public class QueryMethod {
 		this.metadata = metadata;
 		this.parameters = createParameters(method);
 
-		if (hasParameterOfType(method, Pageable.class)) {
-
-			if (!isStreamQuery()) {
-				assertReturnTypeAssignable(method, QueryExecutionConverters.getAllowedPageableTypes());
-			}
-
-			if (hasParameterOfType(method, Sort.class)) {
-				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameters. "
-						+ "Use sorting capabilities on Pageable instead; Offending method: %s", method));
-			}
-		}
-
-		if (hasParameterOfType(method, ScrollPosition.class)) {
-			assertReturnTypeAssignable(method, Collections.singleton(Window.class));
-		}
-
-		Assert.notNull(this.parameters,
-				() -> String.format("Parameters extracted from method '%s' must not be null", method.getName()));
-
-		if (isPageQuery()) {
-			Assert.isTrue(this.parameters.hasPageableParameter(),
-					String.format("Paging query needs to have a Pageable parameter; Offending method: %s", method));
-		}
-
-		if (isScrollQuery()) {
-
-			Assert.isTrue(this.parameters.hasScrollPositionParameter() || this.parameters.hasPageableParameter(),
-					String.format("Scroll query needs to have a ScrollPosition parameter; Offending method: %s", method));
-		}
-
 		this.domainClass = Lazy.of(() -> {
 
 			Class<?> repositoryDomainClass = metadata.getDomainType();
@@ -127,6 +99,8 @@ public class QueryMethod {
 
 		this.resultProcessor = new ResultProcessor(this, factory);
 		this.isCollectionQuery = Lazy.of(this::calculateIsCollectionQuery);
+
+		validate();
 	}
 
 	/**
@@ -291,6 +265,41 @@ public class QueryMethod {
 		return method.toString();
 	}
 
+	public void validate() {
+
+		QueryMethodValidator.validate(method);
+
+		if (hasParameterOfType(method, Pageable.class)) {
+
+			if (!isStreamQuery()) {
+				assertReturnTypeAssignable(method, QueryExecutionConverters.getAllowedPageableTypes());
+			}
+
+			if (hasParameterOfType(method, Sort.class)) {
+				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameters. "
+						+ "Use sorting capabilities on Pageable instead; Offending method: %s", method));
+			}
+		}
+
+		if (hasParameterOfType(method, ScrollPosition.class)) {
+			assertReturnTypeAssignable(method, Collections.singleton(Window.class));
+		}
+
+		Assert.notNull(this.parameters,
+				() -> String.format("Parameters extracted from method '%s' must not be null", method.getName()));
+
+		if (isPageQuery()) {
+			Assert.isTrue(this.parameters.hasPageableParameter(),
+					String.format("Paging query needs to have a Pageable parameter; Offending method: %s", method));
+		}
+
+		if (isScrollQuery()) {
+
+			Assert.isTrue(this.parameters.hasScrollPositionParameter() || this.parameters.hasPageableParameter(),
+					String.format("Scroll query needs to have a ScrollPosition parameter; Offending method: %s", method));
+		}
+	}
+
 	private boolean calculateIsCollectionQuery() {
 
 		if (isPageQuery() || isSliceQuery() || isScrollQuery()) {
@@ -362,5 +371,31 @@ public class QueryMethod {
 		}
 
 		throw new IllegalStateException("Method has to have one of the following return types " + types);
+	}
+
+	static class QueryMethodValidator {
+
+		static void validate(Method method) {
+
+			if (!pageableCannotHaveSortOrLimit.test(method)) {
+
+				throw new IllegalStateException(
+						"Method method using Pageable parameter must not define Limit nor Sort. Offending method: %s"
+								.formatted(method));
+			}
+		}
+
+		static Predicate<Method> pageableCannotHaveSortOrLimit = (method) -> {
+
+			if (!hasParameterAssignableToType(method, Pageable.class)) {
+				return true;
+			}
+
+			if (hasParameterAssignableToType(method, Sort.class) || hasParameterAssignableToType(method, Limit.class)) {
+				return false;
+			}
+
+			return true;
+		};
 	}
 }

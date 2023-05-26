@@ -17,6 +17,7 @@ package org.springframework.data.repository.query;
 
 import java.util.Iterator;
 
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
@@ -53,6 +54,22 @@ public interface ParameterAccessor extends Iterable<Object> {
 	 * @return
 	 */
 	Sort getSort();
+
+	/**
+	 * Returns the {@link Limit} instance to be used for query creation. If no {@link java.lang.reflect.Parameter}
+	 * assignable to {@link Limit} can be found {@link Limit} will be created out of {@link Pageable#getPageSize()} if
+	 * present.
+	 *
+	 * @return {@link Limit#unlimited()} by default.
+	 * @since 3.2
+	 */
+	default Limit getLimit() {
+
+		if (getPageable().isUnpaged()) {
+			return Limit.unlimited();
+		}
+		return Limit.of(getPageable().getPageSize());
+	}
 
 	/**
 	 * Returns the dynamic projection type to be used when executing the query or {@literal null} if none is defined.

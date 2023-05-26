@@ -1,12 +1,12 @@
 [[repositories.special-parameters]]
-=== Paging, Iterating Large Results, Sorting
+=== Paging, Iterating Large Results, Sorting & Limiting
 
 To handle parameters in your query, define method parameters as already seen in the preceding examples.
-Besides that, the infrastructure recognizes certain specific types like `Pageable` and `Sort`, to apply pagination and sorting to your queries dynamically.
+Besides that, the infrastructure recognizes certain specific types like `Pageable`, `Sort` and `Limit`, to apply pagination, sorting and limiting to your queries dynamically.
 The following example demonstrates these features:
 
 ifdef::feature-scroll[]
-.Using `Pageable`, `Slice`, `ScrollPosition`, and `Sort` in query methods
+.Using `Pageable`, `Slice`, `ScrollPosition`, `Sort` and `Limit` in query methods
 ====
 [source,java]
 ----
@@ -18,13 +18,15 @@ Window<User> findTop10ByLastname(String lastname, ScrollPosition position, Sort 
 
 List<User> findByLastname(String lastname, Sort sort);
 
+List<User> findByLastname(String lastname, Sort sort, Limit limit);
+
 List<User> findByLastname(String lastname, Pageable pageable);
 ----
 ====
 endif::[]
 
 ifndef::feature-scroll[]
-.Using `Pageable`, `Slice`, and `Sort` in query methods
+.Using `Pageable`, `Slice`, `Sort` and `Limit` in query methods
 ====
 [source,java]
 ----
@@ -34,13 +36,15 @@ Slice<User> findByLastname(String lastname, Pageable pageable);
 
 List<User> findByLastname(String lastname, Sort sort);
 
+List<User> findByLastname(String lastname, Sort sort, Limit limit);
+
 List<User> findByLastname(String lastname, Pageable pageable);
 ----
 ====
 endif::[]
 
-IMPORTANT: APIs taking `Sort` and `Pageable` expect non-`null` values to be handed into methods.
-If you do not want to apply any sorting or pagination, use `Sort.unsorted()` and `Pageable.unpaged()`.
+IMPORTANT: APIs taking `Sort`, `Pageable` and `Limit` expect non-`null` values to be handed into methods.
+If you do not want to apply any sorting or pagination, use `Sort.unsorted()`, `Pageable.unpaged()` and `Limit.unlimited()`.
 
 The first method lets you pass an `org.springframework.data.domain.Pageable` instance to the query method to dynamically add paging to your statically defined query.
 A `Page` knows about the total number of elements and pages available.
@@ -56,6 +60,28 @@ Rather, it restricts the query to look up only the given range of entities.
 
 NOTE: To find out how many pages you get for an entire query, you have to trigger an additional count query.
 By default, this query is derived from the query you actually trigger.
+
+[IMPORTANT]
+====
+Special parameters may only be used once within a query method. +
+Some of the special parameters described above are mutually exclusive.
+Please consider the following list of invalid parameter combinations.
+
+|===
+| Parameters | Example | Reason
+
+| `Pageable` & `Sort`
+| `findBy...(Pageable page, Sort sort)`
+| `Pageable` already defines `Sort`
+
+| `Pageable` & `Limit`
+| `findBy...(Pageable page, Limit limit)`
+| `Pageable` already defines a limit.
+
+|===
+
+The `Top` keyword used to limit results can be used to along with `Pageable` whereas `Top` defines the total maximum of results, whereas the Pageable parameter may reduce this this number.
+====
 
 [[repositories.scrolling.guidance]]
 ==== Which Method is Appropriate?

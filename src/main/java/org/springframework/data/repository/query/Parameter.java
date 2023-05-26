@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
@@ -58,7 +59,7 @@ public class Parameter {
 
 	static {
 
-		List<Class<?>> types = new ArrayList<>(Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class));
+		List<Class<?>> types = new ArrayList<>(Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class, Limit.class));
 
 		// consider Kotlin Coroutines Continuation a special parameter. That parameter is synthetic and should not get
 		// bound to any query.
@@ -219,6 +220,16 @@ public class Parameter {
 	 */
 	boolean isSort() {
 		return Sort.class.isAssignableFrom(getType());
+	}
+
+	/**
+	 * Returns whether the {@link Parameter} is a {@link Limit} parameter.
+	 *
+	 * @return
+	 * @since 3.2
+	 */
+	boolean isLimit() {
+		return Limit.class.isAssignableFrom(getType());
 	}
 
 	/**

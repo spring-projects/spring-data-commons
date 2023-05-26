@@ -19,9 +19,12 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 
 /**
  * Unit tests for {@link ParametersParameterAccessor}.
@@ -101,6 +104,94 @@ class ParametersParameterAccessorUnitTests {
 		assertThat(accessor.getBindableValue(0)).isEqualTo("Foo");
 	}
 
+	@Test // GH-2728
+	void handlesLimitAsAParameterType() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Limit.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Limit.of(100), "spring" });
+
+		assertThat(accessor).hasSize(1);
+		assertThat(accessor.getBindableValue(0)).isEqualTo("spring");
+	}
+
+	@Test // GH-2728
+	void returnsLimitIfAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Limit.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Limit.of(100), "spring" });
+
+		assertThat(accessor.getLimit()).extracting(Limit::max).isEqualTo(100);
+	}
+
+	@Test // GH-2728
+	void readsLimitFromPageableIfAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Pageable.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Pageable.ofSize(100), "spring" });
+
+		assertThat(accessor.getLimit()).extracting(Limit::max).isEqualTo(100);
+	}
+
+	@Test // GH-2728
+	void returnsUnlimitedIfNoLimitingAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Sort.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Pageable.ofSize(100), "spring" });
+
+		assertThat(accessor.getLimit().isUnlimited()).isTrue();
+	}
+
+	@Test // GH-2728
+	void appliesLimitToPageableIfAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Limit.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Limit.of(100), "spring" });
+
+		Pageable pageable = accessor.getPageable();
+		assertThat(pageable).extracting(Pageable::getPageSize).isEqualTo(100);
+		assertThat(pageable.getSort().isUnsorted()).isTrue();
+	}
+
+	@Test // GH-2728
+	void appliesLimitToPageableIfRequested() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Limit.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Limit.of(100), "spring" });
+
+		assertThat(accessor).hasSize(1);
+		assertThat(accessor.getBindableValue(0)).isEqualTo("spring");
+	}
+
+	@Test // GH-2728
+	void appliesSortToPageableIfAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Sort.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Sort.by("one", "two"), "spring" });
+
+		Pageable pageable = accessor.getPageable();
+		assertThat(pageable.isPaged()).isFalse();
+		assertThat(pageable.getSort()).containsExactly(Order.by("one"), Order.by("two"));
+	}
+
+	@Test // GH-2728
+	void appliesSortAndLimitToPageableIfAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Sort.class, Limit.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Sort.by("one", "two"), Limit.of(42), "spring" });
+
+		Pageable pageable = accessor.getPageable();
+		assertThat(pageable).extracting(Pageable::getPageSize).isEqualTo(42);
+		assertThat(pageable.getSort()).containsExactly(Order.by("one"), Order.by("two"));
+	}
+
 	interface Sample {
 
 		void method(String string, int integer);
@@ -110,5 +201,11 @@ class ParametersParameterAccessorUnitTests {
 		void method(ScrollPosition scrollPosition, String string);
 
 		void methodWithPageRequest(PageRequest pageRequest, String string);
+
+		void method(Limit limit, String string);
+
+		void method(Sort sort, Limit limit, String string);
+
+		void method(Sort sort, String string);
 	}
 }

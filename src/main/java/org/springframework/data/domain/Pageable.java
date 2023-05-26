@@ -24,6 +24,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public interface Pageable {
 
@@ -33,7 +34,18 @@ public interface Pageable {
 	 * @return
 	 */
 	static Pageable unpaged() {
-		return Unpaged.INSTANCE;
+		return unpaged(Sort.unsorted());
+	}
+
+	/**
+	 * Returns a {@link Pageable} instance representing no pagination setup having a defined result {@link Sort order}.
+	 *
+	 * @param sort must not be {@literal null}, use {@link Sort#unsorted()} if needed.
+	 * @return never {@literal null}.
+	 * @since 3.2
+	 */
+	static Pageable unpaged(Sort sort) {
+		return Unpaged.sorted(sort);
 	}
 
 	/**

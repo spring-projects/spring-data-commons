@@ -19,6 +19,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.springframework.data.repository.Repository;
@@ -174,6 +176,17 @@ public abstract class ClassUtils {
 	 */
 	public static boolean hasParameterOfType(Method method, Class<?> type) {
 		return Arrays.asList(method.getParameterTypes()).contains(type);
+	}
+
+	/**
+	 * Returns whether the given {@link Method} has a parameter that is assignable to the given type.
+	 *
+	 * @param method
+	 * @param type
+	 * @return
+	 */
+	public static boolean hasParameterAssignableToType(Method method, Class<?> type) {
+		return List.of(method.getParameterTypes()).stream().anyMatch(type::isAssignableFrom);
 	}
 
 	/**

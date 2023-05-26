@@ -19,10 +19,21 @@ package org.springframework.data.domain;
  * {@link Pageable} implementation to represent the absence of pagination information.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
-enum Unpaged implements Pageable {
+final class Unpaged implements Pageable {
 
-	INSTANCE;
+	private static final Pageable UNSORTED = new Unpaged(Sort.unsorted());
+
+	private final Sort sort;
+
+	Unpaged(Sort sort) {
+		this.sort = sort;
+	}
+
+	static Pageable sorted(Sort sort) {
+		return sort.isSorted() ? new Unpaged(sort) : UNSORTED;
+	}
 
 	@Override
 	public boolean isPaged() {
@@ -46,7 +57,7 @@ enum Unpaged implements Pageable {
 
 	@Override
 	public Sort getSort() {
-		return Sort.unsorted();
+		return sort;
 	}
 
 	@Override
@@ -78,5 +89,4 @@ enum Unpaged implements Pageable {
 
 		throw new UnsupportedOperationException();
 	}
-
 }

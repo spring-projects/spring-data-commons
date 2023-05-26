@@ -27,6 +27,7 @@ import java.util.function.Function;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
@@ -43,7 +44,7 @@ import org.springframework.util.Assert;
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Streamable<T> {
 
-	public static final List<Class<?>> TYPES = Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class);
+	public static final List<Class<?>> TYPES = Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class, Limit.class);
 
 	private static final String PARAM_ON_SPECIAL = format("You must not use @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
@@ -56,6 +57,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private final int scrollPositionIndex;
 	private final int pageableIndex;
 	private final int sortIndex;
+	private final int limitIndex;
 	private final List<T> parameters;
 	private final Lazy<S> bindable;
 
@@ -96,6 +98,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		int scrollPositionIndex = -1;
 		int pageableIndex = -1;
 		int sortIndex = -1;
+		int limitIndex = -1;
 
 		for (int i = 0; i < parameterCount; i++) {
 
@@ -126,12 +129,17 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 				sortIndex = i;
 			}
 
+			if (Limit.class.isAssignableFrom(parameter.getType())) {
+				limitIndex = i;
+			}
+
 			parameters.add(parameter);
 		}
 
 		this.scrollPositionIndex = scrollPositionIndex;
 		this.pageableIndex = pageableIndex;
 		this.sortIndex = sortIndex;
+		this.limitIndex = limitIndex;
 		this.bindable = Lazy.of(this::getBindable);
 
 		assertEitherAllParamAnnotatedOrNone();
@@ -149,6 +157,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		int scrollPositionIndexTemp = -1;
 		int pageableIndexTemp = -1;
 		int sortIndexTemp = -1;
+		int limitIndexTmp = -1;
 		int dynamicProjectionTemp = -1;
 
 		for (int i = 0; i < originals.size(); i++) {
@@ -159,12 +168,14 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			scrollPositionIndexTemp = original.isScrollPosition() ? i : -1;
 			pageableIndexTemp = original.isPageable() ? i : -1;
 			sortIndexTemp = original.isSort() ? i : -1;
+			limitIndexTmp = original.isLimit() ? i : -1;
 			dynamicProjectionTemp = original.isDynamicProjectionParameter() ? i : -1;
 		}
 
 		this.scrollPositionIndex = scrollPositionIndexTemp;
 		this.pageableIndex = pageableIndexTemp;
 		this.sortIndex = sortIndexTemp;
+		this.limitIndex = limitIndexTmp;
 		this.dynamicProjectionIndex = dynamicProjectionTemp;
 		this.bindable = Lazy.of(() -> (S) this);
 	}
@@ -253,6 +264,27 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 */
 	public boolean hasSortParameter() {
 		return sortIndex != -1;
+	}
+
+	/**
+	 * Returns whether the method the {@link Parameters} was created for contains a {@link Limit} argument.
+	 *
+	 * @return
+	 * @since 3.2
+	 */
+	public boolean hasLimitParameter() {
+		return getLimitIndex() != -1;
+	}
+
+	/**
+	 * Returns the index of the {@link Limit} {@link Method} parameter if available. Will return {@literal -1} if there is
+	 * no {@link Limit} argument in the {@link Method}'s parameter list.
+	 *
+	 * @return
+	 * @since 3.2
+	 */
+	public int getLimitIndex() {
+		return limitIndex;
 	}
 
 	/**
