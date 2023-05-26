@@ -20,11 +20,13 @@ import static org.assertj.core.api.Assertions.*;
 import io.reactivex.rxjava3.core.Single;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -191,6 +193,15 @@ class ParametersUnitTests {
 		assertThat(parameters.hasScrollPositionParameter()).isTrue();
 	}
 
+	@Test // GH-2827
+	void acceptsLimitParameter() throws Exception {
+
+		var parameters = getParametersFor("withResultLimit", String.class, Limit.class);
+
+		assertThat(parameters.hasLimitParameter()).isTrue();
+		assertThat(parameters.getLimitIndex()).isOne();
+	}
+
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
@@ -232,6 +243,8 @@ class ParametersUnitTests {
 		Page<Object> customPageable(SomePageable pageable);
 
 		Window<Object> customScrollPosition(OffsetScrollPosition request);
+
+		List<User> withResultLimit(String criteria, Limit limit);
 	}
 
 	interface SomePageable extends Pageable {}
