@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
@@ -167,6 +168,16 @@ public class PartTree implements Streamable<OrPart> {
 	@Nullable
 	public Integer getMaxResults() {
 		return subject.getMaxResults().orElse(null);
+	}
+
+	/**
+	 * Return the number of maximal results to return or {@link Limit#unlimited()} if not restricted.
+	 *
+	 * @return {@literal null} if not restricted.
+	 * @since 3.2
+	 */
+	public Limit getResultLimit() {
+		return subject.getMaxResults().map(Limit::of).orElse(Limit.unlimited());
 	}
 
 	/**

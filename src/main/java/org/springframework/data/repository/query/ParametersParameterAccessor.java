@@ -17,6 +17,7 @@ package org.springframework.data.repository.query;
 
 import java.util.Iterator;
 
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
@@ -112,6 +113,15 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	public Pageable getPageable() {
 
 		if (!parameters.hasPageableParameter()) {
+			if (parameters.hasLimitParameter()) {
+				Limit limit = getLimit();
+				if (!limit.isUnlimited()) {
+					if (limit.max() > Integer.MAX_VALUE) {
+						throw new IllegalArgumentException();
+					}
+					return Pageable.ofSize((int) limit.max());
+				}
+			}
 			return Pageable.unpaged();
 		}
 
@@ -134,6 +144,18 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		}
 
 		return Sort.unsorted();
+	}
+
+	@Nullable
+	@Override
+	public Limit getLimit() {
+
+		if (!parameters.hasLimitParameter()) {
+			return null;
+		}
+
+		Limit limit = (Limit) values[parameters.getLimitIndex()];
+		return limit == null ? Limit.unlimited() : limit;
 	}
 
 	/**

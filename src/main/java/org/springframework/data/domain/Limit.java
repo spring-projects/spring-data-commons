@@ -17,6 +17,8 @@ package org.springframework.data.domain;
 
 import java.util.Optional;
 
+import org.springframework.util.ClassUtils;
+
 /**
  * {@link Limit} represents the maximum value up to which an operation should continue processing. It may be used for
  * defining the {@link #max() maximum} number of results within a repository finder method or if applicable a template
@@ -60,7 +62,7 @@ public interface Limit {
 	 * @return {@literal true} if no limiting (maximum value) should be applied.
 	 */
 	default boolean isUnlimited() {
-		return this.equals(UNLIMITED);
+		return UNLIMITED.equals(this);
 	}
 
 	/**
@@ -78,6 +80,27 @@ public interface Limit {
 	 * @return new instance of {@link Limit}.
 	 */
 	static Limit of(long max) {
-		return () -> max;
+		return new Limit() {
+			@Override
+			public long max() {
+				return max;
+			}
+
+			@Override
+			public boolean equals(Object obj) {
+
+				if (obj == null) {
+					return false;
+				}
+				if (!ClassUtils.isAssignable(Limit.class, obj.getClass())) {
+					return false;
+				}
+				Limit that = (Limit) obj;
+				if (this.isUnlimited() && that.isUnlimited()) {
+					return true;
+				}
+				return max() == that.max();
+			}
+		};
 	}
 }

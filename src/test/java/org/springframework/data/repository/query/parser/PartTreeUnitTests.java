@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
@@ -667,6 +668,7 @@ class PartTreeUnitTests {
 
 		assertThat(tree.isLimiting()).isEqualTo(limiting);
 		assertThat(tree.getMaxResults()).isEqualTo(maxResults);
+		assertThat(tree.getResultLimit()).isEqualTo(maxResults != null ? Limit.of(maxResults) : Limit.unlimited());
 		assertThat(tree.isDistinct()).isEqualTo(distinct);
 	}
 
