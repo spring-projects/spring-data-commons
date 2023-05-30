@@ -88,11 +88,6 @@ The table shows which types you can return from a query method
 | Single query using typically cursors.
 | Store module must provide reactive infrastructure.
 
-| `CloseableIterator<T>`
-| Chunked (one-by-one or in batches) depending on `CloseableIterator` consumption.
-| Single query using typically cursors.
-| `CloseableIterator` need to be closed after usage to avoid resource leaks.
-
 | `Slice<T>`
 | `Pageable.getPageSize() + 1` at `Pageable.getOffset()`
 | One to many queries fetching data starting at `Pageable.getOffset()` applying limiting.
