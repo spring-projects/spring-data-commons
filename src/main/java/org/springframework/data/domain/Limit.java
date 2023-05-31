@@ -15,8 +15,8 @@
  */
 package org.springframework.data.domain;
 
-import java.util.Optional;
-
+import org.springframework.data.domain.Limit.Limited;
+import org.springframework.data.domain.Limit.Unlimited;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -25,7 +25,7 @@ import org.springframework.util.ClassUtils;
  * operation.
  * <p>
  * A {@link Limit#isUnlimited()} is used to indicate that there is no {@link Limit} defined, which should be favoured
- * over using {@literal null} or {@link Optional#empty()} to indicate the absence of an actual {@link Limit}.
+ * over using {@literal null} or {@link java.util.Optional#empty()} to indicate the absence of an actual {@link Limit}.
  * </p>
  * {@link Limit} itself does not make assumptions about the actual {@link #max()} value sign. This means that a negative
  * value may be valid within a defined context. Implementations should override {@link #isUnlimited()} to fit their
@@ -34,35 +34,18 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @since 3.2
  */
-public interface Limit {
-
-	/**
-	 * A {@link Limit} that defaults {@link #isUnlimited()} to {@literal true} and errors on {@link #max()}.
-	 */
-	Limit UNLIMITED = new Limit() {
-
-		@Override
-		public long max() {
-			throw new IllegalStateException(
-					"Unlimited does not define 'max'. Please check 'isUnlimited' before attempting to read 'max'");
-		}
-
-		@Override
-		public boolean isUnlimited() {
-			return true;
-		}
-	};
+public sealed interface Limit permits Limited, Unlimited {
 
 	/**
 	 * @return the max number of potential results.
 	 */
-	long max();
+	int max();
 
 	/**
 	 * @return {@literal true} if no limiting (maximum value) should be applied.
 	 */
 	default boolean isUnlimited() {
-		return UNLIMITED.equals(this);
+		return Unlimited.INSTANCE.equals(this);
 	}
 
 	/**
@@ -70,7 +53,7 @@ public interface Limit {
 	 *         {@literal true}.
 	 */
 	static Limit unlimited() {
-		return UNLIMITED;
+		return Unlimited.INSTANCE;
 	}
 
 	/**
@@ -79,28 +62,60 @@ public interface Limit {
 	 * @param max the maximum value.
 	 * @return new instance of {@link Limit}.
 	 */
-	static Limit of(long max) {
-		return new Limit() {
-			@Override
-			public long max() {
-				return max;
-			}
+	static Limit of(int max) {
+		return new Limited(max);
+	}
 
-			@Override
-			public boolean equals(Object obj) {
+	final class Limited implements Limit {
 
-				if (obj == null) {
-					return false;
-				}
-				if (!ClassUtils.isAssignable(Limit.class, obj.getClass())) {
-					return false;
-				}
-				Limit that = (Limit) obj;
-				if (this.isUnlimited() && that.isUnlimited()) {
-					return true;
-				}
-				return max() == that.max();
+		private final int max;
+
+		Limited(int max) {
+			this.max = max;
+		}
+
+		@Override
+		public int max() {
+			return max;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+
+			if (obj == null) {
+				return false;
 			}
-		};
+			if (!ClassUtils.isAssignable(Limit.class, obj.getClass())) {
+				return false;
+			}
+			Limit that = (Limit) obj;
+			if (this.isUnlimited() && that.isUnlimited()) {
+				return true;
+			}
+			return max() == that.max();
+		}
+
+		@Override
+		public int hashCode() {
+			return (int) (max ^ (max >>> 32));
+		}
+	}
+
+	final class Unlimited implements Limit {
+
+		static final Limit INSTANCE = new Unlimited();
+
+		Unlimited() {}
+
+		@Override
+		public int max() {
+			throw new IllegalStateException(
+					"Unlimited does not define 'max'. Please check 'isUnlimited' before attempting to read 'max'");
+		}
+
+		@Override
+		public boolean isUnlimited() {
+			return true;
+		}
 	}
 }

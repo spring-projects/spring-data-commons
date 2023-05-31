@@ -38,47 +38,19 @@ class LimitUnitTests {
 	}
 
 	@ParameterizedTest // GH-2827
-	@ValueSource(longs = { Long.MIN_VALUE, -100, 0, 100, Long.MAX_VALUE })
-	void limitOfCapturesMaxValue(long value) {
+	@ValueSource(ints = { Integer.MIN_VALUE, -100, 0, 100, Integer.MAX_VALUE })
+	void limitOfCapturesMaxValue(int value) {
 		assertThat(Limit.of(value)).extracting(Limit::max).isEqualTo(value);
 	}
 
 	@ParameterizedTest // GH-2827
-	@ValueSource(longs = { Long.MIN_VALUE, -100, 0, 100, Long.MAX_VALUE })
-	void isUnlimitedReturnsFalseIfLimited(long value) {
+	@ValueSource(ints = { Integer.MIN_VALUE, -100, 0, 100, Integer.MAX_VALUE })
+	void isUnlimitedReturnsFalseIfLimited(int value) {
 		assertThat(Limit.of(value).isUnlimited()).isFalse();
 	}
 
 	@Test // GH-2827
 	void unlimitedErrorsOnMax() {
 		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> Limit.unlimited().max());
-	}
-
-	@Test // GH-2827
-	void unlimitedIsNotEqualToCustomUnlimited/*even if both return true for isUnlimited()*/() {
-		assertThat(Limit.unlimited()).isNotEqualTo(new MyLimit(-1));
-	}
-
-	static class MyLimit implements Limit {
-
-		private final long max;
-
-		public MyLimit(long max) {
-			this.max = max;
-		}
-
-		@Override
-		public long max() {
-			return max;
-		}
-
-		@Override
-		public boolean isUnlimited() {
-			if (Limit.super.isUnlimited()) {
-				return true;
-			}
-
-			return max() < 0;
-		}
 	}
 }

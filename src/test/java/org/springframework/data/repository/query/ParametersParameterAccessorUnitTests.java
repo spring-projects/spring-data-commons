@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 
 /**
  * Unit tests for {@link ParametersParameterAccessor}.
@@ -107,7 +108,8 @@ class ParametersParameterAccessorUnitTests {
 	void handlesLimitAsAParameterType() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Limit.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method), new Object[] {Limit.of(100), "spring"});
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Limit.of(100), "spring" });
 
 		assertThat(accessor).hasSize(1);
 		assertThat(accessor.getBindableValue(0)).isEqualTo("spring");
@@ -117,16 +119,38 @@ class ParametersParameterAccessorUnitTests {
 	void returnsLimitIfAvailable() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Limit.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method), new Object[] {Limit.of(100), "spring"});
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Limit.of(100), "spring" });
 
-		assertThat(accessor.getLimit()).extracting(Limit::max).isEqualTo(100L);
+		assertThat(accessor.getLimit()).extracting(Limit::max).isEqualTo(100);
+	}
+
+	@Test // GH-2728
+	void readsLimitFromPageableIfAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Pageable.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Pageable.ofSize(100), "spring" });
+
+		assertThat(accessor.getLimit()).extracting(Limit::max).isEqualTo(100);
+	}
+
+	@Test // GH-2728
+	void returnsUnlimitedIfNoLimitingAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Sort.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Pageable.ofSize(100), "spring" });
+
+		assertThat(accessor.getLimit().isUnlimited()).isTrue();
 	}
 
 	@Test // GH-2728
 	void appliesLimitToPageableIfAvailable() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Limit.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method), new Object[] {Limit.of(100), "spring"});
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Limit.of(100), "spring" });
 
 		Pageable pageable = accessor.getPageable();
 		assertThat(pageable).extracting(Pageable::getPageSize).isEqualTo(100);
@@ -137,10 +161,35 @@ class ParametersParameterAccessorUnitTests {
 	void appliesLimitToPageableIfRequested() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Limit.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method), new Object[] {Limit.of(100), "spring"});
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Limit.of(100), "spring" });
 
 		assertThat(accessor).hasSize(1);
 		assertThat(accessor.getBindableValue(0)).isEqualTo("spring");
+	}
+
+	@Test // GH-2728
+	void appliesSortToPageableIfAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Sort.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Sort.by("one", "two"), "spring" });
+
+		Pageable pageable = accessor.getPageable();
+		assertThat(pageable.isPaged()).isFalse();
+		assertThat(pageable.getSort()).containsExactly(Order.by("one"), Order.by("two"));
+	}
+
+	@Test // GH-2728
+	void appliesSortAndLimitToPageableIfAvailable() throws NoSuchMethodException {
+
+		var method = Sample.class.getMethod("method", Sort.class, Limit.class, String.class);
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+				new Object[] { Sort.by("one", "two"), Limit.of(42), "spring" });
+
+		Pageable pageable = accessor.getPageable();
+		assertThat(pageable).extracting(Pageable::getPageSize).isEqualTo(42);
+		assertThat(pageable.getSort()).containsExactly(Order.by("one"), Order.by("two"));
 	}
 
 	interface Sample {
@@ -154,5 +203,9 @@ class ParametersParameterAccessorUnitTests {
 		void methodWithPageRequest(PageRequest pageRequest, String string);
 
 		void method(Limit limit, String string);
+
+		void method(Sort sort, Limit limit, String string);
+
+		void method(Sort sort, String string);
 	}
 }

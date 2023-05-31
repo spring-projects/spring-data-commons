@@ -56,14 +56,19 @@ public interface ParameterAccessor extends Iterable<Object> {
 	Sort getSort();
 
 	/**
-	 * Returns the {@link Limit} instance to be used for query creation. Will return {@literal null} if not defined.
+	 * Returns the {@link Limit} instance to be used for query creation. If no {@link java.lang.reflect.Parameter}
+	 * assignable to {@link Limit} can be found {@link Limit} will be created out of {@link Pageable#getPageSize()} if
+	 * present.
 	 *
-	 * @return
+	 * @return {@link Limit#unlimited()} by default.
 	 * @since 3.2
 	 */
-	@Nullable
 	default Limit getLimit() {
-		return null;
+
+		if (getPageable().isUnpaged()) {
+			return Limit.unlimited();
+		}
+		return Limit.of(getPageable().getPageSize());
 	}
 
 	/**
