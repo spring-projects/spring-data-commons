@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
  * A factory implementation to create {@link PersistentPropertyPath} instances in various ways.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @since 2.1
  * @soundtrack Cypress Hill - Boom Biddy Bye Bye (Fugees Remix, Unreleased & Revamped)
  */
@@ -48,7 +49,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 	private static final Predicate<PersistentProperty<? extends PersistentProperty<?>>> IS_ENTITY = PersistentProperty::isEntity;
 
-	private final Map<TypeAndPath, PersistentPropertyPath<P>> propertyPaths = new ConcurrentReferenceHashMap<>();
+	private final Map<TypeAndPath, PathResolution> propertyPaths = new ConcurrentReferenceHashMap<>();
 	private final MappingContext<E, P> context;
 
 	public PersistentPropertyPathFactory(MappingContext<E, P> context) {
@@ -166,7 +167,10 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	}
 
 	private PersistentPropertyPath<P> getPersistentPropertyPath(TypeInformation<?> type, String propertyPath) {
+		return getPotentiallyCachedPath(type, propertyPath).getResolvedPath();
+	}
 
+	private PathResolution getPotentiallyCachedPath(TypeInformation<?> type, String propertyPath) {
 		return propertyPaths.computeIfAbsent(TypeAndPath.of(type, propertyPath),
 				it -> createPersistentPropertyPath(it.getPath(), it.getType()));
 	}
@@ -178,7 +182,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	private PersistentPropertyPath<P> createPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
+	private PathResolution createPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
 
 		String trimmedPath = propertyPath.trim();
 		List<String> parts = trimmedPath.isEmpty() ? Collections.emptyList() : List.of(trimmedPath.split("\\."));
@@ -196,17 +200,14 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			Pair<DefaultPersistentPropertyPath<P>, E> pair = getPair(path, iterator, segment, current);
 
 			if (pair == null) {
-
-				String source = StringUtils.collectionToDelimitedString(parts, ".");
-
-				throw new InvalidPersistentPropertyPath(source, type, segment, currentPath);
+				return new PathResolution(parts, segment, type, currentPath);
 			}
 
 			path = pair.getFirst();
 			current = pair.getSecond();
 		}
 
-		return path;
+		return new PathResolution(path);
 	}
 
 	@Nullable
@@ -427,6 +428,46 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 						.findFirst() //
 						.orElse(0);
 			}
+		}
+	}
+
+	/**
+	 * Wrapper around {@link PersistentPropertyPath} that allows them to be cached. Retains behaviour be throwing
+	 * {@link InvalidPersistentPropertyPath} on access of {@link #getResolvedPath()} if no corresponding property was
+	 * found.
+	 */
+	private static class PathResolution {
+
+		private final PersistentPropertyPath<?> path;
+		private final boolean resolvable;
+		private String source, segment;
+		private TypeInformation<?> type;
+
+		public PathResolution(PersistentPropertyPath<?> path) {
+
+			this.path = path;
+			this.resolvable = true;
+		}
+
+		PathResolution(List<String> parts, String segment, TypeInformation<?> type, PersistentPropertyPath<?> path) {
+
+			this.source = StringUtils.collectionToDelimitedString(parts, ".");
+			this.segment = segment;
+			this.type = type;
+			this.path = path;
+			this.resolvable = false;
+		}
+
+		/**
+		 * @return the path if available.
+		 * @throws InvalidPersistentPropertyPath when the path could not be resolved to an actual property
+		 */
+		PersistentPropertyPath getResolvedPath() {
+
+			if (resolvable) {
+				return path;
+			}
+			throw new InvalidPersistentPropertyPath(source, type, segment, path);
 		}
 	}
 }

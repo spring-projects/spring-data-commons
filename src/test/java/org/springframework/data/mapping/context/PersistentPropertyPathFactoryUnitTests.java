@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import jakarta.inject.Inject;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Reference;
@@ -27,13 +28,17 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.context.PersistentPropertyPathFactory.TypeAndPath;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.util.TypeInformation;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.StringUtils;
 
 /**
  * Unit tests for {@link PersistentPropertyPathFactory}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  * @soundtrack Cypress Hill - Illusions (Q-Tip Remix, Unreleased & Revamped)
  */
 class PersistentPropertyPathFactoryUnitTests {
@@ -82,6 +87,16 @@ class PersistentPropertyPathFactoryUnitTests {
 
 		assertThat(factory.from(PersonSample.class, "persons.name")) //
 				.isSameAs(factory.from(PersonSample.class, "persons.name"));
+	}
+
+	@Test // GH-2837
+	void cachesFailingPropertyPathLookup() {
+
+		assertThatExceptionOfType(InvalidPersistentPropertyPath.class)//
+				.isThrownBy(() -> factory.from(PersonSample.class, "persons.firstname"));
+
+		Map<TypeAndPath, ?> propertyPaths = (Map<TypeAndPath, ?>) ReflectionTestUtils.getField(factory, "propertyPaths");
+		assertThat(propertyPaths).containsKey(TypeAndPath.of(TypeInformation.of(PersonSample.class), "persons.firstname"));
 	}
 
 	@Test // DATACMNS-1275
