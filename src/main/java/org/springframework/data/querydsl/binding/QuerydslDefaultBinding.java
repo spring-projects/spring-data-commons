@@ -59,7 +59,16 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 			BooleanBuilder builder = new BooleanBuilder();
 
 			for (Object element : value) {
-				builder.and(((CollectionPathBase) path).contains(element));
+
+				if (element instanceof Collection<?> nestedCollection) {
+
+					for (Object nested : nestedCollection) {
+						builder.and(((CollectionPathBase) path).contains(nested));
+					}
+				} else {
+					builder.and(((CollectionPathBase) path).contains(element));
+				}
+
 			}
 
 			return Optional.of(builder.getValue());
