@@ -19,12 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assumptions.*;
 import static org.springframework.test.util.ReflectionTestUtils.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.querydsl.Address;
 import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
@@ -189,9 +187,7 @@ class QuerydslPredicateBuilderUnitTests {
 
 		var predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
 
-		var constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(0);
-
-		assertThat(constant.getConstant()).isEqualTo(Arrays.asList("Walt", "Heisenberg"));
+		assertThat(predicate).hasToString("Walt in user.nickNames && Heisenberg in user.nickNames");
 	}
 
 	@Test // GH-2649
@@ -200,9 +196,8 @@ class QuerydslPredicateBuilderUnitTests {
 		values.add("user.nickNames", "Walt,Heisenberg");
 
 		var predicate = builder.getPredicate(TypeInformation.of(UserWrapper.class), values, DEFAULT_BINDINGS);
-		var constant = (Constant<Object>) ((List<?>) getField(getField(predicate, "mixin"), "args")).get(0);
 
-		assertThat(constant.getConstant()).isEqualTo(Arrays.asList("Walt", "Heisenberg"));
+		assertThat(predicate).hasToString("Walt in userWrapper.user.nickNames && Heisenberg in userWrapper.user.nickNames");
 	}
 
 	@Test // DATACMNS-883
