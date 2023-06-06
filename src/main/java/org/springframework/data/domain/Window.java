@@ -30,6 +30,7 @@ import org.springframework.data.util.Streamable;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Yanming Zhou
  * @since 3.1
  * @see ScrollPosition
  */
@@ -142,6 +143,16 @@ public interface Window<T> extends Streamable<T> {
 
 		return positionAt(index);
 	}
+
+	/**
+	 * Returns the {@link ScrollPosition} for next {@link Window}, position at last by default,
+	 * position at first for keyset-based scrolling and direction is {@code ScrollPosition.Direction.BACKWARD}.
+	 *
+	 * @return ScrollPosition for next window.
+	 * @throws IllegalStateException if there is no next window.
+	 * @since 3.2.0
+	 */
+	ScrollPosition positionForNext();
 
 	/**
 	 * Returns a new {@link Window} with the content of the current one mapped by the given {@code converter}.

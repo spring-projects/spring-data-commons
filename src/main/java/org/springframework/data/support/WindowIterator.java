@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 
-import org.springframework.data.domain.KeysetScrollPosition;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Window;
 import org.springframework.lang.Nullable;
@@ -41,6 +40,7 @@ import org.springframework.util.Assert;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Yanming Zhou
  * @since 3.1
  */
 public class WindowIterator<T> implements Iterator<T> {
@@ -93,7 +93,7 @@ public class WindowIterator<T> implements Iterator<T> {
 
 				if (currentWindow != null && currentWindow.hasNext()) {
 
-					currentPosition = getNextPosition(currentPosition, currentWindow);
+					currentPosition = currentWindow.positionForNext();
 					currentIterator = null;
 					currentWindow = null;
 					continue;
@@ -112,17 +112,6 @@ public class WindowIterator<T> implements Iterator<T> {
 		}
 
 		return currentIterator.next();
-	}
-
-	private static ScrollPosition getNextPosition(ScrollPosition currentPosition, Window<?> window) {
-
-		if (currentPosition instanceof KeysetScrollPosition ksp) {
-			if (ksp.scrollsBackward()) {
-				return window.positionAt(0);
-			}
-		}
-
-		return window.positionAt(window.size() - 1);
 	}
 
 	/**

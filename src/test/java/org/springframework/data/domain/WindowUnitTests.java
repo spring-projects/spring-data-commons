@@ -18,6 +18,7 @@ package org.springframework.data.domain;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.IntFunction;
 
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Yanming Zhou
  */
 class WindowUnitTests {
 
@@ -66,5 +68,27 @@ class WindowUnitTests {
 
 		// by object
 		assertThat(window.positionAt(Integer.valueOf(1))).isEqualTo(ScrollPosition.offset(1));
+	}
+
+	@Test
+	void positionForNext() {
+
+		List<Integer> result = List.of(1, 2, 3);
+
+		Window<Integer> window = Window.from(result, OffsetScrollPosition.positionFunction(0));
+
+		assertThatIllegalStateException().isThrownBy(window::positionForNext);
+
+		window = Window.from(result, OffsetScrollPosition.positionFunction(0), true);
+
+		assertThat(window.positionForNext()).isEqualTo(ScrollPosition.offset(3));
+
+		window = Window.from(result, (value) -> ScrollPosition.forward(Map.of("value", result.get(value))), true);
+
+		assertThat(window.positionForNext()).isEqualTo(ScrollPosition.forward(Map.of("value", 3)));
+
+		window = Window.from(result, (value) -> ScrollPosition.backward( Map.of("value", result.get(value))), true);
+
+		assertThat(window.positionForNext()).isEqualTo(ScrollPosition.backward(Map.of("value", 1)));
 	}
 }

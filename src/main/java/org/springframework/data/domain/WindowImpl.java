@@ -29,6 +29,7 @@ import org.springframework.util.ObjectUtils;
  * Default {@link Window} implementation.
  *
  * @author Mark Paluch
+ * @author Yanming Zhou
  * @since 3.1
  */
 class WindowImpl<T> implements Window<T> {
@@ -76,6 +77,24 @@ class WindowImpl<T> implements Window<T> {
 		}
 
 		return positionFunction.apply(index);
+	}
+
+	@Override
+	public ScrollPosition positionForNext() {
+
+		if (!hasNext()) {
+			throw new IllegalStateException("There is no next window");
+		}
+
+		ScrollPosition position = positionAt(size() - 1);
+
+		if (position instanceof KeysetScrollPosition ksp) {
+			if (ksp.scrollsBackward()) {
+				position = positionAt(0);
+			}
+		}
+
+		return position;
 	}
 
 	@Override
