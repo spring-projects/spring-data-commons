@@ -29,6 +29,7 @@ import org.springframework.data.domain.ScrollPosition.Direction;
  *
  * @author Mark Paluch
  * @author Oliver Drotbohm
+ * @author Yanming Zhou
  */
 class ScrollPositionUnitTests {
 
@@ -136,5 +137,15 @@ class ScrollPositionUnitTests {
 
 		assertThat(keyset.isInitial()).isTrue();
 		assertThat(keyset.scrollsForward()).isTrue();
+	}
+
+	@Test // GH-2840
+	void keysetPositionWithEmptyKeys() {
+
+		KeysetScrollPosition forwardEmptyKeyset = ScrollPosition.of(Collections.emptyMap(), Direction.FORWARD);
+		KeysetScrollPosition backwordEmptyKeyset = ScrollPosition.of(Collections.emptyMap(), Direction.BACKWARD);
+
+		assertThat(forwardEmptyKeyset.isInitial()).isTrue();
+		assertThat(backwordEmptyKeyset.scrollsBackward()).isTrue();
 	}
 }

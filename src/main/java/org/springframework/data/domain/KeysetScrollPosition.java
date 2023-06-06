@@ -30,6 +30,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Mark Paluch
  * @author Oliver Drotbohm
+ * @author Yanming Zhou
  * @since 3.1
  */
 public final class KeysetScrollPosition implements ScrollPosition {
@@ -70,7 +71,7 @@ public final class KeysetScrollPosition implements ScrollPosition {
 		Assert.notNull(keys, "Keys must not be null");
 		Assert.notNull(direction, "Direction must not be null");
 
-		return keys.isEmpty()
+		return keys.isEmpty() && direction == Direction.FORWARD
 				? initial()
 				: new KeysetScrollPosition(Collections.unmodifiableMap(new LinkedHashMap<>(keys)), direction);
 	}
