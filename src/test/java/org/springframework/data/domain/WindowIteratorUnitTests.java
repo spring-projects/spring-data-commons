@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 
@@ -30,7 +31,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.domain.ScrollPosition.Direction;
 import org.springframework.data.support.WindowIterator;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link WindowIterator}.
@@ -126,5 +129,29 @@ class WindowIteratorUnitTests {
 		}
 
 		assertThat(capturedResult).containsExactly("a", "b", "c", "d");
+	}
+
+	@Test // GH-2151
+	void considersBackwardKeysetScrolling() {
+
+		Window<String> initial = Window.from(List.of("c", "d"),
+				value -> KeysetScrollPosition.of(Map.of("k", 10 + value), Direction.BACKWARD), true);
+		Window<String> terminal = Window.from(List.of("a", "b"),
+				value -> KeysetScrollPosition.of(Map.of("k", value), Direction.BACKWARD));
+
+		WindowIterator<String> iterator = WindowIterator.of(it -> {
+
+			if (it instanceof KeysetScrollPosition ksp) {
+				if (Integer.valueOf(10).equals(ksp.getKeys().get("k"))) {
+					return terminal;
+				}
+			}
+
+			return initial;
+
+		}).startingAt(ScrollPosition.keyset().backward());
+
+		List<String> items = Streamable.of(() -> iterator).toList();
+		assertThat(items).containsExactly("c", "d", "a", "b");
 	}
 }
