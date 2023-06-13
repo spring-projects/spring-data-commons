@@ -101,3 +101,6 @@ Scroll queries applying Keyset-Filtering require to the properties used in the s
 
 You can use interface and DTO projections, however make sure to include all properties that you've sorted by to avoid keyset extraction failures.
 
+When specifying your `Sort` order, it is sufficient to include sort properties relevant to your query;
+You do not need to ensure unique query results if you do not want to.
+The keyset query mechanism amends your sort order by including the primary key (or any remainder of composite primary keys) to ensure each query result is unique.
