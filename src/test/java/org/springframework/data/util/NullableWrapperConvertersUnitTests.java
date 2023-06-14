@@ -24,7 +24,6 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.concurrent.ListenableFuture;
 

@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.annotation.ElementType;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.util.nonnull.NullableAnnotatedType;
 import org.springframework.data.util.nonnull.packagelevel.NonNullOnPackage;

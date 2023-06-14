@@ -23,7 +23,6 @@ import java.net.URLClassLoader;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.mapping.model.TypeCreatingSyntheticClassKt;
 import org.springframework.util.ClassUtils;

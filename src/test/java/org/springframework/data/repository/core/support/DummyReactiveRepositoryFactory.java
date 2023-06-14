@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.mockito.Mockito;
-
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.core.EntityInformation;

@@ -21,7 +21,6 @@ import static org.springframework.data.web.SortDefaultUnitTests.*;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.PageRequest;

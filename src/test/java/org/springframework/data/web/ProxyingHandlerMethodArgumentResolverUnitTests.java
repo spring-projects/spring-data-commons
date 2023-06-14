@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTests.SampleInterface;

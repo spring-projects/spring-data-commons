@@ -18,7 +18,6 @@ package org.springframework.data.web;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.http.MediaType;
 
 /**

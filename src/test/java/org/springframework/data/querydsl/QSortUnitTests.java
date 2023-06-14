@@ -23,7 +23,6 @@ import static org.springframework.data.querydsl.QQSortUnitTests_WrapperToWrapWra
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.aot.types;
 
-import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.geo.Point;
 

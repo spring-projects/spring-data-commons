@@ -21,7 +21,6 @@ import java.beans.PropertyDescriptor;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.NotWritablePropertyException;
 import org.springframework.beans.factory.annotation.Value;
 

@@ -15,10 +15,6 @@
  */
 package org.springframework.data.aot.sample;
 
-import javax.annotation.processing.Generated;
-
-import com.querydsl.core.types.dsl.BeanPath;
-import com.querydsl.core.types.dsl.EntityPathBase;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor.MyRepo;

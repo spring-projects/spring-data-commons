@@ -21,7 +21,6 @@ import static org.springframework.data.domain.Sort.Direction.*;
 import java.net.URI;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.web.util.UriComponentsBuilder;
 

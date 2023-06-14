@@ -24,7 +24,6 @@ import java.util.function.BiFunction;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.repository.query.SpelQueryContext.SpelExtractor;
 
 /**

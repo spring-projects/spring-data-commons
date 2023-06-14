@@ -20,7 +20,6 @@ import static org.springframework.data.geo.Metrics.*;
 
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.domain.Range.Bound;
 import org.springframework.util.SerializationUtils;
 

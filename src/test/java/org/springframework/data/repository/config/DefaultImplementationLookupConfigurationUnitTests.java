@@ -22,7 +22,6 @@ import java.beans.Introspector;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.util.ClassUtils;
 

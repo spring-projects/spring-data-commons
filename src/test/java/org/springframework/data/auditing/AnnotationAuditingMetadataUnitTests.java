@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.util.ReflectionUtils;
 

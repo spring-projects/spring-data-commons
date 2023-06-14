@@ -23,7 +23,6 @@ import java.lang.annotation.RetentionPolicy;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Primary;

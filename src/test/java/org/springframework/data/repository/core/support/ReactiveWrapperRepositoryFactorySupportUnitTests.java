@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
@@ -32,9 +31,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.reactive.ReactiveSortingRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport} using reactive wrapper types.

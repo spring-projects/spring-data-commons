@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.data.type.MethodsMetadata;
 

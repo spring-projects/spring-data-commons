@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.apache.webbeans.context.AbstractContext;
 import org.mockito.Mockito;
-
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.data.repository.core.support.DummyRepositoryFactory;
 

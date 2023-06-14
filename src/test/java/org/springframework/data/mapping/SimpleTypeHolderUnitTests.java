@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**

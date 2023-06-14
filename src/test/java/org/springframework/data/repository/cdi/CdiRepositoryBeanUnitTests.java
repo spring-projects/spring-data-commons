@@ -38,7 +38,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;

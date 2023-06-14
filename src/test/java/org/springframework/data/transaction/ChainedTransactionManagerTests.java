@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.transaction.ChainedTransactionManagerTests.TestPlatformTransactionManager.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.transaction.HeuristicCompletionException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;

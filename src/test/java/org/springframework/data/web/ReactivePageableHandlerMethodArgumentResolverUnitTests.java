@@ -21,7 +21,6 @@ import static org.springframework.data.web.PageableHandlerMethodArgumentResolver
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;

@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.Serializable;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.test.util.ReflectionTestUtils;

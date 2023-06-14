@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
