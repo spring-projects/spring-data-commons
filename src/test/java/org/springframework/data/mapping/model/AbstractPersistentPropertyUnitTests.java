@@ -17,9 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -288,10 +285,16 @@ public class AbstractPersistentPropertyUnitTests {
 
 	}
 
-	@Getter
-	@Setter
 	class GenericGetter<T> {
 		T genericField;
+
+		public T getGenericField() {
+			return genericField;
+		}
+
+		public void setGenericField(T genericField) {
+			this.genericField = genericField;
+		}
 	}
 
 	class ConcreteGetter extends GenericGetter<String> {}

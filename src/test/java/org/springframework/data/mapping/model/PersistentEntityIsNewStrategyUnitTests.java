@@ -17,8 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
@@ -146,10 +144,13 @@ class PersistentEntityIsNewStrategyUnitTests {
 		@Id Long id;
 	}
 
-	@AllArgsConstructor
 	static class PersistableEntity implements Persistable<Long> {
 
 		boolean isNew;
+
+		public PersistableEntity(boolean isNew) {
+			this.isNew = isNew;
+		}
 
 		@Override
 		public boolean isNew() {

@@ -15,8 +15,9 @@
  */
 package org.springframework.data.aot.sample;
 
-import com.querydsl.core.types.dsl.EntityPathBase;
 import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor.Person;
+
+import com.querydsl.core.types.dsl.EntityPathBase;
 
 public class QConfigWithQuerydslPredicateExecutor_Person extends EntityPathBase<Person> {
 

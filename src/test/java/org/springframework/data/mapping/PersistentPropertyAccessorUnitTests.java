@@ -17,12 +17,6 @@ package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Value;
-import lombok.With;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -53,39 +47,66 @@ public class PersistentPropertyAccessorUnitTests {
 		var order = new Order(new Customer("1"));
 
 		var accessor = context.getPersistentEntity(Order.class).getPropertyAccessor(order);
-		var convertingAccessor = new ConvertingPropertyAccessor<Order>(accessor,
-				new DefaultConversionService());
+		var convertingAccessor = new ConvertingPropertyAccessor<Order>(accessor, new DefaultConversionService());
 
-		var path = context.getPersistentPropertyPath("customer.firstname",
-				Order.class);
+		var path = context.getPersistentPropertyPath("customer.firstname", Order.class);
 
 		convertingAccessor.setProperty(path, 2);
 
-		assertThat(convertingAccessor.getBean().getCustomer().getFirstname()).isEqualTo("2");
+		assertThat(convertingAccessor.getBean().customer().getFirstname()).isEqualTo("2");
 	}
 
-	@Value
-	static class Order {
-		Customer customer;
+	record Order(Customer customer) {
 	}
 
-	@Data
-	@AllArgsConstructor
 	static class Customer {
 		String firstname;
+
+		public Customer(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
 	}
 
 	// DATACMNS-1322
 
-	@Value
-	@With(AccessLevel.PACKAGE)
-	static class NestedImmutable {
-		String value;
+	static final class NestedImmutable {
+		private final String value;
+
+		public NestedImmutable(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return this.value;
+		}
+
+		NestedImmutable withValue(String value) {
+			return this.value == value ? this : new NestedImmutable(value);
+		}
 	}
 
-	@Value
-	@With(AccessLevel.PACKAGE)
-	static class Outer {
-		NestedImmutable immutable;
+	static final class Outer {
+		private final NestedImmutable immutable;
+
+		public Outer(NestedImmutable immutable) {
+			this.immutable = immutable;
+		}
+
+		public NestedImmutable getImmutable() {
+			return this.immutable;
+		}
+
+		Outer withImmutable(NestedImmutable immutable) {
+			return this.immutable == immutable ? this : new Outer(immutable);
+		}
 	}
 }

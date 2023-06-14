@@ -17,15 +17,11 @@ package org.springframework.data.mapping.context;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Getter;
-import lombok.Value;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.projection.EntityProjection;
@@ -188,10 +184,13 @@ class EntityProjectionIntrospectorUnitTests {
 		Map<String, List<DomainClass>> domains;
 	}
 
-	@Getter
 	static class WithMapOfCollectionProjection {
 
 		Map<String, List<DomainClassProjection>> domains;
+
+		public Map<String, List<DomainClassProjection>> getDomains() {
+			return domains;
+		}
 	}
 
 	interface WithCollectionProjection {
@@ -234,15 +233,22 @@ class EntityProjectionIntrospectorUnitTests {
 		String getFoo();
 	}
 
-	@Value
 	static class DomainClassDto {
 
-		String id;
-		long value;
+		final String id;
+		final long value;
 
 		public DomainClassDto(String id, long value) {
 			this.id = id;
 			this.value = value;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public long getValue() {
+			return value;
 		}
 	}
 

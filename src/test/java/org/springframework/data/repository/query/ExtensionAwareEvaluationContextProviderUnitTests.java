@@ -19,8 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import lombok.RequiredArgsConstructor;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -34,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -323,12 +320,16 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 				}));
 	}
 
-	@RequiredArgsConstructor
 	public static class DummyExtension implements org.springframework.data.spel.spi.EvaluationContextExtension {
 
 		public static String DUMMY_KEY = "dummy";
 
 		private final String key, value;
+
+		public DummyExtension(String key, String value) {
+			this.key = key;
+			this.value = value;
+		}
 
 		@Override
 		public String getExtensionId() {

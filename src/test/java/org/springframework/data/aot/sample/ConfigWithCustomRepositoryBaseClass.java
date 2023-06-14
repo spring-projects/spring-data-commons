@@ -15,7 +15,7 @@
  */
 package org.springframework.data.aot.sample;
 
-import lombok.experimental.Delegate;
+import java.util.Optional;
 
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +38,55 @@ public class ConfigWithCustomRepositoryBaseClass {
 
 	public static class RepoBaseClass<T, ID> implements CrudRepository<T, ID> {
 
-		private @Delegate CrudRepository<T, ID> delegate;
+		private CrudRepository<T, ID> delegate;
+
+		public <S extends T> S save(S entity) {
+			return this.delegate.save(entity);
+		}
+
+		public <S extends T> Iterable<S> saveAll(Iterable<S> entities) {
+			return this.delegate.saveAll(entities);
+		}
+
+		public Optional<T> findById(ID id) {
+			return this.delegate.findById(id);
+		}
+
+		public boolean existsById(ID id) {
+			return this.delegate.existsById(id);
+		}
+
+		public Iterable<T> findAll() {
+			return this.delegate.findAll();
+		}
+
+		public Iterable<T> findAllById(Iterable<ID> ids) {
+			return this.delegate.findAllById(ids);
+		}
+
+		public long count() {
+			return this.delegate.count();
+		}
+
+		public void deleteById(ID id) {
+			this.delegate.deleteById(id);
+		}
+
+		public void delete(T entity) {
+			this.delegate.delete(entity);
+		}
+
+		public void deleteAllById(Iterable<? extends ID> ids) {
+			this.delegate.deleteAllById(ids);
+		}
+
+		public void deleteAll(Iterable<? extends T> entities) {
+			this.delegate.deleteAll(entities);
+		}
+
+		public void deleteAll() {
+			this.delegate.deleteAll();
+		}
 	}
 
 	public static class Person {

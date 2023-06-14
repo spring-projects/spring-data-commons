@@ -15,17 +15,21 @@
  */
 package org.springframework.data.repository.sample;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Component;
 
 /**
  * @author Oliver Gierke
  */
 @Component
-@RequiredArgsConstructor
 public class AddressRepositoryClient {
 
-	private final @Getter AddressRepository repository;
+	private final AddressRepository repository;
+
+	public AddressRepositoryClient(AddressRepository repository) {
+		this.repository = repository;
+	}
+
+	public AddressRepository getRepository() {
+		return this.repository;
+	}
 }

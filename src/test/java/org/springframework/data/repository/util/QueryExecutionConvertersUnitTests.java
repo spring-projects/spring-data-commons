@@ -24,7 +24,6 @@ import io.reactivex.rxjava3.core.Single;
 import io.vavr.collection.Seq;
 import io.vavr.control.Try;
 import io.vavr.control.Try.Failure;
-import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import scala.Option;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -187,8 +187,7 @@ class QueryExecutionConvertersUnitTests {
 		var method = Sample.class.getMethod("pages");
 		var returnType = TypeInformation.fromReturnTypeOf(method);
 
-		assertThat(QueryExecutionConverters.unwrapWrapperTypes(returnType).getType())
-				.isEqualTo(String.class);
+		assertThat(QueryExecutionConverters.unwrapWrapperTypes(returnType).getType()).isEqualTo(String.class);
 	}
 
 	@Test // DATACMNS-983
@@ -282,19 +281,58 @@ class QueryExecutionConvertersUnitTests {
 
 	// DATACMNS-1430
 
-	@Value(staticConstructor = "of")
-	static class StreamableWrapper {
-		Streamable<String> streamable;
+	static final class StreamableWrapper {
+		private final Streamable<String> streamable;
+
+		private StreamableWrapper(Streamable<String> streamable) {
+			this.streamable = streamable;
+		}
+
+		public static StreamableWrapper of(Streamable<String> streamable) {
+			return new StreamableWrapper(streamable);
+		}
+
+		public Streamable<String> getStreamable() {
+			return this.streamable;
+		}
+
 	}
 
-	@Value
-	static class CustomStreamableWrapper<T> implements Streamable<T> {
+	static final class CustomStreamableWrapper<T> implements Streamable<T> {
 
-		Streamable<T> source;
+		private final Streamable<T> source;
+
+		public CustomStreamableWrapper(Streamable<T> source) {
+			this.source = source;
+		}
 
 		@Override
 		public Iterator<T> iterator() {
 			return source.iterator();
+		}
+
+		public Streamable<T> source() {
+			return source;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this)
+				return true;
+			if (obj == null || obj.getClass() != this.getClass())
+				return false;
+			var that = (CustomStreamableWrapper) obj;
+			return Objects.equals(this.source, that.source);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(source);
+		}
+
+		@Override
+		public String toString() {
+			return "CustomStreamableWrapper[" + "source=" + source + ']';
 		}
 	}
 }

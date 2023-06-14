@@ -17,8 +17,6 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Getter;
-
 import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
@@ -96,17 +94,35 @@ class MethodInvocationRecorderUnitTests {
 
 	static final class FinalType {}
 
-	@Getter
 	static class Foo {
 		Bar bar;
 		Collection<Bar> bars;
 		String name;
 		int age;
+
+		public Bar getBar() {
+			return this.bar;
+		}
+
+		public Collection<Bar> getBars() {
+			return this.bars;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public int getAge() {
+			return this.age;
+		}
 	}
 
-	@Getter
 	static class Bar {
 		FooBar fooBar;
+
+		public FooBar getFooBar() {
+			return this.fooBar;
+		}
 	}
 
 	static class FooBar {}

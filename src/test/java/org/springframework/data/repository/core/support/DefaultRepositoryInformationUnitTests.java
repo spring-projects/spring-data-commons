@@ -17,8 +17,6 @@ package org.springframework.data.repository.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.experimental.Delegate;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -36,7 +34,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -399,7 +396,55 @@ class DefaultRepositoryInformationUnitTests {
 
 	static class DummyRepositoryImpl<T, ID> implements CrudRepository<T, ID> {
 
-		private @Delegate CrudRepository<T, ID> delegate;
+		private CrudRepository<T, ID> delegate;
+
+		public <S extends T> S save(S entity) {
+			return this.delegate.save(entity);
+		}
+
+		public <S extends T> Iterable<S> saveAll(Iterable<S> entities) {
+			return this.delegate.saveAll(entities);
+		}
+
+		public Optional<T> findById(ID id) {
+			return this.delegate.findById(id);
+		}
+
+		public boolean existsById(ID id) {
+			return this.delegate.existsById(id);
+		}
+
+		public Iterable<T> findAll() {
+			return this.delegate.findAll();
+		}
+
+		public Iterable<T> findAllById(Iterable<ID> ids) {
+			return this.delegate.findAllById(ids);
+		}
+
+		public long count() {
+			return this.delegate.count();
+		}
+
+		public void deleteById(ID id) {
+			this.delegate.deleteById(id);
+		}
+
+		public void delete(T entity) {
+			this.delegate.delete(entity);
+		}
+
+		public void deleteAllById(Iterable<? extends ID> ids) {
+			this.delegate.deleteAllById(ids);
+		}
+
+		public void deleteAll(Iterable<? extends T> entities) {
+			this.delegate.deleteAll(entities);
+		}
+
+		public void deleteAll() {
+			this.delegate.deleteAll();
+		}
 	}
 
 	// DATACMNS-1008, DATACMNS-854, DATACMNS-912

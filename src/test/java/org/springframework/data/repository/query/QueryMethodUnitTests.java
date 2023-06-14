@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
-import org.springframework.data.domain.Window;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -35,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Window;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;

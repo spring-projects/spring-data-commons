@@ -23,7 +23,6 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
-import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,7 +40,6 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
-
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.util.Streamable;
@@ -460,10 +458,13 @@ class QueryExecutionResultHandlerUnitTests {
 
 	// DATACMNS-1430
 
-	@Value
 	static class CustomStreamableWrapper<T> implements Streamable<T> {
 
-		Streamable<T> source;
+		final Streamable<T> source;
+
+		public CustomStreamableWrapper(Streamable<T> source) {
+			this.source = source;
+		}
 
 		@Override
 		public Iterator<T> iterator() {

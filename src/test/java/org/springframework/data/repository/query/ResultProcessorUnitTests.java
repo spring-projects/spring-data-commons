@@ -21,7 +21,6 @@ import static org.mockito.Mockito.*;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
-import lombok.Getter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -34,7 +33,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -156,8 +154,7 @@ class ResultProcessorUnitTests {
 	@Test // DATACMNS-89
 	void refrainsFromProjectingIfThePreparingConverterReturnsACompatibleInstance() throws Exception {
 
-		var result = getProcessor("findAllDtos").processResult(new Sample("Dave", "Matthews"),
-				source -> new SampleDto());
+		var result = getProcessor("findAllDtos").processResult(new Sample("Dave", "Matthews"), source -> new SampleDto());
 
 		assertThat(result).isInstanceOf(SampleDto.class);
 	}
@@ -247,8 +244,7 @@ class ResultProcessorUnitTests {
 
 	@Test // DATACMNS-836
 	@SuppressWarnings("unchecked")
-	void refrainsFromProjectingUsingReactiveWrappersIfThePreparingConverterReturnsACompatibleInstance()
-			throws Exception {
+	void refrainsFromProjectingUsingReactiveWrappersIfThePreparingConverterReturnsACompatibleInstance() throws Exception {
 
 		var processor = getProcessor("findMonoSampleDto");
 
@@ -405,13 +401,20 @@ class ResultProcessorUnitTests {
 		}
 	}
 
-	@Getter
 	static abstract class AbstractDto {
 		final String firstname, lastname;
 
 		public AbstractDto(String firstname, String lastname) {
 			this.firstname = firstname;
 			this.lastname = lastname;
+		}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public String getLastname() {
+			return this.lastname;
 		}
 	}
 
@@ -424,10 +427,8 @@ class ResultProcessorUnitTests {
 
 	static class SampleDto {}
 
-	@lombok.Value
-	// Needs to be public until https://jira.spring.io/browse/SPR-14304 is resolved
-	public static class WrappingDto {
-		Sample sample;
+	public record WrappingDto(Sample sample) {
+
 	}
 
 	interface SampleProjection {

@@ -18,8 +18,6 @@ package org.springframework.data.domain;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.NullHandling.*;
 
-import lombok.Getter;
-
 import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
@@ -216,14 +214,24 @@ class SortUnitTests {
 
 	}
 
-	@Getter
 	static class Sample {
 		Nested nested;
 		Collection<Nested> nesteds;
+
+		public Nested getNested() {
+			return nested;
+		}
+
+		public Collection<Nested> getNesteds() {
+			return nesteds;
+		}
 	}
 
-	@Getter
 	static class Nested {
 		String firstname;
+
+		public String getFirstname() {
+			return firstname;
+		}
 	}
 }

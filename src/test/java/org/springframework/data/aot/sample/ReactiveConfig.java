@@ -19,7 +19,6 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.repository.config.EnableReactiveRepositories;
-import org.springframework.data.repository.config.EnableRepositories;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 /**

@@ -17,8 +17,6 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Value;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ReflectionUtils;
@@ -55,9 +53,12 @@ public class AnnotationDetectionFieldCallbackUnitTests {
 		assertThat(callback.<Object> getValue(new Empty())).isNull();
 	}
 
-	@Value
 	static class Sample {
 		@Autowired String value;
+
+		public Sample(String value) {
+			this.value = value;
+		}
 	}
 
 	static class Empty {}

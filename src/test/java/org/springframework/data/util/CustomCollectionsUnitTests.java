@@ -17,8 +17,6 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -236,7 +234,6 @@ class CustomCollectionsUnitTests {
 				.reduce(source, (value, mapper) -> mapper.apply(value), (l, r) -> r);
 	}
 
-	@AllArgsConstructor
 	static class CustomCollectionTester {
 
 		private final Collection<Class<?>> expectedCollections, expectedMaps, collectionImplementations, mapImplementations;
@@ -247,6 +244,14 @@ class CustomCollectionsUnitTests {
 			this.expectedMaps = Collections.emptyList();
 			this.collectionImplementations = Collections.emptyList();
 			this.mapImplementations = Collections.emptyList();
+		}
+
+		public CustomCollectionTester(Collection<Class<?>> expectedCollections, Collection<Class<?>> expectedMaps,
+				Collection<Class<?>> collectionImplementations, Collection<Class<?>> mapImplementations) {
+			this.expectedCollections = expectedCollections;
+			this.expectedMaps = expectedMaps;
+			this.collectionImplementations = collectionImplementations;
+			this.mapImplementations = mapImplementations;
 		}
 
 		public CustomCollectionTester withCollections(Class<?>... types) {

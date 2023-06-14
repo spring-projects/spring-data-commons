@@ -20,10 +20,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import groovy.lang.MetaClass;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,7 +34,6 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.context.ApplicationContext;
@@ -156,8 +151,7 @@ class AbstractMappingContextUnitTests {
 		var context = new SampleMappingContext();
 		context.getPersistentEntity(TypeInformation.MAP);
 
-		var iterator = context.getPersistentEntities()
-				.iterator();
+		var iterator = context.getPersistentEntities().iterator();
 
 		while (iterator.hasNext()) {
 			context.getPersistentEntity(TypeInformation.SET);
@@ -216,8 +210,7 @@ class AbstractMappingContextUnitTests {
 	@Test // DATACMNS-1574
 	void cleansUpCacheForRuntimeException() {
 
-		var context = TypeRejectingMappingContext.rejecting(() -> new RuntimeException(),
-				Unsupported.class);
+		var context = TypeRejectingMappingContext.rejecting(() -> new RuntimeException(), Unsupported.class);
 
 		assertThatExceptionOfType(RuntimeException.class) //
 				.isThrownBy(() -> context.getPersistentEntity(Unsupported.class));
@@ -231,8 +224,7 @@ class AbstractMappingContextUnitTests {
 	@Test // GH-3113
 	void shouldIgnoreKotlinOverrideCtorPropertyInSuperClass() {
 
-		var entity = context
-				.getPersistentEntity(TypeInformation.of(ShadowingPropertyTypeWithCtor.class));
+		var entity = context.getPersistentEntity(TypeInformation.of(ShadowingPropertyTypeWithCtor.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
 			assertThat(property.getField().getDeclaringClass()).isIn(ShadowingPropertyTypeWithCtor.class,
 					ShadowedPropertyTypeWithCtor.class);
@@ -242,8 +234,7 @@ class AbstractMappingContextUnitTests {
 	@Test // GH-3113
 	void shouldIncludeAssignableKotlinOverridePropertyInSuperClass() {
 
-		var entity = context
-				.getPersistentEntity(TypeInformation.of(ShadowingPropertyType.class));
+		var entity = context.getPersistentEntity(TypeInformation.of(ShadowingPropertyType.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
 			assertThat(property.getField().getDeclaringClass()).isIn(ShadowedPropertyType.class, ShadowingPropertyType.class);
 		});
@@ -252,8 +243,7 @@ class AbstractMappingContextUnitTests {
 	@Test // GH-3113
 	void shouldIncludeAssignableShadowedPropertyInSuperClass() {
 
-		var entity = context
-				.getPersistentEntity(TypeInformation.of(ShadowingPropertyAssignable.class));
+		var entity = context.getPersistentEntity(TypeInformation.of(ShadowingPropertyAssignable.class));
 
 		assertThat(StreamUtils.createStreamFromIterator(entity.iterator())
 				.filter(it -> it.getField().getDeclaringClass().equals(ShadowedPropertyAssignable.class)).findFirst() //
@@ -270,8 +260,7 @@ class AbstractMappingContextUnitTests {
 	@Test // GH-3113
 	void shouldIgnoreNonAssignableOverridePropertyInSuperClass() {
 
-		var entity = context
-				.getPersistentEntity(TypeInformation.of(ShadowingPropertyNotAssignable.class));
+		var entity = context.getPersistentEntity(TypeInformation.of(ShadowingPropertyNotAssignable.class));
 		entity.doWithProperties((PropertyHandler<SamplePersistentProperty>) property -> {
 			assertThat(property.getField().getDeclaringClass()).isEqualTo(ShadowingPropertyNotAssignable.class);
 		});
@@ -292,8 +281,7 @@ class AbstractMappingContextUnitTests {
 
 		context.getPersistentEntity(WithNestedLists.class);
 
-		assertThat(context.getPersistentEntities()).map(it -> (Class) it.getType())
-				.contains(Base.class)
+		assertThat(context.getPersistentEntities()).map(it -> (Class) it.getType()).contains(Base.class)
 				.doesNotContain(List.class, ArrayList.class);
 	}
 
@@ -410,13 +398,16 @@ class AbstractMappingContextUnitTests {
 	 *
 	 * @author Oliver Drotbohm
 	 */
-	@Value
-	@EqualsAndHashCode(callSuper = false)
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	private static class TypeRejectingMappingContext extends SampleMappingContext {
 
 		Supplier<? extends RuntimeException> exception;
 		Collection<Class<?>> rejectedTypes;
+
+		public TypeRejectingMappingContext(Supplier<? extends RuntimeException> exception,
+				Collection<Class<?>> rejectedTypes) {
+			this.exception = exception;
+			this.rejectedTypes = rejectedTypes;
+		}
 
 		/**
 		 * Creates a new {@link TypeRejectingMappingContext} producing the given exceptions if any of the given types is

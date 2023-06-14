@@ -18,9 +18,6 @@ package org.springframework.data.repository.config;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
-
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
@@ -90,10 +86,22 @@ class DefaultRepositoryConfigurationUnitTests {
 		return new DefaultRepositoryConfiguration<>(source, beanDefinition, extension);
 	}
 
-	@Value
-	@EqualsAndHashCode(callSuper = true)
-	private static class SimplerRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
-		String repositoryFactoryBeanClassName, modulePrefix;
+	private static final class SimplerRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
+		private final String repositoryFactoryBeanClassName, modulePrefix;
+
+		public SimplerRepositoryConfigurationExtension(String repositoryFactoryBeanClassName, String modulePrefix) {
+			this.repositoryFactoryBeanClassName = repositoryFactoryBeanClassName;
+			this.modulePrefix = modulePrefix;
+		}
+
+		public String getRepositoryFactoryBeanClassName() {
+			return this.repositoryFactoryBeanClassName;
+		}
+
+		public String getModulePrefix() {
+			return this.modulePrefix;
+		}
+
 	}
 
 	private static RootBeanDefinition createBeanDefinition(String repositoryInterfaceName) {

@@ -17,9 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Value;
-import lombok.With;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
@@ -35,18 +32,17 @@ class PropertyUnitTests {
 	void shouldNotFindWitherMethod() {
 
 		assertThat(Property
-				.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "id"))
-				.getWither()).isEmpty();
-		assertThat(Property
-				.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "name"))
-				.getWither()).isEmpty();
+				.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "id")).getWither())
+						.isEmpty();
+		assertThat(
+				Property.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "name"))
+						.getWither()).isEmpty();
 	}
 
 	@Test // DATACMNS-1322
 	void shouldDiscoverWitherMethod() {
 
-		var property = Property.of(TypeInformation.of(WitherType.class),
-				ReflectionUtils.findField(WitherType.class, "id"));
+		var property = Property.of(TypeInformation.of(WitherType.class), ReflectionUtils.findField(WitherType.class, "id"));
 
 		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
 			assertThat(actual.getName()).isEqualTo("withId");
@@ -76,11 +72,23 @@ class PropertyUnitTests {
 		assertThat(property.getWither()).isEmpty();
 	}
 
-	@Value
 	static class ImmutableType {
 
-		String id;
-		String name;
+		final String id;
+		final String name;
+
+		public ImmutableType(String id, String name) {
+			this.id = id;
+			this.name = name;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public String getName() {
+			return name;
+		}
 
 		ImmutableType withId(Long id) {
 			return null;
@@ -95,12 +103,31 @@ class PropertyUnitTests {
 		}
 	}
 
-	@Value
-	@With
-	private static class WitherType {
+	private static final class WitherType {
 
-		String id;
-		String name;
+		private final String id;
+		private final String name;
+
+		public WitherType(String id, String name) {
+			this.id = id;
+			this.name = name;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public WitherType withId(String id) {
+			return this.id == id ? this : new WitherType(id, this.name);
+		}
+
+		public WitherType withName(String name) {
+			return this.name == name ? this : new WitherType(this.id, name);
+		}
 	}
 
 	static abstract class WitherBaseClass {
