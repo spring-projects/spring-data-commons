@@ -22,6 +22,7 @@ import java.util.function.BiFunction;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -57,7 +58,8 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 	 * @param beanFactory must not be {@literal null}.
 	 */
 	DefaultEntityCallbacks(BeanFactory beanFactory) {
-		this.callbackDiscoverer = new EntityCallbackDiscoverer(beanFactory);
+		this.callbackDiscoverer = new EntityCallbackDiscoverer(
+				beanFactory instanceof GenericApplicationContext ac ? ac.getBeanFactory() : beanFactory);
 	}
 
 	@Override
@@ -93,8 +95,7 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 		this.callbackDiscoverer.addEntityCallback(callback);
 	}
 
-	static class SimpleEntityCallbackInvoker
-			implements org.springframework.data.mapping.callback.EntityCallbackInvoker {
+	static class SimpleEntityCallbackInvoker implements org.springframework.data.mapping.callback.EntityCallbackInvoker {
 
 		@Override
 		public <T> T invokeCallback(EntityCallback<T> callback, T entity,

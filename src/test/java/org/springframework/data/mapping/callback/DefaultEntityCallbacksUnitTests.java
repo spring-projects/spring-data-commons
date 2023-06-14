@@ -170,7 +170,6 @@ class DefaultEntityCallbacksUnitTests {
 	void detectsMultipleCallbacksWithinOneClass() {
 
 		var ctx = new AnnotationConfigApplicationContext(MultipleCallbacksInOneClassConfig.class);
-
 		var callbacks = new DefaultEntityCallbacks(ctx);
 
 		var personDocument = new PersonDocument(null, "Walter", null);
