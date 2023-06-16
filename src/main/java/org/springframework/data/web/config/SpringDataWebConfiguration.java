@@ -28,6 +28,7 @@ import org.springframework.data.geo.format.DistanceFormatter;
 import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.web.OffsetScrollPositionHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
@@ -46,7 +47,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
- * {@link SortHandlerMethodArgumentResolver} and {@link DomainClassConverter}.
+ * {@link SortHandlerMethodArgumentResolver}, {@link OffsetScrollPositionHandlerMethodArgumentResolver}
+ * and {@link DomainClassConverter}.
  *
  * @since 1.6
  * @author Oliver Gierke
@@ -54,6 +56,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Jens Schauder
  * @author Mark Paluch
  * @author Greg Turnquist
+ * @author Yanming Zhou
  */
 @Configuration(proxyBeanMethods = false)
 public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLoaderAware {
@@ -66,6 +69,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	private final Lazy<PageableHandlerMethodArgumentResolver> pageableResolver;
 	private final Lazy<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
 	private final Lazy<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
+	private final Lazy<OffsetScrollPositionHandlerMethodArgumentResolverCustomizer> offsetResolverCustomizer;
 
 	public SpringDataWebConfiguration(ApplicationContext context,
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
@@ -83,6 +87,8 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 				() -> context.getBeanProvider(PageableHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
 		this.sortResolverCustomizer = Lazy.of( //
 				() -> context.getBeanProvider(SortHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
+		this.offsetResolverCustomizer = Lazy.of( //
+				() -> context.getBeanProvider(OffsetScrollPositionHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
 	}
 
 	@Override
@@ -105,6 +111,14 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		SortHandlerMethodArgumentResolver sortResolver = new SortHandlerMethodArgumentResolver();
 		customizeSortResolver(sortResolver);
 		return sortResolver;
+	}
+
+	@Bean
+	public OffsetScrollPositionHandlerMethodArgumentResolver offsetResolver() {
+
+		OffsetScrollPositionHandlerMethodArgumentResolver offsetResolver = new OffsetScrollPositionHandlerMethodArgumentResolver();
+		customizeOffsetResolver(offsetResolver);
+		return offsetResolver;
 	}
 
 	@Override
@@ -163,6 +177,10 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 
 	protected void customizeSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
 		sortResolverCustomizer.getOptional().ifPresent(c -> c.customize(sortResolver));
+	}
+
+	protected void customizeOffsetResolver(OffsetScrollPositionHandlerMethodArgumentResolver offsetResolver) {
+		offsetResolverCustomizer.getOptional().ifPresent(c -> c.customize(offsetResolver));
 	}
 
 	private void forwardBeanClassLoader(BeanClassLoaderAware target) {

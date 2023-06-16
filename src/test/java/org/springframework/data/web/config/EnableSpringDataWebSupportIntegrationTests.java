@@ -32,6 +32,7 @@ import org.springframework.data.geo.Point;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.web.OffsetScrollPositionHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
@@ -52,6 +53,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @author Jens Schauder
  * @author Vedran Pavic
+ * @author Yanming Zhou
  */
 class EnableSpringDataWebSupportIntegrationTests {
 
@@ -85,6 +87,17 @@ class EnableSpringDataWebSupportIntegrationTests {
 		@Bean
 		SortHandlerMethodArgumentResolverCustomizer testSortResolverCustomizer() {
 			return sortResolver -> sortResolver.setSortParameter("foo");
+		}
+	}
+
+	@Configuration
+	@EnableWebMvc
+	@EnableSpringDataWebSupport
+	static class OffsetResolverCustomizerConfig extends SampleConfig {
+
+		@Bean
+		OffsetScrollPositionHandlerMethodArgumentResolverCustomizer testOffsetResolverCustomizer() {
+			return offsetResolver -> offsetResolver.setOffsetParameter("foo");
 		}
 	}
 
@@ -215,6 +228,17 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 		assertThat(names).contains("testSortResolverCustomizer");
 		assertThat((String) ReflectionTestUtils.getField(resolver, "sortParameter")).isEqualTo("foo");
+	}
+
+	@Test
+	void picksUpOffsetResolverCustomizer() {
+
+		ApplicationContext context = WebTestUtils.createApplicationContext(OffsetResolverCustomizerConfig.class);
+		var names = Arrays.asList(context.getBeanDefinitionNames());
+		var resolver = context.getBean("offsetResolver", OffsetScrollPositionHandlerMethodArgumentResolver.class);
+
+		assertThat(names).contains("testOffsetResolverCustomizer");
+		assertThat((String) ReflectionTestUtils.getField(resolver, "offsetParameter")).isEqualTo("foo");
 	}
 
 	@Test // DATACMNS-1237
