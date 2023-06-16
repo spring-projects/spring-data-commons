@@ -69,7 +69,7 @@ abstract class SortDefaultUnitTests {
 	}
 
 	@Test
-	void returnsNullForNoDefault() throws Exception {
+	void returnsUnsortedForNoDefault() throws Exception {
 		assertSupportedAndResolvedTo(getParameterOfMethod("supportedMethod"), Sort.unsorted());
 	}
 
