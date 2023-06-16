@@ -28,8 +28,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 /**
  * Argument resolver to extract a {@link Pageable} object from a {@link NativeWebRequest} for a particular
  * {@link MethodParameter}. A {@link PageableArgumentResolver} can either resolve {@link Pageable} itself or wrap
- * another {@link PageableArgumentResolver} to post-process {@link Pageable}. {@link Pageable} resolution yields either
- * in a {@link Pageable} object or {@literal null} if {@link Pageable} cannot be resolved.
+ * another {@link PageableArgumentResolver} to post-process {@link Pageable}.
  *
  * @author Mark Paluch
  * @since 1.13

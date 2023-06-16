@@ -55,7 +55,7 @@ class ReactiveSortHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	void returnsNullForNoDefault() {
+	void returnsUnsortedForNoDefault() {
 		assertSupportedAndResolvedTo(getParameterOfMethod("supportedMethod"), Sort.unsorted());
 	}
 

@@ -107,7 +107,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	}
 
 	@Test
-	void returnsNullForSortParameterSetToNothing() {
+	void returnsUnsortedForSortParameterSetToNothing() {
 
 		var parameter = getParameterOfMethod("supportedMethod");
 
