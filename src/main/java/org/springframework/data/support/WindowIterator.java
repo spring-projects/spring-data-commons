@@ -15,6 +15,7 @@
  */
 package org.springframework.data.support;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
@@ -81,7 +82,9 @@ public class WindowIterator<T> implements Iterator<T> {
 
 			if (currentIterator == null) {
 				if (currentWindow != null) {
-					currentIterator = currentWindow.iterator();
+					currentIterator = isBackwardsScrolling(currentPosition)
+							? currentWindow.stream().sorted(Collections.reverseOrder()).iterator()
+							: currentWindow.iterator();
 				}
 			}
 
@@ -116,13 +119,15 @@ public class WindowIterator<T> implements Iterator<T> {
 
 	private static ScrollPosition getNextPosition(ScrollPosition currentPosition, Window<?> window) {
 
-		if (currentPosition instanceof KeysetScrollPosition ksp) {
-			if (ksp.scrollsBackward()) {
-				return window.positionAt(0);
-			}
+		if (isBackwardsScrolling(currentPosition)) {
+			return window.positionAt(0);
 		}
 
 		return window.positionAt(window.size() - 1);
+	}
+
+	private static boolean isBackwardsScrolling(ScrollPosition position) {
+		return position instanceof KeysetScrollPosition ksp ? ksp.scrollsBackward() : false;
 	}
 
 	/**

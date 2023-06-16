@@ -131,7 +131,7 @@ class WindowIteratorUnitTests {
 		assertThat(capturedResult).containsExactly("a", "b", "c", "d");
 	}
 
-	@Test // GH-2151
+	@Test // GH-2151, GH-2857
 	void considersBackwardKeysetScrolling() {
 
 		Window<String> initial = Window.from(List.of("c", "d"),
@@ -152,6 +152,6 @@ class WindowIteratorUnitTests {
 		}).startingAt(ScrollPosition.keyset().backward());
 
 		List<String> items = Streamable.of(() -> iterator).toList();
-		assertThat(items).containsExactly("c", "d", "a", "b");
+		assertThat(items).containsExactly("d", "c", "b", "a");
 	}
 }
