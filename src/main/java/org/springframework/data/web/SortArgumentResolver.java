@@ -28,8 +28,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 /**
  * Argument resolver to extract a {@link Sort} object from a {@link NativeWebRequest} for a particular
  * {@link MethodParameter}. A {@link SortArgumentResolver} can either resolve {@link Sort} itself or wrap another
- * {@link SortArgumentResolver} to post-process {@link Sort}. {@link Sort} resolution yields either in a {@link Sort}
- * object or {@literal null} if {@link Sort} cannot be resolved.
+ * {@link SortArgumentResolver} to post-process {@link Sort}.
  *
  * @author Mark Paluch
  * @since 1.13
@@ -45,7 +44,7 @@ public interface SortArgumentResolver extends HandlerMethodArgumentResolver {
 	 * @param mavContainer the ModelAndViewContainer for the current request
 	 * @param webRequest the current request
 	 * @param binderFactory a factory for creating {@link WebDataBinder} instances
-	 * @return the resolved argument value, or {@code null}
+	 * @return the resolved argument value
 	 */
 	@NonNull
 	@Override

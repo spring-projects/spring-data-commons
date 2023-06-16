@@ -131,7 +131,7 @@ class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-1211
-	void returnsNullIfFallbackIsUnpagedAndNoParametersGiven() {
+	void returnsUnpagedIfFallbackIsUnpagedAndNoParametersGiven() {
 
 		var resolver = getReactiveResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
