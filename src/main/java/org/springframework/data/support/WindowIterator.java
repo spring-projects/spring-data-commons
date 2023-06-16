@@ -15,8 +15,9 @@
  */
 package org.springframework.data.support;
 
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 
@@ -83,7 +84,7 @@ public class WindowIterator<T> implements Iterator<T> {
 			if (currentIterator == null) {
 				if (currentWindow != null) {
 					currentIterator = isBackwardsScrolling(currentPosition)
-							? currentWindow.stream().sorted(Collections.reverseOrder()).iterator()
+							? new ReverseListIterator<>(currentWindow.getContent())
 							: currentWindow.iterator();
 				}
 			}
@@ -159,6 +160,30 @@ public class WindowIterator<T> implements Iterator<T> {
 			Assert.notNull(position, "ScrollPosition must not be null");
 
 			return new WindowIterator<>(windowFunction, position);
+		}
+	}
+
+	private static class ReverseListIterator<T> implements Iterator<T> {
+
+		private final ListIterator<T> delegate;
+
+		public ReverseListIterator(List<T> list) {
+			this.delegate = list.listIterator(list.size());
+		}
+
+		@Override
+		public boolean hasNext() {
+			return delegate.hasPrevious();
+		}
+
+		@Override
+		public T next() {
+			return delegate.previous();
+		}
+
+		@Override
+		public void remove() {
+			delegate.remove();
 		}
 	}
 }
