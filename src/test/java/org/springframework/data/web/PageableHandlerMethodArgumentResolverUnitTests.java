@@ -149,7 +149,7 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 	}
 
 	@Test // DATACMNS-477
-	void returnsNullIfFallbackIsUnpagedAndNoParametersGiven() throws Exception {
+	void returnsUnpagedIfFallbackIsUnpagedAndNoParametersGiven() throws Exception {
 
 		var resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
