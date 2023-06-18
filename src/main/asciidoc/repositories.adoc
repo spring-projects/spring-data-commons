@@ -1,5 +1,5 @@
-:spring-framework-docs: https://docs.spring.io/spring-framework/docs/{springVersion}/reference/html
-:spring-framework-javadoc: https://docs.spring.io/spring/docs/{springVersion}/javadoc-api
+:spring-framework-docs: {springDocsUrl}
+:spring-framework-javadoc: {springJavadocUrl}
 
 ifndef::store[]
 :store: Jpa
@@ -28,7 +28,7 @@ For detailed information on the specific features of your module, see the chapte
 == Core concepts
 
 The central interface in the Spring Data repository abstraction is `Repository`.
-It takes the domain class to manage as well as the ID type of the domain class as type arguments.
+It takes the domain class to manage as well as the identifier type of the domain class as type arguments.
 This interface acts primarily as a marker interface to capture the types to work with and to help you to discover interfaces that extend this one.
 The https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/CrudRepository.html[`CrudRepository`] and https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/ListCrudRepository.html[`ListCrudRepository`] interfaces provide sophisticated CRUD functionality for the entity class that is being managed.
 
@@ -62,6 +62,7 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 <6> Indicates whether an entity with the given ID exists.
 ====
 
+The methods declared in this interface are commonly referred to as CRUD methods.
 `ListCrudRepository` offers equivalent methods, but they return `List` where the `CrudRepository` methods return an `Iterable`.
 
 NOTE: We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`.
@@ -91,6 +92,10 @@ PagingAndSortingRepository<User, Long> repository = // … get access to a bean
 Page<User> users = repository.findAll(PageRequest.of(1, 20));
 ----
 ====
+
+ifdef::feature-scroll[]
+In addition to pagination, scrolling provides a more fine-grained access to iterate through chunks of larger result sets.
+endif::[]
 
 In addition to query methods, query derivation for both count and delete queries is available.
 The following list shows the interface definition for a derived count query:
@@ -517,118 +522,7 @@ List<Person> findByAddress_ZipCode(ZipCode zipCode);
 
 Because we treat the underscore character as a reserved character, we strongly advise following standard Java naming conventions (that is, not using underscores in property names but using camel case instead).
 
-[[repositories.special-parameters]]
-=== Special parameter handling
-
-To handle parameters in your query, define method parameters as already seen in the preceding examples.
-Besides that, the infrastructure recognizes certain specific types like `Pageable` and `Sort`, to apply pagination and sorting to your queries dynamically.
-The following example demonstrates these features:
-
-.Using `Pageable`, `Slice`, and `Sort` in query methods
-====
-[source,java]
-----
-Page<User> findByLastname(String lastname, Pageable pageable);
-
-Slice<User> findByLastname(String lastname, Pageable pageable);
-
-List<User> findByLastname(String lastname, Sort sort);
-
-List<User> findByLastname(String lastname, Pageable pageable);
-----
-====
-
-IMPORTANT: APIs taking `Sort` and `Pageable` expect non-`null` values to be handed into methods.
-If you do not want to apply any sorting or pagination, use `Sort.unsorted()` and `Pageable.unpaged()`.
-
-The first method lets you pass an `org.springframework.data.domain.Pageable` instance to the query method to dynamically add paging to your statically defined query.
-A `Page` knows about the total number of elements and pages available.
-It does so by the infrastructure triggering a count query to calculate the overall number.
-As this might be expensive (depending on the store used), you can instead return a `Slice`.
-A `Slice` knows only about whether a next `Slice` is available, which might be sufficient when walking through a larger result set.
-
-Sorting options are handled through the `Pageable` instance, too.
-If you need only sorting, add an `org.springframework.data.domain.Sort` parameter to your method.
-As you can see, returning a `List` is also possible.
-In this case, the additional metadata required to build the actual `Page` instance is not created (which, in turn, means that the additional count query that would have been necessary is not issued).
-Rather, it restricts the query to look up only the given range of entities.
-
-NOTE: To find out how many pages you get for an entire query, you have to trigger an additional count query.
-By default, this query is derived from the query you actually trigger.
-
-[[repositories.paging-and-sorting]]
-==== Paging and Sorting
-
-You can define simple sorting expressions by using property names.
-You can concatenate expressions to collect multiple criteria into one expression.
-
-.Defining sort expressions
-====
-[source,java]
-----
-Sort sort = Sort.by("firstname").ascending()
-  .and(Sort.by("lastname").descending());
-----
-====
-
-For a more type-safe way to define sort expressions, start with the type for which to define the sort expression and use method references to define the properties on which to sort.
-
-.Defining sort expressions by using the type-safe API
-====
-[source,java]
-----
-TypedSort<Person> person = Sort.sort(Person.class);
-
-Sort sort = person.by(Person::getFirstname).ascending()
-  .and(person.by(Person::getLastname).descending());
-----
-====
-
-NOTE: `TypedSort.by(…)` makes use of runtime proxies by (typically) using CGlib, which may interfere with native image compilation when using tools such as Graal VM Native.
-
-If your store implementation supports Querydsl, you can also use the generated metamodel types to define sort expressions:
-
-.Defining sort expressions by using the Querydsl API
-====
-[source,java]
-----
-QSort sort = QSort.by(QPerson.firstname.asc())
-  .and(QSort.by(QPerson.lastname.desc()));
-----
-====
-
-[[repositories.limit-query-result]]
-=== Limiting Query Results
-
-You can limit the results of query methods by using the `first` or `top` keywords, which you can use interchangeably.
-You can append an optional numeric value to `top` or `first` to specify the maximum result size to be returned.
-If the number is left out, a result size of 1 is assumed.
-The following example shows how to limit the query size:
-
-.Limiting the result size of a query with `Top` and `First`
-====
-[source,java]
-----
-User findFirstByOrderByLastnameAsc();
-
-User findTopByOrderByAgeDesc();
-
-Page<User> queryFirst10ByLastname(String lastname, Pageable pageable);
-
-Slice<User> findTop3ByLastname(String lastname, Pageable pageable);
-
-List<User> findFirst10ByLastname(String lastname, Sort sort);
-
-List<User> findTop10ByLastname(String lastname, Pageable pageable);
-----
-====
-
-The limiting expressions also support the `Distinct` keyword for datastores that support distinct queries.
-Also, for the queries that limit the result set to one instance, wrapping the result into with the `Optional` keyword is supported.
-
-If pagination or slicing is applied to a limiting query pagination (and the calculation of the number of available pages), it is applied within the limited result.
-
-NOTE: Limiting the results in combination with dynamic sorting by using a `Sort` parameter lets you express query methods for the 'K' smallest as well as for the 'K' biggest elements.
+include::repositories-paging-sorting.adoc[]
 
 [[repositories.collections-and-iterables]]
 === Repository Methods Returning Collections or Iterables
@@ -725,103 +619,6 @@ You can use the types in the first column (or subtypes thereof) as query method 
 Alternatively, you can declare `Traversable` (the Vavr `Iterable` equivalent), and we then derive the implementation class from the actual return value.
 That is, a `java.util.List` is turned into a Vavr `List` or `Seq`, a `java.util.Set` becomes a Vavr `LinkedHashSet` `Set`, and so on.
 
-[[repositories.nullability]]
-=== Null Handling of Repository Methods
-
-As of Spring Data 2.0, repository CRUD methods that return an individual aggregate instance use Java 8's `Optional` to indicate the potential absence of a value.
-Besides that, Spring Data supports returning the following wrapper types on query methods:
-
-* `com.google.common.base.Optional`
-* `scala.Option`
-* `io.vavr.control.Option`
-
-Alternatively, query methods can choose not to use a wrapper type at all.
-The absence of a query result is then indicated by returning `null`.
-Repository methods returning collections, collection alternatives, wrappers, and streams are guaranteed never to return `null` but rather the corresponding empty representation.
-See "`<<repository-query-return-types>>`" for details.
-
-[[repositories.nullability.annotations]]
-==== Nullability Annotations
-
-You can express nullability constraints for repository methods by using {spring-framework-docs}/core.html#null-safety[Spring Framework's nullability annotations].
-They provide a tooling-friendly approach and opt-in `null` checks during runtime, as follows:
-
-* {spring-framework-javadoc}/org/springframework/lang/NonNullApi.html[`@NonNullApi`]: Used on the package level to declare that the default behavior for parameters and return values is, respectively, neither to accept nor to produce `null` values.
-* {spring-framework-javadoc}/org/springframework/lang/NonNull.html[`@NonNull`]: Used on a parameter or return value that must not be `null` (not needed on a parameter and return value where `@NonNullApi` applies).
-* {spring-framework-javadoc}/org/springframework/lang/Nullable.html[`@Nullable`]: Used on a parameter or return value that can be `null`.
-
-Spring annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR 305] annotations (a dormant but widely used JSR).
-JSR 305 meta-annotations let tooling vendors (such as https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], https://help.eclipse.org/oxygen/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], and link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin]) provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
-To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on the package level by using Spring’s `@NonNullApi` in `package-info.java`, as shown in the following example:
-
-.Declaring Non-nullability in `package-info.java`
-====
-[source,java]
-----
-@org.springframework.lang.NonNullApi
-package com.acme;
-----
-====
-
-Once non-null defaulting is in place, repository query method invocations get validated at runtime for nullability constraints.
-If a query result violates the defined constraint, an exception is thrown.
-This happens when the method would return `null` but is declared as non-nullable (the default with the annotation defined on the package in which the repository resides).
-If you want to opt-in to nullable results again, selectively use `@Nullable` on individual methods.
-Using the result wrapper types mentioned at the start of this section continues to work as expected: an empty result is translated into the value that represents absence.
-
-The following example shows a number of the techniques just described:
-
-.Using different nullability constraints
-====
-[source,java]
-----
-package com.acme;                                                       <1>
-
-import org.springframework.lang.Nullable;
-
-interface UserRepository extends Repository<User, Long> {
-
-  User getByEmailAddress(EmailAddress emailAddress);                    <2>
-
-  @Nullable
-  User findByEmailAddress(@Nullable EmailAddress emailAdress);          <3>
-
-  Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); <4>
-}
-----
-<1> The repository resides in a package (or sub-package) for which we have defined non-null behavior.
-<2> Throws an `EmptyResultDataAccessException` when the query does not produce a result.
-Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
-<3> Returns `null` when the query does not produce a result.
-Also accepts `null` as the value for `emailAddress`.
-<4> Returns `Optional.empty()` when the query does not produce a result.
-Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
-====
-
-[[repositories.nullability.kotlin]]
-==== Nullability in Kotlin-based Repositories
-
-Kotlin has the definition of https://kotlinlang.org/docs/reference/null-safety.html[nullability constraints] baked into the language.
-Kotlin code compiles to bytecode, which does not express nullability constraints through method signatures but rather through compiled-in metadata.
-Make sure to include the `kotlin-reflect` JAR in your project to enable introspection of Kotlin's nullability constraints.
-Spring Data repositories use the language mechanism to define those constraints to apply the same runtime checks, as follows:
-
-.Using nullability constraints on Kotlin repositories
-====
-[source,kotlin]
-----
-interface UserRepository : Repository<User, String> {
-
-  fun findByUsername(username: String): User     <1>
-
-  fun findByFirstname(firstname: String?): User? <2>
-}
-----
-<1> The method defines both the parameter and the result as non-nullable (the Kotlin default).
-The Kotlin compiler rejects method invocations that pass `null` to the method.
-If the query yields an empty result, an `EmptyResultDataAccessException` is thrown.
-<2> This method accepts `null` for the `firstname` parameter and returns `null` if the query does not produce a result.
-====
 
 [[repositories.query-streaming]]
 === Streaming Query Results
@@ -857,6 +654,8 @@ try (Stream<User> stream = repository.findAllByCustomQueryAndStream()) {
 ====
 
 NOTE: Not all Spring Data modules currently support `Stream<T>` as a return type.
+
+include::repositories-null-handling.adoc[]
 
 [[repositories.query-async]]
 === Asynchronous Query Results
@@ -1339,7 +1138,13 @@ It must not take any arguments.
 You can use it to potentially clean the list of events to be published (among other uses).
 ====
 
-The methods are called every time one of a Spring Data repository's `save(…)`, `saveAll(…)`, `delete(…)` or `deleteAll(…)` methods are called.
+The methods are called every time one of the following a Spring Data repository methods are called:
+
+* `save(…)`, `saveAll(…)`
+* `delete(…)`, `deleteAll(…)`, `deleteAllInBatch(…)`, `deleteInBatch(…)`
+
+Note, that these methods take the aggregate root instances as arguments.
+This is why `deleteById(…)` is notably absent, as the implementations might choose to issue a query deleting the instance and thus we would never have access to the aggregate instance in the first place.
 
 [[core.extensions]]
 == Spring Data Extensions
@@ -1542,11 +1347,12 @@ You have to populate `thing1_page`, `thing2_page`, and so on.
 The default `Pageable` passed into the method is equivalent to a `PageRequest.of(0, 20)`, but you can customize it by using the `@PageableDefault` annotation on the `Pageable` parameter.
 
 [[core.web.pageables]]
-==== Hypermedia Support for Pageables
+==== Hypermedia Support for `Page` and `Slice`
 
-Spring HATEOAS ships with a representation model class (`PagedResources`) that allows enriching the content of a `Page` instance with the necessary `Page` metadata as well as links to let the clients easily navigate the pages.
-The conversion of a `Page` to a `PagedResources` is done by an implementation of the Spring HATEOAS `ResourceAssembler` interface, called the `PagedResourcesAssembler`.
-The following example shows how to use a `PagedResourcesAssembler` as a controller method argument:
+Spring HATEOAS ships with a representation model class (`PagedModel`/`SlicedModel`) that allows enriching the content of a `Page` or `Slice` instance with the necessary `Page`/`Slice` metadata as well as links to let the clients easily navigate the pages.
+The conversion of a `Page` to a `PagedModel` is done by an implementation of the Spring HATEOAS `RepresentationModelAssembler` interface, called the `PagedResourcesAssembler`.
+Similarly `Slice` instances can be converted to a `SlicedModel` using a `SlicedResourcesAssembler`.
+The following example shows how to use a `PagedResourcesAssembler` as a controller method argument, as the `SlicedResourcesAssembler` works exactly the same:
 
 .Using a PagedResourcesAssembler as controller method argument
 ====
@@ -1555,36 +1361,38 @@ The following example shows how to use a `PagedResourcesAssembler` as a controll
 @Controller
 class PersonController {
 
-  @Autowired PersonRepository repository;
+  private final PersonRepository repository;
 
-  @RequestMapping(value = "/persons", method = RequestMethod.GET)
-  HttpEntity<PagedResources<Person>> persons(Pageable pageable,
+  // Constructor omitted
+
+  @GetMapping("/people")
+  HttpEntity<PagedModel<Person>> people(Pageable pageable,
     PagedResourcesAssembler assembler) {
 
-    Page<Person> persons = repository.findAll(pageable);
-    return new ResponseEntity<>(assembler.toResources(persons), HttpStatus.OK);
+    Page<Person> people = repository.findAll(pageable);
+    return ResponseEntity.ok(assembler.toModel(people));
   }
 }
 ----
 ====
 
 Enabling the configuration, as shown in the preceding example, lets the `PagedResourcesAssembler` be used as a controller method argument.
-Calling `toResources(…)` on it has the following effects:
+Calling `toModel(…)` on it has the following effects:
 
-* The content of the `Page` becomes the content of the `PagedResources` instance.
-* The `PagedResources` object gets a `PageMetadata` instance attached, and it is populated with information from the `Page` and the underlying `PageRequest`.
-* The `PagedResources` may get `prev` and `next` links attached, depending on the page's state.
+* The content of the `Page` becomes the content of the `PagedModel` instance.
+* The `PagedModel` object gets a `PageMetadata` instance attached, and it is populated with information from the `Page` and the underlying `Pageable`.
+* The `PagedModel` may get `prev` and `next` links attached, depending on the page's state.
 The links point to the URI to which the method maps.
 The pagination parameters added to the method match the setup of the `PageableHandlerMethodArgumentResolver` to make sure the links can be resolved later.
 
 Assume we have 30 `Person` instances in the database.
-You can now trigger a request (`GET http://localhost:8080/persons`) and see output similar to the following:
+You can now trigger a request (`GET http://localhost:8080/people`) and see output similar to the following:
 
 ====
 [source,javascript]
 ----
-{ "links" : [ { "rel" : "next",
-                "href" : "http://localhost:8080/persons?page=1&size=20" }
+{ "links" : [
+    { "rel" : "next", "href" : "http://localhost:8080/persons?page=1&size=20" }
   ],
   "content" : [
      … // 20 Person instances rendered here
@@ -1599,9 +1407,14 @@ You can now trigger a request (`GET http://localhost:8080/persons`) and see outp
 ----
 ====
 
+WARNING: The JSON envelope format shown here doesn't follow any formally specified structure and it's not guaranteed stable and we might change it at any time.
+It's highly recommended to enable the rendering as a hypermedia-enabled, official media type, supported by Spring HATEOAS, like https://docs.spring.io/spring-hateoas/docs/{springHateoasVersion}/reference/html/#mediatypes.hal[HAL].
+Those can be activated by using its `@EnableHypermediaSupport` annotation.
+Find more information in the https://docs.spring.io/spring-hateoas/docs/{springHateoasVersion}/reference/html/#configuration.at-enable[Spring HATEOAS reference documentation].
+
 The assembler produced the correct URI and also picked up the default configuration to resolve the parameters into a `Pageable` for an upcoming request.
 This means that, if you change that configuration, the links automatically adhere to the change.
-By default, the assembler points to the controller method it was invoked in, but you can customize that by passing a custom `Link` to be used as base to build the pagination links, which overloads the `PagedResourcesAssembler.toResource(…)` method.
+By default, the assembler points to the controller method it was invoked in, but you can customize that by passing a custom `Link` to be used as base to build the pagination links, which overloads the `PagedResourcesAssembler.toModel(…)` method.
 
 [[core.web.basic.jackson-mappers]]
 ==== Spring Data Jackson Modules
@@ -1661,7 +1474,7 @@ If the method returns a complex, non-interface type, a Jackson `ObjectMapper` is
 For Spring MVC, the necessary converters are registered automatically as soon as `@EnableSpringDataWebSupport` is active and the required dependencies are available on the classpath.
 For usage with `RestTemplate`, register a `ProjectingJackson2HttpMessageConverter` (JSON) or `XmlBeamHttpMessageConverter` manually.
 
-For more information, see the https://github.com/spring-projects/spring-data-examples/tree/master/web/projection[web projection example] in the canonical https://github.com/spring-projects/spring-data-examples[Spring Data Examples repository].
+For more information, see the https://github.com/spring-projects/spring-data-examples/tree/main/web/projection[web projection example] in the canonical https://github.com/spring-projects/spring-data-examples[Spring Data Examples repository].
 
 [[core.web.type-safe]]
 ==== Querydsl Web Support

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 the original author or authors.
+ * Copyright 2016-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,7 +33,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.AfterDomainEventPublication;
@@ -347,27 +342,62 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		doReturn(returnValue).when(invocation).proceed();
 	}
 
-	@Value(staticConstructor = "of")
-	static class MultipleEvents {
-		@Getter(onMethod = @__(@DomainEvents)) Collection<? extends Object> events;
+	static final class MultipleEvents {
+		private final Collection<? extends Object> events;
+
+		private MultipleEvents(Collection<? extends Object> events) {
+			this.events = events;
+		}
+
+		public static MultipleEvents of(Collection<? extends Object> events) {
+			return new MultipleEvents(events);
+		}
+
+		@DomainEvents
+		public Collection<?> getEvents() {
+			return this.events;
+		}
 	}
 
-	@RequiredArgsConstructor(staticName = "of")
 	static class EventsWithClearing {
-		@Getter(onMethod = @__(@DomainEvents)) final Collection<? extends Object> events;
+		final Collection<? extends Object> events;
+
+		private EventsWithClearing(Collection<? extends Object> events) {
+			this.events = events;
+		}
+
+		public static EventsWithClearing of(Collection<? extends Object> events) {
+			return new EventsWithClearing(events);
+		}
 
 		@AfterDomainEventPublication
 		void clearDomainEvents() {}
+
+		@DomainEvents
+		public Collection<?> getEvents() {
+			return this.events;
+		}
 	}
 
-	@Value(staticConstructor = "of")
-	private static class OneEvent {
-		@Getter(onMethod = @__(@DomainEvents)) Object event;
+	private static final class OneEvent {
+		private final Object event;
+
+		private OneEvent(Object event) {
+			this.event = event;
+		}
+
+		public static OneEvent of(Object event) {
+			return new OneEvent(event);
+		}
+
+		@DomainEvents
+		public Object getEvent() {
+			return this.event;
+		}
 	}
 
-	@Value
 	private static class SomeEvent {
-		UUID id = UUID.randomUUID();
+		final UUID id = UUID.randomUUID();
 	}
 
 	interface SampleRepository extends CrudRepository<MultipleEvents, Long> {

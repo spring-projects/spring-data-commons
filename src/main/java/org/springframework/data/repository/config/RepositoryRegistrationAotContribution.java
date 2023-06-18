@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,14 +42,15 @@ import org.springframework.core.DecoratingProxy;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.aot.AotContext;
-import org.springframework.data.util.TypeContributor;
-import org.springframework.data.util.TypeUtils;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.util.QTypeContributor;
+import org.springframework.data.util.TypeContributor;
+import org.springframework.data.util.TypeUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -263,10 +264,12 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		contribution.getRuntimeHints().reflection()
 				.registerType(repositoryInformation.getRepositoryInterface(),
 						hint -> hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS))
-				.registerType(repositoryInformation.getRepositoryBaseClass(),
-						hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
+				.registerType(repositoryInformation.getRepositoryBaseClass(), hint -> hint
+						.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
 
 		TypeContributor.contribute(repositoryInformation.getDomainType(), contribution);
+		QTypeContributor.contributeEntityPath(repositoryInformation.getDomainType(), contribution,
+				repositoryContext.getClassLoader());
 
 		// Repository Fragments
 		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {

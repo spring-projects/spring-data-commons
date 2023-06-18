@@ -30,7 +30,7 @@ The version name follows `${calver}` for GA releases and service releases and th
 * `M1`, `M2`, and so on: Milestones
 * `RC1`, `RC2`, and so on: Release candidates
 
-You can find a working example of using the BOMs in our https://github.com/spring-projects/spring-data-examples/tree/master/bom[Spring Data examples repository]. With that in place, you can declare the Spring Data modules you would like to use without a version in the `<dependencies />` block, as follows:
+You can find a working example of using the BOMs in our https://github.com/spring-projects/spring-data-examples/tree/main/bom[Spring Data examples repository]. With that in place, you can declare the Spring Data modules you would like to use without a version in the `<dependencies />` block, as follows:
 
 .Declaring a dependency to a Spring Data module
 ====
@@ -48,8 +48,12 @@ You can find a working example of using the BOMs in our https://github.com/sprin
 [[dependencies.spring-boot]]
 == Dependency Management with Spring Boot
 
-Spring Boot selects a recent version of Spring Data modules for you. If you still want to upgrade to a newer version, set
-the `spring-data-releasetrain.version` property to the <<dependencies.train-version,train version and iteration>> you would like to use.
+Spring Boot selects a recent version of the Spring Data modules for you. If you still want to upgrade to a newer version,
+set the `spring-data-bom.version` property to the <<dependencies.train-version,train version and iteration>>
+you would like to use.
+
+See Spring Boot's https://docs.spring.io/spring-boot/docs/current/reference/html/dependency-versions.html#appendix.dependency-versions.properties[documentation]
+(search for "Spring Data Bom") for more details.
 
 [[dependencies.spring-framework]]
 == Spring Framework

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 the original author or authors.
+ * Copyright 2020-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.springframework.data.auditing;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import lombok.Value;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -68,14 +67,14 @@ class ReactiveAuditingHandlerUnitTests {
 
 		handler.markCreated(immutable).as(StepVerifier::create).consumeNextWith(actual -> {
 
-			assertThat(actual.getCreatedDate()).isNotNull();
-			assertThat(actual.getModifiedDate()).isNotNull();
+			assertThat(actual.createdDate()).isNotNull();
+			assertThat(actual.modifiedDate()).isNotNull();
 
-			assertThat(actual.getCreatedBy()).isNull();
-			assertThat(actual.getModifiedBy()).isNull();
+			assertThat(actual.createdBy()).isNull();
+			assertThat(actual.modifiedBy()).isNull();
 		}).verifyComplete();
 
-		assertThat(immutable.getCreatedDate()).isNull();
+		assertThat(immutable.createdDate()).isNull();
 	}
 
 	@Test // DATACMNS-1231
@@ -96,12 +95,8 @@ class ReactiveAuditingHandlerUnitTests {
 		verify(auditorAware).getCurrentAuditor();
 	}
 
-	@Value
-	static class Immutable {
+	record Immutable(@CreatedDate Instant createdDate, @CreatedBy String createdBy,
+			@LastModifiedDate Instant modifiedDate, @LastModifiedBy String modifiedBy) {
 
-		@CreatedDate Instant createdDate;
-		@CreatedBy String createdBy;
-		@LastModifiedDate Instant modifiedDate;
-		@LastModifiedBy String modifiedBy;
 	}
 }

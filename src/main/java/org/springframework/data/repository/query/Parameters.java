@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2022 the original author or authors.
+ * Copyright 2008-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
@@ -41,7 +43,7 @@ import org.springframework.util.Assert;
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Streamable<T> {
 
-	public static final List<Class<?>> TYPES = Arrays.asList(Pageable.class, Sort.class);
+	public static final List<Class<?>> TYPES = Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class);
 
 	private static final String PARAM_ON_SPECIAL = format("You must not use @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
@@ -51,6 +53,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
+	private final int scrollPositionIndex;
 	private final int pageableIndex;
 	private final int sortIndex;
 	private final List<T> parameters;
@@ -62,16 +65,35 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * Creates a new instance of {@link Parameters}.
 	 *
 	 * @param method must not be {@literal null}.
+	 * @deprecated since 3.1, use {@link #Parameters(Method, Function)} instead.
 	 */
+	@SuppressWarnings("null")
+	@Deprecated(since = "3.1", forRemoval = true)
 	public Parameters(Method method) {
+		this(method, null);
+	}
+
+	/**
+	 * Creates a new {@link Parameters} instance for the given {@link Method} and {@link Function} to create a
+	 * {@link Parameter} instance from a {@link MethodParameter}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param parameterFactory must not be {@literal null}.
+	 * @since 3.0.2
+	 */
+	protected Parameters(Method method, Function<MethodParameter, T> parameterFactory) {
 
 		Assert.notNull(method, "Method must not be null");
+
+		// Factory nullability not enforced yet to support falling back to the deprecated
+		// createParameter(MethodParameter). Add assertion when the deprecation is removed.
 
 		int parameterCount = method.getParameterCount();
 
 		this.parameters = new ArrayList<>(parameterCount);
 		this.dynamicProjectionIndex = -1;
 
+		int scrollPositionIndex = -1;
 		int pageableIndex = -1;
 		int sortIndex = -1;
 
@@ -80,7 +102,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			MethodParameter methodParameter = new MethodParameter(method, i);
 			methodParameter.initParameterNameDiscovery(PARAMETER_NAME_DISCOVERER);
 
-			T parameter = createParameter(methodParameter);
+			T parameter = parameterFactory == null //
+					? createParameter(methodParameter) //
+					: parameterFactory.apply(methodParameter);
 
 			if (parameter.isSpecialParameter() && parameter.isNamedParameter()) {
 				throw new IllegalArgumentException(PARAM_ON_SPECIAL);
@@ -88,6 +112,10 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 			if (parameter.isDynamicProjectionParameter()) {
 				this.dynamicProjectionIndex = parameter.getIndex();
+			}
+
+			if (ScrollPosition.class.isAssignableFrom(parameter.getType())) {
+				scrollPositionIndex = i;
 			}
 
 			if (Pageable.class.isAssignableFrom(parameter.getType())) {
@@ -101,6 +129,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			parameters.add(parameter);
 		}
 
+		this.scrollPositionIndex = scrollPositionIndex;
 		this.pageableIndex = pageableIndex;
 		this.sortIndex = sortIndex;
 		this.bindable = Lazy.of(this::getBindable);
@@ -117,6 +146,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		this.parameters = new ArrayList<>(originals.size());
 
+		int scrollPositionIndexTemp = -1;
 		int pageableIndexTemp = -1;
 		int sortIndexTemp = -1;
 		int dynamicProjectionTemp = -1;
@@ -126,11 +156,13 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			T original = originals.get(i);
 			this.parameters.add(original);
 
+			scrollPositionIndexTemp = original.isScrollPosition() ? i : -1;
 			pageableIndexTemp = original.isPageable() ? i : -1;
 			sortIndexTemp = original.isSort() ? i : -1;
 			dynamicProjectionTemp = original.isDynamicProjectionParameter() ? i : -1;
 		}
 
+		this.scrollPositionIndex = scrollPositionIndexTemp;
 		this.pageableIndex = pageableIndexTemp;
 		this.sortIndex = sortIndexTemp;
 		this.dynamicProjectionIndex = dynamicProjectionTemp;
@@ -156,8 +188,34 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 *
 	 * @param parameter will never be {@literal null}.
 	 * @return
+	 * @deprecated since 3.1, in your extension, call {@link #Parameters(Method, Function)} instead.
 	 */
-	protected abstract T createParameter(MethodParameter parameter);
+	@SuppressWarnings("unchecked")
+	@Deprecated(since = "3.1", forRemoval = true)
+	protected T createParameter(MethodParameter parameter) {
+		return (T) new Parameter(parameter);
+	}
+
+	/**
+	 * Returns whether the method the {@link Parameters} was created for contains a {@link ScrollPosition} argument.
+	 *
+	 * @return
+	 * @since 3.1
+	 */
+	public boolean hasScrollPositionParameter() {
+		return scrollPositionIndex != -1;
+	}
+
+	/**
+	 * Returns the index of the {@link ScrollPosition} {@link Method} parameter if available. Will return {@literal -1} if
+	 * there is no {@link ScrollPosition} argument in the {@link Method}'s parameter list.
+	 *
+	 * @return the scrollPositionIndex
+	 * @since 3.1
+	 */
+	public int getScrollPositionIndex() {
+		return scrollPositionIndex;
+	}
 
 	/**
 	 * Returns whether the method the {@link Parameters} was created for contains a {@link Pageable} argument.
@@ -262,7 +320,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * @return
 	 */
 	public boolean hasSpecialParameter() {
-		return hasSortParameter() || hasPageableParameter();
+		return hasScrollPositionParameter() || hasSortParameter() || hasPageableParameter();
 	}
 
 	/**

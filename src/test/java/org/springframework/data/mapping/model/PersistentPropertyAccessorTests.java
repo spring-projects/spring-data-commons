@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Data;
-import lombok.Value;
-import lombok.With;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +25,6 @@ import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -199,8 +194,7 @@ public class PersistentPropertyAccessorTests {
 				.loadClass("org.springframework.data.mapping.model.PersistentPropertyAccessorTests$ClassLoaderTest");
 
 		var factory = new ClassGeneratingPropertyAccessorFactory();
-		var entity = MAPPING_CONTEXT
-				.getRequiredPersistentEntity(entityType);
+		var entity = MAPPING_CONTEXT.getRequiredPersistentEntity(entityType);
 
 		assertThat(factory.isSupported(entity)).isFalse();
 	}
@@ -209,18 +203,41 @@ public class PersistentPropertyAccessorTests {
 		return MAPPING_CONTEXT.getRequiredPersistentEntity(bean.getClass()).getRequiredPersistentProperty(propertyName);
 	}
 
-	@Data
 	static class DataClass {
 		String id;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
 	}
 
 	static class ClassLoaderTest {}
 
-	@Value
+	private static final class ValueClass {
+		private final String id;
+		private final String immutable;
 
-	private static class ValueClass {
-		@With String id;
-		String immutable;
+		public ValueClass(String id, String immutable) {
+			this.id = id;
+			this.immutable = immutable;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public String getImmutable() {
+			return this.immutable;
+		}
+
+		public ValueClass withId(String id) {
+			return this.id == id ? this : new ValueClass(id, this.immutable);
+		}
 	}
 
 	static class UnsettableVersion {

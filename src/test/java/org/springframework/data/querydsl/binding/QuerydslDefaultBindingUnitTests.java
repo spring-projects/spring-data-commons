@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 the original author or authors.
+ * Copyright 2015-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,15 @@ import java.util.Collections;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.querydsl.QUser;
 
 /**
+ * Unit tests for {@link QuerydslDefaultBinding}.
+ *
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Colin Gao
+ * @author Mark Paluch
  */
 class QuerydslDefaultBindingUnitTests {
 
@@ -64,6 +66,14 @@ class QuerydslDefaultBindingUnitTests {
 		assertThat(predicate).hasValue(QUser.user.nickNames.contains("dragon reborn"));
 	}
 
+	@Test // GH-2834
+	void shouldUnwrapNestedCollectionsWithContainingWhenPropertyIsCollectionLike() {
+
+		var predicate = binding.bind(QUser.user.nickNames, Collections.singleton(Collections.singleton("dragon reborn")));
+
+		assertThat(predicate).hasValue(QUser.user.nickNames.contains("dragon reborn"));
+	}
+
 	@Test // DATACMNS-669
 	void shouldCreatePredicateWithInWhenPropertyIsAnObjectAndValueIsACollection() {
 
@@ -73,7 +83,7 @@ class QuerydslDefaultBindingUnitTests {
 	}
 
 	@Test
-	void testname() {
+	void shouldNotBindEmptyParameterCollection() {
 		assertThat(binding.bind(QUser.user.lastname, Collections.emptySet())).isNotPresent();
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2022 the original author or authors.
+ * Copyright 2008-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
@@ -31,7 +32,9 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Window;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
@@ -86,6 +89,48 @@ class QueryMethodUnitTests {
 		var queryMethod = new QueryMethod(method, metadata, factory);
 		assertThat(queryMethod.isPageQuery()).isTrue();
 		assertThat(queryMethod.isCollectionQuery()).isFalse();
+	}
+
+	@Test // GH-2151
+	void supportsImperativecursorQueries() throws Exception {
+		var method = SampleRepository.class.getMethod("cursorWindow", ScrollPosition.class);
+		var queryMethod = new QueryMethod(method, metadata, factory);
+
+		assertThat(queryMethod.isPageQuery()).isFalse();
+		assertThat(queryMethod.isScrollQuery()).isTrue();
+		assertThat(queryMethod.isCollectionQuery()).isFalse();
+	}
+
+	@Test // GH-2151
+	void supportsReactiveCursorQueries() throws Exception {
+		var method = SampleRepository.class.getMethod("reactiveCursorWindow", ScrollPosition.class);
+		var queryMethod = new QueryMethod(method, metadata, factory);
+		assertThat(queryMethod.isPageQuery()).isFalse();
+
+		assertThat(queryMethod.isScrollQuery()).isTrue();
+		assertThat(queryMethod.isCollectionQuery()).isFalse();
+	}
+
+	@Test // GH-2151
+	void rejectsInvalidReactiveCursorQueries() throws Exception {
+		var method = SampleRepository.class.getMethod("invalidReactiveCursorWindow", ScrollPosition.class);
+
+		assertThatIllegalStateException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
+	}
+
+	@Test // GH-2151
+	void rejectsCursorWindowMethodWithoutPageable() throws Exception {
+		var method = SampleRepository.class.getMethod("cursorWindowWithoutScrollPosition");
+
+		assertThatIllegalArgumentException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
+	}
+
+	@Test // GH-2151
+	void rejectsCursorWindowMethodWithInvalidReturnType() throws Exception {
+
+		var method = SampleRepository.class.getMethod("cursorWindowMethodWithInvalidReturnType", ScrollPosition.class);
+
+		assertThatIllegalStateException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
 	}
 
 	@Test // DATACMNS-171
@@ -305,6 +350,16 @@ class QueryMethodUnitTests {
 		Mono<Slice<User>> reactiveSlice();
 
 		ImmutableList<User> returnsEclipseCollection();
+
+		Window<User> cursorWindow(ScrollPosition cursorRequest);
+
+		Mono<Window<User>> reactiveCursorWindow(ScrollPosition cursorRequest);
+
+		Flux<Window<User>> invalidReactiveCursorWindow(ScrollPosition cursorRequest);
+
+		Page<User> cursorWindowMethodWithInvalidReturnType(ScrollPosition cursorRequest);
+
+		Window<User> cursorWindowWithoutScrollPosition();
 	}
 
 	class User {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,9 @@ package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Value;
-import lombok.With;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.context.SampleMappingContext;
-import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 
 /**
@@ -58,182 +41,72 @@ public class PersistentPropertyAccessorUnitTests {
 		this.path = context.getPersistentPropertyPath(path, Order.class);
 	}
 
-	@Test // DATACMNS-1275
-	public void looksUpValueForPropertyPath() {
-
-		var order = new Order(new Customer("Dave"));
-
-		setUp(order, "customer.firstname");
-
-		assertThat(accessor.getProperty(path)).isEqualTo("Dave");
-	}
-
-	@Test // DATACMNS-1275
-	public void setsPropertyOnNestedPath() {
-
-		var customer = new Customer("Dave");
-		var order = new Order(customer);
-
-		setUp(order, "customer.firstname");
-
-		accessor.setProperty(path, "Oliver August");
-
-		assertThat(customer.firstname).isEqualTo("Oliver August");
-	}
-
-	@Test // DATACMNS-1275
-	public void rejectsEmptyPathToSetValues() {
-
-		setUp(new Order(null), "");
-
-		assertThatIllegalArgumentException() //
-				.isThrownBy(() -> accessor.setProperty(path, "Oliver August"));
-	}
-
-	@Test // DATACMNS-1275
-	public void rejectsIntermediateNullValuesForRead() {
-
-		setUp(new Order(null), "customer.firstname");
-
-		assertThatExceptionOfType(MappingException.class)//
-				.isThrownBy(() -> accessor.getProperty(path));
-	}
-
-	@Test // DATACMNS-1275
-	public void rejectsIntermediateNullValuesForWrite() {
-
-		setUp(new Order(null), "customer.firstname");
-
-		assertThatExceptionOfType(MappingException.class)//
-				.isThrownBy(() -> accessor.setProperty(path, "Oliver August"));
-	}
-
-	@Test // DATACMNS-1322
-	public void correctlyReplacesObjectInstancesWhenSettingPropertyPathOnImmutableObjects() {
-
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(Outer.class);
-		var path = context.getPersistentPropertyPath("immutable.value",
-				entity.getType());
-
-		var immutable = new NestedImmutable("foo");
-		var outer = new Outer(immutable);
-
-		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(outer);
-		accessor.setProperty(path, "bar");
-
-		var result = accessor.getBean();
-
-		assertThat(result).isInstanceOfSatisfying(Outer.class, it -> {
-			assertThat(it.immutable).isNotSameAs(immutable);
-			assertThat(it).isNotSameAs(outer);
-		});
-	}
-
 	@Test // DATACMNS-1377
 	public void shouldConvertToPropertyPathLeafType() {
 
 		var order = new Order(new Customer("1"));
 
 		var accessor = context.getPersistentEntity(Order.class).getPropertyAccessor(order);
-		var convertingAccessor = new ConvertingPropertyAccessor<Order>(accessor,
-				new DefaultConversionService());
+		var convertingAccessor = new ConvertingPropertyAccessor<Order>(accessor, new DefaultConversionService());
 
-		var path = context.getPersistentPropertyPath("customer.firstname",
-				Order.class);
+		var path = context.getPersistentPropertyPath("customer.firstname", Order.class);
 
 		convertingAccessor.setProperty(path, 2);
 
-		assertThat(convertingAccessor.getBean().getCustomer().getFirstname()).isEqualTo("2");
+		assertThat(convertingAccessor.getBean().customer().getFirstname()).isEqualTo("2");
 	}
 
-	@Test // DATACMNS-1555
-	public void usesTraversalContextToTraverseCollections() {
-
-		var withContext = WithContext.builder() //
-				.collection(Collections.singleton("value")) //
-				.list(Collections.singletonList("value")) //
-				.set(Collections.singleton("value")) //
-				.map(Collections.singletonMap("key", "value")) //
-				.string(" value ") //
-				.build();
-
-		var collectionHelper = Spec.of("collection",
-				(context, property) -> context.registerCollectionHandler(property, it -> it.iterator().next()));
-		var listHelper = Spec.of("list", (context, property) -> context.registerListHandler(property, it -> it.get(0)));
-		var setHelper = Spec.of("set",
-				(context, property) -> context.registerSetHandler(property, it -> it.iterator().next()));
-		var mapHelper = Spec.of("map", (context, property) -> context.registerMapHandler(property, it -> it.get("key")));
-		var stringHelper = Spec.of("string",
-				(context, property) -> context.registerHandler(property, String.class, it -> it.trim()));
-
-		Stream.of(collectionHelper, listHelper, setHelper, mapHelper, stringHelper).forEach(it -> {
-
-			PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(WithContext.class);
-			PersistentProperty<?> property = entity.getRequiredPersistentProperty(it.name);
-			var accessor = entity.getPropertyAccessor(withContext);
-
-			var traversalContext = it.registrar.apply(new TraversalContext(), property);
-
-			var propertyPath = context.getPersistentPropertyPath(it.name,
-					WithContext.class);
-
-			assertThat(accessor.getProperty(propertyPath, traversalContext)).isEqualTo("value");
-		});
+	record Order(Customer customer) {
 	}
 
-	@Test // DATACMNS-1555
-	public void traversalContextRejectsInvalidPropertyHandler() {
-
-		PersistentEntity<Object, SamplePersistentProperty> entity = context.getPersistentEntity(WithContext.class);
-		PersistentProperty<?> property = entity.getRequiredPersistentProperty("collection");
-
-		var traversal = new TraversalContext();
-
-		assertThatIllegalArgumentException() //
-				.isThrownBy(() -> traversal.registerHandler(property, Map.class, Function.identity()));
-	}
-
-	@Value
-	static class Order {
-		Customer customer;
-	}
-
-	@Data
-	@AllArgsConstructor
 	static class Customer {
 		String firstname;
+
+		public Customer(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
 	}
 
 	// DATACMNS-1322
 
-	@Value
-	@With(AccessLevel.PACKAGE)
-	static class NestedImmutable {
-		String value;
+	static final class NestedImmutable {
+		private final String value;
+
+		public NestedImmutable(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return this.value;
+		}
+
+		NestedImmutable withValue(String value) {
+			return this.value == value ? this : new NestedImmutable(value);
+		}
 	}
 
-	@Value
-	@With(AccessLevel.PACKAGE)
-	static class Outer {
-		NestedImmutable immutable;
-	}
+	static final class Outer {
+		private final NestedImmutable immutable;
 
-	// DATACMNS-1555
+		public Outer(NestedImmutable immutable) {
+			this.immutable = immutable;
+		}
 
-	@Builder
-	static class WithContext {
+		public NestedImmutable getImmutable() {
+			return this.immutable;
+		}
 
-		Collection<String> collection;
-		List<String> list;
-		Set<String> set;
-		Map<String, String> map;
-		String string;
-	}
-
-	@Value(staticConstructor = "of")
-	static class Spec {
-
-		String name;
-		BiFunction<TraversalContext, PersistentProperty<?>, TraversalContext> registrar;
+		Outer withImmutable(NestedImmutable immutable) {
+			return this.immutable == immutable ? this : new Outer(immutable);
+		}
 	}
 }

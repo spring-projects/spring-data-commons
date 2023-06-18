@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2022 the original author or authors.
+ * Copyright 2008-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.springframework.data.repository.query;
 
 import static java.lang.String.*;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,6 +26,7 @@ import java.util.Optional;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
@@ -58,7 +58,7 @@ public class Parameter {
 
 	static {
 
-		List<Class<?>> types = new ArrayList<>(Arrays.asList(Pageable.class, Sort.class));
+		List<Class<?>> types = new ArrayList<>(Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class));
 
 		// consider Kotlin Coroutines Continuation a special parameter. That parameter is synthetic and should not get
 		// bound to any query.
@@ -72,14 +72,28 @@ public class Parameter {
 	 * Creates a new {@link Parameter} for the given {@link MethodParameter}.
 	 *
 	 * @param parameter must not be {@literal null}.
+	 * @deprecated since 3.1, use {@link #Parameter(MethodParameter, TypeInformation)} instead.
 	 */
+	@Deprecated(since = "3.1", forRemoval = true)
 	protected Parameter(MethodParameter parameter) {
+		this(parameter, TypeInformation.of(Parameter.class));
+	}
+
+	/**
+	 * Creates a new {@link Parameter} for the given {@link MethodParameter} and domain {@link TypeInformation}.
+	 *
+	 * @param parameter must not be {@literal null}.
+	 * @param domainType must not be {@literal null}.
+	 * @since 3.0.2
+	 */
+	protected Parameter(MethodParameter parameter, TypeInformation<?> domainType) {
 
 		Assert.notNull(parameter, "MethodParameter must not be null");
+		Assert.notNull(domainType, "TypeInformation must not be null!");
 
 		this.parameter = parameter;
 		this.parameterType = potentiallyUnwrapParameterType(parameter);
-		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter);
+		this.isDynamicProjectionParameter = isDynamicProjectionParameter(parameter, domainType);
 		this.name = isSpecialParameterType(parameter.getParameterType()) ? Lazy.of(Optional.empty()) : Lazy.of(() -> {
 			Param annotation = parameter.getParameterAnnotation(Param.class);
 			return Optional.ofNullable(annotation == null ? parameter.getParameterName() : annotation.value());
@@ -180,6 +194,16 @@ public class Parameter {
 	}
 
 	/**
+	 * Returns whether the {@link Parameter} is a {@link ScrollPosition} parameter.
+	 *
+	 * @return
+	 * @since 3.1
+	 */
+	boolean isScrollPosition() {
+		return ScrollPosition.class.isAssignableFrom(getType());
+	}
+
+	/**
 	 * Returns whether the {@link Parameter} is a {@link Pageable} parameter.
 	 *
 	 * @return
@@ -206,23 +230,32 @@ public class Parameter {
 	 * </code>
 	 *
 	 * @param parameter must not be {@literal null}.
+	 * @param domainType the reference domain type, must not be {@literal null}.
 	 * @return
 	 */
-	private static boolean isDynamicProjectionParameter(MethodParameter parameter) {
+	private static boolean isDynamicProjectionParameter(MethodParameter parameter, TypeInformation<?> domainType) {
 
 		if (!parameter.getParameterType().equals(Class.class)) {
 			return false;
 		}
 
-		Method method = parameter.getMethod();
+		if (parameter.hasParameterAnnotation(Param.class)) {
+			return false;
+		}
+
+		var method = parameter.getMethod();
 
 		if (method == null) {
 			throw new IllegalArgumentException("Parameter is not associated with any method");
 		}
 
-		TypeInformation<?> returnType = TypeInformation.fromReturnTypeOf(method);
-		TypeInformation<?> unwrapped = QueryExecutionConverters.unwrapWrapperTypes(returnType);
-		TypeInformation<?> reactiveUnwrapped = ReactiveWrapperConverters.unwrapWrapperTypes(unwrapped);
+		var returnType = TypeInformation.fromReturnTypeOf(method);
+		var unwrapped = QueryExecutionConverters.unwrapWrapperTypes(returnType);
+		var reactiveUnwrapped = ReactiveWrapperConverters.unwrapWrapperTypes(unwrapped);
+
+		if (domainType.isAssignableFrom(reactiveUnwrapped)) {
+			return false;
+		}
 
 		return reactiveUnwrapped.equals(TypeInformation.fromMethodParameter(parameter).getComponentType());
 	}

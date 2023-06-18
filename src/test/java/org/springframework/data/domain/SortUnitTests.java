@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2022 the original author or authors.
+ * Copyright 2008-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.NullHandling.*;
-
-import lombok.Getter;
 
 import java.util.Collection;
 
@@ -201,14 +199,39 @@ class SortUnitTests {
 				.containsExactly(Order.by("center"), Order.by("radius"));
 	}
 
-	@Getter
+	@Test // GH-2805
+	void reversesSortCorrectly() {
+		assertThat(Sort.by(Order.asc("center"), Order.desc("radius")).reverse()) //
+				.containsExactly(Order.desc("center"), Order.asc("radius"));
+	}
+
+	@Test // GH-2805
+	void reversesTypedSortCorrectly() {
+
+		Sort reverse = Sort.sort(Circle.class).by(Circle::getCenter).reverse();
+		assertThat(reverse) //
+				.containsExactly(Order.desc("center"));
+
+	}
+
 	static class Sample {
 		Nested nested;
 		Collection<Nested> nesteds;
+
+		public Nested getNested() {
+			return nested;
+		}
+
+		public Collection<Nested> getNesteds() {
+			return nesteds;
+		}
 	}
 
-	@Getter
 	static class Nested {
 		String firstname;
+
+		public String getFirstname() {
+			return firstname;
+		}
 	}
 }

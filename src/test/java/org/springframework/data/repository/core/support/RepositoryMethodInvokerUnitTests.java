@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 the original author or authors.
+ * Copyright 2020-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,6 @@ import kotlin.coroutines.CoroutineContext;
 import kotlinx.coroutines.flow.Flow;
 import kotlinx.coroutines.flow.FlowKt;
 import kotlinx.coroutines.reactor.ReactorContext;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -405,11 +402,19 @@ class RepositoryMethodInvokerUnitTests {
 		Mono<TestDummy> findByName(String name);
 	}
 
-	@ToString
-	@AllArgsConstructor
-	@NoArgsConstructor
 	static class TestDummy {
 		String id;
 		String name;
+
+		public TestDummy(String id, String name) {
+			this.id = id;
+			this.name = name;
+		}
+
+		public TestDummy() {}
+
+		public String toString() {
+			return "RepositoryMethodInvokerUnitTests.TestDummy(id=" + this.id + ", name=" + this.name + ")";
+		}
 	}
 }

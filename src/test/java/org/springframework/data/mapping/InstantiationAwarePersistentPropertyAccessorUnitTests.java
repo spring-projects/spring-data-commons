@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 the original author or authors.
+ * Copyright 2019-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,7 @@ package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Value;
-
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.EntityInstantiators;
@@ -91,11 +88,8 @@ class InstantiationAwarePersistentPropertyAccessorUnitTests {
 		assertThat(wrapper.getBean()).isEqualTo(new WithSingleArgConstructor(41L, "Oliver August"));
 	}
 
-	@Value
-	static class Sample {
+	record Sample(String firstname, String lastname, int age) {
 
-		String firstname, lastname;
-		int age;
 	}
 
 	public record WithSingleArgConstructor(Long id, String name) {

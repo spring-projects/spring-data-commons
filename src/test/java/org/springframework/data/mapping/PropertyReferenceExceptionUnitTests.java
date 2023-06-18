@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 the original author or authors.
+ * Copyright 2016-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author John Blum
  */
 public class PropertyReferenceExceptionUnitTests {
 
@@ -65,6 +66,33 @@ public class PropertyReferenceExceptionUnitTests {
 		assertThat(matches).containsExactly("name");
 	}
 
+	@Test // GH-2750
+	public void formatsMessageWithTypeInfoAndHintsCorrectly() {
+
+		var exception = new PropertyReferenceException("nme", TYPE_INFO, NO_PATHS);
+
+		String expectedMessage = String.format("%s; %s", PropertyReferenceException.ERROR_TEMPLATE,
+				PropertyReferenceException.HINTS_TEMPLATE);
+
+		assertThat(exception)
+				.hasMessage(expectedMessage,"nme", TYPE_INFO.getType().getSimpleName(), "'name'");
+	}
+
+	@Test // GH-2750
+	public void formatsMessageWithTypeInfoHintsAndPathCorrectly() {
+
+		var ctype = TypeInformation.of(C.class);
+
+		var exception = new PropertyReferenceException("nme", TYPE_INFO,
+				Collections.singletonList(PropertyPath.from("b.a", ctype)));
+
+		String expectedMessage = String.format("%s; %s; %s", PropertyReferenceException.ERROR_TEMPLATE,
+				PropertyReferenceException.HINTS_TEMPLATE, "Traversed path: C.b.a");
+
+		assertThat(exception)
+				.hasMessage(expectedMessage,"nme", TYPE_INFO.getType().getSimpleName(), "'name'");
+	}
+
 	static class Sample {
 
 		String name;
@@ -76,5 +104,17 @@ public class PropertyReferenceExceptionUnitTests {
 		public void setName(String name) {
 			this.name = name;
 		}
+	}
+
+	static class A {
+
+	}
+
+	static class B {
+		A a;
+	}
+
+	static class C {
+		B b;
 	}
 }

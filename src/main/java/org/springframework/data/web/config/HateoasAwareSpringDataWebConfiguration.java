@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,13 @@ import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
+import org.springframework.data.web.SlicedResourcesAssembler;
+import org.springframework.data.web.SlicedResourcesAssemblerArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 /**
- * JavaConfig class to register {@link PagedResourcesAssembler} and {@link PagedResourcesAssemblerArgumentResolver}.
+ * JavaConfig class to register {@link PagedResourcesAssembler}, {@link PagedResourcesAssemblerArgumentResolver},
+ * {@link SlicedResourcesAssembler} and {@link SlicedResourcesAssemblerArgumentResolver}.
  *
  * @since 1.6
  * @author Oliver Gierke
@@ -40,13 +43,15 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  * @author Vedran Pavic
  * @author Mark Paluch
  * @author Greg Turnquist
+ * @author Michael Schout
  */
 @Configuration(proxyBeanMethods = false)
 public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfiguration {
 
 	private final Lazy<HateoasSortHandlerMethodArgumentResolver> sortResolver;
 	private final Lazy<HateoasPageableHandlerMethodArgumentResolver> pageableResolver;
-	private final Lazy<PagedResourcesAssemblerArgumentResolver> argumentResolver;
+	private final Lazy<PagedResourcesAssemblerArgumentResolver> pagedResourcesArgumentResolver;
+	private final Lazy<SlicedResourcesAssemblerArgumentResolver> slicedResourcesArgumentResolver;
 
 	/**
 	 * @param context must not be {@literal null}.
@@ -61,8 +66,10 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 				.of(() -> context.getBean("sortResolver", HateoasSortHandlerMethodArgumentResolver.class));
 		this.pageableResolver = Lazy
 				.of(() -> context.getBean("pageableResolver", HateoasPageableHandlerMethodArgumentResolver.class));
-		this.argumentResolver = Lazy.of(() -> context.getBean("pagedResourcesAssemblerArgumentResolver",
+		this.pagedResourcesArgumentResolver = Lazy.of(() -> context.getBean("pagedResourcesAssemblerArgumentResolver",
 				PagedResourcesAssemblerArgumentResolver.class));
+		this.slicedResourcesArgumentResolver = Lazy.of(() -> context.getBean("slicedResourcesAssemblerArgumentResolver",
+				SlicedResourcesAssemblerArgumentResolver.class));
 	}
 
 	@Override
@@ -94,11 +101,22 @@ public class HateoasAwareSpringDataWebConfiguration extends SpringDataWebConfigu
 		return new PagedResourcesAssemblerArgumentResolver(pageableResolver.get());
 	}
 
+	@Bean
+	public SlicedResourcesAssembler<?> slicedResourcesAssembler() {
+		return new SlicedResourcesAssembler<>(pageableResolver.get(), null);
+	}
+
+	@Bean
+	public SlicedResourcesAssemblerArgumentResolver slicedResourcesAssemblerArgumentResolver() {
+		return new SlicedResourcesAssemblerArgumentResolver(pageableResolver.get());
+	}
+
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 
 		super.addArgumentResolvers(argumentResolvers);
 
-		argumentResolvers.add(argumentResolver.get());
+		argumentResolvers.add(pagedResourcesArgumentResolver.get());
+		argumentResolvers.add(slicedResourcesArgumentResolver.get());
 	}
 }

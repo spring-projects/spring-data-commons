@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 the original author or authors.
+ * Copyright 2021-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.mapping;
 
 import java.lang.annotation.Annotation;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.MergedAnnotations;
@@ -23,7 +24,6 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -144,38 +144,25 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;
 		}
 
-		if (!(o instanceof Parameter<?, ?> parameter)) {
+		if (!(o instanceof Parameter<?, ?> that)) {
 			return false;
 		}
 
-		if (!ObjectUtils.nullSafeEquals(name, parameter.name)) {
-			return false;
-		}
-
-		if (!ObjectUtils.nullSafeEquals(type, parameter.type)) {
-			return false;
-		}
-
-		if (!ObjectUtils.nullSafeEquals(key, parameter.key)) {
-			return false;
-		}
-
-		return ObjectUtils.nullSafeEquals(entity, parameter.entity);
+		return Objects.equals(this.name, that.name)
+				&& Objects.equals(this.type, that.type)
+				&& Objects.equals(this.key, that.key)
+				&& Objects.equals(this.entity, that.entity);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(name);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(type);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(key);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(entity);
-		return result;
+		return Objects.hash(name, type, key, entity);
 	}
 
 	/**

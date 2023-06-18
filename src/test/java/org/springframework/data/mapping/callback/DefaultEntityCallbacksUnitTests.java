@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 the original author or authors.
+ * Copyright 2019-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ class DefaultEntityCallbacksUnitTests {
 		var afterCallback = callbacks.callback(BeforeSaveCallback.class, personDocument);
 
 		assertThat(afterCallback).isSameAs(personDocument);
+		assertThat(afterCallback.getSsn()).isEqualTo(6);
 	}
 
 	@Test // DATACMNS-1467
@@ -73,7 +74,8 @@ class DefaultEntityCallbacksUnitTests {
 		var callbacks = new DefaultEntityCallbacks();
 		callbacks.addEntityCallback(new GenericPersonCallback());
 
-		Person afterCallback = callbacks.callback(GenericPersonCallback.class, new PersonDocument(null, "Walter", null));
+		Person afterCallback = callbacks.callback(GenericPersonCallback.class,
+				new PersonDocument(null, "Walter", null));
 
 		assertThat(afterCallback.getSsn()).isEqualTo(6);
 	}
@@ -143,7 +145,8 @@ class DefaultEntityCallbacksUnitTests {
 
 		var initial = new PersonDocument(null, "Walter", null);
 
-		assertThatIllegalArgumentException().isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, initial));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> callbacks.callback(CapturingEntityCallback.class, initial));
 
 		assertThat(first.capturedValue()).isSameAs(initial);
 		assertThat(second.capturedValue()).isNotNull().isNotSameAs(initial);
@@ -166,9 +169,7 @@ class DefaultEntityCallbacksUnitTests {
 	@Test // DATACMNS-1467
 	void detectsMultipleCallbacksWithinOneClass() {
 
-		var ctx = new AnnotationConfigApplicationContext(
-				MultipleCallbacksInOneClassConfig.class);
-
+		var ctx = new AnnotationConfigApplicationContext(MultipleCallbacksInOneClassConfig.class);
 		var callbacks = new DefaultEntityCallbacks(ctx);
 
 		var personDocument = new PersonDocument(null, "Walter", null);
@@ -179,6 +180,17 @@ class DefaultEntityCallbacksUnitTests {
 		callbacks.callback(BeforeConvertCallback.class, personDocument);
 
 		assertThat(ctx.getBean("callbacks", MultipleCallbacks.class).invocations).containsExactly("save", "convert");
+	}
+
+	@Test // GH-2822
+	void genericCallbackDiscoveredForObjectDeclaration() {
+
+		var ctx = new AnnotationConfigApplicationContext(SomeConfiguration.class);
+		var callbacks = new DefaultEntityCallbacks(ctx);
+
+		callbacks.callback(BeforeSaveCallback.class, new PersonDocument(null, "Walter", null));
+
+		assertThat(ctx.getBean(SomeConfiguration.class).invoked).isTrue();
 	}
 
 	@Configuration
@@ -309,4 +321,18 @@ class DefaultEntityCallbacksUnitTests {
 
 	}
 
+	// GH-2822
+	@Configuration
+	static class SomeConfiguration {
+
+		boolean invoked = false;
+
+		@Bean
+		BeforeSaveCallback<Object> someGenericCallback() {
+			return it -> {
+				this.invoked = true;
+				return it;
+			};
+		}
+	}
 }

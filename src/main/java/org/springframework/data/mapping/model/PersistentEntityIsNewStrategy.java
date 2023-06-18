@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * An {@link IsNewStrategy} to use a {@link PersistentEntity}'s version property followed by it
+ * An {@link IsNewStrategy} to use a {@link PersistentEntity}'s version property followed by identifier.
  *
  * @author Oliver Gierke
  * @author Mark Paluch

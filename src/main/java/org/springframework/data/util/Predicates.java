@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 the original author or authors.
+ * Copyright 2021-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -30,22 +31,24 @@ import org.springframework.util.Assert;
  */
 public interface Predicates {
 
-	public static final Predicate<Member> IS_ENUM_MEMBER = member -> member.getDeclaringClass().isEnum();
-	public static final Predicate<Member> IS_HIBERNATE_MEMBER = member -> member.getName().startsWith("$$_hibernate"); // this
+	Predicate<Member> IS_ENUM_MEMBER = member -> member.getDeclaringClass().isEnum();
+	Predicate<Member> IS_HIBERNATE_MEMBER = member -> member.getName().startsWith("$$_hibernate"); // this
 	// should
 	// go
 	// into
 	// JPA
-	public static final Predicate<Member> IS_OBJECT_MEMBER = member -> Object.class.equals(member.getDeclaringClass());
-	public static final Predicate<Member> IS_JAVA = member -> member.getDeclaringClass().getPackageName().startsWith("java.");
-	public static final Predicate<Member> IS_NATIVE = member -> Modifier.isNative(member.getModifiers());
-	public static final Predicate<Member> IS_PRIVATE = member -> Modifier.isPrivate(member.getModifiers());
-	public static final Predicate<Member> IS_PROTECTED = member -> Modifier.isProtected(member.getModifiers());
-	public static final Predicate<Member> IS_PUBLIC = member -> Modifier.isPublic(member.getModifiers());
-	public static final Predicate<Member> IS_SYNTHETIC = Member::isSynthetic;
-	public static final Predicate<Member> IS_STATIC = member -> Modifier.isStatic(member.getModifiers());
+	Predicate<Member> IS_OBJECT_MEMBER = member -> Object.class.equals(member.getDeclaringClass());
+	Predicate<Member> IS_JAVA = member -> member.getDeclaringClass().getPackageName().startsWith("java.");
+	Predicate<Member> IS_NATIVE = member -> Modifier.isNative(member.getModifiers());
+	Predicate<Member> IS_PRIVATE = member -> Modifier.isPrivate(member.getModifiers());
+	Predicate<Member> IS_PROTECTED = member -> Modifier.isProtected(member.getModifiers());
+	Predicate<Member> IS_PUBLIC = member -> Modifier.isPublic(member.getModifiers());
+	Predicate<Member> IS_SYNTHETIC = Member::isSynthetic;
 
-	public static final Predicate<Method> IS_BRIDGE_METHOD = Method::isBridge;
+	Predicate<Class<?>> IS_KOTLIN = KotlinReflectionUtils::isSupportedKotlinClass;
+	Predicate<Member> IS_STATIC = member -> Modifier.isStatic(member.getModifiers());
+
+	Predicate<Method> IS_BRIDGE_METHOD = Method::isBridge;
 
 	/**
 	 * A {@link Predicate} that yields always {@code true}.
@@ -74,5 +77,30 @@ public interface Predicates {
 
 		Assert.notNull(predicate, "Predicate must not be null");
 		return predicate.negate();
+	}
+
+	/**
+	 * Whether to consider a {@link Constructor}. We generally exclude synthetic constructors for non-Kotlin classes.
+	 *
+	 * @param candidate
+	 * @return
+	 */
+	static boolean isIncluded(Constructor<?> candidate) {
+		return !isExcluded(candidate);
+	}
+
+	/**
+	 * Whether to not consider a {@link Constructor}. We generally exclude synthetic constructors for non-Kotlin classes.
+	 *
+	 * @param candidate
+	 * @return
+	 */
+	static boolean isExcluded(Constructor<?> candidate) {
+
+		if (IS_KOTLIN.test(candidate.getDeclaringClass())) {
+			return false;
+		}
+
+		return IS_SYNTHETIC.test(candidate);
 	}
 }

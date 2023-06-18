@@ -235,48 +235,16 @@ The following example shows a projecting DTO:
 
 .A projecting DTO
 ====
-[source, java]
-----
-class NamesOnly {
-
-  private final String firstname, lastname;
-
-  NamesOnly(String firstname, String lastname) {
-
-    this.firstname = firstname;
-    this.lastname = lastname;
-  }
-
-  String getFirstname() {
-    return this.firstname;
-  }
-
-  String getLastname() {
-    return this.lastname;
-  }
-
-  // equals(…) and hashCode() implementations
-}
-----
-====
-
-[TIP]
-.Avoid boilerplate code for projection DTOs
-====
-You can dramatically simplify the code for a DTO by using https://projectlombok.org[Project Lombok], which provides an `@Value` annotation (not to be confused with Spring's `@Value` annotation shown in the earlier interface examples).
-If you use Project Lombok's `@Value` annotation, the sample DTO shown earlier would become the following:
-
 [source,java]
 ----
-@Value
-class NamesOnly {
-	String firstname, lastname;
+record NamesOnly(String firstname, String lastname) {
 }
 ----
-
-Fields are `private final` by default, and the class exposes a constructor that takes all fields and automatically gets `equals(…)` and `hashCode()` methods implemented.
-
 ====
+
+Java Records are ideal to define DTO types since they adhere to value semantics:
+All fields are `private final` and ``equals(…)``/``hashCode()``/``toString()`` methods are created automatically.
+Alternatively, you can use any class that defines the properties you want to project.
 
 ifdef::repository-projections-trailing-dto-fragment[]
 include::{repository-projections-trailing-dto-fragment}[]

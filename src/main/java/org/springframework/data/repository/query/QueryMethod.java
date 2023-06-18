@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2022 the original author or authors.
+ * Copyright 2008-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,14 @@ package org.springframework.data.repository.query;
 import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Window;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.projection.ProjectionFactory;
@@ -31,6 +34,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -69,18 +73,16 @@ public class QueryMethod {
 		Assert.notNull(metadata, "Repository metadata must not be null");
 		Assert.notNull(factory, "ProjectionFactory must not be null");
 
-		Parameters.TYPES.stream()
-				.filter(type -> getNumberOfOccurrences(method, type) > 1)
-				.findFirst().ifPresent(type -> {
-					throw new IllegalStateException(
-							String.format("Method must have only one argument of type %s; Offending method: %s",
-									type.getSimpleName(), method));
+		Parameters.TYPES.stream() //
+				.filter(type -> getNumberOfOccurrences(method, type) > 1).findFirst().ifPresent(type -> {
+					throw new IllegalStateException(String.format(
+							"Method must have only one argument of type %s; Offending method: %s", type.getSimpleName(), method));
 				});
 
 		this.method = method;
 		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(metadata, method);
-		this.parameters = createParameters(method);
 		this.metadata = metadata;
+		this.parameters = createParameters(method);
 
 		if (hasParameterOfType(method, Pageable.class)) {
 
@@ -94,6 +96,10 @@ public class QueryMethod {
 			}
 		}
 
+		if (hasParameterOfType(method, ScrollPosition.class)) {
+			assertReturnTypeAssignable(method, Collections.singleton(Window.class));
+		}
+
 		Assert.notNull(this.parameters,
 				() -> String.format("Parameters extracted from method '%s' must not be null", method.getName()));
 
@@ -102,12 +108,18 @@ public class QueryMethod {
 					String.format("Paging query needs to have a Pageable parameter; Offending method: %s", method));
 		}
 
+		if (isScrollQuery()) {
+
+			Assert.isTrue(this.parameters.hasScrollPositionParameter() || this.parameters.hasPageableParameter(),
+					String.format("Scroll query needs to have a ScrollPosition parameter; Offending method: %s", method));
+		}
+
 		this.domainClass = Lazy.of(() -> {
 
 			Class<?> repositoryDomainClass = metadata.getDomainType();
 			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
 
-			return (repositoryDomainClass == null) || repositoryDomainClass.isAssignableFrom(methodDomainClass)
+			return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)
 					? methodDomainClass
 					: repositoryDomainClass;
 		});
@@ -119,11 +131,25 @@ public class QueryMethod {
 	/**
 	 * Creates a {@link Parameters} instance.
 	 *
-	 * @param method
+	 * @param method must not be {@literal null}.
 	 * @return must not return {@literal null}.
+	 * @deprecated since 3.1, call or override {@link #createParameters(Method, TypeInformation)} instead.
 	 */
+	@Deprecated(since = "3.1", forRemoval = true)
 	protected Parameters<?, ?> createParameters(Method method) {
-		return new DefaultParameters(method);
+		return createParameters(method, metadata.getDomainTypeInformation());
+	}
+
+	/**
+	 * Creates a {@link Parameters} instance.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param domainType must not be {@literal null}.
+	 * @return must not return {@literal null}.
+	 * @since 3.0.2
+	 */
+	protected Parameters<?, ?> createParameters(Method method, TypeInformation<?> domainType) {
+		return new DefaultParameters(method, domainType);
 	}
 
 	/**
@@ -174,6 +200,16 @@ public class QueryMethod {
 	 */
 	public boolean isCollectionQuery() {
 		return isCollectionQuery.get();
+	}
+
+	/**
+	 * Returns whether the query method will return a {@link Window}.
+	 *
+	 * @return
+	 * @since 3.1
+	 */
+	public boolean isScrollQuery() {
+		return org.springframework.util.ClassUtils.isAssignable(Window.class, unwrappedReturnType);
 	}
 
 	/**
@@ -256,7 +292,7 @@ public class QueryMethod {
 
 	private boolean calculateIsCollectionQuery() {
 
-		if (isPageQuery() || isSliceQuery()) {
+		if (isPageQuery() || isSliceQuery() || isScrollQuery()) {
 			return false;
 		}
 
@@ -302,6 +338,10 @@ public class QueryMethod {
 		// TODO: to resolve generics fully we'd need the actual repository interface here
 		TypeInformation<?> returnType = TypeInformation.fromReturnTypeOf(method);
 
+		returnType = ReactiveWrappers.isSingleValueType(returnType.getType()) //
+				? returnType.getRequiredComponentType() //
+				: returnType;
+
 		returnType = QueryExecutionConverters.isSingleValue(returnType.getType()) //
 				? returnType.getRequiredComponentType() //
 				: returnType;
@@ -312,6 +352,6 @@ public class QueryMethod {
 			}
 		}
 
-		throw new IllegalStateException("Method has to have one of the following return types" + types);
+		throw new IllegalStateException("Method has to have one of the following return types " + types);
 	}
 }

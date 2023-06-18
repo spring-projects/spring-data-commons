@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import jakarta.inject.Inject;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyPath;
@@ -106,8 +105,8 @@ class PersistentPropertyPathFactoryUnitTests {
 	}
 
 	@Test // DATACMNS-1275
-	void createsEmptyPropertyPathCorrectly() {
-		assertThat(factory.from(Wrapper.class, "")).isEmpty();
+	void rejectsEmptyPropertyPathCreation() {
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.from(Wrapper.class, ""));
 	}
 
 	@Test // DATACMNS-1275

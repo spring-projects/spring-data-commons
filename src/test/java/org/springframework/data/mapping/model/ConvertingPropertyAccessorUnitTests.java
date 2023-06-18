@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022 the original author or authors.
+ * Copyright 2014-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,6 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Value;
 
 import java.util.stream.Stream;
 
@@ -187,15 +183,34 @@ public class ConvertingPropertyAccessorUnitTests {
 		Long id;
 	}
 
-	@Value
-	static class Order {
-		Customer customer;
+	static final class Order {
+		private final Customer customer;
+
+		public Order(Customer customer) {
+			this.customer = customer;
+		}
+
+		public Customer getCustomer() {
+			return this.customer;
+		}
+
 	}
 
-	@Data
-	@AllArgsConstructor
 	static class Customer {
 		String firstname;
+
+		public Customer(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
 	}
 
 	static class IntegerWrapper {
@@ -203,11 +218,19 @@ public class ConvertingPropertyAccessorUnitTests {
 		Integer boxed;
 	}
 
-	@Value(staticConstructor = "$")
-	static class PrimitiveFixture implements Named<PrimitiveFixture> {
+	static final class PrimitiveFixture implements Named<PrimitiveFixture> {
 
-		PersistentProperty<?> property;
-		Class<?> type;
+		private final PersistentProperty<?> property;
+		private final Class<?> type;
+
+		private PrimitiveFixture(PersistentProperty<?> property, Class<?> type) {
+			this.property = property;
+			this.type = type;
+		}
+
+		public static PrimitiveFixture $(PersistentProperty<?> property, Class<?> type) {
+			return new PrimitiveFixture(property, type);
+		}
 
 		@Override
 		public String getName() {
@@ -218,5 +241,14 @@ public class ConvertingPropertyAccessorUnitTests {
 		public PrimitiveFixture getPayload() {
 			return this;
 		}
+
+		public PersistentProperty<?> getProperty() {
+			return this.property;
+		}
+
+		public Class<?> getType() {
+			return this.type;
+		}
+
 	}
 }

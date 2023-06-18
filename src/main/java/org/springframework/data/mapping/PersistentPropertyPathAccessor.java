@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,27 +37,23 @@ public interface PersistentPropertyPathAccessor<T> extends PersistentPropertyAcc
 	 * @return
 	 */
 	@Nullable
-	@SuppressWarnings("deprecation")
-	default Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path) {
-		return PersistentPropertyAccessor.super.getProperty(path);
-	}
+	Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path);
 
 	/**
 	 * Return the value pointed to by the given {@link PersistentPropertyPath}. If the given path is empty, the wrapped
-	 * bean is returned. On each path segment value lookup, the resulting value is post-processed by handlers registered
-	 * on the given {@link TraversalContext} context. This can be used to unwrap container types that are encountered
-	 * during the traversal.
+	 * bean is returned. On each path segment value lookup, the resulting value is post-processed depending on the given
+	 * {@link GetOptions}.
 	 *
 	 * @param path must not be {@literal null}.
-	 * @param context must not be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return
 	 */
 	@Nullable
-	Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, GetOptions context);
+	Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, GetOptions options);
 
 	/**
-	 * Sets the given value for the {@link PersistentProperty} pointed to by the given {@link PersistentPropertyPath}. The
-	 * lookup of intermediate values must not yield {@literal null}.
+	 * Sets the given value for the {@link PersistentProperty} pointed to by the given {@link PersistentPropertyPath}.
+	 * The lookup of intermediate values must not yield {@literal null}.
 	 *
 	 * @param path must not be {@literal null} or empty.
 	 * @param value can be {@literal null}.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,11 +82,11 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 
 		repositoryContext.getResolvedTypes().stream()
 				.filter(it -> !RepositoryRegistrationAotContribution.isJavaOrPrimitiveType(it))
-				.forEach(it -> RepositoryRegistrationAotProcessor.contributeType(it, generationContext));
+				.forEach(it -> contributeType(it, generationContext));
 
 		repositoryContext.getResolvedAnnotations().stream()
 				.filter(RepositoryRegistrationAotProcessor::isSpringDataManagedAnnotation).map(MergedAnnotation::getType)
-				.forEach(it -> RepositoryRegistrationAotProcessor.contributeType(it, generationContext));
+				.forEach(it -> contributeType(it, generationContext));
 	}
 
 	private boolean isRepositoryBean(RegisteredBean bean) {
@@ -167,7 +167,7 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 				|| annotation.getMetaTypes().stream().anyMatch(RepositoryRegistrationAotProcessor::isInSpringDataNamespace));
 	}
 
-	private static void contributeType(Class<?> type, GenerationContext generationContext) {
+	protected void contributeType(Class<?> type, GenerationContext generationContext) {
 		TypeContributor.contribute(type, it -> true, generationContext);
 	}
 

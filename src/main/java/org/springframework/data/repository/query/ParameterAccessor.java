@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 the original author or authors.
+ * Copyright 2011-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.repository.query;
 import java.util.Iterator;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 
@@ -28,6 +29,14 @@ import org.springframework.lang.Nullable;
  * @author Mark Paluch
  */
 public interface ParameterAccessor extends Iterable<Object> {
+
+	/**
+	 * Returns the {@link ScrollPosition} of the parameters, if available. Returns {@code null} otherwise.
+	 *
+	 * @return
+	 */
+	@Nullable
+	ScrollPosition getScrollPosition();
 
 	/**
 	 * Returns the {@link Pageable} of the parameters, if available. Returns {@link Pageable#unpaged()} otherwise.

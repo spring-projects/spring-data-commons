@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 the original author or authors.
+ * Copyright 2016-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.util.ObjectUtils;
 public class Lazy<T> implements Supplier<T> {
 
 	private static final Lazy<?> EMPTY = new Lazy<>(() -> null, null, true);
+	static final String UNRESOLVED = "[Unresolved]";
 
 	private final Supplier<? extends T> supplier;
 
@@ -214,6 +215,21 @@ public class Lazy<T> implements Supplier<T> {
 	}
 
 	/**
+	 * Returns the {@link String} representation of the already resolved value or the one provided through the given
+	 * {@link Supplier} if the value has not been resolved yet.
+	 *
+	 * @param fallback must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.0.1
+	 */
+	public String toString(Supplier<String> fallback) {
+
+		Assert.notNull(fallback, "Fallback must not be null!");
+
+		return resolved ? toString() : fallback.get();
+	}
+
+	/**
 	 * Returns the value of the lazy evaluation.
 	 *
 	 * @return
@@ -230,6 +246,16 @@ public class Lazy<T> implements Supplier<T> {
 		this.resolved = true;
 
 		return value;
+	}
+
+	@Override
+	public String toString() {
+
+		if (!resolved) {
+			return UNRESOLVED;
+		}
+
+		return value == null ? "null" : value.toString();
 	}
 
 	@Override

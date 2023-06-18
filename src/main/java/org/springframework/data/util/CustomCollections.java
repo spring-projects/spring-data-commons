@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -223,7 +223,7 @@ public class CustomCollections {
 		/**
 		 * Returns whether the current's raw type is one of the given ones.
 		 *
-		 * @param candidates must not be {@literal null}.
+		 * @param type must not be {@literal null}.
 		 * @return
 		 */
 		public boolean has(Class<?> type) {

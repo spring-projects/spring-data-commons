@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 the original author or authors.
+ * Copyright 2015-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.domain.Window;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
@@ -143,6 +144,10 @@ public class ResultProcessor {
 
 		ChainingConverter converter = ChainingConverter.of(type.getReturnedType(), preparingConverter).and(this.converter);
 
+		if (source instanceof Window<?> && method.isScrollQuery()) {
+			return (T) ((Window<?>) source).map(converter::convert);
+		}
+
 		if (source instanceof Slice && (method.isPageQuery() || method.isSliceQuery())) {
 			return (T) ((Slice<?>) source).map(converter::convert);
 		}
@@ -163,7 +168,7 @@ public class ResultProcessor {
 		}
 
 		if (ReactiveWrapperConverters.supports(source.getClass())) {
-			return (T) ReactiveWrapperConverters.map(source, converter::convert);
+			return (T) ReactiveWrapperConverters.map(source, it -> processResult(it, preparingConverter));
 		}
 
 		return (T) converter.convert(source);

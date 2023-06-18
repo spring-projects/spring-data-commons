@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 the original author or authors.
+ * Copyright 2017-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,11 @@ package org.springframework.data.repository.core.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import lombok.Data;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Example;
 import org.springframework.data.repository.Repository;
@@ -177,16 +174,30 @@ class RepositoryCompositionUnitTests {
 		Person findOne(Person entity);
 	}
 
-	@Data
 	static class Person {
 
 		@Id String id;
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
 	}
 
-	@Data
 	static class Contact {
 
 		@Id String id;
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
 	}
 
 	interface OrderedRepository extends Repository<Person, String>, FooMixin, BarMixin {

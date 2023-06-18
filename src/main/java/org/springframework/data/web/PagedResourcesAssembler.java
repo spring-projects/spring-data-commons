@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
 	private boolean forceFirstAndLastRels = false;
+	private @Nullable MethodParameter parameter;
 
 	/**
 	 * Creates a new {@link PagedResourcesAssembler} using the given {@link PageableHandlerMethodArgumentResolver} and
@@ -69,9 +70,15 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	 */
 	public PagedResourcesAssembler(@Nullable HateoasPageableHandlerMethodArgumentResolver resolver,
 			@Nullable UriComponents baseUri) {
+		this(resolver, Optional.ofNullable(baseUri), null);
+	}
+
+	private PagedResourcesAssembler(@Nullable HateoasPageableHandlerMethodArgumentResolver resolver,
+			Optional<UriComponents> baseUri, @Nullable MethodParameter parameter) {
 
 		this.pageableResolver = resolver == null ? new HateoasPageableHandlerMethodArgumentResolver() : resolver;
-		this.baseUri = Optional.ofNullable(baseUri);
+		this.baseUri = baseUri;
+		this.parameter = parameter;
 	}
 
 	/**
@@ -85,6 +92,17 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	 */
 	public void setForceFirstAndLastRels(boolean forceFirstAndLastRels) {
 		this.forceFirstAndLastRels = forceFirstAndLastRels;
+	}
+
+	/**
+	 * Creates a new {@link PagedResourcesAssembler} with the given reference {@link MethodParameter}.
+	 *
+	 * @param parameter can be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.1
+	 */
+	public PagedResourcesAssembler<T> withParameter(@Nullable MethodParameter parameter) {
+		return new PagedResourcesAssembler<>(pageableResolver, baseUri, parameter);
 	}
 
 	@Override
@@ -267,7 +285,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	private Link createLink(UriTemplate base, Pageable pageable, LinkRelation relation) {
 
 		UriComponentsBuilder builder = fromUri(base.expand());
-		pageableResolver.enhance(builder, getMethodParameter(), pageable);
+		pageableResolver.enhance(builder, parameter, pageable);
 
 		return Link.of(UriTemplate.of(builder.build().toString()), relation);
 	}
@@ -278,8 +296,10 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	 *
 	 * @return
 	 * @since 1.7
+	 * @deprecated since 3.1, rather set up the instance with {@link #withParameter(MethodParameter)}.
 	 */
 	@Nullable
+	@Deprecated(since = "3.1", forRemoval = true)
 	protected MethodParameter getMethodParameter() {
 		return null;
 	}

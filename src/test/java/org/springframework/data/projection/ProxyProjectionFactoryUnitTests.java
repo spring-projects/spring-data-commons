@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022 the original author or authors.
+ * Copyright 2014-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-
+import org.springframework.aop.Advisor;
 import org.springframework.aop.TargetClassAware;
 import org.springframework.aop.framework.Advised;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -137,8 +137,20 @@ class ProxyProjectionFactoryUnitTests {
 		assertThat(result).hasSize(6);
 	}
 
-	@Test // DATACMNS-655
+	@Test // DATACMNS-655, GH-2831
 	void invokesDefaultMethodOnProxy() {
+
+		var excerpt = factory.createProjection(CustomerExcerptWithDefaultMethod.class);
+
+		var advised = (Advised) ReflectionTestUtils.getField(Proxy.getInvocationHandler(excerpt), "advised");
+		var advisors = advised.getAdvisors();
+
+		assertThat(advisors.length).isGreaterThan(0);
+		assertThat(advisors[0].getAdvice()).isInstanceOf(DefaultMethodInvokingMethodInterceptor.class);
+	}
+
+	@Test // GH-2831
+	void doesNotRegisterDefaultMethodInvokingMethodInterceptor() {
 
 		var excerpt = factory.createProjection(CustomerExcerpt.class);
 
@@ -146,7 +158,10 @@ class ProxyProjectionFactoryUnitTests {
 		var advisors = advised.getAdvisors();
 
 		assertThat(advisors.length).isGreaterThan(0);
-		assertThat(advisors[0].getAdvice()).isInstanceOf(DefaultMethodInvokingMethodInterceptor.class);
+
+		for (Advisor advisor : advisors) {
+			assertThat(advisor).isNotInstanceOf(DefaultMethodInvokingMethodInterceptor.class);
+		}
 	}
 
 	@Test // DATACMNS-648
@@ -271,8 +286,7 @@ class ProxyProjectionFactoryUnitTests {
 		customer.address.city = "New York";
 		customer.address.zipCode = "ZIP";
 
-		var excerpt = factory.createProjection(CustomerWithOptionalHavingProjection.class,
-				customer);
+		var excerpt = factory.createProjection(CustomerWithOptionalHavingProjection.class, customer);
 
 		assertThat(excerpt.getFirstname()).isEqualTo("Dave");
 		assertThat(excerpt.getAddress()).hasValueSatisfying(addressExcerpt -> {
@@ -341,6 +355,13 @@ class ProxyProjectionFactoryUnitTests {
 		byte[] getPicture();
 
 		Map<String, Object> getData();
+	}
+
+	interface CustomerExcerptWithDefaultMethod extends CustomerExcerpt {
+
+		default String getFirstnameAndId() {
+			return getFirstname() + " " + getId();
+		}
 	}
 
 	interface AddressExcerpt {

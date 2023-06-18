@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2022 the original author or authors.
+ * Copyright 2008-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.UnitTestUtils.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.domain.Sort.Direction;
 
 /**
@@ -66,5 +65,13 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> PageRequest.of(0, 10, null));
+	}
+
+	@Test // GH-2151
+	void createsOffsetScrollPosition() {
+
+		PageRequest request = PageRequest.of(1, 10);
+
+		assertThat(request.toScrollPosition()).isEqualTo(ScrollPosition.offset(10));
 	}
 }

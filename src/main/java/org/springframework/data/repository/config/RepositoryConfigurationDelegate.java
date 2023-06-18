@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022 the original author or authors.
+ * Copyright 2014-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -34,6 +33,7 @@ import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.AutowireCandidateResolver;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
@@ -221,19 +221,16 @@ public class RepositoryConfigurationDelegate {
 	private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
 			Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
 
+		BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
+				.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+
+		repositoryAotProcessor.addPropertyValue("configMap", metadataByRepositoryBeanName);
+
 		// module-specific repository aot processor
-		String repositoryAotProcessorBeanName = String.format("data-%s.repository-aot-processor" /* might be duplicate */,
+		String repositoryAotProcessorBeanName = String.format("data-%s.repository-aot-processor",
 				extension.getModuleIdentifier());
-
-		if (!registry.isBeanNameInUse(repositoryAotProcessorBeanName)) {
-
-			BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
-					.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-
-			repositoryAotProcessor.addPropertyValue("configMap", metadataByRepositoryBeanName);
-
-			registry.registerBeanDefinition(repositoryAotProcessorBeanName, repositoryAotProcessor.getBeanDefinition());
-		}
+		registry.registerBeanDefinition(BeanDefinitionReaderUtils.uniqueBeanName(repositoryAotProcessorBeanName, registry),
+				repositoryAotProcessor.getBeanDefinition());
 	}
 
 	/**

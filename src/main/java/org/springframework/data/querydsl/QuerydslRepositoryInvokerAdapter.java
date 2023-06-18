@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 the original author or authors.
+ * Copyright 2015-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,13 +44,14 @@ public class QuerydslRepositoryInvokerAdapter implements RepositoryInvoker {
 	 *
 	 * @param delegate must not be {@literal null}.
 	 * @param executor must not be {@literal null}.
-	 * @param predicate can be {@literal null}.
+	 * @param predicate must not be {@literal null}.
 	 */
 	public QuerydslRepositoryInvokerAdapter(RepositoryInvoker delegate, QuerydslPredicateExecutor<Object> executor,
 			Predicate predicate) {
 
 		Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null");
 		Assert.notNull(executor, "QuerydslPredicateExecutor must not be null");
+		Assert.notNull(predicate, "Predicate must not be null");
 
 		this.delegate = delegate;
 		this.executor = executor;

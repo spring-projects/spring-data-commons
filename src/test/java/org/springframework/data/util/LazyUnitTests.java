@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 the original author or authors.
+ * Copyright 2016-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,5 +115,36 @@ class LazyUnitTests {
 		assertThat(empty.orElse(reference)).isEqualTo(reference);
 		assertThat(empty.or(reference).get()).isEqualTo(reference);
 		assertThat(empty.or(() -> reference).get()).isEqualTo(reference);
+	}
+
+	@Test // #2751
+	void doesNotResolveValueForToString() {
+
+		Supplier<Object> mock = mock(Supplier.class);
+
+		var lazy = Lazy.of(mock);
+
+		assertThat(lazy.toString()).isEqualTo(Lazy.UNRESOLVED);
+		verify(mock, never()).get();
+
+		lazy.getNullable();
+
+		assertThat(lazy.toString()).isNotEqualTo(Lazy.UNRESOLVED);
+	}
+
+	@Test // #2751
+	void usesFallbackForToStringOnUnresolvedInstance() {
+
+		Supplier<Object> mock = mock(Supplier.class);
+
+		var lazy = Lazy.of(mock);
+		var fallback = "fallback";
+
+		assertThat(lazy.toString(() -> fallback)).isEqualTo(fallback);
+		verify(mock, never()).get();
+
+		lazy.getNullable();
+
+		assertThat(lazy.toString(() -> fallback)).isNotEqualTo(fallback);
 	}
 }

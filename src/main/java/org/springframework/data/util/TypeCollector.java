@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 the original author or authors.
+ * Copyright 2019-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -40,24 +31,32 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
+ * Collector to inspect domain types and discover the type graph that is relevant for Spring Data operations.
+ * <p>
+ * Type inspection walks through all class members (fields, methods, constructors) and introspects those for additional
+ * types that are part of the domain model.
+ *
  * @author Christoph Strobl
  * @author Sebastien Deleuze
  * @author John Blum
+ * @since 3.0
  */
 public class TypeCollector {
 
 	private static final Log logger = LogFactory.getLog(TypeCollector.class);
 
-	static final Set<String> EXCLUDED_DOMAINS = new HashSet<>(Arrays.asList("java", "sun.", "jdk.", "reactor.",
-			"kotlinx.", "kotlin.", "org.springframework.core.", "org.springframework.data.mapping.",
-			"org.springframework.data.repository.", "org.springframework.boot.", "org.springframework.core."));
+	static final Set<String> EXCLUDED_DOMAINS = new HashSet<>(
+			Arrays.asList("java", "sun.", "jdk.", "reactor.", "kotlinx.", "kotlin.", "org.springframework.core.",
+					"org.springframework.data.mapping.", "org.springframework.data.repository.", "org.springframework.boot.",
+					"org.springframework.context.", "org.springframework.beans."));
 
 	private final Predicate<Class<?>> excludedDomainsFilter = type -> {
-		String packageName = type.getPackageName();
+		String packageName = type.getPackageName() + ".";
 		return EXCLUDED_DOMAINS.stream().noneMatch(packageName::startsWith);
 	};
 
-	private Predicate<Class<?>> typeFilter = excludedDomainsFilter;
+	private Predicate<Class<?>> typeFilter = excludedDomainsFilter
+			.and(it -> !it.isLocalClass() && !it.isAnonymousClass());
 
 	private final Predicate<Method> methodFilter = createMethodFilter();
 
@@ -120,21 +119,30 @@ public class TypeCollector {
 	}
 
 	Set<Type> visitConstructorsOfType(ResolvableType type) {
+
 		if (!typeFilter.test(type.toClass())) {
 			return Collections.emptySet();
 		}
+
 		Set<Type> discoveredTypes = new LinkedHashSet<>();
+
 		for (Constructor<?> constructor : type.toClass().getDeclaredConstructors()) {
+
+			if (Predicates.isExcluded(constructor)) {
+				continue;
+			}
 			for (Class<?> signatureType : TypeUtils.resolveTypesInSignature(type.toClass(), constructor)) {
 				if (typeFilter.test(signatureType)) {
 					discoveredTypes.add(signatureType);
 				}
 			}
 		}
+
 		return new HashSet<>(discoveredTypes);
 	}
 
 	Set<Type> visitMethodsOfType(ResolvableType type) {
+
 		if (!typeFilter.test(type.toClass())) {
 			return Collections.emptySet();
 		}
@@ -154,11 +162,14 @@ public class TypeCollector {
 		} catch (Exception cause) {
 			logger.warn(cause);
 		}
+
 		return new HashSet<>(discoveredTypes);
 	}
 
 	Set<Type> visitFieldsOfType(ResolvableType type) {
+
 		Set<Type> discoveredTypes = new LinkedHashSet<>();
+
 		ReflectionUtils.doWithLocalFields(type.toClass(), field -> {
 			if (!fieldFilter.test(field)) {
 				return;
@@ -169,6 +180,7 @@ public class TypeCollector {
 				}
 			}
 		});
+
 		return discoveredTypes;
 	}
 

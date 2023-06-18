@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022 the original author or authors.
+ * Copyright 2014-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Window;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.util.CustomCollections;
@@ -97,6 +98,7 @@ public abstract class QueryExecutionConverters {
 		ALLOWED_PAGEABLE_TYPES.add(Slice.class);
 		ALLOWED_PAGEABLE_TYPES.add(Page.class);
 		ALLOWED_PAGEABLE_TYPES.add(List.class);
+		ALLOWED_PAGEABLE_TYPES.add(Window.class);
 
 		WRAPPER_TYPES.add(NullableWrapperToCompletableFutureConverter.getWrapperType());
 

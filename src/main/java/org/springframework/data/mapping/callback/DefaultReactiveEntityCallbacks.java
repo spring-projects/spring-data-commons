@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 the original author or authors.
+ * Copyright 2019-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.function.BiFunction;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.reactivestreams.Publisher;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
@@ -37,6 +36,8 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Michael J. Simons
+ * @author Oliver Drotbohm
  */
 class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 
@@ -62,11 +63,13 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T> Mono<T> callback(Class<? extends EntityCallback> callbackType, T entity, Object... args) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Class<T> entityType = (Class<T>) (entity != null ? ClassUtils.getUserClass(entity.getClass())
+		Class<T> entityType = (Class<T>) (entity != null
+				? ClassUtils.getUserClass(entity.getClass())
 				: callbackDiscoverer.resolveDeclaredEntityType(callbackType).getRawClass());
 
 		Method callbackMethod = callbackMethodCache.computeIfAbsent(callbackType, it -> {
@@ -111,8 +114,8 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 				}
 
 				throw new IllegalArgumentException(
-						String.format("Callback invocation on %s returned null value for %s", callback.getClass(), entity));
-			} catch (ClassCastException ex) {
+						"Callback invocation on %s returned null value for %s".formatted(callback.getClass(), entity));
+			} catch (IllegalArgumentException | ClassCastException ex) {
 
 				String msg = ex.getMessage();
 				if (msg == null || EntityCallbackInvoker.matchesClassCastMessage(msg, entity.getClass())) {

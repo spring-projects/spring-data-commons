@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2022 the original author or authors.
+ * Copyright 2008-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.repository.query;
 import java.util.Iterator;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
@@ -89,6 +90,22 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 */
 	protected Object[] getValues() {
 		return this.values;
+	}
+
+	@Override
+	public ScrollPosition getScrollPosition() {
+
+		if (!parameters.hasScrollPositionParameter()) {
+
+			Pageable pageable = getPageable();
+			if (pageable.isPaged()) {
+				return pageable.toScrollPosition();
+			}
+
+			return null;
+		}
+
+		return (ScrollPosition) values[parameters.getScrollPositionIndex()];
 	}
 
 	@Override

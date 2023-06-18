@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 the original author or authors.
+ * Copyright 2015-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class InvalidPersistentPropertyPath extends MappingException {
 	public InvalidPersistentPropertyPath(String source, TypeInformation<?> type, String unresolvableSegment,
 			PersistentPropertyPath<? extends PersistentProperty<?>> resolvedPath) {
 
-		super(createMessage(resolvedPath.isEmpty() ? type : resolvedPath.getRequiredLeafProperty().getTypeInformation(),
+		super(createMessage(resolvedPath.isEmpty() ? type : resolvedPath.getLeafProperty().getTypeInformation(),
 				unresolvableSegment));
 
 		Assert.notNull(source, "Source property path must not be null");

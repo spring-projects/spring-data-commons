@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 the original author or authors.
+ * Copyright 2019-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.util.function.BiFunction;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -35,6 +35,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Oliver Drotbohm
  * @since 2.2
  */
 class DefaultEntityCallbacks implements EntityCallbacks {
@@ -57,7 +58,8 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 	 * @param beanFactory must not be {@literal null}.
 	 */
 	DefaultEntityCallbacks(BeanFactory beanFactory) {
-		this.callbackDiscoverer = new EntityCallbackDiscoverer(beanFactory);
+		this.callbackDiscoverer = new EntityCallbackDiscoverer(
+				beanFactory instanceof GenericApplicationContext ac ? ac.getBeanFactory() : beanFactory);
 	}
 
 	@Override
@@ -108,11 +110,12 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 				}
 
 				throw new IllegalArgumentException(
-						String.format("Callback invocation on %s returned null value for %s", callback.getClass(), entity));
+						"Callback invocation on %s returned null value for %s".formatted(callback.getClass(), entity));
 
 			} catch (IllegalArgumentException | ClassCastException ex) {
 
 				String msg = ex.getMessage();
+
 				if (msg == null || EntityCallbackInvoker.matchesClassCastMessage(msg, entity.getClass())) {
 
 					// Possibly a lambda-defined listener which we could not resolve the generic event type for

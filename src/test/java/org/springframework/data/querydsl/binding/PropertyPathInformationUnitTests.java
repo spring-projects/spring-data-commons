@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 the original author or authors.
+ * Copyright 2021-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.springframework.data.querydsl.binding;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.User;
 

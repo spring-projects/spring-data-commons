@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Value;
-import lombok.experimental.Wither;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +25,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.AccessOptions.SetOptions.SetNulls;
 import org.springframework.data.mapping.PersistentEntity;
@@ -122,25 +116,62 @@ class SimplePersistentPropertyPathAccessorUnitTests {
 		return accessor;
 	}
 
-	@Data
-	@AllArgsConstructor
 	static class Customer {
 		String firstname;
+
+		public Customer(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
 	}
 
-	@Value
-	private static class Customers {
-		@Wither List<Customer> customers;
-		@Wither Map<String, Customer> customerMap;
+	private static final class Customers {
+		private final List<Customer> customers;
+		private final Map<String, Customer> customerMap;
+
+		public Customers(List<Customer> customers, Map<String, Customer> customerMap) {
+			this.customers = customers;
+			this.customerMap = customerMap;
+		}
+
+		public List<Customer> getCustomers() {
+			return this.customers;
+		}
+
+		public Map<String, Customer> getCustomerMap() {
+			return this.customerMap;
+		}
+
+		public Customers withCustomers(List<Customer> customers) {
+			return this.customers == customers ? this : new Customers(customers, this.customerMap);
+		}
+
+		public Customers withCustomerMap(Map<String, Customer> customerMap) {
+			return this.customerMap == customerMap ? this : new Customers(this.customers, customerMap);
+		}
 	}
 
-	@AllArgsConstructor
 	static class CustomerWrapper {
 		Customer customer;
+
+		public CustomerWrapper(Customer customer) {
+			this.customer = customer;
+		}
 	}
 
-	@AllArgsConstructor
 	static class CustomerWrapperWrapper {
 		CustomerWrapper wrapper;
+
+		public CustomerWrapperWrapper(CustomerWrapper wrapper) {
+			this.wrapper = wrapper;
+		}
 	}
 }

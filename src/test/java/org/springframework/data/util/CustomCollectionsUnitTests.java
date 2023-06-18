@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
-
-import lombok.AllArgsConstructor;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -236,7 +234,6 @@ class CustomCollectionsUnitTests {
 				.reduce(source, (value, mapper) -> mapper.apply(value), (l, r) -> r);
 	}
 
-	@AllArgsConstructor
 	static class CustomCollectionTester {
 
 		private final Collection<Class<?>> expectedCollections, expectedMaps, collectionImplementations, mapImplementations;
@@ -247,6 +244,14 @@ class CustomCollectionsUnitTests {
 			this.expectedMaps = Collections.emptyList();
 			this.collectionImplementations = Collections.emptyList();
 			this.mapImplementations = Collections.emptyList();
+		}
+
+		public CustomCollectionTester(Collection<Class<?>> expectedCollections, Collection<Class<?>> expectedMaps,
+				Collection<Class<?>> collectionImplementations, Collection<Class<?>> mapImplementations) {
+			this.expectedCollections = expectedCollections;
+			this.expectedMaps = expectedMaps;
+			this.collectionImplementations = collectionImplementations;
+			this.mapImplementations = mapImplementations;
 		}
 
 		public CustomCollectionTester withCollections(Class<?>... types) {

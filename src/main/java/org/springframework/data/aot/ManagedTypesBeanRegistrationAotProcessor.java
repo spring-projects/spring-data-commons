@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.ManagedTypes;
+import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
 import org.springframework.lang.Nullable;
@@ -134,9 +135,11 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 		Set<String> annotationNamespaces = Collections.singleton(TypeContributor.DATA_NAMESPACE);
 
-		TypeContributor.contribute(type.toClass(), annotationNamespaces, generationContext);
+		Class<?> resolvedType = type.toClass();
+		TypeContributor.contribute(resolvedType, annotationNamespaces, generationContext);
+		QTypeContributor.contributeEntityPath(resolvedType, generationContext, resolvedType.getClassLoader());
 
-		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
+		TypeUtils.resolveUsedAnnotations(resolvedType).forEach(
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
 	}
 

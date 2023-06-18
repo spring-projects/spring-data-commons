@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 the original author or authors.
+ * Copyright 2012-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,14 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author John Blum
  */
 public class PropertyReferenceException extends RuntimeException {
 
 	private static final long serialVersionUID = -5254424051438976570L;
-	private static final String ERROR_TEMPLATE = "No property '%s' found for type '%s'";
-	private static final String HINTS_TEMPLATE = " Did you mean '%s'";
+
+	static final String ERROR_TEMPLATE = "No property '%s' found for type '%s'";
+	static final String HINTS_TEMPLATE = "Did you mean %s";
 
 	private final String propertyName;
 	private final TypeInformation<?> type;
@@ -101,13 +103,13 @@ public class PropertyReferenceException extends RuntimeException {
 		Collection<String> potentialMatches = getPropertyMatches();
 		if (!potentialMatches.isEmpty()) {
 			String matches = StringUtils.collectionToDelimitedString(potentialMatches, ",", "'", "'");
+			builder.append("; ");
 			builder.append(String.format(HINTS_TEMPLATE, matches));
 		}
 
 		if (!alreadyResolvedPath.isEmpty()) {
-			builder.append(" Traversed path: ");
+			builder.append("; Traversed path: ");
 			builder.append(alreadyResolvedPath.get(0).toString());
-			builder.append(".");
 		}
 
 		return builder.toString();

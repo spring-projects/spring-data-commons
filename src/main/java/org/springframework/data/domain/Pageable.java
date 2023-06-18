@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2022 the original author or authors.
+ * Copyright 2008-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,4 +161,19 @@ public interface Pageable {
 		return isUnpaged() ? Optional.empty() : Optional.of(this);
 	}
 
+	/**
+	 * Returns an {@link OffsetScrollPosition} from this pageable if the page request {@link #isPaged() is paged}.
+	 *
+	 * @return
+	 * @throws IllegalStateException if the request is {@link #isUnpaged()}
+	 * @since 3.1
+	 */
+	default OffsetScrollPosition toScrollPosition() {
+
+		if (isUnpaged()) {
+			throw new IllegalStateException("Cannot create OffsetScrollPosition from an unpaged instance");
+		}
+
+		return ScrollPosition.offset(getOffset());
+	}
 }

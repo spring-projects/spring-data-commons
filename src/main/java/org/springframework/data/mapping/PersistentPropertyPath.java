@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 the original author or authors.
+ * Copyright 2011-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,8 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 	/**
 	 * Returns the dot based path notation using {@link PersistentProperty#getName()}.
 	 *
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
-	@Nullable
 	String toDotPath();
 
 	/**
@@ -40,18 +39,16 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 	 * {@link PersistentProperty}s to path segments.
 	 *
 	 * @param converter must not be {@literal null}.
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
-	@Nullable
 	String toDotPath(Converter<? super P, String> converter);
 
 	/**
 	 * Returns a {@link String} path with the given delimiter based on the {@link PersistentProperty#getName()}.
 	 *
-	 * @param delimiter must not be {@literal null}.
-	 * @return
+	 * @param delimiter must not be {@literal null} or empty.
+	 * @return will never be {@literal null}.
 	 */
-	@Nullable
 	String toPath(String delimiter);
 
 	/**
@@ -60,9 +57,8 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 	 *
 	 * @param delimiter must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
-	@Nullable
 	String toPath(String delimiter, Converter<? super P, String> converter);
 
 	/**
@@ -70,20 +66,21 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 	 * {@link PersistentProperty} for {@code bar}. For a simple {@code foo} it returns {@link PersistentProperty} for
 	 * {@code foo}.
 	 *
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
-	@Nullable
 	P getLeafProperty();
 
+	/**
+	 * Returns the last property in the {@link PersistentPropertyPath}. So for {@code foo.bar} it will return the
+	 * {@link PersistentProperty} for {@code bar}. For a simple {@code foo} it returns {@link PersistentProperty} for
+	 * {@code foo}.
+	 *
+	 * @return will never be {@literal null}.
+	 * @deprecated use {@link #getLeafProperty()} instead.
+	 */
+	@Deprecated(since = "3.1", forRemoval = true)
 	default P getRequiredLeafProperty() {
-
-		P property = getLeafProperty();
-
-		if (property == null) {
-			throw new IllegalStateException("No leaf property found");
-		}
-
-		return property;
+		return getLeafProperty();
 	}
 
 	/**
@@ -91,17 +88,26 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 	 * {@link PersistentProperty} for {@code foo}. For a simple {@code foo} it returns {@link PersistentProperty} for
 	 * {@code foo}.
 	 *
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
-	@Nullable
 	P getBaseProperty();
+
+	/**
+	 * Returns whether the current path is located at the root of the traversal. In other words, if the path only contains
+	 * a single property.
+	 *
+	 * @return whether the current path is located at the root of the traversal
+	 */
+	default boolean isRootPath() {
+		return getLength() == 1;
+	}
 
 	/**
 	 * Returns whether the given {@link PersistentPropertyPath} is a base path of the current one. This means that the
 	 * current {@link PersistentPropertyPath} is basically an extension of the given one.
 	 *
 	 * @param path must not be {@literal null}.
-	 * @return
+	 * @return whether the given {@link PersistentPropertyPath} is a base path of the current one.
 	 */
 	boolean isBasePathOf(PersistentPropertyPath<P> path);
 
@@ -111,7 +117,7 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 	 * the current one the current {@link PersistentPropertyPath} will be returned as is.
 	 *
 	 * @param base must not be {@literal null}.
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
 	PersistentPropertyPath<P> getExtensionForBaseOf(PersistentPropertyPath<P> base);
 
@@ -121,13 +127,15 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 	 * returning the property.
 	 *
 	 * @return
+	 * @throws IllegalStateException if the current path only consists of one segment.
 	 */
-	PersistentPropertyPath<P> getParentPath();
+	@Nullable
+	PersistentPropertyPath<P> getParentPath() throws IllegalStateException;
 
 	/**
 	 * Returns the length of the {@link PersistentPropertyPath}.
 	 *
-	 * @return
+	 * @return a value greater than 0.
 	 */
 	int getLength();
 }

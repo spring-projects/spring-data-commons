@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 the original author or authors.
+ * Copyright 2015-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,16 @@ class QuerydslDefaultBinding implements MultiValueBinding<Path<? extends Object>
 			BooleanBuilder builder = new BooleanBuilder();
 
 			for (Object element : value) {
-				builder.and(((CollectionPathBase) path).contains(element));
+
+				if (element instanceof Collection<?> nestedCollection) {
+
+					for (Object nested : nestedCollection) {
+						builder.and(((CollectionPathBase) path).contains(nested));
+					}
+				} else {
+					builder.and(((CollectionPathBase) path).contains(element));
+				}
+
 			}
 
 			return Optional.of(builder.getValue());

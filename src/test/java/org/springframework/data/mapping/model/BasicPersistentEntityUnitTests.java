@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 the original author or authors.
+ * Copyright 2011-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package org.springframework.data.mapping.model;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
-import lombok.RequiredArgsConstructor;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
@@ -445,24 +443,36 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 
 	// DATACMNS-1366
 
-	@RequiredArgsConstructor
 	private static class PropertyPopulationRequired {
 
 		private final String firstname, lastname;
 		private String email;
+
+		public PropertyPopulationRequired(String firstname, String lastname) {
+			this.firstname = firstname;
+			this.lastname = lastname;
+		}
 	}
 
-	@RequiredArgsConstructor
 	private static class PropertyPopulationNotRequired {
 
 		private final String firstname, lastname;
+
+		public PropertyPopulationNotRequired(String firstname, String lastname) {
+			this.firstname = firstname;
+			this.lastname = lastname;
+		}
 	}
 
-	@RequiredArgsConstructor
 	private static class PropertyPopulationNotRequiredWithTransient {
 
 		private final String firstname, lastname;
 		private @Transient String email;
+
+		public PropertyPopulationNotRequiredWithTransient(String firstname, String lastname) {
+			this.firstname = firstname;
+			this.lastname = lastname;
+		}
 	}
 
 	// #2325
