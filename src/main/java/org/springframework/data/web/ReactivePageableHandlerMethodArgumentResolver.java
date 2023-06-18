@@ -33,6 +33,7 @@ import org.springframework.web.server.ServerWebExchange;
  *
  * @since 2.2
  * @author Mark Paluch
+ * @author Yanming Zhou
  */
 public class ReactivePageableHandlerMethodArgumentResolver extends PageableHandlerMethodArgumentResolverSupport
 		implements SyncHandlerMethodArgumentResolver {
@@ -75,9 +76,17 @@ public class ReactivePageableHandlerMethodArgumentResolver extends PageableHandl
 		String pageSize = queryParams.getFirst(getParameterNameToUse(getSizeParameterName(), parameter));
 
 		Sort sort = sortResolver.resolveArgumentValue(parameter, bindingContext, exchange);
-
 		Pageable pageable = getPageable(parameter, page, pageSize);
 
-		return sort.isSorted() ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort) : pageable;
+		if (sort.isSorted()) {
+			if (pageable.isPaged()) {
+				pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+			}
+			else {
+				pageable = Pageable.unpaged(sort);
+			}
+		}
+
+		return pageable;
 	}
 }
