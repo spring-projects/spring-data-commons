@@ -29,7 +29,7 @@ import kotlin.reflect.KClass
  * @author Mark Paluch
  * See also https://github.com/spring-projects/spring-framework/issues/28638
  */
-class ReflectionEntityInstantiatorInlineClassUnitTests {
+class ReflectionEntityInstantiatorValueClassUnitTests {
 
 	val provider = mockk<ParameterValueProvider<SamplePersistentProperty>>()
 
@@ -38,8 +38,8 @@ class ReflectionEntityInstantiatorInlineClassUnitTests {
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter")
 
-		val instance: WithMyInlineValueClass =
-			construct(WithMyInlineValueClass::class)
+		val instance: WithMyValueClass =
+			construct(WithMyValueClass::class)
 
 		assertThat(instance.id.id).isEqualTo("Walter")
 	}
@@ -49,8 +49,8 @@ class ReflectionEntityInstantiatorInlineClassUnitTests {
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "")
 
-		val instance: WithNestedMyNullableInlineClass =
-			construct(WithNestedMyNullableInlineClass::class)
+		val instance: WithNestedMyNullableValueClass =
+			construct(WithNestedMyNullableValueClass::class)
 
 		assertThat(instance.id?.id?.id).isEqualTo("Walter")
 		assertThat(instance.baz?.id).isEqualTo("")
@@ -61,7 +61,7 @@ class ReflectionEntityInstantiatorInlineClassUnitTests {
 
 		every { provider.getParameterValue<String>(any()) } returns null
 
-		val instance: WithNestedMyNullableInlineClass = construct(WithNestedMyNullableInlineClass::class)
+		val instance: WithNestedMyNullableValueClass = construct(WithNestedMyNullableValueClass::class)
 
 		assertThat(instance.id?.id?.id).isEqualTo("foo")
 		assertThat(instance.baz?.id).isEqualTo("id")
@@ -72,7 +72,7 @@ class ReflectionEntityInstantiatorInlineClassUnitTests {
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", null)
 
-		val instance = construct(WithInlineClassPreferredConstructor::class)
+		val instance = construct(WithValueClassPreferredConstructor::class)
 
 		assertThat(instance.id?.id?.id).isEqualTo("foo")
 		assertThat(instance.baz?.id).isEqualTo("Walter-pref")

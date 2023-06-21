@@ -21,9 +21,12 @@ import org.springframework.data.annotation.PersistenceCreator
  * @author Mark Paluch
  */
 @JvmInline
-value class MyInlineValueClass(val id: String)
+value class MyValueClass(val id: String)
 
-data class WithMyInlineValueClass(val id: MyInlineValueClass) {
+/**
+ * Simple class. Value class is flattened into `String`. However, `copy` requires a boxed value when called via reflection.
+ */
+data class WithMyValueClass(val id: MyValueClass) {
 
 	// ByteCode explanation
 
@@ -36,30 +39,34 @@ data class WithMyInlineValueClass(val id: MyInlineValueClass) {
 	// synthetic constructor that we actually want to use
 	// public synthetic WithMyValueClass(java.lang.String arg0, kotlin.jvm.internal.DefaultConstructorMarker arg1) {}
 	// ---------
+
+	// ---------
+	// public static WithMyValueClass copy-R7yrDNU$default(WithMyValueClass var0, String var1, int var2, Object var3) {
+	// ---------
 }
 
 @JvmInline
-value class MyNullableInlineClass(val id: String? = "id")
+value class MyNullableValueClass(val id: String? = "id")
 
 @JvmInline
-value class MyNestedNullableInlineClass(val id: MyNullableInlineClass)
+value class MyNestedNullableValueClass(val id: MyNullableValueClass)
 
-class WithNestedMyNullableInlineClass(
-	val id: MyNestedNullableInlineClass? = MyNestedNullableInlineClass(
-		MyNullableInlineClass("foo")
-	), val baz: MyNullableInlineClass? = MyNullableInlineClass("id")
+class WithNestedMyNullableValueClass(
+	var id: MyNestedNullableValueClass? = MyNestedNullableValueClass(
+		MyNullableValueClass("foo")
+	), var baz: MyNullableValueClass? = MyNullableValueClass("id")
 
 	// ByteCode explanation
 
 	// ---------
-	// private WithNestedMyNullableInlineClass(MyNestedNullableInlineClass id, MyNullableInlineClass baz) {}
+	// private WithNestedMyNullableValueClass(MyNestedNullableValueClass id, MyNullableValueClass baz) {}
 	// ---------
 
 	// ---------
 	// default constructor, detected by Discoverers.KOTLIN
-	// note that these constructors use boxed variants ("MyNestedNullableInlineClass")
+	// note that these constructors use boxed variants ("MyNestedNullableValueClass")
 
-	// public synthetic WithNestedMyNullableInlineClass(MyNestedNullableInlineClass id, MyNullableInlineClass baz, DefaultConstructorMarker $constructor_marker) {}
+	// public synthetic WithNestedMyNullableValueClass(MyNestedNullableValueClass id, MyNullableValueClass baz, DefaultConstructorMarker $constructor_marker) {}
 	// ---------
 
 	// ---------
@@ -67,52 +74,106 @@ class WithNestedMyNullableInlineClass(
 	// provide the defaulting mask. This constructor only gets generated when parameters are nullable, otherwise
 	// Kotlin doesn't create this constructor
 
-	// public synthetic WithNestedMyNullableInlineClass(MyNestedNullableInlineClass var1, MyNullableInlineClass var2, int var3, DefaultConstructorMarker var4) {}
+	// public synthetic WithNestedMyNullableValueClass(MyNestedNullableValueClass var1, MyNullableValueClass var2, int var3, DefaultConstructorMarker var4) {}
 	// ---------
 )
 
-class WithInlineClassPreferredConstructor(
-	val id: MyNestedNullableInlineClass? = MyNestedNullableInlineClass(
-		MyNullableInlineClass("foo")
-	), val baz: MyNullableInlineClass? = MyNullableInlineClass("id")
+/**
+ * Nullability on the domain class means that public and static copy methods uses both the boxed type.
+ */
+data class DataClassWithNullableValueClass(
+
+	val fullyNullable: MyNullableValueClass? = MyNullableValueClass("id"),
+	val innerNullable: MyNullableValueClass = MyNullableValueClass("id")
+
+	// ByteCode
+
+	// private final MyNullableValueClass fullyNullable;
+	// private final String innerNullable;
+
+	// ---------
+	// private DataClassWithNullableValueClass(MyNullableValueClass fullyNullable, String innerNullable)
+	// ---------
+
+	// ---------
+	// public DataClassWithNullableValueClass(MyNullableValueClass var1, MyNullableValueClass var2, int var3, DefaultConstructorMarker var4) {
+	// ---------
+
+	// ---------
+	// public final DataClassWithNullableValueClass copy-bwh045w (@Nullable MyNullableValueClass fullyNullable, @NotNull String innerNullable) {
+	// ---------
+
+	// ---------
+	// public static DataClassWithNullableValueClass copy-bwh045w$default(DataClassWithNullableValueClass var0, MyNullableValueClass var1, MyNullableValueClass var2, int var3, Object var4) {}
+	// ---------
+)
+
+/**
+ * Nullability on a nested level (domain class property isn't nullable, the inner value in the value class is) means that public copy method uses the value component type while the static copy method uses the boxed type.
+ *
+ * This creates a skew in getter vs. setter. The setter would be required to set the boxed value while the getter returns plain String. Sigh.
+ */
+data class DataClassWithNestedNullableValueClass(
+	val nullableNestedNullable: MyNestedNullableValueClass?,
+	val nestedNullable: MyNestedNullableValueClass
+
+	// ByteCode
+
+	// ---------
+	// public DataClassWithNestedNullableValueClass(MyNestedNullableValueClass nullableNestedNullable, String nestedNullable, DefaultConstructorMarker $constructor_marker) {
+	// ---------
+
+	// ---------
+	// public final DataClassWithNestedNullableValueClass copy-W2GYjxM(@Nullable MyNestedNullableValueClass nullableNestedNullable, @NotNull String nestedNullable) { … }
+	// ---------
+
+	// ---------
+	// public static DataClassWithNestedNullableValueClass copy-W2GYjxM$default(DataClassWithNestedNullableValueClass var0, MyNestedNullableValueClass var1, MyNestedNullableValueClass var2, int var3, Object var4) {
+	// ---------
+)
+
+class WithValueClassPreferredConstructor(
+	val id: MyNestedNullableValueClass? = MyNestedNullableValueClass(
+		MyNullableValueClass("foo")
+	), val baz: MyNullableValueClass? = MyNullableValueClass("id")
 ) {
 
 	@PersistenceCreator
 	constructor(
-		a: String, id: MyNestedNullableInlineClass? = MyNestedNullableInlineClass(
-			MyNullableInlineClass("foo")
+		a: String, id: MyNestedNullableValueClass? = MyNestedNullableValueClass(
+			MyNullableValueClass("foo")
 		)
-	) : this(id, MyNullableInlineClass(a + "-pref")) {
+	) : this(id, MyNullableValueClass(a + "-pref")) {
 
 	}
 
 	// ByteCode explanation
 
 	// ---------
-	// private WithPreferredConstructor(MyNestedNullableInlineClass id, MyNullableInlineClass baz) {}
+	// private WithPreferredConstructor(MyNestedNullableValueClass id, MyNullableValueClass baz) {}
 	// ---------
 
 	// ---------
-	//    public WithPreferredConstructor(MyNestedNullableInlineClass var1, MyNullableInlineClass var2, int var3, DefaultConstructorMarker var4) {}
+	//    public WithPreferredConstructor(MyNestedNullableValueClass var1, MyNullableValueClass var2, int var3, DefaultConstructorMarker var4) {}
 	// ---------
 
 	// ---------
-	// private WithPreferredConstructor(String a, MyNestedNullableInlineClass id) {}
+	// private WithPreferredConstructor(String a, MyNestedNullableValueClass id) {}
 	// ---------
 
 	// ---------
 	// this is the one we need to invoke to pass on the defaulting mask
-	// public synthetic WithPreferredConstructor(String var1, MyNestedNullableInlineClass var2, int var3, DefaultConstructorMarker var4) {}
+	// public synthetic WithPreferredConstructor(String var1, MyNestedNullableValueClass var2, int var3, DefaultConstructorMarker var4) {}
 	// ---------
 
 	// ---------
-	// public synthetic WithPreferredConstructor(MyNestedNullableInlineClass id, MyNullableInlineClass baz, DefaultConstructorMarker $constructor_marker) {
+	// public synthetic WithPreferredConstructor(MyNestedNullableValueClass id, MyNullableValueClass baz, DefaultConstructorMarker $constructor_marker) {
 	// ---------
 
 	// ---------
 	// annotated constructor, detected by Discoverers.KOTLIN
 	// @PersistenceCreator
-	// public WithPreferredConstructor(String a, MyNestedNullableInlineClass id, DefaultConstructorMarker $constructor_marker) {
+	// public WithPreferredConstructor(String a, MyNestedNullableValueClass id, DefaultConstructorMarker $constructor_marker) {
 	// ---------
 
 }

@@ -162,7 +162,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	fun `should use default constructor for types using value class`() {
 
 		every { provider.getParameterValue<String>(any()) } returns "hello"
-		val instance = construct(WithMyInlineValueClass::class)
+		val instance = construct(WithMyValueClass::class)
 
 		assertThat(instance.id.id).isEqualTo("hello")
 	}
@@ -172,7 +172,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		every { provider.getParameterValue<String>(any()) } returns null
 
-		val instance = construct(WithNestedMyNullableInlineClass::class)
+		val instance = construct(WithNestedMyNullableValueClass::class)
 
 		assertThat(instance.id?.id?.id).isEqualTo("foo")
 		assertThat(instance.baz?.id).isEqualTo("id")
@@ -183,7 +183,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", null)
 
-		val instance = construct(WithInlineClassPreferredConstructor::class)
+		val instance = construct(WithValueClassPreferredConstructor::class)
 
 		assertThat(instance.id?.id?.id).isEqualTo("foo")
 		assertThat(instance.baz?.id).isEqualTo("Walter-pref")

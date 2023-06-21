@@ -84,6 +84,41 @@ public final class KotlinReflectionUtils {
 	}
 
 	/**
+	 * Returns whether the given {@link KType} is a {@link KClass#isValue() value} class.
+	 *
+	 * @param type the kotlin type to inspect.
+	 * @return {@code true} the type is a value class.
+	 * @since 3.2
+	 */
+	public static boolean isValueClass(KType type) {
+		return type.getClassifier()instanceof KClass<?> kc && kc.isValue();
+	}
+
+	/**
+	 * Returns whether the given class makes uses Kotlin {@link KClass#isValue() value} classes.
+	 *
+	 * @param type the kotlin type to inspect.
+	 * @return {@code true} when at least one property uses Kotlin value classes.
+	 * @since 3.2
+	 */
+	public static boolean hasValueClassProperty(Class<?> type) {
+
+		if (!KotlinDetector.isKotlinType(type)) {
+			return false;
+		}
+
+		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+
+		for (KCallable<?> member : kotlinClass.getMembers()) {
+			if (member instanceof KProperty<?> kp && isValueClass(kp.getReturnType())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns a {@link KFunction} instance corresponding to the given Java {@link Method} instance, or {@code null} if
 	 * this method cannot be represented by a Kotlin function.
 	 *
