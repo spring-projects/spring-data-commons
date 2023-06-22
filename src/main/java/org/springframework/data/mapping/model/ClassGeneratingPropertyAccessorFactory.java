@@ -84,8 +84,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor<?>>> propertyAccessorClasses = new HashMap<>(
 			32);
 
-	private ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache = new ConcurrentLruCache<>(
-			256, KotlinValueClassBoxingAdapter::getWrapper);
+	private final ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache = new ConcurrentLruCache<>(
+			256, KotlinValueBoxingAdapter::getWrapper);
 
 	@Override
 	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {
@@ -111,19 +111,19 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			PersistentPropertyAccessor<T> accessor = (PersistentPropertyAccessor<T>) constructor.newInstance(args);
 
 			if (KotlinDetector.isKotlinType(entity.getType())) {
-				return new KotlinValueClassBoxingAdapter<>(entity, accessor, wrapperCache);
+				return new KotlinValueBoxingAdapter<>(entity, accessor, wrapperCache);
 			}
 
 			return accessor;
 		} catch (Exception e) {
-			throw new IllegalArgumentException(String.format("Cannot create persistent property delegate for %s", entity), e);
+			throw new IllegalArgumentException(String.format("Cannot create persistent property accessor for %s", entity), e);
 		} finally {
 			args[0] = null;
 		}
 	}
 
 	/**
-	 * Checks whether an delegate class can be generated.
+	 * Checks whether an accessor class can be generated.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @return {@literal true} if the runtime is equal or greater to Java 1.7, we can access the ClassLoader, the property
@@ -223,8 +223,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * well. Accessing properties using generated accessors imposes some constraints:
 	 * <ul>
 	 * <li>Runtime must be Java 7 or higher</li>
-	 * <li>The generated delegate decides upon generation whether to use field or property access for particular
-	 * properties. It's not possible to change the access method once the delegate class is generated.</li>
+	 * <li>The generated accessor decides upon generation whether to use field or property access for particular
+	 * properties. It's not possible to change the access method once the accessor class is generated.</li>
 	 * <li>Property names and their {@link String#hashCode()} must be unique within a {@link PersistentEntity}.</li>
 	 * </ul>
 	 * These constraints apply to retain the performance gains, otherwise the generated code has to decide which method
@@ -278,7 +278,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * 			// …
 	 * 		}
 	 * 		throw new UnsupportedOperationException(
-	 * 				String.format("No delegate to set property %s", new Object[] { property }));
+	 * 				String.format("No accessor to set property %s", new Object[] { property }));
 	 * 	}
 	 *
 	 * 	public Object getProperty(PersistentProperty<?> property) {
@@ -293,7 +293,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * 				return bean.field;
 	 * 				// …
 	 * 				throw new UnsupportedOperationException(
-	 * 						String.format("No delegate to get property %s", new Object[] { property }));
+	 * 						String.format("No accessor to get property %s", new Object[] { property }));
 	 * 		}
 	 * 	}
 	 * }
@@ -794,7 +794,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			visitGetPropertySwitch(entity, persistentProperties, internalClassName, mv);
 
 			mv.visitLabel(l1);
-			visitThrowUnsupportedOperationException(mv, "No delegate to get property %s");
+			visitThrowUnsupportedOperationException(mv, "No accessor to get property %s");
 
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l1, 0);
 			mv.visitLocalVariable("property", referenceName(PERSISTENT_PROPERTY),
@@ -929,7 +929,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * 		// …
 		 * 	}
 		 * 	throw new UnsupportedOperationException(
-		 * 			String.format("No delegate to set property %s", new Object[] { property }));
+		 * 			String.format("No accessor to set property %s", new Object[] { property }));
 		 * }
 		 * </pre>
 		 */
@@ -957,7 +957,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			Label l1 = new Label();
 			mv.visitLabel(l1);
 
-			visitThrowUnsupportedOperationException(mv, "No delegate to set property %s");
+			visitThrowUnsupportedOperationException(mv, "No accessor to set property %s");
 
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l1, 0);
 			mv.visitLocalVariable("property", "Lorg/springframework/data/mapping/PersistentProperty;",
@@ -1466,12 +1466,13 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	/**
 	 * Adapter to encapsulate Kotlin's value class boxing when properties are nullable.
 	 *
-	 * @param entity
-	 * @param delegate
-	 * @param wrapperCache
+	 * @param entity the entity that could use value class properties.
+	 * @param delegate the property accessor to delegate to.
+	 * @param wrapperCache cache for wrapping functions.
 	 * @param <T>
+	 * @since 3.2
 	 */
-	record KotlinValueClassBoxingAdapter<T> (PersistentEntity<?, ?> entity, PersistentPropertyAccessor<T> delegate,
+	record KotlinValueBoxingAdapter<T> (PersistentEntity<?, ?> entity, PersistentPropertyAccessor<T> delegate,
 			ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache)
 			implements
 				PersistentPropertyAccessor<T> {
@@ -1481,6 +1482,14 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			delegate.setProperty(property, wrapperCache.get(property).apply(value));
 		}
 
+		/**
+		 * Create a wrapper function if the {@link PersistentProperty} uses value classes.
+		 *
+		 * @param property the persistent property to inspect.
+		 * @return a wrapper function to wrap a value class component into the hierarchy of value classes or
+		 *         {@link Function#identity()} if wrapping is not necessary.
+		 * @see KotlinValueUtils#getValueHierarchy(Class)
+		 */
 		static Function<Object, Object> getWrapper(PersistentProperty<?> property) {
 
 			Optional<KotlinCopyMethod> kotlinCopyMethod = KotlinCopyMethod.findCopyMethod(property.getOwner().getType())

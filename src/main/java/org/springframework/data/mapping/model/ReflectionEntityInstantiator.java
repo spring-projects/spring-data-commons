@@ -57,6 +57,7 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 			return instantiateClass(entity);
 		}
 
+		// workaround as classes using value classes cannot be instantiated through BeanUtils.
 		if (KotlinDetector.isKotlinReflectPresent() && KotlinReflectionUtils.isSupportedKotlinClass(entity.getType())
 				&& creator instanceof PreferredConstructor<?, ?> constructor) {
 
