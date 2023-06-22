@@ -51,6 +51,20 @@ value class MyNullableValueClass(val id: String? = "id")
 @JvmInline
 value class MyNestedNullableValueClass(val id: MyNullableValueClass)
 
+@JvmInline
+value class MyGenericValue<T>(val id: T)
+
+@JvmInline
+value class MyGenericBoundValue<T : CharSequence>(val id: T)
+
+data class WithGenericValue(
+	val string: MyGenericBoundValue<String>,
+	val charseq: MyGenericBoundValue<CharSequence>,
+	val recursive: MyGenericValue<MyGenericValue<String>>
+)
+
+data class WithGenericNullableValue(val recursive: MyGenericValue<MyGenericValue<String>>?)
+
 class WithNestedMyNullableValueClass(
 	var id: MyNestedNullableValueClass? = MyNestedNullableValueClass(
 		MyNullableValueClass("foo")

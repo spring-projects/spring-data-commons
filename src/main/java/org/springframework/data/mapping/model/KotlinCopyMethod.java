@@ -38,7 +38,6 @@ import org.springframework.core.ResolvableType;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimplePropertyHandler;
-import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -172,7 +171,7 @@ class KotlinCopyMethod {
 			return Optional.empty();
 		}
 
-		boolean usesValueClasses = KotlinReflectionUtils.hasValueClassProperty(type);
+		boolean usesValueClasses = KotlinValueUtils.hasValueClassProperty(type);
 		List<KParameter> constructorArguments = getComponentArguments(primaryConstructor);
 		Predicate<String> isCopyMethod;
 
@@ -243,7 +242,7 @@ class KotlinCopyMethod {
 			return Optional.empty();
 		}
 
-		boolean usesValueClasses = KotlinReflectionUtils.hasValueClassProperty(type);
+		boolean usesValueClasses = KotlinValueUtils.hasValueClassProperty(type);
 
 		Predicate<String> isCopyMethod = usesValueClasses ? (it -> it.startsWith("copy-") && it.endsWith("$default"))
 				: (it -> it.equals("copy$default"));
@@ -278,7 +277,7 @@ class KotlinCopyMethod {
 
 			KParameter kParameter = constructorArguments.get(i);
 
-			if (KotlinReflectionUtils.isValueClass(kParameter.getType())) {
+			if (KotlinValueUtils.isValueClass(kParameter.getType())) {
 				// sigh. This can require deep unwrapping because the public vs. the synthetic copy methods use different
 				// parameter types.
 				continue;

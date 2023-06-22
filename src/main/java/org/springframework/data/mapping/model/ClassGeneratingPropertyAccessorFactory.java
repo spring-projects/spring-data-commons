@@ -53,6 +53,7 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.model.KotlinCopyMethod.KotlinCopyByProperty;
+import org.springframework.data.mapping.model.KotlinValueUtils.ValueBoxing;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -84,7 +85,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			32);
 
 	private ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache = new ConcurrentLruCache<>(
-			256, KotlinValueClassBoxingWrapper::getWrapper);
+			256, KotlinValueClassBoxingAdapter::getWrapper);
 
 	@Override
 	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {
@@ -110,7 +111,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			PersistentPropertyAccessor<T> accessor = (PersistentPropertyAccessor<T>) constructor.newInstance(args);
 
 			if (KotlinDetector.isKotlinType(entity.getType())) {
-				return new KotlinValueClassBoxingWrapper<>(entity, accessor, wrapperCache);
+				return new KotlinValueClassBoxingAdapter<>(entity, accessor, wrapperCache);
 			}
 
 			return accessor;
@@ -1463,14 +1464,14 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	}
 
 	/**
-	 * Wrapper to encapsulate Kotlin's value class boxing when properties are nullable.
+	 * Adapter to encapsulate Kotlin's value class boxing when properties are nullable.
 	 *
 	 * @param entity
 	 * @param delegate
 	 * @param wrapperCache
 	 * @param <T>
 	 */
-	record KotlinValueClassBoxingWrapper<T> (PersistentEntity<?, ?> entity, PersistentPropertyAccessor<T> delegate,
+	record KotlinValueClassBoxingAdapter<T> (PersistentEntity<?, ?> entity, PersistentPropertyAccessor<T> delegate,
 			ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache)
 			implements
 				PersistentPropertyAccessor<T> {
@@ -1496,14 +1497,13 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 						.filter(kf -> kf.getName().equals(property.getName())) //
 						.findFirst();
 
-				Function<Object, Object> objectObjectFunction = kParameter.map(KotlinValueBoxing::getWrapper)
-						.orElse(Function.identity());
+				ValueBoxing vh = kParameter.map(KotlinValueUtils::getValueHierarchy).orElse(null);
 				KotlinCopyByProperty kotlinCopyByProperty = copyMethod.forProperty(property).get();
 				Method copy = copyMethod.getSyntheticCopyMethod();
 
 				Parameter parameter = copy.getParameters()[kotlinCopyByProperty.getParameterPosition()];
 
-				return o -> ClassUtils.isAssignableValue(parameter.getType(), o) ? o : objectObjectFunction.apply(o);
+				return o -> ClassUtils.isAssignableValue(parameter.getType(), o) || vh == null ? o : vh.wrap(o);
 			}
 
 			return Function.identity();

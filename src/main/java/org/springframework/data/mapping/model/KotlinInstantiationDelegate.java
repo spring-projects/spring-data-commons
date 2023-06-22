@@ -15,14 +15,11 @@
  */
 package org.springframework.data.mapping.model;
 
-import kotlin.jvm.JvmClassMappingKt;
-import kotlin.reflect.KClass;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -32,6 +29,7 @@ import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.mapping.model.KotlinValueUtils.ValueBoxing;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 
@@ -68,34 +66,10 @@ class KotlinInstantiationDelegate {
 		this.hasDefaultConstructorMarker = hasDefaultConstructorMarker(constructorToInvoke.getParameters());
 
 		for (KParameter kParameter : kParameters) {
-			wrappers.add(getWrapper(kParameter, true));
+
+			ValueBoxing valueBoxing = KotlinValueUtils.getValueHierarchy(kParameter);
+			wrappers.add(valueBoxing::wrap);
 		}
-	}
-
-	/**
-	 * @param kParameter the kotlin parameter to wrap.
-	 * @param domainTypeUsage optional in the domain type require value type casting. Inner/nested ones don't. This is
-	 *          because calling the synthetic constructor with an optional parameter requires an inline class while
-	 *          optional parameters via reflection are handled within Kotlin-Reflection.
-	 * @return
-	 */
-	private Function<Object, Object> getWrapper(KParameter kParameter, boolean domainTypeUsage) {
-
-		if (kParameter.getType().getClassifier()instanceof KClass<?> kc && kc.isValue()
-				&& (!domainTypeUsage || kParameter.isOptional())) {
-
-			KFunction<?> ctor = kc.getConstructors().iterator().next();
-
-			// using reflection to construct a value class wrapper. Everything
-			// else would require too many levels of indirections.
-
-			KParameter nested = ctor.getParameters().get(0);
-			Function<Object, Object> wrapper = getWrapper(nested, false);
-
-			return o -> ctor.call(wrapper.apply(o));
-		}
-
-		return Function.identity();
 	}
 
 	static boolean hasDefaultConstructorMarker(java.lang.reflect.Parameter[] parameters) {
@@ -269,25 +243,8 @@ class KotlinInstantiationDelegate {
 
 		// candidate can be also a wrapper
 
-		Class<?> aClass = unwrapValueClass(candidateParameter.getType());
+		Class<?> componentType = KotlinValueUtils.getValueHierarchy(candidateParameter.getType()).getActualType();
 
-		return constructorParameter.getType().equals(aClass);
+		return constructorParameter.getType().equals(componentType);
 	}
-
-	private static Class<?> unwrapValueClass(Class<?> type) {
-
-		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
-		if (kotlinClass != null && kotlinClass.isValue()) {
-
-			KFunction<?> next = kotlinClass.getConstructors().iterator().next();
-			KParameter kParameter = next.getParameters().get(0);
-			Type javaType = ReflectJvmMapping.getJavaType(kParameter.getType());
-			if (javaType instanceof Class<?>) {
-				return unwrapValueClass((Class<?>) javaType);
-			}
-		}
-
-		return type;
-	}
-
 }

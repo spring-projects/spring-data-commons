@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
+import kotlin.reflect.jvm.internal.KotlinReflectionInternalError;
 
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -106,6 +107,15 @@ public class KotlinPropertyAccessorFactoryTests {
 		assertThat(propertyAccessor).isNotNull();
 		assertThat(propertyAccessor.getProperty(fullyNullable)).isEqualTo(expectedDefaultValue);
 
+		if (factory instanceof BeanWrapperPropertyAccessorFactory) {
+
+			// see https://youtrack.jetbrains.com/issue/KT-57357
+			assertThatExceptionOfType(KotlinReflectionInternalError.class)
+					.isThrownBy(() -> propertyAccessor.setProperty(fullyNullable, barValue))
+					.withMessageContaining("This callable does not support a default call");
+			return;
+		}
+
 		propertyAccessor.setProperty(fullyNullable, barValue);
 		assertThat(propertyAccessor.getProperty(fullyNullable)).isEqualTo(barValue);
 
@@ -139,6 +149,15 @@ public class KotlinPropertyAccessorFactoryTests {
 		MyNullableValueClass inner = nullable.getConstructors().iterator().next().call("new-value");
 		MyNestedNullableValueClass outer = nested.getConstructors().iterator().next().call(inner);
 
+		if (factory instanceof BeanWrapperPropertyAccessorFactory) {
+
+			// see https://youtrack.jetbrains.com/issue/KT-57357
+			assertThatExceptionOfType(KotlinReflectionInternalError.class)
+					.isThrownBy(() -> propertyAccessor.setProperty(nullableNestedNullable, outer))
+					.withMessageContaining("This callable does not support a default call");
+			return;
+		}
+
 		propertyAccessor.setProperty(nullableNestedNullable, outer);
 		assertThat(propertyAccessor.getProperty(nullableNestedNullable)).isInstanceOf(MyNestedNullableValueClass.class)
 				.hasToString("MyNestedNullableValueClass(id=MyNullableValueClass(id=new-value))");
@@ -150,6 +169,73 @@ public class KotlinPropertyAccessorFactoryTests {
 
 		propertyAccessor.setProperty(nestedNullable, "inner");
 		assertThat(propertyAccessor.getProperty(nestedNullable)).isEqualTo("inner");
+	}
+
+	@MethodSource("factories")
+	@ParameterizedTest // GH-2806
+	void genericInlineClassesShouldWork(PersistentPropertyAccessorFactory factory) {
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
+				.getRequiredPersistentEntity(WithGenericValue.class);
+
+		Object instance = createInstance(entity, parameter -> "aaa");
+
+		var propertyAccessor = factory.getPropertyAccessor(entity, instance);
+		var string = entity.getRequiredPersistentProperty("string");
+
+		assertThat(propertyAccessor).isNotNull();
+		assertThat(propertyAccessor.getProperty(string)).isEqualTo("aaa");
+
+		if (factory instanceof BeanWrapperPropertyAccessorFactory) {
+
+			// see https://youtrack.jetbrains.com/issue/KT-57357
+			assertThatExceptionOfType(KotlinReflectionInternalError.class)
+					.isThrownBy(() -> propertyAccessor.setProperty(string, "string"))
+					.withMessageContaining("This callable does not support a default call");
+			return;
+		}
+
+		propertyAccessor.setProperty(string, "string");
+		assertThat(propertyAccessor.getProperty(string)).isEqualTo("string");
+
+		var charseq = entity.getRequiredPersistentProperty("charseq");
+
+		assertThat(propertyAccessor).isNotNull();
+		assertThat(propertyAccessor.getProperty(charseq)).isEqualTo("aaa");
+		propertyAccessor.setProperty(charseq, "charseq");
+		assertThat(propertyAccessor.getProperty(charseq)).isEqualTo("charseq");
+
+		var recursive = entity.getRequiredPersistentProperty("recursive");
+
+		assertThat(propertyAccessor).isNotNull();
+		assertThat(propertyAccessor.getProperty(recursive)).isEqualTo("aaa");
+		propertyAccessor.setProperty(recursive, "recursive");
+		assertThat(propertyAccessor.getProperty(recursive)).isEqualTo("recursive");
+	}
+
+	@MethodSource("factories")
+	@ParameterizedTest // GH-2806
+	void genericNullableInlineClassesShouldWork(PersistentPropertyAccessorFactory factory) {
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
+				.getRequiredPersistentEntity(WithGenericNullableValue.class);
+
+		KClass<MyGenericValue> genericClass = JvmClassMappingKt.getKotlinClass(MyGenericValue.class);
+		MyGenericValue<?> inner = genericClass.getConstructors().iterator().next().call("initial-value");
+		MyGenericValue<?> outer = genericClass.getConstructors().iterator().next().call(inner);
+
+		MyGenericValue<?> newInner = genericClass.getConstructors().iterator().next().call("new-value");
+		MyGenericValue<?> newOuter = genericClass.getConstructors().iterator().next().call(newInner);
+
+		Object instance = createInstance(entity, parameter -> outer);
+
+		var propertyAccessor = factory.getPropertyAccessor(entity, instance);
+		var recursive = entity.getRequiredPersistentProperty("recursive");
+
+		assertThat(propertyAccessor).isNotNull();
+		assertThat(propertyAccessor.getProperty(recursive)).isEqualTo(outer);
+		propertyAccessor.setProperty(recursive, newOuter);
+		assertThat(propertyAccessor.getProperty(recursive)).isEqualTo(newOuter);
 	}
 
 	private Object createInstance(BasicPersistentEntity<?, SamplePersistentProperty> entity,
