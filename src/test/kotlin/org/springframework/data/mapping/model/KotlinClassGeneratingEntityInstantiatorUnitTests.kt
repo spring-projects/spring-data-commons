@@ -189,6 +189,48 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		assertThat(instance.baz?.id).isEqualTo("Walter-pref")
 	}
 
+	@Test // GH-2806
+	fun `should instantiate type with value class defaulting`() {
+
+		every { provider.getParameterValue<Int>(any()) }.returns(1)
+
+		val instance = construct(WithDefaultPrimitiveValue::class)
+
+		assertThat(instance.pvd.id).isEqualTo(1)
+	}
+
+	@Test // GH-2806
+	fun `should instantiate type with nullable primitive value class defaulting`() {
+
+		every { provider.getParameterValue<Any>(any()) }.returnsMany(
+			1,
+			PrimitiveNullableValue(2),
+			3,
+			PrimitiveNullableValue(4)
+		)
+
+		val instance = construct(WithPrimitiveNullableValue::class)
+
+		assertThat(instance.nv.id).isEqualTo(1)
+		assertThat(instance.nvn!!.id).isEqualTo(2)
+		assertThat(instance.nvd.id).isEqualTo(3)
+		assertThat(instance.nvdn!!.id).isEqualTo(4)
+	}
+
+	@Test // GH-2806
+	fun `should instantiate type with nullable value class defaulting`() {
+
+		// String nv, String nvn, String nvd, String nvdn, LocalDate dnv, LocalDate dnvn, LocalDate dnvd, LocalDate dnvdn
+		every { provider.getParameterValue<Any>(any()) }.returnsMany("1", "2", "3", "4")
+
+		val instance = construct(WithStringValue::class)
+
+		assertThat(instance.nv.id).isEqualTo("1")
+		assertThat(instance.nvn!!.id).isEqualTo("2")
+		assertThat(instance.nvd.id).isEqualTo("3")
+		assertThat(instance.nvdn!!.id).isEqualTo("4")
+	}
+
 	private fun <T : Any> construct(typeToCreate: KClass<T>): T {
 
 		val entity =

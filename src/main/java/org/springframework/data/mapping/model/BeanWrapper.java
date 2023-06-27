@@ -190,7 +190,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 				if (parameter.getKind() == Kind.VALUE && parameter.getName() != null
 						&& parameter.getName().equals(property.getName())) {
 
-					args.put(parameter, KotlinValueUtils.getValueHierarchy(parameter).wrap(value));
+					args.put(parameter, KotlinValueUtils.getCopyValueHierarchy(parameter).wrap(value));
 				}
 			}
 			return args;

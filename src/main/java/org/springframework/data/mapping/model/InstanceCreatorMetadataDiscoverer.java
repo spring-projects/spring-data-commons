@@ -15,6 +15,11 @@
  */
 package org.springframework.data.mapping.model;
 
+import kotlin.jvm.JvmClassMappingKt;
+import kotlin.reflect.KCallable;
+import kotlin.reflect.KClass;
+import kotlin.reflect.KProperty;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -24,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.annotation.PersistenceCreator;
@@ -55,7 +61,8 @@ class InstanceCreatorMetadataDiscoverer {
 	 * @return
 	 */
 	@Nullable
-	public static <T, P extends PersistentProperty<P>> InstanceCreatorMetadata<P> discover(PersistentEntity<T, P> entity) {
+	public static <T, P extends PersistentProperty<P>> InstanceCreatorMetadata<P> discover(
+			PersistentEntity<T, P> entity) {
 
 		Constructor<?>[] declaredConstructors = entity.getType().getDeclaredConstructors();
 		Method[] declaredMethods = entity.getType().getDeclaredMethods();
@@ -75,6 +82,34 @@ class InstanceCreatorMetadataDiscoverer {
 
 			if (candidates.size() == 1) {
 				return getFactoryMethod(entity, candidates.get(0));
+			}
+		}
+
+		if (KotlinDetector.isKotlinReflectPresent() && KotlinDetector.isKotlinType(entity.getType())) {
+
+			KClass<?> kClass = JvmClassMappingKt.getKotlinClass(entity.getType());
+			// We use box-impl as factory for classes.
+			if (kClass.isValue()) {
+
+				String propertyName = "";
+				for (KCallable<?> member : kClass.getMembers()) {
+					if (member instanceof KProperty<?>) {
+						propertyName = member.getName();
+						break;
+					}
+				}
+
+				for (Method declaredMethod : entity.getType().getDeclaredMethods()) {
+					if (declaredMethod.getName().equals("box-impl") && declaredMethod.isSynthetic()
+							&& declaredMethod.getParameterCount() == 1) {
+
+						Annotation[][] parameterAnnotations = declaredMethod.getParameterAnnotations();
+						List<TypeInformation<?>> types = entity.getTypeInformation().getParameterTypes(declaredMethod);
+
+						return new FactoryMethod<>(declaredMethod,
+								new Parameter<>(propertyName, (TypeInformation) types.get(0), parameterAnnotations[0], entity));
+					}
+				}
 			}
 		}
 

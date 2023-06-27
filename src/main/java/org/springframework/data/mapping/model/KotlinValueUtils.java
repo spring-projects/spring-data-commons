@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.model;
 
 import kotlin.jvm.JvmClassMappingKt;
+import kotlin.jvm.internal.Reflection;
 import kotlin.reflect.KCallable;
 import kotlin.reflect.KClass;
 import kotlin.reflect.KFunction;
@@ -23,9 +24,16 @@ import kotlin.reflect.KParameter;
 import kotlin.reflect.KProperty;
 import kotlin.reflect.KType;
 import kotlin.reflect.KTypeParameter;
+import kotlin.reflect.jvm.ReflectJvmMapping;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.springframework.core.KotlinDetector;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * Utilities for Kotlin Value class support.
@@ -69,25 +77,135 @@ class KotlinValueUtils {
 	}
 
 	/**
-	 * Creates a value hierarchy across value types from a given {@link KParameter}.
+	 * Creates a value hierarchy across value types from a given {@link KParameter} for COPY method usage.
 	 *
 	 * @param parameter the parameter that references the value class hierarchy.
 	 * @return
 	 */
-	public static ValueBoxing getValueHierarchy(KParameter parameter) {
-		return ValueBoxing.of(parameter);
+	public static ValueBoxing getCopyValueHierarchy(KParameter parameter) {
+		return new ValueBoxing(BoxingRules.COPY, parameter);
 	}
 
 	/**
-	 * Creates a value hierarchy across value types from a given {@link KParameter}.
+	 * Creates a value hierarchy across value types from a given {@link KParameter} for constructor usage.
 	 *
-	 * @param cls the entrypoint of the type hierarchy
-	 * @return
+	 * @param parameter the parameter that references the value class hierarchy.
+	 * @return the {@link ValueBoxing} type hierarchy.
 	 */
-	public static ValueBoxing getValueHierarchy(Class<?> cls) {
+	public static ValueBoxing getConstructorValueHierarchy(KParameter parameter) {
+		return new ValueBoxing(BoxingRules.CONSTRUCTOR, parameter);
+	}
+
+	/**
+	 * Creates a value hierarchy across value types from a given {@link KParameter} for constructor usage.
+	 *
+	 * @param cls the entrypoint of the type hierarchy.
+	 * @return the {@link ValueBoxing} type hierarchy.
+	 */
+	public static ValueBoxing getConstructorValueHierarchy(Class<?> cls) {
 
 		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(cls);
-		return ValueBoxing.of(kotlinClass);
+		return new ValueBoxing(BoxingRules.CONSTRUCTOR, Reflection.typeOf(kotlinClass), kotlinClass, false);
+	}
+
+	/**
+	 * Boxing rules for value class wrappers.
+	 */
+	enum BoxingRules {
+
+		/**
+		 * When used in the constructor. Constructor boxing depends on nullability of the declared property, whether the
+		 * component uses defaulting, nullability of the value component and whether the component is a primitive.
+		 */
+		CONSTRUCTOR {
+			@Override
+			public boolean shouldApplyBoxing(KType type, boolean optional, KParameter component) {
+
+				Type javaType = ReflectJvmMapping.getJavaType(component.getType());
+				boolean isPrimitive = javaType instanceof Class<?> c && c.isPrimitive();
+
+				if (type.isMarkedNullable() || optional) {
+					return (isPrimitive && type.isMarkedNullable()) || component.getType().isMarkedNullable();
+				}
+
+				return false;
+			}
+		},
+
+		/**
+		 * When used in a copy method. Copy method boxing depends on nullability of the declared property, nullability of
+		 * the value component and whether the component is a primitive.
+		 */
+		COPY {
+			@Override
+			public boolean shouldApplyBoxing(KType type, boolean optional, KParameter component) {
+
+				KType copyType = expandUnderlyingType(type);
+
+				if (copyType.getClassifier()instanceof KClass<?> kc && kc.isValue() || copyType.isMarkedNullable()) {
+					return true;
+				}
+
+				return false;
+			}
+
+			private static KType expandUnderlyingType(KType kotlinType) {
+
+				if (!(kotlinType.getClassifier()instanceof KClass<?> kc) || !kc.isValue()) {
+					return kotlinType;
+				}
+
+				List<KProperty<?>> properties = getProperties(kc);
+				if (properties.isEmpty()) {
+					return kotlinType;
+				}
+
+				KType underlyingType = properties.get(0).getReturnType();
+				KType componentType = ValueBoxing.resolveType(underlyingType);
+				KType expandedUnderlyingType = expandUnderlyingType(componentType);
+
+				if (!kotlinType.isMarkedNullable()) {
+					return expandedUnderlyingType;
+				}
+
+				if (expandedUnderlyingType.isMarkedNullable()) {
+					return kotlinType;
+				}
+
+				Type javaType = ReflectJvmMapping.getJavaType(expandedUnderlyingType);
+				boolean isPrimitive = javaType instanceof Class<?> c && c.isPrimitive();
+
+				if (isPrimitive) {
+					return kotlinType;
+				}
+
+				return expandedUnderlyingType;
+			}
+
+			static List<KProperty<?>> getProperties(KClass<?> kClass) {
+
+				if (kClass.isValue()) {
+
+					for (KCallable<?> member : kClass.getMembers()) {
+						if (member instanceof KProperty<?> kp) {
+							return Collections.singletonList(kp);
+						}
+					}
+				}
+
+				List<KProperty<?>> properties = new ArrayList<>();
+				for (KCallable<?> member : kClass.getMembers()) {
+					if (member instanceof KProperty<?> kp) {
+						properties.add(kp);
+					}
+				}
+
+				return properties;
+			}
+		};
+
+		public abstract boolean shouldApplyBoxing(KType type, boolean optional, KParameter component);
+
 	}
 
 	/**
@@ -104,24 +222,30 @@ class KotlinValueUtils {
 		private final @Nullable ValueBoxing next;
 
 		/**
-		 * @param type the referenced type.
-		 * @param optional whether the type is optional.
+		 * Creates a new {@link ValueBoxing} for a {@link KParameter}.
+		 *
+		 * @param rules boxing rules to apply.
+		 * @param parameter the copy or constructor parameter.
 		 */
-		private ValueBoxing(KType type, boolean optional) {
-			this((KClass<?>) type.getClassifier(), optional, true);
+		@SuppressWarnings("ConstantConditions")
+		private ValueBoxing(BoxingRules rules, KParameter parameter) {
+			this(rules, parameter.getType(), (KClass<?>) parameter.getType().getClassifier(), parameter.isOptional());
 		}
 
-		private ValueBoxing(KClass<?> kClass, boolean optional, boolean domainTypeUsage) {
+		private ValueBoxing(BoxingRules rules, KType type, KClass<?> kClass, boolean optional) {
 
 			KFunction<?> wrapperConstructor = null;
 			ValueBoxing next = null;
+			boolean applyBoxing;
 
-			boolean applyBoxing = (optional || !domainTypeUsage);
 			if (kClass.isValue()) {
 
 				wrapperConstructor = kClass.getConstructors().iterator().next();
 				KParameter nested = wrapperConstructor.getParameters().get(0);
 				KType nestedType = nested.getType();
+
+				applyBoxing = rules.shouldApplyBoxing(type, optional, nested);
+
 				KClass<?> nestedClass;
 
 				// bound flattening
@@ -131,7 +255,11 @@ class KotlinValueUtils {
 					nestedClass = (KClass<?>) nestedType.getClassifier();
 				}
 
-				next = new ValueBoxing(nestedClass, nested.isOptional(), false);
+				Assert.notNull(nestedClass, () -> String.format("Cannot resolve nested class from type %s", nestedType));
+
+				next = new ValueBoxing(rules, nestedType, nestedClass, nested.isOptional());
+			} else {
+				applyBoxing = false;
 			}
 
 			this.kClass = kClass;
@@ -143,6 +271,7 @@ class KotlinValueUtils {
 		private static KClass<?> getUpperBound(KTypeParameter typeParameter) {
 
 			for (KType upperBound : typeParameter.getUpperBounds()) {
+
 				if (upperBound.getClassifier()instanceof KClass<?> kc) {
 					return kc;
 				}
@@ -151,54 +280,94 @@ class KotlinValueUtils {
 			throw new IllegalArgumentException("No upper bounds found");
 		}
 
-		/**
-		 * Creates a new {@link ValueBoxing} for a {@link KParameter}.
-		 *
-		 * @param parameter
-		 * @return
-		 */
-		static ValueBoxing of(KParameter parameter) {
-			return new ValueBoxing(parameter.getType(), parameter.isOptional());
+		static KType resolveType(KType type) {
+
+			if (type.getClassifier()instanceof KTypeParameter ktp) {
+
+				for (KType upperBound : ktp.getUpperBounds()) {
+
+					if (upperBound.getClassifier()instanceof KClass<?> kc) {
+						return upperBound;
+					}
+				}
+			}
+
+			return type;
 		}
 
 		/**
-		 * Creates a new {@link ValueBoxing} for a {@link KClass} assuming the class is the uppermost entrypoint and not a
-		 * value class.
-		 *
-		 * @param kotlinClass
-		 * @return
+		 * @return the expanded component type that is used as value.
 		 */
-		public static ValueBoxing of(KClass<?> kotlinClass) {
-			return new ValueBoxing(kotlinClass, false, !kotlinClass.isValue());
-		}
-
 		public Class<?> getActualType() {
 
 			if (isValueClass() && hasNext()) {
-				return next.getActualType();
+				return getNext().getActualType();
 			}
 
 			return JvmClassMappingKt.getJavaClass(kClass);
+		}
+
+		/**
+		 * @return the component or wrapper type to be used.
+		 */
+		public Class<?> getParameterType() {
+
+			if (hasNext() && getNext().appliesBoxing()) {
+				return next.getParameterType();
+			}
+
+			return JvmClassMappingKt.getJavaClass(kClass);
+		}
+
+		/**
+		 * @return {@code true} if the value hierarchy applies boxing.
+		 */
+		public boolean appliesBoxing() {
+			return applyBoxing;
 		}
 
 		public boolean isValueClass() {
 			return kClass.isValue();
 		}
 
+		/**
+		 * @return whether there is another item in the value hierarchy.
+		 */
 		public boolean hasNext() {
 			return next != null;
 		}
 
-		@Nullable
+		/**
+		 * Returns the next {@link ValueBoxing} or throws {@link IllegalStateException} if there is no next. Make sure to
+		 * check {@link #hasNext()} prior to calling this method.
+		 *
+		 * @return the next {@link ValueBoxing}.
+		 * @throws IllegalStateException if there is no next item.
+		 */
 		public ValueBoxing getNext() {
+
+			if (next == null) {
+				throw new IllegalStateException("No next ValueBoxing available");
+			}
+
 			return next;
 		}
 
+		/**
+		 * Apply wrapping into the boxing wrapper type if applicable.
+		 *
+		 * @param o
+		 * @return
+		 */
 		@Nullable
 		public Object wrap(@Nullable Object o) {
 
 			if (applyBoxing) {
-				return next == null || kClass.isInstance(o) ? o : wrapperConstructor.call(next.wrap(o));
+				return o == null || kClass.isInstance(o) ? o : wrapperConstructor.call(next.wrap(o));
+			}
+
+			if (hasNext()) {
+				return next.wrap(o);
 			}
 
 			return o;

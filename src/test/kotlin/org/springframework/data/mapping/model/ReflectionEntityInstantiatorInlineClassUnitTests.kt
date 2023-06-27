@@ -45,18 +45,6 @@ class ReflectionEntityInstantiatorValueClassUnitTests {
 	}
 
 	@Test // GH-2806
-	fun `should create instance with defaulting with value`() {
-
-		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "")
-
-		val instance: WithNestedMyNullableValueClass =
-			construct(WithNestedMyNullableValueClass::class)
-
-		assertThat(instance.id?.id?.id).isEqualTo("Walter")
-		assertThat(instance.baz?.id).isEqualTo("")
-	}
-
-	@Test // GH-2806
 	fun `should create instance with defaulting without value`() {
 
 		every { provider.getParameterValue<String>(any()) } returns null

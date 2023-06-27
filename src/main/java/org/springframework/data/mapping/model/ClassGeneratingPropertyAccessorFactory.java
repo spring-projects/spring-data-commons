@@ -1488,7 +1488,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * @param property the persistent property to inspect.
 		 * @return a wrapper function to wrap a value class component into the hierarchy of value classes or
 		 *         {@link Function#identity()} if wrapping is not necessary.
-		 * @see KotlinValueUtils#getValueHierarchy(Class)
+		 * @see KotlinValueUtils#getCopyValueHierarchy(KParameter)
 		 */
 		static Function<Object, Object> getWrapper(PersistentProperty<?> property) {
 
@@ -1506,7 +1506,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 						.filter(kf -> kf.getName().equals(property.getName())) //
 						.findFirst();
 
-				ValueBoxing vh = kParameter.map(KotlinValueUtils::getValueHierarchy).orElse(null);
+				ValueBoxing vh = kParameter.map(KotlinValueUtils::getCopyValueHierarchy).orElse(null);
 				KotlinCopyByProperty kotlinCopyByProperty = copyMethod.forProperty(property).get();
 				Method copy = copyMethod.getSyntheticCopyMethod();
 

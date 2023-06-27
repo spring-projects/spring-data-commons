@@ -67,7 +67,7 @@ class KotlinInstantiationDelegate {
 
 		for (KParameter kParameter : kParameters) {
 
-			ValueBoxing valueBoxing = KotlinValueUtils.getValueHierarchy(kParameter);
+			ValueBoxing valueBoxing = KotlinValueUtils.getConstructorValueHierarchy(kParameter);
 			wrappers.add(valueBoxing::wrap);
 		}
 	}
@@ -242,9 +242,9 @@ class KotlinInstantiationDelegate {
 		}
 
 		// candidate can be also a wrapper
+		Class<?> componentOrWrapperType = KotlinValueUtils.getConstructorValueHierarchy(candidateParameter.getType())
+				.getActualType();
 
-		Class<?> componentType = KotlinValueUtils.getValueHierarchy(candidateParameter.getType()).getActualType();
-
-		return constructorParameter.getType().equals(componentType);
+		return constructorParameter.getType().equals(componentOrWrapperType);
 	}
 }

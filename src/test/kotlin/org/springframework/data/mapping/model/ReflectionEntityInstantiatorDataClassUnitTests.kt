@@ -56,6 +56,16 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 		assertThat(instance.lastname).isEqualTo("White")
 	}
 
+	@Test // GH-2806
+	fun `should instantiate type with value class defaulting`() {
+
+		every { provider.getParameterValue<Int>(any()) }.returns(1)
+
+		val instance = construct(WithDefaultPrimitiveValue::class)
+
+		assertThat(instance.pvd.id).isEqualTo(1)
+	}
+
 	private fun <T : Any> construct(typeToCreate: KClass<T>): T {
 
 		val entity = mockk<PersistentEntity<T, SamplePersistentProperty>>()

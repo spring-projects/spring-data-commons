@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.model
 
 import org.springframework.data.annotation.PersistenceCreator
+import java.time.LocalDate
 
 /**
  * @author Mark Paluch
@@ -58,12 +59,77 @@ value class MyGenericValue<T>(val id: T)
 value class MyGenericBoundValue<T : CharSequence>(val id: T)
 
 data class WithGenericValue(
+	// ctor: WithGenericValue(CharSequence string, CharSequence charseq, Object recursive, DefaultConstructorMarker $constructor_marker)
 	val string: MyGenericBoundValue<String>,
 	val charseq: MyGenericBoundValue<CharSequence>,
 	val recursive: MyGenericValue<MyGenericValue<String>>
+
+	// copy: copy-XQwFSJ0$default(WithGenericValue var0, CharSequence var1, CharSequence var2, MyGenericValue var3, int var4, Object var5) {
 )
 
 data class WithGenericNullableValue(val recursive: MyGenericValue<MyGenericValue<String>>?)
+
+@JvmInline
+value class PrimitiveNullableValue(val id: Int?)
+
+data class WithDefaultPrimitiveValue(
+	val pvd: PrimitiveValue = PrimitiveValue(1)
+)
+
+/**
+ * Copy method for nullable value component type uses wrappers while constructor uses the component type.
+ */
+data class WithPrimitiveNullableValue(
+	// ctor:    public WithPrimitiveNullableValue(Integer nv, PrimitiveNullableValue nvn, Integer nvd, PrimitiveNullableValue nvdn, DefaultConstructorMarker $constructor_marker) {
+	val nv: PrimitiveNullableValue,
+	val nvn: PrimitiveNullableValue?,
+	val nvd: PrimitiveNullableValue = PrimitiveNullableValue(1),
+	val nvdn: PrimitiveNullableValue? = PrimitiveNullableValue(1),
+
+	// copy:   copy-lcs_1S0$default(WithPrimitiveNullableValue var0, PrimitiveNullableValue var1, PrimitiveNullableValue var2, PrimitiveNullableValue var3, PrimitiveNullableValue var4, int var5, Object var6)
+)
+
+@JvmInline
+value class PrimitiveValue(val id: Int)
+
+data class WithPrimitiveValue(
+
+	// ctor: int,org.springframework.data.mapping.model.KotlinValueUtilsUnitTests$PrimitiveValue,int,org.springframework.data.mapping.model.KotlinValueUtilsUnitTests$PrimitiveValue,kotlin.jvm.internal.DefaultConstructorMarker
+	val nv: PrimitiveValue,
+	val nvn: PrimitiveValue?,
+	val nvd: PrimitiveValue = PrimitiveValue(1),
+	val nvdn: PrimitiveValue? = PrimitiveValue(1),
+
+	// copy: copy-XQwFSJ0$default(WithPrimitiveValue var0, int var1, PrimitiveValue var2, int var3, PrimitiveValue var4, int var5, Object var6)
+)
+
+@JvmInline
+value class StringValue(val id: String)
+
+data class WithStringValue(
+
+	// ctor: WithStringValue(String nv, String nvn, String nvd, String nvdn)
+	val nv: StringValue,
+	val nvn: StringValue?,
+	val nvd: StringValue = StringValue("1"),
+	val nvdn: StringValue? = StringValue("1"),
+
+	// copy: copy-QB2wzyg$default(WithStringValue var0, String var1, String var2, String var3, String var4, int var5, Object var6)
+)
+
+
+data class Inner(val id: LocalDate, val foo: String)
+
+@JvmInline
+value class Outer(val id: Inner = Inner(LocalDate.MAX, ""))
+
+data class WithCustomInner(
+
+	// ctor: private WithCustomInner(Inner nv)
+	val nv: Outer
+
+	// copy: copy(org.springframework.data.mapping.model.WithCustomInner,org.springframework.data.mapping.model.Inner,int,java.lang.Object)
+)
 
 class WithNestedMyNullableValueClass(
 	var id: MyNestedNullableValueClass? = MyNestedNullableValueClass(

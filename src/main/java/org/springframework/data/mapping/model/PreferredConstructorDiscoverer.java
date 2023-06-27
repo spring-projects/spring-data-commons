@@ -180,7 +180,6 @@ public interface PreferredConstructorDiscoverer {
 
 				Class<?> rawOwningType = type.getType();
 
-
 				// Kotlin can rewrite annotated constructors into synthetic ones so we need to inspect that first.
 				Optional<PreferredConstructor<T, P>> first = Arrays.stream(rawOwningType.getDeclaredConstructors()) //
 						.filter(it -> it.isSynthetic() && AnnotationUtils.findAnnotation(it, PersistenceCreator.class) != null)
