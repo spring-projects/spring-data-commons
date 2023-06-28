@@ -33,7 +33,7 @@ class ReflectionEntityInstantiatorValueClassUnitTests {
 
 	val provider = mockk<ParameterValueProvider<SamplePersistentProperty>>()
 
-	@Test // GH-2806
+	@Test // GH-1947
 	fun `should create instance`() {
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter")
@@ -44,7 +44,7 @@ class ReflectionEntityInstantiatorValueClassUnitTests {
 		assertThat(instance.id.id).isEqualTo("Walter")
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	fun `should create instance with defaulting without value`() {
 
 		every { provider.getParameterValue<String>(any()) } returns null
@@ -55,7 +55,7 @@ class ReflectionEntityInstantiatorValueClassUnitTests {
 		assertThat(instance.baz?.id).isEqualTo("id")
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	fun `should use annotated constructor for types using nullable value class`() {
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", null)

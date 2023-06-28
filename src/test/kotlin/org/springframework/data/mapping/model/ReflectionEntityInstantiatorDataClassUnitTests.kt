@@ -56,7 +56,7 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 		assertThat(instance.lastname).isEqualTo("White")
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	fun `should instantiate type with value class defaulting`() {
 
 		every { provider.getParameterValue<Int>(any()) }.returns(1)

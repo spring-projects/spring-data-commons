@@ -26,7 +26,7 @@ import kotlin.reflect.jvm.javaConstructor
  */
 class KotlinValueUtilsUnitTests {
 
-	@Test // GH-2806
+	@Test // GH-1947
 	internal fun considersCustomInnerConstructorRules() {
 
 		val ctor = WithCustomInner::class.constructors.iterator().next();
@@ -40,7 +40,7 @@ class KotlinValueUtilsUnitTests {
 		assertThat(vh.appliesBoxing()).isFalse
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	internal fun considersCustomInnerCopyRules() {
 
 		val copy = KotlinCopyMethod.findCopyMethod(WithCustomInner::class.java).get();
@@ -55,7 +55,7 @@ class KotlinValueUtilsUnitTests {
 		assertThat(vh.appliesBoxing()).isFalse
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	internal fun inlinesTypesToStringConstructorRules() {
 
 		val ctor = WithStringValue::class.constructors.iterator().next();
@@ -71,7 +71,7 @@ class KotlinValueUtilsUnitTests {
 		}
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	internal fun inlinesTypesToStringCopyRules() {
 
 		val copy = KotlinCopyMethod.findCopyMethod(WithStringValue::class.java).get();
@@ -91,7 +91,7 @@ class KotlinValueUtilsUnitTests {
 		}
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	internal fun inlinesTypesToIntConstructorRules() {
 
 		val ctor = WithPrimitiveValue::class.constructors.iterator().next();
@@ -118,7 +118,7 @@ class KotlinValueUtilsUnitTests {
 		assertThat(nvdn.appliesBoxing()).isTrue
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	internal fun inlinesTypesToIntCopyRules() {
 
 		val copy = KotlinCopyMethod.findCopyMethod(WithPrimitiveValue::class.java).get();
@@ -145,7 +145,7 @@ class KotlinValueUtilsUnitTests {
 		assertThat(nvdn.appliesBoxing()).isTrue
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	internal fun inlinesGenericTypesConstructorRules() {
 
 		val ctor = WithGenericValue::class.constructors.iterator().next();
@@ -166,7 +166,7 @@ class KotlinValueUtilsUnitTests {
 		assertThat(recursive.appliesBoxing()).isFalse
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	internal fun inlinesGenericTypesCopyRules() {
 
 		val copy = KotlinCopyMethod.findCopyMethod(WithGenericValue::class.java).get();

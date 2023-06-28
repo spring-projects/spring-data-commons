@@ -45,7 +45,7 @@ public class KotlinPropertyAccessorFactoryTests {
 	private SampleMappingContext mappingContext = new SampleMappingContext();
 
 	@MethodSource("factories")
-	@ParameterizedTest // GH-2806
+	@ParameterizedTest // GH-1947
 	void shouldGeneratePropertyAccessorForTypeWithValueClass(PersistentPropertyAccessorFactory factory) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
@@ -72,7 +72,7 @@ public class KotlinPropertyAccessorFactoryTests {
 	}
 
 	@MethodSource("factories")
-	@ParameterizedTest // GH-2806
+	@ParameterizedTest // GH-1947
 	void shouldGeneratePropertyAccessorForTypeWithNullableValueClass(PersistentPropertyAccessorFactory factory)
 			throws ReflectiveOperationException {
 
@@ -96,7 +96,7 @@ public class KotlinPropertyAccessorFactoryTests {
 	}
 
 	@MethodSource("factories")
-	@ParameterizedTest // GH-2806
+	@ParameterizedTest // GH-1947
 	void shouldGeneratePropertyAccessorForDataClassWithNullableValueClass(PersistentPropertyAccessorFactory factory)
 			throws ReflectiveOperationException {
 
@@ -137,7 +137,7 @@ public class KotlinPropertyAccessorFactoryTests {
 	}
 
 	@MethodSource("factories")
-	@ParameterizedTest // GH-2806
+	@ParameterizedTest // GH-1947
 	void nestedNullablePropertiesShouldBeSetCorrectly(PersistentPropertyAccessorFactory factory) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
@@ -180,7 +180,7 @@ public class KotlinPropertyAccessorFactoryTests {
 	}
 
 	@MethodSource("factories")
-	@ParameterizedTest // GH-2806
+	@ParameterizedTest // GH-1947
 	void genericInlineClassesShouldWork(PersistentPropertyAccessorFactory factory) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
@@ -231,7 +231,7 @@ public class KotlinPropertyAccessorFactoryTests {
 	}
 
 	@MethodSource("factories")
-	@ParameterizedTest // GH-2806
+	@ParameterizedTest // GH-1947
 	void genericNullableInlineClassesShouldWork(PersistentPropertyAccessorFactory factory) {
 
 		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext

@@ -178,7 +178,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		assertThat(instance.baz?.id).isEqualTo("id")
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	fun `should use annotated constructor for types using nullable value class`() {
 
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", null)
@@ -189,7 +189,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		assertThat(instance.baz?.id).isEqualTo("Walter-pref")
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	fun `should instantiate type with value class defaulting`() {
 
 		every { provider.getParameterValue<Int>(any()) }.returns(1)
@@ -199,7 +199,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		assertThat(instance.pvd.id).isEqualTo(1)
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	fun `should instantiate type with nullable primitive value class defaulting`() {
 
 		every { provider.getParameterValue<Any>(any()) }.returnsMany(
@@ -217,7 +217,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		assertThat(instance.nvdn!!.id).isEqualTo(4)
 	}
 
-	@Test // GH-2806
+	@Test // GH-1947
 	fun `should instantiate type with nullable value class defaulting`() {
 
 		// String nv, String nvn, String nvd, String nvdn, LocalDate dnv, LocalDate dnvn, LocalDate dnvd, LocalDate dnvdn
