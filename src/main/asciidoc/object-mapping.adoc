@@ -436,3 +436,27 @@ You can exclude properties by annotating these with `@Transient`.
 2. How to represent properties in your data store?
 Using the same field/column name for different values typically leads to corrupt data so you should annotate least one of the properties using an explicit field/column name.
 3. Using `@AccessType(PROPERTY)` cannot be used as the super-property cannot be set.
+
+[[mapping.kotlin.value.classes]]
+=== Kotlin Value Classes
+
+Kotlin Value Classes are designed for a more expressive domain model to make underlying concepts explicit.
+Spring Data can read and write types that define properties using Value Classes.
+
+Consider the following domain model:
+
+====
+[source,kotlin]
+----
+@JvmInline
+value class EmailAddress(val theAddress: String)                                    <1>
+
+data class Contact(val id: String, val name:String, val emailAddress: EmailAddress) <2>
+----
+
+<1> A simple value class with a non-nullable value type.
+<2> Data class defining a property using the `EmailAddress` value class.
+====
+
+NOTE: Non-nullable properties using non-primitive value types are flattened in the compiled class to the value type.
+Nullable primitive value types or nullable value-in-value types are represented with their wrapper type and that affects how value types are represented in the database.
