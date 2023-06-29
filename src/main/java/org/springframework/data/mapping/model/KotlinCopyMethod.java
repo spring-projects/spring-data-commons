@@ -30,6 +30,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -38,16 +39,21 @@ import org.springframework.core.ResolvableType;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimplePropertyHandler;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Value object to represent a Kotlin {@code copy} method. The lookup requires a {@code copy} method that matches the
  * primary constructor of the class regardless of whether the primary constructor is the persistence constructor.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.1
  */
 class KotlinCopyMethod {
+
+	private static final Map<Class<?>, Optional<KotlinCopyMethod>> COPY_METHOD_CACHE = new ConcurrentReferenceHashMap<>();
 
 	private final Method publicCopyMethod;
 	private final Method syntheticCopyMethod;
@@ -78,15 +84,17 @@ class KotlinCopyMethod {
 
 		Assert.notNull(type, "Type must not be null");
 
-		Optional<Method> syntheticCopyMethod = findSyntheticCopyMethod(type);
+		return COPY_METHOD_CACHE.computeIfAbsent(type, it -> {
 
-		if (!syntheticCopyMethod.isPresent()) {
-			return Optional.empty();
-		}
+			Optional<Method> syntheticCopyMethod = findSyntheticCopyMethod(type);
 
-		Optional<Method> publicCopyMethod = syntheticCopyMethod.flatMap(KotlinCopyMethod::findPublicCopyMethod);
+			if (!syntheticCopyMethod.isPresent()) {
+				return Optional.empty();
+			}
 
-		return publicCopyMethod.map(method -> new KotlinCopyMethod(method, syntheticCopyMethod.get()));
+			Optional<Method> publicCopyMethod = syntheticCopyMethod.flatMap(KotlinCopyMethod::findPublicCopyMethod);
+			return publicCopyMethod.map(method -> new KotlinCopyMethod(method, syntheticCopyMethod.get()));
+		});
 	}
 
 	public Method getPublicCopyMethod() {
@@ -171,7 +179,7 @@ class KotlinCopyMethod {
 			return Optional.empty();
 		}
 
-		boolean usesValueClasses = KotlinValueUtils.hasValueClassProperty(type);
+		boolean usesValueClasses = KotlinReflectionUtils.hasValueClassProperty(type);
 		List<KParameter> constructorArguments = getComponentArguments(primaryConstructor);
 		Predicate<String> isCopyMethod;
 
@@ -242,7 +250,7 @@ class KotlinCopyMethod {
 			return Optional.empty();
 		}
 
-		boolean usesValueClasses = KotlinValueUtils.hasValueClassProperty(type);
+		boolean usesValueClasses = KotlinReflectionUtils.hasValueClassProperty(type);
 
 		Predicate<String> isCopyMethod = usesValueClasses ? (it -> it.startsWith("copy-") && it.endsWith("$default"))
 				: (it -> it.equals("copy$default"));
@@ -277,7 +285,7 @@ class KotlinCopyMethod {
 
 			KParameter kParameter = constructorArguments.get(i);
 
-			if (KotlinValueUtils.isValueClass(kParameter.getType())) {
+			if (KotlinReflectionUtils.isValueClass(kParameter.getType())) {
 				// sigh. This can require deep unwrapping because the public vs. the synthetic copy methods use different
 				// parameter types.
 				continue;

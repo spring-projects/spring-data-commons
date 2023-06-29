@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.core.KotlinDetector;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -42,39 +41,6 @@ import org.springframework.util.Assert;
  * @since 3.2
  */
 class KotlinValueUtils {
-
-	/**
-	 * Returns whether the given {@link KType} is a {@link KClass#isValue() value} class.
-	 *
-	 * @param type the kotlin type to inspect.
-	 * @return {@code true} the type is a value class.
-	 */
-	public static boolean isValueClass(KType type) {
-		return type.getClassifier()instanceof KClass<?> kc && kc.isValue();
-	}
-
-	/**
-	 * Returns whether the given class makes uses Kotlin {@link KClass#isValue() value} classes.
-	 *
-	 * @param type the kotlin type to inspect.
-	 * @return {@code true} when at least one property uses Kotlin value classes.
-	 */
-	public static boolean hasValueClassProperty(Class<?> type) {
-
-		if (!KotlinDetector.isKotlinType(type)) {
-			return false;
-		}
-
-		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
-
-		for (KCallable<?> member : kotlinClass.getMembers()) {
-			if (member instanceof KProperty<?> kp && isValueClass(kp.getReturnType())) {
-				return true;
-			}
-		}
-
-		return false;
-	}
 
 	/**
 	 * Creates a value hierarchy across value types from a given {@link KParameter} for COPY method usage.
@@ -122,9 +88,10 @@ class KotlinValueUtils {
 			public boolean shouldApplyBoxing(KType type, boolean optional, KParameter component) {
 
 				Type javaType = ReflectJvmMapping.getJavaType(component.getType());
-				boolean isPrimitive = javaType instanceof Class<?> c && c.isPrimitive();
 
 				if (type.isMarkedNullable() || optional) {
+
+					boolean isPrimitive = javaType instanceof Class<?> c && c.isPrimitive();
 					return (isPrimitive && type.isMarkedNullable()) || component.getType().isMarkedNullable();
 				}
 

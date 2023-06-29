@@ -90,6 +90,25 @@ data class WithPrimitiveNullableValue(
 )
 
 @JvmInline
+value class PrimitiveArrayValue(val ids: IntArray)
+
+@JvmInline
+value class PrimitiveNullableArrayValue(val ids: IntArray?)
+
+data class WithPrimitiveArrays(
+
+	// ctor WithPrimitiveArrays(int[], int[], int[], int[], int[], int, DefaultConstructorMarker)
+
+	val pa: PrimitiveArrayValue,
+	val pan: PrimitiveArrayValue?,
+	val pna: PrimitiveNullableArrayValue,
+	val pad: PrimitiveArrayValue = PrimitiveArrayValue(intArrayOf(1, 2, 3)),
+	val pand: PrimitiveArrayValue? = PrimitiveArrayValue(intArrayOf(1, 2, 3))
+
+	// copy: copy-NCSWWqw$default(WithPrimitiveArrays var0, int[] var1, int[] var2, PrimitiveNullableArrayValue var3, int[] var4, int[] var5, int var4, Object var5) {
+)
+
+@JvmInline
 value class PrimitiveValue(val id: Int)
 
 data class WithPrimitiveValue(

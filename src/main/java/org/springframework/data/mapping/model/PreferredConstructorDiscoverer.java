@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.PersistenceCreator;
@@ -220,6 +221,10 @@ public interface PreferredConstructorDiscoverer {
 		 * @return the appropriate discoverer for {@code type}.
 		 */
 		private static Discoverers findDiscoverer(Class<?> type) {
+
+			if(!KotlinDetector.isKotlinPresent()) {
+				return DEFAULT;
+			}
 			return KotlinReflectionUtils.isSupportedKotlinClass(type) ? KOTLIN : DEFAULT;
 		}
 

@@ -146,6 +146,65 @@ class KotlinValueUtilsUnitTests {
 	}
 
 	@Test // GH-1947
+	internal fun inlinesTypesToPrimitiveArrayCopyRules() {
+
+		val copy = KotlinCopyMethod.findCopyMethod(WithPrimitiveArrays::class.java).get();
+		assertThat(copy.syntheticCopyMethod.toString()).contains("(org.springframework.data.mapping.model.WithPrimitiveArrays,int[],int[],org.springframework.data.mapping.model.PrimitiveNullableArrayValue,int[],int[],int,java.lang.Object)")
+
+		val parameters = copy.copyFunction.parameters;
+
+		val pa = KotlinValueUtils.getConstructorValueHierarchy(parameters[1]);
+		assertThat(pa.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pa.appliesBoxing()).isFalse
+
+		val pan = KotlinValueUtils.getConstructorValueHierarchy(parameters[2]);
+		assertThat(pan.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pan.appliesBoxing()).isFalse
+
+		val pna = KotlinValueUtils.getConstructorValueHierarchy(parameters[3]);
+		assertThat(pna.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pna.parameterType).isEqualTo(PrimitiveNullableArrayValue::class.java)
+		assertThat(pna.appliesBoxing()).isTrue
+
+		val pad = KotlinValueUtils.getConstructorValueHierarchy(parameters[4]);
+		assertThat(pad.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pad.appliesBoxing()).isFalse
+
+		val pand = KotlinValueUtils.getConstructorValueHierarchy(parameters[5]);
+		assertThat(pand.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pand.appliesBoxing()).isFalse
+	}
+
+	@Test // GH-1947
+	internal fun inlinesPrimitiveArrayConstructorRules() {
+
+		val ctor = WithPrimitiveArrays::class.constructors.iterator().next();
+		assertThat(ctor.javaConstructor.toString()).contains("(int[],int[],int[],int[],int[],kotlin.jvm.internal.DefaultConstructorMarker)")
+
+		val iterator = ctor.parameters.iterator()
+
+		val pa = KotlinValueUtils.getConstructorValueHierarchy(iterator.next());
+		assertThat(pa.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pa.appliesBoxing()).isFalse
+
+		val pan = KotlinValueUtils.getConstructorValueHierarchy(iterator.next());
+		assertThat(pan.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pan.appliesBoxing()).isFalse
+
+		val pna = KotlinValueUtils.getConstructorValueHierarchy(iterator.next());
+		assertThat(pna.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pna.appliesBoxing()).isFalse
+
+		val pad = KotlinValueUtils.getConstructorValueHierarchy(iterator.next());
+		assertThat(pad.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pad.appliesBoxing()).isFalse
+
+		val pand = KotlinValueUtils.getConstructorValueHierarchy(iterator.next());
+		assertThat(pand.actualType).isEqualTo(IntArray::class.java)
+		assertThat(pand.appliesBoxing()).isFalse
+	}
+
+	@Test // GH-1947
 	internal fun inlinesGenericTypesConstructorRules() {
 
 		val ctor = WithGenericValue::class.constructors.iterator().next();

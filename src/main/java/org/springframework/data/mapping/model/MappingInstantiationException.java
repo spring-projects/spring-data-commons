@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.core.KotlinDetector;
 import org.springframework.data.mapping.FactoryMethod;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.PersistentEntity;
@@ -117,7 +118,7 @@ public class MappingInstantiationException extends RuntimeException {
 
 		Constructor<?> constructor = preferredConstructor.getConstructor();
 
-		if (KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
+		if (KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
 
 			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
 
@@ -133,7 +134,7 @@ public class MappingInstantiationException extends RuntimeException {
 
 		Method constructor = factoryMethod.getFactoryMethod();
 
-		if (KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
+		if (KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
 
 			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
 

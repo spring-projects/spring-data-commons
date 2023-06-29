@@ -22,6 +22,7 @@ import java.util.Map;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -58,7 +59,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	 */
 	public static boolean supports(Class<?> repositoryInterface) {
 
-		return KotlinReflectionUtils.isSupportedKotlinClass(repositoryInterface)
+		return KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(repositoryInterface)
 				|| NullableUtils.isNonNull(repositoryInterface, ElementType.METHOD)
 				|| NullableUtils.isNonNull(repositoryInterface, ElementType.PARAMETER);
 	}
