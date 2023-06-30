@@ -23,12 +23,16 @@ import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import org.eclipse.collections.api.list.ImmutableList;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -38,6 +42,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link QueryMethod}.
@@ -257,6 +262,28 @@ class QueryMethodUnitTests {
 		assertThat(queryMethod.isCollectionQuery()).isTrue();
 	}
 
+	@TestFactory // GH-2869
+	Stream<DynamicTest> doesNotConsiderQueryMethodReturningAggregateImplementingStreamableACollectionQuery()
+			throws Exception {
+
+		var metadata = AbstractRepositoryMetadata.getMetadata(StreamableAggregateRepository.class);
+		var stream = Stream.of(
+				Map.entry("findBy", false),
+				Map.entry("findSubTypeBy", false),
+				Map.entry("findAllBy", true),
+				Map.entry("findOptionalBy", false));
+
+		return DynamicTest.stream(stream, //
+				it -> it.getKey() + " considered collection query -> " + it.getValue(), //
+				it -> {
+
+					var method = StreamableAggregateRepository.class.getMethod(it.getKey());
+					var queryMethod = new QueryMethod(method, metadata, factory);
+
+					assertThat(queryMethod.isCollectionQuery()).isEqualTo(it.getValue());
+				});
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -324,4 +351,21 @@ class QueryMethodUnitTests {
 	interface ContainerRepository extends Repository<Container, Long> {
 		Container someMethod();
 	}
+
+	// GH-2869
+
+	static abstract class StreamableAggregate implements Streamable<Object> {}
+
+	interface StreamableAggregateRepository extends Repository<StreamableAggregate, Object> {
+
+		StreamableAggregate findBy();
+
+		StreamableAggregateSubType findSubTypeBy();
+
+		Optional<StreamableAggregate> findOptionalBy();
+
+		Streamable<StreamableAggregate> findAllBy();
+	}
+
+	static abstract class StreamableAggregateSubType extends StreamableAggregate {}
 }

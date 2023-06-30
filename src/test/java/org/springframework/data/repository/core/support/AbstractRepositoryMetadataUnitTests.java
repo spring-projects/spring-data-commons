@@ -22,15 +22,21 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
+
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link AbstractRepositoryMetadata}.
@@ -113,6 +119,25 @@ class AbstractRepositoryMetadataUnitTests {
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(Container.class);
 	}
 
+	@TestFactory // GH-2869
+	Stream<DynamicTest> detectsReturnTypesForStreamableAggregates() throws Exception {
+
+		var metadata = AbstractRepositoryMetadata.getMetadata(StreamableAggregateRepository.class);
+		var methods = Stream.of(
+				Map.entry("findBy", StreamableAggregate.class),
+				Map.entry("findSubTypeBy", StreamableAggregateSubType.class),
+				Map.entry("findAllBy", StreamableAggregate.class),
+				Map.entry("findOptional", StreamableAggregate.class));
+
+		return DynamicTest.stream(methods, //
+				it -> it.getKey() + "'s returned domain class is " + it.getValue(), //
+				it -> {
+
+					var method = StreamableAggregateRepository.class.getMethod(it.getKey());
+					assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(it.getValue());
+				});
+	}
+
 	interface UserRepository extends Repository<User, Long> {
 
 		User findSingle();
@@ -157,4 +182,20 @@ class AbstractRepositoryMetadataUnitTests {
 
 	interface CompletePageableAndSortingRepository extends PagingAndSortingRepository<Container, Long> {}
 
+	// GH-2869
+
+	static abstract class StreamableAggregate implements Streamable<Object> {}
+
+	interface StreamableAggregateRepository extends Repository<StreamableAggregate, Object> {
+
+		StreamableAggregate findBy();
+
+		StreamableAggregateSubType findSubTypeBy();
+
+		Streamable<StreamableAggregate> findAllBy();
+
+		Optional<StreamableAggregate> findOptional();
+	}
+
+	static abstract class StreamableAggregateSubType extends StreamableAggregate {}
 }
