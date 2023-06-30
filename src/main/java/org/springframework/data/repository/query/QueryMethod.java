@@ -32,6 +32,7 @@ import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -265,7 +266,15 @@ public class QueryMethod {
 			return false;
 		}
 
-		Class<?> returnType = metadata.getReturnType(method).getType();
+		TypeInformation<?> returnTypeInformation = metadata.getReturnType(method);
+
+		// Check against simple wrapper types first
+		if (metadata.getDomainTypeInformation()
+				.isAssignableFrom(NullableWrapperConverters.unwrapActualType(returnTypeInformation))) {
+			return false;
+		}
+
+		Class<?> returnType = returnTypeInformation.getType();
 
 		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
 			return true;

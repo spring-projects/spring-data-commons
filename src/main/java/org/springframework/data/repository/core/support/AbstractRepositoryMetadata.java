@@ -105,12 +105,13 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(java.lang.reflect.Method)
 	 */
+	@Override
 	public Class<?> getReturnedDomainClass(Method method) {
 
 		TypeInformation<?> returnType = getReturnType(method);
+		returnType = ReactiveWrapperConverters.unwrapWrapperTypes(returnType);
 
-		return QueryExecutionConverters.unwrapWrapperTypes(ReactiveWrapperConverters.unwrapWrapperTypes(returnType))
-				.getType();
+		return QueryExecutionConverters.unwrapWrapperTypes(returnType, getDomainTypeInformation()).getType();
 	}
 
 	/*
