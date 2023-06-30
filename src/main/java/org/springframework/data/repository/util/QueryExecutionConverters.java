@@ -36,8 +36,8 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Window;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Window;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.util.CustomCollections;
 import org.springframework.data.util.NullableWrapper;
@@ -85,6 +85,7 @@ public abstract class QueryExecutionConverters {
 	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<>();
 	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>();
 	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentReferenceHashMap<>();
+	private static final TypeInformation<Void> VOID_INFORMATION = TypeInformation.of(Void.class);
 
 	static {
 
@@ -235,14 +236,20 @@ public abstract class QueryExecutionConverters {
 	}
 
 	/**
-	 * Recursively unwraps well known wrapper types from the given {@link TypeInformation}.
+	 * Recursively unwraps well known wrapper types from the given {@link TypeInformation} but aborts at the given
+	 * reference type.
 	 *
 	 * @param type must not be {@literal null}.
+	 * @param reference must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	public static TypeInformation<?> unwrapWrapperTypes(TypeInformation<?> type) {
+	public static TypeInformation<?> unwrapWrapperTypes(TypeInformation<?> type, TypeInformation<?> reference) {
 
 		Assert.notNull(type, "type must not be null");
+
+		if (reference.isAssignableFrom(type)) {
+			return type;
+		}
 
 		Class<?> rawType = type.getType();
 
@@ -253,7 +260,17 @@ public abstract class QueryExecutionConverters {
 				|| supports(rawType) //
 				|| Stream.class.isAssignableFrom(rawType);
 
-		return needToUnwrap ? unwrapWrapperTypes(type.getRequiredComponentType()) : type;
+		return needToUnwrap ? unwrapWrapperTypes(type.getRequiredComponentType(), reference) : type;
+	}
+
+	/**
+	 * Recursively unwraps well known wrapper types from the given {@link TypeInformation}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	public static TypeInformation<?> unwrapWrapperTypes(TypeInformation<?> type) {
+		return unwrapWrapperTypes(type, VOID_INFORMATION);
 	}
 
 	/**
