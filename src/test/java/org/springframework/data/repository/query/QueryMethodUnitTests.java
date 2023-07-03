@@ -23,9 +23,9 @@ import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -269,13 +269,14 @@ class QueryMethodUnitTests {
 			throws Exception {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(StreamableAggregateRepository.class);
-		Stream<Entry<String, Boolean>> stream = Stream.of(
-				Map.entry("findBy", false),
-				Map.entry("findSubTypeBy", false),
-				Map.entry("findAllBy", true),
-				Map.entry("findOptionalBy", false));
 
-		return DynamicTest.stream(stream, //
+		Map<String, Boolean> map = new LinkedHashMap<>();
+		map.put("findBy", false);
+		map.put("findSubTypeBy", false);
+		map.put("findAllBy", true);
+		map.put("findOptionalBy", false);
+
+		return DynamicTest.stream(map.entrySet().stream(), //
 				it -> it.getKey() + " considered collection query -> " + it.getValue(), //
 				it -> {
 

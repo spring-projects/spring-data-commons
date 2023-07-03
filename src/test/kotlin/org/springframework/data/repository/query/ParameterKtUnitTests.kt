@@ -26,7 +26,7 @@ import kotlin.reflect.jvm.javaMethod
  *
  * @author Mark Paluch
  */
-class ParameterUnitTests {
+class ParameterKtUnitTests {
 
 	@Test // DATACMNS-1508
 	fun `should consider Continuation a special parameter`() {

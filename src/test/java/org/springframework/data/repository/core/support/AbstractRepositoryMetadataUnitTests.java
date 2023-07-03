@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -121,13 +121,14 @@ class AbstractRepositoryMetadataUnitTests {
 	Stream<DynamicTest> detectsReturnTypesForStreamableAggregates() throws Exception {
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(StreamableAggregateRepository.class);
-		Stream<Entry<String, Class<?>>> methods = Stream.of(
-				Map.entry("findBy", StreamableAggregate.class),
-				Map.entry("findSubTypeBy", StreamableAggregateSubType.class),
-				Map.entry("findAllBy", StreamableAggregate.class),
-				Map.entry("findOptional", StreamableAggregate.class));
 
-		return DynamicTest.stream(methods, //
+		Map<String, Class<?>> map = new LinkedHashMap<>();
+		map.put("findBy", StreamableAggregate.class);
+		map.put("findSubTypeBy", StreamableAggregateSubType.class);
+		map.put("findAllBy", StreamableAggregate.class);
+		map.put("findOptionalBy", StreamableAggregate.class);
+
+		return DynamicTest.stream(map.entrySet().stream(), //
 				it -> it.getKey() + "'s returned domain class is " + it.getValue(), //
 				it -> {
 
@@ -190,7 +191,7 @@ class AbstractRepositoryMetadataUnitTests {
 
 		Streamable<StreamableAggregate> findAllBy();
 
-		Optional<StreamableAggregate> findOptional();
+		Optional<StreamableAggregate> findOptionalBy();
 	}
 
 	static abstract class StreamableAggregateSubType extends StreamableAggregate {}
