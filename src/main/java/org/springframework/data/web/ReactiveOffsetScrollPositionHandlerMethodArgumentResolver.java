@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,37 +15,36 @@
  */
 package org.springframework.data.web;
 
+import java.util.List;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.OffsetScrollPosition;
-import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.BindingContext;
 import org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver;
 import org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentResolver;
 import org.springframework.web.server.ServerWebExchange;
 
-import java.util.List;
-
 /**
- * Reactive {@link HandlerMethodArgumentResolver} to create {@link OffsetScrollPosition} instances from query string parameters.
+ * Reactive {@link HandlerMethodArgumentResolver} to create {@link OffsetScrollPosition} instances from query string
+ * parameters.
  *
- * @since 3.2
  * @author Yanming Zhou
+ * @since 3.2
  */
-public class ReactiveOffsetScrollPositionHandlerMethodArgumentResolver extends OffsetScrollPositionHandlerMethodArgumentResolverSupport
-		implements SyncHandlerMethodArgumentResolver {
+public class ReactiveOffsetScrollPositionHandlerMethodArgumentResolver
+		extends OffsetScrollPositionHandlerMethodArgumentResolverSupport implements SyncHandlerMethodArgumentResolver {
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return OffsetScrollPosition.class.equals(parameter.getParameterType());
+		return OffsetScrollPosition.class.equals(parameter.nestedIfOptional().getNestedParameterType());
 	}
 
-	@NonNull
 	@Override
-	public OffsetScrollPosition resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
+	public Object resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
 			ServerWebExchange exchange) {
 
 		List<String> offsetParameter = exchange.getRequest().getQueryParams().get(getOffsetParameter(parameter));
 
-		return parseParameterIntoOffsetScrollPosition(offsetParameter);
+		return adaptArgumentIfNecessary(parseParameterIntoOffsetScrollPosition(offsetParameter), parameter);
 	}
 }

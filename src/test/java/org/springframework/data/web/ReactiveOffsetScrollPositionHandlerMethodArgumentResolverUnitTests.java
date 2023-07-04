@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
  */
 package org.springframework.data.web;
 
-import org.junit.jupiter.api.BeforeAll;
+import static org.assertj.core.api.Assertions.*;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
@@ -26,41 +29,40 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.util.StringUtils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Unit tests for {@link ReactiveOffsetScrollPositionHandlerMethodArgumentResolver}.
  *
- * @since 3.2
  * @author Yanming Zhou
+ * @author Mark Paluch
  */
 class ReactiveOffsetScrollPositionHandlerMethodArgumentResolverUnitTests {
 
-	static MethodParameter PARAMETER;
+	static final MethodParameter PARAMETER = getParameterOfMethod("supportedMethod");
+	static final MethodParameter OPTIONAL_PARAMETER = getOptionalParameterOfMethod("supportedMethodWithOptional");
 
-	@BeforeAll
-	static void setUp() throws Exception {
-		PARAMETER = getParameterOfMethod("supportedMethod");
+	final ReactiveOffsetScrollPositionHandlerMethodArgumentResolver sut = new ReactiveOffsetScrollPositionHandlerMethodArgumentResolver();
+
+	@Test // GH-2856
+	void supportsOffsetScrollPositionParameter() {
+		assertThat(sut.supportsParameter(PARAMETER)).isTrue();
 	}
 
-	@Test
-	void supportsSortParameter() {
-
-		var resolver = new ReactiveOffsetScrollPositionHandlerMethodArgumentResolver();
-
-		assertThat(resolver.supportsParameter(PARAMETER)).isTrue();
+	@Test // GH-2856
+	void supportsOptionalOffsetScrollPositionParameter() {
+		assertThat(sut.supportsParameter(OPTIONAL_PARAMETER)).isTrue();
 	}
 
-	@Test
-	void fallbackToDefaultOffset() {
+	@Test // GH-2856
+	void fallbackToNullOffset() {
 
 		var parameter = TestUtils.getParameterOfMethod(Controller.class, "unsupportedMethod", String.class);
 		var request = MockServerHttpRequest.get("/foo").build();
 		var position = resolveOffset(request, parameter);
-		assertThat(position).isEqualTo(ScrollPosition.offset());
+
+		assertThat(position).isNull();
 	}
 
-	@Test
+	@Test // GH-2856
 	void discoversOffsetFromRequest() {
 
 		var reference = ScrollPosition.offset(5);
@@ -68,7 +70,34 @@ class ReactiveOffsetScrollPositionHandlerMethodArgumentResolverUnitTests {
 		assertSupportedAndResolvedTo(getRequestWithOffset(reference, null), PARAMETER, reference);
 	}
 
-	@Test
+	@Test // GH-2856
+	void returnsNullIfNotSpecified() {
+
+		var request = MockServerHttpRequest.get("/foo").build();
+		var position = resolveOffset(request, PARAMETER);
+
+		assertThat(position).isNull();
+	}
+
+	@Test // GH-2856
+	void returnsOptionalParameterFromRequest() {
+
+		var request = MockServerHttpRequest.get("/foo?offset=5").build();
+		var position = resolveOffset(request, OPTIONAL_PARAMETER);
+
+		assertThat(position).isEqualTo(Optional.of(ScrollPosition.offset(5)));
+	}
+
+	@Test // GH-2856
+	void returnsEmptyOptionalIfNotSpecified() {
+
+		var request = MockServerHttpRequest.get("/foo").build();
+		var position = resolveOffset(request, OPTIONAL_PARAMETER);
+
+		assertThat(position).isEqualTo(Optional.empty());
+	}
+
+	@Test // GH-2856
 	void discoversOffsetFromRequestWithMultipleParams() {
 
 		var request = MockServerHttpRequest.get("/foo?offset=5&offset=6").build();
@@ -76,40 +105,32 @@ class ReactiveOffsetScrollPositionHandlerMethodArgumentResolverUnitTests {
 		assertThat(resolveOffset(request, PARAMETER)).isEqualTo(ScrollPosition.offset(5));
 	}
 
-	@Test
+	@Test // GH-2856
 	void discoversQualifiedOffsetFromRequest() {
 
 		var parameter = getParameterOfMethod("qualifiedOffset");
 		var reference = ScrollPosition.offset(5);
 
-		assertSupportedAndResolvedTo(getRequestWithOffset(reference, "qual"), parameter, reference);
+		assertSupportedAndResolvedTo(getRequestWithOffset(reference, "hello"), parameter, reference);
 	}
 
-	@Test
-	void returnsDefaultForOffsetParamSetToNothing() {
-
-		var request = MockServerHttpRequest.get("/foo").build();
-
-		assertThat(resolveOffset(request, PARAMETER)).isEqualTo(ScrollPosition.offset());
-	}
-
-	@Test
-	void returnsDefaultForEmptyOffsetParam() {
+	@Test // GH-2856
+	void returnsNullForEmptyOffsetParam() {
 
 		var request = MockServerHttpRequest.get("/foo?offset=").build();
 
-		assertThat(resolveOffset(request, PARAMETER)).isEqualTo(ScrollPosition.offset());
+		assertThat(resolveOffset(request, PARAMETER)).isNull();
 	}
 
-	@Test
-	void returnsDefaultForOffsetParamIsInvalidProperty() {
+	@Test // GH-2856
+	void returnsNullForOffsetParamIsInvalidProperty() {
 
 		var request = MockServerHttpRequest.get("/foo?offset=invalid_number").build();
 
-		assertThat(resolveOffset(request, PARAMETER)).isEqualTo(ScrollPosition.offset());
+		assertThat(resolveOffset(request, PARAMETER)).isNull();
 	}
 
-	@Test
+	@Test // GH-2856
 	void emptyQualifierIsUsedInParameterLookup() {
 
 		var parameter = getParameterOfMethod("emptyQualifier");
@@ -118,7 +139,7 @@ class ReactiveOffsetScrollPositionHandlerMethodArgumentResolverUnitTests {
 		assertSupportedAndResolvedTo(getRequestWithOffset(reference, ""), parameter, reference);
 	}
 
-	@Test
+	@Test // GH-2856
 	void mergedQualifierIsUsedInParameterLookup() {
 
 		var parameter = getParameterOfMethod("mergedQualifier");
@@ -127,47 +148,51 @@ class ReactiveOffsetScrollPositionHandlerMethodArgumentResolverUnitTests {
 		assertSupportedAndResolvedTo(getRequestWithOffset(reference, "merged"), parameter, reference);
 	}
 
-	private static OffsetScrollPosition resolveOffset(MockServerHttpRequest request, MethodParameter parameter) {
+	@Nullable
+	private static Object resolveOffset(MockServerHttpRequest request, MethodParameter parameter) {
 
 		var resolver = new ReactiveOffsetScrollPositionHandlerMethodArgumentResolver();
 		return resolver.resolveArgumentValue(parameter, null, MockServerWebExchange.from(request));
 	}
 
-	private static void assertSupportedAndResolvedTo(MockServerHttpRequest request, MethodParameter parameter, OffsetScrollPosition position) {
+	private void assertSupportedAndResolvedTo(MockServerHttpRequest request, MethodParameter parameter,
+			OffsetScrollPosition position) {
 
-		var resolver = new ReactiveOffsetScrollPositionHandlerMethodArgumentResolver();
-		assertThat(resolver.supportsParameter(parameter)).isTrue();
+		assertThat(sut.supportsParameter(parameter)).isTrue();
 
-		try {
-			var resolved = resolveOffset(request, parameter);
-			assertThat(resolved).isEqualTo(position);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		var resolved = resolveOffset(request, parameter);
+		assertThat(resolved).isEqualTo(position);
 	}
-
 
 	private static MethodParameter getParameterOfMethod(String name) {
 		return TestUtils.getParameterOfMethod(Controller.class, name, OffsetScrollPosition.class);
 	}
 
-	private static MockServerHttpRequest getRequestWithOffset(@Nullable OffsetScrollPosition position, @Nullable String qualifier) {
+	private static MethodParameter getOptionalParameterOfMethod(String name) {
+		return TestUtils.getParameterOfMethod(Controller.class, name, Optional.class);
+	}
+
+	private static MockServerHttpRequest getRequestWithOffset(@Nullable OffsetScrollPosition position,
+			@Nullable String qualifier) {
 
 		if (position == null) {
 			return TestUtils.getWebfluxRequest();
 		}
 
 		String parameterName = StringUtils.hasLength(qualifier) ? qualifier + "_offset" : "offset";
-		return MockServerHttpRequest.get(String.format("foo?%s=%s", parameterName, String.valueOf(position.getOffset()))).build();
+		return MockServerHttpRequest.get(String.format("foo?%s=%s", parameterName, String.valueOf(position.getOffset())))
+				.build();
 	}
 
 	interface Controller {
 
 		void supportedMethod(OffsetScrollPosition offset);
 
+		void supportedMethodWithOptional(Optional<OffsetScrollPosition> offset);
+
 		void unsupportedMethod(String string);
 
-		void qualifiedOffset(@Qualifier("qual") OffsetScrollPosition offset);
+		void qualifiedOffset(@Qualifier("hello") OffsetScrollPosition offset);
 
 		void emptyQualifier(@Qualifier OffsetScrollPosition offset);
 

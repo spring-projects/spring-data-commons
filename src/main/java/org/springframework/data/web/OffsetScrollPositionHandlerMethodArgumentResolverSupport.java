@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,23 @@
  */
 package org.springframework.data.web;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Objects;
-
 /**
- * Base class providing methods for handler method argument resolvers to create {@link OffsetScrollPosition} instances from request
- * parameters.
+ * Base class providing methods for handler method argument resolvers to create {@link OffsetScrollPosition} instances
+ * from request parameters.
  *
- * @since 3.2
  * @author Yanming Zhou
+ * @since 3.2
  * @see OffsetScrollPositionHandlerMethodArgumentResolver
  * @see ReactiveOffsetScrollPositionHandlerMethodArgumentResolver
  */
@@ -71,7 +72,7 @@ public abstract class OffsetScrollPositionHandlerMethodArgumentResolverSupport {
 	 * @param parameter can be {@literal null}.
 	 * @return the offset parameter
 	 */
-	protected String getOffsetParameter(@Nullable MethodParameter parameter) {
+	protected String getOffsetParameter(MethodParameter parameter) {
 
 		StringBuilder builder = new StringBuilder();
 
@@ -89,19 +90,39 @@ public abstract class OffsetScrollPositionHandlerMethodArgumentResolverSupport {
 	 * Parses the given source into a {@link OffsetScrollPosition} instance.
 	 *
 	 * @param source could be {@literal null} or empty.
-	 * @return parsed OffsetScrollPosition
+	 * @return parsed OffsetScrollPosition or {@literal null} if it cannot be constructed.
 	 */
+	@Nullable
 	OffsetScrollPosition parseParameterIntoOffsetScrollPosition(@Nullable List<String> source) {
+
 		// No parameter or Single empty parameter, e.g "offset="
-		if (source == null || source.size() == 1 && !StringUtils.hasText(source.get(0))) {
-			return ScrollPosition.offset();
+		if (CollectionUtils.isEmpty(source) || (source.size() == 1 && !StringUtils.hasText(source.get(0)))) {
+			return null;
 		}
+
 		try {
 			long offset = Long.parseLong(source.get(0));
 			return ScrollPosition.offset(offset);
 		} catch (NumberFormatException ex) {
-			return ScrollPosition.offset();
+			return null;
 		}
+	}
+
+	/**
+	 * Adapt the given argument against the method parameter, if necessary.
+	 *
+	 * @param arg the resolved argument.
+	 * @param parameter the method parameter descriptor.
+	 * @return the adapted argument, or the original resolved argument as-is.
+	 */
+	@Nullable
+	Object adaptArgumentIfNecessary(@Nullable Object arg, MethodParameter parameter) {
+
+		if (parameter.getParameterType() == Optional.class) {
+			return arg == null ? Optional.empty() : Optional.of(arg);
+		}
+
+		return arg;
 	}
 
 }

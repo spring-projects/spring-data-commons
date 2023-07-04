@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.web;
 
+import java.util.Arrays;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.lang.Nullable;
@@ -23,27 +25,28 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import java.util.Arrays;
-
 /**
- * {@link HandlerMethodArgumentResolver} to automatically create {@link OffsetScrollPosition} instances from request parameters.
+ * {@link HandlerMethodArgumentResolver} to automatically create {@link OffsetScrollPosition} instances from request
+ * parameters.
  *
- * @since 3.2
  * @author Yanming Zhou
+ * @since 3.2
  */
 public class OffsetScrollPositionHandlerMethodArgumentResolver extends OffsetScrollPositionHandlerMethodArgumentResolverSupport
 		implements OffsetScrollPositionArgumentResolver {
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return OffsetScrollPosition.class.equals(parameter.getParameterType());
+		return OffsetScrollPosition.class.equals(parameter.nestedIfOptional().getNestedParameterType());
 	}
 
 	@Override
-	public OffsetScrollPosition resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
+	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
-		String[] offsetParameter = webRequest.getParameterValues(getOffsetParameter(parameter));
-		return parseParameterIntoOffsetScrollPosition(offsetParameter != null ? Arrays.asList(offsetParameter) : null);
+		String[] offsetParameter = webRequest.getParameterValues(getOffsetParameter(parameter.nestedIfOptional()));
+		return adaptArgumentIfNecessary(
+				parseParameterIntoOffsetScrollPosition(offsetParameter != null ? Arrays.asList(offsetParameter) : null),
+				parameter);
 	}
 }
