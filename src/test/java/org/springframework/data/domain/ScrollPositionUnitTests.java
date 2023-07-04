@@ -129,12 +129,24 @@ class ScrollPositionUnitTests {
 		assertThat(position.getOffset()).isEqualTo(0);
 	}
 
-	@Test // GH-2824
+	@Test // GH-2824, GH-2840
 	void initialKeysetPosition() {
 
 		KeysetScrollPosition keyset = ScrollPosition.keyset();
 
 		assertThat(keyset.isInitial()).isTrue();
 		assertThat(keyset.scrollsForward()).isTrue();
+
+		keyset = ScrollPosition.of(Collections.emptyMap(), Direction.FORWARD);
+
+		assertThat(keyset.isInitial()).isTrue();
+		assertThat(keyset.scrollsForward()).isTrue();
+		assertThat(keyset.scrollsBackward()).isFalse();
+
+		keyset = ScrollPosition.of(Collections.emptyMap(), Direction.BACKWARD);
+
+		assertThat(keyset.isInitial()).isTrue();
+		assertThat(keyset.scrollsForward()).isFalse();
+		assertThat(keyset.scrollsBackward()).isTrue();
 	}
 }
