@@ -28,25 +28,12 @@ import org.springframework.util.ClassUtils;
  * over using {@literal null} or {@link java.util.Optional#empty()} to indicate the absence of an actual {@link Limit}.
  * </p>
  * {@link Limit} itself does not make assumptions about the actual {@link #max()} value sign. This means that a negative
- * value may be valid within a defined context. Implementations should override {@link #isUnlimited()} to fit their
- * needs and enforce restrictions if needed.
- * 
+ * value may be valid within a defined context.
+ *
  * @author Christoph Strobl
  * @since 3.2
  */
-public sealed interface Limit permits Limited, Unlimited {
-
-	/**
-	 * @return the max number of potential results.
-	 */
-	int max();
-
-	/**
-	 * @return {@literal true} if no limiting (maximum value) should be applied.
-	 */
-	default boolean isUnlimited() {
-		return Unlimited.INSTANCE.equals(this);
-	}
+public sealed interface Limit permits Limited,Unlimited {
 
 	/**
 	 * @return a {@link Limit} instance that does not define {@link #max()} and answers {@link #isUnlimited()} with
@@ -66,6 +53,23 @@ public sealed interface Limit permits Limited, Unlimited {
 		return new Limited(max);
 	}
 
+	/**
+	 * @return the max number of potential results.
+	 */
+	int max();
+
+	/**
+	 * @return {@literal true} if limiting (maximum value) should be applied.
+	 */
+	boolean isLimited();
+
+	/**
+	 * @return {@literal true} if no limiting (maximum value) should be applied.
+	 */
+	default boolean isUnlimited() {
+		return !isLimited();
+	}
+
 	final class Limited implements Limit {
 
 		private final int max;
@@ -77,6 +81,11 @@ public sealed interface Limit permits Limited, Unlimited {
 		@Override
 		public int max() {
 			return max;
+		}
+
+		@Override
+		public boolean isLimited() {
+			return true;
 		}
 
 		@Override
@@ -97,7 +106,7 @@ public sealed interface Limit permits Limited, Unlimited {
 
 		@Override
 		public int hashCode() {
-			return (int) (max ^ (max >>> 32));
+			return max ^ (max >>> 32);
 		}
 	}
 
@@ -110,12 +119,13 @@ public sealed interface Limit permits Limited, Unlimited {
 		@Override
 		public int max() {
 			throw new IllegalStateException(
-					"Unlimited does not define 'max'. Please check 'isUnlimited' before attempting to read 'max'");
+					"Unlimited does not define 'max'. Please check 'isLimited' before attempting to read 'max'");
 		}
 
 		@Override
-		public boolean isUnlimited() {
-			return true;
+		public boolean isLimited() {
+			return false;
 		}
+
 	}
 }

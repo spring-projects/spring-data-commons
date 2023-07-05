@@ -103,6 +103,68 @@ public class QueryMethod {
 		validate();
 	}
 
+	private void validate() {
+
+		QueryMethodValidator.validate(method);
+
+		if (hasParameterOfType(method, Pageable.class)) {
+
+			if (!isStreamQuery()) {
+				assertReturnTypeAssignable(method, QueryExecutionConverters.getAllowedPageableTypes());
+			}
+
+			if (hasParameterOfType(method, Sort.class)) {
+				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameters. "
+						+ "Use sorting capabilities on Pageable instead; Offending method: %s", method));
+			}
+		}
+
+		if (hasParameterOfType(method, ScrollPosition.class)) {
+			assertReturnTypeAssignable(method, Collections.singleton(Window.class));
+		}
+
+		Assert.notNull(this.parameters,
+				() -> String.format("Parameters extracted from method '%s' must not be null", method.getName()));
+
+		if (isPageQuery()) {
+			Assert.isTrue(this.parameters.hasPageableParameter(),
+					String.format("Paging query needs to have a Pageable parameter; Offending method: %s", method));
+		}
+
+		if (isScrollQuery()) {
+
+			Assert.isTrue(this.parameters.hasScrollPositionParameter() || this.parameters.hasPageableParameter(),
+					String.format("Scroll query needs to have a ScrollPosition parameter; Offending method: %s", method));
+		}
+	}
+
+	private boolean calculateIsCollectionQuery() {
+
+		if (isPageQuery() || isSliceQuery() || isScrollQuery()) {
+			return false;
+		}
+
+		TypeInformation<?> returnTypeInformation = metadata.getReturnType(method);
+
+		// Check against simple wrapper types first
+		if (metadata.getDomainTypeInformation()
+				.isAssignableFrom(NullableWrapperConverters.unwrapActualType(returnTypeInformation))) {
+			return false;
+		}
+
+		Class<?> returnType = returnTypeInformation.getType();
+
+		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
+			return true;
+		}
+
+		if (QueryExecutionConverters.supports(unwrappedReturnType)) {
+			return !QueryExecutionConverters.isSingleValue(unwrappedReturnType);
+		}
+
+		return TypeInformation.of(unwrappedReturnType).isCollectionLike();
+	}
+
 	/**
 	 * Creates a {@link Parameters} instance.
 	 *
@@ -263,68 +325,6 @@ public class QueryMethod {
 	@Override
 	public String toString() {
 		return method.toString();
-	}
-
-	public void validate() {
-
-		QueryMethodValidator.validate(method);
-
-		if (hasParameterOfType(method, Pageable.class)) {
-
-			if (!isStreamQuery()) {
-				assertReturnTypeAssignable(method, QueryExecutionConverters.getAllowedPageableTypes());
-			}
-
-			if (hasParameterOfType(method, Sort.class)) {
-				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameters. "
-						+ "Use sorting capabilities on Pageable instead; Offending method: %s", method));
-			}
-		}
-
-		if (hasParameterOfType(method, ScrollPosition.class)) {
-			assertReturnTypeAssignable(method, Collections.singleton(Window.class));
-		}
-
-		Assert.notNull(this.parameters,
-				() -> String.format("Parameters extracted from method '%s' must not be null", method.getName()));
-
-		if (isPageQuery()) {
-			Assert.isTrue(this.parameters.hasPageableParameter(),
-					String.format("Paging query needs to have a Pageable parameter; Offending method: %s", method));
-		}
-
-		if (isScrollQuery()) {
-
-			Assert.isTrue(this.parameters.hasScrollPositionParameter() || this.parameters.hasPageableParameter(),
-					String.format("Scroll query needs to have a ScrollPosition parameter; Offending method: %s", method));
-		}
-	}
-
-	private boolean calculateIsCollectionQuery() {
-
-		if (isPageQuery() || isSliceQuery() || isScrollQuery()) {
-			return false;
-		}
-
-		TypeInformation<?> returnTypeInformation = metadata.getReturnType(method);
-
-		// Check against simple wrapper types first
-		if (metadata.getDomainTypeInformation()
-				.isAssignableFrom(NullableWrapperConverters.unwrapActualType(returnTypeInformation))) {
-			return false;
-		}
-
-		Class<?> returnType = returnTypeInformation.getType();
-
-		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
-			return true;
-		}
-
-		if (QueryExecutionConverters.supports(unwrappedReturnType)) {
-			return !QueryExecutionConverters.isSingleValue(unwrappedReturnType);
-		}
-
-		return TypeInformation.of(unwrappedReturnType).isCollectionLike();
 	}
 
 	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(RepositoryMetadata metadata, Method method) {

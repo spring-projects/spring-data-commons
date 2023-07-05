@@ -22,6 +22,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
+ * Unit tests for {@link Limit}.
+ *
  * @author Christoph Strobl
  * @soundtrack Rise Against - Tragedy + Time
  */

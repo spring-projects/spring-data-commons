@@ -60,15 +60,11 @@ public interface ParameterAccessor extends Iterable<Object> {
 	 * assignable to {@link Limit} can be found {@link Limit} will be created out of {@link Pageable#getPageSize()} if
 	 * present.
 	 *
-	 * @return {@link Limit#unlimited()} by default.
+	 * @return
 	 * @since 3.2
 	 */
 	default Limit getLimit() {
-
-		if (getPageable().isUnpaged()) {
-			return Limit.unlimited();
-		}
-		return Limit.of(getPageable().getPageSize());
+		return getPageable().toLimit();
 	}
 
 	/**

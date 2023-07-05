@@ -174,6 +174,22 @@ public interface Pageable {
 	}
 
 	/**
+	 * Returns an {@link Limit} from this pageable if the page request {@link #isPaged() is paged} or
+	 * {@link Limit#unlimited()} otherwise.
+	 *
+	 * @return
+	 * @since 3.2
+	 */
+	default Limit toLimit() {
+
+		if (isUnpaged()) {
+			return Limit.unlimited();
+		}
+
+		return Limit.of(getPageSize());
+	}
+
+	/**
 	 * Returns an {@link OffsetScrollPosition} from this pageable if the page request {@link #isPaged() is paged}.
 	 *
 	 * @return

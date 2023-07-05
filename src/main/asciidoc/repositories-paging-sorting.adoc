@@ -64,23 +64,23 @@ By default, this query is derived from the query you actually trigger.
 [IMPORTANT]
 ====
 Special parameters may only be used once within a query method. +
-Some of the special parameters described above are mutually exclusive.
+Some special parameters described above are mutually exclusive.
 Please consider the following list of invalid parameter combinations.
 
 |===
 | Parameters | Example | Reason
 
-| `Pageable` & `Sort`
+| `Pageable` and `Sort`
 | `findBy...(Pageable page, Sort sort)`
 | `Pageable` already defines `Sort`
 
-| `Pageable` & `Limit`
+| `Pageable` and `Limit`
 | `findBy...(Pageable page, Limit limit)`
 | `Pageable` already defines a limit.
 
 |===
 
-The `Top` keyword used to limit results can be used to along with `Pageable` whereas `Top` defines the total maximum of results, whereas the Pageable parameter may reduce this this number.
+The `Top` keyword used to limit results can be used to along with `Pageable` whereas `Top` defines the total maximum of results, whereas the Pageable parameter may reduce this number.
 ====
 
 [[repositories.scrolling.guidance]]

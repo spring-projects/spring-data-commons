@@ -157,7 +157,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		if (parameters.hasPageableParameter()) {
 
 			Pageable pageable = (Pageable) values[parameters.getPageableIndex()];
-			return pageable.isPaged() ? Limit.of(pageable.getPageSize()) : Limit.unlimited();
+			return pageable.toLimit();
 		}
 
 		return Limit.unlimited();
