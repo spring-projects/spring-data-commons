@@ -1,0 +1,118 @@
+[[repositories.create-instances]]
+= Creating Repository Instances
+
+This section covers how to create instances and bean definitions for the defined repository interfaces.
+
+[[repositories.create-instances.java-config]]
+== Java Configuration
+
+Use the store-specific `@Enable{store}Repositories` annotation on a Java configuration class to define a configuration for repository activation.
+For an introduction to Java-based configuration of the Spring container, see {spring-framework-docs}/core.html#beans-java[JavaConfig in the Spring reference documentation].
+
+A sample configuration to enable Spring Data repositories resembles the following:
+
+.Sample annotation-based repository configuration
+[source,java]
+----
+@Configuration
+@EnableJpaRepositories("com.acme.repositories")
+class ApplicationConfiguration {
+
+  @Bean
+  EntityManagerFactory entityManagerFactory() {
+    // …
+  }
+}
+----
+
+NOTE: The preceding example uses the JPA-specific annotation, which you would change according to the store module you actually use. The same applies to the definition of the `EntityManagerFactory` bean. See the sections covering the store-specific configuration.
+
+ifeval::[{include-xml-namespaces} != false]
+[[repositories.create-instances.spring]]
+[[repositories.create-instances.xml]]
+== XML Configuration
+
+Each Spring Data module includes a `repositories` element that lets you define a base package that Spring scans for you, as shown in the following example:
+
+.Enabling Spring Data repositories via XML
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.springframework.org/schema/data/jpa"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/data/jpa
+    https://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+
+  <jpa:repositories base-package="com.acme.repositories" />
+
+</beans:beans>
+----
+
+In the preceding example, Spring is instructed to scan `com.acme.repositories` and all its sub-packages for interfaces extending `Repository` or one of its sub-interfaces.
+For each interface found, the infrastructure registers the persistence technology-specific `FactoryBean` to create the appropriate proxies that handle invocations of the query methods.
+Each bean is registered under a bean name that is derived from the interface name, so an interface of `UserRepository` would be registered under `userRepository`.
+Bean names for nested repository interfaces are prefixed with their enclosing type name.
+The base package attribute allows wildcards so that you can define a pattern of scanned packages.
+endif::[]
+
+[[repositories.using-filters]]
+== Using Filters
+
+By default, the infrastructure picks up every interface that extends the persistence technology-specific `Repository` sub-interface located under the configured base package and creates a bean instance for it.
+However, you might want more fine-grained control over which interfaces have bean instances created for them.
+To do so, use filter elements inside the repository declaration.
+The semantics are exactly equivalent to the elements in Spring's component filters.
+For details, see the {spring-framework-docs}/core.html#beans-scanning-filters[Spring reference documentation] for these elements.
+
+For example, to exclude certain interfaces from instantiation as repository beans, you could use the following configuration:
+
+.Using filters
+[tabs]
+======
+Java::
++
+[source,java,subs="attributes,specialchars",role="primary"]
+----
+@Configuration
+@Enable{store}Repositories(basePackages = "com.acme.repositories",
+    includeFilters = { @Filter(type = FilterType.REGEX, pattern = ".*SomeRepository") },
+    excludeFilters = { @Filter(type = FilterType.REGEX, pattern = ".*SomeOtherRepository") })
+class ApplicationConfiguration {
+
+  @Bean
+  EntityManagerFactory entityManagerFactory() {
+    // …
+  }
+}
+----
+
+XML::
++
+[source,xml,role="secondary"]
+----
+<repositories base-package="com.acme.repositories">
+  <context:exclude-filter type="regex" expression=".*SomeRepository" />
+  <context:include-filter type="regex" expression=".*SomeOtherRepository" />
+</repositories>
+----
+======
+
+
+The preceding example excludes all interfaces ending in `SomeRepository` from being instantiated and includes those ending with `SomeOtherRepository`.
+
+
+[[repositories.create-instances.standalone]]
+== Standalone Usage
+
+You can also use the repository infrastructure outside of a Spring container -- for example, in CDI environments. You still need some Spring libraries in your classpath, but, generally, you can set up repositories programmatically as well. The Spring Data modules that provide repository support ship with a persistence technology-specific `RepositoryFactory` that you can use, as follows:
+
+.Standalone usage of the repository factory
+[source,java]
+----
+RepositoryFactorySupport factory = … // Instantiate factory here
+UserRepository repository = factory.getRepository(UserRepository.class);
+----
+

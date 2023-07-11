@@ -1,0 +1,36 @@
+[[core.domain-events]]
+= Publishing Events from Aggregate Roots
+
+Entities managed by repositories are aggregate roots.
+In a Domain-Driven Design application, these aggregate roots usually publish domain events.
+Spring Data provides an annotation called `@DomainEvents` that you can use on a method of your aggregate root to make that publication as easy as possible, as shown in the following example:
+
+.Exposing domain events from an aggregate root
+[source,java]
+----
+class AnAggregateRoot {
+
+    @DomainEvents <1>
+    Collection<Object> domainEvents() {
+        // … return events you want to get published here
+    }
+
+    @AfterDomainEventPublication <2>
+    void callbackMethod() {
+       // … potentially clean up domain events list
+    }
+}
+----
+<1> The method that uses `@DomainEvents` can return either a single event instance or a collection of events.
+It must not take any arguments.
+<2> After all events have been published, we have a method annotated with `@AfterDomainEventPublication`.
+You can use it to potentially clean the list of events to be published (among other uses).
+
+The methods are called every time one of the following a Spring Data repository methods are called:
+
+* `save(…)`, `saveAll(…)`
+* `delete(…)`, `deleteAll(…)`, `deleteAllInBatch(…)`, `deleteInBatch(…)`
+
+Note, that these methods take the aggregate root instances as arguments.
+This is why `deleteById(…)` is notably absent, as the implementations might choose to issue a query deleting the instance and thus we would never have access to the aggregate instance in the first place.
+

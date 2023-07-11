@@ -1,0 +1,443 @@
+[[mapping.fundamentals]]
+= Object Mapping Fundamentals
+
+This section covers the fundamentals of Spring Data object mapping, object creation, field and property access, mutability and immutability.
+Note, that this section only applies to Spring Data modules that do not use the object mapping of the underlying data store (like JPA).
+Also be sure to consult the store-specific sections for store-specific object mapping, like indexes, customizing column or field names or the like.
+
+Core responsibility of the Spring Data object mapping is to create instances of domain objects and map the store-native data structures onto those.
+This means we need two fundamental steps:
+
+1. Instance creation by using one of the constructors exposed.
+2. Instance population to materialize all exposed properties.
+
+[[mapping.object-creation]]
+== Object creation
+
+Spring Data automatically tries to detect a persistent entity's constructor to be used to materialize objects of that type.
+The resolution algorithm works as follows:
+
+1. If there is a single static factory method annotated with `@PersistenceCreator` then it is used.
+2. If there is a single constructor, it is used.
+3. If there are multiple constructors and exactly one is annotated with `@PersistenceCreator`, it is used.
+4. If the type is a Java `Record` the canonical constructor is used.
+5. If there's a no-argument constructor, it is used.
+Other constructors will be ignored.
+
+The value resolution assumes constructor/factory method argument names to match the property names of the entity, i.e. the resolution will be performed as if the property was to be populated, including all customizations in mapping (different datastore column or field name etc.).
+This also requires either parameter names information available in the class file or an `@ConstructorProperties` annotation being present on the constructor.
+
+The value resolution can be customized by using Spring Framework's `@Value` value annotation using a store-specific SpEL expression.
+Please consult the section on store specific mappings for further details.
+
+[[mapping.object-creation.details]]
+.Object creation internals
+****
+
+To avoid the overhead of reflection, Spring Data object creation uses a factory class generated at runtime by default, which will call the domain classes constructor directly.
+I.e. for this example type:
+
+[source,java]
+----
+class Person {
+  Person(String firstname, String lastname) { … }
+}
+----
+
+we will create a factory class semantically equivalent to this one at runtime:
+
+[source, java]
+----
+class PersonObjectInstantiator implements ObjectInstantiator {
+
+  Object newInstance(Object... args) {
+    return new Person((String) args[0], (String) args[1]);
+  }
+}
+----
+
+This gives us a roundabout 10% performance boost over reflection.
+For the domain class to be eligible for such optimization, it needs to adhere to a set of constraints:
+
+- it must not be a private class
+- it must not be a non-static inner class
+- it must not be a CGLib proxy class
+- the constructor to be used by Spring Data must not be private
+
+If any of these criteria match, Spring Data will fall back to entity instantiation via reflection.
+****
+
+[[mapping.property-population]]
+== Property population
+
+Once an instance of the entity has been created, Spring Data populates all remaining persistent properties of that class.
+Unless already populated by the entity's constructor (i.e. consumed through its constructor argument list), the identifier property will be populated first to allow the resolution of cyclic object references.
+After that, all non-transient properties that have not already been populated by the constructor are set on the entity instance.
+For that we use the following algorithm:
+
+1. If the property is immutable but exposes a `with…` method (see below), we use the `with…` method to create a new entity instance with the new property value.
+2. If property access (i.e. access through getters and setters) is defined, we're invoking the setter method.
+3. If the property is mutable we set the field directly.
+4. If the property is immutable we're using the constructor to be used by persistence operations (see xref:object-mapping.adoc#mapping.object-creation[Object creation]) to create a copy of the instance.
+5. By default, we set the field value directly.
+
+[[mapping.property-population.details]]
+.Property population internals
+****
+Similarly to our xref:object-mapping.adoc#mapping.object-creation.details[optimizations in object construction] we also use Spring Data runtime generated accessor classes to interact with the entity instance.
+
+[source,java]
+----
+class Person {
+
+  private final Long id;
+  private String firstname;
+  private @AccessType(Type.PROPERTY) String lastname;
+
+  Person() {
+    this.id = null;
+  }
+
+  Person(Long id, String firstname, String lastname) {
+    // Field assignments
+  }
+
+  Person withId(Long id) {
+    return new Person(id, this.firstname, this.lastame);
+  }
+
+  void setLastname(String lastname) {
+    this.lastname = lastname;
+  }
+}
+----
+
+.A generated Property Accessor
+[source, java]
+----
+class PersonPropertyAccessor implements PersistentPropertyAccessor {
+
+  private static final MethodHandle firstname;              <2>
+
+  private Person person;                                    <1>
+
+  public void setProperty(PersistentProperty property, Object value) {
+
+    String name = property.getName();
+
+    if ("firstname".equals(name)) {
+      firstname.invoke(person, (String) value);             <2>
+    } else if ("id".equals(name)) {
+      this.person = person.withId((Long) value);            <3>
+    } else if ("lastname".equals(name)) {
+      this.person.setLastname((String) value);              <4>
+    }
+  }
+}
+----
+<1> PropertyAccessor's hold a mutable instance of the underlying object. This is, to enable mutations of otherwise immutable properties.
+<2> By default, Spring Data uses field-access to read and write property values. As per visibility rules of `private` fields, `MethodHandles` are used to interact with fields.
+<3> The class exposes a `withId(…)` method that's used to set the identifier, e.g. when an instance is inserted into the datastore and an identifier has been generated. Calling `withId(…)` creates a new `Person` object. All subsequent mutations will take place in the new instance leaving the previous untouched.
+<4> Using property-access allows direct method invocations without using `MethodHandles`.
+
+This gives us a roundabout 25% performance boost over reflection.
+For the domain class to be eligible for such optimization, it needs to adhere to a set of constraints:
+
+- Types must not reside in the default or under the `java` package.
+- Types and their constructors must be `public`
+- Types that are inner classes must be `static`.
+- The used Java Runtime must allow for declaring classes in the originating `ClassLoader`. Java 9 and newer impose certain limitations.
+
+By default, Spring Data attempts to use generated property accessors and falls back to reflection-based ones if a limitation is detected.
+****
+
+Let's have a look at the following entity:
+
+.A sample entity
+[source, java]
+----
+class Person {
+
+  private final @Id Long id;                                                <1>
+  private final String firstname, lastname;                                 <2>
+  private final LocalDate birthday;
+  private final int age;                                                    <3>
+
+  private String comment;                                                   <4>
+  private @AccessType(Type.PROPERTY) String remarks;                        <5>
+
+  static Person of(String firstname, String lastname, LocalDate birthday) { <6>
+
+    return new Person(null, firstname, lastname, birthday,
+      Period.between(birthday, LocalDate.now()).getYears());
+  }
+
+  Person(Long id, String firstname, String lastname, LocalDate birthday, int age) { <6>
+
+    this.id = id;
+    this.firstname = firstname;
+    this.lastname = lastname;
+    this.birthday = birthday;
+    this.age = age;
+  }
+
+  Person withId(Long id) {                                                  <1>
+    return new Person(id, this.firstname, this.lastname, this.birthday, this.age);
+  }
+
+  void setRemarks(String remarks) {                                         <5>
+    this.remarks = remarks;
+  }
+}
+----
+<1> The identifier property is final but set to `null` in the constructor.
+The class exposes a `withId(…)` method that's used to set the identifier, e.g. when an instance is inserted into the datastore and an identifier has been generated.
+The original `Person` instance stays unchanged as a new one is created.
+The same pattern is usually applied for other properties that are store managed but might have to be changed for persistence operations.
+The wither method is optional as the persistence constructor (see 6) is effectively a copy constructor and setting the property will be translated into creating a fresh instance with the new identifier value applied.
+<2> The `firstname` and `lastname` properties are ordinary immutable properties potentially exposed through getters.
+<3> The `age` property is an immutable but derived one from the `birthday` property.
+With the design shown, the database value will trump the defaulting as Spring Data uses the only declared constructor.
+Even if the intent is that the calculation should be preferred, it's important that this constructor also takes `age` as parameter (to potentially ignore it) as otherwise the property population step will attempt to set the age field and fail due to it being immutable and no `with…` method being present.
+<4> The `comment` property is mutable and is populated by setting its field directly.
+<5> The `remarks` property is mutable and is populated by invoking the setter method.
+<6> The class exposes a factory method and a constructor for object creation.
+The core idea here is to use factory methods instead of additional constructors to avoid the need for constructor disambiguation through `@PersistenceCreator`.
+Instead, defaulting of properties is handled within the factory method.
+If you want Spring Data to use the factory method for object instantiation, annotate it with `@PersistenceCreator`.
+
+[[mapping.general-recommendations]]
+== General recommendations
+
+* _Try to stick to immutable objects_ -- Immutable objects are straightforward to create as materializing an object is then a matter of calling its constructor only.
+Also, this avoids your domain objects to be littered with setter methods that allow client code to manipulate the objects state.
+If you need those, prefer to make them package protected so that they can only be invoked by a limited amount of co-located types.
+Constructor-only materialization is up to 30% faster than properties population.
+* _Provide an all-args constructor_ -- Even if you cannot or don't want to model your entities as immutable values, there's still value in providing a constructor that takes all properties of the entity as arguments, including the mutable ones, as this allows the object mapping to skip the property population for optimal performance.
+* _Use factory methods instead of overloaded constructors to avoid ``@PersistenceCreator``_ -- With an all-argument constructor needed for optimal performance, we usually want to expose more application use case specific constructors that omit things like auto-generated identifiers etc.
+It's an established pattern to rather use static factory methods to expose these variants of the all-args constructor.
+* _Make sure you adhere to the constraints that allow the generated instantiator and property accessor classes to be used_ --
+* _For identifiers to be generated, still use a final field in combination with an all-arguments persistence constructor (preferred) or a `with…` method_ --
+* _Use Lombok to avoid boilerplate code_ -- As persistence operations usually require a constructor taking all arguments, their declaration becomes a tedious repetition of boilerplate parameter to field assignments that can best be avoided by using Lombok's `@AllArgsConstructor`.
+
+[[mapping.general-recommendations.override.properties]]
+=== Overriding Properties
+
+Java's allows a flexible design of domain classes where a subclass could define a property that is already declared with the same name in its superclass.
+Consider the following example:
+
+[source,java]
+----
+public class SuperType {
+
+   private CharSequence field;
+
+   public SuperType(CharSequence field) {
+      this.field = field;
+   }
+
+   public CharSequence getField() {
+      return this.field;
+   }
+
+   public void setField(CharSequence field) {
+      this.field = field;
+   }
+}
+
+public class SubType extends SuperType {
+
+   private String field;
+
+   public SubType(String field) {
+      super(field);
+      this.field = field;
+   }
+
+   @Override
+   public String getField() {
+      return this.field;
+   }
+
+   public void setField(String field) {
+      this.field = field;
+
+      // optional
+      super.setField(field);
+   }
+}
+----
+
+Both classes define a `field` using assignable types. `SubType` however shadows `SuperType.field`.
+Depending on the class design, using the constructor could be the only default approach to set `SuperType.field`.
+Alternatively, calling `super.setField(…)` in the setter could set the `field` in `SuperType`.
+All these mechanisms create conflicts to some degree because the properties share the same name yet might represent two distinct values.
+Spring Data skips super-type properties if types are not assignable.
+That is, the type of the overridden property must be assignable to its super-type property type to be registered as override, otherwise the super-type property is considered transient.
+We generally recommend using distinct property names.
+
+Spring Data modules generally support overridden properties holding different values.
+From a programming model perspective there are a few things to consider:
+
+1. Which property should be persisted (default to all declared properties)?
+You can exclude properties by annotating these with `@Transient`.
+2. How to represent properties in your data store?
+Using the same field/column name for different values typically leads to corrupt data so you should annotate least one of the properties using an explicit field/column name.
+3. Using `@AccessType(PROPERTY)` cannot be used as the super-property cannot be generally set without making any further assumptions of the setter implementation.
+
+[[mapping.kotlin]]
+== Kotlin support
+
+Spring Data adapts specifics of Kotlin to allow object creation and mutation.
+
+[[mapping.kotlin.creation]]
+=== Kotlin object creation
+
+Kotlin classes are supported to be instantiated, all classes are immutable by default and require explicit property declarations to define mutable properties.
+
+Spring Data automatically tries to detect a persistent entity's constructor to be used to materialize objects of that type.
+The resolution algorithm works as follows:
+
+1. If there is a constructor that is annotated with `@PersistenceCreator`, it is used.
+2. If the type is a xref:object-mapping.adoc#mapping.kotlin[Kotlin data cass] the primary constructor is used.
+3. If there is a single static factory method annotated with `@PersistenceCreator` then it is used.
+4. If there is a single constructor, it is used.
+5. If there are multiple constructors and exactly one is annotated with `@PersistenceCreator`, it is used.
+6. If the type is a Java `Record` the canonical constructor is used.
+7. If there's a no-argument constructor, it is used.
+Other constructors will be ignored.
+
+Consider the following `data` class `Person`:
+
+[source,kotlin]
+----
+data class Person(val id: String, val name: String)
+----
+
+The class above compiles to a typical class with an explicit constructor.We can customize this class by adding another constructor and annotate it with `@PersistenceCreator` to indicate a constructor preference:
+
+[source,kotlin]
+----
+data class Person(var id: String, val name: String) {
+
+    @PersistenceCreator
+    constructor(id: String) : this(id, "unknown")
+}
+----
+
+Kotlin supports parameter optionality by allowing default values to be used if a parameter is not provided.
+When Spring Data detects a constructor with parameter defaulting, then it leaves these parameters absent if the data store does not provide a value (or simply returns `null`) so Kotlin can apply parameter defaulting.Consider the following class that applies parameter defaulting for `name`
+
+[source,kotlin]
+----
+data class Person(var id: String, val name: String = "unknown")
+----
+
+Every time the `name` parameter is either not part of the result or its value is `null`, then the `name` defaults to `unknown`.
+
+[[property-population-of-kotlin-data-classes]]
+=== Property population of Kotlin data classes
+
+In Kotlin, all classes are immutable by default and require explicit property declarations to define mutable properties.
+Consider the following `data` class `Person`:
+
+[source,kotlin]
+----
+data class Person(val id: String, val name: String)
+----
+
+This class is effectively immutable.
+It allows creating new instances as Kotlin generates a `copy(…)` method that creates new object instances copying all property values from the existing object and applying property values provided as arguments to the method.
+
+[[mapping.kotlin.override.properties]]
+=== Kotlin Overriding Properties
+
+Kotlin allows declaring https://kotlinlang.org/docs/inheritance.html#overriding-properties[property overrides] to alter properties in subclasses.
+
+[source,kotlin]
+----
+open class SuperType(open var field: Int)
+
+class SubType(override var field: Int = 1) :
+	SuperType(field) {
+}
+----
+
+Such an arrangement renders two properties with the name `field`.
+Kotlin generates property accessors (getters and setters) for each property in each class.
+Effectively, the code looks like as follows:
+
+[source,java]
+----
+public class SuperType {
+
+   private int field;
+
+   public SuperType(int field) {
+      this.field = field;
+   }
+
+   public int getField() {
+      return this.field;
+   }
+
+   public void setField(int field) {
+      this.field = field;
+   }
+}
+
+public final class SubType extends SuperType {
+
+   private int field;
+
+   public SubType(int field) {
+      super(field);
+      this.field = field;
+   }
+
+   public int getField() {
+      return this.field;
+   }
+
+   public void setField(int field) {
+      this.field = field;
+   }
+}
+----
+
+Getters and setters on `SubType` set only `SubType.field` and not `SuperType.field`.
+In such an arrangement, using the constructor is the only default approach to set `SuperType.field`.
+Adding a method to `SubType` to set `SuperType.field` via `this.SuperType.field = …` is possible but falls outside of supported conventions.
+Property overrides create conflicts to some degree because the properties share the same name yet might represent two distinct values.
+We generally recommend using distinct property names.
+
+Spring Data modules generally support overridden properties holding different values.
+From a programming model perspective there are a few things to consider:
+
+1. Which property should be persisted (default to all declared properties)?
+You can exclude properties by annotating these with `@Transient`.
+2. How to represent properties in your data store?
+Using the same field/column name for different values typically leads to corrupt data so you should annotate least one of the properties using an explicit field/column name.
+3. Using `@AccessType(PROPERTY)` cannot be used as the super-property cannot be set.
+
+[[mapping.kotlin.value.classes]]
+=== Kotlin Value Classes
+
+Kotlin Value Classes are designed for a more expressive domain model to make underlying concepts explicit.
+Spring Data can read and write types that define properties using Value Classes.
+
+Consider the following domain model:
+
+[source,kotlin]
+----
+@JvmInline
+value class EmailAddress(val theAddress: String)                                    <1>
+
+data class Contact(val id: String, val name:String, val emailAddress: EmailAddress) <2>
+----
+
+<1> A simple value class with a non-nullable value type.
+<2> Data class defining a property using the `EmailAddress` value class.
+
+NOTE: Non-nullable properties using non-primitive value types are flattened in the compiled class to the value type.
+Nullable primitive value types or nullable value-in-value types are represented with their wrapper type and that affects how value types are represented in the database.
