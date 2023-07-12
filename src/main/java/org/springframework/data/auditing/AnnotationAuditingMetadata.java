@@ -16,6 +16,7 @@
 package org.springframework.data.auditing;
 
 import java.lang.reflect.Field;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -58,7 +59,12 @@ final class AnnotationAuditingMetadata {
 
 	static {
 
-		List<String> types = new ArrayList<>(3);
+		List<String> types = new ArrayList<>(Jsr310Converters.getSupportedClasses() //
+				.stream() //
+				.filter(TemporalAccessor.class::isAssignableFrom) //
+				.map(Class::getName) //
+				.toList());
+
 		types.add(Date.class.getName());
 		types.add(Long.class.getName());
 		types.add(long.class.getName());
@@ -104,7 +110,7 @@ final class AnnotationAuditingMetadata {
 
 			Class<?> type = it.getType();
 
-			if (Jsr310Converters.supports(type)) {
+			if (TemporalAccessor.class.isAssignableFrom(type)) {
 				return;
 			}
 

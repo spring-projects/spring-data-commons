@@ -19,7 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 
 import org.junit.jupiter.api.Test;
@@ -34,7 +36,7 @@ import org.springframework.data.auditing.DefaultAuditableBeanWrapperFactory.Refl
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
- * @since 1.5
+ * @author Mark Paluch
  */
 class DefaultAuditableBeanWrapperFactoryUnitTests {
 
@@ -135,10 +137,56 @@ class DefaultAuditableBeanWrapperFactoryUnitTests {
 		assertThat(result).hasValue(now);
 	}
 
+	@Test
+	void shouldRejectUnsupportedTemporalConversion() {
+
+		var source = new WithZonedDateTime();
+		AuditableBeanWrapper<WithZonedDateTime> wrapper = factory.getBeanWrapperFor(source).get();
+
+		assertThatIllegalArgumentException().isThrownBy(() -> wrapper.setCreatedDate(LocalDateTime.now()))
+				.withMessageContaining(
+						"Cannot convert unsupported date type java.time.LocalDateTime to java.time.ZonedDateTime");
+	}
+
+	@Test // GH-2719
+	void shouldPassthruZonedDateTimeValue() {
+
+		var source = new WithZonedDateTime();
+		var now = ZonedDateTime.now();
+		AuditableBeanWrapper<WithZonedDateTime> wrapper = factory.getBeanWrapperFor(source).get();
+
+		wrapper.setCreatedDate(now);
+
+		assertThat(source.created).isEqualTo(now);
+	}
+
+	@Test // GH-2719
+	void shouldPassthruOffsetDatetimeValue() {
+
+		var source = new WithOffsetDateTime();
+		var now = OffsetDateTime.now();
+		AuditableBeanWrapper<WithOffsetDateTime> wrapper = factory.getBeanWrapperFor(source).get();
+
+		wrapper.setCreatedDate(now);
+
+		assertThat(source.created).isEqualTo(now);
+	}
+
 	public static class LongBasedAuditable {
 
 		@CreatedDate public Long dateCreated;
 
 		@LastModifiedDate public Long dateModified;
 	}
+
+	static class WithZonedDateTime {
+
+		@CreatedDate ZonedDateTime created;
+	}
+
+	static class WithOffsetDateTime {
+
+		@CreatedDate OffsetDateTime created;
+	}
+
 }

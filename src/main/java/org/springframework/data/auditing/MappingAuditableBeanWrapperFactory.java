@@ -114,7 +114,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		/**
 		 * Creates a new {@link MappingAuditingMetadata} instance from the given {@link PersistentEntity}.
 		 *
-		 * @param entity must not be {@literal null}.
+		 * @param context must not be {@literal null}.
+		 * @param type must not be {@literal null}.
 		 */
 		public <P> MappingAuditingMetadata(MappingContext<?, ? extends PersistentProperty<?>> context, Class<?> type) {
 
