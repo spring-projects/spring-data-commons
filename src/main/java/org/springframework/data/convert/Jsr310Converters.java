@@ -38,7 +38,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 
 /**
- * Helper class to register JSR-310 specific {@link Converter} implementations in case the we're running on Java 8.
+ * Helper class to register JSR-310 specific {@link Converter} implementations.
  *
  * @author Oliver Gierke
  * @author Barak Schoster
@@ -52,9 +52,9 @@ public abstract class Jsr310Converters {
 			Instant.class, ZoneId.class, Duration.class, Period.class);
 
 	/**
-	 * Returns the converters to be registered. Will only return converters in case we're running on Java 8.
+	 * Returns the converters to be registered.
 	 *
-	 * @return
+	 * @return the converters to be registered.
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
 
