@@ -15,7 +15,16 @@
  */
 package org.springframework.data.mapping.context;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -34,7 +43,6 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -42,6 +50,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 2.1
  * @soundtrack Cypress Hill - Boom Biddy Bye Bye (Fugees Remix, Unreleased & Revamped)
  */
@@ -172,7 +181,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 	private PathResolution getPotentiallyCachedPath(TypeInformation<?> type, String propertyPath) {
 		return propertyPaths.computeIfAbsent(TypeAndPath.of(type, propertyPath),
-				it -> createPersistentPropertyPath(it.getPath(), it.getType()));
+				it -> createPersistentPropertyPath(it.path(), it.type()));
 	}
 
 	/**
@@ -200,14 +209,14 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			Pair<DefaultPersistentPropertyPath<P>, E> pair = getPair(path, iterator, segment, current);
 
 			if (pair == null) {
-				return new PathResolution(parts, segment, type, currentPath);
+				return PathResolution.unresolved(parts, segment, type, currentPath);
 			}
 
 			path = pair.getFirst();
 			current = pair.getSecond();
 		}
 
-		return new PathResolution(path);
+		return PathResolution.resolved(path);
 	}
 
 	@Nullable
@@ -240,7 +249,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 		Set<PersistentPropertyPath<P>> properties = new HashSet<>();
 
-		PropertyHandler<P> propertyTester = (PropertyHandler<P>) persistentProperty -> {
+		PropertyHandler<P> propertyTester = persistentProperty -> {
 
 			TypeInformation<?> typeInformation = persistentProperty.getTypeInformation();
 			TypeInformation<?> actualPropertyType = typeInformation.getActualType();
@@ -263,64 +272,19 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 		entity.doWithProperties(propertyTester);
 
-		AssociationHandler<P> handler = (AssociationHandler<P>) association -> propertyTester
+		AssociationHandler<P> handler = association -> propertyTester
 				.doWithPersistentProperty(association.getInverse());
 		entity.doWithAssociations(handler);
 
 		return properties;
 	}
 
-	static final class TypeAndPath {
-
-		private final TypeInformation<?> type;
-		private final String path;
-
-		private TypeAndPath(TypeInformation<?> type, String path) {
-			this.type = type;
-			this.path = path;
-		}
+	record TypeAndPath(TypeInformation<?> type, String path) {
 
 		public static TypeAndPath of(TypeInformation<?> type, String path) {
 			return new TypeAndPath(type, path);
 		}
 
-		public TypeInformation<?> getType() {
-			return this.type;
-		}
-
-		public String getPath() {
-			return this.path;
-		}
-
-		@Override
-		public boolean equals(@Nullable Object o) {
-
-			if (this == o) {
-				return true;
-			}
-
-			if (!(o instanceof TypeAndPath that)) {
-				return false;
-			}
-
-			if (!ObjectUtils.nullSafeEquals(type, that.type)) {
-				return false;
-			}
-
-			return ObjectUtils.nullSafeEquals(path, that.path);
-		}
-
-		@Override
-		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(type);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(path);
-			return result;
-		}
-
-		@Override
-		public String toString() {
-			return "PersistentPropertyPathFactory.TypeAndPath(type=" + this.getType() + ", path=" + this.getPath() + ")";
-		}
 	}
 
 	static class DefaultPersistentPropertyPaths<T, P extends PersistentProperty<P>>
@@ -389,7 +353,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			Assert.notNull(predicate, "Predicate must not be null");
 
 			List<PersistentPropertyPath<P>> paths = this.stream() //
-					.filter(it -> !it.stream().anyMatch(predicate)) //
+					.filter(it -> it.stream().noneMatch(predicate)) //
 					.collect(Collectors.toList());
 
 			return paths.equals(this.paths) ? this : new DefaultPersistentPropertyPaths<>(type, paths);
@@ -408,8 +372,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		 * @author Oliver Gierke
 		 * @since 2.1
 		 */
-		private enum ShortestSegmentFirst
-				implements Comparator<PersistentPropertyPath<? extends PersistentProperty<?>>> {
+		private enum ShortestSegmentFirst implements Comparator<PersistentPropertyPath<? extends PersistentProperty<?>>> {
 
 			INSTANCE;
 
@@ -417,8 +380,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			@SuppressWarnings("null")
 			public int compare(PersistentPropertyPath<?> left, PersistentPropertyPath<?> right) {
 
-				Function<PersistentProperty<?>, Integer> mapper = (Function<PersistentProperty<?>, Integer>) it -> it.getName()
-						.length();
+				Function<PersistentProperty<?>, Integer> mapper = it -> it.getName().length();
 
 				Stream<Integer> leftNames = left.stream().map(mapper);
 				Stream<Integer> rightNames = right.stream().map(mapper);
@@ -440,16 +402,22 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 		private final PersistentPropertyPath<?> path;
 		private final boolean resolvable;
-		private String source, segment;
-		private TypeInformation<?> type;
+		private @Nullable final String source;
 
-		public PathResolution(PersistentPropertyPath<?> path) {
+		private @Nullable final String segment;
+		private @Nullable final TypeInformation<?> type;
+
+		private PathResolution(PersistentPropertyPath<?> path) {
 
 			this.path = path;
 			this.resolvable = true;
+			this.source = null;
+			this.segment = null;
+			this.type = null;
 		}
 
-		PathResolution(List<String> parts, String segment, TypeInformation<?> type, PersistentPropertyPath<?> path) {
+		private PathResolution(List<String> parts, String segment, TypeInformation<?> type,
+				PersistentPropertyPath<?> path) {
 
 			this.source = StringUtils.collectionToDelimitedString(parts, ".");
 			this.segment = segment;
@@ -458,15 +426,26 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			this.resolvable = false;
 		}
 
+		static PathResolution unresolved(List<String> parts, String segment, TypeInformation<?> type,
+				PersistentPropertyPath<?> path) {
+			return new PathResolution(parts, segment, type, path);
+		}
+
+		static PathResolution resolved(PersistentPropertyPath<?> path) {
+			return new PathResolution(path);
+		}
+
 		/**
 		 * @return the path if available.
 		 * @throws InvalidPersistentPropertyPath when the path could not be resolved to an actual property
 		 */
-		PersistentPropertyPath getResolvedPath() {
+		@SuppressWarnings("unchecked")
+		<P extends PersistentProperty<P>> PersistentPropertyPath<P> getResolvedPath() {
 
 			if (resolvable) {
-				return path;
+				return (PersistentPropertyPath<P>) path;
 			}
+
 			throw new InvalidPersistentPropertyPath(source, type, segment, path);
 		}
 	}
