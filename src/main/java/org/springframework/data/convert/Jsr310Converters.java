@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -82,8 +83,15 @@ public abstract class Jsr310Converters {
 	}
 
 	public static boolean supports(Class<?> type) {
-
 		return CLASSES.contains(type);
+	}
+
+	/**
+	 * @return the collection of supported temporal classes.
+	 * @since 3.2
+	 */
+	public static Collection<Class<?>> getSupportedClasses() {
+		return Collections.unmodifiableList(CLASSES);
 	}
 
 	@ReadingConverter

@@ -73,7 +73,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		return Optional.of(source).map(it -> {
 
 			if (it instanceof Auditable) {
-				return (AuditableBeanWrapper<T>) new AuditableInterfaceBeanWrapper(conversionService, (Auditable<Object, ?, TemporalAccessor>) it);
+				return (AuditableBeanWrapper<T>) new AuditableInterfaceBeanWrapper(conversionService,
+						(Auditable<Object, ?, TemporalAccessor>) it);
 			}
 
 			AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(it.getClass());
@@ -98,7 +99,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		private final Class<? extends TemporalAccessor> type;
 
 		@SuppressWarnings("unchecked")
-		public AuditableInterfaceBeanWrapper(ConversionService conversionService, Auditable<Object, ?, TemporalAccessor> auditable) {
+		public AuditableInterfaceBeanWrapper(ConversionService conversionService,
+				Auditable<Object, ?, TemporalAccessor> auditable) {
 
 			super(conversionService);
 
@@ -151,8 +153,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	}
 
 	/**
-	 * Base class for {@link AuditableBeanWrapper} implementations that might need to convert {@link TemporalAccessor} values into
-	 * compatible types when setting date/time information.
+	 * Base class for {@link AuditableBeanWrapper} implementations that might need to convert {@link TemporalAccessor}
+	 * values into compatible types when setting date/time information.
 	 *
 	 * @author Oliver Gierke
 	 * @since 1.8
@@ -168,7 +170,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		/**
 		 * Returns the {@link TemporalAccessor} in a type, compatible to the given field.
 		 *
-		 * @param value can be {@literal null}.
+		 * @param value must not be {@literal null}.
 		 * @param targetType must not be {@literal null}.
 		 * @param source must not be {@literal null}.
 		 * @return
@@ -176,7 +178,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Nullable
 		protected Object getDateValueToSet(TemporalAccessor value, Class<?> targetType, Object source) {
 
-			if (TemporalAccessor.class.equals(targetType)) {
+			if (targetType.isInstance(value)) {
 				return value;
 			}
 
@@ -188,7 +190,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 				if (!conversionService.canConvert(value.getClass(), Date.class)) {
 					throw new IllegalArgumentException(
-							String.format("Cannot convert date type for member %s; From %s to java.util.Date to %s", source,
+							String.format("Cannot convert date type for %s; From %s to java.util.Date to %s", source,
 									value.getClass(), targetType));
 				}
 
@@ -196,7 +198,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 				return conversionService.convert(date, targetType);
 			}
 
-			throw rejectUnsupportedType(source);
+			throw rejectUnsupportedType(value.getClass(), targetType);
 		}
 
 		/**
@@ -217,19 +219,20 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 				}
 
 				Class<?> typeToConvertTo = Stream.of(target, Instant.class)//
-						.filter(type -> target.isAssignableFrom(type))//
+						.filter(target::isAssignableFrom)//
 						.filter(type -> conversionService.canConvert(it.getClass(), type))//
 						.findFirst() //
-						.orElseThrow(() -> rejectUnsupportedType(source.map(Object.class::cast).orElseGet(() -> source)));
+						.orElseThrow(() -> rejectUnsupportedType(it.getClass(), target));
 
 				return (S) conversionService.convert(it, typeToConvertTo);
 			});
 		}
 	}
 
-	private static IllegalArgumentException rejectUnsupportedType(Object source) {
-		return new IllegalArgumentException(String.format("Invalid date type %s for member %s; Supported types are %s",
-				source.getClass(), source, AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
+	private static IllegalArgumentException rejectUnsupportedType(Class<?> sourceType, Class<?> targetType) {
+		return new IllegalArgumentException(
+				String.format("Cannot convert unsupported date type %s to %s; Supported types are %s", sourceType.getName(),
+						targetType.getName(), AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));
 	}
 
 	/**
@@ -264,7 +267,6 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		@Override
 		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
-
 			return setDateField(metadata.getCreatedDateField(), value);
 		}
 

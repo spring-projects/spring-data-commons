@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
@@ -242,6 +243,29 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 		});
 	}
 
+	@Test // GH-2719
+	void shouldRejectUnsupportedTemporalConversion() {
+
+		var source = new WithZonedDateTime();
+		AuditableBeanWrapper<WithZonedDateTime> wrapper = factory.getBeanWrapperFor(source).get();
+
+		assertThatIllegalArgumentException().isThrownBy(() -> wrapper.setCreatedDate(LocalDateTime.now()))
+				.withMessageContaining(
+						"Cannot convert unsupported date type java.time.LocalDateTime to java.time.ZonedDateTime");
+	}
+
+	@Test // GH-2719
+	void shouldPassthruTemporalValue() {
+
+		var source = new WithZonedDateTime();
+		var now = ZonedDateTime.now();
+		AuditableBeanWrapper<WithZonedDateTime> wrapper = factory.getBeanWrapperFor(source).get();
+
+		wrapper.setCreatedDate(now);
+
+		assertThat(source.created).isEqualTo(now);
+	}
+
 	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
 
 		var sample = new Sample();
@@ -300,6 +324,11 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 		@CreatedBy String creator;
 		@LastModifiedDate Instant modified;
 		@LastModifiedBy String modifier;
+	}
+
+	static class WithZonedDateTime {
+
+		@CreatedDate ZonedDateTime created;
 	}
 
 	static class WithEmbedded {
