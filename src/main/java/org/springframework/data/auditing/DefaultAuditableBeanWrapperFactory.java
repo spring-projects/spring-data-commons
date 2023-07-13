@@ -230,6 +230,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 	}
 
 	private static IllegalArgumentException rejectUnsupportedType(Class<?> sourceType, Class<?> targetType) {
+
 		return new IllegalArgumentException(
 				String.format("Cannot convert unsupported date type %s to %s; Supported types are %s", sourceType.getName(),
 						targetType.getName(), AnnotationAuditingMetadata.SUPPORTED_DATE_TYPES));

@@ -137,7 +137,7 @@ class DefaultAuditableBeanWrapperFactoryUnitTests {
 		assertThat(result).hasValue(now);
 	}
 
-	@Test
+	@Test // GH-2719
 	void shouldRejectUnsupportedTemporalConversion() {
 
 		var source = new WithZonedDateTime();
