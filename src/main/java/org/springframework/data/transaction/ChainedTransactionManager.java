@@ -70,7 +70,7 @@ import org.springframework.util.Assert;
 @Deprecated
 public class ChainedTransactionManager implements PlatformTransactionManager {
 
-	private final static Log logger = LogFactory.getLog(ChainedTransactionManager.class);
+	private static final Log logger = LogFactory.getLog(ChainedTransactionManager.class);
 
 	private final List<PlatformTransactionManager> transactionManagers;
 	private final SynchronizationManager synchronizationManager;

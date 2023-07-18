@@ -59,8 +59,8 @@ import java.util.stream.Stream;
  */
 public class SpelQueryContext {
 
-	private final static String SPEL_PATTERN_STRING = "([:?])#\\{([^}]+)}";
-	private final static Pattern SPEL_PATTERN = Pattern.compile(SPEL_PATTERN_STRING);
+	private static final String SPEL_PATTERN_STRING = "([:?])#\\{([^}]+)}";
+	private static final Pattern SPEL_PATTERN = Pattern.compile(SPEL_PATTERN_STRING);
 
 	/**
 	 * A function from the index of a SpEL expression in a query and the actual SpEL expression to the parameter name to

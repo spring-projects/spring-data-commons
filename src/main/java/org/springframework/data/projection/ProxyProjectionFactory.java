@@ -51,7 +51,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  */
 class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware {
 
-	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
+	static final GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
 
 	static {
 		Jsr310Converters.getConvertersToRegister().forEach(CONVERSION_SERVICE::addConverter);

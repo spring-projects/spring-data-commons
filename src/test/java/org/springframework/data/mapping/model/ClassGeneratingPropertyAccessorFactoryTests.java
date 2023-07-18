@@ -41,8 +41,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @SuppressWarnings("WeakerAccess") // public required for class generation due to visibility rules
 public class ClassGeneratingPropertyAccessorFactoryTests {
 
-	private final static ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
-	private final static SampleMappingContext mappingContext = new SampleMappingContext();
+	private static final ClassGeneratingPropertyAccessorFactory factory = new ClassGeneratingPropertyAccessorFactory();
+	private static final SampleMappingContext mappingContext = new SampleMappingContext();
 
 
 	@SuppressWarnings("unchecked")

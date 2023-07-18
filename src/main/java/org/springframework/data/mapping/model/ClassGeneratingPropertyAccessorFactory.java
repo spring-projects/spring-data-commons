@@ -215,7 +215,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 	/**
 	 * Generates {@link PersistentPropertyAccessor} classes to access properties of a {@link PersistentEntity}. This code
-	 * uses {@code private final static} held method handles which perform about the speed of native method invocations
+	 * uses {@code private static final} held method handles which perform about the speed of native method invocations
 	 * for property access which is restricted due to Java rules (such as private fields/methods) or private inner
 	 * classes. All other scoped members (package default, protected and public) are accessed via field or property access
 	 * to bypass reflection overhead. That's only possible if the type and the member access is possible from another

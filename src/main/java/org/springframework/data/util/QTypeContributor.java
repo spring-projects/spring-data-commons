@@ -29,7 +29,7 @@ import org.springframework.util.ClassUtils;
  */
 public class QTypeContributor {
 
-	private final static Log logger = LogFactory.getLog(QTypeContributor.class);
+	private static final Log logger = LogFactory.getLog(QTypeContributor.class);
 
 	public static void contributeEntityPath(Class<?> type, GenerationContext context, @Nullable ClassLoader classLoader) {
 
