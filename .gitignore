@@ -1,0 +1,6 @@
+node
+node_modules
+target
+package*.json
+*.iml
+*.idea
