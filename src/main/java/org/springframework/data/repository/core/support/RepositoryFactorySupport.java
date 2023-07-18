@@ -84,7 +84,7 @@ import org.springframework.util.ObjectUtils;
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
-	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
+	static final GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
 	private static final Log logger = LogFactory.getLog(RepositoryFactorySupport.class);
 
 	static {
