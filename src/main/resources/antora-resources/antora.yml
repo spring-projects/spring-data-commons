@@ -13,4 +13,4 @@ asciidoc:
     spring-framework-javadoc: {springjavadocurl}
     releasetrainversion: 2023.0.1 # FIXME this is wrong
     store: Jpa
-    springhateoasversion: 2.2.0-SNAPSHOT
+    springhateoasversion: ${spring-hateoas}

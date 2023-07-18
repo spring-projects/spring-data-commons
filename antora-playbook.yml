@@ -8,12 +8,12 @@ antora:
       root_component_name: 'data-commons'
 site:
   title: Spring Data Reference
-  url: https://https://rwinch.github.io/spring-data-commons/
+  url: https://rwinch.github.io/spring-data-commons/
 content:
   sources:
     - url: .
       branches: HEAD
-      start_path: .
+      start_path: src/main/antora
       worktrees: true
 asciidoc:
   attributes:
