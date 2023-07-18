@@ -29,6 +29,7 @@ import com.querydsl.core.types.OrderSpecifier;
  * @author Thomas Darimont
  * @author Oliver Drotbohm
  * @author Mark Paluch
+ * @author Thach Le
  */
 public class QPageRequest extends AbstractPageRequest {
 
@@ -37,43 +38,43 @@ public class QPageRequest extends AbstractPageRequest {
 	private final QSort sort;
 
 	/**
-	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return the first
-	 * page.
+	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code pageNumber} will return the first
+	 * pageNumber.
 	 *
-	 * @param page must not be negative.
-	 * @param size must be greater or equal to 0.
+	 * @param pageNumber must not be negative.
+	 * @param pageSize must be greater or equal to 0.
 	 * @deprecated since 2.1, use {@link #of(int, int)} instead.
 	 */
 	@Deprecated
-	public QPageRequest(int page, int size) {
-		this(page, size, QSort.unsorted());
+	public QPageRequest(int pageNumber, int pageSize) {
+		this(pageNumber, pageSize, QSort.unsorted());
 	}
 
 	/**
 	 * Creates a new {@link QPageRequest} with the given {@link OrderSpecifier}s applied.
 	 *
-	 * @param page must not be negative.
-	 * @param size must be greater or equal to 0.
+	 * @param pageNumber must not be negative.
+	 * @param pageSize must be greater or equal to 0.
 	 * @param orderSpecifiers must not be {@literal null} or empty;
 	 * @deprecated since 2.1, use {@link #of(int, int, OrderSpecifier...)} instead.
 	 */
 	@Deprecated
-	public QPageRequest(int page, int size, OrderSpecifier<?>... orderSpecifiers) {
-		this(page, size, new QSort(orderSpecifiers));
+	public QPageRequest(int pageNumber, int pageSize, OrderSpecifier<?>... orderSpecifiers) {
+		this(pageNumber, pageSize, new QSort(orderSpecifiers));
 	}
 
 	/**
 	 * Creates a new {@link QPageRequest} with sort parameters applied.
 	 *
-	 * @param page must not be negative.
-	 * @param size must be greater or equal to 0.
+	 * @param pageNumber must not be negative.
+	 * @param pageSize must be greater or equal to 0.
 	 * @param sort must not be {@literal null}.
 	 * @deprecated since 2.1, use {@link #of(int, int, QSort)} instead.
 	 */
 	@Deprecated
-	public QPageRequest(int page, int size, QSort sort) {
+	public QPageRequest(int pageNumber, int pageSize, QSort sort) {
 
-		super(page, size);
+		super(pageNumber, pageSize);
 
 		Assert.notNull(sort, "QSort must not be null");
 
@@ -81,39 +82,39 @@ public class QPageRequest extends AbstractPageRequest {
 	}
 
 	/**
-	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return the first
-	 * page.
+	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code pageNumber} will return the first
+	 * pageNumber.
 	 *
-	 * @param page must not be negative.
-	 * @param size must be greater or equal to 0.
+	 * @param pageNumber must not be negative.
+	 * @param pageSize must be greater or equal to 0.
 	 * @since 2.1
 	 */
-	public static QPageRequest of(int page, int size) {
-		return new QPageRequest(page, size, QSort.unsorted());
+	public static QPageRequest of(int pageNumber, int pageSize) {
+		return new QPageRequest(pageNumber, pageSize, QSort.unsorted());
 	}
 
 	/**
 	 * Creates a new {@link QPageRequest} with the given {@link OrderSpecifier}s applied.
 	 *
-	 * @param page must not be negative.
-	 * @param size must be greater or equal to 0.
+	 * @param pageNumber must not be negative.
+	 * @param pageSize must be greater or equal to 0.
 	 * @param orderSpecifiers must not be {@literal null} or empty;
 	 * @since 2.1
 	 */
-	public static QPageRequest of(int page, int size, OrderSpecifier<?>... orderSpecifiers) {
-		return new QPageRequest(page, size, new QSort(orderSpecifiers));
+	public static QPageRequest of(int pageNumber, int pageSize, OrderSpecifier<?>... orderSpecifiers) {
+		return new QPageRequest(pageNumber, pageSize, new QSort(orderSpecifiers));
 	}
 
 	/**
 	 * Creates a new {@link QPageRequest} with sort parameters applied.
 	 *
-	 * @param page must not be negative.
-	 * @param size must be greater or equal to 0.
+	 * @param pageNumber must not be negative.
+	 * @param pageSize must be greater or equal to 0.
 	 * @param sort must not be {@literal null}.
 	 * @since 2.1
 	 */
-	public static QPageRequest of(int page, int size, QSort sort) {
-		return new QPageRequest(page, size, sort);
+	public static QPageRequest of(int pageNumber, int pageSize, QSort sort) {
+		return new QPageRequest(pageNumber, pageSize, sort);
 	}
 
 	/**
