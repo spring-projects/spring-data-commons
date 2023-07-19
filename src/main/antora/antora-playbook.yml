@@ -11,9 +11,8 @@ site:
   url: https://rwinch.github.io/spring-data-commons/
 content:
   sources:
-    - url: .
+    - url: ../../..
       branches: HEAD
-      start_path: src/main/antora
       worktrees: true
 asciidoc:
   attributes:
