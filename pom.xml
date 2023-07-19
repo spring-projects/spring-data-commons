@@ -419,7 +419,7 @@
 									<executable>node/node</executable>
 									<arguments>
 										<argument>node_modules/.bin/antora</argument>
-										<argument>antora-playbook.yml</argument>
+										<argument>src/main/antora/antora-playbook.yml</argument>
 										<argument>--to-dir=target/site</argument>
 									</arguments>
 									<workingDirectory>${project.basedir}</workingDirectory>
