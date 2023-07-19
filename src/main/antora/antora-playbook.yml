@@ -11,7 +11,7 @@ site:
   url: https://rwinch.github.io/spring-data-commons/
 content:
   sources:
-    - url: ../../..
+    - url: ~+/
       branches: HEAD
       worktrees: true
 asciidoc:
