@@ -8,9 +8,9 @@ asciidoc:
     springversion: ${spring}
     spring-data-commons-javadoc-base: https://docs.spring.io/spring-data/data-commons/docs/current/api/
     springdocsurl: https://docs.spring.io/spring-framework/docs/{springversion}/reference/html
-    spring-framework-docs: {springdocsurl}
+    spring-framework-docs: '{springdocsurl}'
     springjavadocurl: https://docs.spring.io/spring-framework/docs/{springversion}/javadoc-api
-    spring-framework-javadoc: {springjavadocurl}
+    spring-framework-javadoc: '{springjavadocurl}'
     releasetrainversion: 2023.0.1 # FIXME this is wrong
     store: Jpa
     springhateoasversion: ${spring-hateoas}
