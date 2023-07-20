@@ -6,7 +6,7 @@ asciidoc:
     chomp: 'all'
     version: ${project.version}
     springversionshort: 6.1
-    springversion: '{spring}'
+    springversion: ${spring}
     spring-data-commons-javadoc-base: https://docs.spring.io/spring-data/data-commons/docs/current/api/
     springdocsurl: https://docs.spring.io/spring-framework/reference/{springversionshort}/core/beans/java.html
     spring-framework-docs: '{springdocsurl}'
