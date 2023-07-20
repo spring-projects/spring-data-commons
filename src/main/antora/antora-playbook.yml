@@ -8,7 +8,7 @@ antora:
       root_component_name: 'data-commons'
 site:
   title: Spring Data Reference
-  url: https://rwinch.github.io/spring-data-commons/
+  url: https://docs.spring.io/spring-data-commons/reference
 content:
   sources:
     - url: ./../../..
