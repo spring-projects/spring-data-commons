@@ -65,7 +65,7 @@ By default, the infrastructure picks up every interface that extends the persist
 However, you might want more fine-grained control over which interfaces have bean instances created for them.
 To do so, use filter elements inside the repository declaration.
 The semantics are exactly equivalent to the elements in Spring's component filters.
-For details, see the {spring-framework-docs}/core.html#beans-scanning-filters[Spring reference documentation] for these elements.
+For details, see the {spring-framework-docs}/core/beans/classpath-scanning.html[Spring reference documentation] for these elements.
 
 For example, to exclude certain interfaces from instantiation as repository beans, you could use the following configuration:
 

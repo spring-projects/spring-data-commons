@@ -247,7 +247,7 @@ NOTE: Not all Spring Data modules currently support `Stream<T>` as a return type
 [[repositories.query-async]]
 == Asynchronous Query Results
 
-You can run repository queries asynchronously by using {spring-framework-docs}/integration.html#scheduling[Spring's asynchronous method running capability].
+You can run repository queries asynchronously by using {spring-framework-docs}/integration/scheduling.html[Spring's asynchronous method running capability].
 This means the method returns immediately upon invocation while the actual query occurs in a task that has been submitted to a Spring `TaskExecutor`.
 Asynchronous queries differ from reactive queries and should not be mixed.
 See the store-specific documentation for more details on reactive support.

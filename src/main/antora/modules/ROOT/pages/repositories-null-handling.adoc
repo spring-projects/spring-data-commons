@@ -16,7 +16,7 @@ See "`xref:repository-query-return-types-reference.adoc[Repository query return 
 [[repositories.nullability.annotations]]
 == Nullability Annotations
 
-You can express nullability constraints for repository methods by using {spring-framework-docs}/core.html#null-safety[Spring Framework's nullability annotations].
+You can express nullability constraints for repository methods by using {spring-framework-docs}/core/null-safety.html[Spring Framework's nullability annotations].
 They provide a tooling-friendly approach and opt-in `null` checks during runtime, as follows:
 
 * {spring-framework-javadoc}/org/springframework/lang/NonNullApi.html[`@NonNullApi`]: Used on the package level to declare that the default behavior for parameters and return values is, respectively, neither to accept nor to produce `null` values.

@@ -439,7 +439,7 @@ The type to which the JSON object is unmarshalled is determined by inspecting th
 The infrastructure eventually selects the appropriate repository to handle the object that was deserialized.
 
 To instead use XML to define the data the repositories should be populated with, you can use the `unmarshaller-populator` element.
-You configure it to use one of the XML marshaller options available in Spring OXM. See the {spring-framework-docs}/data-access.html#oxm[Spring reference documentation] for details.
+You configure it to use one of the XML marshaller options available in Spring OXM. See the {spring-framework-docs}/data-access/oxm.html[Spring reference documentation] for details.
 The following example shows how to unmarshall a repository populator with JAXB:
 
 .Declaring an unmarshalling repository populator (using JAXB)
