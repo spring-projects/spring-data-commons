@@ -8,7 +8,7 @@ antora:
     root_component_name: 'data-commons'
 site:
   title: Spring Data Commons
-  url: https://spring.io/spring-data-commons/reference
+  url: https://docs.spring.io/spring-data-commons/reference
   robots: allow
 git:
   ensure_git_suffix: false
