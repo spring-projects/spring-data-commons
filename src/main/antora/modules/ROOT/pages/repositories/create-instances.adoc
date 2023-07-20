@@ -7,7 +7,7 @@ This section covers how to create instances and bean definitions for the defined
 == Java Configuration
 
 Use the store-specific `@Enable{store}Repositories` annotation on a Java configuration class to define a configuration for repository activation.
-For an introduction to Java-based configuration of the Spring container, see {spring-framework-docs}/core.html#beans-java[JavaConfig in the Spring reference documentation].
+For an introduction to Java-based configuration of the Spring container, see {spring-framework-docs}/core/beans/java.html[JavaConfig in the Spring reference documentation].
 
 A sample configuration to enable Spring Data repositories resembles the following:
 

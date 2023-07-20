@@ -8,7 +8,7 @@ asciidoc:
     springversionshort: 6.1
     springversion: ${spring}
     spring-data-commons-javadoc-base: https://docs.spring.io/spring-data/data-commons/docs/current/api/
-    springdocsurl: https://docs.spring.io/spring-framework/reference/{springversionshort}/core/beans/java.html
+    springdocsurl: https://docs.spring.io/spring-framework/reference/{springversionshort}
     spring-framework-docs: '{springdocsurl}'
     springjavadocurl: https://docs.spring.io/spring-framework/docs/{springversion}/javadoc-api
     spring-framework-javadoc: '{springjavadocurl}'
