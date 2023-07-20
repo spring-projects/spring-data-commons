@@ -37,8 +37,8 @@ public class PageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link PageRequest} with sort parameters applied.
 	 *
-	 * @param pageNumber zero-based pageNumber index, must not be negative.
-	 * @param pageSize the pageSize of the pageNumber to be returned, must be greater than 0.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @param sort must not be {@literal null}, use {@link Sort#unsorted()} instead.
 	 */
 	protected PageRequest(int pageNumber, int pageSize, Sort sort) {
@@ -53,8 +53,8 @@ public class PageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new unsorted {@link PageRequest}.
 	 *
-	 * @param pageNumber zero-based pageNumber index, must not be negative.
-	 * @param pageSize the pageSize of the pageNumber to be returned, must be greater than 0.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @since 2.0
 	 */
 	public static PageRequest of(int pageNumber, int pageSize) {
@@ -64,8 +64,8 @@ public class PageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link PageRequest} with sort parameters applied.
 	 *
-	 * @param pageNumber zero-based pageNumber index.
-	 * @param pageSize the pageSize of the pageNumber to be returned.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @param sort must not be {@literal null}, use {@link Sort#unsorted()} instead.
 	 * @since 2.0
 	 */
@@ -76,8 +76,8 @@ public class PageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link PageRequest} with sort direction and properties applied.
 	 *
-	 * @param pageNumber zero-based pageNumber index, must not be negative.
-	 * @param pageSize the pageSize of the pageNumber to be returned, must be greater than 0.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @param direction must not be {@literal null}.
 	 * @param properties must not be {@literal null}.
 	 * @since 2.0

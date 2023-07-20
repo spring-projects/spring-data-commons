@@ -38,11 +38,11 @@ public class QPageRequest extends AbstractPageRequest {
 	private final QSort sort;
 
 	/**
-	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code pageNumber} will return the first
-	 * pageNumber.
+	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code pageNumber} will return the
+	 * first pageNumber.
 	 *
-	 * @param pageNumber must not be negative.
-	 * @param pageSize must be greater or equal to 0.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @deprecated since 2.1, use {@link #of(int, int)} instead.
 	 */
 	@Deprecated
@@ -53,8 +53,8 @@ public class QPageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link QPageRequest} with the given {@link OrderSpecifier}s applied.
 	 *
-	 * @param pageNumber must not be negative.
-	 * @param pageSize must be greater or equal to 0.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @param orderSpecifiers must not be {@literal null} or empty;
 	 * @deprecated since 2.1, use {@link #of(int, int, OrderSpecifier...)} instead.
 	 */
@@ -66,8 +66,8 @@ public class QPageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link QPageRequest} with sort parameters applied.
 	 *
-	 * @param pageNumber must not be negative.
-	 * @param pageSize must be greater or equal to 0.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @param sort must not be {@literal null}.
 	 * @deprecated since 2.1, use {@link #of(int, int, QSort)} instead.
 	 */
@@ -82,11 +82,11 @@ public class QPageRequest extends AbstractPageRequest {
 	}
 
 	/**
-	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code pageNumber} will return the first
-	 * pageNumber.
+	 * Creates a new {@link QPageRequest}. Pages are zero indexed, thus providing 0 for {@code pageNumber} will return the
+	 * first pageNumber.
 	 *
-	 * @param pageNumber must not be negative.
-	 * @param pageSize must be greater or equal to 0.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @since 2.1
 	 */
 	public static QPageRequest of(int pageNumber, int pageSize) {
@@ -96,8 +96,8 @@ public class QPageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link QPageRequest} with the given {@link OrderSpecifier}s applied.
 	 *
-	 * @param pageNumber must not be negative.
-	 * @param pageSize must be greater or equal to 0.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @param orderSpecifiers must not be {@literal null} or empty;
 	 * @since 2.1
 	 */
@@ -108,8 +108,8 @@ public class QPageRequest extends AbstractPageRequest {
 	/**
 	 * Creates a new {@link QPageRequest} with sort parameters applied.
 	 *
-	 * @param pageNumber must not be negative.
-	 * @param pageSize must be greater or equal to 0.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @param sort must not be {@literal null}.
 	 * @since 2.1
 	 */
