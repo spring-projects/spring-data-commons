@@ -5,7 +5,7 @@ asciidoc:
     attribute-missing: 'warn'
     chomp: 'all'
     version: ${project.version}
-    springversion: ${spring}
+    springversion: 6.1
     spring-data-commons-javadoc-base: https://docs.spring.io/spring-data/data-commons/docs/current/api/
     springdocsurl: https://docs.spring.io/spring-framework/docs/{springversion}/reference/html
     spring-framework-docs: '{springdocsurl}'
