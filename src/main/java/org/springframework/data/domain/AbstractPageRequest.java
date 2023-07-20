@@ -34,13 +34,13 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	private final int pageSize;
 
 	/**
-	 * Creates a new {@link AbstractPageRequest}. Pages are zero indexed, thus providing 0 for {@code pageNumber} will return
-	 * the first pageNumber.
+	 * Creates a new {@link AbstractPageRequest}. Pages are zero indexed, thus providing 0 for {@code pageNumber} will
+	 * return the first pageNumber.
 	 *
-	 * @param pageNumber must not be less than zero.
-	 * @param pageSize must not be less than one.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 */
-	protected AbstractPageRequest(int pageNumber, int pageSize) {
+	public AbstractPageRequest(int pageNumber, int pageSize) {
 
 		if (pageNumber < 0) {
 			throw new IllegalArgumentException("Page index must not be less than zero");
@@ -54,26 +54,32 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		this.pageSize = pageSize;
 	}
 
+	@Override
 	public int getPageSize() {
 		return pageSize;
 	}
 
+	@Override
 	public int getPageNumber() {
 		return pageNumber;
 	}
 
+	@Override
 	public long getOffset() {
 		return (long) pageNumber * (long) pageSize;
 	}
 
+	@Override
 	public boolean hasPrevious() {
 		return pageNumber > 0;
 	}
 
+	@Override
 	public Pageable previousOrFirst() {
 		return hasPrevious() ? previous() : first();
 	}
 
+	@Override
 	public abstract Pageable next();
 
 	/**
@@ -83,6 +89,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 */
 	public abstract Pageable previous();
 
+	@Override
 	public abstract Pageable first();
 
 	@Override
