@@ -47,8 +47,10 @@ import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StopWatch;
 
 /**
@@ -183,7 +185,7 @@ public class RepositoryConfigurationDelegate {
 
 			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
 
-			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, configuration.getRepositoryInterface());
+			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, getRepositoryInterface(configuration));
 			beanDefinition.setResourceDescription(configuration.getResourceDescription());
 
 			String beanName = configurationSource.generateBeanName(beanDefinition);
@@ -305,6 +307,23 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		return ApplicationStartup.DEFAULT;
+	}
+
+	/**
+	 * Returns the repository interface of the given {@link RepositoryConfiguration} as loaded {@link Class}.
+	 *
+	 * @param configuration must not be {@literal null}.
+	 * @return can be {@literal null}.
+	 */
+	@Nullable
+	private Class<?> getRepositoryInterface(RepositoryConfiguration<?> configuration) {
+
+		String interfaceName = configuration.getRepositoryInterface();
+		ClassLoader classLoader = resourceLoader.getClassLoader() == null
+				? ClassUtils.getDefaultClassLoader()
+				: resourceLoader.getClassLoader();
+
+		return ReflectionUtils.loadIfPresent(interfaceName, classLoader);
 	}
 
 	/**

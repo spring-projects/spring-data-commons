@@ -61,7 +61,7 @@ class RepositoryConfigurationDelegateUnitTests {
 
 	RepositoryConfigurationExtension extension = new DummyConfigurationExtension();
 
-	@Test // DATACMNS-892
+	@Test // DATACMNS-892, #2891
 	void registersRepositoryBeanNameAsAttribute() {
 
 		var environment = new StandardEnvironment();
@@ -76,8 +76,11 @@ class RepositoryConfigurationDelegateUnitTests {
 		for (var definition : delegate.registerRepositoriesIn(context, extension)) {
 
 			var beanDefinition = definition.getBeanDefinition();
+			var attribute = beanDefinition.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE);
 
-			assertThat(beanDefinition.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE).toString()).endsWith("Repository");
+			assertThat(attribute).isInstanceOfSatisfying(Class.class, it -> {
+				assertThat(it.getName()).endsWith("Repository");
+			});
 		}
 	}
 
