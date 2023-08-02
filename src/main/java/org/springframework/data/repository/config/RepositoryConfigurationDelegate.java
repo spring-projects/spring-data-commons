@@ -25,19 +25,19 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.AutowireCandidateResolver;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
@@ -70,7 +70,6 @@ public class RepositoryConfigurationDelegate {
 	private static final String REPOSITORY_REGISTRATION = "Spring Data %s - Registering repository: %s - Interface: %s - Factory: %s";
 	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode";
 	private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = "Non-default AutowireCandidateResolver (%s) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working";
-	private static final String FACTORY_BEAN_OBJECT_TYPE = FactoryBean.OBJECT_TYPE_ATTRIBUTE;
 
 	private static final Log logger = LogFactory.getLog(RepositoryConfigurationDelegate.class);
 
@@ -183,9 +182,9 @@ public class RepositoryConfigurationDelegate {
 				extension.postProcess(definitionBuilder, (AnnotationRepositoryConfigurationSource) configurationSource);
 			}
 
-			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
+			RootBeanDefinition beanDefinition = (RootBeanDefinition) definitionBuilder.getBeanDefinition();
 
-			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, getRepositoryInterface(configuration));
+			beanDefinition.setTargetType(getRepositoryInterface(configuration));
 			beanDefinition.setResourceDescription(configuration.getResourceDescription());
 
 			String beanName = configurationSource.generateBeanName(beanDefinition);
@@ -316,14 +315,31 @@ public class RepositoryConfigurationDelegate {
 	 * @return can be {@literal null}.
 	 */
 	@Nullable
-	private Class<?> getRepositoryInterface(RepositoryConfiguration<?> configuration) {
+	private ResolvableType getRepositoryInterface(RepositoryConfiguration<?> configuration) {
 
 		String interfaceName = configuration.getRepositoryInterface();
 		ClassLoader classLoader = resourceLoader.getClassLoader() == null
 				? ClassUtils.getDefaultClassLoader()
 				: resourceLoader.getClassLoader();
 
-		return ReflectionUtils.loadIfPresent(interfaceName, classLoader);
+		classLoader = classLoader != null ? classLoader : getClass().getClassLoader();
+
+		Class<?> repositoryInterface = ReflectionUtils.loadIfPresent(interfaceName, classLoader);
+		Class<?> factoryBean = ReflectionUtils.loadIfPresent(configuration.getRepositoryFactoryBeanClassName(),
+				classLoader);
+
+		int numberOfGenerics = factoryBean.getTypeParameters().length;
+
+		Class<?>[] generics = new Class<?>[numberOfGenerics];
+		generics[0] = repositoryInterface;
+
+		if (numberOfGenerics > 1) {
+			for (int i = 1; i < numberOfGenerics; i++) {
+				generics[i] = Object.class;
+			}
+		}
+
+		return ResolvableType.forClassWithGenerics(factoryBean, generics);
 	}
 
 	/**

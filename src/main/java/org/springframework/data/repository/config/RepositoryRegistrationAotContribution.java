@@ -32,21 +32,17 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.DecoratingProxy;
-import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.aot.AotContext;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
@@ -152,8 +148,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		this.repositoryContext = buildAotRepositoryContext(repositoryBean, repositoryMetadata);
 
-		enhanceRepositoryBeanDefinition(repositoryBean, repositoryMetadata, this.repositoryContext);
-
 		return this;
 	}
 
@@ -204,43 +198,11 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	}
 
 	/**
-	 * Helps the AOT processing render the {@link FactoryBean} type correctly that is used to tell the outcome of the
-	 * {@link FactoryBean}. We just need to set the target {@link Repository} {@link Class type} of the
-	 * {@link RepositoryFactoryBeanSupport} while keeping the actual ID and DomainType set to {@link Object}. If the
-	 * generic type signature does not match, then we do not try to resolve and remap the types, but rather set the
-	 * {@literal factoryBeanObjectType} attribute on the {@link RootBeanDefinition}.
-	 */
-	protected void enhanceRepositoryBeanDefinition(RegisteredBean repositoryBean,
-			RepositoryConfiguration<?> repositoryMetadata, AotRepositoryContext repositoryContext) {
-
-		logTrace(String.format("Enhancing repository factory bean definition [%s]", repositoryBean.getBeanName()));
-
-		Class<?> repositoryFactoryBeanType = repositoryContext
-				.introspectType(repositoryMetadata.getRepositoryFactoryBeanClassName()).resolveType()
-				.orElse(RepositoryFactoryBeanSupport.class);
-
-		ResolvableType resolvedRepositoryFactoryBeanType = ResolvableType.forClass(repositoryFactoryBeanType);
-
-		RootBeanDefinition repositoryBeanDefinition = repositoryBean.getMergedBeanDefinition();
-
-		if (isRepositoryWithTypeParameters(resolvedRepositoryFactoryBeanType)) {
-			repositoryBeanDefinition.setTargetType(ResolvableType.forClassWithGenerics(repositoryFactoryBeanType,
-					repositoryContext.getRepositoryInformation().getRepositoryInterface(), Object.class, Object.class));
-		} else {
-			repositoryBeanDefinition.setTargetType(resolvedRepositoryFactoryBeanType);
-			repositoryBeanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE,
-					repositoryContext.getRepositoryInformation().getRepositoryInterface());
-		}
-	}
-
-	/**
 	 * {@link BiConsumer Callback} for data module specific contributions.
 	 *
 	 * @param moduleContribution {@link BiConsumer} used by data modules to submit contributions; can be {@literal null}.
 	 * @return this.
 	 */
-
-	@SuppressWarnings("unused")
 	public RepositoryRegistrationAotContribution withModuleContribution(
 			@Nullable BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution) {
 		this.moduleContribution = moduleContribution;
@@ -384,9 +346,5 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	// used in the contributeType(..) method above?
 	public Predicate<Class<?>> typeFilter() { // like only document ones. // TODO: As in MongoDB?
 		return it -> true;
-	}
-
-	private static boolean isRepositoryWithTypeParameters(ResolvableType type) {
-		return type.getGenerics().length == 3;
 	}
 }
