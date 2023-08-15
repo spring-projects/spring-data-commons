@@ -230,8 +230,8 @@ public class CustomConversions {
 	 * @see ConverterRegistration
 	 * @since 2.3
 	 */
-	private List<ConverterRegistrationIntent> collectPotentialConverterRegistrations(@
-			NonNull StoreConversions storeConversions, @NonNull Collection<?> converters) {
+	private List<ConverterRegistrationIntent> collectPotentialConverterRegistrations(
+			@NonNull StoreConversions storeConversions, @NonNull Collection<?> converters) {
 
 		List<ConverterRegistrationIntent> converterRegistrations = new ArrayList<>();
 
