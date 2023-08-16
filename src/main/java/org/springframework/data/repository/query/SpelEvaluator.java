@@ -15,9 +15,8 @@
  */
 package org.springframework.data.repository.query;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.springframework.data.repository.query.SpelQueryContext.SpelExtractor;
 import org.springframework.data.spel.ExpressionDependencies;
@@ -62,11 +61,12 @@ public class SpelEvaluator {
 
 		Assert.notNull(values, "Values must not be null.");
 
+		Map<String, String> parameterMap = extractor.getParameterMap();
+		Map<String, Object> results = new LinkedHashMap<>(parameterMap.size());
 
-		return extractor.getParameters().collect(Collectors.toMap(//
-				Entry::getKey, //
-				it -> getSpElValue(it.getValue(), values) //
-		));
+		parameterMap.forEach((parameter, expression) -> results.put(parameter, getSpElValue(expression, values)));
+
+		return results;
 	}
 
 	/**

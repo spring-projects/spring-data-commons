@@ -22,11 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Range.Bound;
@@ -288,9 +286,6 @@ public class SpelQueryContext {
 			return expressions;
 		}
 
-		Stream<Entry<String, String>> getParameters() {
-			return expressions.entrySet().stream();
-		}
 	}
 
 	/**
