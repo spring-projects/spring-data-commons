@@ -38,7 +38,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	private transient final @Transient List<Object> domainEvents = new ArrayList<>();
 
 	/**
-	 * Registers the given event object for publication on a call to a Spring Data repository's save methods.
+	 * Registers the given event object for publication on a call to a Spring Data repository's save or delete methods.
 	 *
 	 * @param event must not be {@literal null}.
 	 * @return the event that has been added.
@@ -86,7 +86,8 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	}
 
 	/**
-	 * Adds the given event to the aggregate for later publication when calling a Spring Data repository's save-method.
+	 * Adds the given event to the aggregate for later publication
+	 * when calling a Spring Data repository's save or delete method.
 	 * Does the same as {@link #registerEvent(Object)} but returns the aggregate instead of the event.
 	 *
 	 * @param event must not be {@literal null}.
