@@ -1,0 +1,12 @@
+[[preface]]
+= Preface
+The Spring Data Commons project applies core Spring concepts to the development of solutions using many relational and non-relational data stores.
+
+[[project]]
+== Project Metadata
+
+* Version control: https://github.com/spring-projects/spring-data-commons
+* Bugtracker: https://github.com/spring-projects/spring-data-commons/issues
+* Release repository: https://repo1.maven.org/maven2/
+* Milestone repository: https://repo.spring.io/milestone/
+* Snapshot repository: https://repo.spring.io/snapshot/

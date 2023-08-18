@@ -1,0 +1,15 @@
+[[populator.namespace-reference]]
+[appendix]
+= Populators namespace reference
+
+[[namespace-dao-config]]
+== The <populator /> element
+The `<populator />` element allows to populate a data store via the Spring Data repository infrastructure.footnote:[see <<repositories.create-instances.xml>>]
+
+.Attributes
+[options="header", cols="1,3"]
+|===============
+|Name|Description
+|`locations`|Where to find the files to read the objects from the repository shall be populated with.
+|===============
+

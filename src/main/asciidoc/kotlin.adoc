@@ -1,0 +1,43 @@
+[[kotlin]]
+= Kotlin Support
+
+https://kotlinlang.org[Kotlin] is a statically typed language that targets the JVM (and other platforms) which allows writing concise and elegant code while providing excellent https://kotlinlang.org/docs/reference/java-interop.html[interoperability] with existing libraries written in Java.
+
+Spring Data provides first-class support for Kotlin and lets developers write Kotlin applications almost as if Spring Data was a Kotlin native framework.
+
+The easiest way to build a Spring application with Kotlin is to leverage Spring Boot and its https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-kotlin.html[dedicated Kotlin support].
+This comprehensive https://spring.io/guides/tutorials/spring-boot-kotlin/[tutorial] will teach you how to build Spring Boot applications with Kotlin using https://start.spring.io/#!language=kotlin&type=gradle-project[start.spring.io].
+
+[[kotlin.requirements]]
+== Requirements
+
+Spring Data supports Kotlin 1.3 and requires `kotlin-stdlib` (or one of its variants, such as `kotlin-stdlib-jdk8`) and `kotlin-reflect` to be present on the classpath.
+Those are provided by default if you bootstrap a Kotlin project via https://start.spring.io/#!language=kotlin&type=gradle-project[start.spring.io].
+
+[[kotlin.null-safety]]
+== Null Safety
+
+One of Kotlin's key features is https://kotlinlang.org/docs/null-safety.html[null safety], which cleanly deals with `null` values at compile time.
+This makes applications safer through nullability declarations and the expression of "`value or no value`" semantics without paying the cost of wrappers, such as `Optional`.
+(Kotlin allows using functional constructs with nullable values. See this https://www.baeldung.com/kotlin/null-safety[comprehensive guide to Kotlin null safety].)
+
+Although Java does not let you express null safety in its type system, Spring Data API is annotated with https://jcp.org/en/jsr/detail?id=305[JSR-305] tooling friendly annotations declared in the `org.springframework.lang` package.
+By default, types from Java APIs used in Kotlin are recognized as https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[platform types], for which null checks are relaxed.
+https://kotlinlang.org/docs/reference/java-interop.html#jsr-305-support[Kotlin support for JSR-305 annotations] and Spring nullability annotations provide null safety for the whole Spring Data API to Kotlin developers, with the advantage of dealing with `null` related issues at compile time.
+
+See <<repositories.nullability>> how null safety applies to Spring Data Repositories.
+
+[TIP]
+====
+You can configure JSR-305 checks by adding the `-Xjsr305` compiler flag with the following options: `-Xjsr305={strict|warn|ignore}`.
+
+For Kotlin versions 1.1+, the default behavior is the same as `-Xjsr305=warn`.
+The `strict` value is required take Spring Data API null-safety into account. Kotlin types inferred from Spring API but should be used with the knowledge that Spring API nullability declaration could evolve, even between minor releases and that more checks may be added in the future.
+====
+
+NOTE: Generic type arguments, varargs, and array elements nullability are not supported yet, but should be in an upcoming release.
+
+[[kotlin.mapping]]
+== Object Mapping
+
+See <<mapping.kotlin>> for details on how Kotlin objects are materialized.

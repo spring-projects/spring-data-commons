@@ -1,0 +1,72 @@
+[[repository-query-keywords]]
+[appendix]
+= Repository query keywords
+
+[[appendix.query.method.subject]]
+== Supported query method subject keywords
+
+The following table lists the subject keywords generally supported by the Spring Data repository query derivation mechanism to express the predicate.
+Consult the store-specific documentation for the exact list of supported keywords, because some keywords listed here might not be supported in a particular store.
+
+.Query subject keywords
+[options="header",cols="1,3"]
+|===============
+|Keyword | Description
+|`find…By`, `read…By`, `get…By`, `query…By`, `search…By`, `stream…By`| General query method returning typically the repository type, a `Collection` or `Streamable` subtype or a result wrapper such as `Page`, `GeoResults` or any other store-specific result wrapper. Can be used as `findBy…`, `findMyDomainTypeBy…` or in combination with additional keywords.
+|`exists…By`| Exists projection, returning typically a `boolean` result.
+|`count…By`| Count projection returning a numeric result.
+|`delete…By`, `remove…By`| Delete query method returning either no result (`void`) or the delete count.
+|`…First<number>…`, `…Top<number>…`| Limit the query results to the first `<number>` of results. This keyword can occur in any place of the subject between `find` (and the other keywords) and `by`.
+|`…Distinct…`| Use a distinct query to return only unique results. Consult the store-specific documentation whether that feature is supported. This keyword can occur in any place of the subject between `find` (and the other keywords) and `by`.
+|===============
+
+[[appendix.query.method.predicate]]
+== Supported query method predicate keywords and modifiers
+
+The following table lists the predicate keywords generally supported by the Spring Data repository query derivation mechanism.
+However, consult the store-specific documentation for the exact list of supported keywords, because some keywords listed here might not be supported in a particular store.
+
+.Query predicate keywords
+[options="header",cols="1,3"]
+|===============
+|Logical keyword|Keyword expressions
+|`AND`|`And`
+|`OR`|`Or`
+|`AFTER`|`After`, `IsAfter`
+|`BEFORE`|`Before`, `IsBefore`
+|`CONTAINING`|`Containing`, `IsContaining`, `Contains`
+|`BETWEEN`|`Between`, `IsBetween`
+|`ENDING_WITH`|`EndingWith`, `IsEndingWith`, `EndsWith`
+|`EXISTS`|`Exists`
+|`FALSE`|`False`, `IsFalse`
+|`GREATER_THAN`|`GreaterThan`, `IsGreaterThan`
+|`GREATER_THAN_EQUALS`|`GreaterThanEqual`, `IsGreaterThanEqual`
+|`IN`|`In`, `IsIn`
+|`IS`|`Is`, `Equals`, (or no keyword)
+|`IS_EMPTY`|`IsEmpty`, `Empty`
+|`IS_NOT_EMPTY`|`IsNotEmpty`, `NotEmpty`
+|`IS_NOT_NULL`|`NotNull`, `IsNotNull`
+|`IS_NULL`|`Null`, `IsNull`
+|`LESS_THAN`|`LessThan`, `IsLessThan`
+|`LESS_THAN_EQUAL`|`LessThanEqual`, `IsLessThanEqual`
+|`LIKE`|`Like`, `IsLike`
+|`NEAR`|`Near`, `IsNear`
+|`NOT`|`Not`, `IsNot`
+|`NOT_IN`|`NotIn`, `IsNotIn`
+|`NOT_LIKE`|`NotLike`, `IsNotLike`
+|`REGEX`|`Regex`, `MatchesRegex`, `Matches`
+|`STARTING_WITH`|`StartingWith`, `IsStartingWith`, `StartsWith`
+|`TRUE`|`True`, `IsTrue`
+|`WITHIN`|`Within`, `IsWithin`
+|===============
+
+In addition to filter predicates, the following list of modifiers is supported:
+
+.Query predicate modifier keywords
+[options="header",cols="1,3"]
+|===============
+|Keyword | Description
+|`IgnoreCase`, `IgnoringCase`| Used with a predicate keyword for case-insensitive comparison.
+|`AllIgnoreCase`, `AllIgnoringCase`| Ignore case for all suitable properties. Used somewhere in the query method predicate.
+|`OrderBy…`| Specify a static sorting order followed by the property path and direction (e. g. `OrderByFirstnameAscLastnameDesc`).
+|===============

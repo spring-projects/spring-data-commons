@@ -1,0 +1,61 @@
+[[dependencies]]
+= Dependencies
+
+Due to the different inception dates of individual Spring Data modules, most of them carry different major and minor version numbers. The easiest way to find compatible ones is to rely on the Spring Data Release Train BOM that we ship with the compatible versions defined. In a Maven project, you would declare this dependency in the `<dependencyManagement />` section of your POM as follows:
+
+.Using the Spring Data release train BOM
+====
+[source, xml, subs="+attributes"]
+----
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-bom</artifactId>
+      <version>{releasetrainVersion}</version>
+      <scope>import</scope>
+      <type>pom</type>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+----
+====
+
+[[dependencies.train-names]]
+[[dependencies.train-version]]
+The current release train version is `{releasetrainVersion}`. The train version uses https://calver.org/[calver] with the pattern `YYYY.MINOR.MICRO`.
+The version name follows `${calver}` for GA releases and service releases and the following pattern for all other versions: `${calver}-${modifier}`, where `modifier` can be one of the following:
+
+* `SNAPSHOT`: Current snapshots
+* `M1`, `M2`, and so on: Milestones
+* `RC1`, `RC2`, and so on: Release candidates
+
+You can find a working example of using the BOMs in our https://github.com/spring-projects/spring-data-examples/tree/main/bom[Spring Data examples repository]. With that in place, you can declare the Spring Data modules you would like to use without a version in the `<dependencies />` block, as follows:
+
+.Declaring a dependency to a Spring Data module
+====
+[source, xml]
+----
+<dependencies>
+  <dependency>
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-jpa</artifactId>
+  </dependency>
+<dependencies>
+----
+====
+
+[[dependencies.spring-boot]]
+== Dependency Management with Spring Boot
+
+Spring Boot selects a recent version of the Spring Data modules for you. If you still want to upgrade to a newer version,
+set the `spring-data-bom.version` property to the <<dependencies.train-version,train version and iteration>>
+you would like to use.
+
+See Spring Boot's https://docs.spring.io/spring-boot/docs/current/reference/html/dependency-versions.html#appendix.dependency-versions.properties[documentation]
+(search for "Spring Data Bom") for more details.
+
+[[dependencies.spring-framework]]
+== Spring Framework
+
+The current version of Spring Data modules require Spring Framework {springVersion} or better. The modules might also work with an older bugfix version of that minor version. However, using the most recent version within that generation is highly recommended.

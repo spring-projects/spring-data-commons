@@ -1,0 +1,106 @@
+[[repositories.scrolling]]
+==== Scrolling
+
+Scrolling is a more fine-grained approach to iterate through larger results set chunks.
+Scrolling consists of a stable sort, a scroll type (Offset- or Keyset-based scrolling) and result limiting.
+You can define simple sorting expressions by using property names and define static result limiting using the <<repositories.limit-query-result,`Top` or `First` keyword>> through query derivation.
+You can concatenate expressions to collect multiple criteria into one expression.
+
+Scroll queries return a `Window<T>` that allows obtaining the scroll position to resume to obtain the next `Window<T>` until your application has consumed the entire query result.
+Similar to consuming a Java `Iterator<List<…>>` by obtaining the next batch of results, query result scrolling lets you access the a `ScrollPosition`  through `Window.positionAt(...)`.
+
+[source,java]
+----
+Window<User> users = repository.findFirst10ByLastnameOrderByFirstname("Doe", OffsetScrollPosition.initial());
+do {
+
+  for (User u : users) {
+    // consume the user
+  }
+
+  // obtain the next Scroll
+  users = repository.findFirst10ByLastnameOrderByFirstname("Doe", users.positionAt(users.size() - 1));
+} while (!users.isEmpty() && users.hasNext());
+----
+
+`WindowIterator` provides a utility to simplify scrolling across ``Window``s by removing the need to check for the presence of a next `Window` and applying the `ScrollPosition`.
+
+[source,java]
+----
+WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst10ByLastnameOrderByFirstname("Doe", position))
+  .startingAt(OffsetScrollPosition.initial());
+
+while (users.hasNext()) {
+  User u = users.next();
+  // consume the user
+}
+----
+
+[[repositories.scrolling.offset]]
+===== Scrolling using Offset
+
+Offset scrolling uses similar to pagination, an Offset counter to skip a number of results and let the data source only return results beginning at the given Offset.
+This simple mechanism avoids large results being sent to the client application.
+However, most databases require materializing the full query result before your server can return the results.
+
+.Using `OffsetScrollPosition` with Repository Query Methods
+====
+[source,java]
+----
+interface UserRepository extends Repository<User, Long> {
+
+  Window<User> findFirst10ByLastnameOrderByFirstname(String lastname, OffsetScrollPosition position);
+}
+
+WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst10ByLastnameOrderByFirstname("Doe", position))
+  .startingAt(OffsetScrollPosition.initial()); <1>
+----
+
+<1> Start from the initial offset at position `0`.
+====
+
+[[repositories.scrolling.keyset]]
+===== Scrolling using Keyset-Filtering
+
+Offset-based requires most databases require materializing the entire result before your server can return the results.
+So while the client only sees the portion of the requested results, your server needs to build the full result, which causes additional load.
+
+Keyset-Filtering approaches result subset retrieval by leveraging built-in capabilities of your database aiming to reduce the computation and I/O requirements for individual queries.
+This approach maintains a set of keys to resume scrolling by passing keys into the query, effectively amending your filter criteria.
+
+The core idea of Keyset-Filtering is to start retrieving results using a stable sorting order.
+Once you want to scroll to the next chunk, you obtain a `ScrollPosition` that is used to reconstruct the position within the sorted result.
+The `ScrollPosition` captures the keyset of the last entity within the current `Window`.
+To run the query, reconstruction rewrites the criteria clause to include all sort fields and the primary key so that the database can leverage potential indexes to run the query.
+The database needs only constructing a much smaller result from the given keyset position without the need to fully materialize a large result and then skipping results until reaching a particular offset.
+
+[WARNING]
+====
+Keyset-Filtering requires the keyset properties (those used for sorting) to be non-nullable.
+This limitation applies due to the store specific `null` value handling of comparison operators as well as the need to run queries against an indexed source.
+Keyset-Filtering on nullable properties will lead to unexpected results.
+====
+
+.Using `KeysetScrollPosition` with Repository Query Methods
+====
+[source,java]
+----
+interface UserRepository extends Repository<User, Long> {
+
+  Window<User> findFirst10ByLastnameOrderByFirstname(String lastname, KeysetScrollPosition position);
+}
+
+WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst10ByLastnameOrderByFirstname("Doe", position))
+  .startingAt(KeysetScrollPosition.initial()); <1>
+----
+<1> Start at the very beginning and do not apply additional filtering.
+====
+
+Keyset-Filtering works best when your database contains an index that matches the sort fields, hence a static sort works well.
+Scroll queries applying Keyset-Filtering require to the properties used in the sort order to be returned by the query, and these must be mapped in the returned entity.
+
+You can use interface and DTO projections, however make sure to include all properties that you've sorted by to avoid keyset extraction failures.
+
+When specifying your `Sort` order, it is sufficient to include sort properties relevant to your query;
+You do not need to ensure unique query results if you do not want to.
+The keyset query mechanism amends your sort order by including the primary key (or any remainder of composite primary keys) to ensure each query result is unique.

@@ -358,6 +358,10 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<groupId>org.asciidoctor</groupId>
+				<artifactId>asciidoctor-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
 				<groupId>io.spring.maven.antora</groupId>
 				<artifactId>antora-maven-plugin</artifactId>
 				<version>${io.spring.maven.antora-version}</version>
