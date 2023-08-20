@@ -380,9 +380,9 @@ public class ClassTypeInformationUnitTests {
 
 		assertThat(Pair.of(abstractBar.specialize(TypeInformation.of(Bar.class)),
 				abstractBar.specialize(TypeInformation.of(Bar.class)))).satisfies(pair -> {
-					assertThat(pair.getFirst()).isEqualTo(pair.getSecond());
-					assertThat(pair.getSecond()).isEqualTo(pair.getFirst());
-					assertThat(pair.getFirst().hashCode()).isEqualTo(pair.getSecond().hashCode());
+					assertThat(pair.first()).isEqualTo(pair.second());
+					assertThat(pair.second()).isEqualTo(pair.first());
+					assertThat(pair.first().hashCode()).isEqualTo(pair.second().hashCode());
 				});
 	}
 

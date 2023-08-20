@@ -115,7 +115,7 @@ public class DefaultCrudMethods implements CrudMethods {
 		Class<?> repositoryInterface = metadata.getRepositoryInterface();
 
 		return source//
-				.flatMap(it -> toStream(findMethod(repositoryInterface, it.getFirst(), it.getSecond())))//
+				.flatMap(it -> toStream(findMethod(repositoryInterface, it.first(), it.second())))//
 				.flatMap(it -> toStream(getMostSpecificMethod(it, repositoryInterface)))//
 				.findFirst();
 	}

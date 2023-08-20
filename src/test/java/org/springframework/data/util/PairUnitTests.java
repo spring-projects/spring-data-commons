@@ -31,8 +31,8 @@ class PairUnitTests {
 
 		var pair = Pair.of(1, 2);
 
-		assertThat(pair.getFirst()).isEqualTo(1);
-		assertThat(pair.getSecond()).isEqualTo(2);
+		assertThat(pair.first()).isEqualTo(1);
+		assertThat(pair.second()).isEqualTo(2);
 	}
 
 	@Test // DATACMNS-790

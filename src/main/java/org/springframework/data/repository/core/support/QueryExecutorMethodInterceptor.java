@@ -98,8 +98,8 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 			Pair<Method, RepositoryQuery> pair = lookupQuery(method, repositoryInformation, lookupStrategy,
 					projectionFactory);
-			invokeListeners(pair.getSecond());
-			result.put(pair.getFirst(), pair.getSecond());
+			invokeListeners(pair.second());
+			result.put(pair.first(), pair.second());
 		}
 
 		return result;

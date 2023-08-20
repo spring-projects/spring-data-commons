@@ -212,8 +212,8 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 				return PathResolution.unresolved(parts, segment, type, currentPath);
 			}
 
-			path = pair.getFirst();
-			current = pair.getSecond();
+			path = pair.first();
+			current = pair.second();
 		}
 
 		return PathResolution.resolved(path);
