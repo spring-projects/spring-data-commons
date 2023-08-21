@@ -30,7 +30,7 @@ The version name follows `+${calver}+` for GA releases and service releases and 
 
 You can find a working example of using the BOMs in our https://github.com/spring-projects/spring-data-examples/tree/main/bom[Spring Data examples repository]. With that in place, you can declare the Spring Data modules you would like to use without a version in the `<dependencies />` block, as follows:
 
-.Declaring a dependency to a Spring Data module
+.Declaring a dependency to a Spring Data module such as JPA
 [source, xml]
 ----
 <dependencies>

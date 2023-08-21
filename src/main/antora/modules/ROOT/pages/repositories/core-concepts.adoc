@@ -4,7 +4,7 @@
 The central interface in the Spring Data repository abstraction is `Repository`.
 It takes the domain class to manage as well as the identifier type of the domain class as type arguments.
 This interface acts primarily as a marker interface to capture the types to work with and to help you to discover interfaces that extend this one.
-The https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/CrudRepository.html[`CrudRepository`] and https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/ListCrudRepository.html[`ListCrudRepository`] interfaces provide sophisticated CRUD functionality for the entity class that is being managed.
+The {spring-data-commons-javadoc-base}/org/springframework/data/repository/CrudRepository.html[`CrudRepository`] and {spring-data-commons-javadoc-base}/api/org/springframework/data/repository/ListCrudRepository.html[`ListCrudRepository`] interfaces provide sophisticated CRUD functionality for the entity class that is being managed.
 
 [[repositories.repository]]
 .`CrudRepository` Interface
@@ -40,7 +40,7 @@ The methods declared in this interface are commonly referred to as CRUD methods.
 NOTE: We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`.
 Those interfaces extend `CrudRepository` and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces such as `CrudRepository`.
 
-Additional to the `CrudRepository`, there is a https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/PagingAndSortingRepository.html[`PagingAndSortingRepository`] abstraction that adds additional methods to ease paginated access to entities:
+Additional to the `CrudRepository`, there is a {spring-data-commons-javadoc-base}/org/springframework/data/repository/PagingAndSortingRepository.html[`PagingAndSortingRepository`] abstraction that adds additional methods to ease paginated access to entities:
 
 .`PagingAndSortingRepository` interface
 [source,java]
