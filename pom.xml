@@ -34,7 +34,6 @@
 		<xmlbeam>1.4.24</xmlbeam>
 		<java-module-name>spring.data.commons</java-module-name>
 		<kotlin.api.target>1.8</kotlin.api.target>
-		<io.spring.maven.antora-version>0.0.3</io.spring.maven.antora-version>
 	</properties>
 
 	<dependencies>
@@ -364,26 +363,23 @@
 			<plugin>
 				<groupId>io.spring.maven.antora</groupId>
 				<artifactId>antora-maven-plugin</artifactId>
-				<version>${io.spring.maven.antora-version}</version>
-				<extensions>true</extensions>
-				<configuration>
-					<playbook>src/main/antora/antora-playbook.yml</playbook>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>io.spring.maven.antora</groupId>
-				<artifactId>antora-component-version-maven-plugin</artifactId>
-				<version>${io.spring.maven.antora-version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>antora-component-version</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>antora-process-resources</id>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/antora/resources/antora-resources</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+	</profiles>
 
 	<repositories>
 		<repository>
