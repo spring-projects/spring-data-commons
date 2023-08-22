@@ -11,7 +11,7 @@ Besides that, Spring Data supports returning the following wrapper types on quer
 Alternatively, query methods can choose not to use a wrapper type at all.
 The absence of a query result is then indicated by returning `null`.
 Repository methods returning collections, collection alternatives, wrappers, and streams are guaranteed never to return `null` but rather the corresponding empty representation.
-See "`xref:repository-query-return-types-reference.adoc[Repository query return types]`" for details.
+See "`xref:repositories/query-return-types-reference.adoc[Repository query return types]`" for details.
 
 [[repositories.nullability.annotations]]
 == Nullability Annotations

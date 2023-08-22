@@ -45,7 +45,7 @@ You can find a working example of using the BOMs in our https://github.com/sprin
 == Dependency Management with Spring Boot
 
 Spring Boot selects a recent version of the Spring Data modules for you. If you still want to upgrade to a newer version,
-set the `spring-data-bom.version` property to the xref:dependencies.adoc#dependencies.train-version[train version and iteration]
+set the `spring-data-bom.version` property to the <<dependencies.train-version,train version and iteration>>
 you would like to use.
 
 See Spring Boot's https://docs.spring.io/spring-boot/docs/current/reference/html/dependency-versions.html#appendix.dependency-versions.properties[documentation]

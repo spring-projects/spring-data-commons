@@ -66,8 +66,8 @@ In such cases, a repository definition must distinguish between persistence tech
 When it detects multiple repository factories on the class path, Spring Data enters strict repository configuration mode.
 Strict configuration uses details on the repository or the domain class to decide about Spring Data module binding for a repository definition:
 
-. If the repository definition xref:repositories/definition.adoc#repositories.multiple-modules.types[extends the module-specific repository], it is a valid candidate for the particular Spring Data module.
-. If the domain class is xref:repositories/definition.adoc#repositories.multiple-modules.annotations[annotated with the module-specific type annotation], it is a valid candidate for the particular Spring Data module.
+. If the repository definition <<repositories.multiple-modules.types,extends the module-specific repository>>, it is a valid candidate for the particular Spring Data module.
+. If the domain class is <<repositories.multiple-modules.annotations,annotated with the module-specific type annotation>>, it is a valid candidate for the particular Spring Data module.
 Spring Data modules accept either third-party annotations (such as JPA's `@Entity`) or provide their own annotations (such as `@Document` for Spring Data MongoDB and Spring Data Elasticsearch).
 
 The following example shows a repository that uses module-specific interfaces (JPA in this case):
@@ -149,7 +149,7 @@ One is intended for JPA and the other for MongoDB usage.
 Spring Data is no longer able to tell the repositories apart, which leads to undefined behavior.
 ====
 
-xref:repositories/definition.adoc#repositories.multiple-modules.types[Repository type details] and xref:repositories/definition.adoc#repositories.multiple-modules.annotations[distinguishing domain class annotations] are used for strict repository configuration to identify repository candidates for a particular Spring Data module.
+<<repositories.multiple-modules.types,Repository type details>> and <<repositories.multiple-modules.annotations,distinguishing domain class annotations>> are used for strict repository configuration to identify repository candidates for a particular Spring Data module.
 Using multiple persistence technology-specific annotations on the same domain type is possible and enables reuse of domain types across multiple persistence technologies.
 However, Spring Data can then no longer determine a unique module with which to bind the repository.
 

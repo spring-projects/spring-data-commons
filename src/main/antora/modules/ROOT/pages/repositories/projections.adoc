@@ -179,7 +179,7 @@ interface NamesOnly {
 }
 ----
 
-Again, for more complex expressions, you should use a Spring bean and let the expression invoke a method, as described  xref:repository-projections.adoc#projections.interfaces.open.bean-reference[earlier].
+Again, for more complex expressions, you should use a Spring bean and let the expression invoke a method, as described  <<projections.interfaces.open.bean-reference,earlier>>.
 
 [[projections.interfaces.nullable-wrappers]]
 === Nullable Wrappers

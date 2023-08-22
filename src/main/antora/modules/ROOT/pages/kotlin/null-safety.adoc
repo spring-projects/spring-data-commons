@@ -9,7 +9,7 @@ Although Java does not let you express null safety in its type system, Spring Da
 By default, types from Java APIs used in Kotlin are recognized as https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[platform types], for which null checks are relaxed.
 https://kotlinlang.org/docs/reference/java-interop.html#jsr-305-support[Kotlin support for JSR-305 annotations] and Spring nullability annotations provide null safety for the whole Spring Data API to Kotlin developers, with the advantage of dealing with `null` related issues at compile time.
 
-See xref:repositories-null-handling.adoc[Null Handling of Repository Methods] how null safety applies to Spring Data Repositories.
+See xref:repositories/null-handling.adoc[Null Handling of Repository Methods] how null safety applies to Spring Data Repositories.
 
 [TIP]
 ====

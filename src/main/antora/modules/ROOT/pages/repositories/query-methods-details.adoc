@@ -66,9 +66,9 @@ interface PersonRepository extends Repository<Person, Long> {
 Parsing query method names is divided into subject and predicate.
 The first part (`find…By`, `exists…By`) defines the subject of the query, the second part forms the predicate.
 The introducing clause (subject) can contain further expressions.
-Any text between `find` (or other introducing keywords) and `By` is considered to be descriptive unless using one of the result-limiting keywords such as a `Distinct` to set a distinct flag on the query to be created or xref:repositories/query-methods-details.adoc#repositories.limit-query-result[`Top`/`First` to limit query results].
+Any text between `find` (or other introducing keywords) and `By` is considered to be descriptive unless using one of the result-limiting keywords such as a `Distinct` to set a distinct flag on the query to be created or <<repositories.limit-query-result,`Top`/`First` to limit query results>>.
 
-The appendix contains the xref:repository-query-keywords-reference.adoc#appendix.query.method.subject[full list of query method subject keywords] and xref:repository-query-keywords-reference.adoc#appendix.query.method.predicate[query method predicate keywords including sorting and letter-casing modifiers].
+The appendix contains the xref:repositories/query-keywords-reference.adoc#appendix.query.method.subject[full list of query method subject keywords] and xref:repositories/query-keywords-reference.adoc#appendix.query.method.predicate[query method predicate keywords including sorting and letter-casing modifiers].
 However, the first `By` acts as a delimiter to indicate the start of the actual criteria predicate.
 At a very basic level, you can define conditions on entity properties and concatenate them with `And` and `Or`.
 
@@ -126,7 +126,7 @@ Because we treat the underscore character as a reserved character, we strongly a
 
 Query methods that return multiple results can use standard Java `Iterable`, `List`, and `Set`.
 Beyond that, we support returning Spring Data's `Streamable`, a custom extension of `Iterable`, as well as collection types provided by https://www.vavr.io/[Vavr].
-Refer to the appendix explaining all possible xref:repository-query-return-types-reference.adoc#appendix.query.return.types[query method return types].
+Refer to the appendix explaining all possible xref:repositories/query-return-types-reference.adoc#appendix.query.return.types[query method return types].
 
 [[repositories.collections-and-iterables.streamable]]
 === Using Streamable as Query Method Return Type
