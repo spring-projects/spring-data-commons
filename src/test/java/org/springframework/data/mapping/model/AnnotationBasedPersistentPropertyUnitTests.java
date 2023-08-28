@@ -178,6 +178,31 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 				.satisfies(it -> assertThat(it.isWritable()).isFalse());
 	}
 
+	@Test // GH-2915
+	public void treatsReadOnlyAsReadable() {
+
+		assertThat(getProperty(ClassWithReadOnlyProperties.class, "readOnlyProperty"))
+				.satisfies(it -> assertThat(it.isReadable()).isTrue());
+	}
+
+	@Test // GH-2915
+	public void considersReadableForWither() {
+
+		assertThat(getProperty(ClassWithWither.class, "nonReadable"))
+				.satisfies(it -> assertThat(it.isReadable()).isFalse());
+
+		assertThat(getProperty(ClassWithWither.class, "immutable")).satisfies(it -> assertThat(it.isReadable()).isTrue());
+	}
+
+	@Test // GH-2915
+	public void considersReadableForKotlinDataClass() {
+
+		assertThat(getProperty(SingleSettableProperty.class, "version"))
+				.satisfies(it -> assertThat(it.isReadable()).isFalse());
+
+		assertThat(getProperty(SingleSettableProperty.class, "id")).satisfies(it -> assertThat(it.isReadable()).isTrue());
+	}
+
 	@Test // DATACMNS-556
 	public void doesNotRejectNonSpringDataAnnotationsUsedOnBothFieldAndAccessor() {
 		getProperty(TypeWithCustomAnnotationsOnBothFieldAndAccessor.class, "field");
@@ -460,7 +485,8 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 	@Id
-	public @interface MyId {}
+	public @interface MyId {
+	}
 
 	static class FieldAccess {
 		String name;
@@ -491,6 +517,21 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 		@ReadOnlyProperty String readOnlyProperty;
 
 		@CustomReadOnly String customReadOnlyProperty;
+	}
+
+	static class ClassWithWither {
+
+		private final String nonReadable = "";
+
+		private final String immutable;
+
+		public ClassWithWither(String immutable) {
+			this.immutable = immutable;
+		}
+
+		public ClassWithWither withImmutable(String v) {
+			return new ClassWithWither(v);
+		}
 	}
 
 	static class TypeWithCustomAnnotationsOnBothFieldAndAccessor {
