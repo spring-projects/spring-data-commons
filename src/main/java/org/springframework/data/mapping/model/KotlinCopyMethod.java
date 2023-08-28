@@ -97,6 +97,20 @@ class KotlinCopyMethod {
 		});
 	}
 
+	/**
+	 * Check whether the owning type of {@link PersistentProperty} declares a {@literal copy} method or {@literal copy}
+	 * method with parameter defaulting.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return
+	 */
+	public static boolean hasKotlinCopyMethodFor(PersistentProperty<?> property) {
+
+		Class<?> type = property.getOwner().getType();
+
+		return KotlinCopyMethod.findCopyMethod(type).filter(it -> it.supportsProperty(property)).isPresent();
+	}
+
 	public Method getPublicCopyMethod() {
 		return this.publicCopyMethod;
 	}

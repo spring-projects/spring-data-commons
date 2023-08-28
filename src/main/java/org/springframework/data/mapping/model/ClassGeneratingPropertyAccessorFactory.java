@@ -1029,7 +1029,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					visitWithProperty(entity, property, mv, internalClassName, wither);
 				}
 
-				if (hasKotlinCopyMethod(property)) {
+				if (KotlinDetector.isKotlinType(entity.getType()) && KotlinCopyMethod.hasKotlinCopyMethodFor(property)) {
 					visitKotlinCopy(entity, property, mv, internalClassName);
 				}
 
@@ -1429,38 +1429,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * @return {@literal true} if object mutation is supported.
 	 */
 	static boolean supportsMutation(PersistentProperty<?> property) {
-
-		if (property.isImmutable()) {
-
-			if (property.getWither() != null) {
-				return true;
-			}
-
-			if (hasKotlinCopyMethod(property)) {
-				return true;
-			}
-		}
-
-		return (property.usePropertyAccess() && property.getSetter() != null)
-				|| (property.getField() != null && !Modifier.isFinal(property.getField().getModifiers()));
-	}
-
-	/**
-	 * Check whether the owning type of {@link PersistentProperty} declares a {@literal copy} method or {@literal copy}
-	 * method with parameter defaulting.
-	 *
-	 * @param property must not be {@literal null}.
-	 * @return
-	 */
-	private static boolean hasKotlinCopyMethod(PersistentProperty<?> property) {
-
-		Class<?> type = property.getOwner().getType();
-
-		if (isAccessible(type) && KotlinDetector.isKotlinType(type)) {
-			return KotlinCopyMethod.findCopyMethod(type).filter(it -> it.supportsProperty(property)).isPresent();
-		}
-
-		return false;
+		return (property.usePropertyAccess() && property.getSetter() != null) || property.isReadable();
 	}
 
 	/**
