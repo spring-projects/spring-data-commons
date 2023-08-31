@@ -109,20 +109,20 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 			return result;
 		}
-	}
 
-	private static boolean isEventPublishingMethod(Method method) {
-		return method.getParameterCount() == 1 //
-				&& (isSaveMethod(method.getName()) || isDeleteMethod(method.getName()));
-	}
+		private boolean isEventPublishingMethod(Method method) {
+			return method.getParameterCount() == 1 //
+					&& (isSaveMethod(method.getName()) || isDeleteMethod(method.getName()));
+		}
 
-	private static boolean isSaveMethod(String methodName) {
-		return methodName.startsWith("save");
-	}
+		private boolean isSaveMethod(String methodName) {
+			return methodName.startsWith("save");
+		}
 
-	private static boolean isDeleteMethod(String methodName) {
-		return methodName.equals("delete") || methodName.equals("deleteAll") || methodName.equals("deleteInBatch")
-				|| methodName.equals("deleteAllInBatch");
+		private boolean isDeleteMethod(String methodName) {
+			return methodName.equals("delete") || methodName.equals("deleteAll") || methodName.equals("deleteInBatch")
+					|| methodName.equals("deleteAllInBatch");
+		}
 	}
 
 	/**
