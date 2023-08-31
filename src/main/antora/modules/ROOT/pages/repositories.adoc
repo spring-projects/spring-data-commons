@@ -1,6 +1,3 @@
-:spring-framework-docs: {springDocsUrl}
-:spring-framework-javadoc: {springJavadocUrl}
-
 ifndef::store[]
 :store: Jpa
 endif::[]

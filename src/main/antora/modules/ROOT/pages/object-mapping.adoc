@@ -78,13 +78,13 @@ For that we use the following algorithm:
 1. If the property is immutable but exposes a `with…` method (see below), we use the `with…` method to create a new entity instance with the new property value.
 2. If property access (i.e. access through getters and setters) is defined, we're invoking the setter method.
 3. If the property is mutable we set the field directly.
-4. If the property is immutable we're using the constructor to be used by persistence operations (see xref:object-mapping.adoc#mapping.object-creation[Object creation]) to create a copy of the instance.
+4. If the property is immutable we're using the constructor to be used by persistence operations (see <<mapping.object-creation,Object creation>>) to create a copy of the instance.
 5. By default, we set the field value directly.
 
 [[mapping.property-population.details]]
 .Property population internals
 ****
-Similarly to our xref:object-mapping.adoc#mapping.object-creation.details[optimizations in object construction] we also use Spring Data runtime generated accessor classes to interact with the entity instance.
+Similarly to our <<mapping.object-creation.details,optimizations in object construction>> we also use Spring Data runtime generated accessor classes to interact with the entity instance.
 
 [source,java]
 ----
@@ -299,7 +299,7 @@ Spring Data automatically tries to detect a persistent entity's constructor to b
 The resolution algorithm works as follows:
 
 1. If there is a constructor that is annotated with `@PersistenceCreator`, it is used.
-2. If the type is a xref:object-mapping.adoc#mapping.kotlin[Kotlin data cass] the primary constructor is used.
+2. If the type is a <<mapping.kotlin,Kotlin data cass>> the primary constructor is used.
 3. If there is a single static factory method annotated with `@PersistenceCreator` then it is used.
 4. If there is a single constructor, it is used.
 5. If there are multiple constructors and exactly one is annotated with `@PersistenceCreator`, it is used.
