@@ -1,5 +1,5 @@
 [[repositories.custom-implementations]]
-= Custom Implementations for Spring Data Repositories
+= Custom Repository Implementations
 
 Spring Data provides various options to create query methods with little coding.
 But when those options don't fit your needs you can also provide your own custom implementation for repository methods.
