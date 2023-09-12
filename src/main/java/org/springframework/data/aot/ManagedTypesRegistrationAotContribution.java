@@ -142,9 +142,7 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 		}
 
 		@Override
-		public CodeBlock generateInstanceSupplierCode(GenerationContext generationContext,
-				BeanRegistrationCode beanRegistrationCode, Executable constructorOrFactoryMethod,
-				boolean allowDirectSupplierShortcut) {
+		public CodeBlock generateInstanceSupplierCode(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode, boolean allowDirectSupplierShortcut) {
 
 			GeneratedMethod generatedMethod = beanRegistrationCode.getMethods().add("Instance",
 					this::generateInstanceFactory);

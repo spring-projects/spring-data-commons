@@ -64,7 +64,7 @@ public class AotTestCodeContributionBuilder {
 	AotTestCodeContributionBuilder writeContentFor(BeanRegistrationAotContribution contribution) {
 
 		CodeBlock codeBlock = getFragments(contribution).generateInstanceSupplierCode(generationContext,
-				beanRegistrationCode, null, false);
+				beanRegistrationCode, false);
 
 		Class<?> beanType = Object.class;
 		try {
