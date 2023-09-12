@@ -210,6 +210,22 @@ class CoroutineCrudRepositoryUnitTests {
 		Mockito.verify(invocationListener).afterInvocation(captor.capture())
 	}
 
+	@Test // DATACMNS-1508, DATACMNS-1764
+	fun shouldBridgeFluxQueryMethod() {
+
+		val sample = User()
+
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Flux.just(sample))
+
+		val result = runBlocking {
+			coRepository.findOne("foo")
+		}
+
+		assertThat(result).isNotNull().isEqualTo(sample)
+		val captor = ArgumentCaptor.forClass(RepositoryMethodInvocationListener.RepositoryMethodInvocation::class.java)
+		Mockito.verify(invocationListener).afterInvocation(captor.capture())
+	}
+
 	@Test // DATACMNS-1508
 	fun shouldBridgeRxJavaQueryMethod() {
 
@@ -283,19 +299,38 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Mono.just(listOf(sample)), Mono.empty<User>())
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any())))
+			.thenReturn(Mono.just(listOf(sample)), Flux.just(sample, sample), Mono.empty<User>())
 
-		val result = runBlocking {
+		val result1 = runBlocking {
 			coRepository.findSuspendedAsList("foo")
 		}
 
-		assertThat(result).hasSize(1).containsOnly(sample)
+		assertThat(result1).hasSize(1).containsOnly(sample)
+
+		val result2 = runBlocking {
+			coRepository.findSuspendedAsList("foo")
+		}
+
+		assertThat(result2).hasSize(2).contains(sample)
 
 		val emptyResult = runBlocking {
 			coRepository.findSuspendedAsList("foo")
 		}
 
 		assertThat(emptyResult).isNull()
+	}
+
+	@Test // DATACMNS-1802
+	fun shouldDiscardResult() {
+
+		Mockito.`when`(factory.queryOne.execute(any())).thenReturn(Flux.empty<User>())
+
+		val result = runBlocking {
+			coRepository.someDelete("foo")
+		}
+
+		assertThat(result).isInstanceOf(Unit.javaClass)
 	}
 
 	interface MyCoRepository : CoroutineCrudRepository<User, String> {
@@ -307,5 +342,7 @@ class CoroutineCrudRepositoryUnitTests {
 		suspend fun findSuspendedMultiple(id: String): Flow<User>
 
 		suspend fun findSuspendedAsList(id: String): List<User>
+
+		suspend fun someDelete(id: String)
 	}
 }

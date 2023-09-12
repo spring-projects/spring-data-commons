@@ -15,12 +15,15 @@
  */
 package org.springframework.data.repository.core.support;
 
+import kotlin.Unit;
 import kotlin.reflect.KFunction;
+import kotlinx.coroutines.flow.Flow;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.reactivestreams.Publisher;
@@ -54,25 +57,63 @@ abstract class RepositoryMethodInvoker {
 	private final Class<?> returnedType;
 	private final Invokable invokable;
 	private final boolean suspendedDeclaredMethod;
-	private final boolean returnsReactiveType;
 
+	@SuppressWarnings("ReactiveStreamsUnusedPublisher")
 	protected RepositoryMethodInvoker(Method method, Invokable invokable) {
 
 		this.method = method;
-		this.invokable = invokable;
 
 		if (KotlinDetector.isKotlinReflectPresent()) {
 
 			this.suspendedDeclaredMethod = KotlinReflectionUtils.isSuspend(method);
 			this.returnedType = this.suspendedDeclaredMethod ? KotlinReflectionUtils.getReturnType(method)
 					: method.getReturnType();
+
+			// special case for most query methods: These can return Flux but we don't want to fail later on if the method
+			// is void.
+			if (suspendedDeclaredMethod) {
+
+				this.invokable = args -> {
+
+					Object result = invokable.invoke(args);
+
+					if (returnedType == Unit.class) {
+
+						if (result instanceof Mono<?> m) {
+							return m.then();
+						}
+
+						Flux<?> flux = result instanceof Flux<?> f ? f : ReactiveWrapperConverters.toWrapper(result, Flux.class);
+						return flux.then();
+					}
+
+					if (returnedType != Flow.class) {
+
+						if (result instanceof Mono<?> m) {
+							return m;
+						}
+
+						Flux<?> flux = result instanceof Flux<?> f ? f : ReactiveWrapperConverters.toWrapper(result, Flux.class);
+
+						if (Collection.class.isAssignableFrom(returnedType)) {
+							return flux.collectList();
+						}
+
+						return flux.singleOrEmpty();
+					}
+
+					return result;
+				};
+			} else {
+				this.invokable = invokable;
+			}
+
 		} else {
 
 			this.suspendedDeclaredMethod = false;
 			this.returnedType = method.getReturnType();
+			this.invokable = invokable;
 		}
-
-		this.returnsReactiveType = ReactiveWrappers.supports(returnedType);
 	}
 
 	static RepositoryQueryMethodInvoker forRepositoryQuery(Method declaredMethod, RepositoryQuery query) {
@@ -154,7 +195,7 @@ abstract class RepositoryMethodInvoker {
 	interface Invokable {
 
 		@Nullable
-		Object invoke(Object[] args) throws ReflectiveOperationException;
+		Object invoke(Object[] args) throws Exception;
 	}
 
 	/**
@@ -214,8 +255,6 @@ abstract class RepositoryMethodInvoker {
 	 */
 	private static class RepositoryFragmentMethodInvoker extends RepositoryMethodInvoker {
 
-		private final CoroutineAdapterInformation adapterInformation;
-
 		public RepositoryFragmentMethodInvoker(Method declaredMethod, Object instance, Method baseClassMethod) {
 			this(CoroutineAdapterInformation.create(declaredMethod, baseClassMethod), declaredMethod, instance,
 					baseClassMethod);
@@ -236,13 +275,12 @@ abstract class RepositoryMethodInvoker {
 						return AopUtils.invokeJoinpointUsingReflection(instance, baseClassMethod, invocationArguments);
 					}
 					return AopUtils.invokeJoinpointUsingReflection(instance, baseClassMethod, args);
-				} catch (RuntimeException e) {
+				} catch (Exception e) {
 					throw e;
 				} catch (Throwable e) {
 					throw new RuntimeException(e);
 				}
 			});
-			this.adapterInformation = adapterInformation;
 		}
 
 		/**
