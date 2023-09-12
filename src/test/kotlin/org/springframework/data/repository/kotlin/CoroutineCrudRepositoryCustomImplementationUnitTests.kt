@@ -25,6 +25,7 @@ import org.springframework.data.repository.core.RepositoryMetadata
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory
 import org.springframework.data.repository.core.support.RepositoryComposition
 import org.springframework.data.repository.core.support.RepositoryFragment
+import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.data.repository.sample.User
 
@@ -42,7 +43,12 @@ class CoroutineCrudRepositoryCustomImplementationUnitTests {
 	@BeforeEach
 	fun before() {
 		factory = CustomDummyReactiveRepositoryFactory(backingRepository)
+		factory.addInvocationListener(RepositoryMethodInvocationListener {
+			repositoryMethodInvocation ->
+			println(repositoryMethodInvocation)
+		})
 		coRepository = factory.getRepository(MyCoRepository::class.java)
+
 	}
 
 	@Test // DATACMNS-1508

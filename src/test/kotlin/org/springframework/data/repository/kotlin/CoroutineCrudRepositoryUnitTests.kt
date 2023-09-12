@@ -19,7 +19,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -28,6 +27,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.reactivestreams.Publisher
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory
@@ -199,7 +199,7 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Mono.just(sample))
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Mono.just(sample))
 
 		val result = runBlocking {
 			coRepository.findOne("foo")
@@ -215,7 +215,7 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Single.just(sample))
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Mono.just(sample))
 
 		val result = runBlocking {
 			coRepository.findOne("foo")
@@ -263,7 +263,7 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Flux.just(sample), Flux.empty<User>())
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Flux.just(sample), Flux.empty<User>())
 
 		val result = runBlocking {
 			coRepository.findSuspendedMultiple("foo").toList()
@@ -283,7 +283,7 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Flux.just(sample), Flux.empty<User>())
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Mono.just(listOf(sample)), Mono.empty<User>())
 
 		val result = runBlocking {
 			coRepository.findSuspendedAsList("foo")
@@ -295,7 +295,7 @@ class CoroutineCrudRepositoryUnitTests {
 			coRepository.findSuspendedAsList("foo")
 		}
 
-		assertThat(emptyResult).isEmpty()
+		assertThat(emptyResult).isNull()
 	}
 
 	interface MyCoRepository : CoroutineCrudRepository<User, String> {
