@@ -16,6 +16,7 @@
 package org.springframework.data.repository.kotlin
 
 import io.mockk.mockk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -45,7 +46,7 @@ class CoroutineCrudRepositoryCustomImplementationUnitTests {
 	}
 
 	@Test // DATACMNS-1508
-	fun shouldInvokeFindAll() {
+	fun shouldInvokeFindOne() {
 
 		val result = runBlocking {
 			coRepository.findOne("foo")
@@ -71,6 +72,7 @@ class CoroutineCrudRepositoryCustomImplementationUnitTests {
 	class MyCustomCoRepositoryImpl : MyCustomCoRepository {
 
 		override suspend fun findOne(id: String): User {
+			delay(1)
 			return User()
 		}
 	}
