@@ -15,18 +15,16 @@
  */
 package org.springframework.data.repository.core.support;
 
-import kotlin.coroutines.Continuation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.stream.Stream;
+
 import kotlin.reflect.KFunction;
-import kotlinx.coroutines.reactive.AwaitKt;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.stream.Stream;
-
-import org.reactivestreams.Publisher;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult;
@@ -116,12 +114,7 @@ abstract class RepositoryMethodInvoker {
 	@Nullable
 	public Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, Object[] args)
 			throws Exception {
-		return shouldAdaptReactiveToSuspended() ? doInvokeReactiveToSuspended(repositoryInterface, multicaster, args)
-				: doInvoke(repositoryInterface, multicaster, args);
-	}
-
-	protected boolean shouldAdaptReactiveToSuspended() {
-		return suspendedDeclaredMethod;
+		return doInvoke(repositoryInterface, multicaster, args);
 	}
 
 	@Nullable
@@ -147,41 +140,6 @@ abstract class RepositoryMethodInvoker {
 			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.success()));
 
 			return result;
-		} catch (Exception e) {
-			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
-			throw e;
-		}
-	}
-
-	@Nullable
-	@SuppressWarnings({ "unchecked", "ConstantConditions" })
-	private Object doInvokeReactiveToSuspended(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
-			Object[] args) throws Exception {
-
-		/*
-		 * Kotlin suspended functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
-		 * We're invoking a method without Continuation as we expect the method to return any sort of reactive type,
-		 * therefore we need to strip the Continuation parameter.
-		 */
-		Continuation<Object> continuation = (Continuation) args[args.length - 1];
-		args[args.length - 1] = null;
-
-		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
-				.captureInvocationOn(repositoryInterface);
-		try {
-
-			Publisher<?> result = new ReactiveInvocationListenerDecorator().decorate(repositoryInterface, multicaster, args,
-					invokable.invoke(args));
-
-			if (returnsReactiveType) {
-				return ReactiveWrapperConverters.toWrapper(result, returnedType);
-			}
-
-			if (Collection.class.isAssignableFrom(returnedType)) {
-				result = (Publisher<?>) collectToList(result);
-			}
-
-			return AwaitKt.awaitFirstOrNull(result, continuation);
 		} catch (Exception e) {
 			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
 			throw e;
@@ -271,28 +229,24 @@ abstract class RepositoryMethodInvoker {
 		public RepositoryFragmentMethodInvoker(CoroutineAdapterInformation adapterInformation, Method declaredMethod,
 				Object instance, Method baseClassMethod) {
 			super(declaredMethod, args -> {
-
-				if (adapterInformation.isAdapterMethod()) {
-
-					/*
-					 * Kotlin suspended functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
-					 * We're invoking a method without Continuation as we expect the method to return any sort of reactive type,
-					 * therefore we need to strip the Continuation parameter.
-					 */
-					Object[] invocationArguments = new Object[args.length - 1];
-					System.arraycopy(args, 0, invocationArguments, 0, invocationArguments.length);
-
-					return baseClassMethod.invoke(instance, invocationArguments);
+				try {
+					if(adapterInformation.shouldAdaptReactiveToSuspended()) {
+						/*
+						 * Kotlin suspended functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
+						 * We're invoking a method without Continuation as we expect the method to return any sort of reactive type,
+						 * therefore we need to strip the Continuation parameter.
+						 */
+						Object[] invocationArguments = new Object[args.length - 1];
+						System.arraycopy(args, 0, invocationArguments, 0, invocationArguments.length);
+						return AopUtils.invokeJoinpointUsingReflection(instance, baseClassMethod, invocationArguments);
+					}
+					return AopUtils.invokeJoinpointUsingReflection(instance, baseClassMethod, args);
 				}
-
-				return baseClassMethod.invoke(instance, args);
+				catch (Throwable e) {
+					throw new RuntimeException(e);
+				}
 			});
 			this.adapterInformation = adapterInformation;
-		}
-
-		@Override
-		protected boolean shouldAdaptReactiveToSuspended() {
-			return adapterInformation.shouldAdaptReactiveToSuspended();
 		}
 
 		/**
