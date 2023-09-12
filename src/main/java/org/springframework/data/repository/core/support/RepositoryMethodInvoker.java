@@ -129,7 +129,7 @@ abstract class RepositoryMethodInvoker {
 			throws Exception {
 
 		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
-				.captureInvocationOn(repositoryInterface);
+				.captureInvocationOn(repositoryInterface, args);
 
 		try {
 
@@ -141,14 +141,14 @@ abstract class RepositoryMethodInvoker {
 
 			if (result instanceof Stream) {
 				return ((Stream<?>) result).onClose(
-						() -> multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.success())));
+						() -> multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.success(args))));
 			}
 
-			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.success()));
+			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.success(args)));
 
 			return result;
 		} catch (Exception e) {
-			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
+			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e, args)));
 			throw e;
 		}
 	}
@@ -167,7 +167,7 @@ abstract class RepositoryMethodInvoker {
 		args[args.length - 1] = null;
 
 		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
-				.captureInvocationOn(repositoryInterface);
+				.captureInvocationOn(repositoryInterface, args);
 		try {
 
 			Publisher<?> result = new ReactiveInvocationListenerDecorator().decorate(repositoryInterface, multicaster, args,
@@ -183,7 +183,7 @@ abstract class RepositoryMethodInvoker {
 
 			return AwaitKt.awaitFirstOrNull(result, continuation);
 		} catch (Exception e) {
-			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
+			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e, args)));
 			throw e;
 		}
 	}
@@ -194,8 +194,8 @@ abstract class RepositoryMethodInvoker {
 	}
 
 	private RepositoryMethodInvocation computeInvocationResult(RepositoryMethodInvocationCaptor captured) {
-		return new RepositoryMethodInvocation(captured.getRepositoryInterface(), method, captured.getCapturedResult(),
-				captured.getDuration());
+		return new RepositoryMethodInvocation(captured.getRepositoryInterface(), method,  captured.getArguments(),
+				captured.getCapturedResult(), captured.getDuration());
 	}
 
 	interface Invokable {
@@ -223,34 +223,34 @@ abstract class RepositoryMethodInvoker {
 
 			if (result instanceof Mono) {
 				return Mono.usingWhen(
-						Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)), it -> {
+						Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface, args)), it -> {
 							it.trackStart();
 							return ReactiveWrapperConverters.toWrapper(result, Mono.class);
 						}, it -> {
-							multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
+							multicaster.notifyListeners(method, args, computeInvocationResult(it.success(args)));
 							return Mono.empty();
 						}, (it, e) -> {
-							multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
+							multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e, args)));
 							return Mono.empty();
 						}, it -> {
-							multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
+							multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled(args)));
 							return Mono.empty();
 						});
 			}
 
 			return Flux.usingWhen(
-					Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface)), it -> {
+					Mono.fromSupplier(() -> RepositoryMethodInvocationCaptor.captureInvocationOn(repositoryInterface, args)), it -> {
 						it.trackStart();
 						return result instanceof Publisher ? (Publisher<?>) result
 								: ReactiveWrapperConverters.toWrapper(result, Publisher.class);
 					}, it -> {
-						multicaster.notifyListeners(method, args, computeInvocationResult(it.success()));
+						multicaster.notifyListeners(method, args, computeInvocationResult(it.success(args)));
 						return Mono.empty();
 					}, (it, e) -> {
-						multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e)));
+						multicaster.notifyListeners(method, args, computeInvocationResult(it.error(e, args)));
 						return Mono.empty();
 					}, it -> {
-						multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled()));
+						multicaster.notifyListeners(method, args, computeInvocationResult(it.canceled(args)));
 						return Mono.empty();
 					});
 		}
@@ -376,34 +376,36 @@ abstract class RepositoryMethodInvoker {
 		private @Nullable Long endTime;
 		private final State state;
 		private final @Nullable Throwable error;
+		private final Object[] arguments;
 
 		protected RepositoryMethodInvocationCaptor(Class<?> repositoryInterface, long startTime, Long endTime, State state,
-				@Nullable Throwable exception) {
+				@Nullable Throwable exception, Object[] arguments) {
 
 			this.repositoryInterface = repositoryInterface;
 			this.startTime = startTime;
 			this.endTime = endTime;
 			this.state = state;
 			this.error = exception instanceof InvocationTargetException ? exception.getCause() : exception;
+			this.arguments = arguments;
 		}
 
-		public static RepositoryMethodInvocationCaptor captureInvocationOn(Class<?> repositoryInterface) {
-			return new RepositoryMethodInvocationCaptor(repositoryInterface, System.nanoTime(), null, State.RUNNING, null);
+		public static RepositoryMethodInvocationCaptor captureInvocationOn(Class<?> repositoryInterface, Object[] arguments) {
+			return new RepositoryMethodInvocationCaptor(repositoryInterface, System.nanoTime(), null, State.RUNNING, null, arguments);
 		}
 
-		public RepositoryMethodInvocationCaptor error(Throwable exception) {
+		public RepositoryMethodInvocationCaptor error(Throwable exception, Object[] arguments) {
 			return new RepositoryMethodInvocationCaptor(repositoryInterface, startTime, System.nanoTime(), State.ERROR,
-					exception);
+					exception, arguments);
 		}
 
-		public RepositoryMethodInvocationCaptor success() {
+		public RepositoryMethodInvocationCaptor success(Object[] arguments) {
 			return new RepositoryMethodInvocationCaptor(repositoryInterface, startTime, System.nanoTime(), State.SUCCESS,
-					null);
+					null, arguments);
 		}
 
-		public RepositoryMethodInvocationCaptor canceled() {
+		public RepositoryMethodInvocationCaptor canceled(Object[] arguments) {
 			return new RepositoryMethodInvocationCaptor(repositoryInterface, startTime, System.nanoTime(), State.CANCELED,
-					null);
+					null, arguments);
 		}
 
 		Class<?> getRepositoryInterface() {
@@ -421,6 +423,10 @@ abstract class RepositoryMethodInvoker {
 		@Nullable
 		public Throwable getError() {
 			return error;
+		}
+
+		public Object[] getArguments() {
+			return arguments;
 		}
 
 		long getDuration() {

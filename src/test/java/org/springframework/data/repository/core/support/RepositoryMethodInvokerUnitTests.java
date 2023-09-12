@@ -194,6 +194,7 @@ class RepositoryMethodInvokerUnitTests {
 
 		assertThat(multicaster.first().getResult().getState()).isEqualTo(State.SUCCESS);
 		assertThat(multicaster.first().getResult().getError()).isNull();
+		assertThat(multicaster.first().getArguments()).isNotNull();
 	}
 
 	@Test // DATACMNS-1764
@@ -205,6 +206,7 @@ class RepositoryMethodInvokerUnitTests {
 
 		assertThat(multicaster.first().getResult().getState()).isEqualTo(State.SUCCESS);
 		assertThat(multicaster.first().getResult().getError()).isNull();
+		assertThat(multicaster.first().getArguments()).isNotNull();
 	}
 
 	@Test // DATACMNS-1764
@@ -215,6 +217,7 @@ class RepositoryMethodInvokerUnitTests {
 
 		assertThat(multicaster.first().getResult().getState()).isEqualTo(State.ERROR);
 		assertThat(multicaster.first().getResult().getError()).isInstanceOf(IllegalStateException.class);
+		assertThat(multicaster.first().getArguments()).isNotNull();
 	}
 
 	@Test // DATACMNS-1764
@@ -228,6 +231,7 @@ class RepositoryMethodInvokerUnitTests {
 
 		assertThat(multicaster.first().getResult().getState()).isEqualTo(State.ERROR);
 		assertThat(multicaster.first().getResult().getError()).isInstanceOf(IllegalStateException.class);
+		assertThat(multicaster.first().getArguments()).isNotNull();
 	}
 
 	@Test // DATACMNS-1764
@@ -239,6 +243,31 @@ class RepositoryMethodInvokerUnitTests {
 
 		assertThat(multicaster.first().getResult().getState()).isEqualTo(State.CANCELED);
 		assertThat(multicaster.first().getResult().getError()).isNull();
+		assertThat(multicaster.first().getArguments()).isNotNull();
+	}
+
+	@Test
+	void capturesImperativeArgumentsCorrectly() throws Exception {
+		String id = "id";
+		String name = "name";
+
+		repositoryMethodInvoker("findByMultipleParameters").invoke(id, name);
+
+		assertThat(multicaster.first().getArguments()).isNotNull();
+		assertThat(multicaster.first().getArguments()).containsExactly(id, name);
+	}
+
+	@Test
+	void capturesReactiveArgumentsCorrectly() throws Exception {
+		String id = "id";
+		String name = "name";
+
+		when(query.execute(any())).thenReturn(Mono.just(new TestDummy()));
+
+		repositoryMethodInvokerForReactive("findByMultipleParameters").<Mono<TestDummy>> invoke(id, name).subscribe();
+
+		assertThat(multicaster.first().getArguments()).isNotNull();
+		assertThat(multicaster.first().getArguments()).containsExactly(id, name);
 	}
 
 	@Test // DATACMNS-1764
@@ -270,6 +299,7 @@ class RepositoryMethodInvokerUnitTests {
 
 		assertThat(multicaster.first().getResult().getState()).isEqualTo(State.SUCCESS);
 		assertThat(multicaster.first().getResult().getError()).isNull();
+		assertThat(multicaster.first().getArguments()).isNotNull();
 	}
 
 	RepositoryMethodInvokerStub repositoryMethodInvoker(String methodName) {
@@ -395,11 +425,15 @@ class RepositoryMethodInvokerUnitTests {
 		TestDummy findByName(String name);
 
 		Stream<TestDummy> streamAll();
+
+		TestDummy findByMultipleParameters(String id, String name);
 	}
 
 	interface ReactiveDummyRepository extends ReactiveCrudRepository<TestDummy, String> {
 
 		Mono<TestDummy> findByName(String name);
+
+		Mono<TestDummy> findByMultipleParameters(String id, String name);
 	}
 
 	static class TestDummy {
