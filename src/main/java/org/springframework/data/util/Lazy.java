@@ -32,6 +32,7 @@ import org.springframework.util.ObjectUtils;
  * @author Mark Paluch
  * @author Henning Rohlfs
  * @author Johannes Englmeier
+ * @author Greg Turnquist
  * @since 2.0
  */
 public class Lazy<T> implements Supplier<T> {
@@ -179,7 +180,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @return
 	 */
 	@Nullable
-	private T orElseGet(Supplier<? extends T> supplier) {
+	public T orElseGet(Supplier<? extends T> supplier) {
 
 		Assert.notNull(supplier, "Default value supplier must not be null");
 
