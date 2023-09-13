@@ -47,6 +47,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Christoph Strobl
  * @author Yuki Yoshida
  * @author Réda Housni Alaoui
+ * @author Yanming Zhou
  * @since 1.13
  * @soundtrack Henrik Freischlader Trio - Master Plan (Openness)
  */
@@ -186,13 +187,13 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return;
 			}
 
-			for (Object aggregateRoot : asCollection(object)) {
+			for (Object aggregateRoot : asIterable(object)) {
 
 				if (!type.isInstance(aggregateRoot)) {
 					continue;
 				}
 
-				for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
+				for (Object event : asIterable(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
 					publisher.publishEvent(event);
 				}
 
@@ -262,21 +263,21 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		}
 
 		/**
-		 * Returns the given source object as collection, i.e. collections are returned as is, objects are turned into a
+		 * Returns the given source object as iterable, i.e. iterables are returned as is, objects are turned into a
 		 * one-element collection, {@literal null} will become an empty collection.
 		 *
 		 * @param source can be {@literal null}.
-		 * @return
+		 * @return iterable
 		 */
 		@SuppressWarnings("unchecked")
-		private static Collection<Object> asCollection(@Nullable Object source) {
+		private static Iterable<Object> asIterable(@Nullable Object source) {
 
 			if (source == null) {
 				return Collections.emptyList();
 			}
 
-			if (Collection.class.isInstance(source)) {
-				return (Collection<Object>) source;
+			if (Iterable.class.isInstance(source)) {
+				return (Iterable<Object>) source;
 			}
 
 			return Collections.singletonList(source);

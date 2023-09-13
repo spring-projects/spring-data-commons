@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.aopalliance.aop.Advice;
@@ -37,6 +38,8 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.AfterDomainEventPublication;
 import org.springframework.data.domain.DomainEvents;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Window;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.EventPublishingRepositoryProxyPostProcessor.EventPublishingMethod;
@@ -49,6 +52,7 @@ import org.springframework.data.repository.core.support.EventPublishingRepositor
  * @author Mark Paluch
  * @author Yuki Yoshida
  * @author Réda Housni Alaoui
+ * @author Yanming Zhou
  * @soundtrack Henrik Freischlader Trio - Nobody Else To Blame (Openness)
  */
 @ExtendWith(MockitoExtension.class)
@@ -190,6 +194,21 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		var event = new SomeEvent();
 		var sample = MultipleEvents.of(Collections.singletonList(event));
 		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), sample);
+
+		EventPublishingMethodInterceptor//
+				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
+				.invoke(invocation);
+
+		verify(publisher).publishEvent(any(SomeEvent.class));
+	}
+
+	@Test
+	void publishesEventsForCallToSaveWithIterableAndWindowAsParameter() throws Throwable {
+
+		var event = new SomeEvent();
+		var sample = MultipleEvents.of(Collections.singletonList(event));
+		Window<MultipleEvents> window = Window.from(List.of(sample), ScrollPosition::offset);
+		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), window);
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
