@@ -28,6 +28,8 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.AfterDomainEventPublication;
 import org.springframework.data.domain.DomainEvents;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Window;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.AnnotationDetectionMethodCallback;
@@ -47,6 +49,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Christoph Strobl
  * @author Yuki Yoshida
  * @author Réda Housni Alaoui
+ * @author Yanming Zhou
  * @since 1.13
  * @soundtrack Henrik Freischlader Trio - Master Plan (Openness)
  */
@@ -268,15 +271,23 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @param source can be {@literal null}.
 		 * @return
 		 */
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({"unchecked", "rawtypes"})
 		private static Collection<Object> asCollection(@Nullable Object source) {
 
 			if (source == null) {
 				return Collections.emptyList();
 			}
 
-			if (Collection.class.isInstance(source)) {
-				return (Collection<Object>) source;
+			if (source instanceof Collection collection) {
+				return collection;
+			}
+
+			if (source instanceof Window window) {
+				return window.toList();
+			}
+
+			if (source instanceof Page page) {
+				return page.toList();
 			}
 
 			return Collections.singletonList(source);
