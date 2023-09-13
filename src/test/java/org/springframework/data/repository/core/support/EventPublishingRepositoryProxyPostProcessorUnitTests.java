@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.aopalliance.aop.Advice;
@@ -189,7 +190,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var event = new SomeEvent();
 		var sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), List.of(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -203,7 +204,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var event = new SomeEvent();
 		var sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAll", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAll", Iterable.class), List.of(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -217,7 +218,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var event = new SomeEvent();
 		var sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("deleteInBatch", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteInBatch", Iterable.class), List.of(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -231,7 +232,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var event = new SomeEvent();
 		var sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAllInBatch", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAllInBatch", Iterable.class), List.of(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
