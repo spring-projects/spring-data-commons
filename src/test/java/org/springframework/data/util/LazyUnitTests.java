@@ -70,7 +70,7 @@ class LazyUnitTests {
 	@Test
 	void returnsCachedInstanceOnMultipleAccesses() {
 
-		var lazy = Lazy.of(() -> new Object());
+		var lazy = Lazy.of(Object::new);
 
 		assertThat(lazy.get()).isSameAs(lazy.get());
 	}
@@ -113,6 +113,7 @@ class LazyUnitTests {
 		var empty = Lazy.of(() -> null);
 
 		assertThat(empty.orElse(reference)).isEqualTo(reference);
+		assertThat(empty.orElseGet(() -> reference)).isEqualTo(reference);
 		assertThat(empty.or(reference).get()).isEqualTo(reference);
 		assertThat(empty.or(() -> reference).get()).isEqualTo(reference);
 	}
