@@ -65,18 +65,13 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	void publishingEventsForNullIsNoOp() {
-		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(null, publisher);
-	}
-
-	@Test // DATACMNS-928
 	void exposesEventsExposedByEntityToPublisher() {
 
 		var first = new SomeEvent();
 		var second = new SomeEvent();
 		var entity = MultipleEvents.of(Arrays.asList(first, second));
 
-		EventPublishingMethod.of(MultipleEvents.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(MultipleEvents.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(publisher).publishEvent(eq(first));
 		verify(publisher).publishEvent(eq(second));
@@ -88,7 +83,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		var event = new SomeEvent();
 		var entity = OneEvent.of(event);
 
-		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(publisher, times(1)).publishEvent(event);
 	}
@@ -98,7 +93,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var entity = OneEvent.of(null);
 
-		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(publisher, times(0)).publishEvent(any());
 	}
@@ -274,7 +269,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var entity = spy(EventsWithClearing.of(Collections.emptyList()));
 
-		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(entity, times(1)).clearDomainEvents();
 	}
@@ -284,7 +279,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var entity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
 
-		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(entity, times(1)).clearDomainEvents();
 	}
