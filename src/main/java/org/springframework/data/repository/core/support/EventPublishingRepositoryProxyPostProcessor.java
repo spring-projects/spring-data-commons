@@ -54,7 +54,15 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 	private final ApplicationEventPublisher publisher;
 
+	/**
+	 * Creates a new {@link EventPublishingRepositoryProxyPostProcessor} for the given {@link ApplicationEventPublisher}.
+	 *
+	 * @param publisher must not be {@literal null}.
+	 */
 	public EventPublishingRepositoryProxyPostProcessor(ApplicationEventPublisher publisher) {
+
+		Assert.notNull(publisher, "Object must not be null");
+
 		this.publisher = publisher;
 	}
 
@@ -103,9 +111,9 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return result;
 			}
 
-			Object[] arguments = invocation.getArguments();
+			Iterable<?> arguments = asCollection(invocation.getArguments()[0], invocation.getMethod());
 
-			eventMethod.publishEventsFrom(arguments[0], publisher);
+			eventMethod.publishEventsFrom(arguments, publisher);
 
 			return result;
 		}
@@ -177,22 +185,18 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		/**
 		 * Publishes all events in the given aggregate root using the given {@link ApplicationEventPublisher}.
 		 *
-		 * @param object can be {@literal null}.
+		 * @param aggregates can be {@literal null}.
 		 * @param publisher must not be {@literal null}.
 		 */
-		public void publishEventsFrom(@Nullable Object object, ApplicationEventPublisher publisher) {
+		public void publishEventsFrom(Iterable<?> aggregates, ApplicationEventPublisher publisher) {
 
-			if (object == null) {
-				return;
-			}
-
-			for (Object aggregateRoot : asCollection(object)) {
+			for (Object aggregateRoot : aggregates) {
 
 				if (!type.isInstance(aggregateRoot)) {
 					continue;
 				}
 
-				for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
+				for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot), null)) {
 					publisher.publishEvent(event);
 				}
 
@@ -261,25 +265,30 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			return method;
 		}
 
-		/**
-		 * Returns the given source object as collection, i.e. collections are returned as is, objects are turned into a
-		 * one-element collection, {@literal null} will become an empty collection.
-		 *
-		 * @param source can be {@literal null}.
-		 * @return
-		 */
-		@SuppressWarnings("unchecked")
-		private static Collection<Object> asCollection(@Nullable Object source) {
+	}
 
-			if (source == null) {
-				return Collections.emptyList();
-			}
+	/**
+	 * Returns the given source object as collection, i.e. collections are returned as is, objects are turned into a
+	 * one-element collection, {@literal null} will become an empty collection.
+	 *
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private static Iterable<Object> asCollection(@Nullable Object source, @Nullable Method method) {
 
-			if (Collection.class.isInstance(source)) {
-				return (Collection<Object>) source;
-			}
-
-			return Collections.singletonList(source);
+		if (source == null) {
+			return Collections.emptyList();
 		}
+
+		if (method != null && method.getName().startsWith("saveAll")) {
+			return (Iterable<Object>) source;
+		}
+
+		if (Collection.class.isInstance(source)) {
+			return (Collection<Object>) source;
+		}
+
+		return Collections.singletonList(source);
 	}
 }
