@@ -37,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.AfterDomainEventPublication;
@@ -69,18 +68,13 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	void publishingEventsForNullIsNoOp() {
-		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(null, publisher);
-	}
-
-	@Test // DATACMNS-928
 	void exposesEventsExposedByEntityToPublisher() {
 
 		SomeEvent first = new SomeEvent();
 		SomeEvent second = new SomeEvent();
 		MultipleEvents entity = MultipleEvents.of(Arrays.asList(first, second));
 
-		EventPublishingMethod.of(MultipleEvents.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(MultipleEvents.class).publishEventsFrom(Arrays.asList(entity), publisher);
 
 		verify(publisher).publishEvent(eq(first));
 		verify(publisher).publishEvent(eq(second));
@@ -92,7 +86,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		SomeEvent event = new SomeEvent();
 		OneEvent entity = OneEvent.of(event);
 
-		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(Arrays.asList(entity), publisher);
 
 		verify(publisher, times(1)).publishEvent(event);
 	}
@@ -102,7 +96,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		OneEvent entity = OneEvent.of(null);
 
-		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(Arrays.asList(entity), publisher);
 
 		verify(publisher, times(0)).publishEvent(any());
 	}
@@ -194,7 +188,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), Arrays.asList(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -208,7 +202,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAll", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAll", Iterable.class), Arrays.asList(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -222,7 +216,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("deleteInBatch", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteInBatch", Iterable.class),
+				Arrays.asList(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -236,7 +231,8 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		SomeEvent event = new SomeEvent();
 		MultipleEvents sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAllInBatch", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAllInBatch", Iterable.class),
+				Arrays.asList(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -278,7 +274,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		EventsWithClearing entity = spy(EventsWithClearing.of(Collections.emptyList()));
 
-		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(Arrays.asList(entity), publisher);
 
 		verify(entity, times(1)).clearDomainEvents();
 	}
@@ -288,7 +284,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		EventsWithClearing entity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
 
-		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(Arrays.asList(entity), publisher);
 
 		verify(entity, times(1)).clearDomainEvents();
 	}
