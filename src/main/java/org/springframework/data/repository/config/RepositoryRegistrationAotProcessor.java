@@ -16,15 +16,20 @@
 package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.aot.generate.GenerationContext;
+import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.annotation.Reflective;
+import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -35,8 +40,9 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.data.util.TypeContributor;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
+import org.springframework.data.util.TypeContributor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -62,7 +68,6 @@ import org.springframework.util.StringUtils;
  * @author John Blum
  * @since 3.0
  */
-@SuppressWarnings("unused")
 public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotProcessor, BeanFactoryAware {
 
 	private ConfigurableListableBeanFactory beanFactory;
@@ -74,7 +79,6 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 	@Nullable
 	@Override
 	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean bean) {
-
 		return isRepositoryBean(bean) ? newRepositoryRegistrationAotContribution(bean) : null;
 	}
 
@@ -89,6 +93,28 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 				.forEach(it -> contributeType(it, generationContext));
 	}
 
+	/**
+	 * Processes the repository's domain and alternative domain types to consider {@link Reflective} annotations used on
+	 * it.
+	 *
+	 * @param repositoryContext must not be {@literal null}.
+	 * @param generationContext must not be {@literal null}.
+	 */
+	private void registerReflectiveForAggregateRoot(AotRepositoryContext repositoryContext,
+			GenerationContext generationContext) {
+
+		RepositoryInformation information = repositoryContext.getRepositoryInformation();
+		ReflectiveRuntimeHintsRegistrar registrar = new ReflectiveRuntimeHintsRegistrar();
+		RuntimeHints hints = generationContext.getRuntimeHints();
+
+		List<Class<?>> aggregateRootTypes = new ArrayList<>();
+		aggregateRootTypes.add(information.getDomainType());
+		aggregateRootTypes.addAll(information.getAlternativeDomainTypes());
+
+		Stream.concat(Stream.of(information.getDomainType()), information.getAlternativeDomainTypes().stream())
+				.forEach(it -> registrar.registerRuntimeHints(hints, it));
+	}
+
 	private boolean isRepositoryBean(RegisteredBean bean) {
 		return getConfigMap().containsKey(bean.getBeanName());
 	}
@@ -99,7 +125,9 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 		RepositoryRegistrationAotContribution contribution = RepositoryRegistrationAotContribution.fromProcessor(this)
 				.forBean(repositoryBean);
 
-		return contribution.withModuleContribution(this::contribute);
+		BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution = this::registerReflectiveForAggregateRoot;
+
+		return contribution.withModuleContribution(moduleContribution.andThen(this::contribute));
 	}
 
 	@Override
