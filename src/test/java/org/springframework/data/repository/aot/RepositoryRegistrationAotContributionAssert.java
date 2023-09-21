@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.assertj.core.api.AbstractAssert;
+import org.junit.jupiter.api.function.ThrowingConsumer;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
@@ -106,7 +107,7 @@ public class RepositoryRegistrationAotContributionAssert
 	}
 
 	public RepositoryRegistrationAotContributionAssert codeContributionSatisfies(
-			Consumer<CodeContributionAssert> assertWith) {
+			ThrowingConsumer<CodeContributionAssert> assertWith) {
 
 		BeanRegistrationCode mockBeanRegistrationCode = mock(BeanRegistrationCode.class);
 
@@ -114,7 +115,11 @@ public class RepositoryRegistrationAotContributionAssert
 
 		this.actual.applyTo(generationContext, mockBeanRegistrationCode);
 
-		assertWith.accept(new CodeContributionAssert(generationContext));
+		try {
+			assertWith.accept(new CodeContributionAssert(generationContext));
+		} catch (Throwable o_O) {
+			fail(o_O.getMessage(), o_O);
+		}
 
 		return this;
 	}

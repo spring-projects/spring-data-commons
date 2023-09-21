@@ -17,6 +17,7 @@ package org.springframework.data.aot;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -46,6 +47,16 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 		for (Class<?> type : types) {
 			assertThat(this.actual.getRuntimeHints()).describedAs("No reflection entry found for [%s]", type)
 					.matches(RuntimeHintsPredicates.reflection().onType(type));
+		}
+
+		return this;
+	}
+
+	public CodeContributionAssert contributesReflectionFor(Method... methods) {
+
+		for (Method method : methods) {
+			assertThat(this.actual.getRuntimeHints()).describedAs("No reflection entry found for [%s]", method)
+					.matches(RuntimeHintsPredicates.reflection().onMethod(method));
 		}
 
 		return this;

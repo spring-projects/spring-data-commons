@@ -28,22 +28,21 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.core.DecoratingProxy;
-import org.springframework.data.aot.sample.ConfigWithCustomImplementation;
-import org.springframework.data.aot.sample.ConfigWithCustomRepositoryBaseClass;
-import org.springframework.data.aot.sample.ConfigWithFragments;
-import org.springframework.data.aot.sample.ConfigWithQueryMethods;
+import org.springframework.data.aot.sample.*;
 import org.springframework.data.aot.sample.ConfigWithQueryMethods.ProjectionInterface;
-import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor;
 import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor.Person;
-import org.springframework.data.aot.sample.ConfigWithSimpleCrudRepository;
-import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresent;
-import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository;
-import org.springframework.data.aot.sample.QConfigWithQuerydslPredicateExecutor_Person;
-import org.springframework.data.aot.sample.ReactiveConfig;
+import org.springframework.data.domain.AbstractAggregateRoot;
+import org.springframework.data.domain.AfterDomainEventPublication;
+import org.springframework.data.domain.DomainEvents;
 import org.springframework.data.domain.Page;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.aot.RepositoryRegistrationAotProcessorIntegrationTests.EventPublicationConfiguration.Sample;
+import org.springframework.data.repository.aot.RepositoryRegistrationAotProcessorIntegrationTests.EventPublicationConfiguration.SampleRepository;
+import org.springframework.data.repository.config.EnableRepositories;
 import org.springframework.data.repository.config.RepositoryRegistrationAotContribution;
 import org.springframework.data.repository.config.RepositoryRegistrationAotProcessor;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
@@ -292,6 +291,30 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 				});
 	}
 
+	@Test // GH-2939
+	void registersReflectionForDomainPublicationAnnotations() {
+
+		RepositoryRegistrationAotContribution contribution = computeAotConfiguration(EventPublicationConfiguration.class)
+				.forRepository(SampleRepository.class);
+
+		assertThatContribution(contribution).codeContributionSatisfies(it -> {
+			it.contributesReflectionFor(Sample.class.getDeclaredMethod("publication"));
+			it.contributesReflectionFor(Sample.class.getDeclaredMethod("cleanup"));
+		});
+	}
+
+	@Test // GH-2939
+	void registersReflectionForInheritedDomainPublicationAnnotations() {
+
+		RepositoryRegistrationAotContribution contribution = computeAotConfiguration(
+				InheritedEventPublicationConfiguration.class)
+						.forRepository(InheritedEventPublicationConfiguration.SampleRepository.class);
+
+		assertThatContribution(contribution).codeContributionSatisfies(it -> {
+			it.contributesReflectionFor(AbstractAggregateRoot.class);
+		});
+	}
+
 	RepositoryRegistrationAotContributionBuilder computeAotConfiguration(Class<?> configuration) {
 		return computeAotConfiguration(configuration, new AnnotationConfigApplicationContext());
 	}
@@ -332,5 +355,32 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	@FunctionalInterface
 	interface RepositoryRegistrationAotContributionBuilder {
 		RepositoryRegistrationAotContribution forRepository(Class<?> repositoryInterface);
+	}
+
+	@EnableRepositories(includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = SampleRepository.class) },
+			considerNestedRepositories = true)
+	public class EventPublicationConfiguration {
+
+		static class Sample {
+
+			@DomainEvents
+			void publication() {}
+
+			@AfterDomainEventPublication
+			void cleanup() {}
+		}
+
+		interface SampleRepository extends Repository<Sample, Object> {}
+	}
+
+	@EnableRepositories(
+			includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE,
+					value = InheritedEventPublicationConfiguration.SampleRepository.class) },
+			considerNestedRepositories = true)
+	public class InheritedEventPublicationConfiguration {
+
+		static class Sample extends AbstractAggregateRoot<Sample> {}
+
+		interface SampleRepository extends Repository<Sample, Object> {}
 	}
 }
