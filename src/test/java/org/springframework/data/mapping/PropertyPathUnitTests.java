@@ -48,6 +48,16 @@ class PropertyPathUnitTests {
 		assertThat(reference.getOwningType()).isEqualTo(TypeInformation.of(Foo.class));
 	}
 
+	@Test // GH-1851
+	void parsesRecordPropertyCorrectly() {
+
+		var reference = PropertyPath.from("userName", MyRecord.class);
+
+		assertThat(reference.hasNext()).isFalse();
+		assertThat(reference.toDotPath()).isEqualTo("userName");
+		assertThat(reference.getOwningType()).isEqualTo(TypeInformation.of(MyRecord.class));
+	}
+
 	@Test
 	void parsesPathPropertyCorrectly() {
 
@@ -292,6 +302,15 @@ class PropertyPathUnitTests {
 		assertThat(path.getSegment()).isEqualTo("UUID");
 	}
 
+	@Test // GH-1851
+	void findsSecondLetterUpperCaseProperty() {
+
+		assertThat(PropertyPath.from("qCode", Foo.class).toDotPath()).isEqualTo("qCode");
+		assertThat(PropertyPath.from("QCode", Foo.class).toDotPath()).isEqualTo("qCode");
+		assertThat(PropertyPath.from("zIndex", MyRecord.class).toDotPath()).isEqualTo("zIndex");
+		assertThat(PropertyPath.from("ZIndex", MyRecord.class).toDotPath()).isEqualTo("zIndex");
+	}
+
 	@Test // DATACMNS-257
 	void findsNestedAllUppercaseProperty() {
 
@@ -427,7 +446,16 @@ class PropertyPathUnitTests {
 		String userName;
 		String _email;
 		String UUID;
+		String qCode;
 		String var_name_with_underscore;
+
+		public String getqCode() {
+			return qCode;
+		}
+
+		public void setqCode(String qCode) {
+			this.qCode = qCode;
+		}
 	}
 
 	private class Bar {
@@ -487,4 +515,7 @@ class PropertyPathUnitTests {
 	}
 
 	private class B {}
+
+	private record MyRecord(String userName, boolean zIndex) {
+	}
 }
