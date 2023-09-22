@@ -370,8 +370,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		var field = ReflectionUtils.findField(rawType, fieldname);
 
 		return field != null ? Optional.of(TypeInformation.of(ResolvableType.forField(field, resolvableType)))
-				: Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname)).map(it -> from(it, rawType))
-						.map(TypeInformation::of);
+				: Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname))
+						.filter(it -> it.getName().equals(fieldname)).map(it -> from(it, rawType)).map(TypeInformation::of);
 	}
 
 	private ResolvableType from(PropertyDescriptor descriptor, Class<?> rawType) {

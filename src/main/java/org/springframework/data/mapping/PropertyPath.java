@@ -50,7 +50,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final Pattern SPLITTER_FOR_QUOTED = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", "\\."));
 	private static final Pattern NESTED_PROPERTY_PATTERN = Pattern.compile("\\p{Lu}[\\p{Ll}\\p{Nd}]*$");
-	private static final Map<Key, PropertyPath> cache = new ConcurrentReferenceHashMap<>();
+	private static final Map<Property, PropertyPath> cache = new ConcurrentReferenceHashMap<>();
 
 	private final TypeInformation<?> owningType;
 	private final String name;
@@ -83,19 +83,31 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.notNull(owningType, "Owning type must not be null");
 		Assert.notNull(base, "Previously found properties must not be null");
 
-		String propertyName = Introspector.decapitalize(name);
-		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
+		String decapitalized = Introspector.decapitalize(name);
+		Property property = lookupProperty(owningType, decapitalized);
 
-		if (propertyType == null) {
-			throw new PropertyReferenceException(propertyName, owningType, base);
+		if (property == null) {
+			property = lookupProperty(owningType, StringUtils.uncapitalize(name));
+		}
+
+		if (property == null) {
+			throw new PropertyReferenceException(decapitalized, owningType, base);
 		}
 
 		this.owningType = owningType;
-		this.typeInformation = propertyType;
-		this.isCollection = propertyType.isCollectionLike();
-		this.name = propertyName;
-		this.actualTypeInformation = propertyType.getActualType() == null ? propertyType
-				: propertyType.getRequiredActualType();
+		this.name = property.path();
+		this.typeInformation = property.type();
+		this.isCollection = this.typeInformation.isCollectionLike();
+		this.actualTypeInformation = this.typeInformation.getActualType() == null ? this.typeInformation
+				: this.typeInformation.getRequiredActualType();
+	}
+
+	@Nullable
+	private static Property lookupProperty(TypeInformation<?> owningType, String name) {
+
+		TypeInformation<?> propertyType = owningType.getProperty(name);
+
+		return propertyType != null ? new Property(propertyType, name) : null;
 	}
 
 	/**
@@ -351,7 +363,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.hasText(source, "Source must not be null or empty");
 		Assert.notNull(type, "TypeInformation must not be null or empty");
 
-		return cache.computeIfAbsent(new Key(type, source), it -> {
+		return cache.computeIfAbsent(new Property(type, source), it -> {
 
 			List<String> iteratorSource = new ArrayList<>();
 
@@ -487,5 +499,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
 	}
 
-	private record Key(TypeInformation<?> type, String path) {};
+	private record Property(TypeInformation<?> type, String path) {
+	};
 }

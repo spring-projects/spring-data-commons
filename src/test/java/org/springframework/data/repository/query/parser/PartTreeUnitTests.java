@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
@@ -616,28 +615,6 @@ class PartTreeUnitTests {
 
 		assertThat(tree).isEmpty();
 		assertThat(tree.hasPredicate()).isFalse();
-	}
-
-	/**
-	 * This test does not verify a desired behaviour but documents a limitation. If it starts failing and everything else
-	 * is green, remove the expectation to fail with an exception.
-	 */
-	@Test // DATACMNS-1570
-	void specialCapitalizationInSubject() {
-
-		assertThatThrownBy(() -> new PartTree("findByZIndex", SpecialCapitalization.class))
-				.isInstanceOf(PropertyReferenceException.class);
-	}
-
-	/**
-	 * This test does not verify a desired behaviour but documents a limitation. If it starts failing and everything else
-	 * is green, remove the expectation to fail with an exception.
-	 */
-	@Test // DATACMNS-1570
-	void specialCapitalizationInOrderBy() {
-
-		assertThatThrownBy(() -> new PartTree("findByOrderByZIndex", SpecialCapitalization.class))
-				.isInstanceOf(PropertyReferenceException.class);
 	}
 
 	@Test // DATACMNS-1570
