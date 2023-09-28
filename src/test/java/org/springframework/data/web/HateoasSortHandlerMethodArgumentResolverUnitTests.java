@@ -28,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * Unit tests for {@link HateoasSortHandlerMethodArgumentResolver}
  *
  * @author Oliver Gierke
+ * @author Julien Béti
  */
 class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandlerMethodArgumentResolverUnitTests {
 
