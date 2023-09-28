@@ -28,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * Unit tests for {@link HateoasPageableHandlerMethodArgumentResolver}.
  *
  * @author Oliver Gierke
+ * @author Julien Béti
  */
 class HateoasPageableHandlerMethodArgumentResolverUnitTests
 		extends PageableHandlerMethodArgumentResolverUnitTests {
@@ -66,18 +67,18 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 		assertUriStringFor(PageRequest.of(0, 200), "page=0&size=100");
 	}
 
-	@Test // DATACMNS-418
+	@Test // DATACMNS-418, GH-2531
 	void appendsTemplateVariablesCorrectly() {
 
-		assertTemplateEnrichment("/foo", "{?page,size,sort}");
-		assertTemplateEnrichment("/foo?bar=1", "{&page,size,sort}");
-		assertTemplateEnrichment("/foo?page=1", "{&size,sort}");
-		assertTemplateEnrichment("/foo?page=1&size=10", "{&sort}");
+		assertTemplateEnrichment("/foo", "{?page,size,sort*}");
+		assertTemplateEnrichment("/foo?bar=1", "{&page,size,sort*}");
+		assertTemplateEnrichment("/foo?page=1", "{&size,sort*}");
+		assertTemplateEnrichment("/foo?page=1&size=10", "{&sort*}");
 		assertTemplateEnrichment("/foo?page=1&sort=foo,asc", "{&size}");
 		assertTemplateEnrichment("/foo?page=1&size=10&sort=foo,asc", "");
 	}
 
-	@Test // DATACMNS-418
+	@Test // DATACMNS-418, GH-2531
 	void returnsCustomizedTemplateVariables() {
 
 		var uriComponents = UriComponentsBuilder.fromPath("/foo").build();
@@ -86,7 +87,7 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 		resolver.setPageParameterName("foo");
 		var variables = resolver.getPaginationTemplateVariables(null, uriComponents).toString();
 
-		assertThat(variables).isEqualTo("{?foo,size,sort}");
+		assertThat(variables).isEqualTo("{?foo,size,sort*}");
 	}
 
 	@Test // DATACMNS-563
