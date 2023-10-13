@@ -153,13 +153,6 @@
 
 		<dependency>
 			<groupId>com.querydsl</groupId>
-			<artifactId>querydsl-apt</artifactId>
-			<version>${querydsl}</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-collections</artifactId>
 			<version>${querydsl}</version>
 			<optional>true</optional>
@@ -348,6 +341,25 @@
 			<plugin>
 				<groupId>io.spring.maven.antora</groupId>
 				<artifactId>antora-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>java-test-compile</id>
+						<configuration>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>com.querydsl</groupId>
+									<artifactId>querydsl-apt</artifactId>
+									<version>${querydsl}</version>
+									<classifier>general</classifier>
+								</path>
+							</annotationProcessorPaths>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
