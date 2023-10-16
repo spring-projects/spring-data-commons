@@ -97,7 +97,7 @@ public interface ConfigurationUtils {
 
 		if (result == null) {
 			throw new IllegalArgumentException(
-					String.format("Could not obtain required bean class name from BeanDefinition", beanDefinition));
+					String.format("Could not obtain required bean class name from BeanDefinition %s", beanDefinition));
 		}
 
 		return result;
