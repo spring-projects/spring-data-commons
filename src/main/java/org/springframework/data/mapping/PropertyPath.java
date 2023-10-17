@@ -108,15 +108,13 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns the first part of the {@link PropertyPath}.
+	 * Returns the first part of the {@link PropertyPath}. For example:
 	 *
-	 * <pre>
-	 * {@code
+	 * <pre class="code">
 	 * PropertyPath.from("a.b.c", Some.class).getSegment();
-	 * }
 	 * </pre>
 	 *
-	 * will result in {@code "a"}
+	 * results in {@code a}.
 	 *
 	 * @return the name will never be {@literal null}.
 	 */
@@ -150,10 +148,10 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns the type of the property will return the plain resolved type for simple properties, the component type for
-	 * any {@link Iterable} or the value type of a {@link java.util.Map} if the property is one.
+	 * Returns the actual type of the property. Will return the plain resolved type for simple properties, the component
+	 * type for any {@link Iterable} or the value type of a {@link java.util.Map}.
 	 *
-	 * @return
+	 * @return the actual type of the property.
 	 */
 	public Class<?> getType() {
 		return this.actualTypeInformation.getType();
@@ -164,15 +162,13 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns the {@link PropertyPath} path that results from removing the first element of the current one.
+	 * Returns the {@link PropertyPath} path that results from removing the first element of the current one. For example:
 	 *
-	 * <pre>
-	 * {@code
-	 * System.out.println(PropertyPath.from("a.b.c", Some.class).next().toDotPath());
-	 * }
+	 * <pre class="code">
+	 * PropertyPath.from("a.b.c", Some.class).next().toDotPath();
 	 * </pre>
 	 *
-	 * Will result in the output: {@code b.c}
+	 * results in the output: {@code b.c}
 	 *
 	 * @return the next nested {@link PropertyPath} or {@literal null} if no nested {@link PropertyPath} available.
 	 * @see #hasNext()
@@ -195,7 +191,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	/**
 	 * Returns the {@link PropertyPath} in dot notation.
 	 *
-	 * @return
+	 * @return the {@link PropertyPath} in dot notation.
 	 */
 	public String toDotPath() {
 
@@ -209,7 +205,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	/**
 	 * Returns whether the {@link PropertyPath} is actually a collection.
 	 *
-	 * @return
+	 * @return {@literal true} whether the {@link PropertyPath} is actually a collection.
 	 */
 	public boolean isCollection() {
 		return isCollection;
@@ -232,37 +228,34 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 	/**
 	 * Returns an {@link Iterator<PropertyPath>} that iterates over all the partial property paths with the same leaf type
-	 * but decreasing length.
+	 * but decreasing length. For example:
 	 *
-	 * <pre>
-	 * {@code
+	 * <pre class="code">
 	 * PropertyPath propertyPath = PropertyPath.from("a.b.c", Some.class);
-	 * for (p : propertyPath.iterator()) {
-	 *     System.out.println(p.toDotPath());
-	 * };
-	 * }
+	 * propertyPath.forEach(p -> p.toDotPath());
 	 * </pre>
 	 *
-	 * Results in the output:
+	 * results in the dot paths: *
 	 *
-	 * <pre>
-	 * {@code
+	 * <pre class="code">
 	 * a.b.c
 	 * b.c
 	 * c
-	 * }
 	 * </pre>
 	 */
+	@Override
 	public Iterator<PropertyPath> iterator() {
 
 		return new Iterator<PropertyPath>() {
 
 			private @Nullable PropertyPath current = PropertyPath.this;
 
+			@Override
 			public boolean hasNext() {
 				return current != null;
 			}
 
+			@Override
 			@Nullable
 			public PropertyPath next() {
 
@@ -274,10 +267,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 				this.current = result.next();
 				return result;
-			}
-
-			public void remove() {
-				throw new UnsupportedOperationException();
 			}
 		};
 	}
@@ -297,11 +286,9 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			return false;
 		}
 
-		return Objects.equals(this.owningType, that.owningType)
-				&& Objects.equals(this.name, that.name)
+		return Objects.equals(this.owningType, that.owningType) && Objects.equals(this.name, that.name)
 				&& Objects.equals(this.typeInformation, that.typeInformation)
-				&& Objects.equals(this.actualTypeInformation, that.actualTypeInformation)
-				&& Objects.equals(next, that.next);
+				&& Objects.equals(this.actualTypeInformation, that.actualTypeInformation) && Objects.equals(next, that.next);
 	}
 
 	@Override
@@ -312,7 +299,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	/**
 	 * Returns the next {@link PropertyPath}.
 	 *
-	 * @return
+	 * @return the next {@link PropertyPath}.
 	 * @throws IllegalStateException it there's no next one.
 	 */
 	private PropertyPath requiredNext() {
@@ -337,8 +324,8 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * "userAddress.city" is preferred over "user.address.city".
 	 * </p>
 	 *
-	 * @param source a String denoting the property path. Must not be {@literal null}.
-	 * @param type the owning type of the property path. Must not be {@literal null}.
+	 * @param source a String denoting the property path, must not be {@literal null}.
+	 * @param type the owning type of the property path, must not be {@literal null}.
 	 * @return a new {@link PropertyPath} guaranteed to be not {@literal null}.
 	 */
 	public static PropertyPath from(String source, Class<?> type) {
@@ -355,8 +342,8 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * "userAddress.city" is preferred over "user.address.city".
 	 * </p>
 	 *
-	 * @param source a String denoting the property path. Must not be {@literal null}.
-	 * @param type the owning type of the property path. Must not be {@literal null}.
+	 * @param source a String denoting the property path, must not be {@literal null}.
+	 * @param type the owning type of the property path, must not be {@literal null}.
 	 * @return a new {@link PropertyPath} guaranteed to be not {@literal null}.
 	 */
 	public static PropertyPath from(String source, TypeInformation<?> type) {
