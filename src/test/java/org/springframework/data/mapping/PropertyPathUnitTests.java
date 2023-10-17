@@ -18,12 +18,13 @@ package org.springframework.data.mapping;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.mapping.PropertyPath.from;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -174,7 +175,7 @@ class PropertyPathUnitTests {
 		assertThat(iterator.hasNext()).isFalse();
 	}
 
-	@Test
+	@Test // GH-2491
 	void returnsCorrectIteratorForMultipleElement() {
 
 		var propertyPath = PropertyPath.from("user.name", Bar.class);
@@ -185,14 +186,19 @@ class PropertyPathUnitTests {
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo(propertyPath.next());
 		assertThat(iterator.hasNext()).isFalse();
+
+		List<String> paths = new ArrayList<>();
+		propertyPath.forEach(it -> paths.add(it.toDotPath()));
+
+		assertThat(paths).containsExactly("user.name", "name");
 	}
 
 	@Test // GH-2491
-	public void nextReturnsPathWithoutFirstElement() {
+	void nextReturnsPathWithoutFirstElement() {
 
 		PropertyPath propertyPath = PropertyPath.from("bar.user.name", Sample.class);
 
-		final PropertyPath next = propertyPath.next();
+		PropertyPath next = propertyPath.next();
 		assertThat(next).isNotNull();
 		assertThat(next.toDotPath()).isEqualTo("user.name");
 	}
