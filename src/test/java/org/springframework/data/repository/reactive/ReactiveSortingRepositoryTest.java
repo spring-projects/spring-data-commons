@@ -15,17 +15,20 @@
  */
 package org.springframework.data.repository.reactive;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.util.List;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Limit;
@@ -39,92 +42,88 @@ import org.springframework.data.domain.Sort;
 @ExtendWith(MockitoExtension.class)
 class ReactiveSortingRepositoryTest {
 
-	private static final Limit LIMIT_TWO = Limit.of(2);
-	private static final Limit LIMIT_NEGATIVE_ONE = Limit.of(-1);
-	private static final Limit LIMIT_ZERO = Limit.of(0);
-	private final Sort defaultSort = Sort.unsorted();
-	@Spy ReactiveSortingRepository<DummyEntity, String> repository;
-
-	record DummyEntity(Integer id) {
-
-	}
+	@Spy ReactiveSortingRepository<Integer, Integer> repository;
 
 	@DisplayName("Entity fetching tests")
 	@Nested
 	class EntityFetchingTests {
 
-		@DisplayName("Return only the limited number of entities when a limit is given")
+		@DisplayName("Return a single entity for a limit of one")
 		@Test
-		void shouldReturnLimitedEntitiesWhenLimitIsGiven() {
-			when(repository.findAll(defaultSort)).thenReturn(Flux.fromIterable(List.of(new DummyEntity(1), new DummyEntity(2), new DummyEntity(3))));
+		void shouldReturnOnlyOneEntityForLimitOfOne() {
+			when(repository.findAll(Sort.unsorted())).thenReturn(Flux.range(1, 20));
 
-			final Flux<DummyEntity> results = repository.findAll(defaultSort, LIMIT_TWO);
+			final Flux<Integer> results = repository.findAll(Sort.unsorted(), Limit.of(1));
 
-			StepVerifier.create(results).expectNextMatches(entity -> 1 == entity.id())
-					.expectNextMatches(entity -> 2 == entity.id()).expectComplete().verify();
+			StepVerifier.create(results)
+					.expectNext(1)
+					.expectComplete()
+					.verify();
+			
 
-			verify(repository).findAll(defaultSort);
+			verify(repository).findAll(Sort.unsorted());
 		}
 
-		@DisplayName("Return all entities when no limit is set")
+		@DisplayName("Return ten entities for a limit of ten")
 		@Test
-		void shouldReturnAllEntitiesWhenNoLimitIsSet() {
-			when(repository.findAll(defaultSort)).thenReturn(Flux.fromIterable(List.of(new DummyEntity(1), new DummyEntity(2), new DummyEntity(3))));
+		void shouldReturnTenEntitiesForLimitOfTen() {
+			when(repository.findAll(Sort.unsorted())).thenReturn(Flux.range(1, 20));
 
-			final Flux<DummyEntity> results = repository.findAll(defaultSort, Limit.unlimited());
+			final Flux<Integer> results = repository.findAll(Sort.unsorted(), Limit.of(10));
 
-			StepVerifier.create(results).expectNextMatches(entity -> 1 == entity.id())
-					.expectNextMatches(entity -> 2 == entity.id()).expectNextMatches(entity -> 3 == entity.id()).expectComplete()
+			StepVerifier.create(results)
+					.expectNext(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+					.expectComplete()
+					.verify();
+			
+			verify(repository).findAll(Sort.unsorted());
+		}
+
+		@DisplayName("Return all entities with unlimited")
+		@Test
+		void shouldReturnAllEntitiesForUnlimited() {
+			when(repository.findAll(Sort.unsorted())).thenReturn(Flux.range(1, 20));
+
+			final Flux<Integer> results = repository.findAll(Sort.unsorted(), Limit.unlimited());
+
+			StepVerifier.create(results)
+					.expectNextSequence(IntStream.rangeClosed(1, 20).boxed().toList())
+					.expectComplete()
 					.verify();
 
-			verify(repository).findAll(defaultSort);
+			verify(repository).findAll(Sort.unsorted());
+		}
+
+		@DisplayName("Return all entities with maximum integer limit")
+		@Test
+		void shouldReturnAllEntitiesForLimitOfMaxValue() {
+			when(repository.findAll(Sort.unsorted())).thenReturn(Flux.range(1, 20));
+
+			final Flux<Integer> results = repository.findAll(Sort.unsorted(), Limit.unlimited());
+
+			StepVerifier.create(results)
+					.expectNextSequence(IntStream.rangeClosed(1, 20).boxed().toList())
+					.expectComplete()
+					.verify();
+
+			verify(repository).findAll(Sort.unsorted());
 		}
 
 		@DisplayName("Exception tests for invalid limits")
 		@Nested
 		class ExceptionTests {
 
-			@DisplayName("Throw IllegalArgumentException when null limit is given")
+			@DisplayName("Throw IllegalArgumentException for null limit")
 			@Test
-			void shouldThrowExceptionWhenNullLimitIsGiven() {
-				Flux<DummyEntity> resultFlux;
-				try {
-					resultFlux = repository.findAll(defaultSort, null);
-				} catch (Exception e) {
-					resultFlux = Flux.error(e);
-				}
-
-				StepVerifier.create(resultFlux).expectErrorMatches(throwable -> throwable instanceof IllegalArgumentException
-						&& "Limit must not be null".equals(throwable.getMessage())).verify();
+			void shouldThrowIllegalArgumentExceptionWhenNullLimitIsGiven() {
+				assertThrows(IllegalArgumentException.class, () -> repository.findAll(Sort.unsorted(), null));
 			}
 
-			@DisplayName("Throw IllegalArgumentException when a negative limit is given")
-			@Test
-			void shouldThrowExceptionWhenNegativeLimitIsGiven() {
-				Flux<DummyEntity> resultFlux;
-				try {
-					resultFlux = repository.findAll(defaultSort, LIMIT_NEGATIVE_ONE);
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-					resultFlux = Flux.error(e);
-				}
-
-				StepVerifier.create(resultFlux).expectErrorMatches(throwable -> throwable instanceof IllegalArgumentException
-						&& "Limit value cannot be negative".equals(throwable.getMessage())).verify();
-			}
-
-			@DisplayName("Throw IllegalArgumentException when a zero limit is given")
-			@Test
-			void shouldThrowExceptionWhenZeroLimitIsGiven() {
-				Flux<DummyEntity> resultFlux;
-				try {
-					resultFlux = repository.findAll(defaultSort, LIMIT_ZERO);
-				} catch (Exception e) {
-					resultFlux = Flux.error(e);
-				}
-
-				StepVerifier.create(resultFlux).expectErrorMatches(throwable -> throwable instanceof IllegalArgumentException
-						&& "Limit value cannot be zero".equals(throwable.getMessage())).verify();
+			@DisplayName("Throw IllegalArgumentException for invalid limit values")
+			@ParameterizedTest
+			@ValueSource(ints = { -1, Integer.MIN_VALUE, 0 })
+			void shouldThrowIllegalArgumentExceptionForInvalidLimits(int limitValue) {
+				assertThrows(IllegalArgumentException.class, () -> repository.findAll(Sort.unsorted(), Limit.of(limitValue)));
 			}
 		}
 	}

@@ -65,7 +65,7 @@ public interface ReactiveSortingRepository<T, ID> extends Repository<T, ID> {
 			throw new IllegalArgumentException("Limit must not be null");
 		}
 
-		if (limit.isUnlimited() || limit.max() == Integer.MAX_VALUE) {
+		if (limit.isUnlimited()) {
 			return findAll(sort);
 		}
 
@@ -76,6 +76,10 @@ public interface ReactiveSortingRepository<T, ID> extends Repository<T, ID> {
 
 		if (maxLimit == 0) {
 			throw new IllegalArgumentException("Limit value cannot be zero");
+		}
+
+		if (maxLimit == Integer.MAX_VALUE) {
+			return findAll(sort);
 		}
 
 		return findAll(sort).take(maxLimit);
