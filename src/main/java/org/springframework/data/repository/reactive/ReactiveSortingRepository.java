@@ -18,18 +18,19 @@ package org.springframework.data.repository.reactive;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 
 /**
- * Repository fragment to provide methods to retrieve entities using the sorting abstraction. In many cases it
- * should be combined with {@link ReactiveCrudRepository} or a similar repository interface in order to add CRUD
- * functionality.
+ * Repository fragment to provide methods to retrieve entities using the sorting abstraction. In many cases it should be
+ * combined with {@link ReactiveCrudRepository} or a similar repository interface in order to add CRUD functionality.
  *
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author YongHwan Kwon
  * @since 2.0
  * @see Sort
  * @see Mono
@@ -48,4 +49,35 @@ public interface ReactiveSortingRepository<T, ID> extends Repository<T, ID> {
 	 * @throws IllegalArgumentException in case the given {@link Sort} is {@literal null}.
 	 */
 	Flux<T> findAll(Sort sort);
+
+	/**
+	 * Returns all entities sorted by the given options with limit.
+	 *
+	 * @param sort the {@link Sort} specification to sort the results by, can be {@link Sort#unsorted()}, must not be
+	 *          {@literal null}.
+	 * @param limit the {@link Limit} to limit the results, must not be {@literal null} or negative.
+	 * @return all entities sorted by the given options.
+	 * @throws IllegalArgumentException in case the given {@link Sort} is {@literal null} or {@link Limit} is
+	 *           {@literal null} or negative.
+	 */
+	default Flux<T> findAll(Sort sort, Limit limit) {
+		if (limit == null) {
+			throw new IllegalArgumentException("Limit must not be null");
+		}
+
+		if (limit.isUnlimited() || limit.max() == Integer.MAX_VALUE) {
+			return findAll(sort);
+		}
+
+		final int maxLimit = limit.max();
+		if (maxLimit < 0) {
+			throw new IllegalArgumentException("Limit value cannot be negative");
+		}
+
+		if (maxLimit == 0) {
+			throw new IllegalArgumentException("Limit value cannot be zero");
+		}
+
+		return findAll(sort).take(maxLimit);
+	}
 }
