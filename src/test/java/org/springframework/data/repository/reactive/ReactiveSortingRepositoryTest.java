@@ -59,7 +59,6 @@ class ReactiveSortingRepositoryTest {
 					.expectNext(1)
 					.expectComplete()
 					.verify();
-			
 
 			verify(repository).findAll(Sort.unsorted());
 		}
