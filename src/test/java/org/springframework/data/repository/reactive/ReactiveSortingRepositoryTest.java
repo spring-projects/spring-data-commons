@@ -99,7 +99,7 @@ class ReactiveSortingRepositoryTest {
 		void shouldReturnAllEntitiesForLimitOfMaxValue() {
 			when(repository.findAll(Sort.unsorted())).thenReturn(Flux.range(1, 20));
 
-			final Flux<Integer> results = repository.findAll(Sort.unsorted(), Limit.unlimited());
+			final Flux<Integer> results = repository.findAll(Sort.unsorted(), Limit.of(Integer.MAX_VALUE));
 
 			StepVerifier.create(results)
 					.expectNextSequence(IntStream.rangeClosed(1, 20).boxed().toList())
