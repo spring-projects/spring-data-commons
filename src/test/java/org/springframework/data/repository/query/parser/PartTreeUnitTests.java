@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
@@ -655,6 +654,14 @@ class PartTreeUnitTests {
 		var tree = new PartTree("findByOrderByURL", SpecialCapitalization.class);
 
 		assertThat(tree.getSort()).hasSize(1);
+	}
+
+	@Test // GH-2965
+	void unmangleKotlinMethodName() {
+
+		var tree = new PartTree("findById-u1QWhUI", Order.class);
+
+		assertThat(tree.getParts()).hasSize(1);
 	}
 
 	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {

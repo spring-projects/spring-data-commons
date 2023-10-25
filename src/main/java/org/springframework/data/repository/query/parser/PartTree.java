@@ -87,6 +87,12 @@ public class PartTree implements Streamable<OrPart> {
 		Assert.notNull(source, "Source must not be null");
 		Assert.notNull(domainClass, "Domain class must not be null");
 
+		// Kotlin name mangling, @JvmName cannot be used with interfaces
+		int dash = source.indexOf('-');
+		if (dash > -1) {
+			source = source.substring(0, dash);
+		}
+
 		Matcher matcher = PREFIX_TEMPLATE.matcher(source);
 
 		if (!matcher.find()) {
