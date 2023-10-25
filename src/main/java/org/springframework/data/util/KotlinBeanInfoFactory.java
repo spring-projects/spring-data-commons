@@ -48,9 +48,14 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 	@Override
 	public BeanInfo getBeanInfo(Class<?> beanClass) throws IntrospectionException {
 
+		if (beanClass.isInterface()) {
+			return null; // back-off to leave interface-based properties to the default mechanism.
+		}
+
 		if (!KotlinDetector.isKotlinReflectPresent() || !KotlinDetector.isKotlinType(beanClass)) {
 			return null;
 		}
+
 
 		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(beanClass);
 		List<PropertyDescriptor> pds = new ArrayList<>();

@@ -65,6 +65,14 @@ class KotlinBeanInfoFactoryUnitTests {
 		assertThat(pds[0].writeMethod).isNull()
 	}
 
+	@Test // GH-2964
+	internal fun backsOffForInterfaces() {
+
+		val pds = BeanUtils.getPropertyDescriptors(FirstnameOnly::class.java)
+
+		assertThat(pds).hasSize(1).extracting("name").containsOnly("firstname")
+	}
+
 	data class SimpleDataClass(val id: String, var name: String)
 
 	@JvmInline
@@ -73,5 +81,9 @@ class KotlinBeanInfoFactoryUnitTests {
 	data class WithValueClass(var address: EmailAddress)
 
 	data class WithOptionalValueClass(val address: EmailAddress? = EmailAddress("un@known"))
+
+	interface FirstnameOnly {
+		fun getFirstname(): String
+	}
 
 }
