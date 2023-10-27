@@ -207,8 +207,9 @@ public class RepositoryConfigurationDelegate {
 
 		if (logger.isInfoEnabled()) {
 			logger.info(
-					LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interfaces.",
-							watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName()));
+					LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interface%s." ,
+							watch.getLastTaskTimeMillis(), configurations.size(),
+							extension.getModuleName(), configurations.size() == 1 ? "" : "s"));
 		}
 
 		// TODO: AOT Processing -> guard this one with a flag so it's not always present
