@@ -777,20 +777,20 @@ ifeval::[{include-xml-namespaces} != false]
 [source,xml,role="secondary"]
 ----
 <repositories base-package="com.acme.repositories">
-  <context:exclude-filter type="regex" expression=".*SomeRepository" />
-  <context:include-filter type="regex" expression=".*SomeOtherRepository" />
+  <context:include-filter type="regex" expression=".*SomeRepository" />
+  <context:exclude-filter type="regex" expression=".*SomeOtherRepository" />
 </repositories>
 ----
 endif::[]
 ====
 
-The preceding example excludes all interfaces ending in `SomeRepository` from being instantiated and includes those ending with `SomeOtherRepository`.
+The preceding example includes all interfaces ending with `SomeRepository` and excludes those ending with `SomeOtherRepository` from being instantiated.
 
 
 [[repositories.create-instances.standalone]]
 === Standalone Usage
 
-You can also use the repository infrastructure outside of a Spring container -- for example, in CDI environments. You still need some Spring libraries in your classpath, but, generally, you can set up repositories programmatically as well. The Spring Data modules that provide repository support ship with a persistence technology-specific `RepositoryFactory` that you can use, as follows:
+You can also use the repository infrastructure outside of a Spring container -- for example, in CDI environments.You still need some Spring libraries in your classpath, but, generally, you can set up repositories programmatically as well.The Spring Data modules that provide repository support ship with a persistence technology-specific `RepositoryFactory` that you can use, as follows:
 
 .Standalone usage of the repository factory
 ====
