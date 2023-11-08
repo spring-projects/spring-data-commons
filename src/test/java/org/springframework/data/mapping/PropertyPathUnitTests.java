@@ -309,6 +309,17 @@ class PropertyPathUnitTests {
 		assertThat(PropertyPath.from("QCode", Foo.class).toDotPath()).isEqualTo("qCode");
 		assertThat(PropertyPath.from("zIndex", MyRecord.class).toDotPath()).isEqualTo("zIndex");
 		assertThat(PropertyPath.from("ZIndex", MyRecord.class).toDotPath()).isEqualTo("zIndex");
+		assertThat(PropertyPath.from("_foo.QCode", Sample2.class).toDotPath()).isEqualTo("_foo.qCode");
+		assertThat(PropertyPath.from("_fooQCode", Sample2.class).toDotPath()).isEqualTo("_foo.qCode");
+	}
+
+	@Test // GH-1851
+	void favoursPropertyHitOverNestedPath() {
+
+		assertThat(PropertyPath.from("qCode", NameAmbiguities.class).toDotPath()).isEqualTo("qCode");
+		assertThat(PropertyPath.from("QCode", NameAmbiguities.class).toDotPath()).isEqualTo("qCode");
+		assertThat(PropertyPath.from("Q_Code", NameAmbiguities.class).toDotPath()).isEqualTo("q.code");
+		assertThat(PropertyPath.from("q_code", NameAmbiguities.class).toDotPath()).isEqualTo("q.code");
 	}
 
 	@Test // DATACMNS-257
@@ -456,6 +467,16 @@ class PropertyPathUnitTests {
 		public void setqCode(String qCode) {
 			this.qCode = qCode;
 		}
+	}
+
+	private static class NameAmbiguities {
+
+		String qCode;
+		Code q;
+	}
+
+	private static class Code {
+		String code;
 	}
 
 	private class Bar {
