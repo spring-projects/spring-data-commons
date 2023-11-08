@@ -119,7 +119,34 @@ So our method name would be as follows:
 List<Person> findByAddress_ZipCode(ZipCode zipCode);
 ----
 
-Because we treat the underscore character as a reserved character, we strongly advise following standard Java naming conventions (that is, not using underscores in property names but using camel case instead).
+[NOTE]
+====
+Because we treat underscores (`_`) as a reserved character, we strongly advise to follow standard Java naming conventions (that is, not using underscores in property names but applying camel case instead).
+====
+
+[CAUTION]
+====
+.Field Names starting with underscore:
+Field names may start with underscores like `String \_name`.
+Make sure to preserve the `_` as in `\_name` and use double `_` to split nested paths like `user__name`.
+
+.Upper Case Field Names:
+Field names that are all uppercase can be used as such.
+Nested paths if applicable require splitting via `_` as in `USER_name`.
+
+.Field Names with 2nd uppercase letter:
+Field names that consist of a starting lower case letter followed by an uppercase one like `String qCode` can be resolved by starting with two upper case letters as in `QCode`.
+Please be aware of potential path ambiguities.
+
+.Path Ambiguities:
+In the following sample the arrangement of properties `qCode` and `q`, with `q` containing a property called `code`, creates an ambiguity for the path `QCode`.
+```java
+record Container(String qCode, Code q) {}
+record Code(String code) {}
+```
+Since a direct match on a property is considered first, any potential nested paths will not be considered and the algorithm picks the `qCode` field.
+In order to select the `code` field in `q` the underscore notation `Q_Code` is required.
+====
 
 [[repositories.collections-and-iterables]]
 == Repository Methods Returning Collections or Iterables
