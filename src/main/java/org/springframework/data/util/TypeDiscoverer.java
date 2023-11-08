@@ -74,7 +74,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 				.map(ResolvableType::toClass).collect(Collectors.toList()));
 	}
 
-	static TypeDiscoverer<?> td(ResolvableType type) {
+	static TypeDiscoverer<?> ofCached(ResolvableType type) {
 
 		Assert.notNull(type, "Type must not be null");
 
