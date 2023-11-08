@@ -60,7 +60,7 @@ public interface TypeInformation<S> {
 		Assert.notNull(type, "Type must not be null");
 
 		return type.hasGenerics() || (type.isArray() && type.getComponentType().hasGenerics()) //
-				|| (type.getType() instanceof TypeVariable) ? TypeDiscoverer.td(type) : ClassTypeInformation.from(type);
+				|| (type.getType() instanceof TypeVariable) ? TypeDiscoverer.ofCached(type) : ClassTypeInformation.from(type);
 	}
 
 	/**

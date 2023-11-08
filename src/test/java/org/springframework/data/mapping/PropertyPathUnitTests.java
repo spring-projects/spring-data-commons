@@ -124,7 +124,7 @@ class PropertyPathUnitTests {
 	}
 
 	@Test
-	void handlesInvalidCollectionCompountTypeProperl() {
+	void handlesInvalidCollectionCompoundTypeProperly() {
 
 		try {
 			PropertyPath.from("usersMame", Bar.class);
