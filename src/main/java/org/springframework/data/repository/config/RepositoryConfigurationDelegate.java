@@ -172,7 +172,6 @@ public class RepositoryConfigurationDelegate {
 			configurationsByRepositoryName.put(configuration.getRepositoryInterface(), configuration);
 
 			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
-
 			extension.postProcess(definitionBuilder, configurationSource);
 
 			if (isXml) {
@@ -207,8 +206,8 @@ public class RepositoryConfigurationDelegate {
 		if (logger.isInfoEnabled()) {
 			logger.info(
 					LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interface%s." ,
-							watch.getLastTaskTimeMillis(), configurations.size(),
-							extension.getModuleName(), configurations.size() == 1 ? "" : "s"));
+							watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName(),
+							configurations.size() == 1 ? "interface" : "interfaces"));
 		}
 
 		// TODO: AOT Processing -> guard this one with a flag so it's not always present
