@@ -40,7 +40,7 @@ The methods declared in this interface are commonly referred to as CRUD methods.
 NOTE: We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`.
 Those interfaces extend `CrudRepository` and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces such as `CrudRepository`.
 
-Additional to the `CrudRepository`, there are {spring-data-commons-javadoc-base}/org/springframework/data/repository/PagingAndSortingRepository.html[`PagingAndSortingRepository`] and {spring-data-commons-javadoc-base}/org/springframework/data/repository/ListPagingAndSortingRepository.html[`ListPagingAndSortingRepository`] which adds additional methods to ease paginated access to entities:
+Additional to the `CrudRepository`, there are {spring-data-commons-javadoc-base}/org/springframework/data/repository/PagingAndSortingRepository.html[`PagingAndSortingRepository`] and {spring-data-commons-javadoc-base}/org/springframework/data/repository/ListPagingAndSortingRepository.html[`ListPagingAndSortingRepository`] which add additional methods to ease paginated access to entities:
 
 .`PagingAndSortingRepository` interface
 [source,java]
@@ -52,6 +52,9 @@ public interface PagingAndSortingRepository<T, ID>  {
   Page<T> findAll(Pageable pageable);
 }
 ----
+
+NOTE: Extension interfaces are subject to be supported by the actual store module.
+While this documentation explains the general scheme, make sure that your store module supports the interfaces that you want to use.
 
 To access the second page of `User` by a page size of 20, you could do something like the following:
 
