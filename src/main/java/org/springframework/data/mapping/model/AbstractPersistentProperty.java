@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,7 +41,6 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
- * @author Jens Schauder
  */
 public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>> implements PersistentProperty<P> {
 
@@ -89,7 +87,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.association = Lazy.of(() -> isAssociation() ? createAssociation() : null);
 		this.owner = owner;
 
-		this.hashCode = Lazy.of(() -> Objects.hash(property, owner));
+		this.hashCode = Lazy.of(property::hashCode);
 		this.usePropertyAccess = Lazy.of(() -> owner.getType().isInterface() || CAUSE_FIELD.equals(getField()));
 
 		this.isAssociation = Lazy.of(() -> ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(rawType));
@@ -319,7 +317,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 			return false;
 		}
 
-		return this.property.equals(that.property) && this.owner.equals(that.owner);
+		return this.property.equals(that.property);
 	}
 
 	@Override

@@ -81,6 +81,16 @@ public class AbstractPersistentPropertyUnitTests {
 		assertThat(getProperty(TestClassComplex.class, "collection").isEntity()).isFalse();
 	}
 
+	@Test // DATACMNS-121
+	void considersPropertiesEqualIfFieldEquals() {
+
+		var firstProperty = getProperty(FirstConcrete.class, "genericField");
+		var secondProperty = getProperty(SecondConcrete.class, "genericField");
+
+		assertThat(firstProperty).isEqualTo(secondProperty);
+		assertThat(firstProperty.hashCode()).isEqualTo(secondProperty.hashCode());
+	}
+
 	@Test // DATACMNS-180
 	void doesNotConsiderJavaTransientFieldsTransient() {
 		assertThat(getProperty(TestClassComplex.class, "transientField").isTransient()).isFalse();
@@ -197,7 +207,7 @@ public class AbstractPersistentPropertyUnitTests {
 	@Test // DATACMNS-1139
 	void resolvesGenericsForRawType() {
 
-		var property = getProperty(Concrete.class, "genericField");
+		var property = getProperty(FirstConcrete.class, "genericField");
 
 		assertThat(property.getRawType()).isEqualTo(String.class);
 	}
@@ -228,15 +238,6 @@ public class AbstractPersistentPropertyUnitTests {
 		SamplePersistentProperty property = getProperty(VavrWrapper.class, "vavrMap");
 
 		assertThat(property.isMap()).isTrue();
-	}
-
-	@Test // GH-2972
-	void equalsConsidersOwner() {
-
-		SamplePersistentProperty id1 = getProperty(Inherited1.class, "id");
-		SamplePersistentProperty id2 = getProperty(Inherited2.class, "id");
-
-		assertThat(id1).isNotEqualTo(id2);
 	}
 
 	private <T> BasicPersistentEntity<T, SamplePersistentProperty> getEntity(Class<T> type) {
@@ -276,7 +277,11 @@ public class AbstractPersistentPropertyUnitTests {
 
 	}
 
-	class Concrete extends Generic<String> {
+	class FirstConcrete extends Generic<String> {
+
+	}
+
+	class SecondConcrete extends Generic<Integer> {
 
 	}
 
@@ -407,15 +412,4 @@ public class AbstractPersistentPropertyUnitTests {
 	class VavrWrapper {
 		io.vavr.collection.Map<String, String> vavrMap;
 	}
-
-	class Base {
-		Long id;
-	}
-
-	class Inherited1 extends Base {
-	}
-
-	class Inherited2 extends Base {
-	}
-
 }
