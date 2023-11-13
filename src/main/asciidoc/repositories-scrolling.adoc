@@ -11,7 +11,7 @@ Similar to consuming a Java `Iterator<List<…>>` by obtaining the next batch of
 
 [source,java]
 ----
-Window<User> users = repository.findFirst10ByLastnameOrderByFirstname("Doe", OffsetScrollPosition.initial());
+Window<User> users = repository.findFirst10ByLastnameOrderByFirstname("Doe", ScrollPosition.offset());
 do {
 
   for (User u : users) {
@@ -28,7 +28,7 @@ do {
 [source,java]
 ----
 WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst10ByLastnameOrderByFirstname("Doe", position))
-  .startingAt(OffsetScrollPosition.initial());
+  .startingAt(ScrollPosition.offset());
 
 while (users.hasNext()) {
   User u = users.next();
@@ -43,7 +43,7 @@ Offset scrolling uses similar to pagination, an Offset counter to skip a number 
 This simple mechanism avoids large results being sent to the client application.
 However, most databases require materializing the full query result before your server can return the results.
 
-.Using `OffsetScrollPosition` with Repository Query Methods
+.Using Offset `ScrollPosition` with Repository Query Methods
 ====
 [source,java]
 ----
@@ -53,7 +53,7 @@ interface UserRepository extends Repository<User, Long> {
 }
 
 WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst10ByLastnameOrderByFirstname("Doe", position))
-  .startingAt(OffsetScrollPosition.initial()); <1>
+  .startingAt(ScrollPosition.offset()); <1>
 ----
 
 <1> Start from the initial offset at position `0`.

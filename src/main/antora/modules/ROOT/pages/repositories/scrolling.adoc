@@ -11,7 +11,7 @@ Similar to consuming a Java `Iterator<List<…>>` by obtaining the next batch of
 
 [source,java]
 ----
-Window<User> users = repository.findFirst10ByLastnameOrderByFirstname("Doe", OffsetScrollPosition.initial());
+Window<User> users = repository.findFirst10ByLastnameOrderByFirstname("Doe", ScrollPosition.offset());
 do {
 
   for (User u : users) {
