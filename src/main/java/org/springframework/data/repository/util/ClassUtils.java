@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import org.springframework.data.repository.Repository;
@@ -110,7 +109,7 @@ public abstract class ClassUtils {
 	 * @deprecated Use {@link #getNumberOfOccurrences(Method, Class)}.
 	 */
 	@Deprecated
-	public static int getNumberOfOccurences(@NonNull Method method, @NonNull Class<?> type) {
+	public static int getNumberOfOccurences(Method method, Class<?> type) {
 		return getNumberOfOccurrences(method, type);
 	}
 

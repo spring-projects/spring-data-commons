@@ -16,7 +16,6 @@
 package org.springframework.data.convert;
 
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -42,7 +41,7 @@ public class PropertyValueConversionService {
 	 * @throws IllegalArgumentException if {@link CustomConversions} is {@literal null}.
 	 * @see CustomConversions
 	 */
-	public PropertyValueConversionService(@NonNull CustomConversions conversions) {
+	public PropertyValueConversionService(CustomConversions conversions) {
 
 		Assert.notNull(conversions, "CustomConversions must not be null");
 

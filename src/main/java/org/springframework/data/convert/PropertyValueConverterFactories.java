@@ -215,10 +215,12 @@ final class PropertyValueConverterFactories {
 			Map<PersistentProperty<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> perPropertyCache = new ConcurrentHashMap<>();
 			Map<Class<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> typeCache = new ConcurrentHashMap<>();
 
+			@Nullable
 			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> get(PersistentProperty<?> property) {
 				return perPropertyCache.get(property);
 			}
 
+			@Nullable
 			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> get(Class<?> type) {
 				return typeCache.get(type);
 			}
