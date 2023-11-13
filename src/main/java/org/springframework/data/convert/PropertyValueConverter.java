@@ -18,7 +18,6 @@ package org.springframework.data.convert;
 import java.util.function.BiFunction;
 
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -48,8 +47,8 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 	 * operation.
 	 *
 	 * @param value value to read.
-	 * @param context {@link ValueConversionContext} containing store-specific metadata
-	 * used in the value conversion; never {@literal null}.
+	 * @param context {@link ValueConversionContext} containing store-specific metadata used in the value conversion;
+	 *          never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
@@ -59,8 +58,8 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 	 * Convert the given {@code null} value from the store into its domain value representation. Typically, a
 	 * {@literal read} operation. Returns {@code null} by default.
 	 *
-	 * @param context {@link ValueConversionContext} containing store-specific metadata
-	 * used in the value conversion; never {@literal null}.
+	 * @param context {@link ValueConversionContext} containing store-specific metadata used in the value conversion;
+	 *          never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
@@ -73,8 +72,8 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 	 * operation.
 	 *
 	 * @param value value to write; can be {@literal null}.
-	 * @param context {@link ValueConversionContext} containing store-specific metadata
-	 * used in the value conversion; never {@literal null}.
+	 * @param context {@link ValueConversionContext} containing store-specific metadata used in the value conversion;
+	 *          never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
@@ -84,8 +83,8 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 	 * Convert the given {@code null} value from the domain model into it's native store representation. Typically, a
 	 * {@literal write} operation. Returns {@code null} by default.
 	 *
-	 * @param context {@link ValueConversionContext} containing store-specific metadata
-	 * used in the value conversion; never {@literal null}.
+	 * @param context {@link ValueConversionContext} containing store-specific metadata used in the value conversion;
+	 *          never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
 	@Nullable
@@ -127,8 +126,8 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 		private final BiFunction<DV, ValueConversionContext<P>, SV> writer;
 		private final BiFunction<SV, ValueConversionContext<P>, DV> reader;
 
-		public FunctionPropertyValueConverter(@NonNull BiFunction<DV, ValueConversionContext<P>, SV> writer,
-				@NonNull BiFunction<SV, ValueConversionContext<P>, DV> reader) {
+		public FunctionPropertyValueConverter(BiFunction<DV, ValueConversionContext<P>, SV> writer,
+				BiFunction<SV, ValueConversionContext<P>, DV> reader) {
 
 			this.writer = writer;
 			this.reader = reader;
@@ -136,23 +135,23 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 
 		@Nullable
 		@Override
-		public SV write(@Nullable DV value, @NonNull ValueConversionContext<P> context) {
+		public SV write(@Nullable DV value, ValueConversionContext<P> context) {
 			return writer.apply(value, context);
 		}
 
 		@Override
-		public SV writeNull(@NonNull ValueConversionContext<P> context) {
+		public SV writeNull(ValueConversionContext<P> context) {
 			return writer.apply(null, context);
 		}
 
 		@Nullable
 		@Override
-		public DV read(@Nullable SV value, @NonNull ValueConversionContext<P> context) {
+		public DV read(@Nullable SV value, ValueConversionContext<P> context) {
 			return reader.apply(value, context);
 		}
 
 		@Override
-		public DV readNull(@NonNull ValueConversionContext<P> context) {
+		public DV readNull(ValueConversionContext<P> context) {
 			return reader.apply(null, context);
 		}
 	}

@@ -22,7 +22,6 @@ import java.util.function.Function;
 import org.springframework.data.convert.PropertyValueConverter.FunctionPropertyValueConverter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.MethodInvocationRecorder;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -106,7 +105,7 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	 * @throws IllegalArgumentException if the {@link ValueConverterRegistry} is {@literal null}.
 	 * @see ValueConverterRegistry
 	 */
-	public void registerConvertersIn(@NonNull ValueConverterRegistry<P> target) {
+	public void registerConvertersIn(ValueConverterRegistry<P> target) {
 
 		Assert.notNull(target, "Target registry must not be null");
 
@@ -119,7 +118,7 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	 *
 	 * @return new instance of {@link SimplePropertyValueConverterRegistry}.
 	 */
-	@NonNull
+
 	public ValueConverterRegistry<P> buildRegistry() {
 		return new SimplePropertyValueConverterRegistry<>(registry);
 	}
@@ -135,7 +134,7 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 		private final PropertyValueConverterRegistrar<P> config;
 
 		WritingConverterRegistrationBuilder(Class<T> type, String property,
-				@NonNull PropertyValueConverterRegistrar<P> config) {
+				PropertyValueConverterRegistrar<P> config) {
 
 			this.config = config;
 			this.registration = converter -> config.registerConverter(type, property, converter);
@@ -173,8 +172,8 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 		private final WritingConverterRegistrationBuilder<T, S, P> origin;
 		private final BiFunction<S, ValueConversionContext<P>, R> writer;
 
-		ReadingConverterRegistrationBuilder(@NonNull WritingConverterRegistrationBuilder<T, S, P> origin,
-				@NonNull BiFunction<S, ValueConversionContext<P>, R> writer) {
+		ReadingConverterRegistrationBuilder(WritingConverterRegistrationBuilder<T, S, P> origin,
+				BiFunction<S, ValueConversionContext<P>, R> writer) {
 
 			this.origin = origin;
 			this.writer = writer;

@@ -17,7 +17,6 @@ package org.springframework.data.convert;
 
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -47,7 +46,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @param value {@link Object value} to write; can be {@literal null}.
 	 * @return can be {@literal null}.
 	 * @throws IllegalStateException if value cannot be written as an instance of the
-	 * {@link PersistentProperty#getTypeInformation() property type}.
+	 *           {@link PersistentProperty#getTypeInformation() property type}.
 	 * @see PersistentProperty#getTypeInformation()
 	 * @see #write(Object, TypeInformation)
 	 */
@@ -67,7 +66,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @see TypeInformation
 	 */
 	@Nullable
-	default <T> T write(@Nullable Object value, @NonNull Class<T> target) {
+	default <T> T write(@Nullable Object value, Class<T> target) {
 		return write(value, TypeInformation.of(target));
 	}
 
@@ -81,7 +80,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @see TypeInformation
 	 */
 	@Nullable
-	default <T> T write(@Nullable Object value, @NonNull TypeInformation<T> target) {
+	default <T> T write(@Nullable Object value, TypeInformation<T> target) {
 
 		if (value == null || target.getType().isInstance(value)) {
 			return target.getType().cast(value);
@@ -97,7 +96,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @param value {@link Object value} to be read; can be {@literal null}.
 	 * @return can be {@literal null}.
 	 * @throws IllegalStateException if value cannot be read as an instance of the
-	 * {@link PersistentProperty#getTypeInformation() property type}.
+	 *           {@link PersistentProperty#getTypeInformation() property type}.
 	 * @see PersistentProperty#getTypeInformation()
 	 * @see #read(Object, TypeInformation)
 	 */
@@ -117,7 +116,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @see TypeInformation
 	 */
 	@Nullable
-	default <T> T read(@Nullable Object value, @NonNull Class<T> target) {
+	default <T> T read(@Nullable Object value, Class<T> target) {
 		return read(value, TypeInformation.of(target));
 	}
 
@@ -131,7 +130,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @see TypeInformation
 	 */
 	@Nullable
-	default <T> T read(@Nullable Object value, @NonNull TypeInformation<T> target) {
+	default <T> T read(@Nullable Object value, TypeInformation<T> target) {
 
 		if (value == null || target.getType().isInstance(value)) {
 			return target.getType().cast(value);

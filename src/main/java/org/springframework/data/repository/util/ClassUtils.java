@@ -108,7 +108,7 @@ public abstract class ClassUtils {
 	 * @deprecated Use {@link #getNumberOfOccurrences(Method, Class)}.
 	 */
 	@Deprecated
-	public static int getNumberOfOccurences(@NonNull Method method, @NonNull Class<?> type) {
+	public static int getNumberOfOccurences(Method method, Class<?> type) {
 		return getNumberOfOccurrences(method, type);
 	}
 
@@ -124,9 +124,7 @@ public abstract class ClassUtils {
 	 */
 	public static int getNumberOfOccurrences(@NonNull Method method, @NonNull Class<?> parameterType) {
 
-		return (int) Arrays.stream(method.getParameterTypes())
-				.filter(parameterType::equals)
-				.count();
+		return (int) Arrays.stream(method.getParameterTypes()).filter(parameterType::equals).count();
 	}
 
 	/**
