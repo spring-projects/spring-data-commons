@@ -11,7 +11,7 @@ Similar to consuming a Java `Iterator<List<…>>` by obtaining the next batch of
 
 [source,java]
 ----
-Window<User> users = repository.findFirst10ByLastnameOrderByFirstname("Doe", OffsetScrollPosition.initial());
+Window<User> users = repository.findFirst10ByLastnameOrderByFirstname("Doe", ScrollPosition.offset());
 do {
 
   for (User u : users) {
@@ -28,7 +28,7 @@ do {
 [source,java]
 ----
 WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst10ByLastnameOrderByFirstname("Doe", position))
-  .startingAt(OffsetScrollPosition.initial());
+  .startingAt(ScrollPosition.offset());
 
 while (users.hasNext()) {
   User u = users.next();
@@ -53,7 +53,7 @@ interface UserRepository extends Repository<User, Long> {
 }
 
 WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst10ByLastnameOrderByFirstname("Doe", position))
-  .startingAt(OffsetScrollPosition.initial()); <1>
+  .startingAt(ScrollPosition.offset()); <1>
 ----
 
 <1> Start from the initial offset at position `0`.
@@ -91,7 +91,7 @@ interface UserRepository extends Repository<User, Long> {
 }
 
 WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst10ByLastnameOrderByFirstname("Doe", position))
-  .startingAt(KeysetScrollPosition.initial()); <1>
+  .startingAt(ScrollPosition.keyset()); <1>
 ----
 <1> Start at the very beginning and do not apply additional filtering.
 ====
