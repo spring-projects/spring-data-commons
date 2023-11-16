@@ -126,7 +126,7 @@ public abstract class Jsr310Converters {
 		@NonNull
 		@Override
 		public LocalDate convert(Date source) {
-			return ofInstant(ofEpochMilli(source.getTime()), systemDefault()).toLocalDate();
+			return source.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
 		}
 	}
 
@@ -138,7 +138,7 @@ public abstract class Jsr310Converters {
 		@NonNull
 		@Override
 		public Date convert(LocalDate source) {
-			return Date.from(source.atStartOfDay(systemDefault()).toInstant());
+			return new Date(source.atStartOfDay().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
 		}
 	}
 
