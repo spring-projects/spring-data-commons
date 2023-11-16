@@ -45,6 +45,7 @@ import org.springframework.lang.NonNull;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Hamza Hanafi
  */
 public abstract class Jsr310Converters {
 
