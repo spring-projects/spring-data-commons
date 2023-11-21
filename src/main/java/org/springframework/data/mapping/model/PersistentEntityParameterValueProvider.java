@@ -17,6 +17,7 @@ package org.springframework.data.mapping.model;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
@@ -53,6 +54,13 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 
 		if (creator != null && creator.isParentParameter(parameter)) {
 			return (T) parent;
+		}
+
+		if (parameter.getAnnotations().isPresent(Transient.class)) {
+
+			// parameter.getRawType().isPrimitive()
+			return null;
+
 		}
 
 		String name = parameter.getName();
