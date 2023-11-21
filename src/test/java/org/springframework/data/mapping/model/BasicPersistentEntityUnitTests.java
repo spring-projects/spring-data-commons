@@ -32,6 +32,8 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -106,8 +108,7 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 	@SuppressWarnings("unchecked")
 	void considersComparatorForPropertyOrder() {
 
-		var entity = createEntity(Person.class,
-				Comparator.comparing(PersistentProperty::getName));
+		var entity = createEntity(Person.class, Comparator.comparing(PersistentProperty::getName));
 
 		var lastName = (T) Mockito.mock(PersistentProperty.class);
 		when(lastName.getName()).thenReturn("lastName");
@@ -199,8 +200,8 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		assertThat(accessor).isNotInstanceOf(BeanWrapper.class);
 		assertThat(accessor).isInstanceOfSatisfying(InstantiationAwarePropertyAccessor.class, it -> {
 
-			var delegateFunction = (Function<Object, PersistentPropertyAccessor<Object>>) ReflectionTestUtils
-					.getField(it, "delegateFunction");
+			var delegateFunction = (Function<Object, PersistentPropertyAccessor<Object>>) ReflectionTestUtils.getField(it,
+					"delegateFunction");
 
 			var delegate = delegateFunction.apply(value);
 			assertThat(delegate.getClass().getName()).contains("_Accessor_");
@@ -360,6 +361,18 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 				.forEach(it -> assertThat(createPopulatedPersistentEntity(it).requiresPropertyPopulation()).isFalse());
 	}
 
+	@ParameterizedTest // GH-1432
+	@ValueSource(classes = { WithTransient.class, RecordWithTransient.class, DataClassWithTransientProperty.class })
+	void includesTransientProperty(Class<?> classUnderTest) {
+
+		PersistentEntity<Object, ?> entity = createPopulatedPersistentEntity(classUnderTest);
+
+		assertThat(entity).extracting(PersistentProperty::getName).hasSize(1).containsOnly("firstname");
+		assertThat(entity.isTransient("firstname")).isFalse();
+		assertThat(entity.isTransient("lastname")).isTrue();
+		assertThat(entity.getTransientProperty("lastname").getName()).isEqualTo("lastname");
+	}
+
 	@Test // #2325
 	void doWithAllInvokesPropertyHandlerForBothAPropertiesAndAssociations() {
 
@@ -476,6 +489,17 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		}
 	}
 
+	private static class WithTransient {
+
+		String firstname;
+		@Transient String lastname;
+
+	}
+
+	record RecordWithTransient(String firstname, @Transient String lastname) {
+
+	}
+
 	// #2325
 
 	static class WithAssociation {
@@ -483,4 +507,5 @@ class BasicPersistentEntityUnitTests<T extends PersistentProperty<T>> {
 		String property;
 		@Reference WithAssociation association;
 	}
+
 }
