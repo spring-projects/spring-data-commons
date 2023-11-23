@@ -40,8 +40,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.NativeDetector;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -49,6 +52,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.model.AbstractPersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapperPropertyAccessorFactory;
 import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory;
 import org.springframework.data.mapping.model.EntityInstantiators;
@@ -59,6 +63,7 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
+import org.springframework.data.support.EnvironmentAccessor;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.Optionals;
@@ -89,7 +94,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Christoph Strobl
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
-		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, InitializingBean {
+		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, InitializingBean, EnvironmentAware {
 
 	private static final Log LOGGER = LogFactory.getLog(MappingContext.class);
 
@@ -100,6 +105,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	private @Nullable ApplicationEventPublisher applicationEventPublisher;
 	private EvaluationContextProvider evaluationContextProvider = EvaluationContextProvider.DEFAULT;
+	private @Nullable EnvironmentAccessor environmentAccessor;
 
 	private ManagedTypes managedTypes = ManagedTypes.empty();
 
@@ -136,6 +142,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		if (applicationEventPublisher == null) {
 			this.applicationEventPublisher = applicationContext;
 		}
+	}
+
+	public void setEnvironment(Environment environment) {
+		this.environmentAccessor = new DelegatingEnvironmentAccessor(environment);
 	}
 
 	/**
@@ -406,6 +416,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			E entity = createPersistentEntity(userTypeInformation);
 			entity.setEvaluationContextProvider(evaluationContextProvider);
+			entity.setEnvironmentAccessor(environmentAccessor);
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
 			persistentEntities.put(userTypeInformation, Optional.of(entity));
@@ -477,6 +488,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	@Override
 	public void afterPropertiesSet() {
+
+		if(this.environmentAccessor == null) {
+			this.environmentAccessor = new DelegatingEnvironmentAccessor(new StandardEnvironment());
+		}
 		initialize();
 	}
 
@@ -579,6 +594,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return;
 			}
 
+			if(property instanceof AbstractPersistentProperty<?> pp) {
+				pp.setEnvironmentAccessor(environmentAccessor);
+			}
 			entity.addPersistentProperty(property);
 
 			if (property.isAssociation()) {
@@ -774,6 +792,34 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 				return true;
 			}
+		}
+	}
+
+	/**
+	 * @author Christoph Strobl
+	 * @since 3.3
+	 */
+	public static class DelegatingEnvironmentAccessor implements EnvironmentAccessor {
+
+		private final Environment environment;
+
+		static EnvironmentAccessor standard() {
+			return new DelegatingEnvironmentAccessor(new StandardEnvironment());
+		}
+
+		public DelegatingEnvironmentAccessor(Environment environment) {
+			this.environment = environment;
+		}
+
+		@Nullable
+		@Override
+		public String getProperty(String key) {
+			return environment.getProperty(key);
+		}
+
+		@Override
+		public String resolvePlaceholders(String text) {
+			return environment.resolvePlaceholders(text);
 		}
 	}
 }

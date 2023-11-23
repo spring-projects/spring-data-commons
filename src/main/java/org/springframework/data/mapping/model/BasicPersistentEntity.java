@@ -36,6 +36,7 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.mapping.*;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExpressionDependencies;
+import org.springframework.data.support.EnvironmentAccessor;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.PersistableIsNewStrategy;
 import org.springframework.data.util.Lazy;
@@ -79,6 +80,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private @Nullable P versionProperty;
 	private PersistentPropertyAccessorFactory propertyAccessorFactory;
 	private EvaluationContextProvider evaluationContextProvider = EvaluationContextProvider.DEFAULT;
+	private @Nullable EnvironmentAccessor environmentAccessor;
 
 	private final Lazy<Alias> typeAlias;
 	private final Lazy<IsNewStrategy> isNewStrategy;
@@ -205,10 +207,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			if (versionProperty != null) {
 
 				throw new MappingException(
-						String.format(
-								"Attempt to add version property %s but already have property %s registered "
-										+ "as version; Check your mapping configuration",
-								property.getField(), versionProperty.getField()));
+						String.format("Attempt to add version property %s but already have property %s registered "
+								+ "as version; Check your mapping configuration", property.getField(), versionProperty.getField()));
 			}
 
 			this.versionProperty = property;
@@ -218,6 +218,11 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	@Override
 	public void setEvaluationContextProvider(EvaluationContextProvider provider) {
 		this.evaluationContextProvider = provider;
+	}
+
+	@Override
+	public void setEnvironmentAccessor(EnvironmentAccessor accessor) {
+		this.environmentAccessor = accessor;
 	}
 
 	/**
@@ -441,6 +446,17 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 */
 	protected EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
 		return evaluationContextProvider.getEvaluationContext(rootObject, dependencies);
+	}
+
+	/**
+	 * Obtain the {@link EnvironmentAccessor} providing access to the current
+	 * {@link org.springframework.core.env.Environment}.
+	 *
+	 * @return never {@literal null}.
+	 * @since 3.3
+	 */
+	protected EnvironmentAccessor getEnvironmentAccessor() {
+		return environmentAccessor;
 	}
 
 	/**
