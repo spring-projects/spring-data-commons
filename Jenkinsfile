@@ -36,7 +36,8 @@ pipeline {
 			steps {
 				script {
 					docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list verify -Dsort -U -B'
+						sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
+							"./mvnw -s settings.xml clean dependency:list verify -Dsort -B"
 					}
 				}
 			}
@@ -62,7 +63,8 @@ pipeline {
 					steps {
 						script {
 							docker.image(p['docker.java.next.image']).inside(p['docker.java.inside.basic']) {
-								sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list verify -Dsort -U -B'
+								sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
+									"./mvnw -s settings.xml clean dependency:list verify -Dsort -B"
 							}
 						}
 					}
@@ -90,14 +92,15 @@ pipeline {
 			steps {
 				script {
 					docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
-								'-Dartifactory.server=https://repo.spring.io ' +
+						sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
+								"./mvnw -s settings.xml -Pci,artifactory " +
+								"-Dartifactory.server=${p['artifactory.url']} " +
 								"-Dartifactory.username=${ARTIFACTORY_USR} " +
 								"-Dartifactory.password=${ARTIFACTORY_PSW} " +
-								"-Dartifactory.staging-repository=libs-snapshot-local " +
+								"-Dartifactory.staging-repository=${p['artifactory.repository.snapshot']} " +
 								"-Dartifactory.build-name=spring-data-commons " +
 								"-Dartifactory.build-number=${BUILD_NUMBER} " +
-								'-Dmaven.test.skip=true clean deploy -U -B'
+								"-Dmaven.test.skip=true clean deploy -U -B"
 					}
 				}
 			}
