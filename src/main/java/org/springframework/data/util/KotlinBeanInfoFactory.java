@@ -28,10 +28,12 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.springframework.beans.BeanInfoFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.Ordered;
 
@@ -57,7 +59,7 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 		}
 
 		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(beanClass);
-		List<PropertyDescriptor> pds = new ArrayList<>();
+		Set<PropertyDescriptor> pds = new LinkedHashSet<>();
 
 		for (KCallable<?> member : kotlinClass.getMembers()) {
 
@@ -69,6 +71,19 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 				pds.add(new PropertyDescriptor(property.getName(), getter, setter));
 			}
 		}
+
+		Class<?> javaClass = beanClass;
+		do {
+
+			javaClass = javaClass.getSuperclass();
+		} while (KotlinDetector.isKotlinType(javaClass));
+
+		if (javaClass != Object.class) {
+
+			PropertyDescriptor[] javaPropertyDescriptors = BeanUtils.getPropertyDescriptors(javaClass);
+			pds.addAll(Arrays.asList(javaPropertyDescriptors));
+		}
+
 		return new SimpleBeanInfo() {
 			@Override
 			public BeanDescriptor getBeanDescriptor() {
