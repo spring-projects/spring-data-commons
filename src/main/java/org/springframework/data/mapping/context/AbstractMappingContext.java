@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -305,6 +304,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	}
 
 	@Override
+	public PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
+		return persistentPropertyPathFactory.from(type, propertyPath);
+	}
+
+	@Override
 	public <T> PersistentPropertyPaths<T, P> findPersistentPropertyPaths(Class<T> type, Predicate<? super P> predicate) {
 
 		Assert.notNull(type, "Type must not be null");
@@ -315,7 +319,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Actually looks up the {@link PersistentPropertyPaths} for the given type, selection predicate and traversal guard.
-	 * Primary purpose is to allow sub-types to alter the default traversal guard, e.g. used by
+	 * Primary purpose is to allow subtypes to alter the default traversal guard, e.g. used by
 	 * {@link #findPersistentPropertyPaths(Class, Predicate)}.
 	 *
 	 * @param type will never be {@literal null}.

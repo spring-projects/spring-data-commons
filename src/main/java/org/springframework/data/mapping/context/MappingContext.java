@@ -158,8 +158,7 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 *
 	 * @param propertyPath must not be {@literal null}.
 	 * @return the {@link PersistentPropertyPath} representing the given {@link PropertyPath}.
-	 * @throws InvalidPersistentPropertyPath in case not all of the segments of the given {@link PropertyPath} can be
-	 *           resolved.
+	 * @throws InvalidPersistentPropertyPath in case not all segments of the given {@link PropertyPath} can be resolved.
 	 */
 	PersistentPropertyPath<P> getPersistentPropertyPath(PropertyPath propertyPath) throws InvalidPersistentPropertyPath;
 
@@ -169,16 +168,27 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	 * @param propertyPath must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return the {@link PersistentPropertyPath} representing the given property path on the given type.
-	 * @throws InvalidPersistentPropertyPath in case not all of the segments of the given property path can be resolved.
+	 * @throws InvalidPersistentPropertyPath in case not all segments of the given property path can be resolved.
 	 */
 	PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, Class<?> type)
 			throws InvalidPersistentPropertyPath;
 
 	/**
+	 * Returns all {@link PersistentProperty}s for the given dot path notation based on the given type.
+	 *
+	 * @param propertyPath must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return the {@link PersistentPropertyPath} representing the given property path on the given type.
+	 * @throws InvalidPersistentPropertyPath in case not all segments of the given property path can be resolved.
+	 * @since 3.2.1
+	 */
+	PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, TypeInformation<?> type)
+			throws InvalidPersistentPropertyPath;
+
+	/**
 	 * Returns all {@link PersistentPropertyPath}s pointing to properties on the given type that match the given
 	 * {@link Predicate}. In case of circular references the detection will stop at the property that references a type
-	 * that's already included in the path. Note, that is is a potentially expensive operation as results cannot be
-	 * cached.
+	 * that's already included in the path. Note, that is a potentially expensive operation as results cannot be cached.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param predicate must not be {@literal null}.
