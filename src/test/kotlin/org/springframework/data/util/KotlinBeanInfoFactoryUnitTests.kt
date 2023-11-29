@@ -22,6 +22,7 @@ import org.springframework.beans.BeanUtils
 /**
  * Unit tests for [KotlinBeanInfoFactory].
  * @author Mark Paluch
+ * @author Yanming Zhou
  */
 class KotlinBeanInfoFactoryUnitTests {
 
@@ -73,6 +74,14 @@ class KotlinBeanInfoFactoryUnitTests {
 		assertThat(pds).hasSize(1).extracting("name").containsOnly("firstname")
 	}
 
+	@Test // GH-2990
+	internal fun determinesEnumClassProperties() {
+
+		val pds = BeanUtils.getPropertyDescriptors(Gender::class.java)
+
+		assertThat(pds).extracting("name").containsOnly("value", "name", "ordinal");
+	}
+
 	data class SimpleDataClass(val id: String, var name: String)
 
 	@JvmInline
@@ -86,4 +95,7 @@ class KotlinBeanInfoFactoryUnitTests {
 		fun getFirstname(): String
 	}
 
+	enum class Gender(val value: Int) {
+		Male(0), FEMALE(1)
+	}
 }

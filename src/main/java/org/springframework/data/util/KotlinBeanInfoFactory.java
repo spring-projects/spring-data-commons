@@ -39,6 +39,7 @@ import org.springframework.core.Ordered;
  * {@link BeanInfoFactory} specific to Kotlin types using Kotlin reflection to determine bean properties.
  *
  * @author Mark Paluch
+ * @author Yanming Zhou
  * @since 3.2
  * @see JvmClassMappingKt
  * @see ReflectJvmMapping
@@ -63,6 +64,12 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 		for (KCallable<?> member : kotlinClass.getMembers()) {
 
 			if (member instanceof KProperty<?> property) {
+
+				// Kotlin introduce auto-generated "entries" property for enum class since 1.8.20 and stable from 1.9.0
+				// see https://youtrack.jetbrains.com/issue/KT-48872
+				if (beanClass.isEnum() && property.getName().equals("entries")) {
+					continue;
+				}
 
 				Method getter = ReflectJvmMapping.getJavaGetter(property);
 				Method setter = property instanceof KMutableProperty<?> kmp ? ReflectJvmMapping.getJavaSetter(kmp) : null;
