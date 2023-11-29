@@ -18,6 +18,9 @@ package org.springframework.data.util
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.BeanUtils
+import org.springframework.data.repository.Repository
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport
+import org.springframework.data.repository.core.support.RepositoryFactorySupport
 
 /**
  * Unit tests for [KotlinBeanInfoFactory].
@@ -81,6 +84,14 @@ class KotlinBeanInfoFactoryUnitTests {
 		assertThat(pds).extracting("name").contains("ordinal")
 	}
 
+	@Test // GH-2994
+	internal fun includesPropertiesFromJavaSupertypes() {
+
+		val pds = BeanUtils.getPropertyDescriptors(MyRepositoryFactoryBeanImpl::class.java)
+
+		assertThat(pds).extracting("name").contains("myQueryLookupStrategyKey", "repositoryBaseClass")
+	}
+
 	data class SimpleDataClass(val id: String, var name: String)
 
 	@JvmInline
@@ -96,6 +107,20 @@ class KotlinBeanInfoFactoryUnitTests {
 
 	enum class MyEnum {
 		Foo, Bar
+	}
+
+	class MyRepositoryFactoryBeanImpl<R, E, I>(repository: Class<R>) : RepositoryFactoryBeanSupport<R, E, I>(repository)
+			where R : Repository<E, I>, E : Any, I : Any {
+
+		private var myQueryLookupStrategyKey: String
+			get() = ""
+			set(value) {
+
+			}
+
+		override fun createRepositoryFactory(): RepositoryFactorySupport {
+			throw UnsupportedOperationException()
+		}
 	}
 
 }
