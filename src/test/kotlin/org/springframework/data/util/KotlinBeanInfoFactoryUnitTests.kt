@@ -92,6 +92,16 @@ class KotlinBeanInfoFactoryUnitTests {
 		assertThat(pds).extracting("name").contains("myQueryLookupStrategyKey", "repositoryBaseClass")
 	}
 
+	@Test // GH-2993
+	internal fun skipsAsymmetricGettersAndSetters() {
+
+		val pds = BeanUtils.getPropertyDescriptors(MyEntity::class.java)
+
+		assertThat(pds).hasSize(1)
+		assertThat(pds[0].writeMethod).isNull()
+		assertThat(pds[0].readMethod).isNotNull()
+	}
+
 	data class SimpleDataClass(val id: String, var name: String)
 
 	@JvmInline
@@ -123,4 +133,12 @@ class KotlinBeanInfoFactoryUnitTests {
 		}
 	}
 
+	interface Interval<T> {
+		val end: T
+	}
+
+	class MyEntity : Interval<Long> {
+		override var end: Long = -1L
+			protected set
+	}
 }

@@ -68,6 +68,13 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 				Method getter = ReflectJvmMapping.getJavaGetter(property);
 				Method setter = property instanceof KMutableProperty<?> kmp ? ReflectJvmMapping.getJavaSetter(kmp) : null;
 
+				if (getter != null && setter != null && setter.getParameterCount() == 1) {
+					if (!getter.getReturnType().equals(setter.getParameters()[0].getType())) {
+						// filter asymmetric getters/setters from being considered a Java Beans property
+						continue;
+					}
+				}
+
 				pds.add(new PropertyDescriptor(property.getName(), getter, setter));
 			}
 		}
