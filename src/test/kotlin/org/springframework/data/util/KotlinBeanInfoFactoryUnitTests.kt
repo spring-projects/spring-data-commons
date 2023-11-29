@@ -73,6 +73,14 @@ class KotlinBeanInfoFactoryUnitTests {
 		assertThat(pds).hasSize(1).extracting("name").containsOnly("firstname")
 	}
 
+	@Test // GH-2990
+	internal fun backsOffForEnums() {
+
+		val pds = BeanUtils.getPropertyDescriptors(MyEnum::class.java)
+
+		assertThat(pds).extracting("name").contains("ordinal")
+	}
+
 	data class SimpleDataClass(val id: String, var name: String)
 
 	@JvmInline
@@ -84,6 +92,10 @@ class KotlinBeanInfoFactoryUnitTests {
 
 	interface FirstnameOnly {
 		fun getFirstname(): String
+	}
+
+	enum class MyEnum {
+		Foo, Bar
 	}
 
 }
