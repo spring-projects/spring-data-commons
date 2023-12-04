@@ -18,8 +18,6 @@ package org.springframework.data.repository.query;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.springframework.data.util.TypeInformation;
-
 /**
  * Default implementation of {@link Parameters}.
  *
@@ -31,7 +29,7 @@ public final class DefaultParameters extends Parameters<DefaultParameters, Param
 	 * Creates a new {@link DefaultParameters} instance from the given {@link Method}.
 	 *
 	 * @param method must not be {@literal null}.
-	 * @deprecated since 3.1, use {@link #DefaultParameters(Method, TypeInformation)} instead.
+	 * @deprecated since 3.1, use {@link #DefaultParameters(ParametersSource)} instead.
 	 */
 	@Deprecated(since = "3.1", forRemoval = true)
 	public DefaultParameters(Method method) {
@@ -39,14 +37,13 @@ public final class DefaultParameters extends Parameters<DefaultParameters, Param
 	}
 
 	/**
-	 * Creates a new {@link DefaultParameters} instance from the given {@link Method} and aggregate
-	 * {@link TypeInformation}.
+	 * Creates a new {@link DefaultParameters} instance from the given {@link ParametersSource}.
 	 *
-	 * @param method must not be {@literal null}.
-	 * @param aggregateType must not be {@literal null}.
+	 * @param parametersSource must not be {@literal null}.
+	 * @since 3.2.1
 	 */
-	public DefaultParameters(Method method, TypeInformation<?> aggregateType) {
-		super(method, param -> new Parameter(param, aggregateType));
+	public DefaultParameters(ParametersSource parametersSource) {
+		super(parametersSource, param -> new Parameter(param, parametersSource.getDomainTypeInformation()));
 	}
 
 	private DefaultParameters(List<Parameter> parameters) {

@@ -183,16 +183,29 @@ public class QueryMethod {
 	 * @param method must not be {@literal null}.
 	 * @param domainType must not be {@literal null}.
 	 * @return must not return {@literal null}.
+	 * @deprecated since 3.2.1, use {@link #createParameters(ParametersSource)} instead.
 	 * @since 3.0.2
 	 */
+	@Deprecated(since = "3.2.1", forRemoval = true)
 	protected Parameters<?, ?> createParameters(Method method, TypeInformation<?> domainType) {
-		return new DefaultParameters(method, domainType);
+		return createParameters(ParametersSource.of(getMetadata(), method));
+	}
+
+	/**
+	 * Creates a {@link Parameters} instance.
+	 *
+	 * @param parametersSource must not be {@literal null}.
+	 * @return must not return {@literal null}.
+	 * @since 3.2.1
+	 */
+	protected Parameters<?, ?> createParameters(ParametersSource parametersSource) {
+		return new DefaultParameters(parametersSource);
 	}
 
 	/**
 	 * Returns the method's name.
 	 *
-	 * @return
+	 * @return the method's name.
 	 */
 	public String getName() {
 		return method.getName();
