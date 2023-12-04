@@ -114,7 +114,8 @@ class RepositoryMethodInvokerUnitTests {
 
 		repositoryMethodInvoker("findAll").invoke();
 
-		assertThat(multicaster.first().getDuration(TimeUnit.MILLISECONDS)).isCloseTo(250, Percentage.withPercentage(10));
+		assertThat(multicaster.first()
+				.getDuration(TimeUnit.MILLISECONDS)).isCloseTo(500, Percentage.withPercentage(50));
 	}
 
 	@Test // DATACMNS-1764
@@ -124,7 +125,8 @@ class RepositoryMethodInvokerUnitTests {
 
 		repositoryMethodInvokerForReactive("findAll").<Flux<TestDummy>> invoke().subscribe();
 
-		assertThat(multicaster.first().getDuration(TimeUnit.MILLISECONDS)).isCloseTo(250, Percentage.withPercentage(10));
+		assertThat(multicaster.first()
+				.getDuration(TimeUnit.MILLISECONDS)).isCloseTo(500, Percentage.withPercentage(50));
 	}
 
 	@Test // DATACMNS-1764

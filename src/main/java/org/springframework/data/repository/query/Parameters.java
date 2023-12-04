@@ -44,7 +44,8 @@ import org.springframework.util.Assert;
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Streamable<T> {
 
-	public static final List<Class<?>> TYPES = Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class, Limit.class);
+	public static final List<Class<?>> TYPES = Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class,
+			Limit.class);
 
 	private static final String PARAM_ON_SPECIAL = format("You must not use @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
@@ -82,14 +83,30 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * @param method must not be {@literal null}.
 	 * @param parameterFactory must not be {@literal null}.
 	 * @since 3.0.2
+	 * @deprecated since 3.2.1, use {@link Parameters(ParametersSource, Function)} instead.
 	 */
+	@Deprecated(since = "3.2.1", forRemoval = true)
 	protected Parameters(Method method, Function<MethodParameter, T> parameterFactory) {
+		this(ParametersSource.of(method), parameterFactory);
+	}
 
-		Assert.notNull(method, "Method must not be null");
+	/**
+	 * Creates a new {@link Parameters} instance for the given {@link Method} and {@link Function} to create a
+	 * {@link Parameter} instance from a {@link MethodParameter}.
+	 *
+	 * @param parametersSource must not be {@literal null}.
+	 * @param parameterFactory must not be {@literal null}.
+	 * @since 3.2.1
+	 */
+	protected Parameters(ParametersSource parametersSource,
+			Function<MethodParameter, T> parameterFactory) {
+
+		Assert.notNull(parametersSource, "ParametersSource must not be null");
 
 		// Factory nullability not enforced yet to support falling back to the deprecated
 		// createParameter(MethodParameter). Add assertion when the deprecation is removed.
 
+		Method method = parametersSource.getMethod();
 		int parameterCount = method.getParameterCount();
 
 		this.parameters = new ArrayList<>(parameterCount);
@@ -102,7 +119,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		for (int i = 0; i < parameterCount; i++) {
 
-			MethodParameter methodParameter = new MethodParameter(method, i);
+			MethodParameter methodParameter = new MethodParameter(method, i)
+					.withContainingClass(parametersSource.getContainingClass());
+
 			methodParameter.initParameterNameDiscovery(PARAMETER_NAME_DISCOVERER);
 
 			T parameter = parameterFactory == null //
@@ -421,7 +440,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		return !TYPES.contains(type);
 	}
 
+	@Override
 	public Iterator<T> iterator() {
 		return parameters.iterator();
 	}
+
 }

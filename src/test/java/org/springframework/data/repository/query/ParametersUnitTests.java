@@ -26,12 +26,16 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
+
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Window;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -43,11 +47,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 class ParametersUnitTests {
 
 	private Method valid;
+	private RepositoryMetadata metadata;
 
 	@BeforeEach
 	void setUp() throws SecurityException, NoSuchMethodException {
 
 		valid = SampleDao.class.getMethod("valid", String.class);
+		metadata = new DefaultRepositoryMetadata(SampleDao.class);
 	}
 
 	@Test
@@ -56,14 +62,14 @@ class ParametersUnitTests {
 		var validWithPageable = SampleDao.class.getMethod("validWithPageable", String.class, Pageable.class);
 		var validWithSort = SampleDao.class.getMethod("validWithSort", String.class, Sort.class);
 
-		new DefaultParameters(valid);
-		new DefaultParameters(validWithPageable);
-		new DefaultParameters(validWithSort);
+		new DefaultParameters(ParametersSource.of(valid));
+		new DefaultParameters(ParametersSource.of(validWithPageable));
+		new DefaultParameters(ParametersSource.of(validWithSort));
 	}
 
 	@Test
 	void rejectsNullMethod() {
-		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultParameters(null));
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultParameters((ParametersSource) null));
 	}
 
 	@Test
@@ -87,12 +93,12 @@ class ParametersUnitTests {
 
 		var method = SampleDao.class.getMethod("validWithSortFirst", Sort.class, String.class);
 
-		Parameters<?, ?> parameters = new DefaultParameters(method);
+		Parameters<?, ?> parameters = new DefaultParameters(ParametersSource.of(method));
 		assertThat(parameters.getBindableParameter(0).getIndex()).isEqualTo(1);
 
 		method = SampleDao.class.getMethod("validWithSortInBetween", String.class, Sort.class, String.class);
 
-		parameters = new DefaultParameters(method);
+		parameters = new DefaultParameters(ParametersSource.of(method));
 
 		assertThat(parameters.getBindableParameter(0).getIndex()).isEqualTo(0);
 		assertThat(parameters.getBindableParameter(1).getIndex()).isEqualTo(2);
@@ -202,19 +208,30 @@ class ParametersUnitTests {
 		assertThat(parameters.getLimitIndex()).isOne();
 	}
 
+	@Test // GH-2995
+	void considersGenericType() throws Exception {
+
+		var method = TypedInterface.class.getMethod("foo", Object.class);
+
+		var parameters = new DefaultParameters(
+				ParametersSource.of(new DefaultRepositoryMetadata(TypedInterface.class), method));
+
+		assertThat(parameters.getParameter(0).getType()).isEqualTo(Long.class);
+	}
+
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
 		var method = SampleDao.class.getMethod(methodName, parameterTypes);
 
-		return new DefaultParameters(method);
+		return new DefaultParameters(ParametersSource.of(metadata, method));
 	}
 
 	static class User {
 
 	}
 
-	static interface SampleDao {
+	interface SampleDao extends Repository<User, String> {
 
 		User valid(@Param("username") String username);
 
@@ -248,4 +265,11 @@ class ParametersUnitTests {
 	}
 
 	interface SomePageable extends Pageable {}
+
+	interface Intermediate<T, ID> extends Repository<T, ID> {
+		void foo(ID id);
+	}
+
+	interface TypedInterface extends Intermediate<User, Long> {}
+
 }
