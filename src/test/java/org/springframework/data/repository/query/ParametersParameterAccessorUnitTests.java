@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.repository.core.RepositoryMetadata;
 
 /**
  * Unit tests for {@link ParametersParameterAccessor}.
@@ -36,10 +37,11 @@ import org.springframework.data.domain.Sort.Order;
 class ParametersParameterAccessorUnitTests {
 
 	Parameters<?, ?> parameters;
+	RepositoryMetadata metadata;
 
 	@BeforeEach
 	void setUp() throws Exception {
-		parameters = new DefaultParameters(Sample.class.getMethod("method", String.class, int.class));
+		parameters = new DefaultParameters(ParametersSource.of(Sample.class.getMethod("method", String.class, int.class)));
 	}
 
 	@Test
@@ -62,7 +64,7 @@ class ParametersParameterAccessorUnitTests {
 		assertThat(accessor.hasBindableNullValue()).isTrue();
 
 		var method = Sample.class.getMethod("method", Pageable.class, String.class);
-		var parameters = new DefaultParameters(method);
+		var parameters = new DefaultParameters(ParametersSource.of(method));
 
 		accessor = new ParametersParameterAccessor(parameters, new Object[] { null, "Foo" });
 		assertThat(accessor.hasBindableNullValue()).isFalse();
@@ -72,7 +74,7 @@ class ParametersParameterAccessorUnitTests {
 	void iteratesonlyOverBindableValues() throws Exception {
 
 		var method = Sample.class.getMethod("method", Pageable.class, String.class);
-		var parameters = new DefaultParameters(method);
+		var parameters = new DefaultParameters(ParametersSource.of(method));
 
 		var accessor = new ParametersParameterAccessor(parameters, new Object[] { PageRequest.of(0, 10), "Foo" });
 
@@ -84,7 +86,7 @@ class ParametersParameterAccessorUnitTests {
 	void handlesScrollPositionAsAParameterType() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", ScrollPosition.class, String.class);
-		var parameters = new DefaultParameters(method);
+		var parameters = new DefaultParameters(ParametersSource.of(method));
 
 		var accessor = new ParametersParameterAccessor(parameters, new Object[] { ScrollPosition.offset(1), "Foo" });
 
@@ -96,7 +98,7 @@ class ParametersParameterAccessorUnitTests {
 	void handlesPageRequestAsAParameterType() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("methodWithPageRequest", PageRequest.class, String.class);
-		var parameters = new DefaultParameters(method);
+		var parameters = new DefaultParameters(ParametersSource.of(method));
 
 		var accessor = new ParametersParameterAccessor(parameters, new Object[] { PageRequest.of(0, 10), "Foo" });
 
@@ -108,7 +110,7 @@ class ParametersParameterAccessorUnitTests {
 	void handlesLimitAsAParameterType() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Limit.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(ParametersSource.of(method)),
 				new Object[] { Limit.of(100), "spring" });
 
 		assertThat(accessor).hasSize(1);
@@ -119,7 +121,7 @@ class ParametersParameterAccessorUnitTests {
 	void returnsLimitIfAvailable() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Limit.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(ParametersSource.of(method)),
 				new Object[] { Limit.of(100), "spring" });
 
 		assertThat(accessor.getLimit()).extracting(Limit::max).isEqualTo(100);
@@ -129,7 +131,7 @@ class ParametersParameterAccessorUnitTests {
 	void readsLimitFromPageableIfAvailable() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Pageable.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(ParametersSource.of(method)),
 				new Object[] { Pageable.ofSize(100), "spring" });
 
 		assertThat(accessor.getLimit()).extracting(Limit::max).isEqualTo(100);
@@ -139,7 +141,7 @@ class ParametersParameterAccessorUnitTests {
 	void returnsUnlimitedIfNoLimitingAvailable() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Sort.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(ParametersSource.of(method)),
 				new Object[] { Pageable.ofSize(100), "spring" });
 
 		assertThat(accessor.getLimit().isUnlimited()).isTrue();
@@ -149,7 +151,7 @@ class ParametersParameterAccessorUnitTests {
 	void appliesLimitToPageableIfAvailable() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Limit.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(ParametersSource.of(method)),
 				new Object[] { Limit.of(100), "spring" });
 
 		Pageable pageable = accessor.getPageable();
@@ -161,7 +163,7 @@ class ParametersParameterAccessorUnitTests {
 	void appliesLimitToPageableIfRequested() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Limit.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(ParametersSource.of(method)),
 				new Object[] { Limit.of(100), "spring" });
 
 		assertThat(accessor).hasSize(1);
@@ -172,7 +174,7 @@ class ParametersParameterAccessorUnitTests {
 	void appliesSortToPageableIfAvailable() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Sort.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(ParametersSource.of(method)),
 				new Object[] { Sort.by("one", "two"), "spring" });
 
 		Pageable pageable = accessor.getPageable();
@@ -184,7 +186,7 @@ class ParametersParameterAccessorUnitTests {
 	void appliesSortAndLimitToPageableIfAvailable() throws NoSuchMethodException {
 
 		var method = Sample.class.getMethod("method", Sort.class, Limit.class, String.class);
-		var accessor = new ParametersParameterAccessor(new DefaultParameters(method),
+		var accessor = new ParametersParameterAccessor(new DefaultParameters(ParametersSource.of(method)),
 				new Object[] { Sort.by("one", "two"), Limit.of(42), "spring" });
 
 		Pageable pageable = accessor.getPageable();

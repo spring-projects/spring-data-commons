@@ -39,14 +39,13 @@ public final class DefaultParameters extends Parameters<DefaultParameters, Param
 	}
 
 	/**
-	 * Creates a new {@link DefaultParameters} instance from the given {@link Method} and aggregate
-	 * {@link TypeInformation}.
+	 * Creates a new {@link DefaultParameters} instance from the given {@link ParametersSource}.
 	 *
-	 * @param method must not be {@literal null}.
-	 * @param aggregateType must not be {@literal null}.
+	 * @param parametersSource must not be {@literal null}.
+	 * @since 3.2.1
 	 */
-	public DefaultParameters(Method method, TypeInformation<?> aggregateType) {
-		super(method, param -> new Parameter(param, aggregateType));
+	public DefaultParameters(ParametersSource parametersSource) {
+		super(parametersSource, param -> new Parameter(param, parametersSource.getDomainType()));
 	}
 
 	private DefaultParameters(List<Parameter> parameters) {
