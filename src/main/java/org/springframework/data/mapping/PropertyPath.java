@@ -487,5 +487,42 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
 	}
 
-	private record Key(TypeInformation<?> type, String path) {};
+	private static final class Key {
+
+		private final TypeInformation<?> type;
+		private final String path;
+
+		private Key(TypeInformation<?> type, String path) {
+			this.type = type;
+			this.path = path;
+		}
+
+		@Override
+		public boolean equals(@Nullable Object obj) {
+
+			if (obj == this) {
+				return true;
+			}
+
+			if (!(obj instanceof Key that)) {
+				return false;
+			}
+
+			return Objects.equals(this.type, that.type) &&
+					Objects.equals(this.path, that.path);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(type, path);
+		}
+
+		@Override
+		public String toString() {
+
+			return "Key[" +
+					"type=" + type + ", " +
+					"path=" + path + ']';
+		}
+	}
 }
