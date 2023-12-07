@@ -20,6 +20,7 @@ import static org.springframework.data.domain.Sort.Direction.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -35,6 +36,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.util.UriUtils;
 
 /**
  * Unit tests for {@link SortHandlerMethodArgumentResolver}.
@@ -257,6 +259,18 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 		var reference = Sort.by("bar", "foo");
 
 		assertSupportedAndResolvedTo(getRequestWithSort(reference, "merged"), parameter, reference);
+	}
+
+	@Test
+	void readsEncodedSort() {
+
+		var request = new MockHttpServletRequest();
+		request.addParameter("sort", UriUtils.encode("foo,desc", StandardCharsets.UTF_8));
+
+		var parameter = getParameterOfMethod("supportedMethod");
+		var encoded = UriUtils.encode("foo,desc", StandardCharsets.UTF_8);
+
+		assertSupportedAndResolvedTo(new ServletWebRequest(request), parameter, Sort.by("foo").descending());
 	}
 
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
