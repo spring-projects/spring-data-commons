@@ -65,18 +65,6 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private int dynamicProjectionIndex;
 
 	/**
-	 * Creates a new instance of {@link Parameters}.
-	 *
-	 * @param method must not be {@literal null}.
-	 * @deprecated since 3.1, use {@link #Parameters(Method, Function)} instead.
-	 */
-	@SuppressWarnings("null")
-	@Deprecated(since = "3.1", forRemoval = true)
-	public Parameters(Method method) {
-		this(method, null);
-	}
-
-	/**
 	 * Creates a new {@link Parameters} instance for the given {@link Method} and {@link Function} to create a
 	 * {@link Parameter} instance from a {@link MethodParameter}.
 	 *
@@ -102,9 +90,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			Function<MethodParameter, T> parameterFactory) {
 
 		Assert.notNull(parametersSource, "ParametersSource must not be null");
+		Assert.notNull(parameterFactory, "Parameter factory must not be null");
 
 		// Factory nullability not enforced yet to support falling back to the deprecated
-		// createParameter(MethodParameter). Add assertion when the deprecation is removed.
 
 		Method method = parametersSource.getMethod();
 		int parameterCount = method.getParameterCount();
@@ -124,9 +112,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 			methodParameter.initParameterNameDiscovery(PARAMETER_NAME_DISCOVERER);
 
-			T parameter = parameterFactory == null //
-					? createParameter(methodParameter) //
-					: parameterFactory.apply(methodParameter);
+			T parameter = parameterFactory.apply(methodParameter);
 
 			if (parameter.isSpecialParameter() && parameter.isNamedParameter()) {
 				throw new IllegalArgumentException(PARAM_ON_SPECIAL);
@@ -211,19 +197,6 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		}
 
 		return createFrom(bindables);
-	}
-
-	/**
-	 * Creates a {@link Parameter} instance for the given {@link MethodParameter}.
-	 *
-	 * @param parameter will never be {@literal null}.
-	 * @return
-	 * @deprecated since 3.1, in your extension, call {@link #Parameters(Method, Function)} instead.
-	 */
-	@SuppressWarnings("unchecked")
-	@Deprecated(since = "3.1", forRemoval = true)
-	protected T createParameter(MethodParameter parameter) {
-		return (T) new Parameter(parameter);
 	}
 
 	/**

@@ -38,7 +38,7 @@ class SpelEvaluatorUnitTests {
 		SpelExtractor extractor = context.parse("SELECT :#{#value}");
 		Method method = MyRepository.class.getDeclaredMethod("simpleExpression", String.class);
 		SpelEvaluator evaluator = new SpelEvaluator(QueryMethodEvaluationContextProvider.DEFAULT,
-				new DefaultParameters(method), extractor);
+				new DefaultParameters(ParametersSource.of(method)), extractor);
 
 		assertThat(evaluator.getQueryString()).isEqualTo("SELECT :__$synthetic$__1");
 		assertThat(evaluator.evaluate(new Object[] { "hello" })).containsEntry("__$synthetic$__1", "hello");
@@ -50,7 +50,7 @@ class SpelEvaluatorUnitTests {
 		SpelExtractor extractor = context.parse("SELECT :#{#value}");
 		Method method = MyRepository.class.getDeclaredMethod("simpleExpression", String.class);
 		SpelEvaluator evaluator = new SpelEvaluator(QueryMethodEvaluationContextProvider.DEFAULT,
-				new DefaultParameters(method), extractor);
+				new DefaultParameters(ParametersSource.of(method)), extractor);
 
 		assertThat(evaluator.getQueryString()).isEqualTo("SELECT :__$synthetic$__1");
 		assertThat(evaluator.evaluate(new Object[] { null })).containsEntry("__$synthetic$__1", null);

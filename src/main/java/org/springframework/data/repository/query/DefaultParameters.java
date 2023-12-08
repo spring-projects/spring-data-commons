@@ -15,26 +15,15 @@
  */
 package org.springframework.data.repository.query;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 /**
  * Default implementation of {@link Parameters}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public final class DefaultParameters extends Parameters<DefaultParameters, Parameter> {
-
-	/**
-	 * Creates a new {@link DefaultParameters} instance from the given {@link Method}.
-	 *
-	 * @param method must not be {@literal null}.
-	 * @deprecated since 3.1, use {@link #DefaultParameters(ParametersSource)} instead.
-	 */
-	@Deprecated(since = "3.1", forRemoval = true)
-	public DefaultParameters(Method method) {
-		super(method);
-	}
 
 	/**
 	 * Creates a new {@link DefaultParameters} instance from the given {@link ParametersSource}.

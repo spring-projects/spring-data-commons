@@ -85,7 +85,7 @@ public class QueryMethod {
 		this.method = method;
 		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(metadata, method);
 		this.metadata = metadata;
-		this.parameters = createParameters(method);
+		this.parameters = createParameters(method, metadata.getDomainTypeInformation());
 
 		this.domainClass = Lazy.of(() -> {
 
@@ -163,18 +163,6 @@ public class QueryMethod {
 		}
 
 		return TypeInformation.of(unwrappedReturnType).isCollectionLike();
-	}
-
-	/**
-	 * Creates a {@link Parameters} instance.
-	 *
-	 * @param method must not be {@literal null}.
-	 * @return must not return {@literal null}.
-	 * @deprecated since 3.1, call or override {@link #createParameters(Method, TypeInformation)} instead.
-	 */
-	@Deprecated(since = "3.1", forRemoval = true)
-	protected Parameters<?, ?> createParameters(Method method) {
-		return createParameters(method, metadata.getDomainTypeInformation());
 	}
 
 	/**

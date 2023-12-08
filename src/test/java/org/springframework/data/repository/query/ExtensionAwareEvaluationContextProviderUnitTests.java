@@ -386,7 +386,7 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 
 	private Object evaluateExpression(String expression, Object[] args) {
 
-		var parameters = new DefaultParameters(method);
+		var parameters = new DefaultParameters(ParametersSource.of(method));
 		var evaluationContext = provider.getEvaluationContext(parameters, args);
 		return new SpelExpressionParser().parseExpression(expression).getValue(evaluationContext);
 	}
