@@ -22,7 +22,9 @@ import kotlin.reflect.jvm.ReflectJvmMapping;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.data.mapping.InstanceCreatorMetadata;
@@ -40,12 +42,14 @@ import org.springframework.lang.Nullable;
  * constructor argument extraction.
  *
  * @author Mark Paluch
+ * @author Yohan Lee
  * @since 3.1
  */
 class KotlinInstantiationDelegate {
 
 	private final KFunction<?> constructor;
 	private final List<KParameter> kParameters;
+	private final Map<KParameter, Integer> indexByKParameter;
 	private final List<Function<Object, Object>> wrappers = new ArrayList<>();
 	private final Constructor<?> constructorToInvoke;
 	private final boolean hasDefaultConstructorMarker;
@@ -62,6 +66,8 @@ class KotlinInstantiationDelegate {
 
 		this.constructor = kotlinConstructor;
 		this.kParameters = kotlinConstructor.getParameters();
+		this.indexByKParameter = IntStream.range(0, kParameters.size()).boxed()
+				.collect(Collectors.toMap(kParameters::get, Function.identity()));
 		this.constructorToInvoke = constructorToInvoke;
 		this.hasDefaultConstructorMarker = hasDefaultConstructorMarker(constructorToInvoke.getParameters());
 
@@ -118,7 +124,7 @@ class KotlinInstantiationDelegate {
 
 		KotlinDefaultMask defaultMask = KotlinDefaultMask.forConstructor(constructor, it -> {
 
-			int index = kParameters.indexOf(it);
+			int index = indexByKParameter.get(it);
 
 			Parameter<Object, P> parameter = parameters.get(index);
 			Class<Object> type = parameter.getType().getType();
