@@ -35,7 +35,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Nick Williams
- * @author Julien Béti
  */
 public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolver
 		implements UriComponentsContributor {
@@ -59,7 +58,7 @@ public class HateoasSortHandlerMethodArgumentResolver extends SortHandlerMethodA
 
 		String description = String.format("pagination.%s.description", sortParameter);
 		TemplateVariable.VariableType type = append ? REQUEST_PARAM_CONTINUED : REQUEST_PARAM;
-		return new TemplateVariables(new TemplateVariable(sortParameter, type, description).composite());
+		return new TemplateVariables(new TemplateVariable(sortParameter, type, description));
 	}
 
 	@Override
