@@ -23,6 +23,7 @@ import org.springframework.data.util.Streamable;
  * Additional repository specific information
  *
  * @author Oliver Gierke
+ * @author Yanming Zhou
  */
 public interface RepositoryInformation extends RepositoryMetadata {
 
@@ -50,6 +51,16 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	 * @return
 	 */
 	boolean isQueryMethod(Method method);
+
+	/**
+	 * Returns whether the given method is a lookup method.
+	 *
+	 * @param method
+	 * @return
+	 */
+	default boolean isLookupMethod(Method method) {
+		return false;
+	}
 
 	/**
 	 * Returns all methods considered to be query methods.

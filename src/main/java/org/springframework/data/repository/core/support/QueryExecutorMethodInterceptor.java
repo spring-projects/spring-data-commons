@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
@@ -49,6 +50,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  * @author Christoph Strobl
  * @author John Blum
  * @author Johannes Englmeier
+ * @author Yanming Zhou
  */
 class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
@@ -59,16 +61,18 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	private final NamedQueries namedQueries;
 	private final List<QueryCreationListener<?>> queryPostProcessors;
 	private final RepositoryInvocationMulticaster invocationMulticaster;
+	private final BeanFactory beanFactory;
 
 	/**
 	 * Creates a new {@link QueryExecutorMethodInterceptor}. Builds a model of {@link QueryMethod}s to be invoked on
 	 * execution of repository interface methods.
 	 */
-	public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation,
+	public QueryExecutorMethodInterceptor(BeanFactory beanFactory, RepositoryInformation repositoryInformation,
 			ProjectionFactory projectionFactory, Optional<QueryLookupStrategy> queryLookupStrategy, NamedQueries namedQueries,
 			List<QueryCreationListener<?>> queryPostProcessors,
 			List<RepositoryMethodInvocationListener> methodInvocationListeners) {
 
+		this.beanFactory = beanFactory;
 		this.repositoryInformation = repositoryInformation;
 		this.namedQueries = namedQueries;
 		this.queryPostProcessors = queryPostProcessors;
@@ -135,6 +139,10 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
+
+		if (repositoryInformation.isLookupMethod(method)) {
+			return beanFactory.getBeanProvider(ResolvableType.forMethodReturnType(method)).getObject(invocation.getArguments());
+		}
 
 		QueryExecutionConverters.ExecutionAdapter executionAdapter = QueryExecutionConverters //
 				.getExecutionAdapter(method.getReturnType());

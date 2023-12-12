@@ -34,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +53,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  * @author Thomas Darimont
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Yanming Zhou
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -272,6 +274,17 @@ class DefaultRepositoryInformationUnitTests {
 		assertThat(information.isCustomMethod(customBaseRepositoryMethod)).isTrue();
 	}
 
+	@Test
+	void discoversLookupMethods() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(DummyRepository.class);
+		RepositoryInformation information = new DefaultRepositoryInformation(metadata, RepositoryFactorySupport.class,
+				RepositoryComposition.empty());
+
+		var lookupMethod = DummyRepository.class.getMethod("getSelf");
+		assertThat(information.isLookupMethod(lookupMethod)).isTrue();
+	}
+
 	private static Method getMethodFrom(Class<?> type, String name) {
 
 		return Arrays.stream(type.getMethods())//
@@ -392,6 +405,9 @@ class DefaultRepositoryInformationUnitTests {
 
 		@Override
 		<S extends User> List<S> saveAll(Iterable<S> entites);
+
+		@Lookup
+		DummyRepository getSelf();
 	}
 
 	static class DummyRepositoryImpl<T, ID> implements CrudRepository<T, ID> {

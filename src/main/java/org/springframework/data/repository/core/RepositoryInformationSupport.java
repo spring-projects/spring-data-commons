@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.util.Lazy;
@@ -37,6 +38,7 @@ import org.springframework.util.ClassUtils;
  * repository base to the latest possible time.
  *
  * @author Christoph Strobl
+ * @author Yanming Zhou
  * @since 3.0
  */
 public abstract class RepositoryInformationSupport implements RepositoryInformation {
@@ -128,6 +130,11 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 	}
 
 	@Override
+	public boolean isLookupMethod(Method method) {
+		return AnnotationUtils.findAnnotation(method, Lookup.class) != null;
+	}
+
+	@Override
 	public TypeInformation<?> getDomainTypeInformation() {
 		return getMetadata().getDomainTypeInformation();
 	}
@@ -176,6 +183,7 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 	protected boolean isQueryMethodCandidate(Method method) {
 		return !method.isBridge() && !method.isDefault() //
 				&& !Modifier.isStatic(method.getModifiers()) //
+				&& !isLookupMethod(method) //
 				&& (isQueryAnnotationPresentOn(method) || !isCustomMethod(method) && !isBaseClassMethod(method));
 	}
 }

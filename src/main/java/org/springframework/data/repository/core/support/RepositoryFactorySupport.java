@@ -81,6 +81,7 @@ import org.springframework.util.ObjectUtils;
  * @author Jens Schauder
  * @author John Blum
  * @author Johannes Englmeier
+ * @author Yanming Zhou
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
@@ -354,7 +355,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 				evaluationContextProvider);
-		result.addAdvice(new QueryExecutorMethodInterceptor(information, getProjectionFactory(), queryLookupStrategy,
+		result.addAdvice(new QueryExecutorMethodInterceptor(beanFactory, information, getProjectionFactory(), queryLookupStrategy,
 				namedQueries, queryPostProcessors, methodInvocationListeners));
 
 		result.addAdvice(
