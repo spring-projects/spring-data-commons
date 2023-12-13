@@ -29,11 +29,11 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * methods. Request properties to be parsed can be configured. Default configuration uses request parameters beginning
  * with {@link #DEFAULT_PAGE_PARAMETER}{@link #DEFAULT_QUALIFIER_DELIMITER}.
  *
- * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @since 1.6
  */
 public class PageableHandlerMethodArgumentResolver extends PageableHandlerMethodArgumentResolverSupport
 		implements PageableArgumentResolver {

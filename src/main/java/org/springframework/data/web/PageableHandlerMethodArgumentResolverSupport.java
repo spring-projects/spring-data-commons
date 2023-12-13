@@ -37,11 +37,11 @@ import org.springframework.util.StringUtils;
  * configured. Default configuration uses request parameters beginning with
  * {@link #DEFAULT_PAGE_PARAMETER}{@link #DEFAULT_QUALIFIER_DELIMITER}.
  *
- * @since 2.2
- * @see PageableHandlerMethodArgumentResolver
- * @see ReactivePageableHandlerMethodArgumentResolver
  * @author Mark Paluch
  * @author Vedran Pavic
+ * @see ReactivePageableHandlerMethodArgumentResolver
+ * @see PageableHandlerMethodArgumentResolver
+ * @since 2.2
  */
 public abstract class PageableHandlerMethodArgumentResolverSupport {
 
