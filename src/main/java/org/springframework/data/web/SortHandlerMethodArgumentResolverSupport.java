@@ -38,12 +38,12 @@ import org.springframework.util.StringUtils;
  * Base class providing methods for handler method argument resolvers to create {@link Sort} instances from request
  * parameters or {@link SortDefault} annotations.
  *
- * @since 2.2
- * @see SortHandlerMethodArgumentResolver
- * @see ReactiveSortHandlerMethodArgumentResolver
  * @author Mark Paluch
  * @author Vedran Pavic
  * @author Johannes Englmeier
+ * @see SortHandlerMethodArgumentResolver
+ * @see ReactiveSortHandlerMethodArgumentResolver
+ * @since 2.2
  */
 public abstract class SortHandlerMethodArgumentResolverSupport {
 

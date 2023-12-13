@@ -27,11 +27,11 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link PagedResourcesAssembler} into Spring MVC
  * controller methods.
  *
- * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Christoph Strobl
  * @author Johannes Englmeier
+ * @since 1.6
  */
 public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 
