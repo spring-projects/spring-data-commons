@@ -268,7 +268,6 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 		request.addParameter("sort", UriUtils.encode("foo,desc", StandardCharsets.UTF_8));
 
 		var parameter = getParameterOfMethod("supportedMethod");
-		var encoded = UriUtils.encode("foo,desc", StandardCharsets.UTF_8);
 
 		assertSupportedAndResolvedTo(new ServletWebRequest(request), parameter, Sort.by("foo").descending());
 	}
