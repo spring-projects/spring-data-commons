@@ -454,9 +454,10 @@ ifdef::feature-scroll[]
 endif::[]
 
 [[repositories.limit-query-result]]
-== Limiting Query Results
+=== Limiting Query Results
 
-You can limit the results of query methods by using the `first` or `top` keywords, which you can use interchangeably.
+In addition to paging it is possible to limit the result size using a dedicated `Limit` parameter.
+You can also limit the results of query methods by using the `first` or `top` keywords, which you can use interchangeably but may not be mixed with a `Limit` parameter.
 You can append an optional numeric value to `top` or `first` to specify the maximum result size to be returned.
 If the number is left out, a result size of 1 is assumed.
 The following example shows how to limit the query size:
@@ -464,6 +465,8 @@ The following example shows how to limit the query size:
 .Limiting the result size of a query with `Top` and `First`
 [source,java]
 ----
+List<User> findByLastname(Limit limit);
+
 User findFirstByOrderByLastnameAsc();
 
 User findTopByOrderByAgeDesc();
