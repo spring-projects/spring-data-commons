@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KParameter
+import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.jvm.javaConstructor
 
 /**
@@ -204,6 +205,30 @@ class KotlinValueUtilsUnitTests {
 		assertThat(pand.appliesBoxing()).isFalse
 	}
 
+	@Test // GH-2986
+	internal fun considersGenerics() {
+
+		val copyFunction =
+			WithGenericsInConstructor::class.memberFunctions.first { it.name == "copy" }
+
+		val vh = KotlinValueUtils.getCopyValueHierarchy(
+			copyFunction.parameters.get(1)
+		)
+		assertThat(vh.actualType).isEqualTo(Object::class.java)
+	}
+
+	@Test // GH-2986
+	internal fun considersGenericsWithBounds() {
+
+		val copyFunction =
+			WithGenericsInConstructor::class.memberFunctions.first { it.name == "copy" }
+
+		val vh = KotlinValueUtils.getCopyValueHierarchy(
+			copyFunction.parameters.get(1)
+		)
+		assertThat(vh.actualType).isEqualTo(Object::class.java)
+	}
+
 	@Test // GH-1947
 	internal fun inlinesGenericTypesConstructorRules() {
 
@@ -246,6 +271,10 @@ class KotlinValueUtilsUnitTests {
 		assertThat(recursive.parameterType).isEqualTo(MyGenericValue::class.java)
 		assertThat(recursive.appliesBoxing()).isFalse
 	}
+
+	data class WithGenericsInConstructor<T>(val bar: T? = null)
+
+	data class WithGenericBoundInConstructor<T : CharSequence>(val bar: T? = null)
 
 }
 

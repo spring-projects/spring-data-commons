@@ -19,6 +19,7 @@ import kotlin.jvm.JvmClassMappingKt;
 import kotlin.jvm.internal.Reflection;
 import kotlin.reflect.KCallable;
 import kotlin.reflect.KClass;
+import kotlin.reflect.KClassifier;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.KProperty;
@@ -109,7 +110,7 @@ class KotlinValueUtils {
 
 				KType copyType = expandUnderlyingType(type);
 
-				if (copyType.getClassifier()instanceof KClass<?> kc && kc.isValue() || copyType.isMarkedNullable()) {
+				if (copyType.getClassifier() instanceof KClass<?> kc && kc.isValue() || copyType.isMarkedNullable()) {
 					return true;
 				}
 
@@ -118,7 +119,7 @@ class KotlinValueUtils {
 
 			private static KType expandUnderlyingType(KType kotlinType) {
 
-				if (!(kotlinType.getClassifier()instanceof KClass<?> kc) || !kc.isValue()) {
+				if (!(kotlinType.getClassifier() instanceof KClass<?> kc) || !kc.isValue()) {
 					return kotlinType;
 				}
 
@@ -196,7 +197,43 @@ class KotlinValueUtils {
 		 */
 		@SuppressWarnings("ConstantConditions")
 		private ValueBoxing(BoxingRules rules, KParameter parameter) {
-			this(rules, parameter.getType(), (KClass<?>) parameter.getType().getClassifier(), parameter.isOptional());
+			this(rules, parameter.getType(), resolveClass(parameter.getType()), parameter.isOptional());
+		}
+
+		private static KClass<?> resolveClass(KType type) {
+
+			if (type instanceof KClass<?> kc) {
+				return kc;
+			}
+
+			if (type instanceof KTypeParameter ktp) {
+				return resolveClass(ktp.getUpperBounds().get(0));
+			}
+
+			KClassifier classifier = type.getClassifier();
+
+			if (classifier != null) {
+				return resolveClass(classifier);
+			}
+
+			return JvmClassMappingKt.getKotlinClass(Object.class);
+		}
+
+		private static KClass<?> resolveClass(KClassifier classifier) {
+
+			if (classifier instanceof KClass<?> kc) {
+				return kc;
+			}
+
+			if (classifier instanceof KTypeParameter ktp) {
+				return resolveClass(ktp.getUpperBounds().get(0));
+			}
+
+			if (classifier instanceof KType ktp) {
+				return resolveClass(ktp);
+			}
+
+			throw new UnsupportedOperationException(String.format("Unsupported KClassifier: %s", classifier));
 		}
 
 		private ValueBoxing(BoxingRules rules, KType type, KClass<?> kClass, boolean optional) {
@@ -216,7 +253,7 @@ class KotlinValueUtils {
 				KClass<?> nestedClass;
 
 				// bound flattening
-				if (nestedType.getClassifier()instanceof KTypeParameter ktp) {
+				if (nestedType.getClassifier() instanceof KTypeParameter ktp) {
 					nestedClass = getUpperBound(ktp);
 				} else {
 					nestedClass = (KClass<?>) nestedType.getClassifier();
@@ -239,7 +276,7 @@ class KotlinValueUtils {
 
 			for (KType upperBound : typeParameter.getUpperBounds()) {
 
-				if (upperBound.getClassifier()instanceof KClass<?> kc) {
+				if (upperBound.getClassifier() instanceof KClass<?> kc) {
 					return kc;
 				}
 			}
@@ -249,11 +286,11 @@ class KotlinValueUtils {
 
 		static KType resolveType(KType type) {
 
-			if (type.getClassifier()instanceof KTypeParameter ktp) {
+			if (type.getClassifier() instanceof KTypeParameter ktp) {
 
 				for (KType upperBound : ktp.getUpperBounds()) {
 
-					if (upperBound.getClassifier()instanceof KClass<?> kc) {
+					if (upperBound.getClassifier() instanceof KClass<?> kc) {
 						return upperBound;
 					}
 				}
