@@ -21,10 +21,10 @@ import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.data.mapping.InstanceCreatorMetadata;
@@ -66,8 +66,12 @@ class KotlinInstantiationDelegate {
 
 		this.constructor = kotlinConstructor;
 		this.kParameters = kotlinConstructor.getParameters();
-		this.indexByKParameter = IntStream.range(0, kParameters.size()).boxed()
-				.collect(Collectors.toMap(kParameters::get, Function.identity()));
+		this.indexByKParameter = new IdentityHashMap<>();
+
+		for (int i = 0; i < kParameters.size(); i++) {
+			indexByKParameter.put(kParameters.get(i), i);
+		}
+
 		this.constructorToInvoke = constructorToInvoke;
 		this.hasDefaultConstructorMarker = hasDefaultConstructorMarker(constructorToInvoke.getParameters());
 
