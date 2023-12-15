@@ -484,8 +484,8 @@ endif::[]
 === Limiting Query Results
 
 In addition to paging it is possible to limit the result size using a dedicated `Limit` parameter.
-You can also limit the results of query methods by using the `first` or `top` keywords, which you can use interchangeably but may not be mixed with a `Limit` parameter.
-You can append an optional numeric value to `top` or `first` to specify the maximum result size to be returned.
+You can also limit the results of query methods by using the `First` or `Top` keywords, which you can use interchangeably but may not be mixed with a `Limit` parameter.
+You can append an optional numeric value to `Top` or `First` to specify the maximum result size to be returned.
 If the number is left out, a result size of 1 is assumed.
 The following example shows how to limit the query size:
 
