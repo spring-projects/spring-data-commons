@@ -51,6 +51,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Johannes Englmeier
  * @author Florian Cramer
+ * @author Yanming Zhou
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -68,8 +69,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private final AnnotationMetadata enableAnnotationMetadata;
 	private final AnnotationAttributes attributes;
 	private final ResourceLoader resourceLoader;
-	private final Environment environment;
-	private final BeanDefinitionRegistry registry;
 	private final boolean hasExplicitFilters;
 
 	/**
@@ -121,8 +120,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		this.enableAnnotationMetadata = AnnotationMetadata.introspect(annotation);
 		this.configMetadata = metadata;
 		this.resourceLoader = resourceLoader;
-		this.environment = environment;
-		this.registry = registry;
 		this.hasExplicitFilters = hasExplicitFilters(attributes);
 	}
 

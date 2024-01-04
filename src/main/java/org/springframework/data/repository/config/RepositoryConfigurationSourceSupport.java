@@ -34,14 +34,13 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Peter Rietzler
  * @author Jens Schauder
+ * @author Yanming Zhou
  */
 public abstract class RepositoryConfigurationSourceSupport implements RepositoryConfigurationSource {
 
-	protected static final String DEFAULT_REPOSITORY_IMPL_POSTFIX = "Impl";
-
-	private final Environment environment;
+	protected final Environment environment;
 	private final RepositoryBeanNameGenerator beanNameGenerator;
-	private final BeanDefinitionRegistry registry;
+	protected final BeanDefinitionRegistry registry;
 
 	/**
 	 * Creates a new {@link RepositoryConfigurationSourceSupport} with the given environment.
@@ -117,7 +116,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 		return new SpringImplementationDetectionConfiguration(this, factory);
 	}
 
-	private class SpringImplementationDetectionConfiguration implements ImplementationDetectionConfiguration {
+	private static class SpringImplementationDetectionConfiguration implements ImplementationDetectionConfiguration {
 
 		private final RepositoryConfigurationSource source;
 		private final MetadataReaderFactory metadataReaderFactory;
