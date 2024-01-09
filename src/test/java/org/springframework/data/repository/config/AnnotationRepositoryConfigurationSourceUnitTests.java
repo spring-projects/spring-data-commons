@@ -57,7 +57,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 		registry = mock(BeanDefinitionRegistry.class);
 
 		source = new AnnotationRepositoryConfigurationSource(annotationMetadata, EnableRepositories.class, resourceLoader,
-				environment, registry);
+				environment, registry, null);
 	}
 
 	@Test // DATACMNS-47
@@ -115,7 +115,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 		var metadata = new StandardAnnotationMetadata(
 				getClass().getClassLoader().loadClass("TypeInDefaultPackage"), true);
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
-				EnableRepositories.class, resourceLoader, environment, registry);
+				EnableRepositories.class, resourceLoader, environment, registry, null);
 
 		assertThat(configurationSource.getBasePackages()).contains("");
 	}
@@ -132,7 +132,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(ConfigWithSampleAnnotation.class, true);
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
-				SampleAnnotation.class, resourceLoader, environment, registry);
+				SampleAnnotation.class, resourceLoader, environment, registry, null);
 
 		assertThat(configurationSource.getRepositoryBaseClassName()).isNotPresent();
 	}
@@ -169,7 +169,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(type, true);
 		return new AnnotationRepositoryConfigurationSource(metadata, EnableRepositories.class, resourceLoader, environment,
-				registry);
+				registry, null);
 	}
 
 	static class Person {}

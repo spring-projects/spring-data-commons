@@ -80,7 +80,7 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 		var registry = mock(BeanDefinitionRegistry.class);
 
 		RepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(annotationMetadata,
-				EnableRepositories.class, resourceLoader, environment, registry);
+				EnableRepositories.class, resourceLoader, environment, registry, null);
 
 		assertThatThrownBy(() -> extension.getRepositoryConfigurations(source, resourceLoader))
 				.isInstanceOf(InvalidDataAccessApiUsageException.class)
