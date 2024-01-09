@@ -69,7 +69,7 @@ class RepositoryConfigurationDelegateUnitTests {
 
 		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
 				new StandardAnnotationMetadata(TestConfig.class, true), EnableRepositories.class, context, environment,
-				context.getDefaultListableBeanFactory());
+				context.getDefaultListableBeanFactory(), null);
 
 		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
 
@@ -112,7 +112,7 @@ class RepositoryConfigurationDelegateUnitTests {
 
 		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
 				new StandardAnnotationMetadata(TestConfig.class, true), EnableRepositories.class, context, environment,
-				context.getDefaultListableBeanFactory());
+				context.getDefaultListableBeanFactory(), null);
 
 		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
 

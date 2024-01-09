@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -42,7 +43,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Annotation based {@link RepositoryConfigurationSource}.
+ * Annotation-based {@link RepositoryConfigurationSource}.
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
@@ -67,9 +68,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private final AnnotationMetadata configMetadata;
 	private final AnnotationMetadata enableAnnotationMetadata;
 	private final AnnotationAttributes attributes;
-	private final ResourceLoader resourceLoader;
-	private final Environment environment;
-	private final BeanDefinitionRegistry registry;
+	private final Function<AnnotationAttributes, Stream<TypeFilter>> typeFilterFunction;
 	private final boolean hasExplicitFilters;
 
 	/**
@@ -83,7 +82,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @param registry must not be {@literal null}.
 	 * @deprecated since 2.2. Prefer to use overload taking a {@link BeanNameGenerator} additionally.
 	 */
-	@Deprecated
+	@Deprecated(since = "2.2")
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
 			ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry) {
 		this(metadata, annotation, resourceLoader, environment, registry, null);
@@ -120,12 +119,12 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		this.attributes = new AnnotationAttributes(annotationAttributes);
 		this.enableAnnotationMetadata = AnnotationMetadata.introspect(annotation);
 		this.configMetadata = metadata;
-		this.resourceLoader = resourceLoader;
-		this.environment = environment;
-		this.registry = registry;
+		this.typeFilterFunction = it -> TypeFilterUtils.createTypeFiltersFor(it, environment, resourceLoader, registry)
+				.stream();
 		this.hasExplicitFilters = hasExplicitFilters(attributes);
 	}
 
+	@Override
 	public Streamable<String> getBasePackages() {
 
 		String[] value = attributes.getStringArray("value");
@@ -139,7 +138,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			return Streamable.of(ClassUtils.getPackageName(className));
 		}
 
-		Set<String> packages = new HashSet<>();
+		Set<String> packages = new HashSet<>(value.length + basePackages.length + basePackageClasses.length);
 		packages.addAll(Arrays.asList(value));
 		packages.addAll(Arrays.asList(basePackages));
 
@@ -150,18 +149,22 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return Streamable.of(packages);
 	}
 
+	@Override
 	public Optional<Object> getQueryLookupStrategyKey() {
 		return Optional.ofNullable(attributes.get(QUERY_LOOKUP_STRATEGY));
 	}
 
+	@Override
 	public Optional<String> getNamedQueryLocation() {
 		return getNullDefaultedAttribute(NAMED_QUERIES_LOCATION);
 	}
 
+	@Override
 	public Optional<String> getRepositoryImplementationPostfix() {
 		return getNullDefaultedAttribute(REPOSITORY_IMPLEMENTATION_POSTFIX);
 	}
 
+	@Override
 	@NonNull
 	public Object getSource() {
 		return configMetadata;
@@ -265,25 +268,22 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	public String getResourceDescription() {
 
 		String simpleClassName = ClassUtils.getShortName(configMetadata.getClassName());
-		String annoationClassName = ClassUtils.getShortName(enableAnnotationMetadata.getClassName());
+		String annotationClassName = ClassUtils.getShortName(enableAnnotationMetadata.getClassName());
 
-		return String.format("@%s declared on %s", annoationClassName, simpleClassName);
+		return String.format("@%s declared on %s", annotationClassName, simpleClassName);
 	}
 
 	private Streamable<TypeFilter> parseFilters(String attributeName) {
 
 		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);
-
-		return Streamable.of(() -> Arrays.stream(filters) //
-				.flatMap(it -> TypeFilterUtils.createTypeFiltersFor(it, this.environment, this.resourceLoader, this.registry)
-						.stream()));
+		return Streamable.of(() -> Arrays.stream(filters).flatMap(typeFilterFunction));
 	}
 
 	/**
 	 * Returns the {@link String} attribute with the given name and defaults it to {@literal Optional#empty()} in case
 	 * it's empty.
 	 *
-	 * @param attributeName
+	 * @param attributeName must not be {@literal null}.
 	 * @return
 	 */
 	private Optional<String> getNullDefaultedAttribute(String attributeName) {
