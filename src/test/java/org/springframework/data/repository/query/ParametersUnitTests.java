@@ -159,6 +159,16 @@ class ParametersUnitTests {
 		assertThat(parameters.getParameter(2).isDynamicProjectionParameter()).isFalse();
 	}
 
+	@Test // GH-3020
+	void detectsDynamicParametrizedProjectionParameter() throws Exception {
+
+		var method = ParametrizedRepository.class.getMethod("dynamicBind", Class.class);
+		var parameters = new DefaultParameters(
+				ParametersSource.of(new DefaultRepositoryMetadata(ParametrizedRepository.class), method));
+
+		assertThat(parameters.getParameter(0).isDynamicProjectionParameter()).isTrue();
+	}
+
 	@Test // DATACMNS-863
 	void unwrapsOptionals() throws Exception {
 
@@ -271,5 +281,13 @@ class ParametersUnitTests {
 	}
 
 	interface TypedInterface extends Intermediate<User, Long> {}
+
+	interface GenericRepository<T, ID> extends Repository<T, ID> {
+		<P extends Projection<T>> Optional<P> dynamicBind(Class<P> type);
+	}
+
+	interface ParametrizedRepository extends GenericRepository<User, Long> {}
+
+	interface Projection<T> {}
 
 }

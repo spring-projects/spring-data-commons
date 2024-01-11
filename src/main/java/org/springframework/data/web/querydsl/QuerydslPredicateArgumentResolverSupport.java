@@ -146,7 +146,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 			throw new IllegalArgumentException("Method parameter is not backed by a method");
 		}
 
-		return detectDomainType(TypeInformation.fromReturnTypeOf(method));
+		return detectDomainType(TypeInformation.fromReturnTypeOf(method, parameter.getContainingClass()));
 	}
 
 	private static TypeInformation<?> detectDomainType(TypeInformation<?> source) {
