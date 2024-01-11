@@ -58,7 +58,9 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 		}
 
 		public PageModule() {
+
 			addSerializer(UNPAGED_TYPE, new UnpagedAsInstanceSerializer());
+			setMixInAnnotation(PageImpl.class, PageImplMixin.class);
 		}
 
 		/**
@@ -78,6 +80,37 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			@Override
 			public String valueToString(@Nullable Object value) {
 				return "INSTANCE";
+			}
+		}
+
+		/**
+		 * A mixin for PageImpl to register a converter issuing the serialization warning.
+		 *
+		 * @author Oliver Drotbohm
+		 */
+		@JsonSerialize(converter = PlainPageSerializationWarning.class)
+		abstract class PageImplMixin {}
+
+		static class PlainPageSerializationWarning extends StdConverter<Page<?>, Page<?>> {
+
+			private static final Logger LOGGER = LoggerFactory.getLogger(PlainPageSerializationWarning.class);
+			private static final String MESSAGE = """
+					Serializing PageImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure!
+						For a stable JSON structure, please use Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
+					""";
+
+			private boolean warningRendered = false;
+
+			@Nullable
+			@Override
+			public Page<?> convert(@Nullable Page<?> value) {
+
+				if (!warningRendered) {
+					this.warningRendered = true;
+					LOGGER.warn(MESSAGE);
+				}
+
+				return value;
 			}
 		}
 	}
