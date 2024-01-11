@@ -260,7 +260,7 @@ public class Parameter {
 			throw new IllegalArgumentException("Parameter is not associated with any method");
 		}
 
-		var returnType = TypeInformation.fromReturnTypeOf(method);
+		var returnType = TypeInformation.fromReturnTypeOf(method, parameter.getContainingClass());
 		var unwrapped = QueryExecutionConverters.unwrapWrapperTypes(returnType);
 		var reactiveUnwrapped = ReactiveWrapperConverters.unwrapWrapperTypes(unwrapped);
 
