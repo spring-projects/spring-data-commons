@@ -32,6 +32,7 @@ Some store modules may define their own result wrapper types.
 |`CompletableFuture<T>`|A Java 8 `CompletableFuture`. Expects a method to be annotated with `@Async` and requires Spring's asynchronous method execution capability to be enabled.
 |`Slice<T>`|A sized chunk of data with an indication of whether there is more data available. Requires a `Pageable` method parameter.
 |`Page<T>`|A `Slice` with additional information, such as the total number of results. Requires a `Pageable` method parameter.
+|`Window<T>`|A `Window` of results obtained from a scroll query. Provides `ScrollPosition` to issue the next scroll query. Requires a `ScrollPosition` method parameter.
 |`GeoResult<T>`|A result entry with additional information, such as the distance to a reference location.
 |`GeoResults<T>`|A list of `GeoResult<T>` with additional information, such as the average distance to a reference location.
 |`GeoPage<T>`|A `Page` with `GeoResult<T>`, such as the average distance to a reference location.
