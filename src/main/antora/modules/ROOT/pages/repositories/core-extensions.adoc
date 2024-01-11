@@ -189,8 +189,92 @@ You have to populate `thing1_page`, `thing2_page`, and so on.
 
 The default `Pageable` passed into the method is equivalent to a `PageRequest.of(0, 20)`, but you can customize it by using the `@PageableDefault` annotation on the `Pageable` parameter.
 
+[[core.web.page]]
+=== Creating JSON representations for `Page`
+
+It's common for Spring MVC controllers to try to ultimately render a representation of a Spring Data page to clients.
+While one could simply return `Page` instances from handler methods to let Jackson render them as is, we strongly recommend against this as the underlying implementation class `PageImpl` is a domain type.
+This means we might want or have to change its API for unrelated reasons, and such changes might alter the resulting JSON representation in a breaking way.
+
+With Spring Data 3.1, we started hinting at the problem by issuing a warning log describing the problem.
+We still ultimately recommend to leverage xref:repositories/core-extensions.adoc#core.web.pageables[the integration with Spring HATEOAS] for a fully stable and hypermedia-enabled way of rendering pages that easily allow clients to navigate them.
+But as of version 3.3 Spring Data ships a page rendering mechanism that is convenient to use but does not require the inclusion of Spring HATEOAS.
+
+[[core.web.page.paged-model]]
+==== Using Spring Data' `PagedModel`
+
+At its core, the support consists of a simplified version of Spring HATEOAS' `PagedModel` (the Spring Data one located in the `org.springframework.data.web` package).
+It can be used to wrap `Page` instances and result in a simplified representation that reflects the structure established by Spring HATEOAS but omits the navigation links.
+
+[source, java]
+----
+import org.springframework.data.web.PagedModel;
+
+@Controller
+class MyController {
+
+  private final MyRepository repository;
+
+  // Constructor ommitted
+
+  @GetMapping("/page")
+  PagedModel<?> page(Pageable pageable) {
+    return new PagedModel<>(repository.findAll(pageable)); // <1>
+  }
+}
+----
+<1> Wraps the `Page` instance into a `PagedModel`.
+
+This will result in a JSON structure looking like this:
+
+[source, javascript]
+----
+{
+  "content" : [
+     … // Page content rendered here
+  ],
+  "page" : {
+    "size" : 20,
+    "totalElements" : 30,
+    "totalPages" : 2,
+    "number" : 0
+  }
+}
+----
+
+Note how the document contains a `page` field exposing the essential pagination metadata.
+
+[[core.web.page.config]]
+==== Globally enabling simplified `Page` rendering
+
+If you don't want to change all your existing controllers to add the mapping step to return `PagedModel` instead of `Page` you can enable the automatic translation of `PageImpl` instances into `PagedModel` by tweaking `@EnableSpringDataWebSupport` as follows:
+
+[source, java]
+----
+@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
+class MyConfiguration { }
+----
+
+This will allow your controller to still return `Page` instances and they will automatically be rendered into the simplified representation:
+
+[source, java]
+----
+@Controller
+class MyController {
+
+  private final MyRepository repository;
+
+  // Constructor ommitted
+
+  @GetMapping("/page")
+  Page<?> page(Pageable pageable) {
+    return repository.findAll(pageable);
+  }
+}
+----
+
 [[core.web.pageables]]
-=== Hypermedia Support for `Page` and `Slice`
+==== Hypermedia Support for `Page` and `Slice`
 
 Spring HATEOAS ships with a representation model class (`PagedModel`/`SlicedModel`) that allows enriching the content of a `Page` or `Slice` instance with the necessary `Page`/`Slice` metadata as well as links to let the clients easily navigate the pages.
 The conversion of a `Page` to a `PagedModel` is done by an implementation of the Spring HATEOAS `RepresentationModelAssembler` interface, called the `PagedResourcesAssembler`.
@@ -237,7 +321,7 @@ You can now trigger a request (`GET http://localhost:8080/people`) and see outpu
   "content" : [
      … // 20 Person instances rendered here
   ],
-  "pageMetadata" : {
+  "page" : {
     "size" : 20,
     "totalElements" : 30,
     "totalPages" : 2,

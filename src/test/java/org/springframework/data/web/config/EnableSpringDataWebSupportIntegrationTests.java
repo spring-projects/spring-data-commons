@@ -38,6 +38,7 @@ import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
+import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
 import org.springframework.hateoas.Link;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -259,6 +260,17 @@ class EnableSpringDataWebSupportIntegrationTests {
 		assertThat(context.getBean(EntityPathResolver.class)).isEqualTo(CustomEntityPathResolver.resolver);
 		assertThat(context.getBean(QuerydslBindingsFactory.class).getEntityPathResolver())
 				.isEqualTo(CustomEntityPathResolver.resolver);
+	}
+
+	@Test // GH-3024
+	void registersSpringDataWebSettingsBean() {
+
+		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
+
+		assertThatNoException().isThrownBy(() -> {
+			assertThat(context.getBean(SpringDataWebSettings.class));
+			assertThat(context.getBean(PageModule.class));
+		});
 	}
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {

@@ -21,9 +21,12 @@ import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration;
+import org.springframework.data.web.config.SpringDataWebSettings;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * Unit tests for PageImpl serialization.
@@ -32,14 +35,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 class PageImplJsonSerializationUnitTests {
 
-	@Test
+	@Test // GH-3024
 	void serializesPageImplAsJson() {
+		assertJsonRendering(PageSerializationMode.DIRECT, "$.pageable", "$.last", "$.first");
+	}
+
+	@Test // GH-3024
+	void serializesPageImplAsPagedModel() {
+		assertJsonRendering(PageSerializationMode.VIA_DTO, "$.content", "$.page");
+	}
+
+	private static void assertJsonRendering(PageSerializationMode mode, String... jsonPaths) {
+
+		SpringDataWebSettings settings = new SpringDataWebSettings(mode);
 
 		ObjectMapper mapper = new ObjectMapper();
-		mapper.registerModule(new SpringDataJacksonConfiguration.PageModule());
+		mapper.registerModule(new SpringDataJacksonConfiguration.PageModule(settings));
 
 		assertThatNoException().isThrownBy(() -> {
-			mapper.writeValueAsString(new PageImpl<>(Collections.emptyList()));
+
+			String result = mapper.writeValueAsString(new PageImpl<>(Collections.emptyList()));
+
+			for (String jsonPath : jsonPaths) {
+				assertThat(JsonPath.<Object> read(result, jsonPath)).isNotNull();
+			}
 		});
 	}
 }
