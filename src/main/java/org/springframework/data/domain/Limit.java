@@ -17,7 +17,7 @@ package org.springframework.data.domain;
 
 import org.springframework.data.domain.Limit.Limited;
 import org.springframework.data.domain.Limit.Unlimited;
-import org.springframework.util.ClassUtils;
+import org.springframework.lang.Nullable;
 
 /**
  * {@link Limit} represents the maximum value up to which an operation should continue processing. It may be used for
@@ -94,14 +94,17 @@ public sealed interface Limit permits Limited,Unlimited {
 			if (obj == null) {
 				return false;
 			}
-			if (!ClassUtils.isAssignable(Limit.class, obj.getClass())) {
+
+			if (!(obj instanceof Limit that)) {
 				return false;
 			}
-			Limit that = (Limit) obj;
-			if (this.isUnlimited() && that.isUnlimited()) {
-				return true;
+
+			if (this.isUnlimited() ^ that.isUnlimited()) {
+				return false;
 			}
-			return max() == that.max();
+
+			return this.isUnlimited() && that.isUnlimited()
+					|| max() == that.max();
 		}
 
 		@Override
