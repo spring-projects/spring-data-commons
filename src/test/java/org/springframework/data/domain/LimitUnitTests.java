@@ -55,4 +55,15 @@ class LimitUnitTests {
 	void unlimitedErrorsOnMax() {
 		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> Limit.unlimited().max());
 	}
+
+	@Test // GH-3023
+	void equalsProperly() {
+
+		Limit unlimited = Limit.unlimited();
+		Limit limited = Limit.of(5);
+
+		assertThat(limited.equals(unlimited)).isFalse();
+		assertThat(unlimited.equals(limited)).isFalse();
+		assertThat(unlimited.equals(unlimited)).isTrue();
+	}
 }
