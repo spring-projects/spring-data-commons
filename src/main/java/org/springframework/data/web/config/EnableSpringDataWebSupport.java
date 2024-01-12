@@ -47,7 +47,7 @@ import org.springframework.util.ClassUtils;
  * by Spring Data repositories as controller method arguments bound with
  * {@link org.springframework.web.bind.annotation.PathVariable} or
  * {@link org.springframework.web.bind.annotation.RequestParam}.</li>
- * <li>{@link PageableHandlerMethodArgumentResolver} - to allow injection of
+ * <li>{@link org.springframework.data.web.PageableHandlerMethodArgumentResolver} - to allow injection of
  * {@link org.springframework.data.domain.Pageable} instances into controller methods automatically created from request
  * parameters.</li>
  * <li>{@link org.springframework.data.web.SortHandlerMethodArgumentResolver} - to allow injection of
@@ -57,7 +57,7 @@ import org.springframework.util.ClassUtils;
  * If Spring HATEOAS is present on the classpath we will register the following beans:
  * <ul>
  * <li>{@link org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver} - instead of
- * {@link PageableHandlerMethodArgumentResolver}</li>
+ * {@link org.springframework.data.web.PageableHandlerMethodArgumentResolver}</li>
  * <li>{@link org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver} - instead of
  * {@link org.springframework.data.web.SortHandlerMethodArgumentResolver}</li>
  * <li>{@link org.springframework.data.web.PagedResourcesAssembler} - for injection into web components</li>
