@@ -24,16 +24,17 @@ import org.springframework.lang.Nullable;
  * defining the {@link #max() maximum} number of results within a repository finder method or if applicable a template
  * operation.
  * <p>
- * A {@link Limit#isUnlimited()} is used to indicate that there is no {@link Limit} defined, which should be favoured
+ * A {@link Limit#isUnlimited()} is used to indicate that there is no {@link Limit} defined, which should be favored
  * over using {@literal null} or {@link java.util.Optional#empty()} to indicate the absence of an actual {@link Limit}.
  * </p>
  * {@link Limit} itself does not make assumptions about the actual {@link #max()} value sign. This means that a negative
  * value may be valid within a defined context.
  *
  * @author Christoph Strobl
+ * @author Oliver Drotbohm
  * @since 3.2
  */
-public sealed interface Limit permits Limited,Unlimited {
+public sealed interface Limit permits Limited, Unlimited {
 
 	/**
 	 * @return a {@link Limit} instance that does not define {@link #max()} and answers {@link #isUnlimited()} with
@@ -89,7 +90,7 @@ public sealed interface Limit permits Limited,Unlimited {
 		}
 
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(@Nullable Object obj) {
 
 			if (obj == null) {
 				return false;
@@ -109,7 +110,7 @@ public sealed interface Limit permits Limited,Unlimited {
 
 		@Override
 		public int hashCode() {
-			return max ^ (max >>> 32);
+			return max ^ max >>> 32;
 		}
 	}
 
@@ -129,6 +130,5 @@ public sealed interface Limit permits Limited,Unlimited {
 		public boolean isLimited() {
 			return false;
 		}
-
 	}
 }
