@@ -3,7 +3,8 @@ org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor=\
 
 org.springframework.aot.hint.RuntimeHintsRegistrar=\
 	org.springframework.data.repository.aot.hint.RepositoryRuntimeHints,\
-	org.springframework.data.querydsl.aot.QuerydslHints
+	org.springframework.data.querydsl.aot.QuerydslHints,\
+	org.springframework.data.web.aot.hint.WebRuntimeHints
 
 org.springframework.beans.factory.aot.BeanRegistrationAotProcessor=\
     org.springframework.data.aot.AuditingBeanRegistrationAotProcessor
