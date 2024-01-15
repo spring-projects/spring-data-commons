@@ -17,6 +17,7 @@ package org.springframework.data.web.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
@@ -39,7 +40,8 @@ import com.fasterxml.jackson.databind.util.StdConverter;
  */
 public class SpringDataJacksonConfiguration implements SpringDataJacksonModules {
 
-	@Nullable @Autowired(required = false) SpringDataWebSettings settings;
+	@Nullable
+	@Autowired(required = false) SpringDataWebSettings settings;
 
 	@Bean
 	public GeoModule jacksonGeoModule() {
