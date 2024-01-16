@@ -20,11 +20,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
+import java.util.List;
 
+import com.fasterxml.jackson.databind.Module;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.geo.Distance;
@@ -40,9 +44,13 @@ import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
 import org.springframework.hateoas.Link;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -111,6 +119,43 @@ class EnableSpringDataWebSupportIntegrationTests {
 		@Bean
 		SimpleEntityPathResolver entityPathResolver() {
 			return resolver;
+		}
+	}
+
+	@Configuration
+	static class PageSampleConfig extends WebMvcConfigurationSupport {
+
+		@Autowired
+		private List<Module> modules;
+
+		@Bean
+		PageSampleController controller() {
+			return new PageSampleController();
+		}
+
+		@Override
+		protected void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+			Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.json().modules(modules);
+			converters.add(0, new MappingJackson2HttpMessageConverter(builder.build()));
+		}
+	}
+
+
+	@EnableSpringDataWebSupport
+	static class PageSampleConfigWithDirect extends PageSampleConfig {
+	}
+
+	@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
+	static class PageSampleConfigWithViaDto extends PageSampleConfig {
+	}
+
+	@EnableSpringDataWebSupport
+	static class PageSampleConfigWithSpringDataWebSettings extends PageSampleConfig {
+
+		@Primary
+		@Bean
+		SpringDataWebSettings SpringDataWebSettings() {
+			return new SpringDataWebSettings(EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO);
 		}
 	}
 
@@ -271,6 +316,39 @@ class EnableSpringDataWebSupportIntegrationTests {
 			assertThat(context.getBean(SpringDataWebSettings.class));
 			assertThat(context.getBean(PageModule.class));
 		});
+	}
+
+	@Test // GH-3024
+	void usesDirectPageSerializationMode() throws Exception {
+
+		var applicationContext = WebTestUtils.createApplicationContext(PageSampleConfigWithDirect.class);
+		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+
+		mvc.perform(post("/page")).//
+				andExpect(status().isOk()).//
+				andExpect(jsonPath("$.pageable").exists());
+	}
+
+	@Test // GH-3024
+	void usesViaDtoPageSerializationMode() throws Exception {
+
+		var applicationContext = WebTestUtils.createApplicationContext(PageSampleConfigWithViaDto.class);
+		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+
+		mvc.perform(post("/page")).//
+				andExpect(status().isOk()).//
+				andExpect(jsonPath("$.page").exists());
+	}
+
+	@Test // GH-3024
+	void overridesPageSerializationModeByCustomizingSpringDataWebSettings() throws Exception {
+
+		var applicationContext = WebTestUtils.createApplicationContext(PageSampleConfigWithSpringDataWebSettings.class);
+		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+
+		mvc.perform(post("/page")).//
+				andExpect(status().isOk()).//
+				andExpect(jsonPath("$.page").exists());
 	}
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
