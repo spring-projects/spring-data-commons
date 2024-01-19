@@ -71,12 +71,30 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 			Class<?> pathClass = ClassUtils.forName(pathClassName, domainClass.getClassLoader());
 
 			return getStaticFieldOfType(pathClass)//
+					.or(() -> getFieldForScalaObject(domainClass, pathClassName))//
 					.map(it -> (EntityPath<T>) ReflectionUtils.getField(it, null))//
 					.orElseThrow(() -> new IllegalStateException(String.format(NO_FIELD_FOUND_TEMPLATE, pathClass)));
 
 		} catch (ClassNotFoundException e) {
 			throw new IllegalArgumentException(String.format(NO_CLASS_FOUND_TEMPLATE, pathClassName, domainClass.getName()),
 					e);
+		}
+	}
+
+	/**
+	 * Resolves the static field of the given type inside the specified domain class.
+	 * Useful for handling Scala-generated QueryDSL path classes.
+	 *
+	 * @param domainClass       The domain class for which the static field needs to be resolved.
+	 * @param javaPathClassName The Java path class name without the "$" suffix.
+	 * @return
+	 */
+	private <T> Optional<Field> getFieldForScalaObject(Class<T> domainClass, String javaPathClassName) {
+		try {
+			Class<?> scalaPathClass = ClassUtils.forName(javaPathClassName + "$", domainClass.getClassLoader());
+			return getStaticFieldOfType(scalaPathClass);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
