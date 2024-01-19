@@ -31,6 +31,7 @@ import com.querydsl.core.types.EntityPath;
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Emanuel Trandafir
  */
 public class SimpleEntityPathResolver implements EntityPathResolver {
 
@@ -82,8 +83,8 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	}
 
 	/**
-	 * Resolves the static field of the given type inside the specified domain class.
-	 * Useful for handling Scala-generated QueryDSL path classes.
+	 * Resolves the static field of the given type inside the specified domain class. Useful for handling Scala-generated
+	 * QueryDSL path classes.
 	 *
 	 * @param domainClass       The domain class for which the static field needs to be resolved.
 	 * @param javaPathClassName The Java path class name without the "$" suffix.
@@ -91,10 +92,13 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	 */
 	private <T> Optional<Field> getFieldForScalaObject(Class<T> domainClass, String javaPathClassName) {
 		try {
+
 			Class<?> scalaPathClass = ClassUtils.forName(javaPathClassName + "$", domainClass.getClassLoader());
 			return getStaticFieldOfType(scalaPathClass);
+
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+			throw new IllegalArgumentException(
+					String.format(NO_CLASS_FOUND_TEMPLATE, javaPathClassName + "$", domainClass.getName()), e);
 		}
 	}
 
