@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.web.aot.hint;
+package org.springframework.data.web.aot;
 
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -22,16 +22,17 @@ import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageMo
 import org.springframework.lang.Nullable;
 
 /**
+ * {@link RuntimeHintsRegistrar} providing hints for web usage.
+ *
  * @author Christoph Strobl
  * @since 3.2.3
  */
-public class WebRuntimeHints implements RuntimeHintsRegistrar {
+class WebRuntimeHints implements RuntimeHintsRegistrar {
 
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
 
-		hints.reflection().registerType(TypeReference.of("org.springframework.data.domain.Unpaged"), hint -> {
-			hint.onReachableType(PageModule.class);
-		});
+		hints.reflection().registerType(TypeReference.of("org.springframework.data.domain.Unpaged"),
+				hint -> hint.onReachableType(PageModule.class));
 	}
 }
