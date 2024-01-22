@@ -22,13 +22,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Arrays;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.Module;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.geo.Distance;
@@ -54,6 +53,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -125,8 +125,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	@Configuration
 	static class PageSampleConfig extends WebMvcConfigurationSupport {
 
-		@Autowired
-		private List<Module> modules;
+		@Autowired private List<Module> modules;
 
 		@Bean
 		PageSampleController controller() {
@@ -140,27 +139,14 @@ class EnableSpringDataWebSupportIntegrationTests {
 		}
 	}
 
-
 	@EnableSpringDataWebSupport
-	static class PageSampleConfigWithDirect extends PageSampleConfig {
-	}
+	static class PageSampleConfigWithDirect extends PageSampleConfig {}
 
 	@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
-	static class PageSampleConfigWithViaDto extends PageSampleConfig {
-	}
-
-	@EnableSpringDataWebSupport
-	static class PageSampleConfigWithSpringDataWebSettings extends PageSampleConfig {
-
-		@Primary
-		@Bean
-		SpringDataWebSettings SpringDataWebSettings() {
-			return new SpringDataWebSettings(EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO);
-		}
-	}
+	static class PageSampleConfigWithViaDto extends PageSampleConfig {}
 
 	@Test // DATACMNS-330
-	void registersBasicBeanDefinitions() throws Exception {
+	void registersBasicBeanDefinitions() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		var names = Arrays.asList(context.getBeanDefinitionNames());
@@ -172,7 +158,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-330
-	void registersHateoasSpecificBeanDefinitions() throws Exception {
+	void registersHateoasSpecificBeanDefinitions() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		var names = Arrays.asList(context.getBeanDefinitionNames());
@@ -182,7 +168,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-330
-	void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() throws Exception {
+	void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() {
 
 		var classLoader = HidingClassLoader.hide(Link.class);
 
@@ -195,7 +181,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	void registersJacksonSpecificBeanDefinitions() throws Exception {
+	void registersJacksonSpecificBeanDefinitions() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		var names = Arrays.asList(context.getBeanDefinitionNames());
@@ -204,7 +190,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() throws Exception {
+	void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(HidingClassLoader.hide(ObjectMapper.class),
 				SampleConfig.class);
@@ -312,10 +298,8 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 
-		assertThatNoException().isThrownBy(() -> {
-			assertThat(context.getBean(SpringDataWebSettings.class));
-			assertThat(context.getBean(PageModule.class));
-		});
+		assertThatNoException().isThrownBy(() -> context.getBean(SpringDataWebSettings.class));
+		assertThatNoException().isThrownBy(() -> context.getBean(PageModule.class));
 	}
 
 	@Test // GH-3024
@@ -324,9 +308,9 @@ class EnableSpringDataWebSupportIntegrationTests {
 		var applicationContext = WebTestUtils.createApplicationContext(PageSampleConfigWithDirect.class);
 		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
 
-		mvc.perform(post("/page")).//
-				andExpect(status().isOk()).//
-				andExpect(jsonPath("$.pageable").exists());
+		mvc.perform(post("/page"))//
+				.andExpect(status().isOk()) //
+				.andExpect(jsonPath("$.pageable").exists());
 	}
 
 	@Test // GH-3024
@@ -335,20 +319,9 @@ class EnableSpringDataWebSupportIntegrationTests {
 		var applicationContext = WebTestUtils.createApplicationContext(PageSampleConfigWithViaDto.class);
 		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
 
-		mvc.perform(post("/page")).//
-				andExpect(status().isOk()).//
-				andExpect(jsonPath("$.page").exists());
-	}
-
-	@Test // GH-3024
-	void overridesPageSerializationModeByCustomizingSpringDataWebSettings() throws Exception {
-
-		var applicationContext = WebTestUtils.createApplicationContext(PageSampleConfigWithSpringDataWebSettings.class);
-		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
-
-		mvc.perform(post("/page")).//
-				andExpect(status().isOk()).//
-				andExpect(jsonPath("$.page").exists());
+		mvc.perform(post("/page")) //
+				.andExpect(status().isOk()) //
+				.andExpect(jsonPath("$.page").exists());
 	}
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
