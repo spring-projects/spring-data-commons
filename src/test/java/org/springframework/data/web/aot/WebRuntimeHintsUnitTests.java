@@ -16,9 +16,10 @@
 package org.springframework.data.web.aot;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
 import org.springframework.aot.hint.ReflectionHints;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
@@ -26,6 +27,8 @@ import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.data.test.util.ClassPathExclusions;
 
 /**
+ * Unit tests for {@link WebRuntimeHints}.
+ *
  * @author Christoph Strobl
  */
 class WebRuntimeHintsUnitTests {
@@ -34,8 +37,8 @@ class WebRuntimeHintsUnitTests {
 	void shouldRegisterRuntimeHintWhenJacksonPresent() {
 
 		ReflectionHints reflectionHints = new ReflectionHints();
-		RuntimeHints runtimeHints = Mockito.mock(RuntimeHints.class);
-		Mockito.when(runtimeHints.reflection()).thenReturn(reflectionHints);
+		RuntimeHints runtimeHints = mock(RuntimeHints.class);
+		when(runtimeHints.reflection()).thenReturn(reflectionHints);
 
 		new WebRuntimeHints().registerHints(runtimeHints, this.getClass().getClassLoader());
 
@@ -48,8 +51,8 @@ class WebRuntimeHintsUnitTests {
 	void shouldRegisterRuntimeHintWithTypeNameWhenJacksonNotPresent() {
 
 		ReflectionHints reflectionHints = new ReflectionHints();
-		RuntimeHints runtimeHints = Mockito.mock(RuntimeHints.class);
-		Mockito.when(runtimeHints.reflection()).thenReturn(reflectionHints);
+		RuntimeHints runtimeHints = mock(RuntimeHints.class);
+		when(runtimeHints.reflection()).thenReturn(reflectionHints);
 
 		new WebRuntimeHints().registerHints(runtimeHints, this.getClass().getClassLoader());
 
