@@ -15,10 +15,14 @@
  */
 package org.springframework.data.web.aot;
 
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.aot.hint.ReflectionHints;
 import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.TypeReference;
+import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.data.test.util.ClassPathExclusions;
 
 /**
@@ -34,6 +38,9 @@ class WebRuntimeHintsUnitTests {
 		Mockito.when(runtimeHints.reflection()).thenReturn(reflectionHints);
 
 		new WebRuntimeHints().registerHints(runtimeHints, this.getClass().getClassLoader());
+
+		assertThat(runtimeHints).matches(
+				RuntimeHintsPredicates.reflection().onType(TypeReference.of("org.springframework.data.domain.Unpaged")));
 	}
 
 	@Test // GH-3033
@@ -45,5 +52,7 @@ class WebRuntimeHintsUnitTests {
 		Mockito.when(runtimeHints.reflection()).thenReturn(reflectionHints);
 
 		new WebRuntimeHints().registerHints(runtimeHints, this.getClass().getClassLoader());
+
+		assertThat(runtimeHints.reflection().typeHints()).isEmpty();
 	}
 }
