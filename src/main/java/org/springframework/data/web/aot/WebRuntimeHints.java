@@ -20,6 +20,7 @@ import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ClassUtils;
 
 /**
  * {@link RuntimeHintsRegistrar} providing hints for web usage.
@@ -32,7 +33,9 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
 
-		hints.reflection().registerType(TypeReference.of("org.springframework.data.domain.Unpaged"),
-				hint -> hint.onReachableType(PageModule.class));
+		if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", classLoader)) {
+			hints.reflection().registerType(TypeReference.of("org.springframework.data.domain.Unpaged"),
+					hint -> hint.onReachableType(PageModule.class));
+		}
 	}
 }

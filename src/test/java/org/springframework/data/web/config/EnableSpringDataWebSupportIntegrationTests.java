@@ -29,12 +29,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.classloadersupport.HidingClassLoader;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.test.util.ClassPathExclusions;
 import org.springframework.data.web.OffsetScrollPositionHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
@@ -42,7 +42,6 @@ import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
-import org.springframework.hateoas.Link;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -54,7 +53,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for {@link EnableSpringDataWebSupport}.
@@ -63,6 +61,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Jens Schauder
  * @author Vedran Pavic
  * @author Yanming Zhou
+ * @author Christoph Strobl
  */
 class EnableSpringDataWebSupportIntegrationTests {
 
@@ -168,11 +167,10 @@ class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-330
+	@ClassPathExclusions(packages = { "org.springframework.hateoas" })
 	void doesNotRegisterHateoasSpecificComponentsIfHateoasNotPresent() {
 
-		var classLoader = HidingClassLoader.hide(Link.class);
-
-		ApplicationContext context = WebTestUtils.createApplicationContext(classLoader, SampleConfig.class);
+		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 
 		var names = Arrays.asList(context.getBeanDefinitionNames());
 
@@ -190,10 +188,10 @@ class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
+	@ClassPathExclusions(packages = { "com.fasterxml.jackson.databind" })
 	void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() {
 
-		ApplicationContext context = WebTestUtils.createApplicationContext(HidingClassLoader.hide(ObjectMapper.class),
-				SampleConfig.class);
+		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 
 		var names = Arrays.asList(context.getBeanDefinitionNames());
 
