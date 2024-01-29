@@ -53,7 +53,7 @@ class SpelExpressionParameterProviderUnitTests {
 		provider = new SpELExpressionParameterValueProvider<>(evaluator, conversionService, delegate);
 
 		parameter = mock(Parameter.class);
-		when(parameter.hasSpelExpression()).thenReturn(true);
+		when(parameter.hasValueExpression()).thenReturn(true);
 		when(parameter.getRawType()).thenReturn(Object.class);
 	}
 
@@ -62,7 +62,7 @@ class SpelExpressionParameterProviderUnitTests {
 	void delegatesIfParameterDoesNotHaveASpELExpression() {
 
 		Parameter<Object, SamplePersistentProperty> parameter = mock(Parameter.class);
-		when(parameter.hasSpelExpression()).thenReturn(false);
+		when(parameter.hasValueExpression()).thenReturn(false);
 
 		provider.getParameterValue(parameter);
 		verify(delegate, times(1)).getParameterValue(parameter);
@@ -72,17 +72,17 @@ class SpelExpressionParameterProviderUnitTests {
 	@Test
 	void evaluatesSpELExpression() {
 
-		when(parameter.getSpelExpression()).thenReturn("expression");
+		when(parameter.getRequiredValueExpression()).thenReturn("expression");
 
 		provider.getParameterValue(parameter);
 		verify(delegate, times(0)).getParameterValue(parameter);
-		verify(evaluator, times(1)).evaluate("expression");
+		verify(evaluator, times(1)).evaluate("#{expression}");
 	}
 
 	@Test
 	void handsSpELValueToConversionService() {
 
-		doReturn("source").when(parameter).getSpelExpression();
+		doReturn("source").when(parameter).getRequiredValueExpression();
 		doReturn("value").when(evaluator).evaluate(any());
 
 		provider.getParameterValue(parameter);
@@ -94,7 +94,7 @@ class SpelExpressionParameterProviderUnitTests {
 	@Test
 	void doesNotConvertNullValue() {
 
-		doReturn("source").when(parameter).getSpelExpression();
+		doReturn("source").when(parameter).getRequiredValueExpression();
 		doReturn(null).when(evaluator).evaluate(any());
 
 		provider.getParameterValue(parameter);
@@ -116,7 +116,7 @@ class SpelExpressionParameterProviderUnitTests {
 			}
 		};
 
-		doReturn("source").when(parameter).getSpelExpression();
+		doReturn("source").when(parameter).getRequiredValueExpression();
 		doReturn("value").when(evaluator).evaluate(any());
 
 		assertThat(provider.getParameterValue(parameter)).isEqualTo("FOO");

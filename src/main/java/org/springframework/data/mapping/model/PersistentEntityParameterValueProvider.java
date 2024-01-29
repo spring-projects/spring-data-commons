@@ -45,6 +45,7 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 		this.parent = parent;
 	}
 
+	@Override
 	@Nullable
 	@SuppressWarnings("unchecked")
 	public <T> T getParameterValue(Parameter<T, P> parameter) {

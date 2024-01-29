@@ -15,13 +15,13 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.springframework.context.EnvironmentAware;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.spel.EvaluationContextProvider;
-import org.springframework.data.support.EnvironmentAccessor;
 
 /**
  * Interface capturing mutator methods for {@link PersistentEntity}s.
@@ -29,7 +29,8 @@ import org.springframework.data.support.EnvironmentAccessor;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> extends PersistentEntity<T, P> {
+public interface MutablePersistentEntity<T, P extends PersistentProperty<P>>
+		extends PersistentEntity<T, P>, EnvironmentAware {
 
 	/**
 	 * Adds a {@link PersistentProperty} to the entity.
@@ -68,11 +69,4 @@ public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> ext
 	 */
 	void setEvaluationContextProvider(EvaluationContextProvider provider);
 
-	/**
-	 * Sets the {@link EnvironmentAccessor} to be used by the entity.
-	 *
-	 * @param accessor must not be {@literal null}.
-	 * @since 3.3
-	 */
-	void setEnvironmentAccessor(EnvironmentAccessor accessor);
 }

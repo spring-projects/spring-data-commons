@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.data.expression;
 
-package org.springframework.data.support;
-
-import org.springframework.lang.Nullable;
+import org.springframework.expression.ExpressionParser;
 
 /**
+ * Configuration for {@link ValueExpressionParser}.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 3.3
  */
-public interface EnvironmentAccessor extends PlaceholderResolver {
+public interface ValueParserConfiguration {
 
-	@Nullable
-	String getProperty(String key);
+	/**
+	 * Parser for {@link org.springframework.expression.Expression SpEL expressions}.
+	 *
+	 * @return for {@link org.springframework.expression.Expression SpEL expressions}.
+	 */
+	ExpressionParser getExpressionParser();
 
 }

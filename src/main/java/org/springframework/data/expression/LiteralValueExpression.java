@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping.model;
+package org.springframework.data.expression;
 
 /**
- * SPI for components that can evaluate Spring EL expressions.
+ * Literal expression returning the underlying expression string upon evaluation.
  *
- * @author Oliver Gierke
+ * @param expression
+ * @author Mark Paluch
+ * @since 3.3
  */
-@Deprecated(since = "3.3")
-public interface SpELExpressionEvaluator extends ValueExpressionEvaluator {
+record LiteralValueExpression(String expression) implements ValueExpression {
+
+	@Override
+	public String getExpressionString() {
+		return expression;
+	}
+
+	@Override
+	public boolean isLiteral() {
+		return true;
+	}
+
+	@Override
+	public String evaluate(ValueEvaluationContext context) {
+		return expression;
+	}
 
 }

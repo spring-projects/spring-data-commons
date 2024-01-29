@@ -147,7 +147,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 		var constructor = PreferredConstructorDiscoverer.discover(ClassWithMetaAnnotatedParameter.class);
 
 		assertThat(constructor).isNotNull();
-		assertThat(constructor.getParameters().get(0).getSpelExpression()).isEqualTo("${hello-world}");
+		assertThat(constructor.getParameters().get(0).getValueExpression()).isEqualTo("${hello-world}");
 		assertThat(constructor.getParameters().get(0).getAnnotations()).isNotNull();
 	}
 

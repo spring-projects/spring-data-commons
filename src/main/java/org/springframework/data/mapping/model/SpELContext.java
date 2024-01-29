@@ -17,6 +17,7 @@ package org.springframework.data.mapping.model;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.PropertyAccessor;
@@ -30,7 +31,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  */
-public class SpELContext {
+public class SpELContext implements EvaluationContextProvider {
 
 	private final SpelExpressionParser parser;
 	private final PropertyAccessor accessor;
@@ -90,6 +91,7 @@ public class SpELContext {
 		return this.parser;
 	}
 
+	@Override
 	public EvaluationContext getEvaluationContext(Object source) {
 
 		StandardEvaluationContext evaluationContext = new StandardEvaluationContext(source);
