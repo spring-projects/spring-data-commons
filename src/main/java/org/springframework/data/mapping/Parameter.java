@@ -39,11 +39,11 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	private final @Nullable String name;
 	private final TypeInformation<T> type;
 	private final MergedAnnotations annotations;
-	private final String key;
+	private final @Nullable String expression;
 	private final @Nullable PersistentEntity<T, P> entity;
 
 	private final Lazy<Boolean> enclosingClassCache;
-	private final Lazy<Boolean> hasSpelExpression;
+	private final Lazy<Boolean> hasExpression;
 
 	/**
 	 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
@@ -64,7 +64,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		this.name = name;
 		this.type = type;
 		this.annotations = MergedAnnotations.from(annotations);
-		this.key = getValue(this.annotations);
+		this.expression = getValue(this.annotations);
 		this.entity = entity;
 
 		this.enclosingClassCache = Lazy.of(() -> {
@@ -77,7 +77,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 			return ClassUtils.isInnerClass(owningType) && type.getType().equals(owningType.getEnclosingClass());
 		});
 
-		this.hasSpelExpression = Lazy.of(() -> StringUtils.hasText(getSpelExpression()));
+		this.hasExpression = Lazy.of(() -> StringUtils.hasText(getValueExpression()));
 	}
 
 	@Nullable
@@ -128,21 +128,62 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Returns the key to be used when looking up a source data structure to populate the actual parameter value.
+	 * Returns the expression to be used when looking up a source data structure to populate the actual parameter value.
 	 *
-	 * @return
+	 * @return the expression to be used when looking up a source data structure.
+	 * @deprecated since 3.3, use {@link #getValueExpression()} instead.
 	 */
+	@Nullable
 	public String getSpelExpression() {
-		return key;
+		return getValueExpression();
+	}
+
+	/**
+	 * Returns the expression to be used when looking up a source data structure to populate the actual parameter value.
+	 *
+	 * @return the expression to be used when looking up a source data structure.
+	 * @since 3.3
+	 */
+	@Nullable
+	public String getValueExpression() {
+		return expression;
+	}
+
+	/**
+	 * Returns the required expression to be used when looking up a source data structure to populate the actual parameter
+	 * value or throws {@link IllegalStateException} if there's no expression.
+	 *
+	 * @return the expression to be used when looking up a source data structure.
+	 * @since 3.3
+	 */
+	public String getRequiredValueExpression() {
+
+		if (!hasValueExpression()) {
+			throw new IllegalStateException("No expression associated with this parameter");
+		}
+
+		return getValueExpression();
 	}
 
 	/**
 	 * Returns whether the constructor parameter is equipped with a SpEL expression.
 	 *
-	 * @return
+	 * @return {@literal true}} if the parameter is equipped with a SpEL expression.
+	 * @deprecated since 3.3, use {@link #hasValueExpression()} instead.
 	 */
+	@Deprecated(since = "3.3")
 	public boolean hasSpelExpression() {
-		return this.hasSpelExpression.get();
+		return hasValueExpression();
+	}
+
+	/**
+	 * Returns whether the constructor parameter is equipped with a value expression.
+	 *
+	 * @return {@literal true}} if the parameter is equipped with a value expression.
+	 * @since 3.3
+	 */
+	public boolean hasValueExpression() {
+		return this.hasExpression.get();
 	}
 
 	@Override
@@ -157,12 +198,12 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		}
 
 		return Objects.equals(this.name, that.name) && Objects.equals(this.type, that.type)
-				&& Objects.equals(this.key, that.key) && Objects.equals(this.entity, that.entity);
+				&& Objects.equals(this.expression, that.expression) && Objects.equals(this.entity, that.entity);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, type, key, entity);
+		return Objects.hash(name, type, expression, entity);
 	}
 
 	/**

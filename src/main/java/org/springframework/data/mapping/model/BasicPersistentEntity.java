@@ -30,13 +30,14 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.data.annotation.Immutable;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.domain.Persistable;
+import org.springframework.data.expression.ValueEvaluationContext;
 import org.springframework.data.mapping.*;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExpressionDependencies;
-import org.springframework.data.support.EnvironmentAccessor;
 import org.springframework.data.support.IsNewStrategy;
 import org.springframework.data.support.PersistableIsNewStrategy;
 import org.springframework.data.util.Lazy;
@@ -80,7 +81,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private @Nullable P versionProperty;
 	private PersistentPropertyAccessorFactory propertyAccessorFactory;
 	private EvaluationContextProvider evaluationContextProvider = EvaluationContextProvider.DEFAULT;
-	private @Nullable EnvironmentAccessor environmentAccessor;
+	private @Nullable Environment environment = null;
 
 	private final Lazy<Alias> typeAlias;
 	private final Lazy<IsNewStrategy> isNewStrategy;
@@ -148,36 +149,44 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return creator != null && creator.isCreatorParameter(property);
 	}
 
+	@Override
 	public boolean isIdProperty(PersistentProperty<?> property) {
 		return idProperty != null && idProperty.equals(property);
 	}
 
+	@Override
 	public boolean isVersionProperty(PersistentProperty<?> property) {
 		return versionProperty != null && versionProperty.equals(property);
 	}
 
+	@Override
 	public String getName() {
 		return getType().getName();
 	}
 
+	@Override
 	@Nullable
 	public P getIdProperty() {
 		return idProperty;
 	}
 
+	@Override
 	@Nullable
 	public P getVersionProperty() {
 		return versionProperty;
 	}
 
+	@Override
 	public boolean hasIdProperty() {
 		return idProperty != null;
 	}
 
+	@Override
 	public boolean hasVersionProperty() {
 		return versionProperty != null;
 	}
 
+	@Override
 	public void addPersistentProperty(P property) {
 
 		Assert.notNull(property, "Property must not be null");
@@ -220,9 +229,13 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.evaluationContextProvider = provider;
 	}
 
+	/**
+	 * @param environment the {@code Environment} that this component runs in.
+	 * @since 3.3
+	 */
 	@Override
-	public void setEnvironmentAccessor(EnvironmentAccessor accessor) {
-		this.environmentAccessor = accessor;
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
 	}
 
 	/**
@@ -248,6 +261,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return property;
 	}
 
+	@Override
 	public void addAssociation(Association<P> association) {
 
 		Assert.notNull(association, "Association must not be null");
@@ -283,18 +297,22 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 				.filter(it -> it.isAnnotationPresent(annotationType)).collect(Collectors.toList());
 	}
 
+	@Override
 	public Class<T> getType() {
 		return information.getType();
 	}
 
+	@Override
 	public Alias getTypeAlias() {
 		return typeAlias.get();
 	}
 
+	@Override
 	public TypeInformation<T> getTypeInformation() {
 		return information;
 	}
 
+	@Override
 	public void doWithProperties(PropertyHandler<P> handler) {
 
 		Assert.notNull(handler, "PropertyHandler must not be null");
@@ -314,6 +332,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
+	@Override
 	public void doWithAssociations(AssociationHandler<P> handler) {
 
 		Assert.notNull(handler, "Handler must not be null");
@@ -323,6 +342,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
+	@Override
 	public void doWithAssociations(SimpleAssociationHandler handler) {
 
 		Assert.notNull(handler, "Handler must not be null");
@@ -350,6 +370,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 				it -> Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(getType(), it)));
 	}
 
+	@Override
 	public void verify() {
 
 		if (comparator != null) {
@@ -449,14 +470,26 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	}
 
 	/**
-	 * Obtain the {@link EnvironmentAccessor} providing access to the current
-	 * {@link org.springframework.core.env.Environment}.
+	 * Obtain a {@link ValueEvaluationContext} for a {@code rootObject}.
 	 *
-	 * @return never {@literal null}.
+	 * @param rootObject must not be {@literal null}.
+	 * @return the evaluation context including all potential extensions.
 	 * @since 3.3
 	 */
-	protected EnvironmentAccessor getEnvironmentAccessor() {
-		return environmentAccessor;
+	protected ValueEvaluationContext getValueEvaluationContext(Object rootObject) {
+		return ValueEvaluationContext.of(this.environment, getEvaluationContext(rootObject));
+	}
+
+	/**
+	 * Obtain a {@link ValueEvaluationContext} for a {@code rootObject} given {@link ExpressionDependencies}.
+	 *
+	 * @param rootObject must not be {@literal null}.
+	 * @param dependencies must not be {@literal null}.
+	 * @return the evaluation context with extensions loaded that satisfy {@link ExpressionDependencies}.
+	 * @since 3.3
+	 */
+	protected ValueEvaluationContext getValueEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+		return ValueEvaluationContext.of(this.environment, getEvaluationContext(rootObject, dependencies));
 	}
 
 	/**
@@ -534,6 +567,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			this.delegate = delegate;
 		}
 
+		@Override
 		public int compare(@Nullable Association<P> left, @Nullable Association<P> right) {
 
 			if (left == null) {

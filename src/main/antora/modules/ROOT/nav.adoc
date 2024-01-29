@@ -15,6 +15,7 @@
 ** xref:repositories/null-handling.adoc[]
 ** xref:repositories/projections.adoc[]
 * xref:query-by-example.adoc[]
+* xref:value-expressions.adoc[]
 * xref:auditing.adoc[]
 * xref:custom-conversions.adoc[]
 * xref:entity-callbacks.adoc[]

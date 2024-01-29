@@ -28,7 +28,9 @@ import org.springframework.util.Assert;
  * {@link SpelExpressionParser} and {@link EvaluationContext}.
  *
  * @author Oliver Gierke
+ * @deprecated since 3.3, use {@link CachingValueExpressionEvaluatorFactory} instead.
  */
+@Deprecated(since = "3.3")
 public class DefaultSpELExpressionEvaluator implements SpELExpressionEvaluator {
 
 	private final Object source;

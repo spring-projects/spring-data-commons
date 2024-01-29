@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.support.EnvironmentAccessor;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.ReflectionUtils;
@@ -74,9 +73,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final Method wither;
 	private final Lazy<Boolean> readable;
 	private final boolean immutable;
-
-
-	private @Nullable EnvironmentAccessor environmentAccessor;
 
 	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,
 			SimpleTypeHolder simpleTypeHolder) {
@@ -308,14 +304,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 		TypeInformation<?> targetType = associationTargetType.getNullable();
 		return targetType == null ? information.getRequiredActualType() : targetType;
-	}
-
-	protected EnvironmentAccessor getEnvironmentAccessor() {
-		return environmentAccessor;
-	}
-
-	public void setEnvironmentAccessor(EnvironmentAccessor environmentAccessor) {
-		this.environmentAccessor = environmentAccessor;
 	}
 
 	@Override
