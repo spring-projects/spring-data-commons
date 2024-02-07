@@ -24,6 +24,7 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -31,6 +32,7 @@ import org.springframework.util.StringUtils;
  *
  * @param <T> the type of the parameter
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class Parameter<T, P extends PersistentProperty<P>> {
 
@@ -72,7 +74,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 			}
 
 			Class<T> owningType = entity.getType();
-			return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
+			return ClassUtils.isInnerClass(owningType) && type.getType().equals(owningType.getEnclosingClass());
 		});
 
 		this.hasSpelExpression = Lazy.of(() -> StringUtils.hasText(getSpelExpression()));

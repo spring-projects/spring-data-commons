@@ -16,19 +16,27 @@
 package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.mapping.ParameterUnitTests.IFace.ClassMember;
+import org.springframework.data.mapping.ParameterUnitTests.IFace.RecordMember;
+import org.springframework.data.mapping.ParameterUnitTests.StaticType.NonStaticInner;
+import org.springframework.data.mapping.ParameterUnitTests.StaticType.RecordInner;
+import org.springframework.data.mapping.ParameterUnitTests.StaticType.StaticInner;
 import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link Parameter}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 @ExtendWith(MockitoExtension.class)
 class ParameterUnitTests<P extends PersistentProperty<P>> {
@@ -86,5 +94,82 @@ class ParameterUnitTests<P extends PersistentProperty<P>> {
 				stringEntity);
 
 		assertThat(left).isNotEqualTo(right);
+	}
+
+	@Test // GH-3038
+	void shouldNotConsiderRecordTypeOfInterfaceEnclosingClassParameter() {
+
+		PersistentEntity pe = Mockito.mock(PersistentEntity.class);
+		when(pe.getType()).thenReturn(RecordMember.class);
+
+		Parameter<IFace, P> iFace = new Parameter<IFace, P>("iFace", TypeInformation.of(IFace.class), annotations, pe);
+		assertThat(iFace.isEnclosingClassParameter()).isFalse();
+	}
+
+	@Test // GH-3038
+	void shouldNotConsiderMemberTypeOfInterfaceEnclosingClassParameter() {
+
+		PersistentEntity pe = Mockito.mock(PersistentEntity.class);
+		when(pe.getType()).thenReturn(ClassMember.class);
+
+		Parameter<IFace, P> iFace = new Parameter<IFace, P>("iFace", TypeInformation.of(IFace.class), annotations, pe);
+		assertThat(iFace.isEnclosingClassParameter()).isFalse();
+	}
+
+	@Test // GH-3038
+	void shouldConsiderMemberTypeOfClassEnclosingClassParameter() {
+
+		PersistentEntity pe = Mockito.mock(PersistentEntity.class);
+		when(pe.getType()).thenReturn(NonStaticInner.class);
+
+		Parameter<StaticType, P> iFace = new Parameter<StaticType, P>("outer", TypeInformation.of(StaticType.class),
+				annotations, pe);
+		assertThat(iFace.isEnclosingClassParameter()).isTrue();
+	}
+
+	@Test // GH-3038
+	void shouldNotConsiderStaticMemberTypeOfClassEnclosingClassParameter() {
+
+		PersistentEntity pe = Mockito.mock(PersistentEntity.class);
+		when(pe.getType()).thenReturn(StaticInner.class);
+
+		Parameter<StaticType, P> iFace = new Parameter<StaticType, P>("outer", TypeInformation.of(StaticType.class),
+				annotations, pe);
+		assertThat(iFace.isEnclosingClassParameter()).isFalse();
+	}
+
+	@Test // GH-3038
+	void shouldNotConsiderRecordMemberTypeOfClassEnclosingClassParameter() {
+
+		PersistentEntity pe = Mockito.mock(PersistentEntity.class);
+		when(pe.getType()).thenReturn(RecordInner.class);
+
+		Parameter<StaticType, P> iFace = new Parameter<StaticType, P>("outer", TypeInformation.of(StaticType.class),
+				annotations, pe);
+		assertThat(iFace.isEnclosingClassParameter()).isFalse();
+	}
+
+	interface IFace {
+
+		record RecordMember(IFace iFace) {
+		}
+
+		class ClassMember {
+			ClassMember(IFace iface) {}
+		}
+	}
+
+	static class StaticType {
+
+		class NonStaticInner {
+			NonStaticInner(StaticType outer) {}
+		}
+
+		static class StaticInner {
+			StaticInner(StaticType outer) {}
+		}
+
+		record RecordInner(StaticType outer) {
+		}
 	}
 }
