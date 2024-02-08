@@ -22,6 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,8 +100,9 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 		assertThat(constructor).isNotNull();
 
-		Parameter<?, P> parameter = constructor.getParameters().iterator().next();
-		assertThat(constructor.isParentParameter(parameter)).isTrue();
+		List<Parameter<Object, P>> parameters = constructor.getParameters();
+		assertThat(constructor.isParentParameter(parameters.get(0))).isTrue();
+		assertThat(constructor.isParentParameter(parameters.get(1))).isFalse();
 	}
 
 	@Test // DATACMNS-1082, DATACMNS-1126
@@ -231,6 +233,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 		class Inner {
 
+			public Inner(Outer outer) {}
 		}
 	}
 

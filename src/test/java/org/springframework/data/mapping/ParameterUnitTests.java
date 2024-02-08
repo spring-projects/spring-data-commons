@@ -162,7 +162,7 @@ class ParameterUnitTests<P extends PersistentProperty<P>> {
 	static class StaticType {
 
 		class NonStaticInner {
-			NonStaticInner(StaticType outer) {}
+			NonStaticInner() {}
 		}
 
 		static class StaticInner {
