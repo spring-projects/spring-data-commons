@@ -156,10 +156,8 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 			return false;
 		}
 
-		return Objects.equals(this.name, that.name)
-				&& Objects.equals(this.type, that.type)
-				&& Objects.equals(this.key, that.key)
-				&& Objects.equals(this.entity, that.entity);
+		return Objects.equals(this.name, that.name) && Objects.equals(this.type, that.type)
+				&& Objects.equals(this.key, that.key) && Objects.equals(this.entity, that.entity);
 	}
 
 	@Override
@@ -183,6 +181,15 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		return property.equals(referencedProperty);
 	}
 
+	/**
+	 * Returns whether this parameter is a candidate for the enclosing class by checking the parameter type against
+	 * {@link Class#getEnclosingClass()} and whether the defining class is an inner non-static one.
+	 * <p>
+	 * Note that for a proper check the parameter position must be compared to ensure that only the first parameter (at
+	 * index {@code 0}/zero) qualifies as enclosing class instance parameter.
+	 *
+	 * @return {@literal true} if this parameter is a candidate for the enclosing class instance.
+	 */
 	boolean isEnclosingClassParameter() {
 		return enclosingClassCache.get();
 	}
