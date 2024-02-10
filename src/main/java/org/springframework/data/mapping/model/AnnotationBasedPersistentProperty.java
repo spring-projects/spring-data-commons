@@ -37,7 +37,6 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.ReflectionUtils;
@@ -197,10 +196,12 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return isTransient.get();
 	}
 
+	@Override
 	public boolean isIdProperty() {
 		return isId.get();
 	}
 
+	@Override
 	public boolean isVersionProperty() {
 		return isVersion.get();
 	}
@@ -226,6 +227,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param annotationType must not be {@literal null}.
 	 * @return {@literal null} if annotation type not found on property.
 	 */
+	@Override
 	@Nullable
 	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 
@@ -262,11 +264,12 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	}
 
 	/**
-	 * Returns whether the property carries the an annotation of the given type.
+	 * Returns whether the property carries the annotation of the given type.
 	 *
 	 * @param annotationType the annotation type to look up.
-	 * @return
+	 * @return {@literal true} if the annotation is present, {@literal false} otherwise.
 	 */
+	@Override
 	public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
 		return doFindAnnotation(annotationType).isPresent();
 	}
