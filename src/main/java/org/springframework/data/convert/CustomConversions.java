@@ -55,7 +55,19 @@ import org.springframework.util.ObjectUtils;
  * Value object to capture custom conversion. That is essentially a {@link List} of converters and some additional logic
  * around them. The converters build up two sets of types which store-specific basic types can be converted into and
  * from. These types will be considered simple ones (which means they neither need deeper inspection nor nested
- * conversion. Thus, the {@link CustomConversions} also act as factory for {@link SimpleTypeHolder} .
+ * conversion. Thus, the {@link CustomConversions} also act as factory for {@link SimpleTypeHolder}.
+ * <p>
+ * Custom conversions supports the following converters:
+ * <ul>
+ * <li>Converters built by {@link ConverterBuilder}</li>
+ * <li>{@link GenericConverter}</li>
+ * <li>{@link ConverterFactory}</li>
+ * <li>{@link Converter}</li>
+ * </ul>
+ * Note that CustomConversions does not support {@link org.springframework.core.convert.converter.ConditionalConverter}
+ * as custom conversions maintains a registry of convertible type pairs; We cannot determine convertible types based on
+ * {@code ConditionalConverter#matches}, instead, we require a converter to provide its convertible types either through
+ * the class declaration or {@code GenericConverter#getConvertibleTypes}.
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
@@ -119,9 +131,9 @@ public class CustomConversions {
 
 		List<Object> registeredConverters = collectPotentialConverterRegistrations(
 				converterConfiguration.getStoreConversions(), converterConfiguration.getUserConverters()).stream()
-						.filter(this::isSupportedConverter).filter(this::shouldRegister)
-						.map(ConverterRegistrationIntent::getConverterRegistration).map(this::register).distinct()
-						.collect(Collectors.toList());
+				.filter(this::isSupportedConverter).filter(this::shouldRegister)
+				.map(ConverterRegistrationIntent::getConverterRegistration).map(this::register).distinct()
+				.collect(Collectors.toList());
 
 		Collections.reverse(registeredConverters);
 
