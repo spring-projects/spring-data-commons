@@ -37,7 +37,7 @@ pipeline {
 				script {
 					docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
 						sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
-							"./mvnw -s settings.xml clean dependency:list verify -Dsort -B"
+							"./mvnw -s settings.xml clean dependency:list verify -Dsort -B -U"
 					}
 				}
 			}
