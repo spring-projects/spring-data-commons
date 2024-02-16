@@ -42,7 +42,7 @@ pipeline {
 							"DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} " +
 							"DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} " +
 							"GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} " +
-							"./mvnw -s settings.xml clean dependency:list verify -Dsort -B"
+							"./mvnw -s settings.xml clean dependency:list verify -Dsort -B -U"
 					}
 				}
 			}
