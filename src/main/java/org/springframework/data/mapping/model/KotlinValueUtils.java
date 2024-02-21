@@ -30,9 +30,9 @@ import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -94,8 +94,9 @@ class KotlinValueUtils {
 
 	private static KTypeProjection[] stubKTypeProjections(KClass<?> kotlinClass) {
 
-		return IntStream.range(0, kotlinClass.getTypeParameters().size()).mapToObj(it -> KTypeProjection.star)
-				.toArray(KTypeProjection[]::new);
+		KTypeProjection[] kTypeProjections = new KTypeProjection[kotlinClass.getTypeParameters().size()];
+		Arrays.fill(kTypeProjections, KTypeProjection.star);
+		return kTypeProjections;
 	}
 
 	/**
