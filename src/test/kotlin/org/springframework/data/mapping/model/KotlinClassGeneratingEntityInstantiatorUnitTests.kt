@@ -21,8 +21,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.data.annotation.PersistenceConstructor
+import org.springframework.data.annotation.Persistent
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
+import org.springframework.data.mapping.model.KotlinValueUtils.BoxingRules
+import kotlin.jvm.internal.Reflection
 import kotlin.reflect.KClass
 
 /**
@@ -149,6 +152,28 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		assertThat(instance.aBool).isTrue()
 	}
 
+	@Test // GH-3041
+	fun `should pick preferred constructor if multiple with same argument count are present`() {
+
+		val entity =
+			mockk<PersistentEntity<WithConstructorsHavingSameParameterCount, SamplePersistentProperty>>()
+		val constructor =
+			PreferredConstructorDiscoverer.discover<WithConstructorsHavingSameParameterCount, SamplePersistentProperty>(
+				WithConstructorsHavingSameParameterCount::class.java
+			)
+
+		every { provider.getParameterValue<Any>(any()) }.returns(1L).andThen(null)
+		every { entity.instanceCreatorMetadata } returns constructor
+		every { entity.type } returns constructor!!.constructor.declaringClass
+		every { entity.typeInformation } returns mockk()
+
+		val instance: WithConstructorsHavingSameParameterCount =
+			KotlinClassGeneratingEntityInstantiator().createInstance(entity, provider)
+
+		assertThat(instance.id).isEqualTo(1L)
+		assertThat(instance.notes).isEmpty();
+	}
+
 	@Test // DATACMNS-1338
 	fun `should create instance using @PersistenceConstructor`() {
 
@@ -270,6 +295,11 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 		val aByte: Byte = 0, val aShort: Short = 0, val anInt: Int = 0, val aLong: Long = 0L,
 		val aFloat: Float = 0.0f, val aDouble: Double = 0.0, val aChar: Char = 'a', val aBool: Boolean = true
 	)
+
+
+	data class WithConstructorsHavingSameParameterCount @PersistenceConstructor constructor(val id: Long?, val notes: Map<String, String> = emptyMap()) {
+		constructor(notes: Map<String, String>, additionalNotes: Map<String, String> = emptyMap()) : this(null, notes + additionalNotes)
+	}
 
 	data class ContactWithPersistenceConstructor(val firstname: String, val lastname: String) {
 
