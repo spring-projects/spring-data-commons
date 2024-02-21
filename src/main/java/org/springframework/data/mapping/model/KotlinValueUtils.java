@@ -75,18 +75,14 @@ class KotlinValueUtils {
 	public static ValueBoxing getConstructorValueHierarchy(Class<?> cls) {
 
 		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(cls);
-		KType kType = extractKType(kotlinClass);
-		return new ValueBoxing(BoxingRules.CONSTRUCTOR, kType, kotlinClass, false);
+		return new ValueBoxing(BoxingRules.CONSTRUCTOR, typeOf(kotlinClass), kotlinClass, false);
 	}
 
 	/**
 	 * Get the {@link KType} for a given {@link KClass} and potentially fill missing generic type arguments with
 	 * {@link KTypeProjection#star} to prevent Kotlin internal checks to fail.
-	 *
-	 * @param kotlinClass
-	 * @return
 	 */
-	private static KType extractKType(KClass<?> kotlinClass) {
+	private static KType typeOf(KClass<?> kotlinClass) {
 
 		return kotlinClass.getTypeParameters().isEmpty() ? Reflection.typeOf(kotlinClass)
 				: Reflection.typeOf(JvmClassMappingKt.getJavaClass(kotlinClass), stubKTypeProjections(kotlinClass));
