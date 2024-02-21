@@ -25,12 +25,14 @@ import kotlin.reflect.KParameter;
 import kotlin.reflect.KProperty;
 import kotlin.reflect.KType;
 import kotlin.reflect.KTypeParameter;
+import kotlin.reflect.KTypeProjection;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -39,6 +41,7 @@ import org.springframework.util.Assert;
  * Utilities for Kotlin Value class support.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 3.2
  */
 class KotlinValueUtils {
@@ -72,7 +75,27 @@ class KotlinValueUtils {
 	public static ValueBoxing getConstructorValueHierarchy(Class<?> cls) {
 
 		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(cls);
-		return new ValueBoxing(BoxingRules.CONSTRUCTOR, Reflection.typeOf(kotlinClass), kotlinClass, false);
+		KType kType = extractKType(kotlinClass);
+		return new ValueBoxing(BoxingRules.CONSTRUCTOR, kType, kotlinClass, false);
+	}
+
+	/**
+	 * Get the {@link KType} for a given {@link KClass} and potentially fill missing generic type arguments with
+	 * {@link KTypeProjection#star} to prevent Kotlin internal checks to fail.
+	 *
+	 * @param kotlinClass
+	 * @return
+	 */
+	private static KType extractKType(KClass<?> kotlinClass) {
+
+		return kotlinClass.getTypeParameters().isEmpty() ? Reflection.typeOf(kotlinClass)
+				: Reflection.typeOf(JvmClassMappingKt.getJavaClass(kotlinClass), stubKTypeProjections(kotlinClass));
+	}
+
+	private static KTypeProjection[] stubKTypeProjections(KClass<?> kotlinClass) {
+
+		return IntStream.range(0, kotlinClass.getTypeParameters().size()).mapToObj(it -> KTypeProjection.star)
+				.toArray(KTypeProjection[]::new);
 	}
 
 	/**
