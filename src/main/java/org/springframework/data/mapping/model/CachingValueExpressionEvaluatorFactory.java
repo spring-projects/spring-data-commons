@@ -23,6 +23,7 @@ import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentLruCache;
 
@@ -38,11 +39,29 @@ public class CachingValueExpressionEvaluatorFactory implements ValueEvaluationCo
 	private final EnvironmentCapable environmentProvider;
 	private final EvaluationContextProvider evaluationContextProvider;
 
+	/**
+	 * Creates a new {@link CachingValueExpressionEvaluatorFactory} for the given {@link ExpressionParser},
+	 * {@link EnvironmentCapable Environment provider} and {@link EvaluationContextProvider} with a cache size of 256.
+	 *
+	 * @param expressionParser
+	 * @param environmentProvider
+	 * @param evaluationContextProvider
+	 */
 	public CachingValueExpressionEvaluatorFactory(ExpressionParser expressionParser,
 			EnvironmentCapable environmentProvider, EvaluationContextProvider evaluationContextProvider) {
 		this(expressionParser, environmentProvider, evaluationContextProvider, 256);
 	}
 
+	/**
+	 * Creates a new {@link CachingValueExpressionEvaluatorFactory} for the given {@link ExpressionParser},
+	 * {@link EnvironmentCapable Environment provider} and {@link EvaluationContextProvider} with a specific
+	 * {@code cacheSize}.
+	 *
+	 * @param expressionParser
+	 * @param environmentProvider
+	 * @param evaluationContextProvider
+	 * @param cacheSize
+	 */
 	public CachingValueExpressionEvaluatorFactory(ExpressionParser expressionParser,
 			EnvironmentCapable environmentProvider, EvaluationContextProvider evaluationContextProvider, int cacheSize) {
 
@@ -55,13 +74,13 @@ public class CachingValueExpressionEvaluatorFactory implements ValueEvaluationCo
 	}
 
 	@Override
-	public ValueEvaluationContext getEvaluationContext(Object rootObject) {
+	public ValueEvaluationContext getEvaluationContext(@Nullable Object rootObject) {
 		return ValueEvaluationContext.of(environmentProvider.getEnvironment(),
 				evaluationContextProvider.getEvaluationContext(rootObject));
 	}
 
 	@Override
-	public ValueEvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+	public ValueEvaluationContext getEvaluationContext(@Nullable Object rootObject, ExpressionDependencies dependencies) {
 		return ValueEvaluationContext.of(environmentProvider.getEnvironment(),
 				evaluationContextProvider.getEvaluationContext(rootObject, dependencies));
 	}

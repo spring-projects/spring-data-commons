@@ -17,6 +17,7 @@ package org.springframework.data.expression;
 
 import org.springframework.core.env.Environment;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.lang.Nullable;
 
 /**
  * Default {@link ValueEvaluationContext}.
@@ -24,7 +25,7 @@ import org.springframework.expression.EvaluationContext;
  * @author Mark Paluch
  * @since 3.3
  */
-record DefaultValueEvaluationContext(Environment environment,
+record DefaultValueEvaluationContext(@Nullable Environment environment,
 		EvaluationContext evaluationContext) implements ValueEvaluationContext {
 
 	@Override

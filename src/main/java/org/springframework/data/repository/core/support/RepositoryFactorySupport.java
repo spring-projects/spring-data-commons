@@ -38,11 +38,16 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.EnvironmentCapable;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
+import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -54,14 +59,20 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.DefaultRepositoryInvocationMulticaster;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
+import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.ReflectionUtils;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionalProxy;
 import org.springframework.util.Assert;
@@ -80,9 +91,13 @@ import org.springframework.util.ObjectUtils;
  * @author John Blum
  * @author Johannes Englmeier
  */
-public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
+public abstract class RepositoryFactorySupport
+		implements BeanClassLoaderAware, BeanFactoryAware, EnvironmentAware, EnvironmentCapable {
 
 	static final GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
+	private static final ExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
+	private static final ValueExpressionParser VALUE_PARSER = ValueExpressionParser.create(() -> EXPRESSION_PARSER);
+
 	private static final Log logger = LogFactory.getLog(RepositoryFactorySupport.class);
 
 	static {
@@ -93,15 +108,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache;
 	private final List<RepositoryProxyPostProcessor> postProcessors;
 
-	private Optional<Class<?>> repositoryBaseClass;
+	private @Nullable Class<?> repositoryBaseClass;
 	private boolean exposeMetadata;
 	private @Nullable QueryLookupStrategy.Key queryLookupStrategyKey;
-	private List<QueryCreationListener<?>> queryPostProcessors;
-	private List<RepositoryMethodInvocationListener> methodInvocationListeners;
+	private final List<QueryCreationListener<?>> queryPostProcessors;
+	private final List<RepositoryMethodInvocationListener> methodInvocationListeners;
 	private NamedQueries namedQueries;
 	private ClassLoader classLoader;
-	private QueryMethodEvaluationContextProvider evaluationContextProvider;
+	private EvaluationContextProvider evaluationContextProvider;
 	private BeanFactory beanFactory;
+	private Environment environment;
 	private Lazy<ProjectionFactory> projectionFactory;
 
 	private final QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
@@ -112,14 +128,17 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.repositoryInformationCache = new HashMap<>(16);
 		this.postProcessors = new ArrayList<>();
 
-		this.repositoryBaseClass = Optional.empty();
 		this.namedQueries = PropertiesBasedNamedQueries.EMPTY;
 		this.classLoader = org.springframework.util.ClassUtils.getDefaultClassLoader();
-		this.evaluationContextProvider = QueryMethodEvaluationContextProvider.DEFAULT;
+		this.evaluationContextProvider = QueryMethodValueEvaluationContextAccessor.DEFAULT_CONTEXT_PROVIDER;
 		this.queryPostProcessors = new ArrayList<>();
 		this.queryPostProcessors.add(collectingListener);
 		this.methodInvocationListeners = new ArrayList<>();
 		this.projectionFactory = createProjectionFactory();
+	}
+
+	EvaluationContextProvider getEvaluationContextProvider() {
+		return evaluationContextProvider;
 	}
 
 	/**
@@ -143,7 +162,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	}
 
 	/**
-	 * Sets the strategy of how to lookup a query to execute finders.
+	 * Sets the strategy of how to look up a query to execute finders.
 	 *
 	 * @param key
 	 */
@@ -156,12 +175,12 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 *
 	 * @param namedQueries the namedQueries to set
 	 */
-	public void setNamedQueries(NamedQueries namedQueries) {
+	public void setNamedQueries(@Nullable NamedQueries namedQueries) {
 		this.namedQueries = namedQueries == null ? PropertiesBasedNamedQueries.EMPTY : namedQueries;
 	}
 
 	@Override
-	public void setBeanClassLoader(ClassLoader classLoader) {
+	public void setBeanClassLoader(@Nullable ClassLoader classLoader) {
 		this.classLoader = classLoader == null ? org.springframework.util.ClassUtils.getDefaultClassLoader() : classLoader;
 		this.projectionFactory = createProjectionFactory();
 	}
@@ -172,15 +191,42 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.projectionFactory = createProjectionFactory();
 	}
 
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
+	}
+
+	@Override
+	public Environment getEnvironment() {
+
+		if (this.environment == null) {
+			this.environment = new StandardEnvironment();
+		}
+
+		return this.environment;
+	}
+
 	/**
 	 * Sets the {@link QueryMethodEvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined
 	 * queries.
 	 *
 	 * @param evaluationContextProvider can be {@literal null}, defaults to
 	 *          {@link QueryMethodEvaluationContextProvider#DEFAULT}.
+	 * @deprecated since 3.4, use {@link #setEvaluationContextProvider(EvaluationContextProvider)} instead.
 	 */
-	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
-		this.evaluationContextProvider = evaluationContextProvider == null ? QueryMethodEvaluationContextProvider.DEFAULT
+	@Deprecated(since = "3.4")
+	public void setEvaluationContextProvider(@Nullable QueryMethodEvaluationContextProvider evaluationContextProvider) {
+		setEvaluationContextProvider(evaluationContextProvider == null ? EvaluationContextProvider.DEFAULT
+				: evaluationContextProvider.getEvaluationContextProvider());
+	}
+
+	/**
+	 * Sets the {@link EvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined queries.
+	 *
+	 * @param evaluationContextProvider can be {@literal null}, defaults to {@link EvaluationContextProvider#DEFAULT}.
+	 */
+	public void setEvaluationContextProvider(@Nullable EvaluationContextProvider evaluationContextProvider) {
+		this.evaluationContextProvider = evaluationContextProvider == null ? EvaluationContextProvider.DEFAULT
 				: evaluationContextProvider;
 	}
 
@@ -191,15 +237,15 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @param repositoryBaseClass the repository base class to back the repository proxy, can be {@literal null}.
 	 * @since 1.11
 	 */
-	public void setRepositoryBaseClass(Class<?> repositoryBaseClass) {
-		this.repositoryBaseClass = Optional.ofNullable(repositoryBaseClass);
+	public void setRepositoryBaseClass(@Nullable Class<?> repositoryBaseClass) {
+		this.repositoryBaseClass = repositoryBaseClass;
 	}
 
 	/**
 	 * Adds a {@link QueryCreationListener} to the factory to plug in functionality triggered right after creation of
 	 * {@link RepositoryQuery} instances.
 	 *
-	 * @param listener
+	 * @param listener the listener to add.
 	 */
 	public void addQueryCreationListener(QueryCreationListener<?> listener) {
 
@@ -211,7 +257,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * Adds a {@link RepositoryMethodInvocationListener} to the factory to plug in functionality triggered right after
 	 * running {@link RepositoryQuery query methods} and {@link Method fragment methods}.
 	 *
-	 * @param listener
+	 * @param listener the listener to add.
 	 * @since 2.4
 	 */
 	public void addInvocationListener(RepositoryMethodInvocationListener listener) {
@@ -225,7 +271,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * the proxy gets created. Note that the {@link QueryExecutorMethodInterceptor} will be added to the proxy
 	 * <em>after</em> the {@link RepositoryProxyPostProcessor}s are considered.
 	 *
-	 * @param processor
+	 * @param processor the post-processor to add.
 	 */
 	public void addRepositoryProxyPostProcessor(RepositoryProxyPostProcessor processor) {
 
@@ -236,8 +282,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	/**
 	 * Creates {@link RepositoryFragments} based on {@link RepositoryMetadata} to add repository-specific extensions.
 	 *
-	 * @param metadata
-	 * @return
+	 * @param metadata the repository metadata to use.
+	 * @return fragment composition.
 	 */
 	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
 		return RepositoryFragments.empty();
@@ -246,8 +292,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	/**
 	 * Creates {@link RepositoryComposition} based on {@link RepositoryMetadata} for repository-specific method handling.
 	 *
-	 * @param metadata
-	 * @return
+	 * @param metadata the repository metadata to use.
+	 * @return repository composition.
 	 */
 	private RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata) {
 		return RepositoryComposition.fromMetadata(metadata);
@@ -257,7 +303,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * Returns a repository instance for the given interface.
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
-	 * @return
+	 * @return the implemented repository interface.
 	 */
 	public <T> T getRepository(Class<T> repositoryInterface) {
 		return getRepository(repositoryInterface, RepositoryFragments.empty());
@@ -269,7 +315,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 * @param customImplementation must not be {@literal null}.
-	 * @return
+	 * @return the implemented repository interface.
 	 */
 	public <T> T getRepository(Class<T> repositoryInterface, Object customImplementation) {
 		return getRepository(repositoryInterface, RepositoryFragments.just(customImplementation));
@@ -281,7 +327,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 * @param fragments must not be {@literal null}.
-	 * @return
+	 * @return the implemented repository interface.
 	 * @since 2.0
 	 */
 	@SuppressWarnings({ "unchecked" })
@@ -298,7 +344,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		StartupStep repositoryInit = onEvent(applicationStartup, "spring.data.repository.init", repositoryInterface);
 
-		repositoryBaseClass.ifPresent(it -> repositoryInit.tag("baseClass", it.getName()));
+		if (repositoryBaseClass != null) {
+			repositoryInit.tag("baseClass", repositoryBaseClass.getName());
+		}
 
 		StartupStep repositoryMetadataStep = onEvent(applicationStartup, "spring.data.repository.metadata",
 				repositoryInterface);
@@ -384,7 +432,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		}
 
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
-				evaluationContextProvider);
+				new ValueExpressionDelegate(
+						new QueryMethodValueEvaluationContextAccessor(getEnvironment(), evaluationContextProvider),
+						VALUE_PARSER));
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, getProjectionFactory(), queryLookupStrategy,
 				namedQueries, queryPostProcessors, methodInvocationListeners));
 
@@ -412,7 +462,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	protected ProjectionFactory getProjectionFactory(ClassLoader classLoader, BeanFactory beanFactory) {
 
-		SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+		SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory(EXPRESSION_PARSER);
 		factory.setBeanClassLoader(classLoader);
 		factory.setBeanFactory(beanFactory);
 
@@ -476,7 +526,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
 
-				Class<?> baseClass = repositoryBaseClass.orElse(getRepositoryBaseClass(metadata));
+			Class<?> baseClass = repositoryBaseClass != null ? repositoryBaseClass : getRepositoryBaseClass(metadata);
 
 				return new DefaultRepositoryInformation(metadata, baseClass, composition);
 			});
@@ -531,10 +581,32 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * @param evaluationContextProvider will never be {@literal null}.
 	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
 	 * @since 1.9
+	 * @deprecated since 3.4, use {@link #getQueryLookupStrategy(Key, ValueExpressionDelegate)} instead to support
+	 *             {@link org.springframework.data.expression.ValueExpression} in query methods.
 	 */
+	@Deprecated(since = "3.4")
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		return Optional.empty();
+	}
+
+	/**
+	 * Returns the {@link QueryLookupStrategy} for the given {@link Key} and {@link ValueExpressionDelegate}. Favor
+	 * implementing this method over {@link #getQueryLookupStrategy(Key, QueryMethodEvaluationContextProvider)} for
+	 * extended {@link org.springframework.data.expression.ValueExpression} support.
+	 * <p>
+	 * This method delegates to {@link #getQueryLookupStrategy(Key, QueryMethodEvaluationContextProvider)} unless
+	 * overridden.
+	 *
+	 * @param key can be {@literal null}.
+	 * @param valueExpressionDelegate will never be {@literal null}.
+	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
+	 * @since 3.4
+	 */
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
+			ValueExpressionDelegate valueExpressionDelegate) {
+		return getQueryLookupStrategy(key,
+				new ExtensionAwareQueryMethodEvaluationContextProvider(evaluationContextProvider));
 	}
 
 	/**

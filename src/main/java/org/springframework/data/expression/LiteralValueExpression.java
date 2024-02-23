@@ -39,4 +39,9 @@ record LiteralValueExpression(String expression) implements ValueExpression {
 		return expression;
 	}
 
+	@Override
+	public Class<?> getValueType(ValueEvaluationContext context) {
+		return String.class;
+	}
+
 }

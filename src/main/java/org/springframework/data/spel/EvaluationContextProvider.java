@@ -17,6 +17,7 @@ package org.springframework.data.spel;
 
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
 
 /**
  * Provides a way to access a centrally defined potentially shared {@link StandardEvaluationContext}.
@@ -44,7 +45,7 @@ public interface EvaluationContextProvider {
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
 	 * @return
 	 */
-	EvaluationContext getEvaluationContext(Object rootObject);
+	EvaluationContext getEvaluationContext(@Nullable Object rootObject);
 
 	/**
 	 * Return a tailored {@link EvaluationContext} built using the given parameter values and considering
@@ -57,7 +58,7 @@ public interface EvaluationContextProvider {
 	 * @return
 	 * @since 2.4
 	 */
-	default EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+	default EvaluationContext getEvaluationContext(@Nullable Object rootObject, ExpressionDependencies dependencies) {
 		return getEvaluationContext(rootObject);
 	}
 }

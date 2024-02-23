@@ -28,7 +28,9 @@ import org.springframework.expression.EvaluationContext;
  *
  * @author Mark Paluch
  * @since 2.4
+ * @deprecated since 4.0 in favor of {@link QueryMethodValueEvaluationContextAccessor}.
  */
+@Deprecated(since = "4.0")
 public interface ReactiveQueryMethodEvaluationContextProvider extends QueryMethodEvaluationContextProvider {
 
 	ReactiveQueryMethodEvaluationContextProvider DEFAULT = new ReactiveExtensionAwareQueryMethodEvaluationContextProvider(

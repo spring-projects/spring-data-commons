@@ -17,6 +17,7 @@ package org.springframework.data.expression;
 
 import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.lang.Nullable;
 
 /**
  * SPI to provide to access a centrally defined potentially shared {@link ValueEvaluationContext}.
@@ -24,6 +25,7 @@ import org.springframework.expression.EvaluationContext;
  * @author Mark Paluch
  * @since 3.3
  */
+@FunctionalInterface
 public interface ValueEvaluationContextProvider {
 
 	/**
@@ -32,7 +34,7 @@ public interface ValueEvaluationContextProvider {
 	 * @param rootObject the root object to set in the {@link EvaluationContext}.
 	 * @return
 	 */
-	ValueEvaluationContext getEvaluationContext(Object rootObject);
+	ValueEvaluationContext getEvaluationContext(@Nullable Object rootObject);
 
 	/**
 	 * Return a tailored {@link EvaluationContext} built using the given parameter values and considering
@@ -44,7 +46,8 @@ public interface ValueEvaluationContextProvider {
 	 * @param dependencies the requested expression dependencies to be available.
 	 * @return
 	 */
-	default ValueEvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+	default ValueEvaluationContext getEvaluationContext(@Nullable Object rootObject,
+			ExpressionDependencies dependencies) {
 		return getEvaluationContext(rootObject);
 	}
 }

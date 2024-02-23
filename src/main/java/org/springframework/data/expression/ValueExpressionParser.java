@@ -28,6 +28,16 @@ import org.springframework.expression.ParseException;
 public interface ValueExpressionParser {
 
 	/**
+	 * Creates a default parser to parse expression strings.
+	 *
+	 * @return the parser instance.
+	 * @since 3.4
+	 */
+	static ValueExpressionParser create() {
+		return DefaultValueExpressionParser.DEFAULT;
+	}
+
+	/**
 	 * Creates a new parser to parse expression strings.
 	 *
 	 * @param configuration the parser context configuration.

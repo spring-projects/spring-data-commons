@@ -72,4 +72,10 @@ record CompositeValueExpression(String raw, List<ValueExpression> expressions) i
 
 		return builder.toString();
 	}
+
+	@Override
+	public Class<?> getValueType(ValueEvaluationContext context) {
+		return String.class;
+	}
+
 }

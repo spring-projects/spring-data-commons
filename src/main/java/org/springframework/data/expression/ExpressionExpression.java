@@ -47,9 +47,14 @@ record ExpressionExpression(Expression expression, ExpressionDependencies depend
 	public Object evaluate(ValueEvaluationContext context) {
 
 		EvaluationContext evaluationContext = context.getEvaluationContext();
-		if (evaluationContext != null) {
-			return expression.getValue(evaluationContext);
-		}
-		return expression.getValue();
+		return evaluationContext != null ? expression.getValue(evaluationContext) : expression.getValue();
 	}
+
+	@Override
+	public Class<?> getValueType(ValueEvaluationContext context) {
+
+		EvaluationContext evaluationContext = context.getEvaluationContext();
+		return evaluationContext != null ? expression.getValueType(evaluationContext) : expression.getValueType();
+	}
+
 }
