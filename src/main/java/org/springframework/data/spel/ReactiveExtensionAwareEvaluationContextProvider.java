@@ -31,6 +31,7 @@ import org.springframework.data.util.Predicates;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
 
 /**
  * A reactive {@link EvaluationContextProvider} that assembles an {@link EvaluationContext} from a list of
@@ -81,13 +82,13 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 	}
 
 	@Override
-	public Mono<StandardEvaluationContext> getEvaluationContextLater(Object rootObject) {
+	public Mono<StandardEvaluationContext> getEvaluationContextLater(@Nullable Object rootObject) {
 		return getExtensions(Predicates.isTrue()) //
 				.map(it -> evaluationContextProvider.doGetEvaluationContext(rootObject, it));
 	}
 
 	@Override
-	public Mono<StandardEvaluationContext> getEvaluationContextLater(Object rootObject,
+	public Mono<StandardEvaluationContext> getEvaluationContextLater(@Nullable Object rootObject,
 			ExpressionDependencies dependencies) {
 
 		return getExtensions(it -> dependencies.stream().anyMatch(it::provides)) //

@@ -20,13 +20,13 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.data.expression.ReactiveValueEvaluationContextProvider;
+import org.springframework.data.expression.ValueEvaluationContext;
+import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExpressionDependencies;
-import org.springframework.data.spel.ReactiveExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ExtensionIdAware;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.util.Assert;
 
 /**
  * An reactive {@link QueryMethodEvaluationContextProvider} that assembles an {@link EvaluationContext} from a list of
@@ -35,11 +35,12 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  * @since 2.4
+ * @deprecated since 3.4 in favor of {@link QueryMethodValueEvaluationContextAccessor}.
  */
+@Deprecated(since = "3.4")
 public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
+		extends ExtensionAwareQueryMethodEvaluationContextProvider
 		implements ReactiveQueryMethodEvaluationContextProvider {
-
-	private final ReactiveExtensionAwareEvaluationContextProvider delegate;
 
 	/**
 	 * Create a new {@link ReactiveExtensionAwareQueryMethodEvaluationContextProvider}.
@@ -48,10 +49,7 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	 *          be {@literal null}.
 	 */
 	public ReactiveExtensionAwareQueryMethodEvaluationContextProvider(ListableBeanFactory beanFactory) {
-
-		Assert.notNull(beanFactory, "ListableBeanFactory must not be null");
-
-		this.delegate = new ReactiveExtensionAwareEvaluationContextProvider(beanFactory);
+		super(beanFactory);
 	}
 
 	/**
@@ -62,61 +60,39 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 	 * @param extensions must not be {@literal null}.
 	 */
 	public ReactiveExtensionAwareQueryMethodEvaluationContextProvider(List<? extends ExtensionIdAware> extensions) {
-
-		Assert.notNull(extensions, "EvaluationContextExtensions must not be null");
-
-		this.delegate = new ReactiveExtensionAwareEvaluationContextProvider(extensions);
+		super(new QueryMethodValueEvaluationContextAccessor(QueryMethodValueEvaluationContextAccessor.ENVIRONMENT,
+				extensions));
 	}
 
-	@Override
-	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
-
-		EvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues);
-
-		if (evaluationContext instanceof StandardEvaluationContext) {
-			((StandardEvaluationContext) evaluationContext).setVariables(
-					ExtensionAwareQueryMethodEvaluationContextProvider.collectVariables(parameters, parameterValues));
-		}
-
-		return evaluationContext;
-	}
-
-	@Override
-	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues,
-			ExpressionDependencies dependencies) {
-
-		EvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
-
-		if (evaluationContext instanceof StandardEvaluationContext) {
-			((StandardEvaluationContext) evaluationContext).setVariables(
-					ExtensionAwareQueryMethodEvaluationContextProvider.collectVariables(parameters, parameterValues));
-		}
-
-		return evaluationContext;
+	/**
+	 * Creates a new {@link ReactiveExtensionAwareQueryMethodEvaluationContextProvider}.
+	 *
+	 * @param evaluationContextProvider to lookup the {@link EvaluationContextExtension}s from, must not be
+	 *          {@literal null}.
+	 */
+	public ReactiveExtensionAwareQueryMethodEvaluationContextProvider(
+			EvaluationContextProvider evaluationContextProvider) {
+		super(new QueryMethodValueEvaluationContextAccessor(QueryMethodValueEvaluationContextAccessor.ENVIRONMENT,
+				evaluationContextProvider));
 	}
 
 	@Override
 	public <T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContextLater(T parameters,
 			Object[] parameterValues) {
 
-		Mono<StandardEvaluationContext> evaluationContext = delegate.getEvaluationContextLater(parameterValues);
-
-		return evaluationContext
-				.doOnNext(it -> it.setVariables(
-						ExtensionAwareQueryMethodEvaluationContextProvider.collectVariables(parameters, parameterValues)))
-				.cast(EvaluationContext.class);
+		return createProvider(parameters).getEvaluationContextLater(parameterValues)
+				.map(ValueEvaluationContext::getRequiredEvaluationContext);
 	}
 
 	@Override
 	public <T extends Parameters<?, ?>> Mono<EvaluationContext> getEvaluationContextLater(T parameters,
 			Object[] parameterValues, ExpressionDependencies dependencies) {
 
-		Mono<StandardEvaluationContext> evaluationContext = delegate.getEvaluationContextLater(parameterValues,
-				dependencies);
+		return createProvider(parameters).getEvaluationContextLater(parameterValues, dependencies)
+				.map(ValueEvaluationContext::getRequiredEvaluationContext);
+	}
 
-		return evaluationContext
-				.doOnNext(it -> it.setVariables(
-						ExtensionAwareQueryMethodEvaluationContextProvider.collectVariables(parameters, parameterValues)))
-				.cast(EvaluationContext.class);
+	private ReactiveValueEvaluationContextProvider createProvider(Parameters<?, ?> parameters) {
+		return (ReactiveValueEvaluationContextProvider) getDelegate().create(parameters);
 	}
 }

@@ -15,18 +15,16 @@
  */
 package org.springframework.data.repository.query;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.expression.ValueEvaluationContext;
+import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExpressionDependencies;
-import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * An {@link QueryMethodEvaluationContextProvider} that assembles an {@link EvaluationContext} from a list of
@@ -38,10 +36,26 @@ import org.springframework.util.StringUtils;
  * @author Jens Schauder
  * @author Johannes Englmeier
  * @since 1.9
+ * @deprecated since 3.4 in favor of {@link QueryMethodValueEvaluationContextAccessor}.
  */
+@Deprecated(since = "3.4")
 public class ExtensionAwareQueryMethodEvaluationContextProvider implements QueryMethodEvaluationContextProvider {
 
-	private final ExtensionAwareEvaluationContextProvider delegate;
+	private final QueryMethodValueEvaluationContextAccessor delegate;
+
+	/**
+	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider}.
+	 *
+	 * @param evaluationContextProvider to lookup the {@link EvaluationContextExtension}s from, must not be
+	 *          {@literal null}.
+	 */
+	public ExtensionAwareQueryMethodEvaluationContextProvider(EvaluationContextProvider evaluationContextProvider) {
+
+		Assert.notNull(evaluationContextProvider, "EvaluationContextProvider must not be null");
+
+		this.delegate = new QueryMethodValueEvaluationContextAccessor(QueryMethodValueEvaluationContextAccessor.ENVIRONMENT,
+				evaluationContextProvider);
+	}
 
 	/**
 	 * Creates a new {@link ExtensionAwareQueryMethodEvaluationContextProvider}.
@@ -53,7 +67,9 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 
 		Assert.notNull(beanFactory, "ListableBeanFactory must not be null");
 
-		this.delegate = new ExtensionAwareEvaluationContextProvider(beanFactory);
+		this.delegate = beanFactory instanceof ApplicationContext ctx ? new QueryMethodValueEvaluationContextAccessor(ctx)
+				: new QueryMethodValueEvaluationContextAccessor(QueryMethodValueEvaluationContextAccessor.ENVIRONMENT,
+						beanFactory);
 	}
 
 	/**
@@ -66,55 +82,39 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 
 		Assert.notNull(extensions, "EvaluationContextExtensions must not be null");
 
-		this.delegate = new org.springframework.data.spel.ExtensionAwareEvaluationContextProvider(extensions);
+		this.delegate = new QueryMethodValueEvaluationContextAccessor(QueryMethodValueEvaluationContextAccessor.ENVIRONMENT,
+				extensions);
+	}
+
+	ExtensionAwareQueryMethodEvaluationContextProvider(QueryMethodValueEvaluationContextAccessor delegate) {
+		this.delegate = delegate;
+	}
+
+	@Override
+	public EvaluationContextProvider getEvaluationContextProvider() {
+		return getDelegate().getEvaluationContextProvider();
+	}
+
+	public QueryMethodValueEvaluationContextAccessor getDelegate() {
+		return delegate;
 	}
 
 	@Override
 	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues) {
 
-		StandardEvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues);
+		ValueEvaluationContext evaluationContext = delegate.create(parameters).getEvaluationContext(parameterValues);
 
-		evaluationContext.setVariables(collectVariables(parameters, parameterValues));
-
-		return evaluationContext;
+		return evaluationContext.getRequiredEvaluationContext();
 	}
 
 	@Override
 	public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters, Object[] parameterValues,
 			ExpressionDependencies dependencies) {
 
-		StandardEvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
+		ValueEvaluationContext evaluationContext = delegate.create(parameters).getEvaluationContext(parameterValues,
+				dependencies);
 
-		evaluationContext.setVariables(collectVariables(parameters, parameterValues));
-
-		return evaluationContext;
-	}
-
-	/**
-	 * Exposes variables for all named parameters for the given arguments. Also exposes non-bindable parameters under the
-	 * names of their types.
-	 *
-	 * @param parameters must not be {@literal null}.
-	 * @param arguments must not be {@literal null}.
-	 * @return
-	 */
-	static Map<String, Object> collectVariables(Parameters<?, ?> parameters, Object[] arguments) {
-
-		Map<String, Object> variables = new HashMap<>(parameters.getNumberOfParameters(), 1.0f);
-
-		parameters.stream()//
-				.filter(Parameter::isSpecialParameter)//
-				.forEach(it -> variables.put(//
-						StringUtils.uncapitalize(it.getType().getSimpleName()), //
-						arguments[it.getIndex()]));
-
-		parameters.stream()//
-				.filter(Parameter::isNamedParameter)//
-				.forEach(it -> variables.put(//
-						it.getName().orElseThrow(() -> new IllegalStateException("Should never occur")), //
-						arguments[it.getIndex()]));
-
-		return variables;
+		return evaluationContext.getRequiredEvaluationContext();
 	}
 
 }

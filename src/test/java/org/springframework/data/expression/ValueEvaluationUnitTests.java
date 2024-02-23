@@ -28,7 +28,6 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.ParseException;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 /**
@@ -86,8 +85,7 @@ public class ValueEvaluationUnitTests {
 	@Test // GH-2369
 	void shouldParseLiteral() {
 
-		ValueParserConfiguration parserContext = () -> new SpelExpressionParser();
-		ValueExpressionParser parser = ValueExpressionParser.create(parserContext);
+		ValueExpressionParser parser = ValueExpressionParser.create();
 
 		assertThat(parser.parse("#{'foo'}-${key.one}").isLiteral()).isFalse();
 		assertThat(parser.parse("foo").isLiteral()).isTrue();
@@ -132,9 +130,7 @@ public class ValueEvaluationUnitTests {
 
 	private String eval(String expressionString) {
 
-		ValueParserConfiguration parserContext = SpelExpressionParser::new;
-
-		ValueExpressionParser parser = ValueExpressionParser.create(parserContext);
+		ValueExpressionParser parser = ValueExpressionParser.create();
 		return (String) parser.parse(expressionString).evaluate(evaluationContext);
 	}
 

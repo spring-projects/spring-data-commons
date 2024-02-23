@@ -36,7 +36,7 @@ public interface ValueEvaluationContext {
 	 * @param evaluationContext
 	 * @return a new {@link ValueEvaluationContext} for the given environment and evaluation context.
 	 */
-	static ValueEvaluationContext of(Environment environment, EvaluationContext evaluationContext) {
+	static ValueEvaluationContext of(@Nullable Environment environment, EvaluationContext evaluationContext) {
 		return new DefaultValueEvaluationContext(environment, evaluationContext);
 	}
 
@@ -51,8 +51,26 @@ public interface ValueEvaluationContext {
 	/**
 	 * Returns the {@link EvaluationContext} if provided.
 	 *
-	 * @return the {@link EvaluationContext} or {@literal null}.
+	 * @return the {@link EvaluationContext} or {@literal null} if not set.
 	 */
 	@Nullable
 	EvaluationContext getEvaluationContext();
+
+	/**
+	 * Returns the required {@link EvaluationContext} or throws {@link IllegalStateException} if there is no evaluation
+	 * context available.
+	 *
+	 * @return the {@link EvaluationContext}.
+	 * @since 3.4
+	 */
+	default EvaluationContext getRequiredEvaluationContext() {
+
+		EvaluationContext evaluationContext = getEvaluationContext();
+
+		if (evaluationContext == null) {
+			throw new IllegalStateException("No evaluation context available");
+		}
+
+		return evaluationContext;
+	}
 }

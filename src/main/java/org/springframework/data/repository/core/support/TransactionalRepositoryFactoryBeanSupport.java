@@ -101,6 +101,7 @@ public abstract class TransactionalRepositoryFactoryBeanSupport<T extends Reposi
 	 */
 	protected abstract RepositoryFactorySupport doCreateRepositoryFactory();
 
+	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
 
 		Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);

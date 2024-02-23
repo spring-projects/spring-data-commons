@@ -28,6 +28,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
@@ -41,6 +43,8 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
+import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.util.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
@@ -63,8 +67,8 @@ import org.springframework.util.Assert;
  * @author Johannes Englmeier
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID>
-		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware,
-		BeanFactoryAware, ApplicationEventPublisherAware {
+		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, ApplicationEventPublisherAware,
+		BeanClassLoaderAware, BeanFactoryAware, EnvironmentAware {
 
 	private final Class<? extends T> repositoryInterface;
 
@@ -74,14 +78,15 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private Optional<Class<?>> repositoryBaseClass = Optional.empty();
 	private Optional<Object> customImplementation = Optional.empty();
 	private Optional<RepositoryFragments> repositoryFragments = Optional.empty();
-	private NamedQueries namedQueries;
+	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
 	private Optional<MappingContext<?, ?>> mappingContext = Optional.empty();
 	private ClassLoader classLoader;
-	private BeanFactory beanFactory;
-	private boolean lazyInit = false;
-	private Optional<QueryMethodEvaluationContextProvider> evaluationContextProvider = Optional.empty();
-	private List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
 	private ApplicationEventPublisher publisher;
+	private BeanFactory beanFactory;
+	private Environment environment;
+	private boolean lazyInit = false;
+	private Optional<EvaluationContextProvider> evaluationContextProvider = Optional.empty();
+	private final List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
 
 	private Lazy<T> repository;
 
@@ -115,7 +120,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * <p>
 	 * Default is "false", in order to avoid unnecessary extra interception. This means that no guarantees are provided
 	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
-	 * 
+	 *
 	 * @since 3.4.0
 	 */
 	public void setExposeMetadata(boolean exposeMetadata) {
@@ -169,13 +174,25 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	}
 
 	/**
+	 * Sets the {@link EvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined queries.
+	 *
+	 * @param evaluationContextProvider must not be {@literal null}.
+	 * @since 3.4
+	 */
+	public void setEvaluationContextProvider(EvaluationContextProvider evaluationContextProvider) {
+		this.evaluationContextProvider = Optional.of(evaluationContextProvider);
+	}
+
+	/**
 	 * Sets the {@link QueryMethodEvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined
 	 * queries.
 	 *
 	 * @param evaluationContextProvider must not be {@literal null}.
+	 * @deprecated since 3.4, use {@link #setEvaluationContextProvider(EvaluationContextProvider)} instead.
 	 */
+	@Deprecated(since = "3.4")
 	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
-		this.evaluationContextProvider = Optional.of(evaluationContextProvider);
+		setEvaluationContextProvider(evaluationContextProvider.getEvaluationContextProvider());
 	}
 
 	/**
@@ -210,10 +227,27 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		this.beanFactory = beanFactory;
 
-		if (!this.evaluationContextProvider.isPresent() && ListableBeanFactory.class.isInstance(beanFactory)) {
-			this.evaluationContextProvider = createDefaultQueryMethodEvaluationContextProvider(
-					(ListableBeanFactory) beanFactory);
+		if (this.evaluationContextProvider.isEmpty() && beanFactory instanceof ListableBeanFactory lbf) {
+			this.evaluationContextProvider = createDefaultEvaluationContextProvider(lbf);
 		}
+	}
+
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
+	}
+
+	/**
+	 * Create a default {@link EvaluationContextProvider} (or subclass) from {@link ListableBeanFactory}.
+	 *
+	 * @param beanFactory the bean factory to use.
+	 * @return the default instance. May be {@link Optional#empty()}.
+	 * @since 3.4
+	 */
+	protected Optional<EvaluationContextProvider> createDefaultEvaluationContextProvider(
+			ListableBeanFactory beanFactory) {
+		return createDefaultQueryMethodEvaluationContextProvider(beanFactory)
+				.map(QueryMethodEvaluationContextProvider::getEvaluationContextProvider);
 	}
 
 	/**
@@ -222,7 +256,9 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param beanFactory the bean factory to use.
 	 * @return the default instance. May be {@link Optional#empty()}.
 	 * @since 2.4
+	 * @deprecated since 3.4, use {@link #createDefaultEvaluationContextProvider(ListableBeanFactory)} instead.
 	 */
+	@Deprecated(since = "3.4")
 	protected Optional<QueryMethodEvaluationContextProvider> createDefaultQueryMethodEvaluationContextProvider(
 			ListableBeanFactory beanFactory) {
 		return Optional.of(new ExtensionAwareQueryMethodEvaluationContextProvider(beanFactory));
@@ -233,11 +269,13 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.publisher = publisher;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
 		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainType());
 	}
 
+	@Override
 	public RepositoryInformation getRepositoryInformation() {
 
 		RepositoryFragments fragments = customImplementation.map(RepositoryFragments::just)//
@@ -246,30 +284,36 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		return factory.getRepositoryInformation(repositoryMetadata, fragments);
 	}
 
+	@Override
 	public PersistentEntity<?, ?> getPersistentEntity() {
 
 		return mappingContext.orElseThrow(() -> new IllegalStateException("No MappingContext available"))
 				.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
 	}
 
+	@Override
 	public List<QueryMethod> getQueryMethods() {
 		return factory.getQueryMethods();
 	}
 
+	@Override
 	@NonNull
 	public T getObject() {
 		return this.repository.get();
 	}
 
+	@Override
 	@NonNull
 	public Class<? extends T> getObjectType() {
 		return repositoryInterface;
 	}
 
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
+	@Override
 	public void afterPropertiesSet() {
 
 		this.factory = createRepositoryFactory();
@@ -277,12 +321,16 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
 		this.factory.setEvaluationContextProvider(
-				evaluationContextProvider.orElseGet(() -> QueryMethodEvaluationContextProvider.DEFAULT));
+				evaluationContextProvider.orElse(QueryMethodValueEvaluationContextAccessor.DEFAULT_CONTEXT_PROVIDER));
 		this.factory.setBeanClassLoader(classLoader);
 		this.factory.setBeanFactory(beanFactory);
 
-		if (publisher != null) {
+		if (this.publisher != null) {
 			this.factory.addRepositoryProxyPostProcessor(new EventPublishingRepositoryProxyPostProcessor(publisher));
+		}
+
+		if (this.environment != null) {
+			this.factory.setEnvironment(this.environment);
 		}
 
 		repositoryBaseClass.ifPresent(this.factory::setRepositoryBaseClass);

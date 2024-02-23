@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -28,46 +29,50 @@ import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Range.Bound;
+import org.springframework.data.expression.ValueEvaluationContext;
+import org.springframework.data.expression.ValueEvaluationContextProvider;
+import org.springframework.data.expression.ValueExpression;
+import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * A {@literal SpelQueryContext} is able to find SpEL expressions in a query string and to replace them with bind
- * variables.
+ * A {@literal ValueExpressionQueryRewriter} is able to detect Value expressions in a query string and to replace them
+ * with bind variables.
  * <p>
- * Result o the parse process is a {@link SpelExtractor} which offers the transformed query string. Alternatively and
+ * Result of the parse process is a {@link ParsedQuery} which provides the transformed query string. Alternatively and
  * preferred one may provide a {@link QueryMethodEvaluationContextProvider} via
- * {@link #withEvaluationContextProvider(QueryMethodEvaluationContextProvider)} which will yield the more powerful
- * {@link EvaluatingSpelQueryContext}.
+ * {@link #withEvaluationContextAccessor(QueryMethodValueEvaluationContextAccessor)} which will yield the more powerful
+ * {@link EvaluatingValueExpressionQueryRewriter}.
  * <p>
  * Typical usage looks like
  *
  * <pre>
  * <code>
-     SpelQueryContext.EvaluatingSpelQueryContext queryContext = SpelQueryContext
-         .of((counter, expression) -> String.format("__$synthetic$__%d", counter), String::concat)
-         .withEvaluationContextProvider(evaluationContextProvider);
+     ExpressionQueryRewriter.ParsedQuery parsed = ExpressionQueryRewriter
+         .of(valueExpressionParser, (counter, expression) -> String.format("__$synthetic$__%d", counter), String::concat)
+         .withEvaluationContextProvider(evaluationContextProviderFactory);
 
-     SpelEvaluator spelEvaluator = queryContext.parse(query, queryMethod.getParameters());
+     ExpressionQueryRewriter.QueryExpressionEvaluator evaluator = queryContext.parse(query, queryMethod.getParameters());
 
-     spelEvaluator.evaluate(objects).forEach(parameterMap::addValue);
+     evaluator.evaluate(objects).forEach(parameterMap::addValue);
  * </code>
  * </pre>
  *
  * @author Jens Schauder
  * @author Gerrit Meier
  * @author Mark Paluch
- * @since 2.1
- * @deprecated since 3.3, use {@link ValueExpressionQueryRewriter.QueryExpressionEvaluator} instead.
+ * @since 3.3
+ * @see ValueExpression
  */
-@Deprecated(since = "3.3")
-public class SpelQueryContext {
+public class ValueExpressionQueryRewriter {
 
-	private static final String SPEL_PATTERN_STRING = "([:?])#\\{([^}]+)}";
-	private static final Pattern SPEL_PATTERN = Pattern.compile(SPEL_PATTERN_STRING);
+	private static final Pattern EXPRESSION_PATTERN = Pattern.compile("([:?])([#$]\\{[^}]+})");
+
+	private final ValueExpressionParser expressionParser;
 
 	/**
-	 * A function from the index of a SpEL expression in a query and the actual SpEL expression to the parameter name to
+	 * A function from the index of a Value expression in a query and the actual SpEL expression to the parameter name to
 	 * be used in place of the SpEL expression. A typical implementation is expected to look like
 	 * <code>(index, spel) -> "__some_placeholder_" + index</code>
 	 */
@@ -82,78 +87,84 @@ public class SpelQueryContext {
 	 */
 	private final BiFunction<String, String, String> replacementSource;
 
-	private SpelQueryContext(BiFunction<Integer, String, String> parameterNameSource,
-			BiFunction<String, String, String> replacementSource) {
+	private ValueExpressionQueryRewriter(ValueExpressionParser expressionParser,
+			BiFunction<Integer, String, String> parameterNameSource, BiFunction<String, String, String> replacementSource) {
 
+		Assert.notNull(expressionParser, "ValueExpressionParser must not be null");
 		Assert.notNull(parameterNameSource, "Parameter name source must not be null");
 		Assert.notNull(replacementSource, "Replacement source must not be null");
 
 		this.parameterNameSource = parameterNameSource;
 		this.replacementSource = replacementSource;
+		this.expressionParser = expressionParser;
 	}
 
-	public static SpelQueryContext of(BiFunction<Integer, String, String> parameterNameSource,
-			BiFunction<String, String, String> replacementSource) {
-		return new SpelQueryContext(parameterNameSource, replacementSource);
+	public static ValueExpressionQueryRewriter of(ValueExpressionParser expressionParser,
+			BiFunction<Integer, String, String> parameterNameSource, BiFunction<String, String, String> replacementSource) {
+		return new ValueExpressionQueryRewriter(expressionParser, parameterNameSource, replacementSource);
 	}
 
 	/**
-	 * Parses the query for SpEL expressions using the pattern:
+	 * Parses the query for {@link org.springframework.data.expression.ValueExpression value expressions} using the
+	 * pattern:
 	 *
 	 * <pre>
 	 * &lt;prefix&gt;#{&lt;spel&gt;}
+	 * &lt;prefix&gt;${&lt;property placeholder&gt;}
 	 * </pre>
 	 * <p>
 	 * with prefix being the character ':' or '?'. Parsing honors quoted {@literal String}s enclosed in single or double
 	 * quotation marks.
 	 *
 	 * @param query a query containing SpEL expressions in the format described above. Must not be {@literal null}.
-	 * @return A {@link SpelExtractor} which makes the query with SpEL expressions replaced by bind parameters and a map
+	 * @return A {@link ParsedQuery} which makes the query with SpEL expressions replaced by bind parameters and a map
 	 *         from bind parameter to SpEL expression available. Guaranteed to be not {@literal null}.
 	 */
-	public SpelExtractor parse(String query) {
-		return new SpelExtractor(query);
+	public ParsedQuery parse(String query) {
+		return new ParsedQuery(expressionParser, query);
 	}
 
 	/**
-	 * Createsa {@link EvaluatingSpelQueryContext} from the current one and the given
-	 * {@link QueryMethodEvaluationContextProvider}.
+	 * Creates a {@link EvaluatingValueExpressionQueryRewriter} from the current one and the given
+	 * {@link QueryMethodValueEvaluationContextAccessor}.
 	 *
-	 * @param provider must not be {@literal null}.
+	 * @param factory must not be {@literal null}.
 	 * @return
 	 */
-	public EvaluatingSpelQueryContext withEvaluationContextProvider(QueryMethodEvaluationContextProvider provider) {
+	public EvaluatingValueExpressionQueryRewriter withEvaluationContextAccessor(
+			QueryMethodValueEvaluationContextAccessor factory) {
 
-		Assert.notNull(provider, "QueryMethodEvaluationContextProvider must not be null");
+		Assert.notNull(factory, "QueryMethodValueEvaluationContextAccessor must not be null");
 
-		return new EvaluatingSpelQueryContext(provider, parameterNameSource, replacementSource);
+		return new EvaluatingValueExpressionQueryRewriter(expressionParser, factory, parameterNameSource,
+				replacementSource);
 	}
 
 	/**
-	 * An extension of {@link SpelQueryContext} that can create {@link SpelEvaluator} instances as it also knows about a
-	 * {@link QueryMethodEvaluationContextProvider}.
+	 * An extension of {@link ValueExpressionQueryRewriter} that can create {@link QueryExpressionEvaluator} instances as
+	 * it also knows about a {@link QueryMethodValueEvaluationContextAccessor}.
 	 *
 	 * @author Oliver Gierke
-	 * @since 2.1
 	 */
-	public static class EvaluatingSpelQueryContext extends SpelQueryContext {
+	public static class EvaluatingValueExpressionQueryRewriter extends ValueExpressionQueryRewriter {
 
-		private final QueryMethodEvaluationContextProvider evaluationContextProvider;
+		private final QueryMethodValueEvaluationContextAccessor contextProviderFactory;
 
 		/**
-		 * Creates a new {@link EvaluatingSpelQueryContext} for the given {@link QueryMethodEvaluationContextProvider},
-		 * parameter name source and replacement source.
+		 * Creates a new {@link EvaluatingValueExpressionQueryRewriter} for the given
+		 * {@link QueryMethodValueEvaluationContextAccessor}, parameter name source and replacement source.
 		 *
-		 * @param evaluationContextProvider must not be {@literal null}.
+		 * @param factory must not be {@literal null}.
 		 * @param parameterNameSource must not be {@literal null}.
 		 * @param replacementSource must not be {@literal null}.
 		 */
-		private EvaluatingSpelQueryContext(QueryMethodEvaluationContextProvider evaluationContextProvider,
+		private EvaluatingValueExpressionQueryRewriter(ValueExpressionParser expressionParser,
+				QueryMethodValueEvaluationContextAccessor factory,
 				BiFunction<Integer, String, String> parameterNameSource, BiFunction<String, String, String> replacementSource) {
 
-			super(parameterNameSource, replacementSource);
+			super(expressionParser, parameterNameSource, replacementSource);
 
-			this.evaluationContextProvider = evaluationContextProvider;
+			this.contextProviderFactory = factory;
 		}
 
 		/**
@@ -161,52 +172,52 @@ public class SpelQueryContext {
 		 *
 		 * <pre>
 		 * &lt;prefix&gt;#{&lt;spel&gt;}
+		 * &lt;prefix&gt;${&lt;property placeholder&gt;}
 		 * </pre>
 		 * <p>
 		 * with prefix being the character ':' or '?'. Parsing honors quoted {@literal String}s enclosed in single or double
 		 * quotation marks.
 		 *
-		 * @param query a query containing SpEL expressions in the format described above. Must not be {@literal null}.
+		 * @param query a query containing Value Expressions in the format described above. Must not be {@literal null}.
 		 * @param parameters a {@link Parameters} instance describing query method parameters
-		 * @return A {@link SpelEvaluator} which allows to evaluate the SpEL expressions. Will never be {@literal null}.
+		 * @return A {@link QueryExpressionEvaluator} which allows to evaluate the Value Expressions.
 		 */
-		public SpelEvaluator parse(String query, Parameters<?, ?> parameters) {
-			return new SpelEvaluator(evaluationContextProvider, parameters, parse(query));
+		public QueryExpressionEvaluator parse(String query, Parameters<?, ?> parameters) {
+			return new QueryExpressionEvaluator(contextProviderFactory.create(parameters), parse(query));
 		}
 	}
 
 	/**
-	 * Parses a query string, identifies the contained SpEL expressions, replaces them with bind parameters and offers a
-	 * {@link Map} from those bind parameters to the SpEL expression.
+	 * Parses a query string, identifies the contained Value expressions, replaces them with bind parameters and offers a
+	 * {@link Map} from those bind parameters to the value expression.
 	 * <p>
-	 * The parser detects quoted parts of the query string and does not detect SpEL expressions inside such quoted parts
+	 * The parser detects quoted parts of the query string and does not detect value expressions inside such quoted parts
 	 * of the query.
 	 *
 	 * @author Jens Schauder
 	 * @author Oliver Gierke
 	 * @author Mark Paluch
-	 * @since 2.1
 	 */
-	public class SpelExtractor {
+	public class ParsedQuery {
 
 		private static final int PREFIX_GROUP_INDEX = 1;
 		private static final int EXPRESSION_GROUP_INDEX = 2;
 
 		private final String query;
-		private final Map<String, String> expressions;
+		private final Map<String, ValueExpression> expressions;
 		private final QuotationMap quotations;
 
 		/**
-		 * Creates a SpelExtractor from a query String.
+		 * Creates a ExpressionDetector from a query String.
 		 *
 		 * @param query must not be {@literal null}.
 		 */
-		SpelExtractor(String query) {
+		ParsedQuery(ValueExpressionParser parser, String query) {
 
 			Assert.notNull(query, "Query must not be null");
 
-			Map<String, String> expressions = new HashMap<>();
-			Matcher matcher = SPEL_PATTERN.matcher(query);
+			Map<String, ValueExpression> expressions = new HashMap<>();
+			Matcher matcher = EXPRESSION_PATTERN.matcher(query);
 			StringBuilder resultQuery = new StringBuilder();
 			QuotationMap quotedAreas = new QuotationMap(query);
 
@@ -216,21 +227,20 @@ public class SpelQueryContext {
 			while (matcher.find()) {
 
 				if (quotedAreas.isQuoted(matcher.start())) {
-
 					resultQuery.append(query, matchedUntil, matcher.end());
 
 				} else {
 
-					String spelExpression = matcher.group(EXPRESSION_GROUP_INDEX);
+					String expressionString = matcher.group(EXPRESSION_GROUP_INDEX);
 					String prefix = matcher.group(PREFIX_GROUP_INDEX);
 
-					String parameterName = parameterNameSource.apply(expressionCounter, spelExpression);
+					String parameterName = parameterNameSource.apply(expressionCounter, expressionString);
 					String replacement = replacementSource.apply(prefix, parameterName);
 
 					resultQuery.append(query, matchedUntil, matcher.start());
 					resultQuery.append(replacement);
 
-					expressions.put(parameterName, spelExpression);
+					expressions.put(parameterName, parser.parse(expressionString));
 					expressionCounter++;
 				}
 
@@ -265,7 +275,7 @@ public class SpelQueryContext {
 			return quotations.isQuoted(index);
 		}
 
-		public String getParameter(String name) {
+		public ValueExpression getParameter(String name) {
 			return expressions.get(name);
 		}
 
@@ -273,7 +283,6 @@ public class SpelQueryContext {
 		 * Returns the number of expressions in this extractor.
 		 *
 		 * @return the number of expressions in this extractor.
-		 * @since 3.1.3
 		 */
 		public int size() {
 			return expressions.size();
@@ -284,7 +293,7 @@ public class SpelQueryContext {
 		 *
 		 * @return Guaranteed to be not {@literal null}.
 		 */
-		Map<String, String> getParameterMap() {
+		Map<String, ValueExpression> getParameterMap() {
 			return expressions;
 		}
 
@@ -352,6 +361,63 @@ public class SpelQueryContext {
 		 */
 		public boolean isQuoted(int index) {
 			return quotedRanges.stream().anyMatch(r -> r.contains(index));
+		}
+	}
+
+	/**
+	 * Evaluates Value expressions as detected by {@link ParsedQuery} based on parameter information from a method and
+	 * parameter values from a method call.
+	 *
+	 * @author Jens Schauder
+	 * @author Gerrit Meier
+	 * @author Oliver Gierke
+	 * @see ValueExpressionQueryRewriter#parse(String)
+	 */
+	public class QueryExpressionEvaluator {
+
+		private final ValueEvaluationContextProvider evaluationContextProvider;
+		private final ParsedQuery detector;
+
+		public QueryExpressionEvaluator(ValueEvaluationContextProvider evaluationContextProvider,
+				ParsedQuery detector) {
+			this.evaluationContextProvider = evaluationContextProvider;
+			this.detector = detector;
+		}
+
+		/**
+		 * Evaluate all value expressions in {@link ParsedQuery} based on values provided as an argument.
+		 *
+		 * @param values Parameter values. Must not be {@literal null}.
+		 * @return a map from parameter name to evaluated value as of {@link ParsedQuery#getParameterMap()}.
+		 */
+		public Map<String, Object> evaluate(Object[] values) {
+
+			Assert.notNull(values, "Values must not be null.");
+
+			Map<String, ValueExpression> parameterMap = detector.getParameterMap();
+			Map<String, Object> results = new LinkedHashMap<>(parameterMap.size());
+
+			parameterMap.forEach((parameter, expression) -> results.put(parameter, evaluate(expression, values)));
+
+			return results;
+		}
+
+		/**
+		 * Returns the query string produced by the intermediate SpEL expression collection step.
+		 *
+		 * @return
+		 */
+		public String getQueryString() {
+			return detector.getQueryString();
+		}
+
+		@Nullable
+		private Object evaluate(ValueExpression expression, Object[] values) {
+
+			ValueEvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(values,
+					expression.getExpressionDependencies());
+
+			return expression.evaluate(evaluationContext);
 		}
 	}
 }

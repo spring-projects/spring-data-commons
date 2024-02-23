@@ -35,7 +35,9 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 2.1
  * @see SpelQueryContext#parse(String)
+ * @deprecated since 3.3, use {@link ValueExpressionQueryRewriter} instead.
  */
+@Deprecated(since = "3.3")
 public class SpelEvaluator {
 
 	private static final SpelExpressionParser PARSER = new SpelExpressionParser();

@@ -17,14 +17,20 @@ package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.ReactiveExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ReactiveWrappers;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -67,6 +73,28 @@ public abstract class ReactiveRepositoryFactorySupport extends RepositoryFactory
 		super.setEvaluationContextProvider(
 				evaluationContextProvider == null ? ReactiveQueryMethodEvaluationContextProvider.DEFAULT
 						: evaluationContextProvider);
+	}
+
+	/**
+	 * Returns the {@link QueryLookupStrategy} for the given {@link QueryLookupStrategy.Key} and
+	 * {@link ValueExpressionDelegate}. Favor implementing this method over
+	 * {@link #getQueryLookupStrategy(QueryLookupStrategy.Key, QueryMethodEvaluationContextProvider)} for extended
+	 * {@link org.springframework.data.expression.ValueExpression} support.
+	 * <p>
+	 * This method delegates to
+	 * {@link #getQueryLookupStrategy(QueryLookupStrategy.Key, QueryMethodEvaluationContextProvider)} unless overridden.
+	 * </p>
+	 *
+	 * @param key can be {@literal null}.
+	 * @param valueExpressionDelegate will never be {@literal null}.
+	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
+	 * @since 3.4
+	 */
+	@Override
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable QueryLookupStrategy.Key key,
+			ValueExpressionDelegate valueExpressionDelegate) {
+		return getQueryLookupStrategy(key,
+				new ReactiveExtensionAwareQueryMethodEvaluationContextProvider(getEvaluationContextProvider()));
 	}
 
 	/**
