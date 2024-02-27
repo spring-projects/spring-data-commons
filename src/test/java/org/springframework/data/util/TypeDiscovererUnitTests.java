@@ -29,6 +29,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.geo.GeoResults;
@@ -348,6 +349,15 @@ public class TypeDiscovererUnitTests {
 		assertThat(discoverer.hashCode()).isNotEqualTo(classTypeInformation.hashCode());
 	}
 
+	@Test // GH-3051
+	void considersNestedGenericsInEquality() throws ReflectiveOperationException {
+
+		ResolvableType containerList = ResolvableType.forField(WithContainer.class.getDeclaredField("containerList"));
+		ResolvableType containerMap = ResolvableType.forField(WithContainer.class.getDeclaredField("containerMap"));
+
+		assertThat(TypeInformation.of(containerList)).isNotEqualTo(TypeInformation.of(containerMap));
+	}
+
 	class Person {
 
 		Addresses addresses;
@@ -441,4 +451,15 @@ public class TypeDiscovererUnitTests {
 	class GeoResultsWrapper {
 		GeoResults<Leaf> results;
 	}
+
+	static class WithContainer {
+		MyContainer<List<String>> containerList;
+
+		MyContainer<List<Map<Long, Double>>> containerMap;
+	}
+
+	static class MyContainer<T> {
+		T data;
+	}
+
 }
