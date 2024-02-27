@@ -60,6 +60,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private final Map<Constructor<?>, List<TypeInformation<?>>> constructorParameters = new ConcurrentHashMap<>();
 	private final Lazy<List<TypeInformation<?>>> typeArguments;
 
+	private final Lazy<List<TypeInformation<?>>> resolvedGenerics;
+
 	protected TypeDiscoverer(ResolvableType type) {
 
 		Assert.notNull(type, "Type must not be null");
@@ -68,6 +70,10 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		this.componentType = Lazy.of(this::doGetComponentType);
 		this.valueType = Lazy.of(this::doGetMapValueType);
 		this.typeArguments = Lazy.of(this::doGetTypeArguments);
+		this.resolvedGenerics = Lazy.of(() -> Arrays.stream(resolvableType.getGenerics()) //
+				.map(TypeInformation::of) // use TypeInformation comparison to remove any attachments to variableResolver
+																	// holding the type source
+				.collect(Collectors.toList()));
 	}
 
 	static TypeDiscoverer<?> td(ResolvableType type) {
@@ -325,15 +331,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return false;
 		}
 
-		var collect1 = Arrays.stream(resolvableType.getGenerics()) //
-				.map(ResolvableType::toClass) //
-				.collect(Collectors.toList());
-
-		var collect2 = Arrays.stream(that.resolvableType.getGenerics()) //
-				.map(ResolvableType::toClass) //
-				.collect(Collectors.toList());
-
-		return ObjectUtils.nullSafeEquals(collect1, collect2);
+		return ObjectUtils.nullSafeEquals(resolvedGenerics.get(), that.resolvedGenerics.get());
 	}
 
 	@Override
