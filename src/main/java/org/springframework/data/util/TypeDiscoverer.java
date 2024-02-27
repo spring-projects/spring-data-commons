@@ -60,7 +60,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private final Map<Constructor<?>, List<TypeInformation<?>>> constructorParameters = new ConcurrentHashMap<>();
 	private final Lazy<List<TypeInformation<?>>> typeArguments;
 
-	private final Lazy<List<Class>> resolvedGenerics;
+	private final Lazy<List<TypeInformation<?>>> resolvedGenerics;
 
 	protected TypeDiscoverer(ResolvableType type) {
 
@@ -71,7 +71,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		this.valueType = Lazy.of(this::doGetMapValueType);
 		this.typeArguments = Lazy.of(this::doGetTypeArguments);
 		this.resolvedGenerics = Lazy.of(() -> Arrays.stream(resolvableType.getGenerics()) //
-				.map(ResolvableType::toClass).collect(Collectors.toList()));
+				.map(TypeInformation::of) // use TypeInformation comparison to remove any attachments to variableResolver
+																	// holding the type source
+				.collect(Collectors.toList()));
 	}
 
 	static TypeDiscoverer<?> td(ResolvableType type) {
