@@ -50,6 +50,7 @@ public interface ReactiveEntityCallbacks {
 	 * @return a {@link Mono} emitting the result after invoking the callbacks.
 	 * @throws IllegalArgumentException if a required argument is {@literal null}.
 	 */
+	@SuppressWarnings("rawtypes")
 	<T> Mono<T> callback(Class<? extends EntityCallback> callbackType, T entity, Object... args);
 
 	/**

@@ -63,14 +63,12 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> Mono<T> callback(Class<? extends EntityCallback> callbackType, T entity, Object... args) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Class<T> entityType = (Class<T>) (entity != null
-				? ClassUtils.getUserClass(entity.getClass())
-				: callbackDiscoverer.resolveDeclaredEntityType(callbackType).getRawClass());
+		Class<T> entityType = (Class<T>) ClassUtils.getUserClass(entity.getClass());
 
 		Method callbackMethod = callbackMethodCache.computeIfAbsent(callbackType, it -> {
 
