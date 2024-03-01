@@ -69,6 +69,7 @@ import org.springframework.util.ClassUtils;
  * @see SpringDataWebConfiguration
  * @see HateoasAwareSpringDataWebConfiguration
  * @author Oliver Gierke
+ * @author Yanming Zhou
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
@@ -170,6 +171,7 @@ public @interface EnableSpringDataWebSupport {
 	 * {@link EnableSpringDataWebSupport}.
 	 *
 	 * @author Oliver Drotbohm
+	 * @author Yanming Zhou
 	 * @soundtrack Norah Jones - Chasing Pirates
 	 * @since 3.3
 	 */
@@ -190,8 +192,14 @@ public @interface EnableSpringDataWebSupport {
 				return;
 			}
 
+			Object pageSerializationMode = attributes.get("pageSerializationMode");
+
+			if (pageSerializationMode == PageSerializationMode.DIRECT) {
+				return;
+			}
+
 			AbstractBeanDefinition definition = BeanDefinitionBuilder.rootBeanDefinition(SpringDataWebSettings.class)
-					.addConstructorArgValue(attributes.get("pageSerializationMode"))
+					.addConstructorArgValue(pageSerializationMode)
 					.getBeanDefinition();
 
 			String beanName = importBeanNameGenerator.generateBeanName(definition, registry);
