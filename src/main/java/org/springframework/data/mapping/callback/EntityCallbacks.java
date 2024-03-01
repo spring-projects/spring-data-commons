@@ -47,6 +47,7 @@ public interface EntityCallbacks {
 	 * @return never {@literal null}.
 	 * @throws IllegalArgumentException if a required argument is {@literal null}.
 	 */
+	@SuppressWarnings("rawtypes")
 	<T> T callback(Class<? extends EntityCallback> callbackType, T entity, Object... args);
 
 	/**

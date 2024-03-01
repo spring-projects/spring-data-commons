@@ -63,6 +63,7 @@ class DefaultEntityCallbacks implements EntityCallbacks {
 	}
 
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> T callback(Class<? extends EntityCallback> callbackType, T entity, Object... args) {
 
 		Assert.notNull(entity, "Entity must not be null");
