@@ -32,7 +32,7 @@ Query by Example is well suited for several use cases:
 Query by Example also has several limitations:
 
 * No support for nested or grouped property constraints, such as `firstname = ?0 or (firstname = ?1 and lastname = ?2)`.
-* Only supports starts/contains/ends/regex matching for strings and exact matching for other property types.
+* Only supports starts/contains/ends/regex (regex not for JPA, because Criteria API doesn't support regular expressions) matching for strings and exact matching for other property types.
 
 Before getting started with Query by Example, you need to have a domain object.
 To get started, create an interface for your repository, as shown in the following example:
