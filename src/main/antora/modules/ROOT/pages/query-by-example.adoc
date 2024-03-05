@@ -10,6 +10,10 @@ Query by Example (QBE) is a user-friendly querying technique with a simple inter
 It allows dynamic query creation and does not require you to write queries that contain field names.
 In fact, Query by Example does not require you to write queries by using store-specific query languages at all.
 
+NOTE: This chapter explains the core concepts of Query by Example.
+The information is pulled from the Spring Data Commons module.
+Depending on your database, String matching support can be limited.
+
 [[query-by-example.usage]]
 == Usage
 
@@ -21,18 +25,20 @@ It can be reused across multiple Examples.
 * `Example`: An `Example` consists of the probe and the `ExampleMatcher`.
 It is used to create the query.
 * `FetchableFluentQuery`: A `FetchableFluentQuery` offers a fluent API, that allows further customization of a query derived from an `Example`.
-   Using the fluent API lets you to specify ordering projection and result processing for your query.
+Using the fluent API lets you specify ordering projection and result processing for your query.
 
 Query by Example is well suited for several use cases:
 
 * Querying your data store with a set of static or dynamic constraints.
 * Frequent refactoring of the domain objects without worrying about breaking existing queries.
-* Working independently from the underlying data store API.
+* Working independently of the underlying data store API.
 
 Query by Example also has several limitations:
 
 * No support for nested or grouped property constraints, such as `firstname = ?0 or (firstname = ?1 and lastname = ?2)`.
-* Only supports starts/contains/ends/regex matching for strings and exact matching for other property types.
+* Store-specific support on string matching.
+Depending on your databases, String matching can support starts/contains/ends/regex for strings.
+* Exact matching for other property types.
 
 Before getting started with Query by Example, you need to have a domain object.
 To get started, create an interface for your repository, as shown in the following example:
