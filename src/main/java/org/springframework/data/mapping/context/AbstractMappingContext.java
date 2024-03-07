@@ -59,6 +59,7 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
+import org.springframework.data.util.CustomCollections;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.Optionals;
@@ -143,7 +144,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 *
 	 * @param initialEntitySet
 	 * @see #setManagedTypes(ManagedTypes)
-	 *
 	 */
 	public void setInitialEntitySet(Set<? extends Class<?>> initialEntitySet) {
 		setManagedTypes(ManagedTypes.fromIterable(initialEntitySet));
@@ -415,16 +415,18 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				persistentEntities.put(typeInformation, Optional.of(entity));
 			}
 
-			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
-			Map<String, PropertyDescriptor> descriptors = new HashMap<>();
+			if (shouldCreateProperties(userTypeInformation)) {
+				PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
+				Map<String, PropertyDescriptor> descriptors = new HashMap<>();
 
-			for (PropertyDescriptor descriptor : pds) {
-				descriptors.put(descriptor.getName(), descriptor);
+				for (PropertyDescriptor descriptor : pds) {
+					descriptors.put(descriptor.getName(), descriptor);
+				}
+
+				PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
+				ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
+				persistentPropertyCreator.addPropertiesForRemainingDescriptors();
 			}
-
-			PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
-			ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
-			persistentPropertyCreator.addPropertiesForRemainingDescriptors();
 
 			entity.verify();
 
@@ -474,6 +476,35 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @return
 	 */
 	protected abstract P createPersistentProperty(Property property, E owner, SimpleTypeHolder simpleTypeHolder);
+
+	/**
+	 * Whether to create the {@link PersistentProperty}s for the given {@link TypeInformation}.
+	 *
+	 * @param typeInformation must not be {@literal null}.
+	 * @return {@literal true} properties should be created, {@literal false} otherwise
+	 */
+	protected boolean shouldCreateProperties(TypeInformation<?> typeInformation) {
+
+		Class<?> type = typeInformation.getType();
+
+		return !typeInformation.isMap() && !isCollectionLike(type);
+	}
+
+	/**
+	 * In contrast to TypeInformation, we do not consider types implementing Streamable collection-like as domain types
+	 * can implement that type.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 * @see TypeInformation#isCollectionLike()
+	 */
+	private static boolean isCollectionLike(Class<?> type) {
+
+		return type.isArray() //
+				|| Iterable.class.equals(type) //
+				|| Streamable.class.equals(type) //
+				|| Collection.class.isAssignableFrom(type) || CustomCollections.isCollection(type);
+	}
 
 	@Override
 	public void afterPropertiesSet() {
@@ -532,6 +563,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			this.remainingDescriptors = remainingDescriptors;
 		}
 
+		@Override
 		public void doWith(Field field) {
 
 			String fieldName = field.getName();
