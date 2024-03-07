@@ -536,11 +536,7 @@ public class CustomConversions {
 		public Class<?> computeIfAbsent(Class<?> sourceType, Class<?> targetType,
 				Function<ConvertiblePair, Class<?>> mappingFunction) {
 
-			TargetTypes targetTypes = customReadTargetTypes.get(sourceType);
-
-			if (targetTypes == null) {
-				targetTypes = customReadTargetTypes.computeIfAbsent(sourceType, TargetTypes::new);
-			}
+			TargetTypes targetTypes = customReadTargetTypes.computeIfAbsent(sourceType, TargetTypes::new);
 
 			return targetTypes.computeIfAbsent(targetType, mappingFunction);
 		}

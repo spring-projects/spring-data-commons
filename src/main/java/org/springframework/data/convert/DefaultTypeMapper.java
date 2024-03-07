@@ -124,14 +124,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	 */
 	@Nullable
 	private TypeInformation<?> getFromCacheOrCreate(Alias alias) {
-
-		Optional<TypeInformation<?>> typeInformation = typeCache.get(alias);
-
-		if (typeInformation == null) {
-			typeInformation = typeCache.computeIfAbsent(alias, getAlias);
-		}
-
-		return typeInformation.orElse(null);
+		return typeCache.computeIfAbsent(alias, getAlias).orElse(null);
 	}
 
 	@Override
