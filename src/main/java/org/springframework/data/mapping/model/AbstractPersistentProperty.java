@@ -157,15 +157,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	@Override
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypeInformation() {
-
-		if (isMap() || isCollectionLike()) {
-			return entityTypeInformation.get();
-		}
-
-		if (!isEntity()) {
-			return Collections.emptySet();
-		}
-
 		return entityTypeInformation.get();
 	}
 
@@ -292,6 +283,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return getActualTypeInformation().getType();
 	}
 
+	@Override
 	public boolean usePropertyAccess() {
 		return usePropertyAccess.get();
 	}
