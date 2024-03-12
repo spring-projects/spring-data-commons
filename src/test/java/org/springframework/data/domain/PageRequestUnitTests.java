@@ -58,6 +58,11 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
 		// Is not equal to instance with another sort
 		assertNotEqualsAndHashcode(request, PageRequest.of(1, 10, Direction.ASC, "foo"));
+
+		// Equaliity for unpaged
+		assertEqualsAndHashcode(Pageable.unpaged(), Pageable.unpaged(Sort.unsorted()));
+
+		assertNotEqualsAndHashcode(Pageable.unpaged(), Pageable.unpaged(Sort.by("foo")));
 	}
 
 	@Test // DATACMNS-1581

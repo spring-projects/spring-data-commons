@@ -89,4 +89,21 @@ final class Unpaged implements Pageable {
 
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof Unpaged unpaged)) {
+			return false;
+		}
+
+		return sort.equals(unpaged.sort);
+	}
+
+	@Override
+	public int hashCode() {
+		return sort.hashCode();
+	}
 }
