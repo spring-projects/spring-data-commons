@@ -1395,7 +1395,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	private static Map<String, PropertyStackAddress> createPropertyStackMap(
 			List<PersistentProperty<?>> persistentProperties) {
 
-		Map<String, PropertyStackAddress> stackmap = new HashMap<>();
+		Map<String, PropertyStackAddress> stackmap = new HashMap<>(persistentProperties.size());
 
 		for (PersistentProperty<?> property : persistentProperties) {
 			stackmap.put(property.getName(), new PropertyStackAddress(new Label(), property.getName().hashCode()));

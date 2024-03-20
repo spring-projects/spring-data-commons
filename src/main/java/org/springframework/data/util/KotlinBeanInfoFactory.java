@@ -29,6 +29,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -59,9 +60,10 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 		}
 
 		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(beanClass);
-		Set<PropertyDescriptor> pds = new LinkedHashSet<>();
+		Collection<KCallable<?>> members = kotlinClass.getMembers();
+		Set<PropertyDescriptor> pds = new LinkedHashSet<>(members.size());
 
-		for (KCallable<?> member : kotlinClass.getMembers()) {
+		for (KCallable<?> member : members) {
 
 			if (member instanceof KProperty<?> property) {
 

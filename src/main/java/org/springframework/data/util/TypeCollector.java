@@ -242,7 +242,7 @@ public class TypeCollector {
 
 	static class InspectionCache {
 
-		private final Map<String, ResolvableType> mutableCache = new LinkedHashMap<>();
+		private final Map<String, ResolvableType> mutableCache = new HashMap<>();
 
 		public void add(ResolvableType resolvableType) {
 			mutableCache.put(resolvableType.toString(), resolvableType);

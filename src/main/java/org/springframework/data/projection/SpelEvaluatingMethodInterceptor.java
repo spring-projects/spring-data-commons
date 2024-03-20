@@ -107,9 +107,10 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	private static Map<Integer, Expression> potentiallyCreateExpressionsForMethodsOnTargetInterface(
 			ExpressionParser parser, Class<?> targetInterface) {
 
-		Map<Integer, Expression> expressions = new HashMap<>();
+		Method[] methods = targetInterface.getMethods();
+		Map<Integer, Expression> expressions = new HashMap<>(methods.length);
 
-		for (Method method : targetInterface.getMethods()) {
+		for (Method method : methods) {
 
 			Value value = AnnotationUtils.findAnnotation(method, Value.class);
 			if (value == null) {

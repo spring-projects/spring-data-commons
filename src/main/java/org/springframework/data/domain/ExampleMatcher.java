@@ -775,12 +775,14 @@ public interface ExampleMatcher {
 	 */
 	class PropertySpecifiers {
 
-		private final Map<String, PropertySpecifier> propertySpecifiers = new LinkedHashMap<>();
+		private final Map<String, PropertySpecifier> propertySpecifiers;
 
-		PropertySpecifiers() {}
+		PropertySpecifiers() {
+			this. propertySpecifiers = new LinkedHashMap<>();
+		}
 
 		PropertySpecifiers(PropertySpecifiers propertySpecifiers) {
-			this.propertySpecifiers.putAll(propertySpecifiers.propertySpecifiers);
+			this.propertySpecifiers = new LinkedHashMap<>(propertySpecifiers.propertySpecifiers);
 		}
 
 		public void add(PropertySpecifier specifier) {
