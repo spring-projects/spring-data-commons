@@ -32,12 +32,14 @@ import org.springframework.util.ObjectUtils;
 public class SimplePropertyValueConverterRegistry<P extends PersistentProperty<P>>
 		implements ValueConverterRegistry<P> {
 
-	private final Map<Key, PropertyValueConverter<?, ?, ? extends ValueConversionContext<P>>> converterRegistrationMap = new LinkedHashMap<>();
+	private final Map<Key, PropertyValueConverter<?, ?, ? extends ValueConversionContext<P>>> converterRegistrationMap;
 
-	public SimplePropertyValueConverterRegistry() {}
+	public SimplePropertyValueConverterRegistry() {
+		this.converterRegistrationMap = new LinkedHashMap<>();
+	}
 
 	SimplePropertyValueConverterRegistry(SimplePropertyValueConverterRegistry<P> source) {
-		this.converterRegistrationMap.putAll(source.converterRegistrationMap);
+		this.converterRegistrationMap = new LinkedHashMap<>(source.converterRegistrationMap);
 	}
 
 	@Override

@@ -725,7 +725,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	static class RepositoryValidator {
 
-		static Map<Class<?>, String> WELL_KNOWN_EXECUTORS = new HashMap<>();
+		static Map<Class<?>, String> WELL_KNOWN_EXECUTORS = new HashMap<>(4, 1f);
 
 		static {
 
