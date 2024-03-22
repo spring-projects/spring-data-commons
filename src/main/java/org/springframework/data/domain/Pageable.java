@@ -191,8 +191,12 @@ public interface Pageable {
 
 	/**
 	 * Returns an {@link OffsetScrollPosition} from this pageable if the page request {@link #isPaged() is paged}.
+	 * <p>
+	 * Given the exclusive nature of scrolling the {@link ScrollPosition} for {@code Page(0, 10)} translates an
+	 * {@link ScrollPosition#isInitial() initial} position, where as {@code Page(1, 10)} will point to the last element of
+	 * {@code Page(0,10)} resulting in {@link ScrollPosition#offset(long) ScrollPosition(9)}.
 	 *
-	 * @return
+	 * @return new instance of {@link OffsetScrollPosition}.
 	 * @throws IllegalStateException if the request is {@link #isUnpaged()}
 	 * @since 3.1
 	 */
@@ -202,6 +206,7 @@ public interface Pageable {
 			throw new IllegalStateException("Cannot create OffsetScrollPosition from an unpaged instance");
 		}
 
-		return ScrollPosition.offset(getOffset());
+		return getOffset() > 0 ? ScrollPosition.offset(getOffset() - 1 /* scrolling is exclusive */)
+				: ScrollPosition.offset();
 	}
 }

@@ -29,6 +29,7 @@ import org.springframework.data.domain.ScrollPosition.Direction;
  *
  * @author Mark Paluch
  * @author Oliver Drotbohm
+ * @author Christoph Strobl
  */
 class ScrollPositionUnitTests {
 
@@ -56,14 +57,14 @@ class ScrollPositionUnitTests {
 		assertThat(foo1).isNotEqualTo(bar).doesNotHaveSameHashCodeAs(bar);
 	}
 
-	@Test // GH-2151
+	@Test // GH-2151, GH-3070
 	void shouldCreateCorrectIndexPosition() {
 
-		assertThat(positionFunction(0).apply(0)).isEqualTo(ScrollPosition.offset(1));
-		assertThat(positionFunction(0).apply(1)).isEqualTo(ScrollPosition.offset(2));
+		assertThat(positionFunction(0).apply(0)).isEqualTo(ScrollPosition.offset(0));
+		assertThat(positionFunction(0).apply(1)).isEqualTo(ScrollPosition.offset(1));
 
-		assertThat(positionFunction(100).apply(0)).isEqualTo(ScrollPosition.offset(101));
-		assertThat(positionFunction(100).apply(1)).isEqualTo(ScrollPosition.offset(102));
+		assertThat(positionFunction(100).apply(0)).isEqualTo(ScrollPosition.offset(100));
+		assertThat(positionFunction(100).apply(1)).isEqualTo(ScrollPosition.offset(101));
 	}
 
 	@Test // GH-2151
@@ -78,6 +79,23 @@ class ScrollPositionUnitTests {
 
 		assertThat(offset.getOffset()).isEqualTo(5);
 		assertThat(offset.advanceBy(-10)).isEqualTo(ScrollPosition.offset(0));
+	}
+
+	@Test // GH-3070
+	void advanceOffsetForward() {
+
+		OffsetScrollPosition offset = ScrollPosition.offset(5);
+
+		assertThat(offset.getOffset()).isEqualTo(5);
+		assertThat(offset.advanceBy(5)).isEqualTo(ScrollPosition.offset(10));
+	}
+
+	@Test // GH-3070
+	void advanceInitialOffsetForward() {
+
+		OffsetScrollPosition offset = ScrollPosition.offset();
+
+		assertThat(offset.advanceBy(5)).isEqualTo(ScrollPosition.offset(5));
 	}
 
 	@Test // GH-2824
@@ -120,13 +138,22 @@ class ScrollPositionUnitTests {
 		assertThat(position.reverse()).isEqualTo(forward);
 	}
 
-	@Test // GH-2824
+	@Test // GH-2824, GH-3070
 	void initialOffsetPosition() {
 
 		OffsetScrollPosition position = ScrollPosition.offset();
 
 		assertThat(position.isInitial()).isTrue();
-		assertThat(position.getOffset()).isEqualTo(0);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(position::getOffset);
+	}
+
+	@Test // GH-3070
+	void initialOffsetPositionIsNotEqualToPositionOfFirstElement() {
+
+		OffsetScrollPosition first = ScrollPosition.offset(0);
+
+		assertThat(first.isInitial()).isFalse();
+		assertThat(first).isNotEqualTo(ScrollPosition.offset());
 	}
 
 	@Test // GH-2824, GH-2840

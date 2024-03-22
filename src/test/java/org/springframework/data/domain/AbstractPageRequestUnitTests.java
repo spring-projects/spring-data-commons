@@ -84,4 +84,11 @@ public abstract class AbstractPageRequestUnitTests {
 
 		assertThat(request.getOffset()).isGreaterThan(Integer.MAX_VALUE);
 	}
+
+	@Test // GH-2151, GH-3070
+	void createsOffsetScrollPosition() {
+
+		assertThat(newPageRequest(0, 10).toScrollPosition()).returns(true, ScrollPosition::isInitial);
+		assertThat(newPageRequest(1, 10).toScrollPosition()).returns(9L, OffsetScrollPosition::getOffset);
+	}
 }
