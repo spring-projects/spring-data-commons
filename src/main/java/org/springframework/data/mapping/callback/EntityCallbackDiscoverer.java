@@ -38,7 +38,6 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.comparator.Comparators;
 
@@ -54,7 +53,7 @@ class EntityCallbackDiscoverer {
 
 	private final CallbackRetriever defaultRetriever = new CallbackRetriever();
 	private final Map<CallbackCacheKey, CallbackRetriever> retrieverCache = new ConcurrentHashMap<>(64);
-	private final Map<Class<?>, ResolvableType> entityTypeCache = new ConcurrentReferenceHashMap<>(64);
+	private final Map<Class<?>, ResolvableType> entityTypeCache = new ConcurrentHashMap<>(64);
 
 	@Nullable private ClassLoader beanClassLoader;
 

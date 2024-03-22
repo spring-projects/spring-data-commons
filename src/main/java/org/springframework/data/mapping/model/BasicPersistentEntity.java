@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -46,8 +47,6 @@ import org.springframework.expression.EvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
@@ -117,9 +116,9 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
 		this.propertyCache = new HashMap<>(16, 1f);
-		this.annotationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
+		this.annotationCache = new ConcurrentHashMap<>(16);
 		this.propertyAnnotationCache = CollectionUtils
-				.toMultiValueMap(new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK));
+				.toMultiValueMap(new ConcurrentHashMap<>(16));
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 		this.isNewStrategy = Lazy.of(() -> Persistable.class.isAssignableFrom(information.getType()) //

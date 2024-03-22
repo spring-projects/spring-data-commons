@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import org.apache.commons.logging.Log;
@@ -28,7 +29,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -41,7 +41,7 @@ import org.springframework.util.ReflectionUtils;
  */
 class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 
-	private final Map<Class<?>, Method> callbackMethodCache = new ConcurrentReferenceHashMap<>(64);
+	private final Map<Class<?>, Method> callbackMethodCache = new ConcurrentHashMap<>(64);
 	private final ReactiveEntityCallbackInvoker callbackInvoker = new DefaultReactiveEntityCallbackInvoker();
 	private final EntityCallbackDiscoverer callbackDiscoverer;
 

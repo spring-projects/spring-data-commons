@@ -16,6 +16,7 @@
 package org.springframework.data.mapping.context;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -33,7 +34,6 @@ import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
 
 /**
@@ -49,7 +49,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 	private static final Predicate<PersistentProperty<? extends PersistentProperty<?>>> IS_ENTITY = PersistentProperty::isEntity;
 
-	private final Map<TypeAndPath, PathResolution> propertyPaths = new ConcurrentReferenceHashMap<>();
+	private final Map<TypeAndPath, PathResolution> propertyPaths = new ConcurrentHashMap<>();
 	private final MappingContext<E, P> context;
 
 	public PersistentPropertyPathFactory(MappingContext<E, P> context) {

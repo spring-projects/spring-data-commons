@@ -32,7 +32,6 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 
 /**

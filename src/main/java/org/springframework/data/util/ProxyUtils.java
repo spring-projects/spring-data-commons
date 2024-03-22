@@ -17,12 +17,12 @@ package org.springframework.data.util;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Proxy type detection utilities, extensible via {@link ProxyDetector} registered via Spring factories.
@@ -32,7 +32,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  */
 public abstract class ProxyUtils {
 
-	private static Map<Class<?>, Class<?>> USER_TYPES = new ConcurrentReferenceHashMap<>();
+	private static Map<Class<?>, Class<?>> USER_TYPES = new ConcurrentHashMap<>();
 
 	private static final List<ProxyDetector> DETECTORS = SpringFactoriesLoader.loadFactories(ProxyDetector.class,
 			ProxyUtils.class.getClassLoader());

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -46,7 +47,7 @@ import org.springframework.util.ObjectUtils;
  */
 public abstract class ReturnedType {
 
-	private static final Map<CacheKey, ReturnedType> cache = new ConcurrentReferenceHashMap<>(32);
+	private static final Map<CacheKey, ReturnedType> cache = new ConcurrentHashMap<>(32);
 
 	private final Class<?> domainType;
 

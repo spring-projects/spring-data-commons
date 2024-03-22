@@ -17,6 +17,7 @@ package org.springframework.data.mapping.callback;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import org.apache.commons.logging.Log;
@@ -26,7 +27,6 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -40,7 +40,7 @@ import org.springframework.util.ReflectionUtils;
  */
 class DefaultEntityCallbacks implements EntityCallbacks {
 
-	private final Map<Class<?>, Method> callbackMethodCache = new ConcurrentReferenceHashMap<>(64);
+	private final Map<Class<?>, Method> callbackMethodCache = new ConcurrentHashMap<>(64);
 	private final SimpleEntityCallbackInvoker callbackInvoker = new SimpleEntityCallbackInvoker();
 	private final EntityCallbackDiscoverer callbackDiscoverer;
 

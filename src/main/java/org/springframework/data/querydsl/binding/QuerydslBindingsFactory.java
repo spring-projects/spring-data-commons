@@ -18,6 +18,7 @@ package org.springframework.data.querydsl.binding;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -30,7 +31,6 @@ import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
 
 import com.querydsl.core.types.EntityPath;
 
@@ -63,7 +63,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 		Assert.notNull(entityPathResolver, "EntityPathResolver must not be null");
 
 		this.entityPathResolver = entityPathResolver;
-		this.entityPaths = new ConcurrentReferenceHashMap<>();
+		this.entityPaths = new ConcurrentHashMap<>();
 		this.beanFactory = Optional.empty();
 		this.repositories = Optional.empty();
 		this.defaultCustomizer = NoOpCustomizer.INSTANCE;

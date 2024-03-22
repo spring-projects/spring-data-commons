@@ -49,7 +49,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -84,7 +83,7 @@ public abstract class QueryExecutionConverters {
 	private static final Set<Function<Object, Object>> UNWRAPPERS = new HashSet<>();
 	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<>();
 	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>();
-	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentReferenceHashMap<>();
+	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentHashMap<>();
 	private static final TypeInformation<Void> VOID_INFORMATION = TypeInformation.of(Void.class);
 
 	static {

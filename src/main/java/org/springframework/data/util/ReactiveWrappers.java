@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.ReactiveAdapter;
 import org.springframework.core.ReactiveAdapterRegistry;
@@ -28,7 +29,6 @@ import org.springframework.core.ReactiveTypeDescriptor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Utility class to expose details about reactive wrapper types. This class exposes whether a reactive wrapper is
@@ -70,7 +70,7 @@ public abstract class ReactiveWrappers {
 
 	public static final boolean IS_REACTIVE_AVAILABLE = Arrays.stream(ReactiveLibrary.values())
 			.anyMatch(ReactiveWrappers::isAvailable);
-	private static final Map<Class<?>, Boolean> IS_REACTIVE_TYPE = new ConcurrentReferenceHashMap<>();
+	private static final Map<Class<?>, Boolean> IS_REACTIVE_TYPE = new ConcurrentHashMap<>();
 
 	private ReactiveWrappers() {}
 

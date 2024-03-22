@@ -22,14 +22,13 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.ProxyMethodInvocation;
 import org.springframework.lang.Nullable;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -43,7 +42,7 @@ import org.springframework.util.ReflectionUtils;
 public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor {
 
 	private static final Lookup LOOKUP = MethodHandles.lookup();
-	private final Map<Method, MethodHandle> methodHandleCache = new ConcurrentReferenceHashMap<>(10, ReferenceType.WEAK);
+	private final Map<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
 
 	/**
 	 * Returns whether the {@code interfaceClass} declares {@link Method#isDefault() default methods}.
