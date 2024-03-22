@@ -26,6 +26,7 @@ import org.mockito.quality.Strictness;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -33,6 +34,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.type.AnnotationMetadata;
@@ -46,13 +48,19 @@ import org.springframework.data.repository.config.stereotype.MyStereotypeReposit
 import org.springframework.data.repository.core.support.DummyRepositoryFactoryBean;
 import org.springframework.data.repository.sample.AddressRepository;
 import org.springframework.data.repository.sample.AddressRepositoryClient;
+import org.springframework.data.repository.sample.Product;
 import org.springframework.data.repository.sample.ProductRepository;
+import org.springframework.data.repository.sample.SampleAnnotatedRepository;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * Unit tests for {@link RepositoryConfigurationDelegate}.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Yanming Zhou
  * @soundtrack Richard Spaven - Tribute (Whole Other*)
  */
 @ExtendWith(MockitoExtension.class)
@@ -85,6 +93,38 @@ class RepositoryConfigurationDelegateUnitTests {
 				assertThat(type.getName()).endsWith("FactoryBean");
 			});
 		}
+	}
+
+	@Test
+	void registersAccurateTargetTypeOfBeanDefinition() {
+
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				new StandardAnnotationMetadata(TestConfig.class, true), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), null);
+
+		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+		List<BeanComponentDefinition> bcds = delegate.registerRepositoriesIn(context, extension);
+		var productRepository = bcds.stream().filter(bcd ->
+				bcd.getName().equals("productRepository")).map(BeanComponentDefinition::getBeanDefinition).findFirst();
+		var sampleAnnotatedRepository = bcds.stream().filter(bcd ->
+				bcd.getName().equals("sampleAnnotatedRepository")).map(BeanComponentDefinition::getBeanDefinition).findFirst();
+
+		assertThat(productRepository).isPresent().get().isInstanceOfSatisfying(RootBeanDefinition.class, it -> {
+			ResolvableType[] generics = it.getResolvableType().getGenerics();
+			assertThat(generics[0].resolve()).isSameAs(ProductRepository.class);
+			assertThat(generics[1].resolve()).isSameAs(Product.class);
+			assertThat(generics[2].resolve()).isSameAs(Long.class);
+		});
+
+		assertThat(sampleAnnotatedRepository).isPresent().get().isInstanceOfSatisfying(RootBeanDefinition.class, it -> {
+			ResolvableType[] generics = it.getResolvableType().getGenerics();
+			assertThat(generics[0].resolve()).isSameAs(SampleAnnotatedRepository.class);
+			assertThat(generics[1].resolve()).isSameAs(Object.class);
+			assertThat(generics[2].resolve()).isSameAs(Serializable.class);
+		});
 	}
 
 	@Test // DATACMNS-1368
