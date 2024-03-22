@@ -141,7 +141,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 				throw new IndexOutOfBoundsException(offset);
 			}
 
-			return of(startOffset + offset + 1);
+			return of(startOffset + offset);
 		}
 	}
 }

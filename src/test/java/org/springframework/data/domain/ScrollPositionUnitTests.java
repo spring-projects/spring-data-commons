@@ -59,11 +59,11 @@ class ScrollPositionUnitTests {
 	@Test // GH-2151
 	void shouldCreateCorrectIndexPosition() {
 
-		assertThat(positionFunction(0).apply(0)).isEqualTo(ScrollPosition.offset(1));
-		assertThat(positionFunction(0).apply(1)).isEqualTo(ScrollPosition.offset(2));
+		assertThat(positionFunction(0).apply(0)).isEqualTo(ScrollPosition.offset(0));
+		assertThat(positionFunction(0).apply(1)).isEqualTo(ScrollPosition.offset(1));
 
-		assertThat(positionFunction(100).apply(0)).isEqualTo(ScrollPosition.offset(101));
-		assertThat(positionFunction(100).apply(1)).isEqualTo(ScrollPosition.offset(102));
+		assertThat(positionFunction(100).apply(0)).isEqualTo(ScrollPosition.offset(100));
+		assertThat(positionFunction(100).apply(1)).isEqualTo(ScrollPosition.offset(101));
 	}
 
 	@Test // GH-2151
