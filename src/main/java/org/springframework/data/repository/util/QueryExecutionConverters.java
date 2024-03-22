@@ -79,11 +79,11 @@ public abstract class QueryExecutionConverters {
 	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Try",
 			QueryExecutionConverters.class.getClassLoader());
 
-	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<>();
-	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>();
+	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<>(10, 1f);
+	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>(10, 1f);
 	private static final Set<Function<Object, Object>> UNWRAPPERS = new HashSet<>();
 	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<>();
-	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>();
+	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>(3, 1f);
 	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentReferenceHashMap<>();
 	private static final TypeInformation<Void> VOID_INFORMATION = TypeInformation.of(Void.class);
 

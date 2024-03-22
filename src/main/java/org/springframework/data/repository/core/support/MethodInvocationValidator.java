@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -49,7 +50,7 @@ import org.springframework.util.ObjectUtils;
 public class MethodInvocationValidator implements MethodInterceptor {
 
 	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
-	private final Map<Method, Nullability> nullabilityCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
+	private final Map<Method, Nullability> nullabilityCache = new ConcurrentHashMap<>(16);
 
 	/**
 	 * Returns {@literal true} if the {@code repositoryInterface} is supported by this interceptor.

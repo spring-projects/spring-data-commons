@@ -461,7 +461,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			if (shouldCreateProperties(userTypeInformation)) {
 				PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
-				Map<String, PropertyDescriptor> descriptors = new HashMap<>();
+				Map<String, PropertyDescriptor> descriptors = new HashMap<>(pds.length);
 
 				for (PropertyDescriptor descriptor : pds) {
 					descriptors.put(descriptor.getName(), descriptor);

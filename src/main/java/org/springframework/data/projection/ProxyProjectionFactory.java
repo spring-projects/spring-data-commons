@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -34,7 +35,6 @@ import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * A {@link ProjectionFactory} to create JDK proxies to back interfaces and handle method invocations on them. By
@@ -60,7 +60,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	}
 
 	private final List<MethodInterceptorFactory> factories;
-	private final Map<Class<?>, ProjectionMetadata> projectionInformationCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Class<?>, ProjectionMetadata> projectionInformationCache = new ConcurrentHashMap<>();
 	private @Nullable ClassLoader classLoader;
 
 	private final Lazy<DefaultMethodInvokingMethodInterceptor> defaultMethodInvokingMethodInterceptor = Lazy

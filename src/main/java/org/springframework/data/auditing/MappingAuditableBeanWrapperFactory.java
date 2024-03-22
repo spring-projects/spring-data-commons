@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.time.temporal.TemporalAccessor;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -40,7 +41,6 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * {@link AuditableBeanWrapperFactory} that will create am {@link AuditableBeanWrapper} using mapping information
@@ -67,7 +67,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		Assert.notNull(entities, "PersistentEntities must not be null");
 
 		this.entities = entities;
-		this.metadataCache = new ConcurrentReferenceHashMap<>();
+		this.metadataCache = new ConcurrentHashMap<>();
 	}
 
 	@Override

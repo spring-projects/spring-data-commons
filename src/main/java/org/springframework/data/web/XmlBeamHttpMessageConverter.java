@@ -17,6 +17,7 @@ package org.springframework.data.web;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -31,8 +32,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
-
 import org.xml.sax.SAXParseException;
 import org.xmlbeam.XBProjector;
 import org.xmlbeam.config.DefaultXMLFactoriesConfig;
@@ -49,7 +48,7 @@ import org.xmlbeam.config.DefaultXMLFactoriesConfig;
 public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Object> {
 
 	private final XBProjector projectionFactory;
-	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentHashMap<>();
 
 	/**
 	 * Creates a new {@link XmlBeamHttpMessageConverter}.
