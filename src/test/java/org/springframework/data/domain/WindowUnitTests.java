@@ -53,18 +53,18 @@ class WindowUnitTests {
 		}
 	}
 
-	@Test // GH-2151
+	@Test // GH-2151, GH-3070
 	void shouldCreateCorrectPositions() {
 
 		Window<Integer> window = Window.from(List.of(1, 2, 3), OffsetScrollPosition.positionFunction(0));
 
-		assertThat(window.positionAt(0)).isEqualTo(ScrollPosition.offset(1));
-		assertThat(window.positionAt(window.size() - 1)).isEqualTo(ScrollPosition.offset(3));
+		assertThat(window.positionAt(0)).isEqualTo(ScrollPosition.offset(0));
+		assertThat(window.positionAt(window.size() - 1)).isEqualTo(ScrollPosition.offset(2));
 
 		// by index
-		assertThat(window.positionAt(1)).isEqualTo(ScrollPosition.offset(2));
+		assertThat(window.positionAt(1)).isEqualTo(ScrollPosition.offset(1));
 
 		// by object
-		assertThat(window.positionAt(Integer.valueOf(1))).isEqualTo(ScrollPosition.offset(1));
+		assertThat(window.positionAt(Integer.valueOf(1))).isEqualTo(ScrollPosition.offset(0));
 	}
 }

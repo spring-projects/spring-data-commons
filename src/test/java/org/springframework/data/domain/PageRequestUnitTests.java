@@ -71,12 +71,4 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> PageRequest.of(0, 10, null));
 	}
-
-	@Test // GH-2151
-	void createsOffsetScrollPosition() {
-
-		PageRequest request = PageRequest.of(1, 10);
-
-		assertThat(request.toScrollPosition()).isEqualTo(ScrollPosition.offset(10));
-	}
 }

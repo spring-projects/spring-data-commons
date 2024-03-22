@@ -23,25 +23,28 @@ import org.springframework.util.Assert;
 
 /**
  * A {@link ScrollPosition} based on the offsets within query results.
+ * <p>
+ * An initial {@link OffsetScrollPosition} does not point to a specific element and is different to a the Po
  *
  * @author Mark Paluch
  * @author Oliver Drotbohm
+ * @author Christoph Strobl
  * @since 3.1
  */
 public final class OffsetScrollPosition implements ScrollPosition {
 
-	private static final OffsetScrollPosition INITIAL = new OffsetScrollPosition(0);
+	private static final OffsetScrollPosition INITIAL = new OffsetScrollPosition(null);
 
-	private final long offset;
+	@Nullable private final Long offset;
 
 	/**
 	 * Creates a new {@link OffsetScrollPosition} for the given non-negative offset.
 	 *
 	 * @param offset must be greater or equal to zero.
 	 */
-	private OffsetScrollPosition(long offset) {
+	private OffsetScrollPosition(@Nullable Long offset) {
 
-		Assert.isTrue(offset >= 0, "Offset must not be negative");
+		Assert.isTrue(offset == null || offset >= 0, "Offset must not be negative");
 
 		this.offset = offset;
 	}
@@ -62,7 +65,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 * @return will never be {@literal null}.
 	 */
 	static OffsetScrollPosition of(long offset) {
-		return offset == 0 ? initial() : new OffsetScrollPosition(offset);
+		return new OffsetScrollPosition(offset);
 	}
 
 	/**
@@ -80,10 +83,15 @@ public final class OffsetScrollPosition implements ScrollPosition {
 
 	/**
 	 * The zero or positive offset.
+	 * <p>
+	 * An {@link #isInitial() initial} position does not define an offset and will raise an error.
 	 *
 	 * @return the offset.
+	 * @throws IllegalStateException if {@link #isInitial()}.
 	 */
 	public long getOffset() {
+
+		Assert.state(offset != null, "Initial state does not have an offset. Make sure to check #isInitial()");
 		return offset;
 	}
 
@@ -96,14 +104,14 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 */
 	public OffsetScrollPosition advanceBy(long delta) {
 
-		var value = offset + delta;
+		var value = isInitial() ? delta : offset + delta;
 
 		return new OffsetScrollPosition(value < 0 ? 0 : value);
 	}
 
 	@Override
 	public boolean isInitial() {
-		return offset == 0;
+		return offset == null;
 	}
 
 	@Override
@@ -117,7 +125,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 			return false;
 		}
 
-		return offset == that.offset;
+		return Objects.equals(offset, that.offset);
 	}
 
 	@Override
@@ -141,7 +149,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 				throw new IndexOutOfBoundsException(offset);
 			}
 
-			return of(startOffset + offset + 1);
+			return of(startOffset + offset);
 		}
 	}
 }
