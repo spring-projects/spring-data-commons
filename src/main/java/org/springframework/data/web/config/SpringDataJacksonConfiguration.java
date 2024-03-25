@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.util.StdConverter;
  * JavaConfig class to export Jackson specific configuration.
  *
  * @author Oliver Gierke
+ * @author Yanming Zhou
  */
 public class SpringDataJacksonConfiguration implements SpringDataJacksonModules {
 
@@ -84,7 +85,7 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 
 			addSerializer(UNPAGED_TYPE, new UnpagedAsInstanceSerializer());
 
-			if (settings != null && settings.pageSerializationMode() == PageSerializationMode.DIRECT) {
+			if (settings == null || settings.pageSerializationMode() == PageSerializationMode.DIRECT) {
 				setMixInAnnotation(PageImpl.class, WarningMixing.class);
 			} else {
 				setMixInAnnotation(PageImpl.class, WrappingMixing.class);

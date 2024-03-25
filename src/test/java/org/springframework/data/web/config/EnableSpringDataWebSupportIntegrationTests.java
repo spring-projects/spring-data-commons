@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -67,7 +68,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 	@Configuration
 	@EnableWebMvc
-	@EnableSpringDataWebSupport
+	@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 	static class SampleConfig {
 
 		@Bean
@@ -304,6 +305,10 @@ class EnableSpringDataWebSupportIntegrationTests {
 	void usesDirectPageSerializationMode() throws Exception {
 
 		var applicationContext = WebTestUtils.createApplicationContext(PageSampleConfigWithDirect.class);
+
+		// SpringDataWebSettings shouldn't be registered if pageSerializationMode is default
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() -> applicationContext.getBean(SpringDataWebSettings.class));
+
 		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
 
 		mvc.perform(post("/page"))//
