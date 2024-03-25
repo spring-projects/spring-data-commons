@@ -28,6 +28,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
@@ -56,8 +58,8 @@ import org.springframework.util.Assert;
  * @author Johannes Englmeier
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID>
-		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware,
-		BeanFactoryAware, ApplicationEventPublisherAware {
+		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, ApplicationEventPublisherAware,
+		BeanClassLoaderAware, BeanFactoryAware, EnvironmentAware {
 
 	private final Class<? extends T> repositoryInterface;
 
@@ -66,14 +68,15 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private Optional<Class<?>> repositoryBaseClass = Optional.empty();
 	private Optional<Object> customImplementation = Optional.empty();
 	private Optional<RepositoryFragments> repositoryFragments = Optional.empty();
-	private NamedQueries namedQueries;
+	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
 	private Optional<MappingContext<?, ?>> mappingContext = Optional.empty();
 	private ClassLoader classLoader;
+	private ApplicationEventPublisher publisher;
 	private BeanFactory beanFactory;
+	private Environment environment;
 	private boolean lazyInit = false;
 	private Optional<QueryMethodEvaluationContextProvider> evaluationContextProvider = Optional.empty();
-	private List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
-	private ApplicationEventPublisher publisher;
+	private final List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
 
 	private Lazy<T> repository;
 
@@ -194,6 +197,11 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		}
 	}
 
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
+	}
+
 	/**
 	 * Create a default {@link QueryMethodEvaluationContextProvider} (or subclass) from {@link ListableBeanFactory}.
 	 *
@@ -211,11 +219,13 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.publisher = publisher;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
 		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainType());
 	}
 
+	@Override
 	public RepositoryInformation getRepositoryInformation() {
 
 		RepositoryFragments fragments = customImplementation.map(RepositoryFragments::just)//
@@ -224,30 +234,36 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		return factory.getRepositoryInformation(repositoryMetadata, fragments);
 	}
 
+	@Override
 	public PersistentEntity<?, ?> getPersistentEntity() {
 
 		return mappingContext.orElseThrow(() -> new IllegalStateException("No MappingContext available"))
 				.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
 	}
 
+	@Override
 	public List<QueryMethod> getQueryMethods() {
 		return factory.getQueryMethods();
 	}
 
+	@Override
 	@NonNull
 	public T getObject() {
 		return this.repository.get();
 	}
 
+	@Override
 	@NonNull
 	public Class<? extends T> getObjectType() {
 		return repositoryInterface;
 	}
 
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
+	@Override
 	public void afterPropertiesSet() {
 
 		this.factory = createRepositoryFactory();
@@ -258,8 +274,12 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.factory.setBeanClassLoader(classLoader);
 		this.factory.setBeanFactory(beanFactory);
 
-		if (publisher != null) {
+		if (this.publisher != null) {
 			this.factory.addRepositoryProxyPostProcessor(new EventPublishingRepositoryProxyPostProcessor(publisher));
+		}
+
+		if (this.environment != null) {
+			this.factory.setEnvironment(this.environment);
 		}
 
 		repositoryBaseClass.ifPresent(this.factory::setRepositoryBaseClass);
