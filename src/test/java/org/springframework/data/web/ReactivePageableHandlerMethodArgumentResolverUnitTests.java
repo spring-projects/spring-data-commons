@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -35,6 +36,7 @@ import org.springframework.web.reactive.result.method.SyncHandlerMethodArgumentR
  * Unit tests for {@link ReactivePageableHandlerMethodArgumentResolver}.
  *
  * @author Mark Paluch
+ * @author Yanming Zhou
  */
 class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 
@@ -148,6 +150,28 @@ class ReactivePageableHandlerMethodArgumentResolverUnitTests {
 		var request = MockServerHttpRequest.get("foo?page=20").build();
 
 		assertThat(resolve(resolver, request)).isEqualTo(Pageable.unpaged());
+	}
+
+	@Test
+	void returnsSortedUnpagedIfOnlyPageAndSortIsGiven() {
+
+		var resolver = getReactiveResolver();
+		resolver.setFallbackPageable(Pageable.unpaged());
+
+		var request = MockServerHttpRequest.get("foo?page=20&sort=test").build();
+
+		assertThat(resolve(resolver, request)).isEqualTo(Pageable.unpaged(Sort.by("test")));
+	}
+
+	@Test
+	void returnsSortedUnpagedIfOnlySortIsGiven() {
+
+		var resolver = getReactiveResolver();
+		resolver.setFallbackPageable(Pageable.unpaged());
+
+		var request = MockServerHttpRequest.get("foo?sort=test").build();
+
+		assertThat(resolve(resolver, request)).isEqualTo(Pageable.unpaged(Sort.by("test")));
 	}
 
 	@Test // DATACMNS-1211

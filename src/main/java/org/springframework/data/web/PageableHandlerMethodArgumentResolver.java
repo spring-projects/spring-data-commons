@@ -33,6 +33,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Nick Williams
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Yanming Zhou
  * @since 1.6
  */
 public class PageableHandlerMethodArgumentResolver extends PageableHandlerMethodArgumentResolverSupport
@@ -83,7 +84,12 @@ public class PageableHandlerMethodArgumentResolver extends PageableHandlerMethod
 		Pageable pageable = getPageable(methodParameter, page, pageSize);
 
 		if (sort.isSorted()) {
-			return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+			if (pageable.isPaged()) {
+				pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+			}
+			else {
+				pageable = Pageable.unpaged(sort);
+			}
 		}
 
 		return pageable;

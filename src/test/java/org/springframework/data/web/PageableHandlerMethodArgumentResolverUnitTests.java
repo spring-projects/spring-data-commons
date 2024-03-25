@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -37,6 +38,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Nick Williams
  * @author Vedran Pavic
  * @author Mark Paluch
+ * @author Yanming Zhou
  */
 class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
@@ -159,7 +161,7 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 	}
 
 	@Test // DATACMNS-477
-	void returnsFallbackIfOnlyPageIsGiven() throws Exception {
+	void returnsFallbackIfOnlyPageIsGiven() {
 
 		var resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
@@ -171,8 +173,35 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 				.isEqualTo(Pageable.unpaged());
 	}
 
+	@Test
+	void returnsSortedUnpagedIfOnlyPageAndSortIsGiven() {
+
+		var resolver = getResolver();
+		resolver.setFallbackPageable(Pageable.unpaged());
+
+		var request = new MockHttpServletRequest();
+		request.addParameter("page", "20");
+		request.addParameter("sort", "foo");
+
+		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null))
+				.isEqualTo(Pageable.unpaged(Sort.by("foo")));
+	}
+
+	@Test
+	void returnsSortedUnpagedIfOnlySortIsGiven() {
+
+		var resolver = getResolver();
+		resolver.setFallbackPageable(Pageable.unpaged());
+
+		var request = new MockHttpServletRequest();
+		request.addParameter("sort", "foo");
+
+		assertThat(resolver.resolveArgument(supportedMethodParameter, null, new ServletWebRequest(request), null))
+				.isEqualTo(Pageable.unpaged(Sort.by("foo")));
+	}
+
 	@Test // DATACMNS-477
-	void returnsFallbackIfFallbackIsUnpagedAndOnlySizeIsGiven() throws Exception {
+	void returnsFallbackIfFallbackIsUnpagedAndOnlySizeIsGiven() {
 
 		var resolver = getResolver();
 		resolver.setFallbackPageable(Pageable.unpaged());
