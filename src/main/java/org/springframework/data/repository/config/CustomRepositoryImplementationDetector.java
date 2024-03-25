@@ -18,7 +18,6 @@ package org.springframework.data.repository.config;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -29,6 +28,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Detects the custom implementation for a {@link org.springframework.data.repository.Repository} instance. If
@@ -43,6 +43,7 @@ import org.springframework.util.Assert;
  * @author Peter Rietzler
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Yanming Zhou
  */
 public class CustomRepositoryImplementationDetector {
 
@@ -97,7 +98,7 @@ public class CustomRepositoryImplementationDetector {
 	 * Tries to detect a custom implementation for a repository bean by classpath scanning.
 	 *
 	 * @param lookup must not be {@literal null}.
-	 * @return the {@code AbstractBeanDefinition} of the custom implementation or {@literal null} if none found.
+	 * @return the {@code Optional<AbstractBeanDefinition>} of the custom implementation or empty {@code Optional} if none found.
 	 */
 	public Optional<AbstractBeanDefinition> detectCustomImplementation(ImplementationLookupConfiguration lookup) {
 
@@ -108,7 +109,7 @@ public class CustomRepositoryImplementationDetector {
 				.filter(lookup::matches) //
 				.collect(StreamUtils.toUnmodifiableSet());
 
-		return selectImplementationCandidate(lookup, definitions);
+		return definitions.isEmpty() ? findDefaultBeanDefinition(lookup) : selectImplementationCandidate(lookup, definitions);
 	}
 
 	private static Optional<AbstractBeanDefinition> selectImplementationCandidate(
@@ -141,6 +142,28 @@ public class CustomRepositoryImplementationDetector {
 		return config.getBasePackages().stream()//
 				.flatMap(it -> provider.findCandidateComponents(it).stream())//
 				.collect(Collectors.toSet());
+	}
+
+	private Optional<AbstractBeanDefinition> findDefaultBeanDefinition(ImplementationLookupConfiguration lookup) {
+
+		if (lookup instanceof DefaultImplementationLookupConfiguration defaultLookup) {
+
+			String interfaceName = defaultLookup.getInterfaceName();
+			String packageName = ClassUtils.getPackageName(interfaceName);
+			String className = ClassUtils.getShortName(interfaceName);
+			String defaultImplementationClass = className + lookup.getImplementationPostfix() + ".class";
+
+			ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false,
+					environment);
+			provider.setResourceLoader(resourceLoader);
+			provider.setResourcePattern(defaultImplementationClass);
+			provider.setMetadataReaderFactory(lookup.getMetadataReaderFactory());
+			provider.addIncludeFilter((reader, factory) -> true);
+
+			return provider.findCandidateComponents(packageName).stream().map(AbstractBeanDefinition.class::cast).findAny();
+		}
+
+		return Optional.empty();
 	}
 
 	private static Optional<BeanDefinition> throwAmbiguousCustomImplementationException(
