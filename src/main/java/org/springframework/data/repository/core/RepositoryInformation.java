@@ -86,6 +86,11 @@ public interface RepositoryInformation extends RepositoryMetadata {
 		return getQueryMethods().stream().anyMatch(this::isCustomMethod);
 	}
 
+	/**
+	 * Returns whether the configured repository interface has query methods at all.
+	 *
+	 * @return
+	 */
 	default boolean hasQueryMethods() {
 		return getQueryMethods().iterator().hasNext();
 	}
