@@ -46,6 +46,8 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
@@ -64,6 +66,7 @@ import org.springframework.util.StopWatch;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author John Blum
+ * @author Yanming Zhou
  */
 public class RepositoryConfigurationDelegate {
 
@@ -330,12 +333,26 @@ public class RepositoryConfigurationDelegate {
 
 		int numberOfGenerics = factoryBean.getTypeParameters().length;
 
-		Class<?>[] generics = new Class<?>[numberOfGenerics];
-		generics[0] = repositoryInterface;
+		ResolvableType[] generics = new ResolvableType[numberOfGenerics];
+		generics[0] = ResolvableType.forClass(repositoryInterface);
 
 		if (numberOfGenerics > 1) {
-			for (int i = 1; i < numberOfGenerics; i++) {
-				generics[i] = Object.class;
+			ResolvableType[] typeArguments;
+			if (repositoryInterface.isAnnotationPresent(RepositoryDefinition.class)) {
+				RepositoryDefinition rd = repositoryInterface.getAnnotation(RepositoryDefinition.class);
+				typeArguments = new ResolvableType[] { ResolvableType.forClass(rd.domainClass()), ResolvableType.forClass(rd.idClass()) };
+			}
+			else {
+				typeArguments = generics[0].as(Repository.class).getGenerics();
+			}
+
+			if (typeArguments.length == numberOfGenerics - 1) {
+				System.arraycopy(typeArguments, 0, generics, 1, numberOfGenerics - 1);
+			}
+			else {
+				for (int i = 1; i < numberOfGenerics; i++) {
+					generics[i] = ResolvableType.forClass(Object.class);
+				}
 			}
 		}
 
