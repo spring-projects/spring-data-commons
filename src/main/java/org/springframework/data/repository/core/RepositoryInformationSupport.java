@@ -19,8 +19,7 @@ import static org.springframework.data.repository.util.ClassUtils.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -43,6 +42,7 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 
 	private final Supplier<RepositoryMetadata> metadata;
 	private final Supplier<Class<?>> repositoryBaseClass;
+	private final Supplier<DefaultQueryMethods> queryMethods;
 
 	public RepositoryInformationSupport(Supplier<RepositoryMetadata> metadata, Supplier<Class<?>> repositoryBaseClass) {
 
@@ -51,25 +51,12 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 
 		this.metadata = Lazy.of(metadata);
 		this.repositoryBaseClass = Lazy.of(repositoryBaseClass);
+		this.queryMethods = Lazy.of(this::calculateQueryMethods);
 	}
 
 	@Override
 	public Streamable<Method> getQueryMethods() {
-
-		Set<Method> result = new HashSet<>();
-
-		for (Method method : getRepositoryInterface().getMethods()) {
-			method = ClassUtils.getMostSpecificMethod(method, getRepositoryInterface());
-			if (isQueryMethodCandidate(method)) {
-				result.add(method);
-			}
-		}
-
-		return Streamable.of(Collections.unmodifiableSet(result));
-	}
-
-	private RepositoryMetadata getMetadata() {
-		return metadata.get();
+		return queryMethods.get().methods;
 	}
 
 	@Override
@@ -139,21 +126,12 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 
 	@Override
 	public boolean hasCustomMethod() {
+		return queryMethods.get().hasCustomMethod;
+	}
 
-		Class<?> repositoryInterface = getRepositoryInterface();
-
-		// No detection required if no typing interface was configured
-		if (isGenericRepositoryInterface(repositoryInterface)) {
-			return false;
-		}
-
-		for (Method method : repositoryInterface.getMethods()) {
-			if (isCustomMethod(method) && !isBaseClassMethod(method)) {
-				return true;
-			}
-		}
-
-		return false;
+	@Override
+	public boolean hasQueryMethods() {
+		return queryMethods.get().hasQueryMethod;
 	}
 
 	/**
@@ -177,5 +155,53 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 		return !method.isBridge() && !method.isDefault() //
 				&& !Modifier.isStatic(method.getModifiers()) //
 				&& (isQueryAnnotationPresentOn(method) || !isCustomMethod(method) && !isBaseClassMethod(method));
+	}
+
+	private RepositoryMetadata getMetadata() {
+		return metadata.get();
+	}
+
+	private final DefaultQueryMethods calculateQueryMethods() {
+
+		Class<?> repositoryInterface = getRepositoryInterface();
+
+		return new DefaultQueryMethods(Streamable.of(Arrays.stream(repositoryInterface.getMethods())
+				.map(it -> ClassUtils.getMostSpecificMethod(it, repositoryInterface))
+				.filter(this::isQueryMethodCandidate)
+				.toList()), calculateHasCustomMethod(repositoryInterface));
+	}
+
+	private final boolean calculateHasCustomMethod(Class<?> repositoryInterface) {
+
+		// No detection required if no typing interface was configured
+		if (isGenericRepositoryInterface(repositoryInterface)) {
+			return false;
+		}
+
+		for (Method method : repositoryInterface.getMethods()) {
+			if (isCustomMethod(method) && !isBaseClassMethod(method)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Information about query methods to allow canonical computation and reuse of that information.
+	 *
+	 * @author Oliver Drotbohm
+	 */
+	private static class DefaultQueryMethods {
+
+		private final Streamable<Method> methods;
+		private final boolean hasCustomMethod, hasQueryMethod;
+
+		DefaultQueryMethods(Streamable<Method> methods, boolean hasCustomMethod) {
+
+			this.methods = methods;
+			this.hasCustomMethod = hasCustomMethod;
+			this.hasQueryMethod = !methods.isEmpty();
+		}
 	}
 }
