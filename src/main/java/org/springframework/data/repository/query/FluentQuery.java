@@ -178,6 +178,14 @@ public interface FluentQuery<T> {
 			throw new UnsupportedOperationException("Scrolling not supported");
 		}
 
+		default Window<T> scrollStartingAt(ScrollPosition scrollPosition) {
+			throw new UnsupportedOperationException("Scrolling not supported");
+		}
+
+		default Window<T> scrollStartingAfter(ScrollPosition scrollPosition) {
+			throw new UnsupportedOperationException("Scrolling not supported");
+		}
+
 		/**
 		 * Get a page of matching elements for {@link Pageable}.
 		 *
