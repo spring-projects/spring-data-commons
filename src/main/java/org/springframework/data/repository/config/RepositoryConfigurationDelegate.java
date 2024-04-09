@@ -49,6 +49,7 @@ import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
@@ -339,22 +340,22 @@ public class RepositoryConfigurationDelegate {
 			return null;
 		}
 
-		TypeVariable<?>[] variables = factoryBean.getTypeParameters();
-		int numberOfGenerics = variables.length;
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
+		List<Class<?>> types = List.of(repositoryInterface, metadata.getDomainType(), metadata.getIdType());
 
-		ResolvableType[] generics = new ResolvableType[numberOfGenerics];
-		generics[0] = ResolvableType.forClass(repositoryInterface);
-		generics[1] = ResolvableType.forClass(metadata.getDomainType());
-		generics[2] = ResolvableType.forClass(metadata.getIdType());
+		ResolvableType factoryBeanType = ResolvableType.forClass(RepositoryFactoryBeanSupport.class, factoryBean);
+		ResolvableType[] factoryGenerics = factoryBeanType.getGenerics();
 
-		if (numberOfGenerics > 3) {
-			for (int i = 3; i < numberOfGenerics; i++) {
-				generics[i] = ResolvableType.forType(variables[0]);
+		for (int i = 0; i < factoryGenerics.length; i++) {
+
+			ResolvableType parameter = factoryGenerics[i];
+
+			if (parameter.getType() instanceof TypeVariable<?> && i < types.size()) {
+				factoryGenerics[i] = ResolvableType.forClass(types.get(i));
 			}
 		}
 
-		return ResolvableType.forClassWithGenerics(factoryBean, generics);
+		return ResolvableType.forClassWithGenerics(factoryBean, factoryGenerics);
 	}
 
 	/**
