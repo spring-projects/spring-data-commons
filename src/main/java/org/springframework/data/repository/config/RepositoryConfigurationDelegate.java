@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +47,8 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
@@ -182,7 +185,6 @@ public class RepositoryConfigurationDelegate {
 			}
 
 			RootBeanDefinition beanDefinition = (RootBeanDefinition) definitionBuilder.getBeanDefinition();
-
 			beanDefinition.setTargetType(getRepositoryInterface(configuration));
 			beanDefinition.setResourceDescription(configuration.getResourceDescription());
 
@@ -206,7 +208,7 @@ public class RepositoryConfigurationDelegate {
 
 		if (logger.isInfoEnabled()) {
 			logger.info(
-					LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interface%s." ,
+					LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interface%s.",
 							watch.lastTaskInfo().getTimeMillis(), configurations.size(), extension.getModuleName(),
 							configurations.size() == 1 ? "" : "s"));
 		}
@@ -325,17 +327,30 @@ public class RepositoryConfigurationDelegate {
 		classLoader = classLoader != null ? classLoader : getClass().getClassLoader();
 
 		Class<?> repositoryInterface = ReflectionUtils.loadIfPresent(interfaceName, classLoader);
+
+		if (repositoryInterface == null) {
+			return null;
+		}
+
 		Class<?> factoryBean = ReflectionUtils.loadIfPresent(configuration.getRepositoryFactoryBeanClassName(),
 				classLoader);
 
-		int numberOfGenerics = factoryBean.getTypeParameters().length;
+		if (factoryBean == null) {
+			return null;
+		}
 
-		Class<?>[] generics = new Class<?>[numberOfGenerics];
-		generics[0] = repositoryInterface;
+		TypeVariable<?>[] variables = factoryBean.getTypeParameters();
+		int numberOfGenerics = variables.length;
+		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
 
-		if (numberOfGenerics > 1) {
-			for (int i = 1; i < numberOfGenerics; i++) {
-				generics[i] = Object.class;
+		ResolvableType[] generics = new ResolvableType[numberOfGenerics];
+		generics[0] = ResolvableType.forClass(repositoryInterface);
+		generics[1] = ResolvableType.forClass(metadata.getDomainType());
+		generics[2] = ResolvableType.forClass(metadata.getIdType());
+
+		if (numberOfGenerics > 3) {
+			for (int i = 3; i < numberOfGenerics; i++) {
+				generics[i] = ResolvableType.forType(variables[0]);
 			}
 		}
 
