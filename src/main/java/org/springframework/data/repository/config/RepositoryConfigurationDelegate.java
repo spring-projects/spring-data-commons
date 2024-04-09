@@ -343,19 +343,28 @@ public class RepositoryConfigurationDelegate {
 		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
 		List<Class<?>> types = List.of(repositoryInterface, metadata.getDomainType(), metadata.getIdType());
 
-		ResolvableType factoryBeanType = ResolvableType.forClass(RepositoryFactoryBeanSupport.class, factoryBean);
-		ResolvableType[] factoryGenerics = factoryBeanType.getGenerics();
+		ResolvableType[] declaredGenerics = ResolvableType.forClass(factoryBean).getGenerics();
+		ResolvableType[] parentGenerics = ResolvableType.forClass(RepositoryFactoryBeanSupport.class, factoryBean)
+				.getGenerics();
+		List<ResolvableType> resolvedGenerics = new ArrayList<ResolvableType>(factoryBean.getTypeParameters().length);
 
-		for (int i = 0; i < factoryGenerics.length; i++) {
 
-			ResolvableType parameter = factoryGenerics[i];
+		for (int i = 0; i < parentGenerics.length; i++) {
 
-			if (parameter.getType() instanceof TypeVariable<?> && i < types.size()) {
-				factoryGenerics[i] = ResolvableType.forClass(types.get(i));
+			ResolvableType parameter = parentGenerics[i];
+
+			if (parameter.getType() instanceof TypeVariable<?>) {
+				resolvedGenerics.add(i < types.size() ? ResolvableType.forClass(types.get(i)) : parameter);
 			}
 		}
 
-		return ResolvableType.forClassWithGenerics(factoryBean, factoryGenerics);
+		if (resolvedGenerics.size() < declaredGenerics.length) {
+			for (int j = parentGenerics.length; j < declaredGenerics.length; j++) {
+				resolvedGenerics.add(declaredGenerics[j]);
+			}
+		}
+
+		return ResolvableType.forClassWithGenerics(factoryBean, resolvedGenerics.toArray(ResolvableType[]::new));
 	}
 
 	/**

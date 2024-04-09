@@ -17,6 +17,7 @@ package org.springframework.data.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +40,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.type.AnnotationMetadata;
@@ -232,6 +234,38 @@ class RepositoryConfigurationDelegateUnitTests {
 		assertThat(context.getBeanNamesForType(RepositoryRegistrationAotProcessor.class)).hasSize(2);
 	}
 
+	@Test // GH-3074
+	void registersGenericsForIdConstrainingRepositoryFactoryBean() {
+
+		ResolvableType it = registerBeanDefinition(IdConstrainingRepositoryFactoryBean.class);
+
+		assertThat(it.getGenerics()).hasSize(2);
+		assertThat(it.getGeneric(0).resolve()).isEqualTo(MyAnnotatedRepository.class);
+		assertThat(it.getGeneric(1).resolve()).isEqualTo(Person.class);
+	}
+
+	@Test // GH-3074
+	void registersGenericsForDomainTypeConstrainingRepositoryFactoryBean() {
+
+		ResolvableType it = registerBeanDefinition(DomainTypeConstrainingRepositoryFactoryBean.class);
+
+		assertThat(it.getGenerics()).hasSize(2);
+		assertThat(it.getGeneric(0).resolve()).isEqualTo(MyAnnotatedRepository.class);
+		assertThat(it.getGeneric(1).resolve()).isEqualTo(String.class);
+	}
+
+	@Test // GH-3074
+	void registersGenericsForAdditionalGenericsRepositoryFactoryBean() {
+
+		ResolvableType it = registerBeanDefinition(AdditionalGenericsRepositoryFactoryBean.class);
+
+		assertThat(it.getGenerics()).hasSize(4);
+		assertThat(it.getGeneric(0).resolve()).isEqualTo(MyAnnotatedRepository.class);
+		assertThat(it.getGeneric(1).resolve()).isEqualTo(Person.class);
+		assertThat(it.getGeneric(2).resolve()).isEqualTo(String.class);
+		assertThat(it.getGeneric(3).getType()).isInstanceOf(TypeVariable.class);
+	}
+
 	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
 
 		var context = new AnnotationConfigApplicationContext(configClass);
@@ -289,8 +323,7 @@ class RepositoryConfigurationDelegateUnitTests {
 		}
 	}
 
-	@Test // GH-3074
-	void registersGenericsForConstrainingRepositoryFactoryBean() {
+	private ResolvableType registerBeanDefinition(Class<?> repositoryFactoryType) {
 
 		AnnotationMetadata metadata = AnnotationMetadata.introspect(AnnotatedBeanNamesConfig.class);
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
@@ -301,7 +334,7 @@ class RepositoryConfigurationDelegateUnitTests {
 
 			@Override
 			public Optional<String> getRepositoryFactoryBeanClassName() {
-				return Optional.of(IdConstrainingRepositoryFactoryBean.class.getName());
+				return Optional.of(repositoryFactoryType.getName());
 			}
 		};
 
@@ -313,17 +346,31 @@ class RepositoryConfigurationDelegateUnitTests {
 		assertThat(repositories).hasSize(1).element(0)
 				.extracting(BeanComponentDefinition::getBeanDefinition)
 				.extracting(BeanDefinition::getResolvableType)
-				.satisfies(it -> {
-					assertThat(it.getGenerics()).hasSize(2);
-					assertThat(it.getGeneric(0).resolve()).isEqualTo(MyAnnotatedRepository.class);
-					assertThat(it.getGeneric(1).resolve()).isEqualTo(Person.class);
-				});
+				.isNotNull();
+
+		return repositories.get(0).getBeanDefinition().getResolvableType();
 	}
 
 	static abstract class IdConstrainingRepositoryFactoryBean<T extends Repository<S, UUID>, S>
 			extends RepositoryFactoryBeanSupport<T, S, UUID> {
 
 		protected IdConstrainingRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
+			super(repositoryInterface);
+		}
+	}
+
+	static abstract class DomainTypeConstrainingRepositoryFactoryBean<T extends Repository<Person, ID>, ID>
+			extends RepositoryFactoryBeanSupport<T, Person, ID> {
+
+		protected DomainTypeConstrainingRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
+			super(repositoryInterface);
+		}
+	}
+
+	static abstract class AdditionalGenericsRepositoryFactoryBean<T extends Repository<S, ID>, S, ID, R>
+			extends RepositoryFactoryBeanSupport<T, S, ID> {
+
+		protected AdditionalGenericsRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
 			super(repositoryInterface);
 		}
 	}
