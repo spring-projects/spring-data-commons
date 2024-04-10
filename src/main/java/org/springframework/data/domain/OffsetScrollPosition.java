@@ -24,7 +24,8 @@ import org.springframework.util.Assert;
 /**
  * A {@link ScrollPosition} based on the offsets within query results.
  * <p>
- * An initial {@link OffsetScrollPosition} does not point to a specific element and is different to a the Po
+ * An initial {@link OffsetScrollPosition} does not point to a specific element and is different to a position
+ * {{@link ScrollPosition#offset(long)}.
  *
  * @author Mark Paluch
  * @author Oliver Drotbohm
@@ -69,7 +70,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	}
 
 	/**
-	 * Returns the {@link IntFunction position function} to calculate.
+	 * Returns a {@link IntFunction position function} starting at {@code startOffset}.
 	 *
 	 * @param startOffset the start offset to be used. Must not be negative.
 	 * @return the offset-based position function.
@@ -79,6 +80,16 @@ public final class OffsetScrollPosition implements ScrollPosition {
 		Assert.isTrue(startOffset >= 0, "Start offset must not be negative");
 
 		return startOffset == 0 ? OffsetPositionFunction.ZERO : new OffsetPositionFunction(startOffset);
+	}
+
+	/**
+	 * Returns the {@link IntFunction position function} starting after the current {@code offset}.
+	 *
+	 * @return the offset-based position function.
+	 * @since 3.3
+	 */
+	public IntFunction<OffsetScrollPosition> positionFunction() {
+		return positionFunction(isInitial() ? 0 : getOffset() + 1);
 	}
 
 	/**
