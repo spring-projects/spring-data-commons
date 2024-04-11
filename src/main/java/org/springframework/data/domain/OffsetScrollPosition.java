@@ -30,23 +30,21 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author Oliver Drotbohm
  * @author Christoph Strobl
+ * @author Yanming Zhou
  * @since 3.1
  */
 public final class OffsetScrollPosition implements ScrollPosition {
 
-	private static final OffsetScrollPosition INITIAL = new OffsetScrollPosition(null);
+	private static final OffsetScrollPosition INITIAL = new OffsetScrollPosition(-1);
 
-	@Nullable private final Long offset;
+	private final long offset;
 
 	/**
 	 * Creates a new {@link OffsetScrollPosition} for the given non-negative offset.
 	 *
 	 * @param offset must be greater or equal to zero.
 	 */
-	private OffsetScrollPosition(@Nullable Long offset) {
-
-		Assert.isTrue(offset == null || offset >= 0, "Offset must not be negative");
-
+	private OffsetScrollPosition(long offset) {
 		this.offset = offset;
 	}
 
@@ -66,6 +64,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 * @return will never be {@literal null}.
 	 */
 	static OffsetScrollPosition of(long offset) {
+		Assert.isTrue(offset >= 0, "Offset must not be negative");
 		return new OffsetScrollPosition(offset);
 	}
 
@@ -89,7 +88,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 * @since 3.3
 	 */
 	public IntFunction<OffsetScrollPosition> positionFunction() {
-		return positionFunction(isInitial() ? 0 : getOffset() + 1);
+		return positionFunction(offset + 1);
 	}
 
 	/**
@@ -102,7 +101,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 */
 	public long getOffset() {
 
-		Assert.state(offset != null, "Initial state does not have an offset. Make sure to check #isInitial()");
+		Assert.state(offset >= 0, "Initial state does not have an offset. Make sure to check #isInitial()");
 		return offset;
 	}
 
@@ -122,7 +121,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 
 	@Override
 	public boolean isInitial() {
-		return offset == null;
+		return offset == -1;
 	}
 
 	@Override
