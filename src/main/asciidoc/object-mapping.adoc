@@ -305,7 +305,7 @@ Spring Data automatically tries to detect a persistent entity's constructor to b
 The resolution algorithm works as follows:
 
 1. If there is a constructor that is annotated with `@PersistenceCreator`, it is used.
-2. If the type is a <<mapping.kotlin,Kotlin data cass>> the primary constructor is used.
+2. If the type is a <<mapping.kotlin,Kotlin data class>> the primary constructor is used.
 3. If there is a single static factory method annotated with `@PersistenceCreator` then it is used.
 4. If there is a single constructor, it is used.
 5. If there are multiple constructors and exactly one is annotated with `@PersistenceCreator`, it is used.
