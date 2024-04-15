@@ -64,6 +64,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 * @return will never be {@literal null}.
 	 */
 	static OffsetScrollPosition of(long offset) {
+
 		Assert.isTrue(offset >= 0, "Offset must not be negative");
 		return new OffsetScrollPosition(offset);
 	}
@@ -77,7 +78,6 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	public static IntFunction<OffsetScrollPosition> positionFunction(long startOffset) {
 
 		Assert.isTrue(startOffset >= 0, "Start offset must not be negative");
-
 		return startOffset == 0 ? OffsetPositionFunction.ZERO : new OffsetPositionFunction(startOffset);
 	}
 
@@ -114,8 +114,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 */
 	public OffsetScrollPosition advanceBy(long delta) {
 
-		var value = isInitial() ? delta : offset + delta;
-
+		long value = isInitial() ? delta : offset + delta;
 		return new OffsetScrollPosition(value < 0 ? 0 : value);
 	}
 
