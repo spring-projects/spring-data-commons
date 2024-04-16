@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Jan Kurella
  */
 public class Sort implements Streamable<org.springframework.data.domain.Sort.Order>, Serializable {
 
@@ -341,13 +342,17 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Returns the {@link Direction} enum for the given {@link String} or null if it cannot be parsed into an enum
+		 * Returns the {@link Direction} enum for the given {@link String} or empty if it cannot be parsed into an enum
 		 * value.
 		 *
 		 * @param value
 		 * @return
 		 */
 		public static Optional<Direction> fromOptionalString(String value) {
+
+			if (value == null) {
+				return Optional.empty();
+			}
 
 			try {
 				return Optional.of(fromString(value));
