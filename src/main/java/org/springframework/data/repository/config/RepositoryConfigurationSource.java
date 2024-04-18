@@ -174,7 +174,7 @@ public interface RepositoryConfigurationSource {
 	BootstrapMode getBootstrapMode();
 
 	/**
-	 * Returns a human readable description of the repository configuration source for error reporting purposes.
+	 * Returns a human-readable description of the repository configuration source for error reporting purposes.
 	 *
 	 * @return can be {@literal null}.
 	 * @since 2.3
