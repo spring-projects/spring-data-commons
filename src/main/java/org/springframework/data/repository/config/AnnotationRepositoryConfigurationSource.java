@@ -66,6 +66,8 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private static final String CONSIDER_NESTED_REPOSITORIES = "considerNestedRepositories";
 	private static final String BOOTSTRAP_MODE = "bootstrapMode";
 	private static final String BEAN_NAME_GENERATOR = "nameGenerator";
+	private static final String INCLUDE_FILTERS = "includeFilters";
+	private static final String EXCLUDE_FILTERS = "excludeFilters";
 
 	private final AnnotationMetadata configMetadata;
 	private final AnnotationMetadata enableAnnotationMetadata;
@@ -175,12 +177,12 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	@Override
 	protected Iterable<TypeFilter> getIncludeFilters() {
-		return parseFilters("includeFilters");
+		return parseFilters(INCLUDE_FILTERS);
 	}
 
 	@Override
 	public Streamable<TypeFilter> getExcludeFilters() {
-		return parseFilters("excludeFilters");
+		return parseFilters(EXCLUDE_FILTERS);
 	}
 
 	@Override
@@ -304,7 +306,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	private static boolean hasExplicitFilters(AnnotationAttributes attributes) {
 
-		return Stream.of("includeFilters", "excludeFilters") //
+		return Stream.of(INCLUDE_FILTERS, EXCLUDE_FILTERS) //
 				.anyMatch(it -> attributes.getAnnotationArray(it).length > 0);
 	}
 
@@ -333,13 +335,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * customized.
 	 *
 	 * @param generator can be {@literal null}.
-	 * @return
+	 * @return the configured {@link BeanNameGenerator} if it is not
+	 *         {@link ConfigurationClassPostProcessor#IMPORT_BEAN_NAME_GENERATOR} or {@link AnnotationBeanNameGenerator}
+	 *         otherwise.
 	 * @since 2.2
 	 */
 	private static BeanNameGenerator defaultBeanNameGenerator(@Nullable BeanNameGenerator generator) {
 
 		return generator == null || ConfigurationClassPostProcessor.IMPORT_BEAN_NAME_GENERATOR.equals(generator) //
-				? new AnnotationBeanNameGenerator() //
+				? AnnotationBeanNameGenerator.INSTANCE //
 				: generator;
 	}
 
