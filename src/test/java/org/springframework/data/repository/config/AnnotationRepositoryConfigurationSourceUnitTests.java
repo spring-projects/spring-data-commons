@@ -24,7 +24,9 @@ import java.lang.annotation.RetentionPolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
@@ -33,6 +35,8 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.config.basepackage.repo.PersonRepository;
+import org.springframework.data.repository.core.support.DummyRepositoryFactory;
 
 /**
  * Unit tests for {@link AnnotationRepositoryConfigurationSource}.
@@ -165,6 +169,17 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 				.isThrownBy(() -> source.getRequiredAttribute("namedQueriesLocation", String.class));
 	}
 
+	@Test // GH-3082
+	void considerBeanNameGenerator() {
+
+		RootBeanDefinition bd = new RootBeanDefinition(DummyRepositoryFactory.class);
+		bd.getConstructorArgumentValues().addGenericArgumentValue(PersonRepository.class);
+
+		assertThat(getConfigSource(ConfigurationWithBeanNameGenerator.class).generateBeanName(bd))
+				.isEqualTo("org.springframework.data.repository.config.basepackage.repo.PersonRepository");
+		assertThat(getConfigSource(DefaultConfiguration.class).generateBeanName(bd)).isEqualTo("personRepository");
+	}
+
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(type, true);
@@ -185,6 +200,9 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	@EnableRepositories(excludeFilters = { @Filter(Primary.class) })
 	static class ConfigurationWithExplicitFilter {}
+
+	@EnableRepositories(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)
+	static class ConfigurationWithBeanNameGenerator {}
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@interface SampleAnnotation {
