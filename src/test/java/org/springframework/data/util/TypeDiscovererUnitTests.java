@@ -17,6 +17,7 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -33,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.geo.GeoResults;
+import org.springframework.data.repository.Repository;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -358,6 +360,24 @@ public class TypeDiscovererUnitTests {
 		assertThat(TypeInformation.of(containerList)).isNotEqualTo(TypeInformation.of(containerMap));
 	}
 
+	@Test // GH-3084
+	void considersNestedGenericsInEqualityForRecursiveUnresolvableTypes() throws Exception {
+
+		TypeInformation<RepoWithRawGenerics> repro = TypeInformation.of(RepoWithRawGenerics.class);
+
+		Method findAllExternalIdsFor = RepoWithRawGenerics.class.getDeclaredMethod("findAllExternalIdsFor");
+		TypeInformation<?> returnType = repro.getReturnType(findAllExternalIdsFor);
+
+		List<TypeInformation<?>> arguments = TypeInformation.of(RepoWithRawGenerics.class)//
+				.getRequiredSuperTypeInformation(Repository.class)//
+				.getTypeArguments();
+
+		TypeInformation<?> domainType = arguments.get(1);
+		TypeInformation<?> actualType = returnType.getRequiredComponentType();
+
+		assertThat(domainType.isAssignableFrom(actualType)).isTrue();
+	}
+
 	class Person {
 
 		Addresses addresses;
@@ -460,6 +480,16 @@ public class TypeDiscovererUnitTests {
 
 	static class MyContainer<T> {
 		T data;
+	}
+
+	static abstract class SomeType<Self extends SomeType<Self>> {
+
+	}
+
+	@SuppressWarnings("rawtypes")
+	interface RepoWithRawGenerics extends Repository<SomeType, SomeType> {
+
+		<T extends SomeType<T>> List<SomeType<T>> findAllExternalIdsFor();
 	}
 
 }
