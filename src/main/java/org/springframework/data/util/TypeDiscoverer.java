@@ -331,6 +331,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return false;
 		}
 
+		// in case types cannot be resolved resort to toString checking to avoid infinite recursion caused by raw types and
+		// self-referencing generics
+		if (that.resolvableType.hasUnresolvableGenerics() || this.resolvableType.hasUnresolvableGenerics()) {
+			return ObjectUtils.nullSafeEquals(that.resolvableType.toString(), this.resolvableType.toString());
+		}
+
 		return ObjectUtils.nullSafeEquals(resolvedGenerics.get(), that.resolvedGenerics.get());
 	}
 
