@@ -730,14 +730,15 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			UNMAPPED_PROPERTIES = Streamable.of(matches);
 		}
 
+		@Override
 		public boolean matches(Field field) {
 
 			if (Modifier.isStatic(field.getModifiers())) {
 				return false;
 			}
 
-			return !UNMAPPED_PROPERTIES.stream()//
-					.anyMatch(it -> it.matches(field.getName(), field.getType()));
+			return UNMAPPED_PROPERTIES.stream()//
+					.noneMatch(it -> it.matches(field.getName(), field.getType()));
 		}
 
 		/**
@@ -754,8 +755,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return false;
 			}
 
-			return !UNMAPPED_PROPERTIES.stream()//
-					.anyMatch(it -> it.matches(property.getName(), property.getType()));
+			return UNMAPPED_PROPERTIES.stream()//
+					.noneMatch(it -> it.matches(property.getName(), property.getType()));
 		}
 
 		/**
