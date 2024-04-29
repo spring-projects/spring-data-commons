@@ -58,6 +58,12 @@ value class MyGenericValue<T>(val id: T)
 @JvmInline
 value class MyGenericBoundValue<T : CharSequence>(val id: T)
 
+data class MyEntity(
+	val id: Long = 0L,
+	val name: String,
+	val createdBy: MyValueClass = MyValueClass("UNKNOWN"),
+)
+
 data class WithGenericValue(
 	// ctor: WithGenericValue(CharSequence string, CharSequence charseq, Object recursive, DefaultConstructorMarker $constructor_marker)
 	val string: MyGenericBoundValue<String>,

@@ -21,6 +21,7 @@ import kotlin.jvm.JvmClassMappingKt;
 import kotlin.reflect.KClass;
 import kotlin.reflect.jvm.internal.KotlinReflectionInternalError;
 
+import java.lang.reflect.Constructor;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -253,6 +254,33 @@ public class KotlinPropertyAccessorFactoryTests {
 		assertThat(propertyAccessor.getProperty(recursive)).isEqualTo(outer);
 		propertyAccessor.setProperty(recursive, newOuter);
 		assertThat(propertyAccessor.getProperty(recursive)).isEqualTo(newOuter);
+	}
+
+	@MethodSource("factories")
+	@ParameterizedTest // GH-1947
+	void shouldUnwrapValueTypeIfNecessary(PersistentPropertyAccessorFactory factory) throws Exception {
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
+				.getRequiredPersistentEntity(MyEntity.class);
+
+		Constructor<?> declaredConstructor = MyValueClass.class.getDeclaredConstructor(String.class);
+
+		Object instance = createInstance(entity, parameter -> {
+
+			String name = parameter.getName();
+
+			return switch (name) {
+				case "id" -> 1L;
+				case "name" -> "foo";
+				default -> "bar";
+			};
+
+		});
+
+		var propertyAccessor = factory.getPropertyAccessor(entity, instance);
+		var createdBy = entity.getRequiredPersistentProperty("createdBy");
+
+		propertyAccessor.setProperty(createdBy, BeanUtils.instantiateClass(declaredConstructor, "baz"));
 	}
 
 	private Object createInstance(BasicPersistentEntity<?, SamplePersistentProperty> entity,
