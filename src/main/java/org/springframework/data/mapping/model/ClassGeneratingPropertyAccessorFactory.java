@@ -1481,7 +1481,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 				Parameter parameter = copy.getParameters()[kotlinCopyByProperty.getParameterPosition()];
 
-				return o -> ClassUtils.isAssignableValue(parameter.getType(), o) || vh == null ? o : vh.wrap(o);
+				return o -> ClassUtils.isAssignableValue(parameter.getType(), o) || vh == null ? o : vh.applyWrapping(o);
 			}
 
 			return Function.identity();

@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -205,6 +206,8 @@ class KotlinValueUtils {
 
 		private final KFunction<?> wrapperConstructor;
 
+		private final KProperty<?> valueProperty;
+
 		private final boolean applyBoxing;
 
 		private final @Nullable ValueBoxing next;
@@ -263,7 +266,6 @@ class KotlinValueUtils {
 			boolean applyBoxing;
 
 			if (kClass.isValue()) {
-
 				wrapperConstructor = kClass.getConstructors().iterator().next();
 				KParameter nested = wrapperConstructor.getParameters().get(0);
 				KType nestedType = nested.getType();
@@ -280,10 +282,12 @@ class KotlinValueUtils {
 				}
 
 				Assert.notNull(nestedClass, () -> String.format("Cannot resolve nested class from type %s", nestedType));
-
+				this.valueProperty = kClass.getMembers().stream().filter(it -> it instanceof KProperty<?>)
+						.map(KProperty.class::cast).findFirst().get();
 				next = new ValueBoxing(rules, nestedType, nestedClass, nested.isOptional());
 			} else {
 				applyBoxing = false;
+				this.valueProperty = null;
 			}
 
 			this.kClass = kClass;
@@ -378,20 +382,46 @@ class KotlinValueUtils {
 		}
 
 		/**
-		 * Apply wrapping into the boxing wrapper type if applicable.
+		 * Wrap the value into the boxing wrapper type if requested. Already wrapped values are left unchanged.
 		 *
 		 * @param o
 		 * @return
 		 */
 		@Nullable
 		public Object wrap(@Nullable Object o) {
+			return doWrap(o, false, ValueBoxing::wrap);
+		}
+
+		/**
+		 * Apply wrapping into the boxing wrapper type if applicable. For types, that do not require wrapping but are
+		 * wrapped, the component type is being unwrapped.
+		 *
+		 * @param o
+		 * @return
+		 * @since 3.2.6
+		 */
+		@Nullable
+		Object applyWrapping(@Nullable Object o) {
+			return doWrap(o, true, ValueBoxing::applyWrapping);
+		}
+
+		/**
+		 * Apply staged wrapping into the boxing wrapper type if value boxing is requested. Otherwise, apply unwrapping and
+		 * pass on the result into {@code nextWrapStage}.
+		 */
+		@Nullable
+		Object doWrap(@Nullable Object o, boolean unwrap, BiFunction<ValueBoxing, Object, Object> nextWrapStage) {
 
 			if (applyBoxing) {
-				return o == null || kClass.isInstance(o) ? o : wrapperConstructor.call(next.wrap(o));
+				return o == null || kClass.isInstance(o) ? o : wrapperConstructor.call(nextWrapStage.apply(next, o));
+			} else if (unwrap && kClass.isValue()) {
+				if (o != null && kClass.isInstance(o)) {
+					o = valueProperty.getGetter().call(o);
+				}
 			}
 
 			if (hasNext()) {
-				return next.wrap(o);
+				return nextWrapStage.apply(next, o);
 			}
 
 			return o;
