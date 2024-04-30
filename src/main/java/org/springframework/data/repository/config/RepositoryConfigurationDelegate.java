@@ -186,7 +186,7 @@ public class RepositoryConfigurationDelegate {
 			}
 
 			RootBeanDefinition beanDefinition = (RootBeanDefinition) definitionBuilder.getBeanDefinition();
-			beanDefinition.setTargetType(getRepositoryInterface(configuration));
+			beanDefinition.setTargetType(getRepositoryFactoryBeanType(configuration));
 			beanDefinition.setResourceDescription(configuration.getResourceDescription());
 
 			String beanName = configurationSource.generateBeanName(beanDefinition);
@@ -312,17 +312,16 @@ public class RepositoryConfigurationDelegate {
 	}
 
 	/**
-	 * Returns the repository interface of the given {@link RepositoryConfiguration} as loaded {@link Class}.
+	 * Returns the repository factory bean type from the given {@link RepositoryConfiguration} as loaded {@link Class}.
 	 *
 	 * @param configuration must not be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
 	@Nullable
-	private ResolvableType getRepositoryInterface(RepositoryConfiguration<?> configuration) {
+	private ResolvableType getRepositoryFactoryBeanType(RepositoryConfiguration<?> configuration) {
 
 		String interfaceName = configuration.getRepositoryInterface();
-		ClassLoader classLoader = resourceLoader.getClassLoader() == null
-				? ClassUtils.getDefaultClassLoader()
+		ClassLoader classLoader = resourceLoader.getClassLoader() == null ? ClassUtils.getDefaultClassLoader()
 				: resourceLoader.getClassLoader();
 
 		classLoader = classLoader != null ? classLoader : getClass().getClassLoader();
@@ -346,7 +345,7 @@ public class RepositoryConfigurationDelegate {
 		ResolvableType[] declaredGenerics = ResolvableType.forClass(factoryBean).getGenerics();
 		ResolvableType[] parentGenerics = ResolvableType.forClass(RepositoryFactoryBeanSupport.class, factoryBean)
 				.getGenerics();
-		List<ResolvableType> resolvedGenerics = new ArrayList<ResolvableType>(factoryBean.getTypeParameters().length);
+		List<ResolvableType> resolvedGenerics = new ArrayList<>(factoryBean.getTypeParameters().length);
 
 		for (int i = 0; i < parentGenerics.length; i++) {
 
@@ -358,12 +357,11 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		if (resolvedGenerics.size() < declaredGenerics.length) {
-			for (int j = parentGenerics.length; j < declaredGenerics.length; j++) {
-				resolvedGenerics.add(declaredGenerics[j]);
-			}
+			resolvedGenerics.addAll(Arrays.asList(declaredGenerics).subList(parentGenerics.length, declaredGenerics.length));
 		}
 
-		return ResolvableType.forClassWithGenerics(factoryBean, resolvedGenerics.toArray(ResolvableType[]::new));
+		return ResolvableType.forClassWithGenerics(factoryBean,
+				resolvedGenerics.subList(0, declaredGenerics.length).toArray(ResolvableType[]::new));
 	}
 
 	/**

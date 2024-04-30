@@ -46,10 +46,17 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
- * Adapter for Springs {@link FactoryBean} interface to allow easy setup of repository factories via Spring
+ * Adapter for Spring's {@link FactoryBean} interface to allow easy setup of repository factories via Spring
  * configuration.
+ * <p>
+ * Subclasses may pass-thru generics, provide a fixed domain, provide a fixed identifier type, or provide additional
+ * generic type parameters. Type parameters must appear in the same order the ones from this class (repository type,
+ * entity type, identifier type, additional type parameters). Using a different ordering will result in invalid type
+ * definitions.
  *
- * @param <T> the type of the repository
+ * @param <T> the type of the repository.
+ * @param <S> the entity type.
+ * @param <ID> the entity identifier type.
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch

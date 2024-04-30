@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -266,6 +267,16 @@ class RepositoryConfigurationDelegateUnitTests {
 		assertThat(it.getGeneric(3).getType()).isInstanceOf(TypeVariable.class);
 	}
 
+	@Test // GH-3074
+	void considersGenericLength() {
+
+		ResolvableType it = registerBeanDefinition(IdAndEntityConstrainingFactoryBean.class);
+
+		assertThat(it.getGenerics()).hasSize(2);
+		assertThat(it.getGeneric(0).resolve()).isEqualTo(MyAnnotatedRepository.class);
+		assertThat(it.getGeneric(1).resolve()).isEqualTo(Person.class);
+	}
+
 	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
 
 		var context = new AnnotationConfigApplicationContext(configClass);
@@ -329,8 +340,8 @@ class RepositoryConfigurationDelegateUnitTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
 		RepositoryConfigurationSource source = new AnnotationRepositoryConfigurationSource(metadata,
-				EnableRepositories.class, context, context.getEnvironment(),
-				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator()) {
+				EnableRepositories.class, context, context.getEnvironment(), context.getDefaultListableBeanFactory(),
+				new AnnotationBeanNameGenerator()) {
 
 			@Override
 			public Optional<String> getRepositoryFactoryBeanClassName() {
@@ -343,10 +354,8 @@ class RepositoryConfigurationDelegateUnitTests {
 
 		List<BeanComponentDefinition> repositories = delegate.registerRepositoriesIn(context, extension);
 
-		assertThat(repositories).hasSize(1).element(0)
-				.extracting(BeanComponentDefinition::getBeanDefinition)
-				.extracting(BeanDefinition::getResolvableType)
-				.isNotNull();
+		assertThat(repositories).hasSize(1).element(0).extracting(BeanComponentDefinition::getBeanDefinition)
+				.extracting(BeanDefinition::getResolvableType).isNotNull();
 
 		return repositories.get(0).getBeanDefinition().getResolvableType();
 	}
@@ -374,4 +383,21 @@ class RepositoryConfigurationDelegateUnitTests {
 			super(repositoryInterface);
 		}
 	}
+
+	static abstract class ModuleRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
+			extends RepositoryFactoryBeanSupport<T, S, ID> {
+
+		protected ModuleRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
+			super(repositoryInterface);
+		}
+	}
+
+	static abstract class IdAndEntityConstrainingFactoryBean<R extends Repository<T, String>, T extends Person>
+			extends RepositoryFactoryBeanSupport<R, T, String> {
+		protected IdAndEntityConstrainingFactoryBean(Class<R> repositoryInterface) {
+			super(repositoryInterface);
+		}
+
+	}
+
 }
