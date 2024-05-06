@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Konstntin Ignatyev
  */
 public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
