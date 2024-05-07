@@ -18,7 +18,7 @@ package org.springframework.data.repository.config;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSourceUnitTests.Person;
 
 /**
- * Repository with customized base base interface.
+ * Repository with customized base interface.
  *
  * @author Mark Paluch
  */
