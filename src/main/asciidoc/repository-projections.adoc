@@ -36,6 +36,9 @@ interface PersonRepository extends Repository<Person, UUID> {
 Now imagine that we want to retrieve the person's name attributes only.
 What means does Spring Data offer to achieve this? The rest of this chapter answers that question.
 
+NOTE: Projection types are types residing outside the entity's type hierarchy.
+Superclasses and interfaces implemented by the entity are inside the type hierarchy hence returning a supertype (or implemented interface) returns an instance of the fully materialized entity.
+
 [[projections.interfaces]]
 == Interface-based Projections
 
