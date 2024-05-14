@@ -78,15 +78,12 @@ public class ReactivePageableHandlerMethodArgumentResolver extends PageableHandl
 		Sort sort = sortResolver.resolveArgumentValue(parameter, bindingContext, exchange);
 		Pageable pageable = getPageable(parameter, page, pageSize);
 
-		if (sort.isSorted()) {
-			if (pageable.isPaged()) {
-				pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-			}
-			else {
-				pageable = Pageable.unpaged(sort);
-			}
+		if (!sort.isSorted()) {
+			return pageable;
 		}
 
-		return pageable;
+		return pageable.isPaged()
+				? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort)
+				: Pageable.unpaged(sort);
 	}
 }
