@@ -83,15 +83,12 @@ public class PageableHandlerMethodArgumentResolver extends PageableHandlerMethod
 		Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
 		Pageable pageable = getPageable(methodParameter, page, pageSize);
 
-		if (sort.isSorted()) {
-			if (pageable.isPaged()) {
-				pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-			}
-			else {
-				pageable = Pageable.unpaged(sort);
-			}
+		if (!sort.isSorted()) {
+			return pageable;
 		}
 
-		return pageable;
+		return pageable.isPaged()
+				? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort)
+				: Pageable.unpaged(sort);
 	}
 }
