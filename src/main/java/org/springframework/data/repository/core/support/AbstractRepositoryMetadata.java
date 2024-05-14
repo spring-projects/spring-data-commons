@@ -41,7 +41,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Jens Schauder
  * @author Mark Paluch
- * @author Konstntin Ignatyev
+ * @author Konstantin Ignatyev
  */
 public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
@@ -57,7 +57,8 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	public AbstractRepositoryMetadata(Class<?> repositoryInterface) {
 
 		Assert.notNull(repositoryInterface, "Given type must not be null");
-		Assert.isTrue(repositoryInterface.isInterface(), "Given type ["+ repositoryInterface.getName()+"] must be an interface");
+		Assert.isTrue(repositoryInterface.isInterface(),
+				() -> String.format("Given type %s must be an interface", repositoryInterface.getName()));
 
 		this.repositoryInterface = repositoryInterface;
 		this.typeInformation = TypeInformation.of(repositoryInterface);
