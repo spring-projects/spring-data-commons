@@ -84,7 +84,7 @@ The supported operators can vary by datastore, so consult the appropriate part o
 Whether ignoring cases is supported may vary by store, so consult the relevant sections in the reference documentation for the store-specific query method.
 
 - You can apply static ordering by appending an `OrderBy` clause to the query method that references a property and by providing a sorting direction (`Asc` or `Desc`).
-To create a query method that supports dynamic sorting, see "`xref:repositories/query-methods-details.adoc[Paging, Iterating Large Results, Sorting & Limiting]`".
+To create a query method that supports dynamic sorting, see "`xref:repositories/query-methods-details.adoc#repositories.special-parameters[Paging, Iterating Large Results, Sorting & Limiting]`".
 
 [[repositories.query-methods.query-property-expressions]]
 == Property Expressions
