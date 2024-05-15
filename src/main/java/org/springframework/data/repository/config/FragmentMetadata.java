@@ -60,7 +60,6 @@ public class FragmentMetadata {
 	 * Returns whether the given interface is a fragment candidate.
 	 *
 	 * @param interfaceName must not be {@literal null} or empty.
-	 * @param factory must not be {@literal null}.
 	 * @return
 	 */
 	private boolean isCandidate(String interfaceName) {
@@ -69,7 +68,6 @@ public class FragmentMetadata {
 
 		AnnotationMetadata metadata = getAnnotationMetadata(interfaceName);
 		return !metadata.hasAnnotation(NoRepositoryBean.class.getName());
-
 	}
 
 	private AnnotationMetadata getAnnotationMetadata(String className) {

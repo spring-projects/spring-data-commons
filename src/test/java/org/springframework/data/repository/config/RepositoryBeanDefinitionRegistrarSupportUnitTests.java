@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -77,14 +78,14 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		assertNoBeanDefinitionRegisteredFor("profileRepository");
 	}
 
-
 	@Test // GH-2584
 	void shouldExposeFragmentsAsBean() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 
 		registrar.registerBeanDefinitions(metadata, registry);
-		verify(registry, atLeast(1)).registerBeanDefinition(eq("commons.MyRepository.fragments#0"), any(BeanDefinition.class));
+		verify(registry, atLeast(1)).registerBeanDefinition(eq("commons.MyRepository.fragments#0"),
+				any(BeanDefinition.class));
 	}
 
 	@Test // DATACMNS-1754
@@ -110,7 +111,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		assertNoBeanDefinitionRegisteredFor("excludedRepositoryImpl");
 	}
 
-	@Test // DATACMNS-1172
+	@Test // DATACMNS-1172, GH-3090
 	void shouldLimitImplementationBasePackages() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(LimitsImplementationBasePackages.class, true);
@@ -119,6 +120,8 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		assertBeanDefinitionRegisteredFor("personRepository");
 		assertNoBeanDefinitionRegisteredFor("fragmentImpl");
+		assertBeanDefinitionRegisteredFor("spiFragmentImplFragment");
+		assertBeanDefinitionRegisteredFor("spiContribution");
 	}
 
 	@Test // DATACMNS-360

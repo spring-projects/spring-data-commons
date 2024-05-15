@@ -19,14 +19,18 @@ import static org.springframework.beans.factory.config.BeanDefinition.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -35,14 +39,18 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.data.config.ParsingUtils;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.core.support.RepositoryFragmentsFactoryBean;
 import org.springframework.data.util.Optionals;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Builder to create {@link BeanDefinitionBuilder} instance to eventually create Spring Data repository instances.
@@ -63,6 +71,7 @@ class RepositoryBeanDefinitionBuilder {
 	private final MetadataReaderFactory metadataReaderFactory;
 	private final FragmentMetadata fragmentMetadata;
 	private final CustomRepositoryImplementationDetector implementationDetector;
+	private final RepositoryFactoriesLoader factoriesLoader;
 
 	/**
 	 * Creates a new {@link RepositoryBeanDefinitionBuilder} from the given {@link BeanDefinitionRegistry},
@@ -83,7 +92,7 @@ class RepositoryBeanDefinitionBuilder {
 		this.registry = registry;
 		this.extension = extension;
 		this.resourceLoader = resourceLoader;
-
+		this.factoriesLoader = RepositoryFactoriesLoader.forDefaultResourceLocation(resourceLoader.getClassLoader());
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
 
 		this.fragmentMetadata = new FragmentMetadata(metadataReaderFactory);
@@ -139,6 +148,7 @@ class RepositoryBeanDefinitionBuilder {
 	}
 
 	// TODO: merge that with the one that creates the BD
+	// TODO: Add support for fragments discovered from spring.factories
 	RepositoryConfigurationAdapter<?> buildMetadata(RepositoryConfiguration<?> configuration) {
 
 		ImplementationDetectionConfiguration config = configuration
@@ -223,21 +233,71 @@ class RepositoryBeanDefinitionBuilder {
 		ImplementationDetectionConfiguration config = configuration
 				.toImplementationDetectionConfiguration(metadataReaderFactory);
 
-		return fragmentMetadata.getFragmentInterfaces(configuration.getRepositoryInterface()) //
-				.map(it -> detectRepositoryFragmentConfiguration(it, config, configuration)) //
-				.flatMap(Optionals::toStream) //
+		Stream<RepositoryFragmentConfiguration> discovered = discoverFragments(configuration, config);
+		Stream<RepositoryFragmentConfiguration> loaded = loadFragments(configuration);
+
+		return Stream.concat(discovered, loaded) //
 				.peek(it -> potentiallyRegisterFragmentImplementation(configuration, it)) //
 				.peek(it -> potentiallyRegisterRepositoryFragment(configuration, it));
+	}
+
+	private Stream<RepositoryFragmentConfiguration> discoverFragments(RepositoryConfiguration<?> configuration,
+			ImplementationDetectionConfiguration config) {
+		return fragmentMetadata.getFragmentInterfaces(configuration.getRepositoryInterface())
+				.map(it -> detectRepositoryFragmentConfiguration(it, config, configuration)) //
+				.flatMap(Optionals::toStream);
+	}
+
+	private Stream<RepositoryFragmentConfiguration> loadFragments(RepositoryConfiguration<?> configuration) {
+
+		List<String> names = factoriesLoader.loadFactoryNames(configuration.getRepositoryInterface());
+
+		if (names.isEmpty()) {
+			return Stream.empty();
+		}
+
+		return names.stream().map(it -> createFragmentConfiguration(null, configuration, it));
 	}
 
 	private Optional<RepositoryFragmentConfiguration> detectRepositoryFragmentConfiguration(String fragmentInterface,
 			ImplementationDetectionConfiguration config, RepositoryConfiguration<?> configuration) {
 
-		ImplementationLookupConfiguration lookup = config.forFragment(fragmentInterface);
-		Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(lookup);
+		List<String> names = factoriesLoader.loadFactoryNames(fragmentInterface);
 
-		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterface, bd,
-				configuration.getConfigurationSource().generateBeanName(bd)));
+		if (names.isEmpty()) {
+
+			ImplementationLookupConfiguration lookup = config.forFragment(fragmentInterface);
+			Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(lookup);
+
+			return beanDefinition.map(bd -> createFragmentConfiguration(fragmentInterface, configuration, bd));
+		}
+
+		if (names.size() > 1) {
+			logger.debug(String.format("Multiple fragment implementations %s registered for fragment interface %s", names,
+					fragmentInterface));
+		}
+
+		return Optional.of(createFragmentConfiguration(fragmentInterface, configuration, names.get(0)));
+	}
+
+	private RepositoryFragmentConfiguration createFragmentConfiguration(@Nullable String fragmentInterface,
+			RepositoryConfiguration<?> configuration, String className) {
+
+		try {
+
+			MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(className);
+			AnnotatedGenericBeanDefinition bd = new AnnotatedGenericBeanDefinition(metadataReader.getAnnotationMetadata());
+			return createFragmentConfiguration(fragmentInterface, configuration, bd);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static RepositoryFragmentConfiguration createFragmentConfiguration(@Nullable String fragmentInterface,
+			RepositoryConfiguration<?> configuration, AbstractBeanDefinition beanDefinition) {
+
+		return new RepositoryFragmentConfiguration(fragmentInterface, beanDefinition,
+				configuration.getConfigurationSource().generateBeanName(beanDefinition));
 	}
 
 	private String potentiallyRegisterRepositoryImplementation(RepositoryConfiguration<?> configuration,
@@ -314,10 +374,47 @@ class RepositoryBeanDefinitionBuilder {
 		BeanDefinitionBuilder fragmentBuilder = BeanDefinitionBuilder.rootBeanDefinition(RepositoryFragment.class,
 				"implemented");
 
-		fragmentBuilder.addConstructorArgValue(fragmentConfiguration.getInterfaceName());
+		if (StringUtils.hasText(fragmentConfiguration.getInterfaceName())) {
+			fragmentBuilder.addConstructorArgValue(fragmentConfiguration.getInterfaceName());
+		}
 		fragmentBuilder.addConstructorArgReference(fragmentConfiguration.getImplementationBeanName());
 
 		registry.registerBeanDefinition(beanName,
 				ParsingUtils.getSourceBeanDefinition(fragmentBuilder, configuration.getSource()));
+	}
+
+	static class RepositoryFactoriesLoader extends SpringFactoriesLoader {
+
+		private final Map<String, List<String>> factories;
+
+		/**
+		 * Create a new {@link SpringFactoriesLoader} instance.
+		 *
+		 * @param classLoader the classloader used to instantiate the factories
+		 * @param factories a map of factory class name to implementation class names
+		 */
+		protected RepositoryFactoriesLoader(@Nullable ClassLoader classLoader, Map<String, List<String>> factories) {
+			super(classLoader, factories);
+			this.factories = factories;
+		}
+
+		/**
+		 * Create a {@link RepositoryFactoriesLoader} instance that will load and instantiate the factory implementations
+		 * from the default location, using the given class loader.
+		 *
+		 * @param classLoader the ClassLoader to use for loading resources; can be {@code null} to use the default
+		 * @return a {@link RepositoryFactoriesLoader} instance
+		 * @see #forResourceLocation(String)
+		 */
+		public static RepositoryFactoriesLoader forDefaultResourceLocation(@Nullable ClassLoader classLoader) {
+			ClassLoader resourceClassLoader = (classLoader != null ? classLoader
+					: SpringFactoriesLoader.class.getClassLoader());
+			return new RepositoryFactoriesLoader(classLoader,
+					loadFactoriesResource(resourceClassLoader, FACTORIES_RESOURCE_LOCATION));
+		}
+
+		List<String> loadFactoryNames(String factoryType) {
+			return this.factories.getOrDefault(factoryType, Collections.emptyList());
+		}
 	}
 }
