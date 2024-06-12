@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -42,6 +41,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Value object to represent a Kotlin {@code copy} method. The lookup requires a {@code copy} method that matches the
@@ -53,7 +53,7 @@ import org.springframework.util.Assert;
  */
 class KotlinCopyMethod {
 
-	private static final Map<Class<?>, Optional<KotlinCopyMethod>> COPY_METHOD_CACHE = new ConcurrentHashMap<>();
+	private static final Map<Class<?>, Optional<KotlinCopyMethod>> COPY_METHOD_CACHE = new ConcurrentReferenceHashMap<>();
 
 	private final Method publicCopyMethod;
 	private final Method syntheticCopyMethod;

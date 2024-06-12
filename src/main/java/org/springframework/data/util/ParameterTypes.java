@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
@@ -46,7 +45,7 @@ import org.springframework.util.TypeUtils;
 public class ParameterTypes {
 
 	private static final TypeDescriptor OBJECT_DESCRIPTOR = TypeDescriptor.valueOf(Object.class);
-	private static final ConcurrentMap<List<TypeDescriptor>, ParameterTypes> cache = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<List<TypeDescriptor>, ParameterTypes> cache = new ConcurrentReferenceHashMap<>();
 
 	private final List<TypeDescriptor> types;
 	private final Lazy<Collection<ParameterTypes>> alternatives;

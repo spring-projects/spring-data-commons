@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -34,6 +33,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.AnnotationDetectionMethodCallback;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -141,7 +141,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	 */
 	static class EventPublishingMethod {
 
-		private static Map<Class<?>, EventPublishingMethod> cache = new ConcurrentHashMap<>();
+		private static Map<Class<?>, EventPublishingMethod> cache = new ConcurrentReferenceHashMap<>();
 		private static @SuppressWarnings("null") EventPublishingMethod NONE = new EventPublishingMethod(Object.class, null,
 				null);
 

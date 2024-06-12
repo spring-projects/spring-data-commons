@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +30,7 @@ import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
 
 /**
@@ -50,7 +50,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final Pattern SPLITTER_FOR_QUOTED = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", "\\."));
 	private static final Pattern NESTED_PROPERTY_PATTERN = Pattern.compile("\\p{Lu}[\\p{Ll}\\p{Nd}]*$");
-	private static final Map<Property, PropertyPath> cache = new ConcurrentHashMap<>();
+	private static final Map<Property, PropertyPath> cache = new ConcurrentReferenceHashMap<>();
 
 	private final TypeInformation<?> owningType;
 	private final String name;
