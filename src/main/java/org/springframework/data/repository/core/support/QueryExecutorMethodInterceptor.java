@@ -93,7 +93,7 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 			QueryLookupStrategy lookupStrategy, ProjectionFactory projectionFactory) {
 
 		List<Method> queryMethods = repositoryInformation.getQueryMethods().toList();
-		Map<Method, RepositoryQuery> result = new HashMap<>(queryMethods.size());
+		Map<Method, RepositoryQuery> result = new HashMap<>(queryMethods.size(), 1.0f);
 
 		for (Method method : queryMethods) {
 

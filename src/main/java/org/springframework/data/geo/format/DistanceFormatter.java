@@ -47,7 +47,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 
 	static {
 
-		Map<String, Metric> metrics = new LinkedHashMap<>(Metrics.values().length);
+		Map<String, Metric> metrics = new LinkedHashMap<>(Metrics.values().length, 1.0f);
 
 		for (Metric metric : Metrics.values()) {
 			metrics.put(metric.getAbbreviation(), metric);

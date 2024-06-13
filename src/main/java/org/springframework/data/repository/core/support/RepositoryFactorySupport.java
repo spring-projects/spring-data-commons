@@ -23,13 +23,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -108,7 +108,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	@SuppressWarnings("null")
 	public RepositoryFactorySupport() {
 
-		this.repositoryInformationCache = new ConcurrentHashMap<>(16);
+		this.repositoryInformationCache = new HashMap<>(16);
 		this.postProcessors = new ArrayList<>();
 
 		this.repositoryBaseClass = Optional.empty();
@@ -364,8 +364,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		if (logger.isDebugEnabled()) {
 			logger
-					.debug(LogMessage.format("Finished creation of repository instance for %s.",
-				repositoryInterface.getName()));
+					.debug(LogMessage.format("Finished creation of repository instance for %s.", repositoryInterface.getName()));
 		}
 
 		return repository;
@@ -440,12 +439,15 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, composition);
 
-		return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
+		synchronized (repositoryInformationCache) {
 
-			Class<?> baseClass = repositoryBaseClass.orElse(getRepositoryBaseClass(metadata));
+			return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
 
-			return new DefaultRepositoryInformation(metadata, baseClass, composition);
-		});
+				Class<?> baseClass = repositoryBaseClass.orElse(getRepositoryBaseClass(metadata));
+
+				return new DefaultRepositoryInformation(metadata, baseClass, composition);
+			});
+		}
 	}
 
 	protected List<QueryMethod> getQueryMethods() {
@@ -725,7 +727,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	static class RepositoryValidator {
 
-		static Map<Class<?>, String> WELL_KNOWN_EXECUTORS = new HashMap<>(4, 1f);
+		static Map<Class<?>, String> WELL_KNOWN_EXECUTORS = new HashMap<>(4, 1.0f);
 
 		static {
 
@@ -786,11 +788,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 				}
 
 				if (!containsFragmentImplementation(composition, executorInterface)) {
-					throw new UnsupportedFragmentException(
-							String.format("Repository %s implements %s but %s does not support %s",
-									ClassUtils.getQualifiedName(repositoryInterface), ClassUtils.getQualifiedName(executorInterface),
-									ClassUtils.getShortName(source), entry.getValue()),
-							repositoryInterface, executorInterface);
+					throw new UnsupportedFragmentException(String.format("Repository %s implements %s but %s does not support %s",
+							ClassUtils.getQualifiedName(repositoryInterface), ClassUtils.getQualifiedName(executorInterface),
+							ClassUtils.getShortName(source), entry.getValue()), repositoryInterface, executorInterface);
 				}
 			}
 		}

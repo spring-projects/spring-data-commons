@@ -19,7 +19,9 @@ import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.springframework.core.ResolvableType;
@@ -44,6 +46,7 @@ import org.springframework.util.Assert;
 class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory {
 
 	private final ConversionService conversionService;
+	private final Map<Class<?>, AnnotationAuditingMetadata> metadataCache;
 
 	public DefaultAuditableBeanWrapperFactory() {
 
@@ -52,6 +55,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
 
 		this.conversionService = conversionService;
+		this.metadataCache = new ConcurrentHashMap<>();
 	}
 
 	ConversionService getConversionService() {
@@ -77,10 +81,11 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 						(Auditable<Object, ?, TemporalAccessor>) it);
 			}
 
-			AnnotationAuditingMetadata metadata = AnnotationAuditingMetadata.getMetadata(it.getClass());
+			AnnotationAuditingMetadata metadata = metadataCache.computeIfAbsent(it.getClass(),
+					AnnotationAuditingMetadata::getMetadata);
 
 			if (metadata.isAuditable()) {
-				return new ReflectionAuditingBeanWrapper<T>(conversionService, it);
+				return new ReflectionAuditingBeanWrapper<>(conversionService, it);
 			}
 
 			return null;

@@ -100,7 +100,7 @@ public class ExtensionAwareQueryMethodEvaluationContextProvider implements Query
 	 */
 	static Map<String, Object> collectVariables(Parameters<?, ?> parameters, Object[] arguments) {
 
-		Map<String, Object> variables = new HashMap<>(parameters.getNumberOfParameters());
+		Map<String, Object> variables = new HashMap<>(parameters.getNumberOfParameters(), 1.0f);
 
 		parameters.stream()//
 				.filter(Parameter::isSpecialParameter)//

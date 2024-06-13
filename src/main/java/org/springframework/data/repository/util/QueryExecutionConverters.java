@@ -63,7 +63,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * <li>{@code javaslang.collection.Seq}, {@code javaslang.collection.Map}, {@code javaslang.collection.Set} - as of
  * 1.13</li>
  * <li>{@code io.vavr.collection.Seq}, {@code io.vavr.collection.Map}, {@code io.vavr.collection.Set} - as of 2.0</li>
- * <li>Reactive wrappers supported by {@link ReactiveWrappers} - as of 2.0</li>
+ * <li>Reactive wrappers supported by {@link org.springframework.data.util.ReactiveWrappers} - as of 2.0</li>
  * </ul>
  *
  * @author Oliver Gierke
@@ -79,11 +79,11 @@ public abstract class QueryExecutionConverters {
 	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Try",
 			QueryExecutionConverters.class.getClassLoader());
 
-	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<>(10, 1f);
-	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>(10, 1f);
+	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<>(10, 1.0f);
+	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>(10, 1.0f);
 	private static final Set<Function<Object, Object>> UNWRAPPERS = new HashSet<>();
 	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<>();
-	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>(3, 1f);
+	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>(3, 1.0f);
 	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentReferenceHashMap<>();
 	private static final TypeInformation<Void> VOID_INFORMATION = TypeInformation.of(Void.class);
 

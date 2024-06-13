@@ -21,9 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -52,8 +50,6 @@ final class AnnotationAuditingMetadata {
 	private static final AnnotationFieldFilter LAST_MODIFIED_BY_FILTER = new AnnotationFieldFilter(LastModifiedBy.class);
 	private static final AnnotationFieldFilter LAST_MODIFIED_DATE_FILTER = new AnnotationFieldFilter(
 			LastModifiedDate.class);
-
-	private static final Map<Class<?>, AnnotationAuditingMetadata> metadataCache = new ConcurrentHashMap<>();
 
 	static final List<String> SUPPORTED_DATE_TYPES;
 
@@ -126,7 +122,7 @@ final class AnnotationAuditingMetadata {
 	 * @param type the type to inspect, must not be {@literal null}.
 	 */
 	public static AnnotationAuditingMetadata getMetadata(Class<?> type) {
-		return metadataCache.computeIfAbsent(type, AnnotationAuditingMetadata::new);
+		return new AnnotationAuditingMetadata(type);
 	}
 
 	/**

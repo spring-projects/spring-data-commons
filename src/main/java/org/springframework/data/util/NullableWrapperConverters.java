@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.springframework.core.convert.TypeDescriptor;
@@ -33,6 +32,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ObjectUtils;
 
 import com.google.common.base.Optional;
@@ -67,7 +67,7 @@ public abstract class NullableWrapperConverters {
 	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<WrapperType>();
 	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>();
 	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
-	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentHashMap<>();
+	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentReferenceHashMap<>();
 
 	static {
 

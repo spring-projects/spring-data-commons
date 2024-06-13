@@ -50,16 +50,6 @@ class AnnotationAuditingMetadataUnitTests {
 	}
 
 	@Test
-	void checkCaching() {
-
-		var firstCall = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
-		assertThat(firstCall).isNotNull();
-
-		var secondCall = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
-		assertThat(firstCall).isEqualTo(secondCall);
-	}
-
-	@Test
 	void checkIsAuditable() {
 
 		var metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);

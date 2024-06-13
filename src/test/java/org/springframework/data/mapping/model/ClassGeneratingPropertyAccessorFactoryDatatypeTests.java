@@ -68,10 +68,10 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		parameters.addAll(create(types, "primitiveBooleanArray", new boolean[] { true, false }));
 		parameters.addAll(create(types, "boxedBoolean", Boolean.valueOf(true)));
 		parameters.addAll(create(types, "boxedBooleanArray", new Boolean[] { Boolean.valueOf(true) }));
-		parameters.addAll(create(types, "primitiveFloat", Float.valueOf(1f)));
-		parameters.addAll(create(types, "primitiveFloatArray", new float[] { 1f, 2f }));
-		parameters.addAll(create(types, "boxedFloat", Float.valueOf(1f)));
-		parameters.addAll(create(types, "boxedFloatArray", new Float[] { Float.valueOf(1f) }));
+		parameters.addAll(create(types, "primitiveFloat", Float.valueOf(1.0f)));
+		parameters.addAll(create(types, "primitiveFloatArray", new float[] { 1.0f, 2f }));
+		parameters.addAll(create(types, "boxedFloat", Float.valueOf(1.0f)));
+		parameters.addAll(create(types, "boxedFloatArray", new Float[] { Float.valueOf(1.0f) }));
 		parameters.addAll(create(types, "primitiveDouble", Double.valueOf(1d)));
 		parameters.addAll(create(types, "primitiveDoubleArray", new double[] { 1d, 2d }));
 		parameters.addAll(create(types, "boxedDouble", Double.valueOf(1d)));
