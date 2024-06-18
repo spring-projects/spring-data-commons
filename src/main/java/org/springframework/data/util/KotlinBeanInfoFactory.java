@@ -28,6 +28,7 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -69,6 +70,10 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 
 				Method getter = ReflectJvmMapping.getJavaGetter(property);
 				Method setter = property instanceof KMutableProperty<?> kmp ? ReflectJvmMapping.getJavaSetter(kmp) : null;
+
+				if (getter != null && (Modifier.isStatic(getter.getModifiers()) || getter.getParameterCount() != 0)) {
+					continue;
+				}
 
 				if (getter != null && setter != null && setter.getParameterCount() == 1) {
 					if (!getter.getReturnType().equals(setter.getParameters()[0].getType())) {
