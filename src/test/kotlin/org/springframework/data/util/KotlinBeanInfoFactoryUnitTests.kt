@@ -48,6 +48,14 @@ class KotlinBeanInfoFactoryUnitTests {
 		}
 	}
 
+	@Test // GH-3109
+	internal fun considersJavaBeansGettersOnly() {
+
+		val pds = BeanUtils.getPropertyDescriptors(InlineClassWithProperty::class.java)
+
+		assertThat(pds).hasSize(1).extracting("name").contains("value")
+	}
+
 	@Test
 	internal fun determinesInlineClassConsumerProperties() {
 
