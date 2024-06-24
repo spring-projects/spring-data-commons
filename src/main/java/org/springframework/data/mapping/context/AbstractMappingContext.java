@@ -726,6 +726,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			matches.add(new PropertyMatch("class", null));
 			matches.add(new PropertyMatch("this\\$.*", null));
 			matches.add(new PropertyMatch("metaClass", "groovy.lang.MetaClass"));
+			matches.add(new KotlinDataClassPropertyMatch(".*\\$delegate", null));
 
 			UNMAPPED_PROPERTIES = Streamable.of(matches);
 		}
@@ -738,7 +739,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			}
 
 			return UNMAPPED_PROPERTIES.stream()//
-					.noneMatch(it -> it.matches(field.getName(), field.getType()));
+					.noneMatch(it -> it.matches(field));
 		}
 
 		/**
@@ -756,7 +757,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			}
 
 			return UNMAPPED_PROPERTIES.stream()//
-					.noneMatch(it -> it.matches(property.getName(), property.getType()));
+					.noneMatch(it -> it.matches(property));
 		}
 
 		/**
@@ -788,6 +789,26 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			/**
 			 * Returns whether the given {@link Field} matches the defined {@link PropertyMatch}.
 			 *
+			 * @param field must not be {@literal null}.
+			 * @return
+			 */
+			public boolean matches(Field field) {
+				return matches(field.getName(), field.getType());
+			}
+
+			/**
+			 * Returns whether the given {@link Property} matches the defined {@link PropertyMatch}.
+			 *
+			 * @param property must not be {@literal null}.
+			 * @return
+			 */
+			public boolean matches(Property property) {
+				return matches(property.getName(), property.getType());
+			}
+
+			/**
+			 * Returns whether the given field name and type matches the defined {@link PropertyMatch}.
+			 *
 			 * @param name must not be {@literal null}.
 			 * @param type must not be {@literal null}.
 			 * @return
@@ -806,6 +827,41 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				}
 
 				return true;
+			}
+		}
+
+		/**
+		 * Value object extension to {@link PropertyMatch} that matches for fields only for Kotlin data classes.
+		 *
+		 * @author Mark Paluch
+		 * @since 3.2.8
+		 */
+		static class KotlinDataClassPropertyMatch extends PropertyMatch {
+
+			public KotlinDataClassPropertyMatch(@Nullable String namePattern, @Nullable String typeName) {
+				super(namePattern, typeName);
+			}
+
+			@Override
+			public boolean matches(Field field) {
+
+				if (!KotlinReflectionUtils.isDataClass(field.getDeclaringClass())) {
+					return false;
+				}
+
+				return super.matches(field);
+			}
+
+			@Override
+			public boolean matches(Property property) {
+
+				Field field = property.getField().orElse(null);
+
+				if (field == null || !KotlinReflectionUtils.isDataClass(field.getDeclaringClass())) {
+					return false;
+				}
+
+				return super.matches(property);
 			}
 		}
 	}
