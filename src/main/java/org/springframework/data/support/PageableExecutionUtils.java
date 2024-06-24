@@ -54,19 +54,30 @@ public abstract class PageableExecutionUtils {
 		Assert.notNull(pageable, "Pageable must not be null");
 		Assert.notNull(totalSupplier, "TotalSupplier must not be null");
 
-		if (pageable.isUnpaged() || pageable.getOffset() == 0) {
-
-			if (pageable.isUnpaged() || pageable.getPageSize() > content.size()) {
-				return new PageImpl<>(content, pageable, content.size());
-			}
-
-			return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
+		if (pageable.isUnpaged()) {
+			return new PageImpl<>(content, pageable, content.size());
 		}
 
-		if (content.size() != 0 && pageable.getPageSize() > content.size()) {
+		if (isFirstPage(pageable) && isPartialPage(content, pageable)) {
+			return new PageImpl<>(content, pageable, content.size());
+		}
+
+		if (isSubsequentPage(pageable) && !content.isEmpty() && isPartialPage(content, pageable)) {
 			return new PageImpl<>(content, pageable, pageable.getOffset() + content.size());
 		}
 
 		return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
+	}
+
+	private static <T> boolean isPartialPage(List<T> content, Pageable pageable) {
+		return pageable.getPageSize() > content.size();
+	}
+
+	private static boolean isFirstPage(Pageable pageable) {
+		return pageable.getOffset() == 0;
+	}
+
+	private static boolean isSubsequentPage(Pageable pageable) {
+		return !isFirstPage(pageable);
 	}
 }
