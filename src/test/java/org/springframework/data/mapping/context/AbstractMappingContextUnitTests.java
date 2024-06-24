@@ -39,7 +39,9 @@ import org.springframework.data.mapping.ShadowedPropertyType;
 import org.springframework.data.mapping.ShadowedPropertyTypeWithCtor;
 import org.springframework.data.mapping.ShadowingPropertyType;
 import org.springframework.data.mapping.ShadowingPropertyTypeWithCtor;
+import org.springframework.data.mapping.model.AbstractPersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.DataClassWithLazy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
@@ -177,6 +179,16 @@ class AbstractMappingContextUnitTests {
 	@Test // DATACMNS-1171
 	void shouldCreateEntityForKotlinDataClass() {
 		assertThat(context.getPersistentEntity(SimpleDataClass.class)).isNotNull();
+	}
+
+	@Test // GH-3112
+	void shouldIgnoreLazyFieldsForDataClasses() {
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
+				.getRequiredPersistentEntity(DataClassWithLazy.class);
+
+		List<String> propertyNames = Streamable.of(entity).map(AbstractPersistentProperty::getName).toList();
+		assertThat(propertyNames).containsOnly("amount", "currency");
 	}
 
 	@Test // DATACMNS-1171

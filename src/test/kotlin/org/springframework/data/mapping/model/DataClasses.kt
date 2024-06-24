@@ -29,6 +29,13 @@ data class ExtendedDataClassKt(val id: Long, val name: String) {
 	}
 }
 
+data class DataClassWithLazy(
+	val amount: Int,
+	val currency: String,
+) {
+	val foo by lazy { 123 }
+}
+
 data class SingleSettableProperty constructor(val id: Double = Math.random()) {
 	val version: Int? = null
 }
