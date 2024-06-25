@@ -93,6 +93,29 @@ class NullableUtilsUnitTests {
 		assertThat(pn1.isNonNull()).isFalse();
 	}
 
+	@Test //
+	void shouldConsiderJSpecifyNonNullParameters() {
+
+		var method = ReflectionUtils.findMethod(org.springframework.data.util.nonnull.jspecify.NonNullOnPackage.class,
+				"someMethod", String.class, String.class);
+		Nullability.Introspector introspector = Nullability.introspect(method.getDeclaringClass());
+		Nullability mrt = introspector.forReturnType(method);
+
+		assertThat(mrt.isDeclared()).isTrue();
+		assertThat(mrt.isNonNull()).isTrue();
+		assertThat(mrt.isNullable()).isFalse();
+
+		Nullability pn0 = introspector.forParameter(MethodParameter.forExecutable(method, 0));
+		assertThat(pn0.isDeclared()).isTrue();
+		assertThat(pn0.isNullable()).isFalse();
+		assertThat(pn0.isNonNull()).isTrue();
+
+		Nullability pn1 = introspector.forParameter(MethodParameter.forExecutable(method, 1));
+		assertThat(pn1.isDeclared()).isTrue();
+		assertThat(pn1.isNullable()).isTrue();
+		assertThat(pn1.isNonNull()).isFalse();
+	}
+
 	@Test // DATACMNS-1154
 	void shouldConsiderJsr305NonNullParameters() {
 
