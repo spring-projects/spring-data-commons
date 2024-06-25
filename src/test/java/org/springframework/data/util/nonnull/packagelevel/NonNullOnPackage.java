@@ -21,4 +21,6 @@ package org.springframework.data.util.nonnull.packagelevel;
 public interface NonNullOnPackage {
 
 	String nonNullReturnValue();
+
+	String nonNullArgs(String arg);
 }

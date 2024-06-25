@@ -222,7 +222,7 @@ public abstract class NullableUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> boolean test(Annotation annotation, String metaAnnotationName, String attribute,
+	static <T> boolean test(Annotation annotation, String metaAnnotationName, String attribute,
 			Predicate<T> filter) {
 
 		if (annotation.annotationType().getName().equals(metaAnnotationName)) {

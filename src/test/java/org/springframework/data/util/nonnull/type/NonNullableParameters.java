@@ -21,4 +21,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * @author Mark Paluch
  */
 @ParametersAreNonnullByDefault
-public interface NonNullableParameters {}
+public interface NonNullableParameters {
+
+	void someMethod(String arg);
+}

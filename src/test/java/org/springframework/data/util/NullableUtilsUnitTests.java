@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.annotation.ElementType;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.util.nonnull.NullableAnnotatedType;
 import org.springframework.data.util.nonnull.packagelevel.NonNullOnPackage;
@@ -38,11 +39,22 @@ class NullableUtilsUnitTests {
 	@Test // DATACMNS-1154
 	void packageAnnotatedShouldConsiderNonNullAnnotation() {
 
-		var method = ReflectionUtils.findMethod(NonNullOnPackage.class, "nonNullReturnValue");
+		var method = ReflectionUtils.findMethod(NonNullOnPackage.class, "nonNullArgs", String.class);
 
 		assertThat(NullableUtils.isNonNull(method, ElementType.METHOD)).isTrue();
 		assertThat(NullableUtils.isNonNull(method, ElementType.PARAMETER)).isTrue();
 		assertThat(NullableUtils.isNonNull(method, ElementType.PACKAGE)).isFalse();
+
+		Nullability.Introspector introspector = Nullability.introspect(NonNullOnPackage.class);
+		Nullability mrt = introspector.forReturnType(method);
+
+		assertThat(mrt.isNullable()).isFalse();
+		assertThat(mrt.isNonNull()).isTrue();
+
+		Nullability pn = introspector.forParameter(MethodParameter.forExecutable(method, 0));
+
+		assertThat(pn.isNullable()).isFalse();
+		assertThat(pn.isNonNull()).isTrue();
 	}
 
 	@Test // DATACMNS-1154
@@ -64,6 +76,19 @@ class NullableUtilsUnitTests {
 
 		assertThat(NullableUtils.isNonNull(NonNullableParameters.class, ElementType.PARAMETER)).isTrue();
 		assertThat(NullableUtils.isNonNull(NonNullableParameters.class, ElementType.FIELD)).isFalse();
+
+		var method = ReflectionUtils.findMethod(NonNullableParameters.class, "someMethod", String.class);
+		Nullability.Introspector introspector = Nullability.introspect(method.getDeclaringClass());
+		Nullability mrt = introspector.forReturnType(method);
+
+		assertThat(mrt.isDeclared()).isFalse();
+		assertThat(mrt.isNonNull()).isFalse();
+		assertThat(mrt.isNullable()).isTrue();
+
+		Nullability pn = introspector.forParameter(MethodParameter.forExecutable(method, 0));
+		assertThat(pn.isDeclared()).isTrue();
+		assertThat(pn.isNullable()).isFalse();
+		assertThat(pn.isNonNull()).isTrue();
 	}
 
 	@Test // DATACMNS-1154
@@ -71,6 +96,19 @@ class NullableUtilsUnitTests {
 
 		assertThat(NullableUtils.isNonNull(Jsr305NonnullAnnotatedType.class, ElementType.PARAMETER)).isTrue();
 		assertThat(NullableUtils.isNonNull(Jsr305NonnullAnnotatedType.class, ElementType.FIELD)).isTrue();
+
+		var method = ReflectionUtils.findMethod(Jsr305NonnullAnnotatedType.class, "someMethod", String.class);
+
+		Nullability mrt = Nullability.forMethodReturnType(method);
+		Nullability pn = Nullability.forMethodParameter(method.getParameters()[0]);
+
+		assertThat(mrt.isDeclared()).isTrue();
+		assertThat(mrt.isNullable()).isFalse();
+		assertThat(mrt.isNonNull()).isTrue();
+
+		assertThat(pn.isDeclared()).isTrue();
+		assertThat(pn.isNullable()).isFalse();
+		assertThat(pn.isNonNull()).isTrue();
 	}
 
 	@Test // DATACMNS-1154
@@ -78,6 +116,19 @@ class NullableUtilsUnitTests {
 
 		assertThat(NullableUtils.isNonNull(NonAnnotatedType.class, ElementType.PARAMETER)).isFalse();
 		assertThat(NullableUtils.isNonNull(NonAnnotatedType.class, ElementType.FIELD)).isFalse();
+
+		var method = ReflectionUtils.findMethod(NonAnnotatedType.class, "someMethod", String.class);
+
+		Nullability mrt = Nullability.forMethodReturnType(method);
+		Nullability pn = Nullability.forMethodParameter(method.getParameters()[0]);
+
+		assertThat(mrt.isDeclared()).isFalse();
+		assertThat(mrt.isNullable()).isTrue();
+		assertThat(mrt.isNonNull()).isFalse();
+
+		assertThat(pn.isDeclared()).isFalse();
+		assertThat(pn.isNullable()).isTrue();
+		assertThat(pn.isNonNull()).isFalse();
 	}
 
 	@Test // DATACMNS-1154
@@ -98,6 +149,12 @@ class NullableUtilsUnitTests {
 		var method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "nullableReturn");
 
 		assertThat(NullableUtils.isExplicitNullable(new MethodParameter(method, -1))).isTrue();
+
+		Nullability mrt = Nullability.forMethodReturnType(method);
+
+		assertThat(mrt.isDeclared()).isTrue();
+		assertThat(mrt.isNullable()).isTrue();
+		assertThat(mrt.isNonNull()).isFalse();
 	}
 
 	@Test // DATACMNS-1154
@@ -106,6 +163,12 @@ class NullableUtilsUnitTests {
 		var method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "jsr305NullableReturn");
 
 		assertThat(NullableUtils.isExplicitNullable(new MethodParameter(method, -1))).isTrue();
+
+		Nullability mrt = Nullability.forMethodReturnType(method);
+
+		assertThat(mrt.isDeclared()).isTrue();
+		assertThat(mrt.isNullable()).isTrue();
+		assertThat(mrt.isNonNull()).isFalse();
 	}
 
 	@Test // DATACMNS-1154
@@ -114,5 +177,11 @@ class NullableUtilsUnitTests {
 		var method = ReflectionUtils.findMethod(NullableAnnotatedType.class, "jsr305NullableReturnWhen");
 
 		assertThat(NullableUtils.isExplicitNullable(new MethodParameter(method, -1))).isTrue();
+
+		Nullability mrt = Nullability.forMethodReturnType(method);
+
+		assertThat(mrt.isDeclared()).isTrue();
+		assertThat(mrt.isNullable()).isTrue();
+		assertThat(mrt.isNonNull()).isFalse();
 	}
 }
