@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2024 the original author or authors.
+ * Copyright 2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.util.nonnull;
-
-import javax.annotation.meta.When;
-
-import org.springframework.lang.Nullable;
 
 /**
  * @author Mark Paluch
  */
-public interface NullableAnnotatedType {
+@Nonnull
+package org.springframework.data.util.nonnull.jakarta;
 
-	String nonNullMethod(String parameter);
-
-	@Nullable
-	String nullableReturn();
-
-	@javax.annotation.Nullable
-	String jsr305NullableReturn();
-
-	@javax.annotation.Nonnull(when = When.MAYBE)
-	String jsr305NullableReturnWhen();
-
-	@jakarta.annotation.Nonnull
-	String jakartaNonnullReturnWhen();
-
-	@jakarta.annotation.Nullable
-	String jakartaNullableReturnWhen();
-}
+import jakarta.annotation.Nonnull;

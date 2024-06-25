@@ -13,31 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.util.nonnull;
+package org.springframework.data.util.nonnull.jakarta;
 
-import javax.annotation.meta.When;
-
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * @author Mark Paluch
  */
-public interface NullableAnnotatedType {
+public interface NonNullOnPackage {
 
-	String nonNullMethod(String parameter);
-
-	@Nullable
-	String nullableReturn();
-
-	@javax.annotation.Nullable
-	String jsr305NullableReturn();
-
-	@javax.annotation.Nonnull(when = When.MAYBE)
-	String jsr305NullableReturnWhen();
-
-	@jakarta.annotation.Nonnull
-	String jakartaNonnullReturnWhen();
-
-	@jakarta.annotation.Nullable
-	String jakartaNullableReturnWhen();
+	String someMethod(String arg, @Nullable String nullableArg);
 }

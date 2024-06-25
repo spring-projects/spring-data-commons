@@ -18,7 +18,6 @@ package org.springframework.data.util;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -51,6 +50,10 @@ class NullabilityIntrospector implements Nullability.Introspector {
 
 		if (Jsr305Provider.isAvailable()) {
 			providers.add(new Jsr305Provider());
+		}
+
+		if (JakartaAnnotation.isAvailable()) {
+			providers.add(new JakartaAnnotation());
 		}
 
 		providers.add(new SpringProvider());
@@ -270,9 +273,59 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		}
 	}
 
-	private static ElementType getElementType(AnnotatedElement element) {
-		return element instanceof Method ? ElementType.METHOD
-				: element instanceof Field ? ElementType.FIELD : ElementType.PARAMETER;
+	/**
+	 * Provider based on the JSR-305 (dormant) spec. Elements can be either annotated with
+	 * {@code @Nonnull}/{@code @Nullable} directly or through meta-annotations that are composed of
+	 * {@code @Nonnull}/{@code @Nullable} and {@code @TypeQualifierDefault}.
+	 */
+	static class JakartaAnnotation extends NullabilityProvider {
+
+		private static final Class<Annotation> NON_NULL = findClass("jakarta.annotation.Nonnull");
+		private static final Class<Annotation> NULLABLE = findClass("jakarta.annotation.Nullable");
+
+		public static boolean isAvailable() {
+			return NON_NULL != null && NULLABLE != null;
+		}
+
+		@Override
+		Spec evaluate(AnnotatedElement element, ElementType elementType) {
+
+			if (element.isAnnotationPresent(NULLABLE) || MergedAnnotations.from(element).isPresent(NULLABLE)) {
+				return Spec.NULLABLE;
+			}
+
+			Annotation[] annotations = element.getAnnotations();
+
+			for (Annotation annotation : annotations) {
+
+				if (test(NON_NULL, annotation)) {
+					return Spec.NON_NULL;
+				}
+
+				if (test(NULLABLE, annotation)) {
+					return Spec.NULLABLE;
+				}
+			}
+
+			return Spec.UNSPECIFIED;
+		}
+
+		private static boolean test(Class<Annotation> annotationClass, Annotation annotation) {
+
+			if (annotation.annotationType().equals(annotationClass)) {
+				return true;
+			}
+
+			MergedAnnotations annotations = MergedAnnotations.from(annotation.annotationType());
+			if (annotations.isPresent(annotationClass)) {
+				Annotation meta = annotations.get(annotationClass).synthesize();
+
+				return true;
+			}
+
+			return false;
+		}
+
 	}
 
 	@Nullable
