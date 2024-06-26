@@ -53,6 +53,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Johannes Englmeier
  * @author Florian Cramer
+ * @author Christoph Strobl
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -314,15 +315,10 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			Class<? extends Annotation> annotation, ClassLoader beanClassLoader,
 			@Nullable BeanNameGenerator importBeanNameGenerator) {
 
-		Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(annotation.getName());
+		BeanNameGenerator beanNameGenerator = getConfiguredBeanNameGenerator(metadata, annotation, beanClassLoader);
 
-		if (annotationAttributes != null) {
-
-			BeanNameGenerator beanNameGenerator = getBeanNameGenerator(annotationAttributes, beanClassLoader);
-
-			if (beanNameGenerator != null) {
-				return beanNameGenerator;
-			}
+		if (beanNameGenerator != null) {
+			return beanNameGenerator;
 		}
 
 		return defaultBeanNameGenerator(importBeanNameGenerator);
@@ -348,26 +344,30 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	}
 
 	/**
-	 * Obtain a configured {@link BeanNameGenerator}.
+	 * Obtain a configured {@link BeanNameGenerator} if present.
 	 *
 	 * @param beanClassLoader a class loader to load the configured {@link BeanNameGenerator} class in case it was
 	 *          configured as String instead of a Class instance.
-	 * @return the bean name generator.
+	 * @return the bean name generator or {@literal null} if not configured.
 	 */
 	@Nullable
 	@SuppressWarnings("unchecked")
-	private static BeanNameGenerator getBeanNameGenerator(Map<String, Object> annotationAttributes,
-			ClassLoader beanClassLoader) {
+	private static BeanNameGenerator getConfiguredBeanNameGenerator(AnnotationMetadata metadata,
+		Class<? extends Annotation> annotation, ClassLoader beanClassLoader) {
+
+		Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(annotation.getName());
+		if(annotationAttributes == null || !annotationAttributes.containsKey(BEAN_NAME_GENERATOR)) {
+			return null;
+		}
 
 		Object configuredBeanNameGenerator = annotationAttributes.get(BEAN_NAME_GENERATOR);
-
 		if (configuredBeanNameGenerator == null) {
 			return null;
 		}
 
-		if (configuredBeanNameGenerator instanceof String cbng) {
+		if (configuredBeanNameGenerator instanceof String beanNameGeneratorTypeName) {
 			try {
-				configuredBeanNameGenerator = ClassUtils.forName(cbng, beanClassLoader);
+				configuredBeanNameGenerator = ClassUtils.forName(beanNameGeneratorTypeName, beanClassLoader);
 			} catch (Exception o_O) {
 				throw new RuntimeException(o_O);
 			}

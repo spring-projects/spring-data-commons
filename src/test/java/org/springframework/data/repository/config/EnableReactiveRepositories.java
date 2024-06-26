@@ -19,6 +19,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.repository.core.support.ReactiveDummyRepositoryFactoryBean;
@@ -42,6 +43,8 @@ public @interface EnableReactiveRepositories {
 	Class<?> repositoryFactoryBeanClass() default ReactiveDummyRepositoryFactoryBean.class;
 
 	Class<?> repositoryBaseClass() default ReactiveSortingRepository.class;
+
+	Class<? extends BeanNameGenerator> nameGenerator() default BeanNameGenerator.class;
 
 	String namedQueriesLocation() default "";
 

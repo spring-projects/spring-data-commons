@@ -77,7 +77,6 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		assertNoBeanDefinitionRegisteredFor("profileRepository");
 	}
 
-
 	@Test // GH-2584
 	void shouldExposeFragmentsAsBean() {
 
@@ -202,7 +201,8 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@EnableRepositories(basePackageClasses = MyNestedRepository.class, considerNestedRepositories = true,
 			excludeFilters = {
 					@Filter(type = FilterType.ASSIGNABLE_TYPE,
-							value = RepositoryConfigurationExtensionSupportUnitTests.ReactiveRepository.class),
+							value = { RepositoryConfigurationExtensionSupportUnitTests.ReactiveRepository.class,
+									AnnotationRepositoryConfigurationSourceUnitTests.ReactivePersonRepository.class }),
 					@Filter(type = FilterType.ASSIGNABLE_TYPE, value = MyOtherRepository.class) })
 	static class NestedRepositoriesConfiguration {}
 

@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.Mockito.mock;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -36,7 +37,9 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.config.basepackage.repo.PersonRepository;
+import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory;
 import org.springframework.data.repository.core.support.DummyRepositoryFactory;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 /**
  * Unit tests for {@link AnnotationRepositoryConfigurationSource}.
@@ -44,6 +47,7 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactory;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class AnnotationRepositoryConfigurationSourceUnitTests {
 
@@ -180,6 +184,17 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 		assertThat(getConfigSource(DefaultConfiguration.class).generateBeanName(bd)).isEqualTo("personRepository");
 	}
 
+	@Test // GH-3082
+	void considerBeanNameGeneratorForReactiveRepos() {
+
+		RootBeanDefinition bd = new RootBeanDefinition(DummyReactiveRepositoryFactory.class);
+		bd.getConstructorArgumentValues().addGenericArgumentValue(ReactivePersonRepository.class);
+
+		assertThat(getConfigSource(ConfigurationWithBeanNameGenerator.class).generateBeanName(bd))
+			.isEqualTo(ReactivePersonRepository.class.getName());
+		assertThat(getConfigSource(DefaultConfiguration.class).generateBeanName(bd)).isEqualTo("annotationRepositoryConfigurationSourceUnitTests.ReactivePersonRepository");
+	}
+
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(type, true);
@@ -204,6 +219,9 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@EnableRepositories(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)
 	static class ConfigurationWithBeanNameGenerator {}
 
+	@EnableReactiveRepositories(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)
+	static class ReactiveConfigurationWithBeanNameGenerator {}
+
 	@Retention(RetentionPolicy.RUNTIME)
 	@interface SampleAnnotation {
 
@@ -214,4 +232,6 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	@SampleAnnotation
 	static class ConfigWithSampleAnnotation {}
+
+	interface ReactivePersonRepository extends ReactiveCrudRepository<Person, String> {}
 }
