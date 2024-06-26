@@ -35,9 +35,4 @@ public interface NullableAnnotatedType {
 	@javax.annotation.Nonnull(when = When.MAYBE)
 	String jsr305NullableReturnWhen();
 
-	@jakarta.annotation.Nonnull
-	String jakartaNonnullReturnWhen();
-
-	@jakarta.annotation.Nullable
-	String jakartaNullableReturnWhen();
 }

@@ -72,9 +72,6 @@ import org.springframework.lang.Nullable;
  * <ul>
  * <li>Spring's {@link NonNullApi}, {@link Nullable}, and {@link org.springframework.lang.NonNull}.</li>
  * <li>JSR-305 {@code javax.annotation.Nonnull} and meta-annotations.</li>
- * <li><a href="https://projects.eclipse.org/projects/ee4j.ca">Jakarta Annotations API</a> via
- * {@code jakarta.annotation.Nonnull} which is a simplified variant of JSR-305 {@code javax.annotation.Nonnull} without
- * {@code when} and {@code @TypeQualifierDefault}.</li>
  * <li><a href="https://https://jspecify.dev/">JSpecify</a>, a newly designed specification to opt-in for non-null by
  * default through {@code org.jspecify.annotations.NullMarked} and {@code org.jspecify.annotations.Nullable}.</li>
  * </ul>

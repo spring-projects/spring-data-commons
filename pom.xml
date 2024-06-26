@@ -35,7 +35,6 @@
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.24</xmlbeam>
 		<java-module-name>spring.data.commons</java-module-name>
-		<jakarta-annotation-api>2.1.1</jakarta-annotation-api>
 		<kotlin.api.target>1.8</kotlin.api.target>
 	</properties>
 

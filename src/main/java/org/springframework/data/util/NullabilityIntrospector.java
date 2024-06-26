@@ -53,16 +53,12 @@ class NullabilityIntrospector implements Nullability.Introspector {
 	private static final List<NullabilityProvider> providers;
 
 	static {
-		providers = new ArrayList<>(5);
+		providers = new ArrayList<>(4);
 
 		providers.add(new PrimitiveProvider());
 
 		if (Jsr305Provider.isAvailable()) {
 			providers.add(new Jsr305Provider());
-		}
-
-		if (JakartaAnnotationProvider.isAvailable()) {
-			providers.add(new JakartaAnnotationProvider());
 		}
 
 		if (JSpecifyAnnotationProvider.isAvailable()) {
@@ -370,24 +366,6 @@ class NullabilityIntrospector implements Nullability.Introspector {
 	}
 
 	/**
-	 * Simplified variant of {@link Jsr305Provider} without {@code when} and {@code @TypeQualifierDefault} support.
-	 */
-	@SuppressWarnings("DataFlowIssue")
-	static class JakartaAnnotationProvider extends SimpleAnnotationNullabilityProvider {
-
-		private static final Class<Annotation> NON_NULL = findClass("jakarta.annotation.Nonnull");
-		private static final Class<Annotation> NULLABLE = findClass("jakarta.annotation.Nullable");
-
-		JakartaAnnotationProvider() {
-			super(NON_NULL, NULLABLE);
-		}
-
-		public static boolean isAvailable() {
-			return NON_NULL != null && NULLABLE != null;
-		}
-	}
-
-	/**
 	 * Provider for JSpecify annotations.
 	 */
 	@SuppressWarnings("DataFlowIssue")
@@ -431,49 +409,15 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		private static Spec evaluate(Annotation[] annotations) {
 			for (Annotation annotation : annotations) {
 
-				if (SimpleAnnotationNullabilityProvider.test(NULL_UNMARKED, annotation)) {
+				if (test(NULL_UNMARKED, annotation)) {
 					return Spec.UNSPECIFIED;
 				}
 
-				if (SimpleAnnotationNullabilityProvider.test(NULL_MARKED, annotation)
-						|| SimpleAnnotationNullabilityProvider.test(NON_NULL, annotation)) {
+				if (test(NULL_MARKED, annotation) || test(NON_NULL, annotation)) {
 					return Spec.NON_NULL;
 				}
 
-				if (SimpleAnnotationNullabilityProvider.test(NULLABLE, annotation)) {
-					return Spec.NULLABLE;
-				}
-			}
-
-			return Spec.UNSPECIFIED;
-		}
-	}
-
-	/**
-	 * Annotation-based {@link NullabilityProvider} leveraging simple or meta-annotations.
-	 */
-	static class SimpleAnnotationNullabilityProvider extends NullabilityProvider {
-
-		private final Class<Annotation> nonNull;
-		private final Class<Annotation> nullable;
-
-		SimpleAnnotationNullabilityProvider(Class<Annotation> nonNull, Class<Annotation> nullable) {
-			this.nonNull = nonNull;
-			this.nullable = nullable;
-		}
-
-		@Override
-		Spec evaluate(AnnotatedElement element, ElementType elementType) {
-
-			Annotation[] annotations = element.getAnnotations();
-
-			for (Annotation annotation : annotations) {
-
-				if (test(nonNull, annotation)) {
-					return Spec.NON_NULL;
-				}
-
-				if (test(nullable, annotation)) {
+				if (test(NULLABLE, annotation)) {
 					return Spec.NULLABLE;
 				}
 			}
@@ -490,7 +434,6 @@ class NullabilityIntrospector implements Nullability.Introspector {
 			MergedAnnotations annotations = MergedAnnotations.from(annotation.annotationType());
 			return annotations.isPresent(annotationClass);
 		}
-
 	}
 
 	@Nullable
