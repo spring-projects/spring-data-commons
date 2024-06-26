@@ -23,5 +23,5 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public interface NonNullableParameters {
 
-	void someMethod(String arg);
+	String someMethod(String arg);
 }

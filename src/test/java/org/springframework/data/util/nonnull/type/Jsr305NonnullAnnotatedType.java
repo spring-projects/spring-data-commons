@@ -23,6 +23,6 @@ import javax.annotation.Nonnull;
 @Nonnull
 public interface Jsr305NonnullAnnotatedType {
 
-	void someMethod(String arg);
+	String someMethod(String arg);
 
 }

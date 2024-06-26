@@ -62,6 +62,9 @@ import org.springframework.lang.Nullable;
  * 	}
  * }
  * </pre>
+ *
+ * Note that nullability is also expressed through using specific types. Primitives ({@code int}, {@code char} etc.) are
+ * non-nullable by definition and cannot be {@code null}. {@code void}/{@code Void} types are {@code null}-only types.
  * <p>
  * {@code javax.annotation.Nonnull} is suitable for composition of meta-annotations and expresses via
  * {@code javax.annotation.Nonnull#when()} in which cases non-nullability is applicable. Nullability introspection
@@ -271,6 +274,15 @@ public interface Nullability {
 		Nullability forParameter(Parameter parameter);
 
 		/**
+		 * Returns a {@link Nullability} instance for a method parameter by index.
+		 *
+		 * @param index the method parameter index.
+		 * @return a {@link Nullability} instance for a method parameter.
+		 * @throws IndexOutOfBoundsException if the method parameter index is out of bounds.
+		 */
+		Nullability forParameter(int index);
+
+		/**
 		 * Returns a {@link Nullability} instance for a method parameter.
 		 *
 		 * @param parameter the method parameter.
@@ -280,6 +292,13 @@ public interface Nullability {
 		default Nullability forParameter(MethodParameter parameter) {
 			return parameter.getParameterIndex() == -1 ? forReturnType() : forParameter(parameter.getParameter());
 		}
+
+		/**
+		 * Returns the method parameter count.
+		 *
+		 * @return the method parameter count.
+		 */
+		int getParameterCount();
 
 	}
 

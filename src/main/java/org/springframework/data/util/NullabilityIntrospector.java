@@ -53,7 +53,9 @@ class NullabilityIntrospector implements Nullability.Introspector {
 	private static final List<NullabilityProvider> providers;
 
 	static {
-		providers = new ArrayList<>(4);
+		providers = new ArrayList<>(5);
+
+		providers.add(new PrimitiveProvider());
 
 		if (Jsr305Provider.isAvailable()) {
 			providers.add(new Jsr305Provider());
@@ -200,6 +202,39 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		 * @return Specification result. Can be {@link Spec#UNSPECIFIED}.
 		 */
 		abstract Spec evaluate(AnnotatedElement element, ElementType elementType);
+	}
+
+	/**
+	 * Provider considering primitive types.
+	 */
+	static class PrimitiveProvider extends NullabilityProvider {
+
+		@Override
+		Spec evaluate(AnnotatedElement element, ElementType elementType) {
+
+			Class<?> type = null;
+
+			if (element instanceof Method m) {
+				type = m.getReturnType();
+			}
+
+			if (element instanceof Parameter p) {
+				type = p.getType();
+			}
+
+			if (type != null) {
+
+				if (ReflectionUtils.isVoid(type)) {
+					return Spec.NULLABLE;
+				}
+
+				if (type.isPrimitive()) {
+					return Spec.NON_NULL;
+				}
+			}
+
+			return Spec.UNSPECIFIED;
+		}
 	}
 
 	/**
@@ -514,6 +549,21 @@ class NullabilityIntrospector implements Nullability.Introspector {
 			}
 
 			return nullability;
+		}
+
+		@Override
+		public Nullability forParameter(int index) {
+
+			if (index >= method.getParameterCount() || index < 0) {
+				throw new IndexOutOfBoundsException();
+			}
+
+			return forParameter(method.getParameters()[index]);
+		}
+
+		@Override
+		public int getParameterCount() {
+			return method.getParameterCount();
 		}
 	}
 

@@ -20,8 +20,8 @@ package org.springframework.data.util.nonnull.type;
  */
 public class NonAnnotatedType {
 
-	void someMethod(String arg){
-		return;
+	String someMethod(String arg) {
+		return "";
 	}
 
 }
