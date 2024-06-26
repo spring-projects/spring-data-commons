@@ -45,13 +45,12 @@ class NullableUtilsUnitTests {
 		assertThat(NullableUtils.isNonNull(method, ElementType.PARAMETER)).isTrue();
 		assertThat(NullableUtils.isNonNull(method, ElementType.PACKAGE)).isFalse();
 
-		Nullability.Introspector introspector = Nullability.introspect(NonNullOnPackage.class);
-		Nullability mrt = introspector.forReturnType(method);
+		Nullability.MethodNullability mrt = Nullability.forMethod(method);
 
 		assertThat(mrt.isNullable()).isFalse();
 		assertThat(mrt.isNonNull()).isTrue();
 
-		Nullability pn = introspector.forParameter(MethodParameter.forExecutable(method, 0));
+		Nullability pn = mrt.forParameter(MethodParameter.forExecutable(method, 0));
 
 		assertThat(pn.isNullable()).isFalse();
 		assertThat(pn.isNonNull()).isTrue();
@@ -145,7 +144,7 @@ class NullableUtilsUnitTests {
 		var method = ReflectionUtils.findMethod(Jsr305NonnullAnnotatedType.class, "someMethod", String.class);
 
 		Nullability mrt = Nullability.forMethodReturnType(method);
-		Nullability pn = Nullability.forMethodParameter(method.getParameters()[0]);
+		Nullability pn = Nullability.forParameter(method.getParameters()[0]);
 
 		assertThat(mrt.isDeclared()).isTrue();
 		assertThat(mrt.isNullable()).isFalse();
@@ -165,7 +164,7 @@ class NullableUtilsUnitTests {
 		var method = ReflectionUtils.findMethod(NonAnnotatedType.class, "someMethod", String.class);
 
 		Nullability mrt = Nullability.forMethodReturnType(method);
-		Nullability pn = Nullability.forMethodParameter(method.getParameters()[0]);
+		Nullability pn = Nullability.forParameter(method.getParameters()[0]);
 
 		assertThat(mrt.isDeclared()).isFalse();
 		assertThat(mrt.isNullable()).isTrue();

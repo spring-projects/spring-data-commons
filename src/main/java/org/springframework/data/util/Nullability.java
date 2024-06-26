@@ -79,13 +79,23 @@ public interface Nullability {
 	boolean isNonNull();
 
 	/**
+	 * Creates a new {@link MethodNullability} instance by introspecting the {@link Method} return type.
+	 *
+	 * @param method the source method.
+	 * @return a {@code Nullability} instance containing the element's nullability declaration.
+	 */
+	static MethodNullability forMethod(Method method) {
+		return new NullabilityIntrospector(method.getDeclaringClass(), true).forMethod(method);
+	}
+
+	/**
 	 * Creates a new {@link Nullability} instance by introspecting the {@link MethodParameter}.
 	 *
 	 * @param parameter the source method parameter.
 	 * @return a {@code Nullability} instance containing the element's nullability declaration.
 	 */
-	static Nullability from(MethodParameter parameter) {
-		return introspect(parameter.getContainingClass()).forParameter(parameter);
+	static Nullability forParameter(MethodParameter parameter) {
+		return new NullabilityIntrospector(parameter.getContainingClass(), false).forParameter(parameter);
 	}
 
 	/**
@@ -95,7 +105,7 @@ public interface Nullability {
 	 * @return a {@code Nullability} instance containing the element's nullability declaration.
 	 */
 	static Nullability forMethodReturnType(Method method) {
-		return introspect(method.getDeclaringClass()).forReturnType(method);
+		return new NullabilityIntrospector(method.getDeclaringClass(), false).forReturnType(method);
 	}
 
 	/**
@@ -104,8 +114,9 @@ public interface Nullability {
 	 * @param parameter the source method parameter.
 	 * @return a {@code Nullability} instance containing the element's nullability declaration.
 	 */
-	static Nullability forMethodParameter(Parameter parameter) {
-		return introspect(parameter.getDeclaringExecutable().getDeclaringClass()).forParameter(parameter);
+	static Nullability forParameter(Parameter parameter) {
+		return new NullabilityIntrospector(parameter.getDeclaringExecutable().getDeclaringClass(), false)
+				.forParameter(parameter);
 	}
 
 	/**
@@ -115,7 +126,7 @@ public interface Nullability {
 	 * @return a {@code Introspector} instance considering nullability declarations from the {@link Class} and package.
 	 */
 	static Introspector introspect(Class<?> cls) {
-		return new NullabilityIntrospector(cls);
+		return new NullabilityIntrospector(cls, true);
 	}
 
 	/**
@@ -125,13 +136,24 @@ public interface Nullability {
 	 * @return a {@code Introspector} instance considering nullability declarations from package.
 	 */
 	static Introspector introspect(Package pkg) {
-		return new NullabilityIntrospector(pkg);
+		return new NullabilityIntrospector(pkg, true);
 	}
 
 	/**
 	 * Nullability introspector to introspect multiple elements within the context of their source container.
 	 */
 	interface Introspector {
+
+		/**
+		 * Creates a new {@link MethodNullability} instance by introspecting the {@link Method}.
+		 * <p>
+		 * If the method parameter does not declare any nullability rules, then introspection falls back to the source
+		 * container that was used to create the introspector.
+		 *
+		 * @param method the source method.
+		 * @return a {@code Nullability} instance containing the element's nullability declaration.
+		 */
+		MethodNullability forMethod(Method method);
 
 		/**
 		 * Creates a new {@link Nullability} instance by introspecting the {@link MethodParameter}.
@@ -159,7 +181,7 @@ public interface Nullability {
 		Nullability forReturnType(Method method);
 
 		/**
-		 * Creates a new {@link Nullability} instance by introspecting the {@link MethodParameter}.
+		 * Creates a new {@link Nullability} instance by introspecting the {@link Parameter}.
 		 * <p>
 		 * If the method parameter does not declare any nullability rules, then introspection falls back to the source
 		 * container that was used to create the introspector.
@@ -168,6 +190,43 @@ public interface Nullability {
 		 * @return a {@code Nullability} instance containing the element's nullability declaration.
 		 */
 		Nullability forParameter(Parameter parameter);
+
+	}
+
+	/**
+	 * Nullability introspector to introspect multiple elements within the context of their source container. Inherited
+	 * nullability methods nullability of the method return type.
+	 */
+	interface MethodNullability extends Nullability {
+
+		/**
+		 * Returns a {@link Nullability} instance for the method return type.
+		 *
+		 * @return a {@link Nullability} instance for the method return type.
+		 */
+		default Nullability forReturnType() {
+			return this;
+		}
+
+		/**
+		 * Returns a {@link Nullability} instance for a method parameter.
+		 *
+		 * @param parameter the method parameter.
+		 * @return a {@link Nullability} instance for a method parameter.
+		 * @throws IllegalArgumentException if the method parameter is not defined by the underlying method.
+		 */
+		Nullability forParameter(Parameter parameter);
+
+		/**
+		 * Returns a {@link Nullability} instance for a method parameter.
+		 *
+		 * @param parameter the method parameter.
+		 * @return a {@link Nullability} instance for a method parameter.
+		 * @throws IllegalArgumentException if the method parameter is not defined by the underlying method.
+		 */
+		default Nullability forParameter(MethodParameter parameter) {
+			return parameter.getParameterIndex() == -1 ? forReturnType() : forParameter(parameter.getParameter());
+		}
 
 	}
 

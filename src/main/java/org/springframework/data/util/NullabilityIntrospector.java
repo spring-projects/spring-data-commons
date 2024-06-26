@@ -25,8 +25,10 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -37,6 +39,7 @@ import org.springframework.lang.NonNullApi;
 import org.springframework.lang.NonNullFields;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentLruCache;
 
 /**
  * Default {@link Nullability.Introspector} implementation backed by {@link NullabilityProvider nullability providers}.
@@ -67,8 +70,9 @@ class NullabilityIntrospector implements Nullability.Introspector {
 
 	private final DeclarationAnchor anchor;
 
-	NullabilityIntrospector(AnnotatedElement segment) {
-		this.anchor = createTree(segment);
+	NullabilityIntrospector(AnnotatedElement segment, boolean cache) {
+		DeclarationAnchor tree = createTree(segment);
+		this.anchor = cache ? new CachingDeclarationAnchor(tree) : tree;
 	}
 
 	/**
@@ -105,6 +109,19 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		}
 
 		throw new IllegalArgumentException(String.format("Cannot create DeclarationAnchor for %s", element));
+	}
+
+	@Override
+	public Nullability.MethodNullability forMethod(Method method) {
+
+		HierarchicalAnnotatedElementAnchor element = new HierarchicalAnnotatedElementAnchor(anchor, method);
+		Map<Parameter, Nullability> parameters = new HashMap<>();
+
+		for (Parameter parameter : method.getParameters()) {
+			parameters.put(parameter, Nullability.forParameter(parameter));
+		}
+
+		return new DefaultMethodNullability(element.evaluate(ElementType.METHOD), parameters, method);
 	}
 
 	@Override
@@ -437,13 +454,64 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		}
 	}
 
+	static class DefaultMethodNullability extends TheNullability implements Nullability.MethodNullability {
+
+		private final Map<Parameter, Nullability> parameters;
+		private final Method method;
+
+		public DefaultMethodNullability(Spec spec, Map<Parameter, Nullability> parameters, Method method) {
+			super(spec);
+			this.parameters = parameters;
+			this.method = method;
+		}
+
+		@Override
+		public Nullability forParameter(Parameter parameter) {
+
+			Nullability nullability = parameters.get(parameter);
+
+			if (nullability == null) {
+				throw new IllegalArgumentException(String.format("Parameter %s is not defined by %s", parameter, method));
+			}
+
+			return nullability;
+		}
+	}
+
 	enum Spec {
 		UNSPECIFIED, NULLABLE, NON_NULL
 	}
 
+	/**
+	 * Declaration anchors represent elements that hold nullability declarations such as classes, packages, modules.
+	 */
 	interface DeclarationAnchor {
 
+		/**
+		 * Evaluate nullability declarations for the given {@link ElementType}.
+		 *
+		 * @param target
+		 * @return
+		 */
 		Spec evaluate(ElementType target);
+
+	}
+
+	/**
+	 * Caching variant of {@link DeclarationAnchor}.
+	 */
+	static class CachingDeclarationAnchor implements DeclarationAnchor {
+
+		private final ConcurrentLruCache<ElementType, Spec> cache;
+
+		public CachingDeclarationAnchor(DeclarationAnchor delegate) {
+			this.cache = new ConcurrentLruCache<>(ElementType.values().length, delegate::evaluate);
+		}
+
+		@Override
+		public Spec evaluate(ElementType target) {
+			return this.cache.get(target);
+		}
 
 	}
 
