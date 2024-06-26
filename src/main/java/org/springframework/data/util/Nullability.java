@@ -19,6 +19,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.lang.NonNullApi;
+import org.springframework.lang.Nullable;
 
 /**
  * Provides access to nullability declarations of methods and parameters, usually obtained from a source such as a
@@ -32,6 +34,46 @@ import org.springframework.core.MethodParameter;
  * anchors. Introspection of nullability traverses declaration anchor trees in their logical order (i.e. a class
  * contains methods, an enclosing class contains inner classes, a package contains classes) to inherit nullability rules
  * if the particular method or parameter does not declare nullability rules.
+ * <p>
+ * By default (no annotation use), a package and its types are considered allowing {@literal null} values in return
+ * values and method parameters. Nullability rules are expressed by annotating a package with annotations such as
+ * Spring's {@link NonNullApi}. All types of the package inherit the package rule. Subpackages do not inherit
+ * nullability rules and must be annotated themselves.
+ *
+ * <pre class="code">
+ * &#64;org.springframework.lang.NonNullApi
+ * package com.example;
+ * </pre>
+ *
+ * {@link Nullable} selectively permits {@literal null} values for method return values or method parameters by
+ * annotating the method respectively the parameters:
+ *
+ * <pre class="code">
+ * public class ExampleClass {
+ *
+ * 	String shouldNotReturnNull(@Nullable String acceptsNull, String doesNotAcceptNull) {
+ * 		// …
+ * 	}
+ *
+ * 	&#64;Nullable
+ * 	String nullableReturn(String parameter) {
+ * 		// …
+ * 	}
+ * }
+ * </pre>
+ * <p>
+ * {@code javax.annotation.Nonnull} is suitable for composition of meta-annotations and expresses via
+ * {@code javax.annotation.Nonnull#when()} in which cases non-nullability is applicable. Nullability introspection
+ * considers the following mechanisms:
+ * <ul>
+ * <li>Spring's {@link NonNullApi}, {@link Nullable}, and {@link org.springframework.lang.NonNull}.</li>
+ * <li>JSR-305 {@code javax.annotation.Nonnull} and meta-annotations.</li>
+ * <li><a href="https://projects.eclipse.org/projects/ee4j.ca">Jakarta Annotations API</a> via
+ * {@code jakarta.annotation.Nonnull} which is a simplified variant of JSR-305 {@code javax.annotation.Nonnull} without
+ * {@code when} and {@code @TypeQualifierDefault}.</li>
+ * <li><a href="https://https://jspecify.dev/">JSpecify</a>, a newly designed specification to opt-in for non-null by
+ * default through {@code org.jspecify.annotations.NullMarked} and {@code org.jspecify.annotations.Nullable}.</li>
+ * </ul>
  * <p>
  * A component might be interested on whether nullability is declared and if so, whether the particular element is
  * nullable or non-null.
@@ -54,6 +96,8 @@ import org.springframework.core.MethodParameter;
  * declarations, for example to validate input or output.</b>
  *
  * @author Mark Paluch
+ * @see NonNullApi
+ * @see Nullable
  */
 public interface Nullability {
 
