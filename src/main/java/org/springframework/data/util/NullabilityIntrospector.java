@@ -18,7 +18,6 @@ package org.springframework.data.util;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -33,6 +32,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.NonNullApi;
@@ -40,6 +41,7 @@ import org.springframework.lang.NonNullFields;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentLruCache;
+import org.springframework.util.MultiValueMap;
 
 /**
  * Default {@link Nullability.Introspector} implementation backed by {@link NullabilityProvider nullability providers}.
@@ -112,6 +114,11 @@ class NullabilityIntrospector implements Nullability.Introspector {
 	}
 
 	@Override
+	public boolean isDeclared(ElementType elementType) {
+		return anchor.evaluate(elementType) != Spec.UNSPECIFIED;
+	}
+
+	@Override
 	public Nullability.MethodNullability forMethod(Method method) {
 
 		HierarchicalAnnotatedElementAnchor element = new HierarchicalAnnotatedElementAnchor(anchor, method);
@@ -138,7 +145,7 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		return new TheNullability(element.evaluate(ElementType.PARAMETER));
 	}
 
-	static <T> Spec doWith(Function<NullabilityProvider, Spec> function) {
+	static Spec doWith(Function<NullabilityProvider, Spec> function) {
 
 		for (NullabilityProvider provider : providers) {
 			Spec result = function.apply(provider);
@@ -149,6 +156,34 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		}
 
 		return Spec.UNSPECIFIED;
+	}
+
+	@SuppressWarnings("unchecked")
+	static <T> boolean test(Annotation annotation, String metaAnnotationName, String attribute, Predicate<T> filter) {
+
+		if (annotation.annotationType().getName().equals(metaAnnotationName)) {
+
+			Map<String, Object> attributes = AnnotationUtils.getAnnotationAttributes(annotation);
+
+			return !attributes.isEmpty() && filter.test((T) attributes.get(attribute));
+		}
+
+		MultiValueMap<String, Object> attributes = AnnotatedElementUtils
+				.getAllAnnotationAttributes(annotation.annotationType(), metaAnnotationName);
+
+		if (attributes == null || attributes.isEmpty()) {
+			return false;
+		}
+
+		List<Object> elementTypes = attributes.get(attribute);
+
+		for (Object value : elementTypes) {
+
+			if (filter.test((T) value)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -208,6 +243,7 @@ class NullabilityIntrospector implements Nullability.Introspector {
 	 * {@code @Nonnull}/{@code @Nullable} directly or through meta-annotations that are composed of
 	 * {@code @Nonnull}/{@code @Nullable} and {@code @TypeQualifierDefault}.
 	 */
+	@SuppressWarnings("DataFlowIssue")
 	static class Jsr305Provider extends NullabilityProvider {
 
 		private static final Class<Annotation> NON_NULL = findClass("javax.annotation.Nonnull");
@@ -269,7 +305,7 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		}
 
 		private static boolean isInScope(Annotation annotation, ElementType elementType) {
-			return NullableUtils.test(annotation, TYPE_QUALIFIER_CLASS_NAME, "value",
+			return NullabilityIntrospector.test(annotation, TYPE_QUALIFIER_CLASS_NAME, "value",
 					(ElementType[] o) -> Arrays.binarySearch(o, elementType) >= 0);
 		}
 
@@ -281,24 +317,27 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		 * @return {@literal true} if the annotation expresses non-nullability.
 		 */
 		static boolean isNonNull(Annotation annotation) {
-			return NullableUtils.test(annotation, NON_NULL.getName(), "when", o -> WHEN_NON_NULLABLE.contains(o.toString()));
+			return NullabilityIntrospector.test(annotation, NON_NULL.getName(), "when",
+					o -> WHEN_NON_NULLABLE.contains(o.toString()));
 		}
 
 		/**
 		 * Introspect {@link Annotation} for being either a meta-annotation composed of {@code Nonnull} or {@code Nonnull}
 		 * itself expressing nullability.
 		 *
-		 * @param annotation
+		 * @param annotation the annotation to introspect.
 		 * @return {@literal true} if the annotation expresses nullability.
 		 */
 		static boolean isNullable(Annotation annotation) {
-			return NullableUtils.test(annotation, NON_NULL.getName(), "when", o -> WHEN_NULLABLE.contains(o.toString()));
+			return NullabilityIntrospector.test(annotation, NON_NULL.getName(), "when",
+					o -> WHEN_NULLABLE.contains(o.toString()));
 		}
 	}
 
 	/**
 	 * Simplified variant of {@link Jsr305Provider} without {@code when} and {@code @TypeQualifierDefault} support.
 	 */
+	@SuppressWarnings("DataFlowIssue")
 	static class JakartaAnnotationProvider extends SimpleAnnotationNullabilityProvider {
 
 		private static final Class<Annotation> NON_NULL = findClass("jakarta.annotation.Nonnull");
@@ -316,6 +355,7 @@ class NullabilityIntrospector implements Nullability.Introspector {
 	/**
 	 * Provider for JSpecify annotations.
 	 */
+	@SuppressWarnings("DataFlowIssue")
 	static class JSpecifyAnnotationProvider extends NullabilityProvider {
 
 		private static final Class<Annotation> NON_NULL = findClass("org.jspecify.annotations.NonNull");
@@ -331,7 +371,6 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		Spec evaluate(AnnotatedElement element, ElementType elementType) {
 
 			Annotation[] annotations = element.getAnnotations();
-			AnnotatedType annotatedType = null;
 
 			if (element instanceof Parameter p) {
 
@@ -478,8 +517,24 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		}
 	}
 
+	/**
+	 * Declaration result.
+	 */
 	enum Spec {
-		UNSPECIFIED, NULLABLE, NON_NULL
+		/**
+		 * No nullabilty rule declared.
+		 */
+		UNSPECIFIED,
+
+		/**
+		 * Declaration yields nullable.
+		 */
+		NULLABLE,
+
+		/**
+		 * Declaration yields non-nullable.
+		 */
+		NON_NULL
 	}
 
 	/**
@@ -490,8 +545,8 @@ class NullabilityIntrospector implements Nullability.Introspector {
 		/**
 		 * Evaluate nullability declarations for the given {@link ElementType}.
 		 *
-		 * @param target
-		 * @return
+		 * @param target target element type to evaluate declarations for.
+		 * @return specification result.
 		 */
 		Spec evaluate(ElementType target);
 

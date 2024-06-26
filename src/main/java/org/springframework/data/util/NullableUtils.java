@@ -22,21 +22,15 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.lang.NonNullApi;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.MultiValueMap;
 
 /**
  * Utility methods to introspect nullability rules declared in packages, classes and methods.
@@ -76,7 +70,10 @@ import org.springframework.util.MultiValueMap;
  * @since 2.0
  * @see NonNullApi
  * @see Nullable
+ * @deprecated since xxx, use {@link Nullability} instead that supports a wider range of introspections with addition
+ *             support for Jakarta Annotations and JSpecify.
  */
+@Deprecated
 public abstract class NullableUtils {
 
 	private static final String NON_NULL_CLASS_NAME = "javax.annotation.Nonnull";
@@ -157,12 +154,11 @@ public abstract class NullableUtils {
 			return true;
 		}
 
-		if (!MergedAnnotations.from(annotation.annotationType()).isPresent(annotationClass)
-				|| !isNonNull(annotation)) {
+		if (!MergedAnnotations.from(annotation.annotationType()).isPresent(annotationClass) || !isNonNull(annotation)) {
 			return false;
 		}
 
-		return test(annotation, TYPE_QUALIFIER_CLASS_NAME, "value",
+		return NullabilityIntrospector.test(annotation, TYPE_QUALIFIER_CLASS_NAME, "value",
 				(ElementType[] o) -> Arrays.binarySearch(o, elementType) >= 0);
 	}
 
@@ -207,7 +203,8 @@ public abstract class NullableUtils {
 	 * @return {@literal true} if the annotation expresses non-nullability.
 	 */
 	private static boolean isNonNull(Annotation annotation) {
-		return test(annotation, NON_NULL_CLASS_NAME, "when", o -> WHEN_NON_NULLABLE.contains(o.toString()));
+		return NullabilityIntrospector.test(annotation, NON_NULL_CLASS_NAME, "when",
+				o -> WHEN_NON_NULLABLE.contains(o.toString()));
 	}
 
 	/**
@@ -218,36 +215,8 @@ public abstract class NullableUtils {
 	 * @return {@literal true} if the annotation expresses nullability.
 	 */
 	private static boolean isNullable(Annotation annotation) {
-		return test(annotation, NON_NULL_CLASS_NAME, "when", o -> WHEN_NULLABLE.contains(o.toString()));
-	}
-
-	@SuppressWarnings("unchecked")
-	static <T> boolean test(Annotation annotation, String metaAnnotationName, String attribute,
-			Predicate<T> filter) {
-
-		if (annotation.annotationType().getName().equals(metaAnnotationName)) {
-
-			Map<String, Object> attributes = AnnotationUtils.getAnnotationAttributes(annotation);
-
-			return !attributes.isEmpty() && filter.test((T) attributes.get(attribute));
-		}
-
-		MultiValueMap<String, Object> attributes = AnnotatedElementUtils
-				.getAllAnnotationAttributes(annotation.annotationType(), metaAnnotationName);
-
-		if (attributes == null || attributes.isEmpty()) {
-			return false;
-		}
-
-		List<Object> elementTypes = attributes.get(attribute);
-
-		for (Object value : elementTypes) {
-
-			if (filter.test((T) value)) {
-				return true;
-			}
-		}
-		return false;
+		return NullabilityIntrospector.test(annotation, NON_NULL_CLASS_NAME, "when",
+				o -> WHEN_NULLABLE.contains(o.toString()));
 	}
 
 	private static Set<Class<?>> findClasses(String... classNames) {

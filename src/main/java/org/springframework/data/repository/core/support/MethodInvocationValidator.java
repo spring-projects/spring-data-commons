@@ -22,18 +22,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.util.KotlinReflectionUtils;
-import org.springframework.data.util.NullableUtils;
+import org.springframework.data.util.Nullability;
+import org.springframework.data.util.Nullability.MethodNullability;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -45,12 +45,12 @@ import org.springframework.util.ObjectUtils;
  * @since 2.0
  * @see org.springframework.lang.NonNull
  * @see ReflectionUtils#isNullable(MethodParameter)
- * @see NullableUtils
+ * @see org.springframework.data.util.Nullability
  */
 public class MethodInvocationValidator implements MethodInterceptor {
 
 	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
-	private final Map<Method, Nullability> nullabilityCache = new ConcurrentHashMap<>(16);
+	private final Map<Method, CachedNullability> nullabilityCache = new ConcurrentHashMap<>(16);
 
 	/**
 	 * Returns {@literal true} if the {@code repositoryInterface} is supported by this interceptor.
@@ -60,9 +60,14 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	 */
 	public static boolean supports(Class<?> repositoryInterface) {
 
-		return KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(repositoryInterface)
-				|| NullableUtils.isNonNull(repositoryInterface, ElementType.METHOD)
-				|| NullableUtils.isNonNull(repositoryInterface, ElementType.PARAMETER);
+		if (KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(repositoryInterface)) {
+			return true;
+		}
+
+		org.springframework.data.util.Nullability.Introspector introspector = org.springframework.data.util.Nullability
+				.introspect(repositoryInterface);
+
+		return introspector.isDeclared(ElementType.METHOD) || introspector.isDeclared(ElementType.PARAMETER);
 	}
 
 	@Nullable
@@ -70,11 +75,11 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
-		Nullability nullability = nullabilityCache.get(method);
+		CachedNullability nullability = nullabilityCache.get(method);
 
 		if (nullability == null) {
 
-			nullability = Nullability.of(method, discoverer);
+			nullability = CachedNullability.of(method, discoverer);
 			nullabilityCache.put(method, nullability);
 		}
 
@@ -102,21 +107,24 @@ public class MethodInvocationValidator implements MethodInterceptor {
 		return result;
 	}
 
-	static final class Nullability {
+	static final class CachedNullability {
 
 		private final boolean nullableReturn;
 		private final boolean[] nullableParameters;
 		private final MethodParameter[] methodParameters;
 
-		private Nullability(boolean nullableReturn, boolean[] nullableParameters, MethodParameter[] methodParameters) {
+		private CachedNullability(boolean nullableReturn, boolean[] nullableParameters,
+				MethodParameter[] methodParameters) {
 			this.nullableReturn = nullableReturn;
 			this.nullableParameters = nullableParameters;
 			this.methodParameters = methodParameters;
 		}
 
-		static Nullability of(Method method, ParameterNameDiscoverer discoverer) {
+		static CachedNullability of(Method method, ParameterNameDiscoverer discoverer) {
 
-			boolean nullableReturn = isNullableParameter(new MethodParameter(method, -1));
+			MethodNullability methodNullability = Nullability.forMethod(method);
+
+			boolean nullableReturn = isNullableParameter(methodNullability, new MethodParameter(method, -1));
 			boolean[] nullableParameters = new boolean[method.getParameterCount()];
 			MethodParameter[] methodParameters = new MethodParameter[method.getParameterCount()];
 
@@ -124,11 +132,11 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 				MethodParameter parameter = new MethodParameter(method, i);
 				parameter.initParameterNameDiscovery(discoverer);
-				nullableParameters[i] = isNullableParameter(parameter);
+				nullableParameters[i] = isNullableParameter(methodNullability, parameter);
 				methodParameters[i] = parameter;
 			}
 
-			return new Nullability(nullableReturn, nullableParameters, methodParameters);
+			return new CachedNullability(nullableReturn, nullableParameters, methodParameters);
 		}
 
 		String getMethodParameterName(int index) {
@@ -151,9 +159,9 @@ public class MethodInvocationValidator implements MethodInterceptor {
 			return nullableParameters[index];
 		}
 
-		private static boolean isNullableParameter(MethodParameter parameter) {
+		private static boolean isNullableParameter(MethodNullability methodNullability, MethodParameter parameter) {
 
-			return requiresNoValue(parameter) || NullableUtils.isExplicitNullable(parameter)
+			return requiresNoValue(parameter) || methodNullability.forParameter(parameter).isNullable()
 					|| (KotlinReflectionUtils.isSupportedKotlinClass(parameter.getDeclaringClass())
 							&& ReflectionUtils.isNullable(parameter));
 		}
@@ -177,7 +185,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 				return true;
 			}
 
-			if (!(o instanceof Nullability that)) {
+			if (!(o instanceof CachedNullability that)) {
 				return false;
 			}
 

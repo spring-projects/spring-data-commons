@@ -15,6 +15,7 @@
  */
 package org.springframework.data.util;
 
+import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
@@ -187,6 +188,14 @@ public interface Nullability {
 	 * Nullability introspector to introspect multiple elements within the context of their source container.
 	 */
 	interface Introspector {
+
+		/**
+		 * Returns whether nullability rules are defined for the given {@link ElementType}.
+		 *
+		 * @param elementType the element type to check.
+		 * @return {@code true} if nullability is declared for the given element type; {@code false} otherwise.
+		 */
+		boolean isDeclared(ElementType elementType);
 
 		/**
 		 * Creates a new {@link MethodNullability} instance by introspecting the {@link Method}.
