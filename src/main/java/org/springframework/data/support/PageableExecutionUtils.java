@@ -59,12 +59,13 @@ public abstract class PageableExecutionUtils {
 			return new PageImpl<>(content, pageable, content.size());
 		}
 
-		if (isFirstPage(pageable) && isPartialPage(content, pageable)) {
-			return new PageImpl<>(content, pageable, content.size());
-		}
+		if (isPartialPage(content, pageable)) {
 
-		if (isSubsequentPage(pageable) && !content.isEmpty() && isPartialPage(content, pageable)) {
-			return new PageImpl<>(content, pageable, pageable.getOffset() + content.size());
+			if (isFirstPage(pageable)) {
+				return new PageImpl<>(content, pageable, content.size());
+			} else if ( !content.isEmpty()) {
+				return new PageImpl<>(content, pageable, pageable.getOffset() + content.size());
+			}
 		}
 
 		return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
@@ -78,7 +79,4 @@ public abstract class PageableExecutionUtils {
 		return pageable.getOffset() == 0;
 	}
 
-	private static boolean isSubsequentPage(Pageable pageable) {
-		return !isFirstPage(pageable);
-	}
 }
