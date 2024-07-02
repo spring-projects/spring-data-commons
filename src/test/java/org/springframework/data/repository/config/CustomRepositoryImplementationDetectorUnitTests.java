@@ -31,6 +31,8 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetectorUnitTests.First.CanonicalSampleRepositoryTestImpl;
+import org.springframework.data.repository.config.lib.MyExtension;
+import org.springframework.data.repository.config.lib.MyExtensionImpl;
 import org.springframework.data.util.Streamable;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -39,6 +41,7 @@ import org.springframework.mock.env.MockEnvironment;
  *
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Yanming Zhou
  */
 class CustomRepositoryImplementationDetectorUnitTests {
 
@@ -113,6 +116,30 @@ class CustomRepositoryImplementationDetectorUnitTests {
 
 			detector.detectCustomImplementation(lookup);
 		});
+	}
+
+	@Test
+	void returnsDefaultBeanDefinitionIfNoCandidatesFound() {
+
+		Class<?> type = MyExtension.class;
+		// use a basePackage where no candidates present
+		String basePackage = this.getClass().getPackage().getName() + ".other";
+
+		when(configuration.getImplementationPostfix()).thenReturn("Impl");
+		when(configuration.getBasePackages()).thenReturn(Streamable.of(basePackage));
+
+		RepositoryConfiguration<?> repositoryConfiguration = mock(RepositoryConfiguration.class);
+		when(repositoryConfiguration.getRepositoryInterface()).thenReturn(type.getName());
+		when(repositoryConfiguration.getImplementationBeanName())
+				.thenReturn(Introspector.decapitalize(type.getSimpleName()) + "Impl");
+		when(repositoryConfiguration.getImplementationBasePackages())
+				.thenReturn(Streamable.of(basePackage));
+
+		var lookup = configuration.forRepositoryConfiguration(repositoryConfiguration);
+
+		assertThat(detector.detectCustomImplementation(lookup)) //
+				.hasValueSatisfying(
+						it -> assertThat(it.getBeanClassName()).isEqualTo(MyExtensionImpl.class.getName()));
 	}
 
 	private RepositoryConfiguration<?> configFor(Class<?> type) {
