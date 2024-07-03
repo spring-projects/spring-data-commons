@@ -15,9 +15,11 @@
  */
 package org.springframework.data.web.aot;
 
+import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
+import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
@@ -34,8 +36,30 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
 
 		if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", classLoader)) {
+
+			// Page Model for Jackson Rendering
+			hints.reflection().registerType(org.springframework.data.web.PagedModel.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS);
+			hints.reflection().registerType(PagedModel.PageMetadata.class, MemberCategory.INVOKE_PUBLIC_METHODS);
+
+			// Type that might not be seen otherwise
 			hints.reflection().registerType(TypeReference.of("org.springframework.data.domain.Unpaged"),
 					hint -> hint.onReachableType(PageModule.class));
+
+			// Jackson Converters used via @JsonSerialize in SpringDataJacksonConfiguration
+			hints.reflection().registerType(
+					TypeReference
+							.of("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$PageModelConverter"),
+					hint -> {
+						hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+						hint.onReachableType(PageModule.class);
+					});
+			hints.reflection().registerType(TypeReference.of(
+					"org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$PlainPageSerializationWarning"),
+					hint -> {
+						hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+						hint.onReachableType(PageModule.class);
+					});
 		}
 	}
 }
