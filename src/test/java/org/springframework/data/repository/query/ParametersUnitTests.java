@@ -128,12 +128,13 @@ class ParametersUnitTests {
 		getParametersFor("validWithPageableFirst", Pageable.class, String.class);
 	}
 
-	@Test // DATACMNS-731
+	@Test // DATACMNS-731, GH-3124
 	void detectsExplicitlyNamedParameter() throws Exception {
 
 		var parameter = getParametersFor("valid", String.class).getBindableParameter(0);
 
-		assertThat(parameter.getName()).isNotNull();
+		assertThat(parameter.getName()).isNotEmpty();
+		assertThat(parameter.getRequiredName()).isNotNull();
 		assertThat(parameter.isExplicitlyNamed()).isTrue();
 	}
 
@@ -145,7 +146,7 @@ class ParametersUnitTests {
 		var methodParameter = ReflectionTestUtils.getField(parameter, "parameter");
 		ReflectionTestUtils.setField(methodParameter, "parameterName", "name");
 
-		assertThat(parameter.getName()).isNotNull();
+		assertThat(parameter.getName()).isNotEmpty();
 		assertThat(parameter.isExplicitlyNamed()).isFalse();
 	}
 
