@@ -21,9 +21,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
+import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
@@ -55,6 +58,7 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	private final RepositoryInformation repositoryInformation;
 	private final Map<Method, RepositoryQuery> queries;
 	private final Map<Method, RepositoryMethodInvoker> invocationMetadataCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Method, MethodParameter> returnTypeMap = new ConcurrentHashMap<>();
 	private final QueryExecutionResultHandler resultHandler;
 	private final NamedQueries namedQueries;
 	private final List<QueryCreationListener<?>> queryPostProcessors;
@@ -135,16 +139,17 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
+		MethodParameter returnType = returnTypeMap.computeIfAbsent(method, it -> new MethodParameter(it, -1));
 
 		QueryExecutionConverters.ExecutionAdapter executionAdapter = QueryExecutionConverters //
-				.getExecutionAdapter(method.getReturnType());
+				.getExecutionAdapter(returnType.getParameterType());
 
 		if (executionAdapter == null) {
-			return resultHandler.postProcessInvocationResult(doInvoke(invocation), method);
+			return resultHandler.postProcessInvocationResult(doInvoke(invocation), returnType);
 		}
 
 		return executionAdapter //
-				.apply(() -> resultHandler.postProcessInvocationResult(doInvoke(invocation), method));
+				.apply(() -> resultHandler.postProcessInvocationResult(doInvoke(invocation), returnType));
 	}
 
 	@Nullable

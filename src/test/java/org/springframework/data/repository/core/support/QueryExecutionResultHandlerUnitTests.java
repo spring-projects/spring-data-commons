@@ -26,7 +26,6 @@ import io.vavr.control.Try;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,6 +39,8 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
+
+import org.springframework.core.MethodParameter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.util.Streamable;
@@ -404,6 +405,17 @@ class QueryExecutionResultHandlerUnitTests {
 		});
 	}
 
+	@Test // GH-3125
+	void considersTypeBoundsFromBaseInterface() throws NoSuchMethodException {
+
+		var method = CustomizedRepository.class.getMethod("findById", Object.class);
+
+		var result = handler.postProcessInvocationResult(Optional.of(new Entity()),
+				new MethodParameter(method, -1).withContainingClass(CustomizedRepository.class));
+
+		assertThat(result).isInstanceOf(Entity.class);
+	}
+
 	@Test // DATACMNS-1552
 	void keepsVavrOptionType() throws Exception {
 
@@ -412,8 +424,17 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(handler.postProcessInvocationResult(source, getMethod("option"))).isSameAs(source);
 	}
 
-	private static Method getMethod(String methodName) throws Exception {
-		return Sample.class.getMethod(methodName);
+	private static MethodParameter getMethod(String methodName) throws Exception {
+		return new MethodParameter(Sample.class.getMethod(methodName), -1);
+	}
+
+	interface BaseRepository<T, ID> extends Repository<T, ID> {
+
+		T findById(ID id);
+	}
+
+	interface CustomizedRepository extends BaseRepository<Entity, Long> {
+
 	}
 
 	static interface Sample extends Repository<Entity, Long> {
