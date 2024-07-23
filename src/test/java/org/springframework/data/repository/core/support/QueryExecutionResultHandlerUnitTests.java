@@ -36,7 +36,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
@@ -396,12 +395,8 @@ class QueryExecutionResultHandlerUnitTests {
 
 		assertThat(result).isInstanceOfSatisfying(List.class, list -> {
 
-			SoftAssertions.assertSoftly(s -> {
-
-				// for making the test failure more obvious:
-				s.assertThat(list).allMatch(it -> Integer.class.isInstance(it));
-				s.assertThat(list).containsExactly(0, 1);
-			});
+			// for making the test failure more obvious:
+			assertThat(list).allMatch(Integer.class::isInstance).containsExactly(0, 1);
 		});
 	}
 
