@@ -91,6 +91,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		return repositories.get().hasRepositoryFor(targetType.getType()) ? toEntityConverter : toIdConverter;
 	}
 
+	@Override
 	public void setApplicationContext(ApplicationContext context) {
 
 		this.repositories = Lazy.of(() -> {
