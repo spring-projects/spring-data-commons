@@ -32,6 +32,7 @@ import org.springframework.beans.NotWritablePropertyException;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @ExtendWith(MockitoExtension.class)
 class PropertyAccessingMethodInterceptorUnitTests {
@@ -109,6 +110,15 @@ class PropertyAccessingMethodInterceptorUnitTests {
 
 		assertThatExceptionOfType(NotWritablePropertyException.class)
 				.isThrownBy(() -> new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation));
+	}
+
+	@Test // GH-3127
+	void detectsKotlinPropertiesWithLeadingIsOnTargetType() throws Throwable {
+
+		var source = new WithIsNamedProperty(true);
+		when(invocation.getMethod()).thenReturn(WithIsNamedPropertyProjection.class.getMethod("isValid"));
+
+		assertThat(new PropertyAccessingMethodInterceptor(source).invoke(invocation)).isEqualTo(true);
 	}
 
 	static class Source {
