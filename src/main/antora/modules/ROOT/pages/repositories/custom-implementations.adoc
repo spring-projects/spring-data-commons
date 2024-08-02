@@ -238,6 +238,97 @@ XML::
 ======
 ====
 
+[[repositories.spring-factories]]
+==== Registering Fragments with spring.factories
+
+As already mentioned in the <<repositories.configuration>> section, the infrastructure only auto detects fragments within the repositories base package. Therefore fragments residing in another location or maybe contributed by an external archive will not be found if they do not share a common namespace.
+Registering fragments within `spring.factories` allows you to circumvent this restriction as explained in the following section.
+
+Imagine you'd like to provide some custom search functionality usable across multiple repositories for your organization leveraging a text search index.
+
+First all you need is the fragment interface. Please note the generic `<T>` parameter to align the fragment with the repository domain type.
+
+====
+[source,java]
+----
+package com.acme.search;
+
+public interface SearchExtension<T> {
+
+    List<T> search(String text, Limit limit);
+}
+----
+====
+
+Let's assume the actual full text search is available via a `SearchService` that is registered as a `Bean` within the context so we can consume it in our `SearchExtension` implementation. All we need to run the search is the collection/index name and a object mapper that converts the search results into actual domain objects as sketched out below.
+
+====
+[source,java]
+----
+package com.acme.search;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Limit;
+import org.springframework.data.repository.core.support.RepositoryMethodMetadata;
+
+class DefaultSearchExtension<T> implements SearchExtension<T> {
+
+    private SearchService service;
+
+    DefaultSearchExtension(@Autowired SearchService service) {
+        this.service = service;
+    }
+
+    public List<T> search(String text, Limit limit) {
+        return search(RepositoryMethodMetadata.get(), text, limit);
+    }
+
+    List<T> search(RepositoryMethodMetadata metadata, String text, Limit limit) {
+
+        Class<T> domainType = metadata.repository().getDomainType();
+
+        String indexName = domainType.getSimpleName().toLowerCase();
+        List<String> jsonResult = service.search(indexName, text, 0, limit.max());
+
+        return jsonResult.stream().map( ... ).collect(toList());
+    }
+}
+----
+====
+
+In the snipped above we use `RepositoryMethodMetadata.get()` to get hold of metadata for the actual method invocation. In doing so we can access additional information attached to the repository. In this case we use the repositories domain type to identify the name of the index to be searched.
+
+[TIP]
+====
+For testing you can use `TransactionSynchronizationManager.bindResource(RepositoryMethodMetadata.class, metadata)` to provide repository method metadata.
+====
+
+Now that we've got both, the fragments declaration and implementation we can register it in the `META-INF/spring.factories` file, package things up if needed and we're good to go.
+
+====
+[source,properties]
+----
+com.acme.search.SearchExtension=com.acme.search.DefaultSearchExtension
+----
+====
+
+To make use of the extension simply add the interface to the repository as shown below. The infrastructure will take care placing the required `RepositoryMethodMetadata` so all that
+
+====
+[source,java]
+----
+package io.my.movies;
+
+import com.acme.search.SearchExtension;
+import org.springframework.data.repository.CrudRepository;
+
+
+public interface MovieRepository extends CrudRepository<Movie, String>, SearchExtension<Movie> {
+
+}
+----
+====
+
 [[repositories.customize-base-repository]]
 == Customize the Base Repository
 

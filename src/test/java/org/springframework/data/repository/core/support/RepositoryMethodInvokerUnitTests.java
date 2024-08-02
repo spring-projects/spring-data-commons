@@ -15,6 +15,18 @@
  */
 package org.springframework.data.repository.core.support;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import kotlin.coroutines.Continuation;
+import kotlinx.coroutines.reactive.ReactiveFlowKt;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,8 +38,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import kotlin.coroutines.Continuation;
-import kotlinx.coroutines.reactive.ReactiveFlowKt;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Percentage;
 import org.jetbrains.annotations.NotNull;
@@ -39,25 +49,17 @@ import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 import org.mockito.internal.stubbing.answers.Returns;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Subscription;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.CoroutineRepositoryMetadataUnitTests.MyCoroutineRepository;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult.State;
+import org.springframework.data.repository.core.support.RepositoryMethodMetadata.MethodMetadata;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Christoph Strobl
@@ -316,7 +318,8 @@ class RepositoryMethodInvokerUnitTests {
 		RepositoryMethodInvokerStub(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
 				String methodName, Invokable invokable) {
 
-			super(methodByName(repositoryInterface, methodName), invokable);
+			super(DefaultRepositoryMethodMetadata.repositoryMethodMetadata(mock(RepositoryMetadata.class), methodByName(repositoryInterface, methodName)), invokable);
+
 			this.repositoryInterface = repositoryInterface;
 			this.multicaster = multicaster;
 		}

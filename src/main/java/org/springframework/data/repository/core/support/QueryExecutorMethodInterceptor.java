@@ -33,6 +33,7 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.DefaultRepositoryInvocationMulticaster;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
+import org.springframework.data.repository.core.support.RepositoryMethodMetadata.MethodMetadata;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethod;
@@ -163,7 +164,9 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 			RepositoryMethodInvoker invocationMetadata = invocationMetadataCache.get(method);
 
 			if (invocationMetadata == null) {
-				invocationMetadata = RepositoryMethodInvoker.forRepositoryQuery(method, queries.get(method));
+
+				DefaultRepositoryMethodMetadata repositoryMethodMetadata = DefaultRepositoryMethodMetadata.repositoryMethodMetadata(repositoryInformation, method);
+				invocationMetadata = RepositoryMethodInvoker.forRepositoryQuery(repositoryMethodMetadata, queries.get(method));
 				invocationMetadataCache.put(method, invocationMetadata);
 			}
 
