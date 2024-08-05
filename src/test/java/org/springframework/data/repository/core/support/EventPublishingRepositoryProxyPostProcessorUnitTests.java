@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -322,6 +323,32 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		EventPublishingMethodInterceptor.of(EventPublishingMethod.of(MultipleEvents.class), publisher).invoke(invocation);
 
 		verify(publisher, never()).publishEvent(any());
+	}
+
+	@Test // GH-3116
+	void rejectsEventAddedDuringProcessing() throws Throwable {
+
+		var originalEvent = new SomeEvent();
+		var eventToBeAdded = new SomeEvent();
+
+		var events = new ArrayList<Object>();
+		events.add(originalEvent);
+
+		var aggregate = MultipleEvents.of(events);
+
+		doAnswer(invocation -> {
+
+			events.add(eventToBeAdded);
+			return null;
+
+		}).when(publisher).publishEvent(any(Object.class));
+
+		var method = EventPublishingMethod.of(MultipleEvents.class);
+
+		assertThatIllegalStateException()
+				.isThrownBy(() -> method.publishEventsFrom(List.of(aggregate), publisher))
+				.withMessageContaining(eventToBeAdded.toString())
+				.withMessageNotContaining(originalEvent.toString());
 	}
 
 	private static void mockInvocation(MethodInvocation invocation, Method method, Object parameterAndReturnValue)
