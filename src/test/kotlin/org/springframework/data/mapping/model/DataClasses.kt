@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model
 
+import org.jmolecules.ddd.types.AggregateRoot
+import org.jmolecules.ddd.types.Identifier
 import org.springframework.data.annotation.Id
 import java.time.LocalDateTime
 
@@ -34,6 +36,19 @@ data class DataClassWithLazy(
 	val currency: String,
 ) {
 	val foo by lazy { 123 }
+}
+
+data class DataClassWithAssociation(
+	val assoc: org.jmolecules.ddd.types.Association<DataClassAggregate, DataClassId>
+)
+
+data class DataClassId(val id: String) : Identifier {
+
+}
+
+data class DataClassAggregate(val identifier: DataClassId) :
+	AggregateRoot<DataClassAggregate, DataClassId> {
+	override fun getId() = this.identifier
 }
 
 data class SingleSettableProperty constructor(val id: Double = Math.random()) {
