@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.jmolecules.ddd.types.Association;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.BeanUtils;
@@ -281,6 +282,27 @@ public class KotlinPropertyAccessorFactoryTests {
 		var createdBy = entity.getRequiredPersistentProperty("createdBy");
 
 		propertyAccessor.setProperty(createdBy, BeanUtils.instantiateClass(declaredConstructor, "baz"));
+	}
+
+	@MethodSource("factories")
+	@ParameterizedTest // GH-3131
+	void shouldApplyCopyForSinglePropertyClass(PersistentPropertyAccessorFactory factory) {
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = mappingContext
+				.getRequiredPersistentEntity(DataClassWithAssociation.class);
+
+		var foo = Association.forAggregate(new DataClassAggregate(new DataClassId("foo")));
+		var bar = Association.forAggregate(new DataClassAggregate(new DataClassId("bar")));
+		Object instance = createInstance(entity, parameter -> foo);
+
+		var propertyAccessor = factory.getPropertyAccessor(entity, instance);
+		var persistentProperty = entity.getRequiredPersistentProperty("assoc");
+
+		assertThat(propertyAccessor).isNotNull();
+		assertThat(propertyAccessor.getProperty(persistentProperty)).isEqualTo(foo);
+
+		propertyAccessor.setProperty(persistentProperty, bar);
+		assertThat(propertyAccessor.getProperty(persistentProperty)).isEqualTo(bar);
 	}
 
 	private Object createInstance(BasicPersistentEntity<?, SamplePersistentProperty> entity,
