@@ -269,7 +269,7 @@ package com.acme.search;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Limit;
-import org.springframework.data.repository.core.support.RepositoryMethodMetadata;
+import org.springframework.data.repository.core.support.RepositoryMethodContext;
 
 class DefaultSearchExtension<T> implements SearchExtension<T> {
 
@@ -280,12 +280,12 @@ class DefaultSearchExtension<T> implements SearchExtension<T> {
     }
 
     public List<T> search(String text, Limit limit) {
-        return search(RepositoryMethodMetadata.get(), text, limit);
+        return search(RepositoryMethodContext.currentMethod(), text, limit);
     }
 
-    List<T> search(RepositoryMethodMetadata metadata, String text, Limit limit) {
+    List<T> search(RepositoryMethodContext metadata, String text, Limit limit) {
 
-        Class<T> domainType = metadata.repository().getDomainType();
+        Class<T> domainType = metadata.getRepository().getDomainType();
 
         String indexName = domainType.getSimpleName().toLowerCase();
         List<String> jsonResult = service.search(indexName, text, 0, limit.max());
@@ -312,7 +312,8 @@ com.acme.search.SearchExtension=com.acme.search.DefaultSearchExtension
 ----
 ====
 
-To make use of the extension simply add the interface to the repository as shown below. The infrastructure will take care placing the required `RepositoryMethodMetadata` so all that
+To make use of the extension simply add the interface to the repository as shown below.
+The infrastructure will take care placing the required `RepositoryMethodContext` so all that
 
 ====
 [source,java]

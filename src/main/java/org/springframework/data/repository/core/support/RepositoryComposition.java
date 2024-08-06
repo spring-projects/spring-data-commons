@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.MethodLookup.InvokedMethod;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
-import org.springframework.data.repository.core.support.RepositoryMethodMetadata.MethodMetadata;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.Streamable;
@@ -282,7 +281,7 @@ public class RepositoryComposition {
 
 		ReflectionUtils.makeAccessible(methodToCall);
 
-		return fragments.invoke(metadata, listener,
+		return fragments.invoke(metadata != null ? metadata.getRepositoryInterface() : method.getDeclaringClass(), listener,
 				method, methodToCall, argumentConverter.apply(methodToCall, args));
 	}
 
@@ -370,6 +369,7 @@ public class RepositoryComposition {
 		private final List<RepositoryFragment<?>> fragments;
 
 		private RepositoryFragments(List<RepositoryFragment<?>> fragments) {
+
 			this.fragments = fragments;
 		}
 
@@ -379,10 +379,6 @@ public class RepositoryComposition {
 		 * @return empty {@link RepositoryFragments}.
 		 */
 		public static RepositoryFragments empty() {
-			return EMPTY;
-		}
-
-		public static RepositoryFragments empty(RepositoryMetadata metadata) {
 			return EMPTY;
 		}
 
@@ -488,7 +484,7 @@ public class RepositoryComposition {
 		/**
 		 * Invoke {@link Method} by resolving the fragment that implements a suitable method.
 		 *
-		 * @param metadata
+		 * @param repositoryInterface
 		 * @param listener
 		 * @param invokedMethod invoked method as per invocation on the interface.
 		 * @param methodToCall backend method that is backing the call.
@@ -497,7 +493,7 @@ public class RepositoryComposition {
 		 * @throws Throwable
 		 */
 		@Nullable
-		Object invoke(@Nullable RepositoryMetadata metadata, RepositoryInvocationMulticaster listener, Method invokedMethod,
+		Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster listener, Method invokedMethod,
 				Method methodToCall, Object[] args) throws Throwable {
 
 			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
@@ -511,15 +507,12 @@ public class RepositoryComposition {
 
 			if (repositoryMethodInvoker == null) {
 
-				DefaultRepositoryMethodMetadata repositoryMethodMetadata = DefaultRepositoryMethodMetadata.repositoryMethodMetadata(metadata, invokedMethod, methodToCall);
-				repositoryMethodInvoker = RepositoryMethodInvoker.forFragmentMethod(repositoryMethodMetadata, optional.get(),
+				repositoryMethodInvoker = RepositoryMethodInvoker.forFragmentMethod(invokedMethod, optional.get(),
 						methodToCall);
-
 				invocationMetadataCache.put(invokedMethod, repositoryMethodInvoker);
 			}
 
-			Class<?> target = (metadata != null && metadata.getRepositoryInterface() != null) ? metadata.getRepositoryInterface() : invokedMethod.getDeclaringClass();
-			return repositoryMethodInvoker.invoke(target, listener, args);
+			return repositoryMethodInvoker.invoke(repositoryInterface, listener, args);
 		}
 
 		private RepositoryFragment<?> findImplementationFragment(Method key) {

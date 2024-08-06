@@ -15,12 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.verify;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,11 +27,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Example;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.query.QueryByExampleExecutor;
-import org.springframework.lang.Nullable;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -170,33 +163,6 @@ class RepositoryCompositionUnitTests {
 				.containsSequence(initial, structural);
 	}
 
-	@Test // GH-3090
-	void fragmentInvocationProvidesRepositoryMethodMetadata() throws Throwable {
-
-		RepositoryInformation repositoryInformation = new DefaultRepositoryInformation(
-				new DefaultRepositoryMetadata(CapturingRepository.class), CapturingRepository.class,
-				RepositoryComposition.empty());
-
-		MethodMetadataCapturingMixin capturingMixin = new MethodMetadataCapturingMixin();
-		RepositoryFragment<?> foo = RepositoryFragment.implemented(capturingMixin);
-
-		var fooBar = RepositoryComposition.of(RepositoryFragments.of(foo))
-				.withMethodLookup(MethodLookups.forRepositoryTypes(repositoryInformation)).withMetadata(repositoryInformation);
-
-		var getString = ReflectionUtils.findMethod(CapturingRepository.class, "getString");
-
-		assertThat(getString).isNotNull();
-		fooBar.invoke(fooBar.findMethod(getString).get());
-
-		RepositoryMethodMetadata lastValue = capturingMixin.getLastValue();
-		assertThat(lastValue.repository()).isNotNull().extracting(RepositoryMetadata::getRepositoryInterface)
-				.isEqualTo(CapturingRepository.class);
-
-		// TODO: I'm actually lost on that one
-		// 	assertThat(lastValue.method()).isNotNull().extracting(MethodMetadata::declaredMethod).isEqualTo(getString);
-		// 	assertThat(lastValue.method()).isNotNull().extracting(MethodMetadata::targetMethod).isEqualTo(FooMixin.class.getMethod("getString"));
-	}
-
 	interface PersonRepository extends Repository<Person, String>, QueryByExampleExecutor<Person> {
 
 		Person save(Person entity);
@@ -236,10 +202,6 @@ class RepositoryCompositionUnitTests {
 
 	}
 
-	interface CapturingRepository extends Repository<Person, String>, FooMixin {
-
-	}
-
 	interface FooMixin {
 
 		String getString();
@@ -251,23 +213,6 @@ class RepositoryCompositionUnitTests {
 		@Override
 		public String getString() {
 			return "foo";
-		}
-	}
-
-	class MethodMetadataCapturingMixin implements FooMixin {
-
-		List<RepositoryMethodMetadata> captured = new ArrayList<>(3);
-
-		@Override
-		public String getString() {
-
-			captured.add(RepositoryMethodMetadata.get());
-			return FooMixinImpl.INSTANCE.getString();
-		}
-
-		@Nullable
-		RepositoryMethodMetadata getLastValue() {
-			return CollectionUtils.lastElement(captured);
 		}
 	}
 
