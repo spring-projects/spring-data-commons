@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.util.Assert;
@@ -158,8 +159,9 @@ class KotlinCopyMethod {
 
 		List<PersistentProperty<?>> persistentProperties = new ArrayList<>();
 		entity.doWithProperties((SimplePropertyHandler) persistentProperties::add);
+		entity.doWithAssociations((SimpleAssociationHandler) it -> persistentProperties.add(it.getInverse()));
 
-		if (persistentProperties.size() > 1) {
+		if (persistentProperties.size() != 1) {
 			return false;
 		}
 
