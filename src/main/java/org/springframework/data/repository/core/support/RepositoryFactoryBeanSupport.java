@@ -69,6 +69,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private final Class<? extends T> repositoryInterface;
 
 	private RepositoryFactorySupport factory;
+	private boolean exposeMetadata;
 	private Key queryLookupStrategyKey;
 	private Optional<Class<?>> repositoryBaseClass = Optional.empty();
 	private Optional<Object> customImplementation = Optional.empty();
@@ -105,6 +106,18 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public void setRepositoryBaseClass(Class<?> repositoryBaseClass) {
 		this.repositoryBaseClass = Optional.ofNullable(repositoryBaseClass);
+	}
+
+	/**
+	 * Set whether the repository method metadata should be exposed by the repository factory as a ThreadLocal for
+	 * retrieval via the {@code RepositoryMethodContext} class. This is useful if an advised object needs to obtain
+	 * repository information.
+	 * <p>
+	 * Default is "false", in order to avoid unnecessary extra interception. This means that no guarantees are provided
+	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
+	 */
+	public void setExposeMetadata(boolean exposeMetadata) {
+		this.exposeMetadata = exposeMetadata;
 	}
 
 	/**
@@ -258,6 +271,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	public void afterPropertiesSet() {
 
 		this.factory = createRepositoryFactory();
+		this.factory.setExposeMetadata(exposeMetadata);
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
 		this.factory.setEvaluationContextProvider(

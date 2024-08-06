@@ -15,11 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import kotlin.coroutines.Continuation;
 import kotlinx.coroutines.reactive.ReactiveFlowKt;
@@ -49,12 +46,11 @@ import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 import org.mockito.internal.stubbing.answers.Returns;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Subscription;
+
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.CoroutineRepositoryMetadataUnitTests.MyCoroutineRepository;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult.State;
-import org.springframework.data.repository.core.support.RepositoryMethodMetadata.MethodMetadata;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.lang.Nullable;
@@ -318,8 +314,7 @@ class RepositoryMethodInvokerUnitTests {
 		RepositoryMethodInvokerStub(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
 				String methodName, Invokable invokable) {
 
-			super(DefaultRepositoryMethodMetadata.repositoryMethodMetadata(mock(RepositoryMetadata.class), methodByName(repositoryInterface, methodName)), invokable);
-
+			super(methodByName(repositoryInterface, methodName), invokable);
 			this.repositoryInterface = repositoryInterface;
 			this.multicaster = multicaster;
 		}

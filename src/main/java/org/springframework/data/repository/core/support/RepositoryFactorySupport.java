@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetbrains.annotations.NotNull;
 
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
@@ -94,6 +96,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private final List<RepositoryProxyPostProcessor> postProcessors;
 
 	private Optional<Class<?>> repositoryBaseClass;
+	private boolean exposeMetadata;
 	private @Nullable QueryLookupStrategy.Key queryLookupStrategyKey;
 	private List<QueryCreationListener<?>> queryPostProcessors;
 	private List<RepositoryMethodInvocationListener> methodInvocationListeners;
@@ -119,6 +122,18 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.queryPostProcessors.add(collectingListener);
 		this.methodInvocationListeners = new ArrayList<>();
 		this.projectionFactory = createProjectionFactory();
+	}
+
+	/**
+	 * Set whether the repository method metadata should be exposed by the repository factory as a ThreadLocal for
+	 * retrieval via the {@code RepositoryMethodContext} class. This is useful if an advised object needs to obtain
+	 * repository information.
+	 * <p>
+	 * Default is "false", in order to avoid unnecessary extra interception. This means that no guarantees are provided
+	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
+	 */
+	public void setExposeMetadata(boolean exposeMetadata) {
+		this.exposeMetadata = exposeMetadata;
 	}
 
 	/**
@@ -330,7 +345,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			result.addAdvice(new MethodInvocationValidator());
 		}
 
-		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
+		if (this.exposeMetadata) {
+			result.addAdvice(new ExposeMetadataInterceptor(metadata));
+			result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
+		}
 
 		if (!postProcessors.isEmpty()) {
 			StartupStep repositoryPostprocessorsStep = onEvent(applicationStartup, "spring.data.repository.postprocessors",
@@ -632,6 +650,32 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			throw new IllegalStateException("Should not occur");
 		}
+	}
+
+	/**
+	 * Interceptor for repository proxies when the repository needs exposing metadata.
+	 */
+	private static class ExposeMetadataInterceptor implements MethodInterceptor, Serializable {
+
+		private final RepositoryMetadata repositoryMetadata;
+
+		public ExposeMetadataInterceptor(RepositoryMetadata repositoryMetadata) {
+			this.repositoryMetadata = repositoryMetadata;
+		}
+
+		@Nullable
+		@Override
+		public Object invoke(@NotNull MethodInvocation invocation) throws Throwable {
+			RepositoryMethodContext oldMetadata = null;
+			try {
+				oldMetadata = RepositoryMethodContext
+						.setCurrentMetadata(new DefaultRepositoryMethodContext(repositoryMetadata, invocation.getMethod()));
+				return invocation.proceed();
+			} finally {
+				RepositoryMethodContext.setCurrentMetadata(oldMetadata);
+			}
+		}
+
 	}
 
 	/**

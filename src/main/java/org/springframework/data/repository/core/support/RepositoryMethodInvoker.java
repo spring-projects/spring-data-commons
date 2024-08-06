@@ -18,19 +18,12 @@ package org.springframework.data.repository.core.support;
 import kotlin.Unit;
 import kotlin.reflect.KFunction;
 import kotlinx.coroutines.flow.Flow;
-import org.springframework.core.type.MethodMetadata;
-import org.springframework.data.repository.core.CrudMethods;
-import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.util.TypeInformation;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.reactivestreams.Publisher;
@@ -53,8 +46,8 @@ import org.springframework.lang.Nullable;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @since 2.4
-// * @see #forFragmentMethod(Method, Object, Method)
-// * @see #forRepositoryQuery(Method, RepositoryQuery)
+ * @see #forFragmentMethod(Method, Object, Method)
+ * @see #forRepositoryQuery(Method, RepositoryQuery)
  * @see RepositoryQuery
  * @see RepositoryComposition
  */
@@ -64,13 +57,11 @@ abstract class RepositoryMethodInvoker {
 	private final Class<?> returnedType;
 	private final Invokable invokable;
 	private final boolean suspendedDeclaredMethod;
-	protected RepositoryMethodMetadata repositoryMethodMetadata;
 
 	@SuppressWarnings("ReactiveStreamsUnusedPublisher")
-	protected RepositoryMethodInvoker(RepositoryMethodMetadata repositoryMethodMetadata, Invokable invokable) {
+	protected RepositoryMethodInvoker(Method method, Invokable invokable) {
 
-		this.repositoryMethodMetadata = repositoryMethodMetadata;
-		this.method = repositoryMethodMetadata.method().declaredMethod();
+		this.method = method;
 
 		if (KotlinDetector.isKotlinReflectPresent()) {
 
@@ -125,7 +116,7 @@ abstract class RepositoryMethodInvoker {
 		}
 	}
 
-	static RepositoryQueryMethodInvoker forRepositoryQuery(RepositoryMethodMetadata declaredMethod, RepositoryQuery query) {
+	static RepositoryQueryMethodInvoker forRepositoryQuery(Method declaredMethod, RepositoryQuery query) {
 		return new RepositoryQueryMethodInvoker(declaredMethod, query);
 	}
 
@@ -137,7 +128,7 @@ abstract class RepositoryMethodInvoker {
 	 * @param baseMethod the base method to call on fragment {@code instance}.
 	 * @return {@link RepositoryMethodInvoker} to call a fragment {@link Method}.
 	 */
-	static RepositoryMethodInvoker forFragmentMethod(RepositoryMethodMetadata declaredMethod, Object instance, Method baseMethod) {
+	static RepositoryMethodInvoker forFragmentMethod(Method declaredMethod, Object instance, Method baseMethod) {
 		return new RepositoryFragmentMethodInvoker(declaredMethod, instance, baseMethod);
 	}
 
@@ -176,10 +167,6 @@ abstract class RepositoryMethodInvoker {
 
 		try {
 
-			if(RepositoryMethodMetadata.get() == null && repositoryMethodMetadata != null) {
-				DefaultRepositoryMethodMetadata.bind(repositoryMethodMetadata);
-			}
-
 			Object result = invokable.invoke(args);
 
 			if (result != null && ReactiveWrappers.supports(result.getClass())) {
@@ -197,8 +184,6 @@ abstract class RepositoryMethodInvoker {
 		} catch (Exception e) {
 			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
 			throw e;
-		} finally {
-			DefaultRepositoryMethodMetadata.unbind();
 		}
 	}
 
@@ -217,7 +202,7 @@ abstract class RepositoryMethodInvoker {
 	 * Implementation to invoke query methods.
 	 */
 	private static class RepositoryQueryMethodInvoker extends RepositoryMethodInvoker {
-		public RepositoryQueryMethodInvoker(RepositoryMethodMetadata method, RepositoryQuery repositoryQuery) {
+		public RepositoryQueryMethodInvoker(Method method, RepositoryQuery repositoryQuery) {
 			super(method, repositoryQuery::execute);
 		}
 	}
@@ -270,19 +255,15 @@ abstract class RepositoryMethodInvoker {
 	 */
 	private static class RepositoryFragmentMethodInvoker extends RepositoryMethodInvoker {
 
-		public RepositoryFragmentMethodInvoker(RepositoryMethodMetadata metadata, Object instance, Method baseClassMethod) {
-			this(CoroutineAdapterInformation.create(metadata.method().declaredMethod(), baseClassMethod), metadata, instance,
+		public RepositoryFragmentMethodInvoker(Method declaredMethod, Object instance, Method baseClassMethod) {
+			this(CoroutineAdapterInformation.create(declaredMethod, baseClassMethod), declaredMethod, instance,
 					baseClassMethod);
 		}
 
-		public RepositoryFragmentMethodInvoker(CoroutineAdapterInformation adapterInformation, RepositoryMethodMetadata declaredMethod,
+		public RepositoryFragmentMethodInvoker(CoroutineAdapterInformation adapterInformation, Method declaredMethod,
 				Object instance, Method baseClassMethod) {
 			super(declaredMethod, args -> {
-
 				try {
-
-
-
 					if (adapterInformation.shouldAdaptReactiveToSuspended()) {
 						/*
 						 * Kotlin suspended functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
