@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.util.StdConverter;
  * JavaConfig class to export Jackson specific configuration.
  *
  * @author Oliver Gierke
+ * @author Yanming Zhou
  */
 public class SpringDataJacksonConfiguration implements SpringDataJacksonModules {
 
