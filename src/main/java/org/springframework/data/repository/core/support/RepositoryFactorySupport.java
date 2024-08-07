@@ -30,8 +30,6 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetbrains.annotations.NotNull;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -129,8 +127,10 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * retrieval via the {@code RepositoryMethodContext} class. This is useful if an advised object needs to obtain
 	 * repository information.
 	 * <p>
-	 * Default is "false", in order to avoid unnecessary extra interception. This means that no guarantees are provided
+	 * Default is {@literal "false"}, in order to avoid unnecessary extra interception. This means that no guarantees are provided
 	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
+	 * 
+	 * @since 3.4.0
 	 */
 	public void setExposeMetadata(boolean exposeMetadata) {
 		this.exposeMetadata = exposeMetadata;
@@ -665,7 +665,8 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		@Nullable
 		@Override
-		public Object invoke(@NotNull MethodInvocation invocation) throws Throwable {
+		public Object invoke(MethodInvocation invocation) throws Throwable {
+
 			RepositoryMethodContext oldMetadata = null;
 			try {
 				oldMetadata = RepositoryMethodContext

@@ -296,14 +296,9 @@ class DefaultSearchExtension<T> implements SearchExtension<T> {
 ----
 ====
 
-In the snipped above we use `RepositoryMethodMetadata.get()` to get hold of metadata for the actual method invocation. In doing so we can access additional information attached to the repository. In this case we use the repositories domain type to identify the name of the index to be searched.
+In the snipped above we use `RepositoryMethodContext.currentMethod()` to get hold of metadata for the actual method invocation. In doing so we can access additional information attached to the repository. In this case we use the repositories domain type to identify the name of the index to be searched.
 
-[TIP]
-====
-For testing you can use `TransactionSynchronizationManager.bindResource(RepositoryMethodMetadata.class, metadata)` to provide repository method metadata.
-====
-
-Now that we've got both, the fragments declaration and implementation we can register it in the `META-INF/spring.factories` file, package things up if needed and we're good to go.
+Now that we've got both, the fragments declaration and implementation we can register it in the `META-INF/spring.factories` file, package things up if needed and we're almost good to go.
 
 ====
 [source,properties]
@@ -312,8 +307,41 @@ com.acme.search.SearchExtension=com.acme.search.DefaultSearchExtension
 ----
 ====
 
-To make use of the extension simply add the interface to the repository as shown below.
-The infrastructure will take care placing the required `RepositoryMethodContext` so all that
+Since we're using additional metadata, that comes with additional cost, via `RepositoryMethodContext.currentMethod()` we need to advise the repository factory responsible for creating the actual repository to expose method metadata by setting the `exposeMetadata` flag.
+
+====
+[source,java]
+----
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
+import org.springframework.lang.Nullable;
+
+@Configuration
+class Cfg implements BeanPostProcessor {
+
+    @Bean
+    public BeanPostProcessor exposeMethodMetadata() {
+
+        return new BeanPostProcessor() {
+
+            @Override
+            public Object postProcessBeforeInitialization(Object bean, String beanName) {
+
+                if(bean instanceof RepositoryFactoryBeanSupport<?,?,?> factoryBean) {
+                    factoryBean.setExposeMetadata(true);
+                }
+            }
+        };
+    }
+}
+----
+The above snippet outlines how to set the `exposeMetadata` flag using a `BeanPostProcessor`.
+Please do not just copy/paste the above but think about your actual use case which may require a more fine grained approach as the above will simply enable the flag on each and every repository. You may want to have a look at our https://github.com/spring-projects/spring-data-examples/tree/main/bom[spring-data-examples] project to draw inspiration.
+====
+
+Now we are ready to make use of the extension.
+Simply add the interface to the repository.
 
 ====
 [source,java]

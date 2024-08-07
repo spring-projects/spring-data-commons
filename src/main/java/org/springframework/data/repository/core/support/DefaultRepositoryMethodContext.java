@@ -26,6 +26,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @since 3.4.0
  */
 class DefaultRepositoryMethodContext implements RepositoryMethodContext {
 
@@ -39,18 +40,19 @@ class DefaultRepositoryMethodContext implements RepositoryMethodContext {
 	private final RepositoryMetadata repositoryMetadata;
 	private final Method method;
 
-	public DefaultRepositoryMethodContext(RepositoryMetadata repositoryMetadata, Method method) {
+	DefaultRepositoryMethodContext(RepositoryMetadata repositoryMetadata, Method method) {
+
 		this.repositoryMetadata = repositoryMetadata;
 		this.method = method;
 	}
 
 	@Nullable
-	public static RepositoryMethodContext getMetadata() {
+	static RepositoryMethodContext getMetadata() {
 		return currentMethod.get();
 	}
 
 	@Nullable
-	public static RepositoryMethodContext setMetadata(@Nullable RepositoryMethodContext metadata) {
+	static RepositoryMethodContext setMetadata(@Nullable RepositoryMethodContext metadata) {
 
 		RepositoryMethodContext old = currentMethod.get();
 		if (metadata != null) {
