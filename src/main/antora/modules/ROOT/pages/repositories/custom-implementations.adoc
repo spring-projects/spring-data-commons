@@ -303,7 +303,7 @@ In the example above `RepositoryMethodContext.currentMethod()` is used to retrie
 `RepositoryMethodContext` exposes information attached to the repository such as the domain type.
 In this case we use the repository domain type to identify the name of the index to be searched.
 
-Now that you've got both, the fragment declaration and implementation you can register it in the `META-INF/spring.factories` file, package things up if needed, and you're good to go.
+Now that you've got both, the fragment declaration and implementation you can register it in the `META-INF/spring.factories` file, package things up if needed, and you're almost good to go.
 
 .Registering a fragment implementation through `META-INF/spring.factories`
 ====
@@ -325,7 +325,7 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 import org.springframework.lang.Nullable;
 
 @Configuration
-class MyConfiguration implements BeanPostProcessor {
+class MyConfiguration {
 
     @Bean
     static BeanPostProcessor exposeMethodMetadata() {
@@ -338,6 +338,7 @@ class MyConfiguration implements BeanPostProcessor {
                 if(bean instanceof RepositoryFactoryBeanSupport<?,?,?> factoryBean) {
                     factoryBean.setExposeMetadata(true);
                 }
+                return bean;
             }
         };
     }
