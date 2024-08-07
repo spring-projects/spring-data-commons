@@ -35,6 +35,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @since 3.4.0
  */
 public interface RepositoryMethodContext {
 
