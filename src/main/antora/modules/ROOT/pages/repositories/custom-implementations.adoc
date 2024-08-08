@@ -241,12 +241,14 @@ XML::
 [[repositories.spring-factories]]
 ==== Registering Fragments with spring.factories
 
-As already mentioned in the <<repositories.configuration>> section, the infrastructure only auto detects fragments within the repositories base package. Therefore fragments residing in another location or maybe contributed by an external archive will not be found if they do not share a common namespace.
+As already mentioned in the <<repositories.configuration>> section, the infrastructure only auto-detects fragments within the repository base-package.
+Therefore, fragments residing in another location or want to be contributed by an external archive will not be found if they do not share a common namespace.
 Registering fragments within `spring.factories` allows you to circumvent this restriction as explained in the following section.
 
 Imagine you'd like to provide some custom search functionality usable across multiple repositories for your organization leveraging a text search index.
 
-First all you need is the fragment interface. Please note the generic `<T>` parameter to align the fragment with the repository domain type.
+First all you need is the fragment interface.
+Note the generic `<T>` parameter to align the fragment with the repository domain type.
 
 ====
 [source,java]
@@ -260,7 +262,8 @@ public interface SearchExtension<T> {
 ----
 ====
 
-Let's assume the actual full text search is available via a `SearchService` that is registered as a `Bean` within the context so we can consume it in our `SearchExtension` implementation. All we need to run the search is the collection/index name and a object mapper that converts the search results into actual domain objects as sketched out below.
+Let's assume the actual full-text search is available via a `SearchService` that is registered as a `Bean` within the context so you can consume it in our `SearchExtension` implementation.
+All you need to run the search is the collection (or index) name and an object mapper that converts the search results into actual domain objects as sketched out below.
 
 ====
 [source,java]
@@ -273,9 +276,9 @@ import org.springframework.data.repository.core.support.RepositoryMethodContext;
 
 class DefaultSearchExtension<T> implements SearchExtension<T> {
 
-    private SearchService service;
+    private final SearchService service;
 
-    DefaultSearchExtension(@Autowired SearchService service) {
+    DefaultSearchExtension(SearchService service) {
         this.service = service;
     }
 
@@ -290,16 +293,19 @@ class DefaultSearchExtension<T> implements SearchExtension<T> {
         String indexName = domainType.getSimpleName().toLowerCase();
         List<String> jsonResult = service.search(indexName, text, 0, limit.max());
 
-        return jsonResult.stream().map( ... ).collect(toList());
+        return jsonResult.stream().map(…).collect(toList());
     }
 }
 ----
 ====
 
-In the snipped above we use `RepositoryMethodContext.currentMethod()` to get hold of metadata for the actual method invocation. In doing so we can access additional information attached to the repository. In this case we use the repositories domain type to identify the name of the index to be searched.
+In the example above `RepositoryMethodContext.currentMethod()` is used to retrieve metadata for the actual method invocation.
+`RepositoryMethodContext` exposes information attached to the repository such as the domain type.
+In this case we use the repository domain type to identify the name of the index to be searched.
 
-Now that we've got both, the fragments declaration and implementation we can register it in the `META-INF/spring.factories` file, package things up if needed and we're almost good to go.
+Now that you've got both, the fragment declaration and implementation you can register it in the `META-INF/spring.factories` file, package things up if needed, and you're good to go.
 
+.Registering a fragment implementation through `META-INF/spring.factories`
 ====
 [source,properties]
 ----
@@ -307,7 +313,8 @@ com.acme.search.SearchExtension=com.acme.search.DefaultSearchExtension
 ----
 ====
 
-Since we're using additional metadata, that comes with additional cost, via `RepositoryMethodContext.currentMethod()` we need to advise the repository factory responsible for creating the actual repository to expose method metadata by setting the `exposeMetadata` flag.
+Exposing invocation metadata is costly, hence it is disabled by default.
+To access `RepositoryMethodContext.currentMethod()` you need to advise the repository factory responsible for creating the actual repository to expose method metadata by setting the `exposeMetadata` flag.
 
 ====
 [source,java]
@@ -318,10 +325,10 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 import org.springframework.lang.Nullable;
 
 @Configuration
-class Cfg implements BeanPostProcessor {
+class MyConfiguration implements BeanPostProcessor {
 
     @Bean
-    public BeanPostProcessor exposeMethodMetadata() {
+    static BeanPostProcessor exposeMethodMetadata() {
 
         return new BeanPostProcessor() {
 
@@ -336,12 +343,13 @@ class Cfg implements BeanPostProcessor {
     }
 }
 ----
-The above snippet outlines how to set the `exposeMetadata` flag using a `BeanPostProcessor`.
-Please do not just copy/paste the above but think about your actual use case which may require a more fine grained approach as the above will simply enable the flag on each and every repository. You may want to have a look at our https://github.com/spring-projects/spring-data-examples/tree/main/bom[spring-data-examples] project to draw inspiration.
+
+The above example outlines how to enable metadata exposure by setting the `exposeMetadata` flag using a `BeanPostProcessor`.
+Please do not just copy/paste the above but consider your actual use case which may require a more fine-grained approach as the above will simply enable the flag on every repository.
+You may want to have a look at our https://github.com/spring-projects/spring-data-examples/tree/main/bom[spring-data-examples] project to draw inspiration.
 ====
 
-Now we are ready to make use of the extension.
-Simply add the interface to the repository.
+Now you are ready to make use of your extension; Simply add the interface to your repository:
 
 ====
 [source,java]
@@ -351,8 +359,7 @@ package io.my.movies;
 import com.acme.search.SearchExtension;
 import org.springframework.data.repository.CrudRepository;
 
-
-public interface MovieRepository extends CrudRepository<Movie, String>, SearchExtension<Movie> {
+interface MovieRepository extends CrudRepository<Movie, String>, SearchExtension<Movie> {
 
 }
 ----
