@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.util.nonnull.packagelevel;
+package org.springframework.data.util.nonnull.jspecify;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * @author Mark Paluch
  */
 public interface NonNullOnPackage {
 
-	String nonNullReturnValue();
-
-	String nonNullArgs(String arg);
+	String someMethod(String arg, @Nullable String nullableArg);
 }
