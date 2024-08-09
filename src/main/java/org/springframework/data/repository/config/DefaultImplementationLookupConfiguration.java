@@ -33,6 +33,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Kyrylo Merzlikin
+ * @author Yanming Zhou
  * @since 2.1
  */
 class DefaultImplementationLookupConfiguration implements ImplementationLookupConfiguration {
@@ -51,6 +52,10 @@ class DefaultImplementationLookupConfiguration implements ImplementationLookupCo
 		this.config = config;
 		this.interfaceName = interfaceName;
 		this.beanName = beanName;
+	}
+
+	public String getInterfaceName() {
+		return this.interfaceName;
 	}
 
 	@Override
