@@ -15,6 +15,8 @@
  */
 package org.springframework.data.web.config;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +29,12 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerial
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializerBase;
 import com.fasterxml.jackson.databind.util.StdConverter;
 
@@ -83,7 +89,8 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			addSerializer(UNPAGED_TYPE, new UnpagedAsInstanceSerializer());
 
 			if (settings == null || settings.pageSerializationMode() == PageSerializationMode.DIRECT) {
-				setMixInAnnotation(PageImpl.class, WarningMixing.class);
+				setSerializerModifier(new WarningLoggingModifier());
+
 			} else {
 				setMixInAnnotation(PageImpl.class, WrappingMixing.class);
 			}
@@ -109,14 +116,6 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			}
 		}
 
-		/**
-		 * A mixin for PageImpl to register a converter issuing the serialization warning.
-		 *
-		 * @author Oliver Drotbohm
-		 */
-		@JsonSerialize(converter = PlainPageSerializationWarning.class)
-		abstract class WarningMixing {}
-
 		@JsonSerialize(converter = PageModelConverter.class)
 		abstract class WrappingMixing {}
 
@@ -129,27 +128,35 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			}
 		}
 
-		static class PlainPageSerializationWarning extends StdConverter<Page<?>, Page<?>> {
+		/**
+		 * A {@link BeanSerializerModifier} that logs a warning message if an instance of {@link Page} will be rendered.
+		 *
+		 * @author Oliver Drotbohm
+		 */
+		static class WarningLoggingModifier extends BeanSerializerModifier {
 
-			private static final Logger LOGGER = LoggerFactory.getLogger(PlainPageSerializationWarning.class);
+			private static final Logger LOGGER = LoggerFactory.getLogger(WarningLoggingModifier.class);
 			private static final String MESSAGE = """
 					Serializing PageImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure!
 						For a stable JSON structure, please use Spring Data's PagedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
 						or Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
 					""";
 
+			private static final long serialVersionUID = 954857444010009875L;
+
 			private boolean warningRendered = false;
 
-			@Nullable
 			@Override
-			public Page<?> convert(@Nullable Page<?> value) {
+			public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc,
+					List<BeanPropertyWriter> beanProperties) {
 
-				if (!warningRendered) {
+				if (Page.class.isAssignableFrom(beanDesc.getBeanClass()) && !warningRendered) {
+
 					this.warningRendered = true;
 					LOGGER.warn(MESSAGE);
 				}
 
-				return value;
+				return super.changeProperties(config, beanDesc, beanProperties);
 			}
 		}
 	}
