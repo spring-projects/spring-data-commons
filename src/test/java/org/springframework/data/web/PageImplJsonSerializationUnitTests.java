@@ -45,7 +45,16 @@ class PageImplJsonSerializationUnitTests {
 		assertJsonRendering(PageSerializationMode.VIA_DTO, "$.content", "$.page");
 	}
 
+	@Test // GH-3137
+	void serializesCustomPageAsPageImpl() {
+		assertJsonRendering(PageSerializationMode.DIRECT, new Extension<>("header"), "$.pageable", "$.last", "$.first");
+	}
+
 	private static void assertJsonRendering(PageSerializationMode mode, String... jsonPaths) {
+		assertJsonRendering(mode, new PageImpl<>(Collections.emptyList()), jsonPaths);
+	}
+
+	private static void assertJsonRendering(PageSerializationMode mode, PageImpl<?> page, String... jsonPaths) {
 
 		SpringDataWebSettings settings = new SpringDataWebSettings(mode);
 
@@ -54,11 +63,24 @@ class PageImplJsonSerializationUnitTests {
 
 		assertThatNoException().isThrownBy(() -> {
 
-			String result = mapper.writeValueAsString(new PageImpl<>(Collections.emptyList()));
+			String result = mapper.writeValueAsString(page);
 
 			for (String jsonPath : jsonPaths) {
 				assertThat(JsonPath.<Object> read(result, jsonPath)).isNotNull();
 			}
 		});
+	}
+
+	static class Extension<T> extends PageImpl<T> {
+
+		private Object header;
+
+		public Extension(Object header) {
+			super(Collections.emptyList());
+		}
+
+		public Object getHeader() {
+			return header;
+		}
 	}
 }
