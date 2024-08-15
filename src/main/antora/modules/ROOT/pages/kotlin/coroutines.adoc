@@ -1,7 +1,7 @@
 [[kotlin.coroutines]]
 = Coroutines
 
-Kotlin https://kotlinlang.org/docs/reference/coroutines-overview.html[Coroutines] are lightweight threads allowing to write non-blocking code imperatively.
+Kotlin https://kotlinlang.org/docs/reference/coroutines-overview.html[Coroutines] are instances of suspendable computations allowing to write non-blocking code imperatively.
 On language side, `suspend` functions provides an abstraction for asynchronous operations while on library side https://github.com/Kotlin/kotlinx.coroutines[kotlinx.coroutines] provides functions like https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html[`async { }`] and types like https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html[`Flow`].
 
 Spring Data modules provide support for Coroutines on the following scope:
