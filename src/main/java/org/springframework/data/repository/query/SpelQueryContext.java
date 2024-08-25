@@ -285,7 +285,6 @@ public class SpelQueryContext {
 		Map<String, String> getParameterMap() {
 			return expressions;
 		}
-
 	}
 
 	/**

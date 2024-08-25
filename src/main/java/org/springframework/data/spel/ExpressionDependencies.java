@@ -102,7 +102,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 	 * @return a set of {@link ExpressionDependencies}.
 	 */
 	public static ExpressionDependencies discover(Expression expression) {
-		return expression instanceof SpelExpression ? discover(((SpelExpression) expression).getAST(), true) : none();
+		return expression instanceof SpelExpression spel ? discover(spel.getAST(), true) : none();
 	}
 
 	/**

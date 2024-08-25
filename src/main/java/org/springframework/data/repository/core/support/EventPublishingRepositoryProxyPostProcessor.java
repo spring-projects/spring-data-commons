@@ -138,6 +138,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	 * Abstraction of a method on the aggregate root that exposes the events to publish.
 	 *
 	 * @author Oliver Gierke
+	 * @author Mikhail Polivakha
 	 * @since 1.13
 	 */
 	static class EventPublishingMethod {
@@ -145,19 +146,20 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		private static Map<Class<?>, EventPublishingMethod> cache = new ConcurrentReferenceHashMap<>();
 		private static @SuppressWarnings("null") EventPublishingMethod NONE = new EventPublishingMethod(Object.class, null,
 				null);
-		private static String ILLEGAL_MODIFCATION = "Aggregate's events were modified during event publication. "
-				+ "Make sure event listeners obtain a fresh instance of the aggregate before adding further events. "
-				+ "Additional events found: %s.";
+		private static final String ILLEGAL_MODIFICATION = "Events of an aggregate '%s' were modified during event publication. "
+				+ "Make sure event listeners obtain a fresh instance of the aggregate before adding further events. ";
 
 		private final Class<?> type;
 		private final Method publishingMethod;
 		private final @Nullable Method clearingMethod;
+		private final IllegalStateException ILLEGAL_MODIFICATION_EXCEPTION;
 
 		EventPublishingMethod(Class<?> type, Method publishingMethod, @Nullable Method clearingMethod) {
 
 			this.type = type;
 			this.publishingMethod = publishingMethod;
 			this.clearingMethod = clearingMethod;
+			this.ILLEGAL_MODIFICATION_EXCEPTION = new IllegalStateException(ILLEGAL_MODIFICATION.formatted(type.getName()));
 		}
 
 		/**
@@ -216,7 +218,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 					postPublication.removeAll(events);
 
-					throw new IllegalStateException(ILLEGAL_MODIFCATION.formatted(postPublication));
+					throw ILLEGAL_MODIFICATION_EXCEPTION;
 				}
 
 				if (clearingMethod != null) {

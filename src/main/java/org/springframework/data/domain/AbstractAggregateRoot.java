@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mikhail Polivakha
  * @since 1.13
  */
 public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
@@ -44,7 +45,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 * @return the event that has been added.
 	 * @see #andEvent(Object)
 	 */
-	protected <T> T registerEvent(T event) {
+	public <T> T registerEvent(T event) {
 
 		Assert.notNull(event, "Domain event must not be null");
 
@@ -76,7 +77,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 * @return the aggregate
 	 */
 	@SuppressWarnings("unchecked")
-	protected final A andEventsFrom(A aggregate) {
+	public final A andEventsFrom(A aggregate) {
 
 		Assert.notNull(aggregate, "Aggregate must not be null");
 
@@ -95,7 +96,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 * @see #registerEvent(Object)
 	 */
 	@SuppressWarnings("unchecked")
-	protected final A andEvent(Object event) {
+	public final A andEvent(Object event) {
 
 		registerEvent(event);
 
