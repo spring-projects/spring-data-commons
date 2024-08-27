@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -68,7 +67,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 	@Configuration
 	@EnableWebMvc
-	@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
+	@EnableSpringDataWebSupport
 	static class SampleConfig {
 
 		@Bean
@@ -292,35 +291,39 @@ class EnableSpringDataWebSupportIntegrationTests {
 				.isEqualTo(CustomEntityPathResolver.resolver);
 	}
 
-	@Test // GH-3024
-	void registersSpringDataWebSettingsBean() {
+	@Test // GH-3024, GH-3054
+	void doesNotRegistersSpringDataWebSettingsBeanByDefault() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 
-		assertThatNoException().isThrownBy(() -> context.getBean(SpringDataWebSettings.class));
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
+				.isThrownBy(() -> context.getBean(SpringDataWebSettings.class));
 		assertThatNoException().isThrownBy(() -> context.getBean(PageModule.class));
 	}
 
-	@Test // GH-3024
+	@Test // GH-3024, GH-3054
 	void usesDirectPageSerializationMode() throws Exception {
 
-		var applicationContext = WebTestUtils.createApplicationContext(PageSampleConfigWithDirect.class);
+		var context = WebTestUtils.createApplicationContext(PageSampleConfigWithDirect.class);
 
-		// SpringDataWebSettings shouldn't be registered if pageSerializationMode is default
-		assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() -> applicationContext.getBean(SpringDataWebSettings.class));
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
+				.isThrownBy(() -> context.getBean(SpringDataWebSettings.class));
 
-		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+		var mvc = MockMvcBuilders.webAppContextSetup(context).build();
 
 		mvc.perform(post("/page"))//
 				.andExpect(status().isOk()) //
 				.andExpect(jsonPath("$.pageable").exists());
 	}
 
-	@Test // GH-3024
+	@Test // GH-3024, GH-3054
 	void usesViaDtoPageSerializationMode() throws Exception {
 
-		var applicationContext = WebTestUtils.createApplicationContext(PageSampleConfigWithViaDto.class);
-		var mvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+		var context = WebTestUtils.createApplicationContext(PageSampleConfigWithViaDto.class);
+
+		assertThatNoException().isThrownBy(() -> context.getBean(SpringDataWebSettings.class));
+
+		var mvc = MockMvcBuilders.webAppContextSetup(context).build();
 
 		mvc.perform(post("/page")) //
 				.andExpect(status().isOk()) //
