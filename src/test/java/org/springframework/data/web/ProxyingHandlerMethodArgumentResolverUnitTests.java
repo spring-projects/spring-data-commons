@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  * @soundtrack Karlijn Langendijk & Sönke Meinen - Englishman In New York (Sting,
  *             https://www.youtube.com/watch?v=O7LZsqrnaaA)
  */
-public class ProxyingHandlerMethodArgumentResolverUnitTests {
+class ProxyingHandlerMethodArgumentResolverUnitTests {
 
 	ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
 			() -> new DefaultConversionService(), true);
@@ -43,8 +43,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void supportAnnotatedInterface() throws Exception {
 
-		var method = Controller.class.getMethod("with", AnnotatedInterface.class);
-		var parameter = new MethodParameter(method, 0);
+		var parameter = getParameter("with", AnnotatedInterface.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 	}
@@ -52,8 +51,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void supportsUnannotatedInterfaceFromUserPackage() throws Exception {
 
-		var method = Controller.class.getMethod("with", SampleInterface.class);
-		var parameter = new MethodParameter(method, 0);
+		var parameter = getParameter("with", SampleInterface.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 	}
@@ -61,8 +59,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void doesNotSupportUnannotatedInterfaceFromSpringNamespace() throws Exception {
 
-		var method = Controller.class.getMethod("with", UnannotatedInterface.class);
-		var parameter = new MethodParameter(method, 0);
+		var parameter = getParameter("with", UnannotatedInterface.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
 	}
@@ -70,8 +67,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void doesNotSupportCoreJavaType() throws Exception {
 
-		var method = Controller.class.getMethod("with", List.class);
-		var parameter = new MethodParameter(method, 0);
+		var parameter = getParameter("with", List.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
 	}
