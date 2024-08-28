@@ -17,12 +17,16 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
+import example.SampleInterface;
+
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTests.SampleInterface;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 /**
  * Unit tests for {@link ProxyingHandlerMethodArgumentResolver}.
@@ -72,6 +76,28 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
 	}
 
+	@Test // GH-2937
+	void doesNotSupportForeignSpringAnnotations() throws Exception {
+
+		var parameter = getParameter("withForeignAnnotation", SampleInterface.class);
+
+		assertThat(resolver.supportsParameter(parameter)).isFalse();
+	}
+
+	@Test // GH-2937
+	void doesSupportAtModelAttribute() throws Exception {
+
+		var parameter = getParameter("withModelAttribute", SampleInterface.class);
+
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
+	}
+
+	private static MethodParameter getParameter(String methodName, Class<?> parameterType) {
+
+		var method = ReflectionUtils.findMethod(Controller.class, methodName, parameterType);
+		return new MethodParameter(method, 0);
+	}
+
 	@ProjectedPayload
 	interface AnnotatedInterface {}
 
@@ -86,5 +112,9 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 		void with(SampleInterface param);
 
 		void with(List<Object> param);
+
+		void withForeignAnnotation(@Autowired SampleInterface param);
+
+		void withModelAttribute(@ModelAttribute SampleInterface param);
 	}
 }
