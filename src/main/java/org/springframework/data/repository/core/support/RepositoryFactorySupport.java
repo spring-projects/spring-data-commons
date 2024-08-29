@@ -127,10 +127,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 * retrieval via the {@code RepositoryMethodContext} class. This is useful if an advised object needs to obtain
 	 * repository information.
 	 * <p>
-	 * Default is {@literal "false"}, in order to avoid unnecessary extra interception. This means that no guarantees are provided
-	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
-	 * 
-	 * @since 3.4.0
+	 * Default is {@literal "false"}, in order to avoid unnecessary extra interception. This means that no guarantees are
+	 * provided that {@code RepositoryMethodContext} access will work consistently within any method of the advised
+	 * object.
+	 * <p>
+	 * Repository method metadata is also exposed if implementations within the {@link RepositoryFragments repository
+	 * composition} implement {@link RepositoryMetadataAccess}.
+	 *
+	 * @since 3.4
+	 * @see RepositoryMethodContext
+	 * @see RepositoryMetadataAccess
 	 */
 	public void setExposeMetadata(boolean exposeMetadata) {
 		this.exposeMetadata = exposeMetadata;
@@ -345,7 +351,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 			result.addAdvice(new MethodInvocationValidator());
 		}
 
-		if (this.exposeMetadata) {
+		if (this.exposeMetadata || shouldExposeMetadata(fragments)) {
 			result.addAdvice(new ExposeMetadataInterceptor(metadata));
 			result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 		}
@@ -614,6 +620,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 	private Lazy<ProjectionFactory> createProjectionFactory() {
 		return Lazy.of(() -> getProjectionFactory(this.classLoader, this.beanFactory));
+	}
+
+	private static boolean shouldExposeMetadata(RepositoryFragments fragments) {
+
+		for (RepositoryFragment<?> fragment : fragments) {
+			if (fragment.getImplementation().filter(RepositoryMetadataAccess.class::isInstance).isPresent()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
