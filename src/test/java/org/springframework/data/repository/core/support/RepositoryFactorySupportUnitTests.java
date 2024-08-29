@@ -271,6 +271,27 @@ class RepositoryFactorySupportUnitTests {
 		assertThat(metadata.methodInvocation().getMethod().getName()).isEqualTo("findMetadataByLastname");
 	}
 
+	@Test // GH-3090
+	void capturesRepositoryMetadataWithMetadataAccess() {
+
+		record Metadata(RepositoryMethodContext context, MethodInvocation methodInvocation) {
+		}
+
+		when(factory.queryOne.execute(any(Object[].class)))
+				.then(invocation -> new Metadata(RepositoryMethodContext.currentMethod(),
+						ExposeInvocationInterceptor.currentInvocation()));
+
+		var repository = factory.getRepository(ObjectRepository.class, new RepositoryMetadataAccess() {});
+		var metadataByLastname = repository.findMetadataByLastname();
+
+		assertThat(metadataByLastname).isInstanceOf(Metadata.class);
+
+		Metadata metadata = (Metadata) metadataByLastname;
+		assertThat(metadata.context().getMethod().getName()).isEqualTo("findMetadataByLastname");
+		assertThat(metadata.context().getRepository().getDomainType()).isEqualTo(Object.class);
+		assertThat(metadata.methodInvocation().getMethod().getName()).isEqualTo("findMetadataByLastname");
+	}
+
 	@Test // DATACMNS-509, DATACMNS-1764
 	void convertsWithSameElementType() {
 
