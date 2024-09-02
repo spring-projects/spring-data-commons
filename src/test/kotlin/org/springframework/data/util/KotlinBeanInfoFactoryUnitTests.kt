@@ -18,6 +18,8 @@ package org.springframework.data.util
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.BeanUtils
+import org.springframework.data.annotation.Id
+import org.springframework.data.domain.Persistable
 import org.springframework.data.repository.Repository
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport
 import org.springframework.data.repository.core.support.RepositoryFactorySupport
@@ -95,9 +97,11 @@ class KotlinBeanInfoFactoryUnitTests {
 	@Test // GH-2994
 	internal fun includesPropertiesFromJavaSupertypes() {
 
-		val pds = BeanUtils.getPropertyDescriptors(MyRepositoryFactoryBeanImpl::class.java)
+		val pds =
+			BeanUtils.getPropertyDescriptors(MyRepositoryFactoryBeanImpl::class.java)
 
-		assertThat(pds).extracting("name").contains("myQueryLookupStrategyKey", "repositoryBaseClass")
+		assertThat(pds).extracting("name")
+			.contains("myQueryLookupStrategyKey", "repositoryBaseClass")
 	}
 
 	@Test // GH-2993
@@ -108,6 +112,22 @@ class KotlinBeanInfoFactoryUnitTests {
 		assertThat(pds).hasSize(1)
 		assertThat(pds[0].writeMethod).isNull()
 		assertThat(pds[0].readMethod).isNotNull()
+	}
+
+	@Test // GH-3140
+	internal fun specializesBeanMethods() {
+
+		var pds = BeanUtils.getPropertyDescriptors(Entity::class.java)
+
+		assertThat(pds.find { it.name == "id" }!!.readMethod!!.declaringClass).isEqualTo(
+			Entity::class.java
+		)
+
+		pds = BeanUtils.getPropertyDescriptors(DogEntity::class.java)
+
+		assertThat(pds.find { it.name == "name" }!!.readMethod!!.declaringClass).isEqualTo(
+			DogEntity::class.java
+		)
 	}
 
 	data class SimpleDataClass(val id: String, var name: String)
@@ -127,7 +147,8 @@ class KotlinBeanInfoFactoryUnitTests {
 		Foo, Bar
 	}
 
-	class MyRepositoryFactoryBeanImpl<R, E, I>(repository: Class<R>) : RepositoryFactoryBeanSupport<R, E, I>(repository)
+	class MyRepositoryFactoryBeanImpl<R, E, I>(repository: Class<R>) :
+		RepositoryFactoryBeanSupport<R, E, I>(repository)
 			where R : Repository<E, I>, E : Any, I : Any {
 
 		private var myQueryLookupStrategyKey: String
@@ -148,5 +169,24 @@ class KotlinBeanInfoFactoryUnitTests {
 	class MyEntity : Interval<Long> {
 		override var end: Long = -1L
 			protected set
+	}
+
+	class Entity(
+		private val id: Long? = null,
+
+		val name: String
+	) : Persistable<Long> {
+
+		override fun getId(): Long? = id
+
+		override fun isNew(): Boolean = id == null
+	}
+
+	open class DogEntity : Animal() {
+
+		@Id
+		override fun getName(): String {
+			return super.getName()
+		}
 	}
 }
