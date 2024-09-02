@@ -29,15 +29,19 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
+import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.beans.BeanInfoFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.Ordered;
+import org.springframework.lang.Nullable;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link BeanInfoFactory} specific to Kotlin types using Kotlin reflection to determine bean properties.
@@ -62,7 +66,7 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 
 		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(beanClass);
 		Collection<KCallable<?>> members = kotlinClass.getMembers();
-		Set<PropertyDescriptor> pds = new LinkedHashSet<>(members.size());
+		Map<String, PropertyDescriptor> descriptors = new LinkedHashMap<>(members.size(), 1.f);
 
 		for (KCallable<?> member : members) {
 
@@ -70,6 +74,16 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 
 				Method getter = ReflectJvmMapping.getJavaGetter(property);
 				Method setter = property instanceof KMutableProperty<?> kmp ? ReflectJvmMapping.getJavaSetter(kmp) : null;
+
+				if (getter == null) {
+					Type javaType = ReflectJvmMapping.getJavaType(property.getReturnType());
+					getter = ReflectionUtils.findMethod(beanClass,
+							javaType == Boolean.TYPE ? "is" : "get" + StringUtils.capitalize(property.getName()));
+				}
+
+				if (getter != null) {
+					getter = ClassUtils.getMostSpecificMethod(getter, beanClass);
+				}
 
 				if (getter != null && (Modifier.isStatic(getter.getModifiers()) || getter.getParameterCount() != 0)) {
 					continue;
@@ -82,7 +96,7 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 					}
 				}
 
-				pds.add(new PropertyDescriptor(property.getName(), getter, setter));
+				descriptors.put(property.getName(), new PropertyDescriptor(property.getName(), getter, setter));
 			}
 		}
 
@@ -95,8 +109,16 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 		if (javaClass != Object.class) {
 
 			PropertyDescriptor[] javaPropertyDescriptors = BeanUtils.getPropertyDescriptors(javaClass);
-			pds.addAll(Arrays.asList(javaPropertyDescriptors));
+
+			for (PropertyDescriptor descriptor : javaPropertyDescriptors) {
+
+				descriptor = new PropertyDescriptor(descriptor.getName(), specialize(beanClass, descriptor.getReadMethod()),
+						specialize(beanClass, descriptor.getWriteMethod()));
+				descriptors.put(descriptor.getName(), descriptor);
+			}
 		}
+
+		PropertyDescriptor[] propertyDescriptors = descriptors.values().toArray(new PropertyDescriptor[0]);
 
 		return new SimpleBeanInfo() {
 			@Override
@@ -106,9 +128,19 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 
 			@Override
 			public PropertyDescriptor[] getPropertyDescriptors() {
-				return pds.toArray(new PropertyDescriptor[0]);
+				return propertyDescriptors;
 			}
 		};
+	}
+
+	@Nullable
+	private static Method specialize(Class<?> beanClass, @Nullable Method method) {
+
+		if (method == null) {
+			return method;
+		}
+
+		return ClassUtils.getMostSpecificMethod(method, beanClass);
 	}
 
 	@Override
