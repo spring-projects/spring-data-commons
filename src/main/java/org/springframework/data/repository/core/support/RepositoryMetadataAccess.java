@@ -19,7 +19,7 @@ package org.springframework.data.repository.core.support;
  * Marker for repository fragment implementation that intend to access repository method invocation metadata.
  * <p>
  * Note that this is a marker interface in the style of {@link java.io.Serializable}, semantically applying to a
- * fragment implementation class rather. In other words, this marker applies to a particular repository composition that
+ * fragment implementation class. In other words, this marker applies to a particular repository composition that
  * enables metadata access for the repository proxy when the composition contain fragments implementing this interface.
  * <p>
  * Ideally, in a repository composition only the fragment implementation uses this interface while the fragment

@@ -250,7 +250,7 @@ Imagine you'd like to provide some custom search functionality usable across mul
 First all you need is the fragment interface.
 Note the generic `<T>` parameter to align the fragment with the repository domain type.
 
-====
+.Fragment Interface
 [source,java]
 ----
 package com.acme.search;
@@ -260,12 +260,11 @@ public interface SearchExtension<T> {
     List<T> search(String text, Limit limit);
 }
 ----
-====
 
 Let's assume the actual full-text search is available via a `SearchService` that is registered as a `Bean` within the context so you can consume it in our `SearchExtension` implementation.
 All you need to run the search is the collection (or index) name and an object mapper that converts the search results into actual domain objects as sketched out below.
 
-====
+.Fragment implementation
 [source,java]
 ----
 package com.acme.search;
@@ -297,27 +296,44 @@ class DefaultSearchExtension<T> implements SearchExtension<T> {
     }
 }
 ----
-====
 
 In the example above `RepositoryMethodContext.currentMethod()` is used to retrieve metadata for the actual method invocation.
 `RepositoryMethodContext` exposes information attached to the repository such as the domain type.
 In this case we use the repository domain type to identify the name of the index to be searched.
 
-Now that you've got both, the fragment declaration and implementation you can register it in the `META-INF/spring.factories` file, package things up if needed, and you're almost good to go.
-
-.Registering a fragment implementation through `META-INF/spring.factories`
-====
-[source,properties]
-----
-com.acme.search.SearchExtension=com.acme.search.DefaultSearchExtension
-----
-====
-
 Exposing invocation metadata is costly, hence it is disabled by default.
-To access `RepositoryMethodContext.currentMethod()` you need to advise the repository factory responsible for creating the actual repository to expose method metadata by setting the `exposeMetadata` flag.
+To access `RepositoryMethodContext.currentMethod()` you need to advise the repository factory responsible for creating the actual repository to expose method metadata.
 
+.Expose Repository Metadata
+[tabs]
+======
+Marker Interface::
++
 ====
-[source,java]
+Adding the `RepositoryMetadataAccess` marker interface to the fragments implementation will trigger the infrastructure and enable metadata exposure for those repositories using the fragment.
+
+[source,java,role="primary"]
+----
+package com.acme.search;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Limit;
+import org.springframework.data.repository.core.support.RepositoryMetadataAccess;
+import org.springframework.data.repository.core.support.RepositoryMethodContext;
+
+class DefaultSearchExtension<T> implements SearchExtension<T>, RepositoryMetadataAccess {
+
+    // ...
+}
+----
+====
+
+Bean Post Processor::
++
+====
+The `exposeMetadata` flag can be set directly on the repository factory bean via a `BeanPostProcessor`.
+
+[source,java,role="secondary"]
 ----
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Configuration;
@@ -345,14 +361,21 @@ class MyConfiguration {
 }
 ----
 
-The above example outlines how to enable metadata exposure by setting the `exposeMetadata` flag using a `BeanPostProcessor`.
 Please do not just copy/paste the above but consider your actual use case which may require a more fine-grained approach as the above will simply enable the flag on every repository.
-You may want to have a look at our https://github.com/spring-projects/spring-data-examples/tree/main/bom[spring-data-examples] project to draw inspiration.
 ====
+======
 
-Now you are ready to make use of your extension; Simply add the interface to your repository:
+Having both, the fragment declaration and implementation in place you can register the extension in the `META-INF/spring.factories` file and package things up if needed.
 
-====
+.Register the fragment in `META-INF/spring.factories`
+[source,properties]
+----
+com.acme.search.SearchExtension=com.acme.search.DefaultSearchExtension
+----
+
+Now you are ready to make use of your extension; Simply add the interface to your repository.
+
+.Using it
 [source,java]
 ----
 package io.my.movies;
@@ -364,7 +387,6 @@ interface MovieRepository extends CrudRepository<Movie, String>, SearchExtension
 
 }
 ----
-====
 
 [[repositories.customize-base-repository]]
 == Customize the Base Repository

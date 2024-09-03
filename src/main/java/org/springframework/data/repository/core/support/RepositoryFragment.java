@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -41,6 +42,7 @@ import org.springframework.util.ReflectionUtils;
  * Fragments are immutable.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.0
  * @see RepositoryComposition
  */
@@ -53,7 +55,7 @@ public interface RepositoryFragment<T> {
 	 * @return
 	 */
 	static <T> RepositoryFragment<T> implemented(T implementation) {
-		return new ImplementedRepositoryFragment<T>(Optional.empty(), implementation);
+		return new ImplementedRepositoryFragment<>((Class<T>) null, implementation);
 	}
 
 	/**
@@ -64,7 +66,7 @@ public interface RepositoryFragment<T> {
 	 * @return
 	 */
 	static <T> RepositoryFragment<T> implemented(Class<T> interfaceClass, T implementation) {
-		return new ImplementedRepositoryFragment<>(Optional.of(interfaceClass), implementation);
+		return new ImplementedRepositoryFragment<>(interfaceClass, implementation);
 	}
 
 	/**
@@ -134,7 +136,7 @@ public interface RepositoryFragment<T> {
 
 		@Override
 		public RepositoryFragment<T> withImplementation(T implementation) {
-			return new ImplementedRepositoryFragment<>(Optional.of(interfaceOrImplementation), implementation);
+			return new ImplementedRepositoryFragment<>(interfaceOrImplementation, implementation);
 		}
 
 		@Override
@@ -164,9 +166,20 @@ public interface RepositoryFragment<T> {
 
 	class ImplementedRepositoryFragment<T> implements RepositoryFragment<T> {
 
-		private final Optional<Class<T>> interfaceClass;
+		private final @Nullable Class<T> interfaceClass;
 		private final T implementation;
-		private final Optional<T> optionalImplementation;
+
+		/**
+		 * Creates a new {@link ImplementedRepositoryFragment} for the given interface class and implementation.
+		 *
+		 * @param interfaceClass
+		 * @param implementation
+		 * @deprecated since 3.4 - use {@link ImplementedRepositoryFragment(Class, Object)} instead.
+		 */
+		@Deprecated(since = "3.4", forRemoval = true)
+		public ImplementedRepositoryFragment(Optional<Class<T>> interfaceClass, T implementation) {
+			this(interfaceClass.orElse(null), implementation);
+		}
 
 		/**
 		 * Creates a new {@link ImplementedRepositoryFragment} for the given interface class and implementation.
@@ -174,37 +187,37 @@ public interface RepositoryFragment<T> {
 		 * @param interfaceClass must not be {@literal null}.
 		 * @param implementation must not be {@literal null}.
 		 */
-		public ImplementedRepositoryFragment(Optional<Class<T>> interfaceClass, T implementation) {
+		public ImplementedRepositoryFragment(@Nullable Class<T> interfaceClass, T implementation) {
 
-			Assert.notNull(interfaceClass, "Interface class must not be null");
 			Assert.notNull(implementation, "Implementation object must not be null");
 
-			interfaceClass.ifPresent(it -> {
+			if (interfaceClass != null) {
 
-				Assert.isTrue(ClassUtils.isAssignableValue(it, implementation),
-						() -> String.format("Fragment implementation %s does not implement %s",
-								ClassUtils.getQualifiedName(implementation.getClass()), ClassUtils.getQualifiedName(it)));
-			});
+				Assert.isTrue(ClassUtils.isAssignableValue(interfaceClass, implementation),
+					() -> "Fragment implementation %s does not implement %s".formatted(
+							ClassUtils.getQualifiedName(implementation.getClass()),
+							ClassUtils.getQualifiedName(interfaceClass)));
+			}
 
 			this.interfaceClass = interfaceClass;
 			this.implementation = implementation;
-			this.optionalImplementation = Optional.of(implementation);
 		}
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Class<?> getSignatureContributor() {
-			return interfaceClass.orElseGet(() -> {
 
-				if(implementation instanceof Class type) {
-					return type;
-				}
-				return (Class<T>) implementation.getClass();
-			});
+			if (interfaceClass != null) {
+				return interfaceClass;
+			}
+
+			if (implementation instanceof Class<?> type) {
+				return type;
+			}
+			return implementation.getClass();
 		}
 
 		@Override
 		public Optional<T> getImplementation() {
-			return optionalImplementation;
+			return Optional.of(implementation);
 		}
 
 		@Override
@@ -216,7 +229,7 @@ public interface RepositoryFragment<T> {
 		public String toString() {
 
 			return String.format("ImplementedRepositoryFragment %s%s",
-					interfaceClass.map(ClassUtils::getShortName).map(it -> it + ":").orElse(""),
+					interfaceClass != null ? (ClassUtils.getShortName(interfaceClass) + ":") : "",
 					ClassUtils.getShortName(implementation.getClass()));
 		}
 
@@ -235,18 +248,13 @@ public interface RepositoryFragment<T> {
 				return false;
 			}
 
-			if (!ObjectUtils.nullSafeEquals(implementation, that.implementation)) {
-				return false;
-			}
-
-			return ObjectUtils.nullSafeEquals(optionalImplementation, that.optionalImplementation);
+			return ObjectUtils.nullSafeEquals(implementation, that.implementation);
 		}
 
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(interfaceClass);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(implementation);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(optionalImplementation);
 			return result;
 		}
 	}
