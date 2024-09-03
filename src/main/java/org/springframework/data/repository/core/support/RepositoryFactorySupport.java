@@ -348,10 +348,16 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.setInterfaces(repositoryInterface, Repository.class, TransactionalProxy.class);
 
 		if (MethodInvocationValidator.supports(repositoryInterface)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace(LogMessage.format("Register MethodInvocationValidator for %s…", repositoryInterface.getName()));
+			}
 			result.addAdvice(new MethodInvocationValidator());
 		}
 
 		if (this.exposeMetadata || shouldExposeMetadata(fragments)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace(LogMessage.format("Register ExposeMetadataInterceptor for %s…", repositoryInterface.getName()));
+			}
 			result.addAdvice(new ExposeMetadataInterceptor(metadata));
 			result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
 		}
@@ -371,6 +377,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		}
 
 		if (DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(repositoryInterface)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace(LogMessage.format("Register DefaultMethodInvokingMethodInterceptor for %s…", repositoryInterface.getName()));
+			}
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
