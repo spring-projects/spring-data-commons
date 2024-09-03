@@ -622,6 +622,13 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		return Lazy.of(() -> getProjectionFactory(this.classLoader, this.beanFactory));
 	}
 
+	/**
+	 * Checks if at least one {@link RepositoryFragment} indicates need to access to {@link RepositoryMetadata} by being
+	 * flagged with {@link RepositoryMetadataAccess}.
+	 *
+	 * @param fragments
+	 * @return {@literal true} if access to metadata is required.
+	 */
 	private static boolean shouldExposeMetadata(RepositoryFragments fragments) {
 
 		for (RepositoryFragment<?> fragment : fragments) {
