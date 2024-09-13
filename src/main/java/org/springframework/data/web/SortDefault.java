@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.NullHandling;
 
 /**
  * Annotation to define the default {@link Sort} options to be used when injecting a {@link Sort} instance into a
@@ -33,6 +34,7 @@ import org.springframework.data.domain.Sort.Direction;
  * @since 1.6
  * @author Oliver Gierke
  * @author Mark Palich
+ * @author Petar Heyken
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -70,6 +72,14 @@ public @interface SortDefault {
 	 * @since 2.3
 	 */
 	boolean caseSensitive() default true;
+
+	/**
+	 * Specifies which null handling to apply. Defaults to {@link NullHandling#NATIVE}.
+	 *
+	 * @return
+	 * @since 3.4
+	 */
+	NullHandling nullHandling() default NullHandling.NATIVE;
 
 	/**
 	 * Wrapper annotation to allow declaring multiple {@link SortDefault} annotations on a method parameter.
