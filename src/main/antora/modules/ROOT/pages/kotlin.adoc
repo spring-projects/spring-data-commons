@@ -1,0 +1,12 @@
+[[kotlin]]
+= Kotlin Support
+:page-section-summary-toc: 1
+
+https://kotlinlang.org[Kotlin] is a statically typed language that targets the JVM (and other platforms) which allows writing concise and elegant code while providing excellent https://kotlinlang.org/docs/reference/java-interop.html[interoperability] with existing libraries written in Java.
+
+Spring Data provides first-class support for Kotlin and lets developers write Kotlin applications almost as if Spring Data was a Kotlin native framework.
+
+The easiest way to build a Spring application with Kotlin is to leverage Spring Boot and its https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-kotlin.html[dedicated Kotlin support].
+This comprehensive https://spring.io/guides/tutorials/spring-boot-kotlin/[tutorial] will teach you how to build Spring Boot applications with Kotlin using https://start.spring.io/#!language=kotlin&type=gradle-project[start.spring.io].
+
+

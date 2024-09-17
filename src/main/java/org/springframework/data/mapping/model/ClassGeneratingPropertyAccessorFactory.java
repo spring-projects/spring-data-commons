@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2023 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,15 @@ package org.springframework.data.mapping.model;
 import static org.springframework.asm.Opcodes.*;
 import static org.springframework.data.mapping.model.BytecodeUtil.*;
 
+import kotlin.reflect.KParameter;
+import kotlin.reflect.KParameter.Kind;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,12 +52,16 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
+import org.springframework.data.mapping.model.KotlinCopyMethod.KotlinCopyByProperty;
+import org.springframework.data.mapping.model.KotlinValueUtils.ValueBoxing;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentLruCache;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * A factory that can generate byte code to speed-up dynamic property access. Uses the {@link PersistentEntity}'s
@@ -76,6 +84,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor<?>>> propertyAccessorClasses = new HashMap<>(
 			32);
 
+	private final ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache = new ConcurrentLruCache<>(
+			256, KotlinValueBoxingAdapter::getWrapper);
+
 	@Override
 	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {
 
@@ -96,7 +107,14 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		args[0] = bean;
 
 		try {
-			return (PersistentPropertyAccessor<T>) constructor.newInstance(args);
+
+			PersistentPropertyAccessor<T> accessor = (PersistentPropertyAccessor<T>) constructor.newInstance(args);
+
+			if (KotlinDetector.isKotlinType(entity.getType())) {
+				return new KotlinValueBoxingAdapter<>(entity, accessor, wrapperCache);
+			}
+
+			return accessor;
 		} catch (Exception e) {
 			throw new IllegalArgumentException(String.format("Cannot create persistent property accessor for %s", entity), e);
 		} finally {
@@ -197,7 +215,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 	/**
 	 * Generates {@link PersistentPropertyAccessor} classes to access properties of a {@link PersistentEntity}. This code
-	 * uses {@code private final static} held method handles which perform about the speed of native method invocations
+	 * uses {@code private static final} held method handles which perform about the speed of native method invocations
 	 * for property access which is restricted due to Java rules (such as private fields/methods) or private inner
 	 * classes. All other scoped members (package default, protected and public) are accessed via field or property access
 	 * to bypass reflection overhead. That's only possible if the type and the member access is possible from another
@@ -1011,7 +1029,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 					visitWithProperty(entity, property, mv, internalClassName, wither);
 				}
 
-				if (hasKotlinCopyMethod(property)) {
+				if (KotlinDetector.isKotlinType(entity.getType()) && KotlinCopyMethod.hasKotlinCopyMethodFor(property)) {
 					visitKotlinCopy(entity, property, mv, internalClassName);
 				}
 
@@ -1377,7 +1395,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	private static Map<String, PropertyStackAddress> createPropertyStackMap(
 			List<PersistentProperty<?>> persistentProperties) {
 
-		Map<String, PropertyStackAddress> stackmap = new HashMap<>();
+		Map<String, PropertyStackAddress> stackmap = new HashMap<>(persistentProperties.size());
 
 		for (PersistentProperty<?> property : persistentProperties) {
 			stackmap.put(property.getName(), new PropertyStackAddress(new Label(), property.getName().hashCode()));
@@ -1411,37 +1429,72 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * @return {@literal true} if object mutation is supported.
 	 */
 	static boolean supportsMutation(PersistentProperty<?> property) {
-
-		if (property.isImmutable()) {
-
-			if (property.getWither() != null) {
-				return true;
-			}
-
-			if (hasKotlinCopyMethod(property)) {
-				return true;
-			}
-		}
-
-		return (property.usePropertyAccess() && property.getSetter() != null)
-				|| (property.getField() != null && !Modifier.isFinal(property.getField().getModifiers()));
+		return (property.usePropertyAccess() && property.getSetter() != null) || property.isReadable();
 	}
 
 	/**
-	 * Check whether the owning type of {@link PersistentProperty} declares a {@literal copy} method or {@literal copy}
-	 * method with parameter defaulting.
+	 * Adapter to encapsulate Kotlin's value class boxing when properties are nullable.
 	 *
-	 * @param type must not be {@literal null}.
-	 * @return
+	 * @param entity the entity that could use value class properties.
+	 * @param delegate the property accessor to delegate to.
+	 * @param wrapperCache cache for wrapping functions.
+	 * @param <T>
+	 * @since 3.2
 	 */
-	private static boolean hasKotlinCopyMethod(PersistentProperty<?> property) {
+	record KotlinValueBoxingAdapter<T> (PersistentEntity<?, ?> entity, PersistentPropertyAccessor<T> delegate,
+			ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache)
+			implements
+				PersistentPropertyAccessor<T> {
 
-		Class<?> type = property.getOwner().getType();
-
-		if (isAccessible(type) && KotlinDetector.isKotlinType(type)) {
-			return KotlinCopyMethod.findCopyMethod(type).filter(it -> it.supportsProperty(property)).isPresent();
+		@Override
+		public void setProperty(PersistentProperty<?> property, @Nullable Object value) {
+			delegate.setProperty(property, wrapperCache.get(property).apply(value));
 		}
 
-		return false;
+		/**
+		 * Create a wrapper function if the {@link PersistentProperty} uses value classes.
+		 *
+		 * @param property the persistent property to inspect.
+		 * @return a wrapper function to wrap a value class component into the hierarchy of value classes or
+		 *         {@link Function#identity()} if wrapping is not necessary.
+		 * @see KotlinValueUtils#getCopyValueHierarchy(KParameter)
+		 */
+		static Function<Object, Object> getWrapper(PersistentProperty<?> property) {
+
+			Optional<KotlinCopyMethod> kotlinCopyMethod = KotlinCopyMethod.findCopyMethod(property.getOwner().getType())
+					.filter(it -> it.supportsProperty(property));
+
+			if (kotlinCopyMethod.isPresent()
+					&& kotlinCopyMethod.filter(it -> it.forProperty(property).isPresent()).isPresent()) {
+				KotlinCopyMethod copyMethod = kotlinCopyMethod.get();
+
+				Optional<KParameter> kParameter = kotlinCopyMethod.stream()
+						.flatMap(it -> it.getCopyFunction().getParameters().stream()) //
+						.filter(kf -> kf.getKind() == Kind.VALUE) //
+						.filter(kf -> StringUtils.hasText(kf.getName())) //
+						.filter(kf -> kf.getName().equals(property.getName())) //
+						.findFirst();
+
+				ValueBoxing vh = kParameter.map(KotlinValueUtils::getCopyValueHierarchy).orElse(null);
+				KotlinCopyByProperty kotlinCopyByProperty = copyMethod.forProperty(property).get();
+				Method copy = copyMethod.getSyntheticCopyMethod();
+
+				Parameter parameter = copy.getParameters()[kotlinCopyByProperty.getParameterPosition()];
+
+				return o -> ClassUtils.isAssignableValue(parameter.getType(), o) || vh == null ? o : vh.applyWrapping(o);
+			}
+
+			return Function.identity();
+		}
+
+		@Override
+		public Object getProperty(PersistentProperty<?> property) {
+			return delegate.getProperty(property);
+		}
+
+		@Override
+		public T getBean() {
+			return delegate.getBean();
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.time.temporal.TemporalAccessor;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -40,7 +41,6 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * {@link AuditableBeanWrapperFactory} that will create am {@link AuditableBeanWrapper} using mapping information
@@ -67,7 +67,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		Assert.notNull(entities, "PersistentEntities must not be null");
 
 		this.entities = entities;
-		this.metadataCache = new ConcurrentReferenceHashMap<>();
+		this.metadataCache = new ConcurrentHashMap<>();
 	}
 
 	@Override
@@ -114,7 +114,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		/**
 		 * Creates a new {@link MappingAuditingMetadata} instance from the given {@link PersistentEntity}.
 		 *
-		 * @param entity must not be {@literal null}.
+		 * @param context must not be {@literal null}.
+		 * @param type must not be {@literal null}.
 		 */
 		public <P> MappingAuditingMetadata(MappingContext<?, ? extends PersistentProperty<?>> context, Class<?> type) {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.function.Function;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
@@ -43,7 +44,8 @@ import org.springframework.util.Assert;
  */
 public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter> implements Streamable<T> {
 
-	public static final List<Class<?>> TYPES = Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class);
+	public static final List<Class<?>> TYPES = Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class,
+			Limit.class);
 
 	private static final String PARAM_ON_SPECIAL = format("You must not use @%s on a parameter typed %s or %s",
 			Param.class.getSimpleName(), Pageable.class.getSimpleName(), Sort.class.getSimpleName());
@@ -56,22 +58,11 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	private final int scrollPositionIndex;
 	private final int pageableIndex;
 	private final int sortIndex;
+	private final int limitIndex;
 	private final List<T> parameters;
 	private final Lazy<S> bindable;
 
 	private int dynamicProjectionIndex;
-
-	/**
-	 * Creates a new instance of {@link Parameters}.
-	 *
-	 * @param method must not be {@literal null}.
-	 * @deprecated since 3.1, use {@link #Parameters(Method, Function)} instead.
-	 */
-	@SuppressWarnings("null")
-	@Deprecated(since = "3.1", forRemoval = true)
-	public Parameters(Method method) {
-		this(method, null);
-	}
 
 	/**
 	 * Creates a new {@link Parameters} instance for the given {@link Method} and {@link Function} to create a
@@ -80,14 +71,30 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * @param method must not be {@literal null}.
 	 * @param parameterFactory must not be {@literal null}.
 	 * @since 3.0.2
+	 * @deprecated since 3.2.1, use {@link Parameters(ParametersSource, Function)} instead.
 	 */
+	@Deprecated(since = "3.2.1", forRemoval = true)
 	protected Parameters(Method method, Function<MethodParameter, T> parameterFactory) {
+		this(ParametersSource.of(method), parameterFactory);
+	}
 
-		Assert.notNull(method, "Method must not be null");
+	/**
+	 * Creates a new {@link Parameters} instance for the given {@link Method} and {@link Function} to create a
+	 * {@link Parameter} instance from a {@link MethodParameter}.
+	 *
+	 * @param parametersSource must not be {@literal null}.
+	 * @param parameterFactory must not be {@literal null}.
+	 * @since 3.2.1
+	 */
+	protected Parameters(ParametersSource parametersSource,
+			Function<MethodParameter, T> parameterFactory) {
+
+		Assert.notNull(parametersSource, "ParametersSource must not be null");
+		Assert.notNull(parameterFactory, "Parameter factory must not be null");
 
 		// Factory nullability not enforced yet to support falling back to the deprecated
-		// createParameter(MethodParameter). Add assertion when the deprecation is removed.
 
+		Method method = parametersSource.getMethod();
 		int parameterCount = method.getParameterCount();
 
 		this.parameters = new ArrayList<>(parameterCount);
@@ -96,15 +103,16 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		int scrollPositionIndex = -1;
 		int pageableIndex = -1;
 		int sortIndex = -1;
+		int limitIndex = -1;
 
 		for (int i = 0; i < parameterCount; i++) {
 
-			MethodParameter methodParameter = new MethodParameter(method, i);
+			MethodParameter methodParameter = new MethodParameter(method, i)
+					.withContainingClass(parametersSource.getContainingClass());
+
 			methodParameter.initParameterNameDiscovery(PARAMETER_NAME_DISCOVERER);
 
-			T parameter = parameterFactory == null //
-					? createParameter(methodParameter) //
-					: parameterFactory.apply(methodParameter);
+			T parameter = parameterFactory.apply(methodParameter);
 
 			if (parameter.isSpecialParameter() && parameter.isNamedParameter()) {
 				throw new IllegalArgumentException(PARAM_ON_SPECIAL);
@@ -126,12 +134,17 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 				sortIndex = i;
 			}
 
+			if (Limit.class.isAssignableFrom(parameter.getType())) {
+				limitIndex = i;
+			}
+
 			parameters.add(parameter);
 		}
 
 		this.scrollPositionIndex = scrollPositionIndex;
 		this.pageableIndex = pageableIndex;
 		this.sortIndex = sortIndex;
+		this.limitIndex = limitIndex;
 		this.bindable = Lazy.of(this::getBindable);
 
 		assertEitherAllParamAnnotatedOrNone();
@@ -149,6 +162,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		int scrollPositionIndexTemp = -1;
 		int pageableIndexTemp = -1;
 		int sortIndexTemp = -1;
+		int limitIndexTmp = -1;
 		int dynamicProjectionTemp = -1;
 
 		for (int i = 0; i < originals.size(); i++) {
@@ -159,12 +173,14 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			scrollPositionIndexTemp = original.isScrollPosition() ? i : -1;
 			pageableIndexTemp = original.isPageable() ? i : -1;
 			sortIndexTemp = original.isSort() ? i : -1;
+			limitIndexTmp = original.isLimit() ? i : -1;
 			dynamicProjectionTemp = original.isDynamicProjectionParameter() ? i : -1;
 		}
 
 		this.scrollPositionIndex = scrollPositionIndexTemp;
 		this.pageableIndex = pageableIndexTemp;
 		this.sortIndex = sortIndexTemp;
+		this.limitIndex = limitIndexTmp;
 		this.dynamicProjectionIndex = dynamicProjectionTemp;
 		this.bindable = Lazy.of(() -> (S) this);
 	}
@@ -181,19 +197,6 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		}
 
 		return createFrom(bindables);
-	}
-
-	/**
-	 * Creates a {@link Parameter} instance for the given {@link MethodParameter}.
-	 *
-	 * @param parameter will never be {@literal null}.
-	 * @return
-	 * @deprecated since 3.1, in your extension, call {@link #Parameters(Method, Function)} instead.
-	 */
-	@SuppressWarnings("unchecked")
-	@Deprecated(since = "3.1", forRemoval = true)
-	protected T createParameter(MethodParameter parameter) {
-		return (T) new Parameter(parameter);
 	}
 
 	/**
@@ -253,6 +256,27 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 */
 	public boolean hasSortParameter() {
 		return sortIndex != -1;
+	}
+
+	/**
+	 * Returns whether the method the {@link Parameters} was created for contains a {@link Limit} argument.
+	 *
+	 * @return
+	 * @since 3.2
+	 */
+	public boolean hasLimitParameter() {
+		return getLimitIndex() != -1;
+	}
+
+	/**
+	 * Returns the index of the {@link Limit} {@link Method} parameter if available. Will return {@literal -1} if there is
+	 * no {@link Limit} argument in the {@link Method}'s parameter list.
+	 *
+	 * @return
+	 * @since 3.2
+	 */
+	public int getLimitIndex() {
+		return limitIndex;
 	}
 
 	/**
@@ -389,7 +413,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		return !TYPES.contains(type);
 	}
 
+	@Override
 	public Iterator<T> iterator() {
 		return parameters.iterator();
 	}
+
 }

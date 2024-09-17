@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2023 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,16 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * Simple value type to delay the creation of an object using a {@link Supplier} returning the produced object for
- * subsequent lookups. Note, that no concurrency control is applied during the lookup of {@link #get()}, which means in
- * concurrent access scenarios, the provided {@link Supplier} can be called multiple times.
+ * subsequent lookups.
+ * <p>
+ * Note, that no concurrency control is applied during the lookup of {@link #get()}, which means in concurrent access
+ * scenarios, the provided {@link Supplier} can be called multiple times.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Henning Rohlfs
  * @author Johannes Englmeier
+ * @author Greg Turnquist
  * @since 2.0
  */
 public class Lazy<T> implements Supplier<T> {
@@ -44,17 +47,12 @@ public class Lazy<T> implements Supplier<T> {
 	private @Nullable T value;
 	private volatile boolean resolved;
 
-	/**
-	 * Creates a new {@link Lazy} instance for the given supplier.
-	 *
-	 * @param supplier
-	 */
 	private Lazy(Supplier<? extends T> supplier) {
 		this(supplier, null, false);
 	}
 
 	/**
-	 * Creates a new {@link Lazy} for the given {@link Supplier}, value and whether it has been resolved or not.
+	 * Creates a new {@code Lazy} for the given {@link Supplier}, value and whether it has been resolved or not.
 	 *
 	 * @param supplier must not be {@literal null}.
 	 * @param value can be {@literal null}.
@@ -68,22 +66,22 @@ public class Lazy<T> implements Supplier<T> {
 	}
 
 	/**
-	 * Creates a new {@link Lazy} to produce an object lazily.
+	 * Creates a new {@code Lazy} to produce an object lazily.
 	 *
 	 * @param <T> the type of which to produce an object of eventually.
 	 * @param supplier the {@link Supplier} to create the object lazily.
-	 * @return
+	 * @return a {@code Lazy} wrapping the given {@link Supplier}.
 	 */
 	public static <T> Lazy<T> of(Supplier<? extends T> supplier) {
 		return new Lazy<>(supplier);
 	}
 
 	/**
-	 * Creates a new {@link Lazy} to return the given value.
+	 * Creates a new {@code Lazy} to return the given value.
 	 *
 	 * @param <T> the type of the value to return eventually.
 	 * @param value the value to return.
-	 * @return
+	 * @return a {@code Lazy} wrapping {@code value}.
 	 */
 	public static <T> Lazy<T> of(T value) {
 
@@ -93,9 +91,9 @@ public class Lazy<T> implements Supplier<T> {
 	}
 
 	/**
-	 * Creates a pre-resolved empty {@link Lazy}.
+	 * Creates a pre-resolved empty {@code Lazy}.
 	 *
-	 * @return
+	 * @return an empty {@code Lazy}.
 	 * @since 2.1
 	 */
 	@SuppressWarnings("unchecked")
@@ -104,11 +102,12 @@ public class Lazy<T> implements Supplier<T> {
 	}
 
 	/**
-	 * Returns the value created by the configured {@link Supplier}. Will return the calculated instance for subsequent
-	 * lookups.
+	 * Returns the value created by the configured {@link Supplier}. Will return the same instance for subsequent lookups.
 	 *
-	 * @return
+	 * @return the value created by the configured {@link Supplier}. Will return the same instance for subsequent lookups.
+	 * @throws IllegalStateException if the resolved value is {@literal null}.
 	 */
+	@Override
 	public T get() {
 
 		T value = getNullable();
@@ -121,118 +120,9 @@ public class Lazy<T> implements Supplier<T> {
 	}
 
 	/**
-	 * Returns the {@link Optional} value created by the configured {@link Supplier}, allowing the absence of values in
-	 * contrast to {@link #get()}. Will return the calculated instance for subsequent lookups.
-	 *
-	 * @return
-	 */
-	public Optional<T> getOptional() {
-		return Optional.ofNullable(getNullable());
-	}
-
-	/**
-	 * Returns a new Lazy that will consume the given supplier in case the current one does not yield in a result.
-	 *
-	 * @param supplier must not be {@literal null}.
-	 * @return
-	 */
-	public Lazy<T> or(Supplier<? extends T> supplier) {
-
-		Assert.notNull(supplier, "Supplier must not be null");
-
-		return Lazy.of(() -> orElseGet(supplier));
-	}
-
-	/**
-	 * Returns a new Lazy that will return the given value in case the current one does not yield in a result.
-	 *
-	 * @param value must not be {@literal null}.
-	 * @return
-	 */
-	public Lazy<T> or(T value) {
-
-		Assert.notNull(value, "Value must not be null");
-
-		return Lazy.of(() -> orElse(value));
-	}
-
-	/**
-	 * Returns the value of the lazy computation or the given default value in case the computation yields
-	 * {@literal null}.
-	 *
-	 * @param value
-	 * @return
-	 */
-	@Nullable
-	public T orElse(@Nullable T value) {
-
-		T nullable = getNullable();
-
-		return nullable == null ? value : nullable;
-	}
-
-	/**
-	 * Returns the value of the lazy computation or the value produced by the given {@link Supplier} in case the original
-	 * value is {@literal null}.
-	 *
-	 * @param supplier must not be {@literal null}.
-	 * @return
-	 */
-	@Nullable
-	private T orElseGet(Supplier<? extends T> supplier) {
-
-		Assert.notNull(supplier, "Default value supplier must not be null");
-
-		T value = getNullable();
-
-		return value == null ? supplier.get() : value;
-	}
-
-	/**
-	 * Creates a new {@link Lazy} with the given {@link Function} lazily applied to the current one.
-	 *
-	 * @param function must not be {@literal null}.
-	 * @return
-	 */
-	public <S> Lazy<S> map(Function<? super T, ? extends S> function) {
-
-		Assert.notNull(function, "Function must not be null");
-
-		return Lazy.of(() -> function.apply(get()));
-	}
-
-	/**
-	 * Creates a new {@link Lazy} with the given {@link Function} lazily applied to the current one.
-	 *
-	 * @param function must not be {@literal null}.
-	 * @return
-	 */
-	public <S> Lazy<S> flatMap(Function<? super T, Lazy<? extends S>> function) {
-
-		Assert.notNull(function, "Function must not be null");
-
-		return Lazy.of(() -> function.apply(get()).get());
-	}
-
-	/**
-	 * Returns the {@link String} representation of the already resolved value or the one provided through the given
-	 * {@link Supplier} if the value has not been resolved yet.
-	 *
-	 * @param fallback must not be {@literal null}.
-	 * @return will never be {@literal null}.
-	 * @since 3.0.1
-	 */
-	public String toString(Supplier<String> fallback) {
-
-		Assert.notNull(fallback, "Fallback must not be null!");
-
-		return resolved ? toString() : fallback.get();
-	}
-
-	/**
 	 * Returns the value of the lazy evaluation.
 	 *
-	 * @return
+	 * @return the value of the lazy evaluation, can be {@literal null}.
 	 * @since 2.2
 	 */
 	@Nullable
@@ -248,14 +138,102 @@ public class Lazy<T> implements Supplier<T> {
 		return value;
 	}
 
-	@Override
-	public String toString() {
+	/**
+	 * Returns the {@link Optional} value created by the configured {@link Supplier}, allowing the absence of values in
+	 * contrast to {@link #get()}. Will return the calculated instance for subsequent lookups.
+	 *
+	 * @return an {@link Optional} value created by the configured {@link Supplier} or an empty {@link Optional} if the
+	 *         resolved value is {@literal null}.
+	 */
+	public Optional<T> getOptional() {
+		return Optional.ofNullable(getNullable());
+	}
 
-		if (!resolved) {
-			return UNRESOLVED;
-		}
+	/**
+	 * Returns a new {@code Lazy} that will return the given value in case the current one does not yield in a result.
+	 *
+	 * @param other must not be {@literal null}.
+	 * @return a new {@code Lazy} that will yield its value if present, otherwise {@code other}.
+	 */
+	public Lazy<T> or(T other) {
 
-		return value == null ? "null" : value.toString();
+		Assert.notNull(other, "Other value must not be null");
+
+		return Lazy.of(() -> orElse(other));
+	}
+
+	/**
+	 * Returns a new {@code Lazy} that will consume the given supplier in case the current one does not yield in a result.
+	 *
+	 * @param supplier the supplying function that produces a value to be returned, must not be {@literal null}.
+	 * @return a new {@code Lazy} that will yield its value if present, otherwise the result produced by the supplying
+	 *         function.
+	 */
+	public Lazy<T> or(Supplier<? extends T> supplier) {
+
+		Assert.notNull(supplier, "Supplier must not be null");
+
+		return Lazy.of(() -> orElseGet(supplier));
+	}
+
+	/**
+	 * Returns the value of the lazy computation or the given default value in case the computation yields
+	 * {@literal null}.
+	 *
+	 * @param other the value to be returned, if no value is present. May be {@literal null}.
+	 * @return the value, if present, otherwise {@code other}.
+	 */
+	@Nullable
+	public T orElse(@Nullable T other) {
+
+		T nullable = getNullable();
+
+		return nullable == null ? other : nullable;
+	}
+
+	/**
+	 * Returns the value of the lazy computation or the value produced by the given {@link Supplier} in case the original
+	 * value is {@literal null}.
+	 *
+	 * @param supplier the supplying function that produces a value to be returned, must not be {@literal null}.
+	 * @return the value, if present, otherwise the result produced by the supplying function.
+	 */
+	@Nullable
+	public T orElseGet(Supplier<? extends T> supplier) {
+
+		Assert.notNull(supplier, "Default value supplier must not be null");
+
+		T value = getNullable();
+
+		return value == null ? supplier.get() : value;
+	}
+
+	/**
+	 * Creates a new {@code Lazy} with the given {@link Function} lazily applied to the current one.
+	 *
+	 * @param function must not be {@literal null}.
+	 * @return an {@code Lazy} describing the result of applying a mapping function to the value of this {@code Lazy} or
+	 *         throwing {@link IllegalStateException} if the {@code Lazy} is empty.
+	 */
+	public <S> Lazy<S> map(Function<? super T, ? extends S> function) {
+
+		Assert.notNull(function, "Function must not be null");
+
+		return Lazy.of(() -> function.apply(get()));
+	}
+
+	/**
+	 * Creates a new {@code Lazy} with the given {@link Function} lazily applied to the current one.
+	 *
+	 * @param function must not be {@literal null}.
+	 * @return the result of applying an {@code Lazy}-bearing mapping function to the value of this {@code Lazy} or a
+	 *         {@code Lazy} throwing {@link IllegalStateException} if the {@code Lazy} is empty.
+	 */
+	public <S> Lazy<S> flatMap(Function<? super T, Lazy<? extends S>> function) {
+
+		Assert.notNull(function, "Function must not be null");
+
+		return Lazy.of(() -> function.apply(get()).get());
 	}
 
 	@Override
@@ -289,5 +267,30 @@ public class Lazy<T> implements Supplier<T> {
 		result = 31 * result + (resolved ? 1 : 0);
 
 		return result;
+	}
+
+	@Override
+	public String toString() {
+
+		if (!resolved) {
+			return UNRESOLVED;
+		}
+
+		return value == null ? "null" : value.toString();
+	}
+
+	/**
+	 * Returns the {@link String} representation of the already resolved value or the one provided through the given
+	 * {@link Supplier} if the value has not been resolved yet.
+	 *
+	 * @param fallback must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.0.1
+	 */
+	public String toString(Supplier<String> fallback) {
+
+		Assert.notNull(fallback, "Fallback must not be null!");
+
+		return resolved ? toString() : fallback.get();
 	}
 }

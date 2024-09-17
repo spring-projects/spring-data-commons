@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 the original author or authors.
+ * Copyright 2019-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.springframework.data.mapping.model;
 
 import java.util.function.Function;
 
-import org.springframework.core.KotlinDetector;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
@@ -76,7 +75,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 		PersistentEntity<?, ? extends PersistentProperty<?>> owner = property.getOwner();
 		PersistentPropertyAccessor<T> delegate = delegateFunction.apply(this.bean);
 
-		if (!property.isImmutable() || property.getWither() != null || KotlinDetector.isKotlinType(owner.getType())) {
+		if (property.isReadable()) {
 
 			delegate.setProperty(property, value);
 			this.bean = delegate.getBean();

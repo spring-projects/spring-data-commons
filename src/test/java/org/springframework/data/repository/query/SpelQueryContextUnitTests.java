@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ class SpelQueryContextUnitTests {
 		assertThat(context.withEvaluationContextProvider(EVALUATION_CONTEXT_PROVIDER)).isNotNull();
 	}
 
-	@Test // DATACMNS-1683
+	@Test // DATACMNS-1683, GH-
 	void reportsQuotationCorrectly() {
 
 		var context = SpelQueryContext.of(PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
@@ -77,5 +77,6 @@ class SpelQueryContextUnitTests {
 				"select n from NetworkServer n where (LOWER(n.name) LIKE LOWER(NULLIF(text(concat('%',:__$synthetic$__0,'%')), '')) OR :__$synthetic$__1 IS NULL )");
 		assertThat(extractor.isQuoted(extractor.getQueryString().indexOf(":__$synthetic$__0"))).isFalse();
 		assertThat(extractor.isQuoted(extractor.getQueryString().indexOf(":__$synthetic$__1"))).isFalse();
+		assertThat(extractor.size()).isEqualTo(2);
 	}
 }

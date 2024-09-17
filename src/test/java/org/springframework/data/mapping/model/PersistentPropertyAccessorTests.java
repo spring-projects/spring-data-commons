@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
  */
 public class PersistentPropertyAccessorTests {
 
-	private final static SampleMappingContext MAPPING_CONTEXT = new SampleMappingContext();
+	private static final SampleMappingContext MAPPING_CONTEXT = new SampleMappingContext();
 
 	@SuppressWarnings("unchecked")
 	public static List<Object[]> parameters() {

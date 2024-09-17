@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2023 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 /**
  * Argument resolver to extract a {@link Pageable} object from a {@link NativeWebRequest} for a particular
  * {@link MethodParameter}. A {@link PageableArgumentResolver} can either resolve {@link Pageable} itself or wrap
- * another {@link PageableArgumentResolver} to post-process {@link Pageable}. {@link Pageable} resolution yields either
- * in a {@link Pageable} object or {@literal null} if {@link Pageable} cannot be resolved.
+ * another {@link PageableArgumentResolver} to post-process {@link Pageable}.
  *
  * @author Mark Paluch
  * @since 1.13

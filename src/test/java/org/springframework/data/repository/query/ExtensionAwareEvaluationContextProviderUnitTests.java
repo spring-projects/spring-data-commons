@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -386,7 +386,7 @@ class ExtensionAwareEvaluationContextProviderUnitTests {
 
 	private Object evaluateExpression(String expression, Object[] args) {
 
-		var parameters = new DefaultParameters(method);
+		var parameters = new DefaultParameters(ParametersSource.of(method));
 		var evaluationContext = provider.getEvaluationContext(parameters, args);
 		return new SpelExpressionParser().parseExpression(expression).getValue(evaluationContext);
 	}

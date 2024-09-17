@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * Unit tests for {@link HateoasSortHandlerMethodArgumentResolver}
  *
  * @author Oliver Gierke
+ * @author Julien Béti
  */
 class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandlerMethodArgumentResolverUnitTests {
 
@@ -46,13 +47,13 @@ class HateoasSortHandlerMethodArgumentResolverUnitTests extends SortHandlerMetho
 		assertUriStringFor(SORT, "/?sort=firstname,lastname,desc", "/?sort=foo,asc");
 	}
 
-	@Test // DATACMNS-418
+	@Test // DATACMNS-418, GH-2531
 	void returnCorrectTemplateVariables() {
 
 		var uriComponents = UriComponentsBuilder.fromPath("/").build();
 
 		var resolver = new HateoasSortHandlerMethodArgumentResolver();
-		assertThat(resolver.getSortTemplateVariables(null, uriComponents).toString()).isEqualTo("{?sort}");
+		assertThat(resolver.getSortTemplateVariables(null, uriComponents).toString()).isEqualTo("{?sort*}");
 	}
 
 	private void assertUriStringFor(Sort sort, String expected) throws Exception {

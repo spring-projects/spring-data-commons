@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,23 @@ import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import org.eclipse.collections.api.list.ImmutableList;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Window;
 import org.springframework.data.domain.Window;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -41,6 +48,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link QueryMethod}.
@@ -302,6 +310,84 @@ class QueryMethodUnitTests {
 		assertThat(queryMethod.isCollectionQuery()).isTrue();
 	}
 
+	@Test // GH-2827
+	void rejectsPageAndSort() throws NoSuchMethodException {
+
+		var method = SampleRepository.class.getMethod("pageableAndSort", Pageable.class, Sort.class);
+
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> new QueryMethod(method, metadata, factory));
+	}
+
+	@Test // GH-2827
+	void rejectsPageAndLimit() throws NoSuchMethodException {
+
+		var method = SampleRepository.class.getMethod("pageableAndLimit", Pageable.class, Limit.class);
+
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> new QueryMethod(method, metadata, factory));
+	}
+
+	@Test // GH-2827
+	void allowsSortAndLimit() throws NoSuchMethodException {
+
+		var method = SampleRepository.class.getMethod("sortAndLimit", Sort.class, Limit.class);
+
+		new QueryMethod(method, metadata, factory);
+	}
+
+	@Test // GH-2827
+	void allowsScrollPositionAndLimit() throws NoSuchMethodException {
+
+		var method = SampleRepository.class.getMethod("scrollPositionAndLimit", ScrollPosition.class, Limit.class);
+
+		new QueryMethod(method, metadata, factory);
+	}
+
+	@Test // GH-2827
+	void allowFindTopAndLimit() throws NoSuchMethodException {
+
+		var method = SampleRepository.class.getMethod("findTop5By", Limit.class);
+
+		new QueryMethod(method, metadata, factory);
+	}
+
+	@Test // GH-2827
+	void allowsFindTopAndPageable() throws NoSuchMethodException {
+
+		var method = SampleRepository.class.getMethod("findTop5By", Pageable.class);
+
+		new QueryMethod(method, metadata, factory);
+	}
+
+	@Test // GH-2827
+	void acceptsScrollAndSortMaybe() throws NoSuchMethodException {
+
+		var method = SampleRepository.class.getMethod("scrollPositionAndSort", ScrollPosition.class, Sort.class);
+
+		new QueryMethod(method, metadata, factory);
+	}
+
+	@TestFactory // GH-2869
+	Stream<DynamicTest> doesNotConsiderQueryMethodReturningAggregateImplementingStreamableACollectionQuery()
+			throws Exception {
+
+		var metadata = AbstractRepositoryMetadata.getMetadata(StreamableAggregateRepository.class);
+		var stream = Stream.of(
+				Map.entry("findBy", false),
+				Map.entry("findSubTypeBy", false),
+				Map.entry("findAllBy", true),
+				Map.entry("findOptionalBy", false));
+
+		return DynamicTest.stream(stream, //
+				it -> it.getKey() + " considered collection query -> " + it.getValue(), //
+				it -> {
+
+					var method = StreamableAggregateRepository.class.getMethod(it.getKey());
+					var queryMethod = new QueryMethod(method, metadata, factory);
+
+					assertThat(queryMethod.isCollectionQuery()).isEqualTo(it.getValue());
+				});
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -360,6 +446,20 @@ class QueryMethodUnitTests {
 		Page<User> cursorWindowMethodWithInvalidReturnType(ScrollPosition cursorRequest);
 
 		Window<User> cursorWindowWithoutScrollPosition();
+
+		List<User> pageableAndSort(Pageable pageable, Sort sort);
+
+		List<User> pageableAndLimit(Pageable pageable, Limit limit);
+
+		Window<User> scrollPositionAndLimit(ScrollPosition pageable, Limit limit);
+
+		Window<User> scrollPositionAndSort(ScrollPosition pageable, Sort sort);
+
+		List<User> sortAndLimit(Sort sort, Limit limit);
+
+		List<User> findTop5By(Limit limit);
+
+		List<User> findTop5By(Pageable page);
 	}
 
 	class User {
@@ -379,4 +479,21 @@ class QueryMethodUnitTests {
 	interface ContainerRepository extends Repository<Container, Long> {
 		Container someMethod();
 	}
+
+	// GH-2869
+
+	static abstract class StreamableAggregate implements Streamable<Object> {}
+
+	interface StreamableAggregateRepository extends Repository<StreamableAggregate, Object> {
+
+		StreamableAggregate findBy();
+
+		StreamableAggregateSubType findSubTypeBy();
+
+		Optional<StreamableAggregate> findOptionalBy();
+
+		Streamable<StreamableAggregate> findAllBy();
+	}
+
+	static abstract class StreamableAggregateSubType extends StreamableAggregate {}
 }

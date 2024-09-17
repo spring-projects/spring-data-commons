@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -261,6 +261,16 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	 * @since 1.9
 	 */
 	boolean isWritable();
+
+	/**
+	 * Returns whether the current property is readable through {@link PersistentPropertyAccessor}, i.e. if it is not
+	 * {@link #isTransient()}, if the value can be set on the current instance or read to create a new instance as per
+	 * {@link #getWither()} or via Kotlin Copy methods.
+	 *
+	 * @return
+	 * @since 3.2
+	 */
+	boolean isReadable();
 
 	/**
 	 * Returns whether the current property is immutable, i.e. if there is no setter or the backing {@link Field} is

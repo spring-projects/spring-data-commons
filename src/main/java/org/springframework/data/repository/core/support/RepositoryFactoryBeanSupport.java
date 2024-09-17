@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,10 +46,17 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
- * Adapter for Springs {@link FactoryBean} interface to allow easy setup of repository factories via Spring
+ * Adapter for Spring's {@link FactoryBean} interface to allow easy setup of repository factories via Spring
  * configuration.
+ * <p>
+ * Subclasses may pass-thru generics, provide a fixed domain, provide a fixed identifier type, or provide additional
+ * generic type parameters. Type parameters must appear in the same order the ones from this class (repository type,
+ * entity type, identifier type, additional type parameters). Using a different ordering will result in invalid type
+ * definitions.
  *
- * @param <T> the type of the repository
+ * @param <T> the type of the repository.
+ * @param <S> the entity type.
+ * @param <ID> the entity identifier type.
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
@@ -62,6 +69,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private final Class<? extends T> repositoryInterface;
 
 	private RepositoryFactorySupport factory;
+	private boolean exposeMetadata;
 	private Key queryLookupStrategyKey;
 	private Optional<Class<?>> repositoryBaseClass = Optional.empty();
 	private Optional<Object> customImplementation = Optional.empty();
@@ -98,6 +106,20 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	public void setRepositoryBaseClass(Class<?> repositoryBaseClass) {
 		this.repositoryBaseClass = Optional.ofNullable(repositoryBaseClass);
+	}
+
+	/**
+	 * Set whether the repository method metadata should be exposed by the repository factory as a ThreadLocal for
+	 * retrieval via the {@code RepositoryMethodContext} class. This is useful if an advised object needs to obtain
+	 * repository information.
+	 * <p>
+	 * Default is "false", in order to avoid unnecessary extra interception. This means that no guarantees are provided
+	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
+	 * 
+	 * @since 3.4.0
+	 */
+	public void setExposeMetadata(boolean exposeMetadata) {
+		this.exposeMetadata = exposeMetadata;
 	}
 
 	/**
@@ -251,6 +273,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	public void afterPropertiesSet() {
 
 		this.factory = createRepositoryFactory();
+		this.factory.setExposeMetadata(exposeMetadata);
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
 		this.factory.setNamedQueries(namedQueries);
 		this.factory.setEvaluationContextProvider(

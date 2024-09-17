@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 the original author or authors.
+ * Copyright 2020-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Jens Schauder
+ * @author Jay Lee
  * @since 2.4
  */
 public abstract class PageableExecutionUtils {
@@ -54,19 +55,28 @@ public abstract class PageableExecutionUtils {
 		Assert.notNull(pageable, "Pageable must not be null");
 		Assert.notNull(totalSupplier, "TotalSupplier must not be null");
 
-		if (pageable.isUnpaged() || pageable.getOffset() == 0) {
-
-			if (pageable.isUnpaged() || pageable.getPageSize() > content.size()) {
-				return new PageImpl<>(content, pageable, content.size());
-			}
-
-			return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
+		if (pageable.isUnpaged()) {
+			return new PageImpl<>(content, pageable, content.size());
 		}
 
-		if (content.size() != 0 && pageable.getPageSize() > content.size()) {
-			return new PageImpl<>(content, pageable, pageable.getOffset() + content.size());
+		if (isPartialPage(content, pageable)) {
+
+			if (isFirstPage(pageable)) {
+				return new PageImpl<>(content, pageable, content.size());
+			} else if ( !content.isEmpty()) {
+				return new PageImpl<>(content, pageable, pageable.getOffset() + content.size());
+			}
 		}
 
 		return new PageImpl<>(content, pageable, totalSupplier.getAsLong());
 	}
+
+	private static <T> boolean isPartialPage(List<T> content, Pageable pageable) {
+		return pageable.getPageSize() > content.size();
+	}
+
+	private static boolean isFirstPage(Pageable pageable) {
+		return pageable.getOffset() == 0;
+	}
+
 }

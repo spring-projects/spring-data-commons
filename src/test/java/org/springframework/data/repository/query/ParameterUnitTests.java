@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.query.ParametersUnitTests.User;
 import org.springframework.data.util.TypeInformation;
@@ -85,7 +85,6 @@ class ParameterUnitTests {
 		assertThat(parameter.isDynamicProjectionParameter()).isFalse();
 	}
 
-	@NotNull
 	private MethodParameter getMethodParameter(String methodName) throws NoSuchMethodException {
 		return new MethodParameter(this.getClass().getDeclaredMethod(methodName, Class.class), 0);
 	}
@@ -117,4 +116,5 @@ class ParameterUnitTests {
 	<T> T atParamOnClass(@Param("type") Class<T> type) {
 		return null;
 	}
+
 }

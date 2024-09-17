@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.springframework.data.mapping;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.mapping.PropertyPath.from;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -31,6 +33,7 @@ import org.springframework.data.util.TypeInformation;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 @SuppressWarnings("unused")
 class PropertyPathUnitTests {
@@ -43,6 +46,16 @@ class PropertyPathUnitTests {
 		assertThat(reference.hasNext()).isFalse();
 		assertThat(reference.toDotPath()).isEqualTo("userName");
 		assertThat(reference.getOwningType()).isEqualTo(TypeInformation.of(Foo.class));
+	}
+
+	@Test // GH-1851
+	void parsesRecordPropertyCorrectly() {
+
+		var reference = PropertyPath.from("userName", MyRecord.class);
+
+		assertThat(reference.hasNext()).isFalse();
+		assertThat(reference.toDotPath()).isEqualTo("userName");
+		assertThat(reference.getOwningType()).isEqualTo(TypeInformation.of(MyRecord.class));
 	}
 
 	@Test
@@ -111,7 +124,7 @@ class PropertyPathUnitTests {
 	}
 
 	@Test
-	void handlesInvalidCollectionCompountTypeProperl() {
+	void handlesInvalidCollectionCompoundTypeProperly() {
 
 		try {
 			PropertyPath.from("usersMame", Bar.class);
@@ -172,7 +185,7 @@ class PropertyPathUnitTests {
 		assertThat(iterator.hasNext()).isFalse();
 	}
 
-	@Test
+	@Test // GH-2491
 	void returnsCorrectIteratorForMultipleElement() {
 
 		var propertyPath = PropertyPath.from("user.name", Bar.class);
@@ -183,6 +196,21 @@ class PropertyPathUnitTests {
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next()).isEqualTo(propertyPath.next());
 		assertThat(iterator.hasNext()).isFalse();
+
+		List<String> paths = new ArrayList<>();
+		propertyPath.forEach(it -> paths.add(it.toDotPath()));
+
+		assertThat(paths).containsExactly("user.name", "name");
+	}
+
+	@Test // GH-2491
+	void nextReturnsPathWithoutFirstElement() {
+
+		PropertyPath propertyPath = PropertyPath.from("bar.user.name", Sample.class);
+
+		PropertyPath next = propertyPath.next();
+		assertThat(next).isNotNull();
+		assertThat(next.toDotPath()).isEqualTo("user.name");
 	}
 
 	@Test // DATACMNS-139, GH-2395
@@ -272,6 +300,28 @@ class PropertyPathUnitTests {
 
 		assertThat(path).isNotNull();
 		assertThat(path.getSegment()).isEqualTo("UUID");
+	}
+
+	@Test // GH-1851
+	void findsSecondLetterUpperCaseProperty() {
+
+		assertThat(PropertyPath.from("qCode", Foo.class).toDotPath()).isEqualTo("qCode");
+		assertThat(PropertyPath.from("QCode", Foo.class).toDotPath()).isEqualTo("qCode");
+		assertThat(PropertyPath.from("zIndex", MyRecord.class).toDotPath()).isEqualTo("zIndex");
+		assertThat(PropertyPath.from("ZIndex", MyRecord.class).toDotPath()).isEqualTo("zIndex");
+		assertThat(PropertyPath.from("_foo.QCode", Sample2.class).toDotPath()).isEqualTo("_foo.qCode");
+		assertThat(PropertyPath.from("_fooQCode", Sample2.class).toDotPath()).isEqualTo("_foo.qCode");
+	}
+
+	@Test // GH-1851
+	void favoursPropertyHitOverNestedPath() {
+
+		assertThat(PropertyPath.from("qCode", NameAmbiguities.class).toDotPath()).isEqualTo("qCode");
+		assertThat(PropertyPath.from("QCode", NameAmbiguities.class).toDotPath()).isEqualTo("qCode");
+		assertThat(PropertyPath.from("Q_Code", NameAmbiguities.class).toDotPath()).isEqualTo("q.code");
+		assertThat(PropertyPath.from("q.code", NameAmbiguities.class).toDotPath()).isEqualTo("q.code");
+		assertThat(PropertyPath.from("Q.Code", NameAmbiguities.class).toDotPath()).isEqualTo("q.code");
+		assertThat(PropertyPath.from("q_code", NameAmbiguities.class).toDotPath()).isEqualTo("q.code");
 	}
 
 	@Test // DATACMNS-257
@@ -409,7 +459,26 @@ class PropertyPathUnitTests {
 		String userName;
 		String _email;
 		String UUID;
+		String qCode;
 		String var_name_with_underscore;
+
+		public String getqCode() {
+			return qCode;
+		}
+
+		public void setqCode(String qCode) {
+			this.qCode = qCode;
+		}
+	}
+
+	private static class NameAmbiguities {
+
+		String qCode;
+		Code q;
+	}
+
+	private static class Code {
+		String code;
 	}
 
 	private class Bar {
@@ -469,4 +538,7 @@ class PropertyPathUnitTests {
 	}
 
 	private class B {}
+
+	private record MyRecord(String userName, boolean zIndex) {
+	}
 }

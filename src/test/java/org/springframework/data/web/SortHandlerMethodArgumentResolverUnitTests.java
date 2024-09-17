@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.springframework.data.domain.Sort.Direction.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -35,6 +36,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.util.UriUtils;
 
 /**
  * Unit tests for {@link SortHandlerMethodArgumentResolver}.
@@ -106,7 +108,7 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 	}
 
 	@Test
-	void returnsNullForSortParameterSetToNothing() {
+	void returnsUnsortedForSortParameterSetToNothing() {
 
 		var parameter = getParameterOfMethod("supportedMethod");
 
@@ -257,6 +259,17 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 		var reference = Sort.by("bar", "foo");
 
 		assertSupportedAndResolvedTo(getRequestWithSort(reference, "merged"), parameter, reference);
+	}
+
+	@Test
+	void readsEncodedSort() {
+
+		var request = new MockHttpServletRequest();
+		request.addParameter("sort", UriUtils.encode("foo,desc", StandardCharsets.UTF_8));
+
+		var parameter = getParameterOfMethod("supportedMethod");
+
+		assertSupportedAndResolvedTo(new ServletWebRequest(request), parameter, Sort.by("foo").descending());
 	}
 
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {

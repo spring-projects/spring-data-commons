@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2023 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.web;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -33,7 +34,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
@@ -52,7 +52,7 @@ public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpM
 		implements BeanClassLoaderAware, BeanFactoryAware {
 
 	private final SpelAwareProxyProjectionFactory projectionFactory;
-	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Class<?>, Boolean> supportedTypesCache = new ConcurrentHashMap<>();
 
 	/**
 	 * Creates a new {@link ProjectingJackson2HttpMessageConverter} using a default {@link ObjectMapper}.

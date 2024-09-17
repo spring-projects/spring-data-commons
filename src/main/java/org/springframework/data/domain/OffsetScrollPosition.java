@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,19 @@ import org.springframework.util.Assert;
 
 /**
  * A {@link ScrollPosition} based on the offsets within query results.
+ * <p>
+ * An initial {@link OffsetScrollPosition} does not point to a specific element and is different to a position
+ * {{@link ScrollPosition#offset(long)}.
  *
  * @author Mark Paluch
  * @author Oliver Drotbohm
+ * @author Christoph Strobl
+ * @author Yanming Zhou
  * @since 3.1
  */
 public final class OffsetScrollPosition implements ScrollPosition {
 
-	private static final OffsetScrollPosition INITIAL = new OffsetScrollPosition(0);
+	private static final OffsetScrollPosition INITIAL = new OffsetScrollPosition(-1);
 
 	private final long offset;
 
@@ -40,9 +45,6 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 * @param offset must be greater or equal to zero.
 	 */
 	private OffsetScrollPosition(long offset) {
-
-		Assert.isTrue(offset >= 0, "Offset must not be negative");
-
 		this.offset = offset;
 	}
 
@@ -62,11 +64,13 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 * @return will never be {@literal null}.
 	 */
 	static OffsetScrollPosition of(long offset) {
-		return offset == 0 ? initial() : new OffsetScrollPosition(offset);
+
+		Assert.isTrue(offset >= 0, "Offset must not be negative");
+		return new OffsetScrollPosition(offset);
 	}
 
 	/**
-	 * Returns the {@link IntFunction position function} to calculate.
+	 * Returns a {@link IntFunction position function} starting at {@code startOffset}.
 	 *
 	 * @param startOffset the start offset to be used. Must not be negative.
 	 * @return the offset-based position function.
@@ -74,16 +78,30 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	public static IntFunction<OffsetScrollPosition> positionFunction(long startOffset) {
 
 		Assert.isTrue(startOffset >= 0, "Start offset must not be negative");
-
 		return startOffset == 0 ? OffsetPositionFunction.ZERO : new OffsetPositionFunction(startOffset);
 	}
 
 	/**
+	 * Returns the {@link IntFunction position function} starting after the current {@code offset}.
+	 *
+	 * @return the offset-based position function.
+	 * @since 3.3
+	 */
+	public IntFunction<OffsetScrollPosition> positionFunction() {
+		return positionFunction(offset + 1);
+	}
+
+	/**
 	 * The zero or positive offset.
+	 * <p>
+	 * An {@link #isInitial() initial} position does not define an offset and will raise an error.
 	 *
 	 * @return the offset.
+	 * @throws IllegalStateException if {@link #isInitial()}.
 	 */
 	public long getOffset() {
+
+		Assert.state(offset >= 0, "Initial state does not have an offset. Make sure to check #isInitial()");
 		return offset;
 	}
 
@@ -96,14 +114,13 @@ public final class OffsetScrollPosition implements ScrollPosition {
 	 */
 	public OffsetScrollPosition advanceBy(long delta) {
 
-		var value = offset + delta;
-
+		long value = isInitial() ? delta : offset + delta;
 		return new OffsetScrollPosition(value < 0 ? 0 : value);
 	}
 
 	@Override
 	public boolean isInitial() {
-		return offset == 0;
+		return offset == -1;
 	}
 
 	@Override
@@ -117,7 +134,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 			return false;
 		}
 
-		return offset == that.offset;
+		return Objects.equals(offset, that.offset);
 	}
 
 	@Override
@@ -141,7 +158,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 				throw new IndexOutOfBoundsException(offset);
 			}
 
-			return of(startOffset + offset + 1);
+			return of(startOffset + offset);
 		}
 	}
 }

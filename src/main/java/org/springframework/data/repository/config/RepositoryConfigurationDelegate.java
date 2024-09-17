@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,19 +26,19 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.AutowireCandidateResolver;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
@@ -46,9 +47,14 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StopWatch;
 
 /**
@@ -68,7 +74,6 @@ public class RepositoryConfigurationDelegate {
 	private static final String REPOSITORY_REGISTRATION = "Spring Data %s - Registering repository: %s - Interface: %s - Factory: %s";
 	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode";
 	private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = "Non-default AutowireCandidateResolver (%s) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working";
-	private static final String FACTORY_BEAN_OBJECT_TYPE = FactoryBean.OBJECT_TYPE_ATTRIBUTE;
 
 	private static final Log logger = LogFactory.getLog(RepositoryConfigurationDelegate.class);
 
@@ -172,7 +177,6 @@ public class RepositoryConfigurationDelegate {
 			configurationsByRepositoryName.put(configuration.getRepositoryInterface(), configuration);
 
 			BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
-
 			extension.postProcess(definitionBuilder, configurationSource);
 
 			if (isXml) {
@@ -181,9 +185,8 @@ public class RepositoryConfigurationDelegate {
 				extension.postProcess(definitionBuilder, (AnnotationRepositoryConfigurationSource) configurationSource);
 			}
 
-			AbstractBeanDefinition beanDefinition = definitionBuilder.getBeanDefinition();
-
-			beanDefinition.setAttribute(FACTORY_BEAN_OBJECT_TYPE, configuration.getRepositoryInterface());
+			RootBeanDefinition beanDefinition = (RootBeanDefinition) definitionBuilder.getBeanDefinition();
+			beanDefinition.setTargetType(getRepositoryFactoryBeanType(configuration));
 			beanDefinition.setResourceDescription(configuration.getResourceDescription());
 
 			String beanName = configurationSource.generateBeanName(beanDefinition);
@@ -206,8 +209,9 @@ public class RepositoryConfigurationDelegate {
 
 		if (logger.isInfoEnabled()) {
 			logger.info(
-					LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interfaces.",
-							watch.getLastTaskTimeMillis(), configurations.size(), extension.getModuleName()));
+					LogMessage.format("Finished Spring Data repository scanning in %s ms. Found %s %s repository interface%s.",
+							watch.lastTaskInfo().getTimeMillis(), configurations.size(), extension.getModuleName(),
+							configurations.size() == 1 ? "" : "s"));
 		}
 
 		// TODO: AOT Processing -> guard this one with a flag so it's not always present
@@ -305,6 +309,59 @@ public class RepositoryConfigurationDelegate {
 		}
 
 		return ApplicationStartup.DEFAULT;
+	}
+
+	/**
+	 * Returns the repository factory bean type from the given {@link RepositoryConfiguration} as loaded {@link Class}.
+	 *
+	 * @param configuration must not be {@literal null}.
+	 * @return can be {@literal null}.
+	 */
+	@Nullable
+	private ResolvableType getRepositoryFactoryBeanType(RepositoryConfiguration<?> configuration) {
+
+		String interfaceName = configuration.getRepositoryInterface();
+		ClassLoader classLoader = resourceLoader.getClassLoader() == null ? ClassUtils.getDefaultClassLoader()
+				: resourceLoader.getClassLoader();
+
+		classLoader = classLoader != null ? classLoader : getClass().getClassLoader();
+
+		Class<?> repositoryInterface = ReflectionUtils.loadIfPresent(interfaceName, classLoader);
+
+		if (repositoryInterface == null) {
+			return null;
+		}
+
+		Class<?> factoryBean = ReflectionUtils.loadIfPresent(configuration.getRepositoryFactoryBeanClassName(),
+				classLoader);
+
+		if (factoryBean == null) {
+			return null;
+		}
+
+		RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
+		List<Class<?>> types = List.of(repositoryInterface, metadata.getDomainType(), metadata.getIdType());
+
+		ResolvableType[] declaredGenerics = ResolvableType.forClass(factoryBean).getGenerics();
+		ResolvableType[] parentGenerics = ResolvableType.forClass(RepositoryFactoryBeanSupport.class, factoryBean)
+				.getGenerics();
+		List<ResolvableType> resolvedGenerics = new ArrayList<>(factoryBean.getTypeParameters().length);
+
+		for (int i = 0; i < parentGenerics.length; i++) {
+
+			ResolvableType parameter = parentGenerics[i];
+
+			if (parameter.getType() instanceof TypeVariable<?>) {
+				resolvedGenerics.add(i < types.size() ? ResolvableType.forClass(types.get(i)) : parameter);
+			}
+		}
+
+		if (resolvedGenerics.size() < declaredGenerics.length) {
+			resolvedGenerics.addAll(Arrays.asList(declaredGenerics).subList(parentGenerics.length, declaredGenerics.length));
+		}
+
+		return ResolvableType.forClassWithGenerics(factoryBean,
+				resolvedGenerics.subList(0, declaredGenerics.length).toArray(ResolvableType[]::new));
 	}
 
 	/**

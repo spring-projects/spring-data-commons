@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,23 @@ import static org.springframework.data.repository.util.ClassUtils.*;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Window;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Window;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -82,7 +85,27 @@ public class QueryMethod {
 		this.method = method;
 		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(metadata, method);
 		this.metadata = metadata;
-		this.parameters = createParameters(method);
+		this.parameters = createParameters(method, metadata.getDomainTypeInformation());
+
+		this.domainClass = Lazy.of(() -> {
+
+			Class<?> repositoryDomainClass = metadata.getDomainType();
+			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
+
+			return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)
+					? methodDomainClass
+					: repositoryDomainClass;
+		});
+
+		this.resultProcessor = new ResultProcessor(this, factory);
+		this.isCollectionQuery = Lazy.of(this::calculateIsCollectionQuery);
+
+		validate();
+	}
+
+	private void validate() {
+
+		QueryMethodValidator.validate(method);
 
 		if (hasParameterOfType(method, Pageable.class)) {
 
@@ -113,31 +136,33 @@ public class QueryMethod {
 			Assert.isTrue(this.parameters.hasScrollPositionParameter() || this.parameters.hasPageableParameter(),
 					String.format("Scroll query needs to have a ScrollPosition parameter; Offending method: %s", method));
 		}
-
-		this.domainClass = Lazy.of(() -> {
-
-			Class<?> repositoryDomainClass = metadata.getDomainType();
-			Class<?> methodDomainClass = metadata.getReturnedDomainClass(method);
-
-			return repositoryDomainClass == null || repositoryDomainClass.isAssignableFrom(methodDomainClass)
-					? methodDomainClass
-					: repositoryDomainClass;
-		});
-
-		this.resultProcessor = new ResultProcessor(this, factory);
-		this.isCollectionQuery = Lazy.of(this::calculateIsCollectionQuery);
 	}
 
-	/**
-	 * Creates a {@link Parameters} instance.
-	 *
-	 * @param method must not be {@literal null}.
-	 * @return must not return {@literal null}.
-	 * @deprecated since 3.1, call or override {@link #createParameters(Method, TypeInformation)} instead.
-	 */
-	@Deprecated(since = "3.1", forRemoval = true)
-	protected Parameters<?, ?> createParameters(Method method) {
-		return createParameters(method, metadata.getDomainTypeInformation());
+	private boolean calculateIsCollectionQuery() {
+
+		if (isPageQuery() || isSliceQuery() || isScrollQuery()) {
+			return false;
+		}
+
+		TypeInformation<?> returnTypeInformation = metadata.getReturnType(method);
+
+		// Check against simple wrapper types first
+		if (metadata.getDomainTypeInformation()
+				.isAssignableFrom(NullableWrapperConverters.unwrapActualType(returnTypeInformation))) {
+			return false;
+		}
+
+		Class<?> returnType = returnTypeInformation.getType();
+
+		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
+			return true;
+		}
+
+		if (QueryExecutionConverters.supports(unwrappedReturnType)) {
+			return !QueryExecutionConverters.isSingleValue(unwrappedReturnType);
+		}
+
+		return TypeInformation.of(unwrappedReturnType).isCollectionLike();
 	}
 
 	/**
@@ -146,16 +171,29 @@ public class QueryMethod {
 	 * @param method must not be {@literal null}.
 	 * @param domainType must not be {@literal null}.
 	 * @return must not return {@literal null}.
+	 * @deprecated since 3.2.1, use {@link #createParameters(ParametersSource)} instead.
 	 * @since 3.0.2
 	 */
+	@Deprecated(since = "3.2.1", forRemoval = true)
 	protected Parameters<?, ?> createParameters(Method method, TypeInformation<?> domainType) {
-		return new DefaultParameters(method, domainType);
+		return createParameters(ParametersSource.of(getMetadata(), method));
+	}
+
+	/**
+	 * Creates a {@link Parameters} instance.
+	 *
+	 * @param parametersSource must not be {@literal null}.
+	 * @return must not return {@literal null}.
+	 * @since 3.2.1
+	 */
+	protected Parameters<?, ?> createParameters(ParametersSource parametersSource) {
+		return new DefaultParameters(parametersSource);
 	}
 
 	/**
 	 * Returns the method's name.
 	 *
-	 * @return
+	 * @return the method's name.
 	 */
 	public String getName() {
 		return method.getName();
@@ -290,25 +328,6 @@ public class QueryMethod {
 		return method.toString();
 	}
 
-	private boolean calculateIsCollectionQuery() {
-
-		if (isPageQuery() || isSliceQuery() || isScrollQuery()) {
-			return false;
-		}
-
-		Class<?> returnType = metadata.getReturnType(method).getType();
-
-		if (QueryExecutionConverters.supports(returnType) && !QueryExecutionConverters.isSingleValue(returnType)) {
-			return true;
-		}
-
-		if (QueryExecutionConverters.supports(unwrappedReturnType)) {
-			return !QueryExecutionConverters.isSingleValue(unwrappedReturnType);
-		}
-
-		return TypeInformation.of(unwrappedReturnType).isCollectionLike();
-	}
-
 	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(RepositoryMetadata metadata, Method method) {
 
 		TypeInformation<?> returnType = metadata.getReturnType(method);
@@ -353,5 +372,31 @@ public class QueryMethod {
 		}
 
 		throw new IllegalStateException("Method has to have one of the following return types " + types);
+	}
+
+	static class QueryMethodValidator {
+
+		static void validate(Method method) {
+
+			if (!pageableCannotHaveSortOrLimit.test(method)) {
+
+				throw new IllegalStateException(
+						"Method method using Pageable parameter must not define Limit nor Sort. Offending method: %s"
+								.formatted(method));
+			}
+		}
+
+		static Predicate<Method> pageableCannotHaveSortOrLimit = (method) -> {
+
+			if (!hasParameterAssignableToType(method, Pageable.class)) {
+				return true;
+			}
+
+			if (hasParameterAssignableToType(method, Sort.class) || hasParameterAssignableToType(method, Limit.class)) {
+				return false;
+			}
+
+			return true;
+		};
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import org.springframework.data.util.MethodInvocationRecorder.Recorded;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -41,10 +43,11 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Jan Kurella
  */
 public class Sort implements Streamable<org.springframework.data.domain.Sort.Order>, Serializable {
 
-	private static final long serialVersionUID = 5737186511678863905L;
+	private static final @Serial long serialVersionUID = 5737186511678863905L;
 
 	private static final Sort UNSORTED = Sort.by(new Order[0]);
 
@@ -62,7 +65,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @param direction defaults to {@link Sort#DEFAULT_DIRECTION} (for {@literal null} cases, too)
 	 * @param properties must not be {@literal null} or contain {@literal null} or empty strings.
 	 */
-	private Sort(Direction direction, List<String> properties) {
+	private Sort(Direction direction, @Nullable List<String> properties) {
 
 		if (properties == null || properties.isEmpty()) {
 			throw new IllegalArgumentException("You have to provide at least one property to sort by");
@@ -77,7 +80,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * Creates a new {@link Sort} for the given properties.
 	 *
 	 * @param properties must not be {@literal null}.
-	 * @return
+	 * @return {@link Sort} for the given properties.
 	 */
 	public static Sort by(String... properties) {
 
@@ -92,7 +95,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * Creates a new {@link Sort} for the given {@link Order}s.
 	 *
 	 * @param orders must not be {@literal null}.
-	 * @return
+	 * @return {@link Sort} for the given {@link Order}s.
 	 */
 	public static Sort by(List<Order> orders) {
 
@@ -105,7 +108,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * Creates a new {@link Sort} for the given {@link Order}s.
 	 *
 	 * @param orders must not be {@literal null}.
-	 * @return
+	 * @return {@link Sort} for the given {@link Order}s.
 	 */
 	public static Sort by(Order... orders) {
 
@@ -119,7 +122,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 *
 	 * @param direction must not be {@literal null}.
 	 * @param properties must not be {@literal null}.
-	 * @return
+	 * @return {@link Sort} for the given {@link Direction} and properties.
 	 */
 	public static Sort by(Direction direction, String... properties) {
 
@@ -136,7 +139,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * Creates a new {@link TypedSort} for the given type.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return {@link TypedSort} for the given type.
 	 * @since 2.2
 	 */
 	public static <T> TypedSort<T> sort(Class<T> type) {
@@ -146,7 +149,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	/**
 	 * Returns a {@link Sort} instances representing no sorting setup at all.
 	 *
-	 * @return
+	 * @return unsorted Sort instance.
 	 */
 	public static Sort unsorted() {
 		return UNSORTED;
@@ -155,7 +158,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	/**
 	 * Returns a new {@link Sort} with the current setup but descending order direction.
 	 *
-	 * @return
+	 * @return a new {@link Sort} with the current setup but descending order direction.
 	 */
 	public Sort descending() {
 		return withDirection(Direction.DESC);
@@ -164,12 +167,15 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	/**
 	 * Returns a new {@link Sort} with the current setup but ascending order direction.
 	 *
-	 * @return
+	 * @return a new {@link Sort} with the current setup but ascending order direction.
 	 */
 	public Sort ascending() {
 		return withDirection(Direction.ASC);
 	}
 
+	/**
+	 * @return {@literal true} if this Sort instance is sorted, {@literal false} otherwise.
+	 */
 	public boolean isSorted() {
 		return !isEmpty();
 	}
@@ -179,6 +185,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		return orders.isEmpty();
 	}
 
+	/**
+	 * @return {@literal true} if this Sort instance is unsorted, {@literal false} otherwise.
+	 */
 	public boolean isUnsorted() {
 		return !isSorted();
 	}
@@ -188,7 +197,8 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * ones.
 	 *
 	 * @param sort must not be {@literal null}.
-	 * @return
+	 * @return a new {@link Sort} consisting of the {@link Order}s of the current {@link Sort} combined with the given
+	 *         ones.
 	 */
 	public Sort and(Sort sort) {
 
@@ -231,8 +241,8 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	/**
 	 * Returns the order registered for the given property.
 	 *
-	 * @param property
-	 * @return
+	 * @param property name of the property that should be sorted.
+	 * @return the sort {@link Order} or {@literal null} if the property is not sorted by.
 	 */
 	@Nullable
 	public Order getOrderFor(String property) {
@@ -246,6 +256,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		return null;
 	}
 
+	@Override
 	public Iterator<Order> iterator() {
 		return this.orders.iterator();
 	}
@@ -277,12 +288,6 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		return isEmpty() ? "UNSORTED" : StringUtils.collectionToCommaDelimitedString(orders);
 	}
 
-	/**
-	 * Creates a new {@link Sort} with the current setup but the given order direction.
-	 *
-	 * @param direction
-	 * @return
-	 */
 	private Sort withDirection(Direction direction) {
 
 		List<Order> result = new ArrayList<>(orders.size());
@@ -306,7 +311,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns whether the direction is ascending.
 		 *
-		 * @return
+		 * @return {@literal true} if ascending, {@literal false} otherwise.
 		 * @since 1.13
 		 */
 		public boolean isAscending() {
@@ -316,7 +321,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns whether the direction is descending.
 		 *
-		 * @return
+		 * @return {@literal true} if descending, {@literal false} otherwise.
 		 * @since 1.13
 		 */
 		public boolean isDescending() {
@@ -326,9 +331,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns the {@link Direction} enum for the given {@link String} value.
 		 *
-		 * @param value
+		 * @param value the direction name.
+		 * @return the {@link Direction} enum value for the given {@code value}.
 		 * @throws IllegalArgumentException in case the given value cannot be parsed into an enum value.
-		 * @return
 		 */
 		public static Direction fromString(String value) {
 
@@ -341,13 +346,18 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Returns the {@link Direction} enum for the given {@link String} or null if it cannot be parsed into an enum
-		 * value.
+		 * Returns the {@link Direction} enum for the given {@link String} or {@code Optional.empty()} if it cannot be
+		 * parsed into an enum value.
 		 *
-		 * @param value
-		 * @return
+		 * @param value the direction name.
+		 * @return Optional holding the {@link Direction} enum value or empty, if {@code value} cannot be parsed into
+		 *         {@link Direction}.
 		 */
 		public static Optional<Direction> fromOptionalString(String value) {
+
+			if (ObjectUtils.isEmpty(value)) {
+				return Optional.empty();
+			}
 
 			try {
 				return Optional.of(fromString(value));
@@ -391,7 +401,8 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	public static class Order implements Serializable {
 
-		private static final long serialVersionUID = 1522511010900108987L;
+		private static final @Serial long serialVersionUID = 1522511010900108987L;
+
 		private static final boolean DEFAULT_IGNORE_CASE = false;
 		private static final NullHandling DEFAULT_NULL_HANDLING = NullHandling.NATIVE;
 
@@ -481,7 +492,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns the order the property shall be sorted for.
 		 *
-		 * @return
+		 * @return the order the property shall be sorted for.
 		 */
 		public Direction getDirection() {
 			return direction;
@@ -490,7 +501,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns the property to order for.
 		 *
-		 * @return
+		 * @return the property to order for.
 		 */
 		public String getProperty() {
 			return property;
@@ -499,7 +510,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns whether sorting for this property shall be ascending.
 		 *
-		 * @return
+		 * @return {@literal true} if ascending, {@literal false} otherwise.
 		 */
 		public boolean isAscending() {
 			return this.direction.isAscending();
@@ -508,7 +519,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns whether sorting for this property shall be descending.
 		 *
-		 * @return
+		 * @return {@literal true} if descending, {@literal false} otherwise.
 		 * @since 1.13
 		 */
 		public boolean isDescending() {
@@ -518,26 +529,26 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns whether the sort will be case-sensitive or case-insensitive.
 		 *
-		 * @return
+		 * @return {@literal true} if the sort will be case-sensitive or case-insensitive, {@literal false} otherwise.
 		 */
 		public boolean isIgnoreCase() {
 			return ignoreCase;
 		}
 
 		/**
-		 * Returns a new {@link Order} with the given {@link Direction}.
+		 * Returns a new {@link Order} with the given {@link Direction} applied.
 		 *
-		 * @param direction
-		 * @return
+		 * @param direction the new direction to use.
+		 * @return a new {@link Order} with the given {@link Direction} applied.
 		 */
 		public Order with(Direction direction) {
 			return new Order(direction, this.property, this.ignoreCase, this.nullHandling);
 		}
 
 		/**
-		 * Returns a new {@link Order} with the reversed {@link #getDirection()}.
+		 * Returns a new {@link Order} with the reversed {@link #getDirection()} applied.
 		 *
-		 * @return
+		 * @return a reversed {@link Order} with the given {@link Direction} applied.
 		 * @since 3.1
 		 */
 		public Order reverse() {
@@ -545,10 +556,10 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Returns a new {@link Order}
+		 * Returns a new {@link Order} with the {@code property} name applied.
 		 *
 		 * @param property must not be {@literal null} or empty.
-		 * @return
+		 * @return a new {@link Order} with the {@code property} name applied.
 		 * @since 1.13
 		 */
 		public Order withProperty(String property) {
@@ -556,10 +567,10 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Returns a new {@link Sort} instance for the given properties.
+		 * Returns a new {@link Sort} instance for the given properties using {@link #getDirection()}.
 		 *
-		 * @param properties
-		 * @return
+		 * @param properties properties to sort by.
+		 * @return a new {@link Sort} instance for the given properties using {@link #getDirection()}.
 		 */
 		public Sort withProperties(String... properties) {
 			return Sort.by(this.direction, properties);
@@ -568,17 +579,17 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns a new {@link Order} with case-insensitive sorting enabled.
 		 *
-		 * @return
+		 * @return a new {@link Order} with case-insensitive sorting enabled.
 		 */
 		public Order ignoreCase() {
 			return new Order(direction, property, true, nullHandling);
 		}
 
 		/**
-		 * Returns a {@link Order} with the given {@link NullHandling}.
+		 * Returns a {@link Order} with the given {@link NullHandling} applied.
 		 *
 		 * @param nullHandling can be {@literal null}.
-		 * @return
+		 * @return a new {@link Order} with the given {@link NullHandling} applied.
 		 * @since 1.8
 		 */
 		public Order with(NullHandling nullHandling) {
@@ -586,9 +597,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Returns a {@link Order} with {@link NullHandling#NULLS_FIRST} as null handling hint.
+		 * Returns a new {@link Order} with {@link NullHandling#NULLS_FIRST} as null handling hint applied.
 		 *
-		 * @return
+		 * @return a new {@link Order} with {@link NullHandling#NULLS_FIRST} as null handling hint applied.
 		 * @since 1.8
 		 */
 		public Order nullsFirst() {
@@ -596,9 +607,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Returns a {@link Order} with {@link NullHandling#NULLS_LAST} as null handling hint.
+		 * Returns a new {@link Order} with {@link NullHandling#NULLS_LAST} as null handling hint applied.
 		 *
-		 * @return
+		 * @return a new {@link Order} with {@link NullHandling#NULLS_LAST} as null handling hint applied.
 		 * @since 1.7
 		 */
 		public Order nullsLast() {
@@ -606,9 +617,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
-		 * Returns a {@link Order} with {@link NullHandling#NATIVE} as null handling hint.
+		 * Returns a new {@link Order} with {@link NullHandling#NATIVE} as null handling hint applied.
 		 *
-		 * @return
+		 * @return a new {@link Order} with {@link NullHandling#NATIVE} as null handling hint applied.
 		 * @since 1.7
 		 */
 		public Order nullsNative() {
@@ -618,7 +629,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		/**
 		 * Returns the used {@link NullHandling} hint, which can but may not be respected by the used datastore.
 		 *
-		 * @return
+		 * @return the used {@link NullHandling} hint.
 		 * @since 1.7
 		 */
 		public NullHandling getNullHandling() {
@@ -679,7 +690,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 */
 	public static class TypedSort<T> extends Sort {
 
-		private static final long serialVersionUID = -3550403511206745880L;
+		private static final @Serial long serialVersionUID = -3550403511206745880L;
 
 		private final Recorded<T> recorded;
 
@@ -734,7 +745,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		@Override
 		public boolean isEmpty() {
-			return !recorded.getPropertyPath().isPresent();
+			return recorded.getPropertyPath().isEmpty();
 		}
 
 		@Override

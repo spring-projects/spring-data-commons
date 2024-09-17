@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
@@ -28,7 +27,6 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Abstraction of a path of {@link PersistentProperty}s.
@@ -111,10 +109,27 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		Assert.hasText(delimiter, "Delimiter must not be null or empty");
 		Assert.notNull(converter, "Converter must not be null");
 
-		return properties.stream() //
-				.map(converter::convert) //
-				.filter(StringUtils::hasText) //
-				.collect(Collectors.joining(delimiter));
+		StringBuilder builder = null;
+		for (P property : properties) {
+
+			String converted = converter.convert(property);
+
+			if (ObjectUtils.isEmpty(converted)) {
+				continue;
+			}
+
+			if (builder == null) {
+				builder = new StringBuilder();
+			}
+
+			if (!builder.isEmpty()) {
+				builder.append(delimiter);
+			}
+
+			builder.append(converted);
+		}
+
+		return builder == null ? "" : builder.toString();
 	}
 
 	@Override

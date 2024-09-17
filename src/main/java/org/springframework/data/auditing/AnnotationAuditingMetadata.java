@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@
 package org.springframework.data.auditing;
 
 import java.lang.reflect.Field;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -52,13 +51,16 @@ final class AnnotationAuditingMetadata {
 	private static final AnnotationFieldFilter LAST_MODIFIED_DATE_FILTER = new AnnotationFieldFilter(
 			LastModifiedDate.class);
 
-	private static final Map<Class<?>, AnnotationAuditingMetadata> metadataCache = new ConcurrentHashMap<>();
-
 	static final List<String> SUPPORTED_DATE_TYPES;
 
 	static {
 
-		List<String> types = new ArrayList<>(3);
+		List<String> types = new ArrayList<>(Jsr310Converters.getSupportedClasses() //
+				.stream() //
+				.filter(TemporalAccessor.class::isAssignableFrom) //
+				.map(Class::getName) //
+				.toList());
+
 		types.add(Date.class.getName());
 		types.add(Long.class.getName());
 		types.add(long.class.getName());
@@ -104,7 +106,7 @@ final class AnnotationAuditingMetadata {
 
 			Class<?> type = it.getType();
 
-			if (Jsr310Converters.supports(type)) {
+			if (TemporalAccessor.class.isAssignableFrom(type)) {
 				return;
 			}
 
@@ -120,7 +122,7 @@ final class AnnotationAuditingMetadata {
 	 * @param type the type to inspect, must not be {@literal null}.
 	 */
 	public static AnnotationAuditingMetadata getMetadata(Class<?> type) {
-		return metadataCache.computeIfAbsent(type, AnnotationAuditingMetadata::new);
+		return new AnnotationAuditingMetadata(type);
 	}
 
 	/**

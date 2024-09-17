@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.PersistenceCreator;
@@ -179,6 +181,15 @@ public interface PreferredConstructorDiscoverer {
 
 				Class<?> rawOwningType = type.getType();
 
+				// Kotlin can rewrite annotated constructors into synthetic ones so we need to inspect that first.
+				Optional<PreferredConstructor<T, P>> first = Arrays.stream(rawOwningType.getDeclaredConstructors()) //
+						.filter(it -> it.isSynthetic() && AnnotationUtils.findAnnotation(it, PersistenceCreator.class) != null)
+						.map(it -> buildPreferredConstructor(it, type, entity)).findFirst();
+
+				if(first.isPresent()){
+					return first.get();
+				}
+
 				return Arrays.stream(rawOwningType.getDeclaredConstructors()) //
 						.filter(it -> !it.isSynthetic()) // Synthetic constructors should not be considered
 						// Explicitly defined creator trumps all
@@ -210,6 +221,10 @@ public interface PreferredConstructorDiscoverer {
 		 * @return the appropriate discoverer for {@code type}.
 		 */
 		private static Discoverers findDiscoverer(Class<?> type) {
+
+			if(!KotlinDetector.isKotlinPresent()) {
+				return DEFAULT;
+			}
 			return KotlinReflectionUtils.isSupportedKotlinClass(type) ? KOTLIN : DEFAULT;
 		}
 

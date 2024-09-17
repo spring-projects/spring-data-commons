@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 the original author or authors.
+ * Copyright 2019-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.repository.kotlin
 
 import io.mockk.mockk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -24,6 +25,7 @@ import org.springframework.data.repository.core.RepositoryMetadata
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory
 import org.springframework.data.repository.core.support.RepositoryComposition
 import org.springframework.data.repository.core.support.RepositoryFragment
+import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.data.repository.sample.User
 
@@ -41,11 +43,16 @@ class CoroutineCrudRepositoryCustomImplementationUnitTests {
 	@BeforeEach
 	fun before() {
 		factory = CustomDummyReactiveRepositoryFactory(backingRepository)
+		factory.addInvocationListener(RepositoryMethodInvocationListener {
+			repositoryMethodInvocation ->
+			println(repositoryMethodInvocation)
+		})
 		coRepository = factory.getRepository(MyCoRepository::class.java)
+
 	}
 
 	@Test // DATACMNS-1508
-	fun shouldInvokeFindAll() {
+	fun shouldInvokeFindOne() {
 
 		val result = runBlocking {
 			coRepository.findOne("foo")
@@ -71,6 +78,7 @@ class CoroutineCrudRepositoryCustomImplementationUnitTests {
 	class MyCustomCoRepositoryImpl : MyCustomCoRepository {
 
 		override suspend fun findOne(id: String): User {
+			delay(1)
 			return User()
 		}
 	}

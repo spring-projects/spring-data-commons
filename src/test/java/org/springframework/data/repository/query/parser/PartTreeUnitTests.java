@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
@@ -617,28 +617,6 @@ class PartTreeUnitTests {
 		assertThat(tree.hasPredicate()).isFalse();
 	}
 
-	/**
-	 * This test does not verify a desired behaviour but documents a limitation. If it starts failing and everything else
-	 * is green, remove the expectation to fail with an exception.
-	 */
-	@Test // DATACMNS-1570
-	void specialCapitalizationInSubject() {
-
-		assertThatThrownBy(() -> new PartTree("findByZIndex", SpecialCapitalization.class))
-				.isInstanceOf(PropertyReferenceException.class);
-	}
-
-	/**
-	 * This test does not verify a desired behaviour but documents a limitation. If it starts failing and everything else
-	 * is green, remove the expectation to fail with an exception.
-	 */
-	@Test // DATACMNS-1570
-	void specialCapitalizationInOrderBy() {
-
-		assertThatThrownBy(() -> new PartTree("findByOrderByZIndex", SpecialCapitalization.class))
-				.isInstanceOf(PropertyReferenceException.class);
-	}
-
 	@Test // DATACMNS-1570
 	void allCapsInSubject() {
 
@@ -655,6 +633,14 @@ class PartTreeUnitTests {
 		assertThat(tree.getSort()).hasSize(1);
 	}
 
+	@Test // GH-2965
+	void unmangleKotlinMethodName() {
+
+		var tree = new PartTree("findById-u1QWhUI", Order.class);
+
+		assertThat(tree.getParts()).hasSize(1);
+	}
+
 	private static void assertLimiting(String methodName, Class<?> entityType, boolean limiting, Integer maxResults) {
 		assertLimiting(methodName, entityType, limiting, maxResults, false);
 	}
@@ -666,6 +652,7 @@ class PartTreeUnitTests {
 
 		assertThat(tree.isLimiting()).isEqualTo(limiting);
 		assertThat(tree.getMaxResults()).isEqualTo(maxResults);
+		assertThat(tree.getResultLimit()).isEqualTo(maxResults != null ? Limit.of(maxResults) : Limit.unlimited());
 		assertThat(tree.isDistinct()).isEqualTo(distinct);
 	}
 

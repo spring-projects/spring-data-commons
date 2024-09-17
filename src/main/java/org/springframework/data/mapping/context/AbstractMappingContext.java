@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,16 +33,20 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.NativeDetector;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -60,6 +64,7 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
+import org.springframework.data.util.CustomCollections;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.Optionals;
@@ -90,7 +95,8 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Christoph Strobl
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
-		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, InitializingBean {
+		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, BeanFactoryAware,
+		EnvironmentAware, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(MappingContext.class);
 
@@ -101,6 +107,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	private @Nullable ApplicationEventPublisher applicationEventPublisher;
 	private EvaluationContextProvider evaluationContextProvider = EvaluationContextProvider.DEFAULT;
+	private @Nullable Environment environment;
 
 	private ManagedTypes managedTypes = ManagedTypes.empty();
 
@@ -129,14 +136,47 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
 
+	/**
+	 * Sets the application context. Sets also {@link ApplicationEventPublisher} and {@link Environment} if these weren't
+	 * already set.
+	 *
+	 * @param applicationContext the ApplicationContext object to be used by this object.
+	 * @throws BeansException
+	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
-		this.evaluationContextProvider = new ExtensionAwareEvaluationContextProvider(applicationContext);
+		setBeanFactory(applicationContext);
 
-		if (applicationEventPublisher == null) {
+		if (this.applicationEventPublisher == null) {
 			this.applicationEventPublisher = applicationContext;
 		}
+
+		if (this.environment == null) {
+			this.environment = applicationContext.getEnvironment();
+		}
+	}
+
+	/**
+	 * @param beanFactory owning BeanFactory.
+	 * @throws BeansException
+	 * @since 3.3
+	 */
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+
+		if (beanFactory instanceof ListableBeanFactory lbf) {
+			this.evaluationContextProvider = new ExtensionAwareEvaluationContextProvider(lbf);
+		}
+	}
+
+	/**
+	 * @param environment the {@code Environment} that this component runs in.
+	 * @since 3.3
+	 */
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
 	}
 
 	/**
@@ -144,7 +184,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 *
 	 * @param initialEntitySet
 	 * @see #setManagedTypes(ManagedTypes)
-	 *
 	 */
 	public void setInitialEntitySet(Set<? extends Class<?>> initialEntitySet) {
 		setManagedTypes(ManagedTypes.fromIterable(initialEntitySet));
@@ -201,6 +240,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 	}
 
+	@Override
 	@Nullable
 	public E getPersistentEntity(Class<?> type) {
 		return getPersistentEntity(TypeInformation.of(type));
@@ -305,6 +345,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	}
 
 	@Override
+	public PersistentPropertyPath<P> getPersistentPropertyPath(String propertyPath, TypeInformation<?> type) {
+		return persistentPropertyPathFactory.from(type, propertyPath);
+	}
+
+	@Override
 	public <T> PersistentPropertyPaths<T, P> findPersistentPropertyPaths(Class<T> type, Predicate<? super P> predicate) {
 
 		Assert.notNull(type, "Type must not be null");
@@ -315,7 +360,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Actually looks up the {@link PersistentPropertyPaths} for the given type, selection predicate and traversal guard.
-	 * Primary purpose is to allow sub-types to alter the default traversal guard, e.g. used by
+	 * Primary purpose is to allow subtypes to alter the default traversal guard, e.g. used by
 	 * {@link #findPersistentPropertyPaths(Class, Predicate)}.
 	 *
 	 * @param type will never be {@literal null}.
@@ -402,6 +447,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			E entity = createPersistentEntity(userTypeInformation);
 			entity.setEvaluationContextProvider(evaluationContextProvider);
+			if (environment != null) {
+				entity.setEnvironment(environment);
+			}
 
 			// Eagerly cache the entity as we might have to find it during recursive lookups.
 			persistentEntities.put(userTypeInformation, Optional.of(entity));
@@ -411,16 +459,18 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				persistentEntities.put(typeInformation, Optional.of(entity));
 			}
 
-			PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
-			Map<String, PropertyDescriptor> descriptors = new HashMap<>();
+			if (shouldCreateProperties(userTypeInformation)) {
+				PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
+				Map<String, PropertyDescriptor> descriptors = new HashMap<>(pds.length);
 
-			for (PropertyDescriptor descriptor : pds) {
-				descriptors.put(descriptor.getName(), descriptor);
+				for (PropertyDescriptor descriptor : pds) {
+					descriptors.put(descriptor.getName(), descriptor);
+				}
+
+				PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
+				ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
+				persistentPropertyCreator.addPropertiesForRemainingDescriptors();
 			}
-
-			PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
-			ReflectionUtils.doWithFields(type, persistentPropertyCreator, PersistentPropertyFilter.INSTANCE);
-			persistentPropertyCreator.addPropertiesForRemainingDescriptors();
 
 			entity.verify();
 
@@ -470,6 +520,35 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * @return
 	 */
 	protected abstract P createPersistentProperty(Property property, E owner, SimpleTypeHolder simpleTypeHolder);
+
+	/**
+	 * Whether to create the {@link PersistentProperty}s for the given {@link TypeInformation}.
+	 *
+	 * @param typeInformation must not be {@literal null}.
+	 * @return {@literal true} properties should be created, {@literal false} otherwise
+	 */
+	protected boolean shouldCreateProperties(TypeInformation<?> typeInformation) {
+
+		Class<?> type = typeInformation.getType();
+
+		return !typeInformation.isMap() && !isCollectionLike(type);
+	}
+
+	/**
+	 * In contrast to TypeInformation, we do not consider types implementing Streamable collection-like as domain types
+	 * can implement that type.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 * @see TypeInformation#isCollectionLike()
+	 */
+	private static boolean isCollectionLike(Class<?> type) {
+
+		return type.isArray() //
+				|| Iterable.class.equals(type) //
+				|| Streamable.class.equals(type) //
+				|| Collection.class.isAssignableFrom(type) || CustomCollections.isCollection(type);
+	}
 
 	@Override
 	public void afterPropertiesSet() {
@@ -528,6 +607,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			this.remainingDescriptors = remainingDescriptors;
 		}
 
+		@Override
 		public void doWith(Field field) {
 
 			String fieldName = field.getName();
@@ -690,18 +770,20 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			matches.add(new PropertyMatch("class", null));
 			matches.add(new PropertyMatch("this\\$.*", null));
 			matches.add(new PropertyMatch("metaClass", "groovy.lang.MetaClass"));
+			matches.add(new KotlinDataClassPropertyMatch(".*\\$delegate", null));
 
 			UNMAPPED_PROPERTIES = Streamable.of(matches);
 		}
 
+		@Override
 		public boolean matches(Field field) {
 
 			if (Modifier.isStatic(field.getModifiers())) {
 				return false;
 			}
 
-			return !UNMAPPED_PROPERTIES.stream()//
-					.anyMatch(it -> it.matches(field.getName(), field.getType()));
+			return UNMAPPED_PROPERTIES.stream()//
+					.noneMatch(it -> it.matches(field));
 		}
 
 		/**
@@ -718,8 +800,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return false;
 			}
 
-			return !UNMAPPED_PROPERTIES.stream()//
-					.anyMatch(it -> it.matches(property.getName(), property.getType()));
+			return UNMAPPED_PROPERTIES.stream()//
+					.noneMatch(it -> it.matches(property));
 		}
 
 		/**
@@ -751,6 +833,26 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			/**
 			 * Returns whether the given {@link Field} matches the defined {@link PropertyMatch}.
 			 *
+			 * @param field must not be {@literal null}.
+			 * @return
+			 */
+			public boolean matches(Field field) {
+				return matches(field.getName(), field.getType());
+			}
+
+			/**
+			 * Returns whether the given {@link Property} matches the defined {@link PropertyMatch}.
+			 *
+			 * @param property must not be {@literal null}.
+			 * @return
+			 */
+			public boolean matches(Property property) {
+				return matches(property.getName(), property.getType());
+			}
+
+			/**
+			 * Returns whether the given field name and type matches the defined {@link PropertyMatch}.
+			 *
 			 * @param name must not be {@literal null}.
 			 * @param type must not be {@literal null}.
 			 * @return
@@ -771,5 +873,41 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return true;
 			}
 		}
+
+		/**
+		 * Value object extension to {@link PropertyMatch} that matches for fields only for Kotlin data classes.
+		 *
+		 * @author Mark Paluch
+		 * @since 3.3.2
+		 */
+		static class KotlinDataClassPropertyMatch extends PropertyMatch {
+
+			public KotlinDataClassPropertyMatch(@Nullable String namePattern, @Nullable String typeName) {
+				super(namePattern, typeName);
+			}
+
+			@Override
+			public boolean matches(Field field) {
+
+				if (!KotlinReflectionUtils.isDataClass(field.getDeclaringClass())) {
+					return false;
+				}
+
+				return super.matches(field);
+			}
+
+			@Override
+			public boolean matches(Property property) {
+
+				Field field = property.getField().orElse(null);
+
+				if (field == null || !KotlinReflectionUtils.isDataClass(field.getDeclaringClass())) {
+					return false;
+				}
+
+				return super.matches(property);
+			}
+		}
 	}
+
 }

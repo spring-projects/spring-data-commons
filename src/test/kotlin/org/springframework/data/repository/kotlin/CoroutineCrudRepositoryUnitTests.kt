@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 the original author or authors.
+ * Copyright 2019-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -28,6 +27,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.reactivestreams.Publisher
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory
@@ -199,7 +199,23 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Mono.just(sample))
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Mono.just(sample))
+
+		val result = runBlocking {
+			coRepository.findOne("foo")
+		}
+
+		assertThat(result).isNotNull().isEqualTo(sample)
+		val captor = ArgumentCaptor.forClass(RepositoryMethodInvocationListener.RepositoryMethodInvocation::class.java)
+		Mockito.verify(invocationListener).afterInvocation(captor.capture())
+	}
+
+	@Test // DATACMNS-1508, DATACMNS-1764
+	fun shouldBridgeFluxQueryMethod() {
+
+		val sample = User()
+
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Flux.just(sample))
 
 		val result = runBlocking {
 			coRepository.findOne("foo")
@@ -215,7 +231,7 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Single.just(sample))
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Mono.just(sample))
 
 		val result = runBlocking {
 			coRepository.findOne("foo")
@@ -263,7 +279,7 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Flux.just(sample), Flux.empty<User>())
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any()))).thenReturn(Flux.just(sample), Flux.empty<User>())
 
 		val result = runBlocking {
 			coRepository.findSuspendedMultiple("foo").toList()
@@ -283,19 +299,38 @@ class CoroutineCrudRepositoryUnitTests {
 
 		val sample = User()
 
-		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null))).thenReturn(Flux.just(sample), Flux.empty<User>())
+		Mockito.`when`(factory.queryOne.execute(arrayOf("foo", null, any())))
+			.thenReturn(Mono.just(listOf(sample)), Flux.just(sample, sample), Mono.empty<User>())
 
-		val result = runBlocking {
+		val result1 = runBlocking {
 			coRepository.findSuspendedAsList("foo")
 		}
 
-		assertThat(result).hasSize(1).containsOnly(sample)
+		assertThat(result1).hasSize(1).containsOnly(sample)
+
+		val result2 = runBlocking {
+			coRepository.findSuspendedAsList("foo")
+		}
+
+		assertThat(result2).hasSize(2).contains(sample)
 
 		val emptyResult = runBlocking {
 			coRepository.findSuspendedAsList("foo")
 		}
 
-		assertThat(emptyResult).isEmpty()
+		assertThat(emptyResult).isNull()
+	}
+
+	@Test // DATACMNS-1802
+	fun shouldDiscardResult() {
+
+		Mockito.`when`(factory.queryOne.execute(any())).thenReturn(Flux.empty<User>())
+
+		val result = runBlocking {
+			coRepository.someDelete("foo")
+		}
+
+		assertThat(result).isInstanceOf(Unit.javaClass)
 	}
 
 	interface MyCoRepository : CoroutineCrudRepository<User, String> {
@@ -307,5 +342,7 @@ class CoroutineCrudRepositoryUnitTests {
 		suspend fun findSuspendedMultiple(id: String): Flow<User>
 
 		suspend fun findSuspendedAsList(id: String): List<User>
+
+		suspend fun someDelete(id: String)
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 package org.springframework.data.projection;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assumptions.*;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.MethodHandleLookup;
-import org.springframework.data.util.Version;
+import org.springframework.aop.framework.ProxyFactory;
 
 /**
  * Unit tests for {@link DefaultMethodInvokingMethodInterceptor}.
@@ -30,22 +28,24 @@ import org.springframework.data.util.Version;
  */
 class DefaultMethodInvokingMethodInterceptorUnitTests {
 
-	@Test // DATACMNS-1376
-	void shouldApplyEncapsulatedLookupOnJava9AndHigher() {
+	@Test // GH-2971
+	void invokesDefaultMethodOnProxy() {
 
-		assumeThat(Version.javaVersion()).isGreaterThanOrEqualTo(Version.parse("9.0"));
+		ProxyFactory factory = new ProxyFactory();
+		factory.setInterfaces(Sample.class);
+		factory.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 
-		assertThat(MethodHandleLookup.getMethodHandleLookup()).isEqualTo(MethodHandleLookup.ENCAPSULATED);
-		assertThat(MethodHandleLookup.ENCAPSULATED.isAvailable()).isTrue();
+		Object proxy = factory.getProxy();
+
+		assertThat(proxy).isInstanceOfSatisfying(Sample.class, it -> {
+			assertThat(it.sample()).isEqualTo("sample");
+		});
 	}
 
-	@Test // DATACMNS-1376
-	void shouldApplyOpenLookupOnJava8() {
+	interface Sample {
 
-		assumeThat(Version.javaVersion()).isLessThan(Version.parse("1.8.9999"));
-
-		assertThat(MethodHandleLookup.getMethodHandleLookup()).isEqualTo(MethodHandleLookup.OPEN);
-		assertThat(MethodHandleLookup.OPEN.isAvailable()).isTrue();
-		assertThat(MethodHandleLookup.ENCAPSULATED.isAvailable()).isFalse();
+		default String sample() {
+			return "sample";
+		}
 	}
 }

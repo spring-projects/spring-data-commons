@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1126
 	fun `should reject two constructors`() {
 
-		val constructor = PreferredConstructorDiscoverer.discover<TwoConstructors, SamplePersistentProperty>(TwoConstructors::class.java)
+		val constructor =
+			PreferredConstructorDiscoverer.discover<TwoConstructors, SamplePersistentProperty>(TwoConstructors::class.java)
 
 		assertThat(constructor!!.parameters.size).isEqualTo(1)
 	}
@@ -46,7 +47,10 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1170
 	fun `should fall back to no-args constructor if no primary constructor available`() {
 
-		val constructor = PreferredConstructorDiscoverer.discover<TwoConstructorsWithoutDefault, SamplePersistentProperty>(TwoConstructorsWithoutDefault::class.java)
+		val constructor =
+			PreferredConstructorDiscoverer.discover<TwoConstructorsWithoutDefault, SamplePersistentProperty>(
+				TwoConstructorsWithoutDefault::class.java
+			)
 
 		assertThat(constructor!!.parameters).isEmpty()
 	}
@@ -54,7 +58,9 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1126
 	fun `should discover annotated constructor`() {
 
-		val constructor = PreferredConstructorDiscoverer.discover<AnnotatedConstructors, SamplePersistentProperty>(AnnotatedConstructors::class.java)
+		val constructor = PreferredConstructorDiscoverer.discover<AnnotatedConstructors, SamplePersistentProperty>(
+			AnnotatedConstructors::class.java
+		)
 
 		assertThat(constructor!!.parameters.size).isEqualTo(2)
 	}
@@ -62,7 +68,8 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1126
 	fun `should discover default constructor`() {
 
-		val constructor = PreferredConstructorDiscoverer.discover<DefaultConstructor, SamplePersistentProperty>(DefaultConstructor::class.java)
+		val constructor =
+			PreferredConstructorDiscoverer.discover<DefaultConstructor, SamplePersistentProperty>(DefaultConstructor::class.java)
 
 		assertThat(constructor!!.parameters.size).isEqualTo(1)
 	}
@@ -70,7 +77,10 @@ class PreferredConstructorDiscovererUnitTests {
 	@Test // DATACMNS-1126
 	fun `should discover default annotated constructor`() {
 
-		val constructor = PreferredConstructorDiscoverer.discover<TwoDefaultConstructorsAnnotated, SamplePersistentProperty>(TwoDefaultConstructorsAnnotated::class.java)
+		val constructor =
+			PreferredConstructorDiscoverer.discover<TwoDefaultConstructorsAnnotated, SamplePersistentProperty>(
+				TwoDefaultConstructorsAnnotated::class.java
+			)
 
 		assertThat(constructor!!.parameters.size).isEqualTo(3)
 	}
@@ -88,8 +98,7 @@ class PreferredConstructorDiscovererUnitTests {
 		assertThat(constructor).isNull()
 	}
 
-	// See https://github.com/spring-projects/spring-data-commons/issues/2374
-	/*@Test // DATACMNS-1800, gh-2215
+	@Test // DATACMNS-1800, GH-2215
 	@ExperimentalUnsignedTypes
 	fun `should discover constructor for class using unsigned types`() {
 
@@ -99,7 +108,7 @@ class PreferredConstructorDiscovererUnitTests {
 			)
 
 		assertThat(constructor).isNotNull()
-	} */
+	}
 
 	data class Simple(val firstname: String)
 
@@ -138,13 +147,11 @@ class PreferredConstructorDiscovererUnitTests {
 		)
 	}
 
-	/*
-	See https://github.com/spring-projects/spring-data-commons/issues/2374
 	@ExperimentalUnsignedTypes
 	data class UnsignedTypesEntity(
 		val id: String,
 		val a: UInt = 5u,
 		val b: Int = 5,
 		val c: Double = 1.5
-	) */
+	)
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public interface Pageable {
 
@@ -33,7 +34,18 @@ public interface Pageable {
 	 * @return
 	 */
 	static Pageable unpaged() {
-		return Unpaged.INSTANCE;
+		return unpaged(Sort.unsorted());
+	}
+
+	/**
+	 * Returns a {@link Pageable} instance representing no pagination setup having a defined result {@link Sort order}.
+	 *
+	 * @param sort must not be {@literal null}, use {@link Sort#unsorted()} if needed.
+	 * @return never {@literal null}.
+	 * @since 3.2
+	 */
+	static Pageable unpaged(Sort sort) {
+		return Unpaged.sorted(sort);
 	}
 
 	/**
@@ -162,9 +174,29 @@ public interface Pageable {
 	}
 
 	/**
-	 * Returns an {@link OffsetScrollPosition} from this pageable if the page request {@link #isPaged() is paged}.
+	 * Returns an {@link Limit} from this pageable if the page request {@link #isPaged() is paged} or
+	 * {@link Limit#unlimited()} otherwise.
 	 *
 	 * @return
+	 * @since 3.2
+	 */
+	default Limit toLimit() {
+
+		if (isUnpaged()) {
+			return Limit.unlimited();
+		}
+
+		return Limit.of(getPageSize());
+	}
+
+	/**
+	 * Returns an {@link OffsetScrollPosition} from this pageable if the page request {@link #isPaged() is paged}.
+	 * <p>
+	 * Given the exclusive nature of scrolling the {@link ScrollPosition} for {@code Page(0, 10)} translates an
+	 * {@link ScrollPosition#isInitial() initial} position, where as {@code Page(1, 10)} will point to the last element of
+	 * {@code Page(0,10)} resulting in {@link ScrollPosition#offset(long) ScrollPosition(9)}.
+	 *
+	 * @return new instance of {@link OffsetScrollPosition}.
 	 * @throws IllegalStateException if the request is {@link #isUnpaged()}
 	 * @since 3.1
 	 */
@@ -174,6 +206,7 @@ public interface Pageable {
 			throw new IllegalStateException("Cannot create OffsetScrollPosition from an unpaged instance");
 		}
 
-		return ScrollPosition.offset(getOffset());
+		return getOffset() > 0 ? ScrollPosition.offset(getOffset() - 1 /* scrolling is exclusive */)
+				: ScrollPosition.offset();
 	}
 }

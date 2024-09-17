@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 the original author or authors.
+ * Copyright 2019-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Reflection utility methods specific to Kotlin reflection. Requires Kotlin classes to be present to avoid linkage
- * errors.
+ * errors - ensure to guard usage with {@link KotlinDetector#isKotlinPresent()}.
  *
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -130,6 +130,42 @@ public final class KotlinReflectionUtils {
 		}
 
 		return JvmClassMappingKt.getJavaClass(KTypesJvm.getJvmErasure(kotlinFunction.getReturnType()));
+	}
+
+	/**
+	 * Returns whether the given {@link KType} is a {@link KClass#isValue() value} class.
+	 *
+	 * @param type the kotlin type to inspect.
+	 * @return {@code true} the type is a value class.
+	 * @since 3.2
+	 */
+	public static boolean isValueClass(KType type) {
+
+		return type.getClassifier() instanceof KClass<?> kc && kc.isValue();
+	}
+
+	/**
+	 * Returns whether the given class makes uses Kotlin {@link KClass#isValue() value} classes.
+	 *
+	 * @param type the kotlin type to inspect.
+	 * @return {@code true} when at least one property uses Kotlin value classes.
+	 * @since 3.2
+	 */
+	public static boolean hasValueClassProperty(Class<?> type) {
+
+		if (!KotlinDetector.isKotlinType(type)) {
+			return false;
+		}
+
+		KClass<?> kotlinClass = JvmClassMappingKt.getKotlinClass(type);
+
+		for (KCallable<?> member : kotlinClass.getMembers()) {
+			if (member instanceof KProperty<?> kp && isValueClass(kp.getReturnType())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

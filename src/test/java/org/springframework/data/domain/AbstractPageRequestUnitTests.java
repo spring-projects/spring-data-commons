@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,5 +83,12 @@ public abstract class AbstractPageRequestUnitTests {
 		var request = newPageRequest(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
 		assertThat(request.getOffset()).isGreaterThan(Integer.MAX_VALUE);
+	}
+
+	@Test // GH-2151, GH-3070
+	void createsOffsetScrollPosition() {
+
+		assertThat(newPageRequest(0, 10).toScrollPosition()).returns(true, ScrollPosition::isInitial);
+		assertThat(newPageRequest(1, 10).toScrollPosition()).returns(9L, OffsetScrollPosition::getOffset);
 	}
 }

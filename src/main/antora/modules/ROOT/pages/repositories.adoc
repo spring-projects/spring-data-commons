@@ -1,0 +1,23 @@
+ifndef::store[]
+:store: Jpa
+endif::[]
+
+[[repositories]]
+= Working with Spring Data Repositories
+
+The goal of the Spring Data repository abstraction is to significantly reduce the amount of boilerplate code required to implement data access layers for various persistence stores.
+
+[IMPORTANT]
+====
+_Spring Data repository documentation and your module_
+
+This chapter explains the core concepts and interfaces of Spring Data repositories.
+The information in this chapter is pulled from the Spring Data Commons module.
+It uses the configuration and code samples for the Jakarta Persistence API (JPA) module.
+ifeval::[{include-xml-namespaces} != false]
+If you want to use XML configuration you should adapt the XML namespace declaration and the types to be extended to the equivalents of the particular module that you use. "`xref:repositories/namespace-reference.adoc#repositories.namespace-reference[Namespace reference]`" covers XML configuration, which is supported across all Spring Data modules that support the repository API.
+endif::[]
+"`xref:repositories/query-keywords-reference.adoc[Repository query keywords]`" covers the query method keywords supported by the repository abstraction in general.
+For detailed information on the specific features of your module, see the chapter on that module of this document.
+====
+

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
@@ -58,7 +60,8 @@ public class Parameter {
 
 	static {
 
-		List<Class<?>> types = new ArrayList<>(Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class));
+		List<Class<?>> types = new ArrayList<>(
+				Arrays.asList(ScrollPosition.class, Pageable.class, Sort.class, Limit.class));
 
 		// consider Kotlin Coroutines Continuation a special parameter. That parameter is synthetic and should not get
 		// bound to any query.
@@ -152,21 +155,37 @@ public class Parameter {
 	}
 
 	/**
-	 * Returns whether the parameter is annotated with {@link Param}.
+	 * Returns whether the parameter is annotated with {@link Param} or has a method parameter name.
 	 *
 	 * @return
+	 * @see Param
+	 * @see ParameterNameDiscoverer
 	 */
 	public boolean isNamedParameter() {
 		return !isSpecialParameter() && getName().isPresent();
 	}
 
 	/**
-	 * Returns the name of the parameter (through {@link Param} annotation).
+	 * Returns the name of the parameter (through {@link Param} annotation or method parameter naming).
 	 *
-	 * @return
+	 * @return the optional name of the parameter.
 	 */
 	public Optional<String> getName() {
 		return this.name.get();
+	}
+
+	/**
+	 * Returns the required name of the parameter (through {@link Param} annotation or method parameter naming) or throws
+	 * {@link IllegalStateException} if the parameter has no name.
+	 *
+	 * @return the required parameter name.
+	 * @throws IllegalStateException if the parameter has no name.
+	 * @since 3.4
+	 */
+	public String getRequiredName() {
+
+		return getName().orElseThrow(() -> new IllegalStateException("Parameter " + parameter
+				+ " is not named. For queries with named parameters you need to provide names for method parameters; Use @Param for query method parameters, or use the javac flag -parameters."));
 	}
 
 	/**
@@ -222,6 +241,16 @@ public class Parameter {
 	}
 
 	/**
+	 * Returns whether the {@link Parameter} is a {@link Limit} parameter.
+	 *
+	 * @return
+	 * @since 3.2
+	 */
+	boolean isLimit() {
+		return Limit.class.isAssignableFrom(getType());
+	}
+
+	/**
 	 * Returns whether the given {@link MethodParameter} is a dynamic projection parameter, which means it carries a
 	 * dynamic type parameter which is identical to the type parameter of the actually returned type.
 	 * <p>
@@ -249,7 +278,7 @@ public class Parameter {
 			throw new IllegalArgumentException("Parameter is not associated with any method");
 		}
 
-		var returnType = TypeInformation.fromReturnTypeOf(method);
+		var returnType = TypeInformation.fromReturnTypeOf(method, parameter.getContainingClass());
 		var unwrapped = QueryExecutionConverters.unwrapWrapperTypes(returnType);
 		var reactiveUnwrapped = ReactiveWrapperConverters.unwrapWrapperTypes(unwrapped);
 

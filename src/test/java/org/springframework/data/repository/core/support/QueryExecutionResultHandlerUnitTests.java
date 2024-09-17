@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import io.vavr.control.Try;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,9 +36,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
+
+import org.springframework.core.MethodParameter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.util.Streamable;
@@ -395,13 +395,20 @@ class QueryExecutionResultHandlerUnitTests {
 
 		assertThat(result).isInstanceOfSatisfying(List.class, list -> {
 
-			SoftAssertions.assertSoftly(s -> {
-
-				// for making the test failure more obvious:
-				s.assertThat(list).allMatch(it -> Integer.class.isInstance(it));
-				s.assertThat(list).containsExactly(0, 1);
-			});
+			// for making the test failure more obvious:
+			assertThat(list).allMatch(Integer.class::isInstance).containsExactly(0, 1);
 		});
+	}
+
+	@Test // GH-3125
+	void considersTypeBoundsFromBaseInterface() throws NoSuchMethodException {
+
+		var method = CustomizedRepository.class.getMethod("findById", Object.class);
+
+		var result = handler.postProcessInvocationResult(Optional.of(new Entity()),
+				new MethodParameter(method, -1).withContainingClass(CustomizedRepository.class));
+
+		assertThat(result).isInstanceOf(Entity.class);
 	}
 
 	@Test // DATACMNS-1552
@@ -412,8 +419,17 @@ class QueryExecutionResultHandlerUnitTests {
 		assertThat(handler.postProcessInvocationResult(source, getMethod("option"))).isSameAs(source);
 	}
 
-	private static Method getMethod(String methodName) throws Exception {
-		return Sample.class.getMethod(methodName);
+	private static MethodParameter getMethod(String methodName) throws Exception {
+		return new MethodParameter(Sample.class.getMethod(methodName), -1);
+	}
+
+	interface BaseRepository<T, ID> extends Repository<T, ID> {
+
+		T findById(ID id);
+	}
+
+	interface CustomizedRepository extends BaseRepository<Entity, Long> {
+
 	}
 
 	static interface Sample extends Repository<Entity, Long> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 the original author or authors.
+ * Copyright 2019-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public interface EntityCallbacks {
 	 * @return never {@literal null}.
 	 * @throws IllegalArgumentException if a required argument is {@literal null}.
 	 */
+	@SuppressWarnings("rawtypes")
 	<T> T callback(Class<? extends EntityCallback> callbackType, T entity, Object... args);
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -77,14 +78,14 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		assertNoBeanDefinitionRegisteredFor("profileRepository");
 	}
 
-
 	@Test // GH-2584
 	void shouldExposeFragmentsAsBean() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
 
 		registrar.registerBeanDefinitions(metadata, registry);
-		verify(registry, atLeast(1)).registerBeanDefinition(eq("commons.MyRepository.fragments#0"), any(BeanDefinition.class));
+		verify(registry, atLeast(1)).registerBeanDefinition(eq("commons.MyRepository.fragments#0"),
+				any(BeanDefinition.class));
 	}
 
 	@Test // DATACMNS-1754
@@ -110,7 +111,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		assertNoBeanDefinitionRegisteredFor("excludedRepositoryImpl");
 	}
 
-	@Test // DATACMNS-1172
+	@Test // DATACMNS-1172, GH-3090
 	void shouldLimitImplementationBasePackages() {
 
 		AnnotationMetadata metadata = new StandardAnnotationMetadata(LimitsImplementationBasePackages.class, true);
@@ -119,6 +120,8 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 		assertBeanDefinitionRegisteredFor("personRepository");
 		assertNoBeanDefinitionRegisteredFor("fragmentImpl");
+		assertBeanDefinitionRegisteredFor("spiFragmentImplFragment");
+		assertBeanDefinitionRegisteredFor("spiContribution");
 	}
 
 	@Test // DATACMNS-360
@@ -202,7 +205,8 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@EnableRepositories(basePackageClasses = MyNestedRepository.class, considerNestedRepositories = true,
 			excludeFilters = {
 					@Filter(type = FilterType.ASSIGNABLE_TYPE,
-							value = RepositoryConfigurationExtensionSupportUnitTests.ReactiveRepository.class),
+							value = { RepositoryConfigurationExtensionSupportUnitTests.ReactiveRepository.class,
+									AnnotationRepositoryConfigurationSourceUnitTests.ReactivePersonRepository.class }),
 					@Filter(type = FilterType.ASSIGNABLE_TYPE, value = MyOtherRepository.class) })
 	static class NestedRepositoriesConfiguration {}
 

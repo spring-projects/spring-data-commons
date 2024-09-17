@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -34,7 +35,6 @@ import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * A {@link ProjectionFactory} to create JDK proxies to back interfaces and handle method invocations on them. By
@@ -51,7 +51,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  */
 class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware {
 
-	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
+	static final GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
 
 	static {
 		Jsr310Converters.getConvertersToRegister().forEach(CONVERSION_SERVICE::addConverter);
@@ -60,7 +60,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 	}
 
 	private final List<MethodInterceptorFactory> factories;
-	private final Map<Class<?>, ProjectionMetadata> projectionInformationCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Class<?>, ProjectionMetadata> projectionInformationCache = new ConcurrentHashMap<>();
 	private @Nullable ClassLoader classLoader;
 
 	private final Lazy<DefaultMethodInvokingMethodInterceptor> defaultMethodInvokingMethodInterceptor = Lazy

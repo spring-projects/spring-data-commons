@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
@@ -42,7 +44,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Annotation based {@link RepositoryConfigurationSource}.
+ * Annotation-based {@link RepositoryConfigurationSource}.
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
@@ -51,6 +53,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Johannes Englmeier
  * @author Florian Cramer
+ * @author Christoph Strobl
  */
 public class AnnotationRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -63,13 +66,14 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private static final String REPOSITORY_BASE_CLASS = "repositoryBaseClass";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "considerNestedRepositories";
 	private static final String BOOTSTRAP_MODE = "bootstrapMode";
+	private static final String BEAN_NAME_GENERATOR = "nameGenerator";
+	private static final String INCLUDE_FILTERS = "includeFilters";
+	private static final String EXCLUDE_FILTERS = "excludeFilters";
 
 	private final AnnotationMetadata configMetadata;
 	private final AnnotationMetadata enableAnnotationMetadata;
 	private final AnnotationAttributes attributes;
-	private final ResourceLoader resourceLoader;
-	private final Environment environment;
-	private final BeanDefinitionRegistry registry;
+	private final Function<AnnotationAttributes, Stream<TypeFilter>> typeFilterFunction;
 	private final boolean hasExplicitFilters;
 
 	/**
@@ -83,7 +87,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @param registry must not be {@literal null}.
 	 * @deprecated since 2.2. Prefer to use overload taking a {@link BeanNameGenerator} additionally.
 	 */
-	@Deprecated
+	@Deprecated(since = "2.2")
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
 			ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry) {
 		this(metadata, annotation, resourceLoader, environment, registry, null);
@@ -98,14 +102,15 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @param resourceLoader must not be {@literal null}.
 	 * @param environment must not be {@literal null}.
 	 * @param registry must not be {@literal null}.
-	 * @param generator can be {@literal null}.
+	 * @param importBeanNameGenerator can be {@literal null}.
 	 */
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
 			ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry,
-			@Nullable BeanNameGenerator generator) {
+			@Nullable BeanNameGenerator importBeanNameGenerator) {
 
 		super(environment, ConfigurationUtils.getRequiredClassLoader(resourceLoader), registry,
-				defaultBeanNameGenerator(generator));
+				configuredOrDefaultBeanNameGenerator(metadata, annotation,
+						ConfigurationUtils.getRequiredClassLoader(resourceLoader), importBeanNameGenerator));
 
 		Assert.notNull(metadata, "Metadata must not be null");
 		Assert.notNull(annotation, "Annotation must not be null");
@@ -120,12 +125,12 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		this.attributes = new AnnotationAttributes(annotationAttributes);
 		this.enableAnnotationMetadata = AnnotationMetadata.introspect(annotation);
 		this.configMetadata = metadata;
-		this.resourceLoader = resourceLoader;
-		this.environment = environment;
-		this.registry = registry;
+		this.typeFilterFunction = it -> TypeFilterUtils.createTypeFiltersFor(it, environment, resourceLoader, registry)
+				.stream();
 		this.hasExplicitFilters = hasExplicitFilters(attributes);
 	}
 
+	@Override
 	public Streamable<String> getBasePackages() {
 
 		String[] value = attributes.getStringArray("value");
@@ -139,7 +144,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			return Streamable.of(ClassUtils.getPackageName(className));
 		}
 
-		Set<String> packages = new HashSet<>();
+		Set<String> packages = new HashSet<>(value.length + basePackages.length + basePackageClasses.length);
 		packages.addAll(Arrays.asList(value));
 		packages.addAll(Arrays.asList(basePackages));
 
@@ -150,18 +155,22 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		return Streamable.of(packages);
 	}
 
+	@Override
 	public Optional<Object> getQueryLookupStrategyKey() {
 		return Optional.ofNullable(attributes.get(QUERY_LOOKUP_STRATEGY));
 	}
 
+	@Override
 	public Optional<String> getNamedQueryLocation() {
 		return getNullDefaultedAttribute(NAMED_QUERIES_LOCATION);
 	}
 
+	@Override
 	public Optional<String> getRepositoryImplementationPostfix() {
 		return getNullDefaultedAttribute(REPOSITORY_IMPLEMENTATION_POSTFIX);
 	}
 
+	@Override
 	@NonNull
 	public Object getSource() {
 		return configMetadata;
@@ -169,12 +178,12 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 
 	@Override
 	protected Iterable<TypeFilter> getIncludeFilters() {
-		return parseFilters("includeFilters");
+		return parseFilters(INCLUDE_FILTERS);
 	}
 
 	@Override
 	public Streamable<TypeFilter> getExcludeFilters() {
-		return parseFilters("excludeFilters");
+		return parseFilters(EXCLUDE_FILTERS);
 	}
 
 	@Override
@@ -265,25 +274,22 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	public String getResourceDescription() {
 
 		String simpleClassName = ClassUtils.getShortName(configMetadata.getClassName());
-		String annoationClassName = ClassUtils.getShortName(enableAnnotationMetadata.getClassName());
+		String annotationClassName = ClassUtils.getShortName(enableAnnotationMetadata.getClassName());
 
-		return String.format("@%s declared on %s", annoationClassName, simpleClassName);
+		return String.format("@%s declared on %s", annotationClassName, simpleClassName);
 	}
 
 	private Streamable<TypeFilter> parseFilters(String attributeName) {
 
 		AnnotationAttributes[] filters = attributes.getAnnotationArray(attributeName);
-
-		return Streamable.of(() -> Arrays.stream(filters) //
-				.flatMap(it -> TypeFilterUtils.createTypeFiltersFor(it, this.environment, this.resourceLoader, this.registry)
-						.stream()));
+		return Streamable.of(() -> Arrays.stream(filters).flatMap(typeFilterFunction));
 	}
 
 	/**
 	 * Returns the {@link String} attribute with the given name and defaults it to {@literal Optional#empty()} in case
 	 * it's empty.
 	 *
-	 * @param attributeName
+	 * @param attributeName must not be {@literal null}.
 	 * @return
 	 */
 	private Optional<String> getNullDefaultedAttribute(String attributeName) {
@@ -301,8 +307,21 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 */
 	private static boolean hasExplicitFilters(AnnotationAttributes attributes) {
 
-		return Stream.of("includeFilters", "excludeFilters") //
+		return Stream.of(INCLUDE_FILTERS, EXCLUDE_FILTERS) //
 				.anyMatch(it -> attributes.getAnnotationArray(it).length > 0);
+	}
+
+	private static BeanNameGenerator configuredOrDefaultBeanNameGenerator(AnnotationMetadata metadata,
+			Class<? extends Annotation> annotation, ClassLoader beanClassLoader,
+			@Nullable BeanNameGenerator importBeanNameGenerator) {
+
+		BeanNameGenerator beanNameGenerator = getConfiguredBeanNameGenerator(metadata, annotation, beanClassLoader);
+
+		if (beanNameGenerator != null) {
+			return beanNameGenerator;
+		}
+
+		return defaultBeanNameGenerator(importBeanNameGenerator);
 	}
 
 	/**
@@ -312,13 +331,52 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * customized.
 	 *
 	 * @param generator can be {@literal null}.
-	 * @return
+	 * @return the configured {@link BeanNameGenerator} if it is not
+	 *         {@link ConfigurationClassPostProcessor#IMPORT_BEAN_NAME_GENERATOR} or {@link AnnotationBeanNameGenerator}
+	 *         otherwise.
 	 * @since 2.2
 	 */
 	private static BeanNameGenerator defaultBeanNameGenerator(@Nullable BeanNameGenerator generator) {
 
 		return generator == null || ConfigurationClassPostProcessor.IMPORT_BEAN_NAME_GENERATOR.equals(generator) //
-				? new AnnotationBeanNameGenerator() //
+				? AnnotationBeanNameGenerator.INSTANCE //
 				: generator;
+	}
+
+	/**
+	 * Obtain a configured {@link BeanNameGenerator} if present.
+	 *
+	 * @param beanClassLoader a class loader to load the configured {@link BeanNameGenerator} class in case it was
+	 *          configured as String instead of a Class instance.
+	 * @return the bean name generator or {@literal null} if not configured.
+	 */
+	@Nullable
+	@SuppressWarnings("unchecked")
+	private static BeanNameGenerator getConfiguredBeanNameGenerator(AnnotationMetadata metadata,
+		Class<? extends Annotation> annotation, ClassLoader beanClassLoader) {
+
+		Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(annotation.getName());
+		if(annotationAttributes == null || !annotationAttributes.containsKey(BEAN_NAME_GENERATOR)) {
+			return null;
+		}
+
+		Object configuredBeanNameGenerator = annotationAttributes.get(BEAN_NAME_GENERATOR);
+		if (configuredBeanNameGenerator == null) {
+			return null;
+		}
+
+		if (configuredBeanNameGenerator instanceof String beanNameGeneratorTypeName) {
+			try {
+				configuredBeanNameGenerator = ClassUtils.forName(beanNameGeneratorTypeName, beanClassLoader);
+			} catch (Exception o_O) {
+				throw new RuntimeException(o_O);
+			}
+		}
+
+		if (configuredBeanNameGenerator != BeanNameGenerator.class) {
+			return BeanUtils.instantiateClass((Class<? extends BeanNameGenerator>) configuredBeanNameGenerator);
+		}
+
+		return null;
 	}
 }

@@ -15,3 +15,7 @@ src/ant/.ant-targets-upload-dist.xml
 *.iws
 /.idea/
 *.graphml
+node
+node_modules
+package-lock.json
+.mvn/.develocity

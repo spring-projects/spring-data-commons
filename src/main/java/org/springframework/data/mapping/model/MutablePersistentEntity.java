@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.springframework.context.EnvironmentAware;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -28,7 +29,8 @@ import org.springframework.data.spel.EvaluationContextProvider;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> extends PersistentEntity<T, P> {
+public interface MutablePersistentEntity<T, P extends PersistentProperty<P>>
+		extends PersistentEntity<T, P>, EnvironmentAware {
 
 	/**
 	 * Adds a {@link PersistentProperty} to the entity.
@@ -66,4 +68,5 @@ public interface MutablePersistentEntity<T, P extends PersistentProperty<P>> ext
 	 * @param provider must not be {@literal null}.
 	 */
 	void setEvaluationContextProvider(EvaluationContextProvider provider);
+
 }

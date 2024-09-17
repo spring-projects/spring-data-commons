@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ abstract class BytecodeUtil {
 	/**
 	 * Checks whether the class is accessible by inspecting modifiers (i.e. whether the class is {@code private}).
 	 *
-	 * @param type must not be {@literal null}.
+	 * @param modifiers modifiers to check.
 	 * @return {@literal true} if the {@code modifiers} do not indicate the private flag.
 	 * @see Modifier#isPrivate(int)
 	 */
@@ -177,7 +177,7 @@ abstract class BytecodeUtil {
 	 * Checks whether the modifiers express {@literal default} (not
 	 * {@literal private}/{@literal protected}/{@literal public}).
 	 *
-	 * @param type must not be {@literal null}.
+	 * @param modifiers modifiers to check.
 	 * @return {@literal true} if the {@code modifiers} indicate {@literal default}.
 	 * @see Modifier#isPrivate(int)
 	 */

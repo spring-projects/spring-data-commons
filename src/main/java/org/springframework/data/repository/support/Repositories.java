@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,14 +95,14 @@ public class Repositories implements Iterable<Class<?>> {
 
 		for (String name : BeanFactoryUtils.beanNamesForTypeIncludingAncestors(factory, RepositoryFactoryInformation.class,
 				false, false)) {
-			cacheRepositoryFactory(name);
+			cacheRepositoryFactory(factory, name);
 		}
 	}
 
 	@SuppressWarnings("rawtypes")
-	private synchronized void cacheRepositoryFactory(String name) {
+	private void cacheRepositoryFactory(ListableBeanFactory factory, String name) {
 
-		RepositoryFactoryInformation repositoryFactoryInformation = beanFactory.get().getBean(name,
+		RepositoryFactoryInformation repositoryFactoryInformation = factory.getBean(name,
 				RepositoryFactoryInformation.class);
 		RepositoryInformation information = repositoryFactoryInformation.getRepositoryInformation();
 		Class<?> domainType = ClassUtils.getUserClass(information.getDomainType());
@@ -113,8 +113,21 @@ public class Repositories implements Iterable<Class<?>> {
 		typesToRegister.add(domainType);
 		typesToRegister.addAll(alternativeDomainTypes);
 
+		Optional<ConfigurableListableBeanFactory> beanFactory = Optional.of(factory).map(it -> {
+
+			if (it instanceof ConfigurableListableBeanFactory) {
+				return (ConfigurableListableBeanFactory) it;
+			}
+
+			if (it instanceof ConfigurableApplicationContext) {
+				return ((ConfigurableApplicationContext) it).getBeanFactory();
+			}
+
+			return null;
+		});
+
 		for (Class<?> type : typesToRegister) {
-			cacheFirstOrPrimary(type, repositoryFactoryInformation, BeanFactoryUtils.transformedBeanName(name));
+			cacheFirstOrPrimary(beanFactory, type, repositoryFactoryInformation, BeanFactoryUtils.transformedBeanName(name));
 		}
 	}
 
@@ -273,6 +286,7 @@ public class Repositories implements Iterable<Class<?>> {
 		return getRepositoryFactoryInfoFor(domainClass).getQueryMethods();
 	}
 
+	@Override
 	public Iterator<Class<?>> iterator() {
 		return repositoryFactoryInfos.keySet().iterator();
 	}
@@ -281,29 +295,18 @@ public class Repositories implements Iterable<Class<?>> {
 	 * Caches the repository information for the given domain type or overrides existing information in case the bean name
 	 * points to a primary bean definition.
 	 *
+	 * @param beanFactory must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @param information must not be {@literal null}.
 	 * @param name must not be {@literal null}.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void cacheFirstOrPrimary(Class<?> type, RepositoryFactoryInformation information, String name) {
+	private void cacheFirstOrPrimary(Optional<ConfigurableListableBeanFactory> beanFactory, Class<?> type,
+			RepositoryFactoryInformation information, String name) {
 
 		if (repositoryBeanNames.containsKey(type)) {
 
-			Optional<ConfigurableListableBeanFactory> factoryToUse = this.beanFactory.map(it -> {
-
-				if (it instanceof ConfigurableListableBeanFactory) {
-					return (ConfigurableListableBeanFactory) it;
-				}
-
-				if (it instanceof ConfigurableApplicationContext) {
-					return ((ConfigurableApplicationContext) it).getBeanFactory();
-				}
-
-				return null;
-			});
-
-			Boolean presentAndPrimary = factoryToUse.map(it -> it.getMergedBeanDefinition(name)) //
+			Boolean presentAndPrimary = beanFactory.map(it -> it.getMergedBeanDefinition(name)) //
 					.map(BeanDefinition::isPrimary) //
 					.orElse(false);
 

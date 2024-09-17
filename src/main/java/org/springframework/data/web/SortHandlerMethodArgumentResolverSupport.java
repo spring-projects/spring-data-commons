@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,12 +38,12 @@ import org.springframework.util.StringUtils;
  * Base class providing methods for handler method argument resolvers to create {@link Sort} instances from request
  * parameters or {@link SortDefault} annotations.
  *
- * @since 2.2
- * @see SortHandlerMethodArgumentResolver
- * @see ReactiveSortHandlerMethodArgumentResolver
  * @author Mark Paluch
  * @author Vedran Pavic
  * @author Johannes Englmeier
+ * @see SortHandlerMethodArgumentResolver
+ * @see ReactiveSortHandlerMethodArgumentResolver
+ * @since 2.2
  */
 public abstract class SortHandlerMethodArgumentResolverSupport {
 

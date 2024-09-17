@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 the original author or authors.
+ * Copyright 2022-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,10 +215,12 @@ final class PropertyValueConverterFactories {
 			Map<PersistentProperty<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> perPropertyCache = new ConcurrentHashMap<>();
 			Map<Class<?>, Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>>> typeCache = new ConcurrentHashMap<>();
 
+			@Nullable
 			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> get(PersistentProperty<?> property) {
 				return perPropertyCache.get(property);
 			}
 
+			@Nullable
 			Optional<PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>>> get(Class<?> type) {
 				return typeCache.get(type);
 			}

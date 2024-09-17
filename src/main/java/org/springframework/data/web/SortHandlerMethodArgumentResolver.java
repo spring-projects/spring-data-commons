@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.springframework.core.MethodParameter;
@@ -23,19 +24,19 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import org.springframework.web.util.UriUtils;
 
 /**
- * {@link HandlerMethodArgumentResolver} to automatically create {@link Sort} instances from request parameters or
- * {@link SortDefault} annotations.
+ * {@link org.springframework.web.method.support.HandlerMethodArgumentResolver} to automatically create {@link Sort}
+ * instances from request parameters or {@link SortDefault} annotations.
  *
- * @since 1.6
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Nick Williams
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @since 1.6
  */
 public class SortHandlerMethodArgumentResolver extends SortHandlerMethodArgumentResolverSupport
 		implements SortArgumentResolver {
@@ -61,6 +62,10 @@ public class SortHandlerMethodArgumentResolver extends SortHandlerMethodArgument
 			return getDefaultFromAnnotationOrFallback(parameter);
 		}
 
-		return parseParameterIntoSort(Arrays.asList(directionParameter), getPropertyDelimiter());
+		var decoded = Arrays.stream(directionParameter)
+				.map(it -> UriUtils.decode(it, StandardCharsets.UTF_8))
+				.toList();
+
+		return parseParameterIntoSort(decoded, getPropertyDelimiter());
 	}
 }

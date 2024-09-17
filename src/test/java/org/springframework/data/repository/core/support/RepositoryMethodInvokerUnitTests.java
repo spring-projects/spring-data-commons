@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 the original author or authors.
+ * Copyright 2020-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import kotlin.coroutines.Continuation;
-import kotlin.coroutines.CoroutineContext;
-import kotlinx.coroutines.flow.Flow;
-import kotlinx.coroutines.flow.FlowKt;
-import kotlinx.coroutines.reactor.ReactorContext;
+import kotlinx.coroutines.reactive.ReactiveFlowKt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -49,6 +46,7 @@ import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 import org.mockito.internal.stubbing.answers.Returns;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Subscription;
+
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.support.CoroutineRepositoryMetadataUnitTests.MyCoroutineRepository;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
@@ -114,7 +112,8 @@ class RepositoryMethodInvokerUnitTests {
 
 		repositoryMethodInvoker("findAll").invoke();
 
-		assertThat(multicaster.first().getDuration(TimeUnit.MILLISECONDS)).isCloseTo(250, Percentage.withPercentage(10));
+		assertThat(multicaster.first()
+				.getDuration(TimeUnit.MILLISECONDS)).isCloseTo(500, Percentage.withPercentage(50));
 	}
 
 	@Test // DATACMNS-1764
@@ -124,7 +123,8 @@ class RepositoryMethodInvokerUnitTests {
 
 		repositoryMethodInvokerForReactive("findAll").<Flux<TestDummy>> invoke().subscribe();
 
-		assertThat(multicaster.first().getDuration(TimeUnit.MILLISECONDS)).isCloseTo(250, Percentage.withPercentage(10));
+		assertThat(multicaster.first()
+				.getDuration(TimeUnit.MILLISECONDS)).isCloseTo(500, Percentage.withPercentage(50));
 	}
 
 	@Test // DATACMNS-1764
@@ -244,29 +244,12 @@ class RepositoryMethodInvokerUnitTests {
 	@Test // DATACMNS-1764
 	void capturesKotlinSuspendFunctionsCorrectly() throws Exception {
 
-		var result = Flux.just(new TestDummy());
+		var result = ReactiveFlowKt.asFlow(Flux.just(new TestDummy()));
 		when(query.execute(any())).thenReturn(result);
 
-		Flow<TestDummy> flow = new RepositoryMethodInvokerStub(MyCoroutineRepository.class, multicaster,
+		Flux<TestDummy> flux = new RepositoryMethodInvokerStub(MyCoroutineRepository.class, multicaster,
 				"suspendedQueryMethod", query::execute).invoke(mock(Continuation.class));
-
-		assertThat(multicaster).isEmpty();
-
-		FlowKt.toCollection(flow, new ArrayList<>(), new Continuation<ArrayList<? extends Object>>() {
-
-			ReactorContext ctx = new ReactorContext(reactor.util.context.Context.empty());
-
-			@NotNull
-			@Override
-			public CoroutineContext getContext() {
-				return ctx;
-			}
-
-			@Override
-			public void resumeWith(@NotNull Object o) {
-
-			}
-		});
+		flux.subscribe();
 
 		assertThat(multicaster.first().getResult().getState()).isEqualTo(State.SUCCESS);
 		assertThat(multicaster.first().getResult().getError()).isNull();

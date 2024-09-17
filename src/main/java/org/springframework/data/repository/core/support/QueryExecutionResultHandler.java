@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,13 +22,16 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.CollectionFactory;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.NullableWrapper;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 
@@ -44,18 +46,31 @@ class QueryExecutionResultHandler {
 
 	private static final TypeDescriptor WRAPPER_TYPE = TypeDescriptor.valueOf(NullableWrapper.class);
 
+	private static final Class<?> FLOW_TYPE = loadIfPresent("kotlinx.coroutines.flow.Flow");
+
 	private final GenericConversionService conversionService;
 
 	private final Object mutex = new Object();
 
 	// concurrent access guarded by mutex.
-	private Map<Method, ReturnTypeDescriptor> descriptorCache = Collections.emptyMap();
+	private Map<MethodParameter, ReturnTypeDescriptor> descriptorCache = Collections.emptyMap();
 
 	/**
 	 * Creates a new {@link QueryExecutionResultHandler}.
 	 */
 	QueryExecutionResultHandler(GenericConversionService conversionService) {
 		this.conversionService = conversionService;
+	}
+
+	@Nullable
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> loadIfPresent(String type) {
+
+		try {
+			return (Class<T>) org.springframework.util.ClassUtils.forName(type, ClassUtils.class.getClassLoader());
+		} catch (ClassNotFoundException | LinkageError e) {
+			return null;
+		}
 	}
 
 	/**
@@ -66,9 +81,9 @@ class QueryExecutionResultHandler {
 	 * @return
 	 */
 	@Nullable
-	Object postProcessInvocationResult(@Nullable Object result, Method method) {
+	Object postProcessInvocationResult(@Nullable Object result, MethodParameter method) {
 
-		if (!processingRequired(result, method.getReturnType())) {
+		if (!processingRequired(result, method)) {
 			return result;
 		}
 
@@ -77,16 +92,16 @@ class QueryExecutionResultHandler {
 		return postProcessInvocationResult(result, 0, descriptor);
 	}
 
-	private ReturnTypeDescriptor getOrCreateReturnTypeDescriptor(Method method) {
+	private ReturnTypeDescriptor getOrCreateReturnTypeDescriptor(MethodParameter method) {
 
-		Map<Method, ReturnTypeDescriptor> descriptorCache = this.descriptorCache;
+		Map<MethodParameter, ReturnTypeDescriptor> descriptorCache = this.descriptorCache;
 		ReturnTypeDescriptor descriptor = descriptorCache.get(method);
 
 		if (descriptor == null) {
 
 			descriptor = ReturnTypeDescriptor.of(method);
 
-			Map<Method, ReturnTypeDescriptor> updatedDescriptorCache;
+			Map<MethodParameter, ReturnTypeDescriptor> updatedDescriptorCache;
 
 			if (descriptorCache.isEmpty()) {
 				updatedDescriptorCache = Collections.singletonMap(method, descriptor);
@@ -94,7 +109,6 @@ class QueryExecutionResultHandler {
 				updatedDescriptorCache = new HashMap<>(descriptorCache.size() + 1, 1);
 				updatedDescriptorCache.putAll(descriptorCache);
 				updatedDescriptorCache.put(method, descriptor);
-
 			}
 
 			synchronized (mutex) {
@@ -234,10 +248,21 @@ class QueryExecutionResultHandler {
 	 * Returns whether we have to process the given source object in the first place.
 	 *
 	 * @param source can be {@literal null}.
-	 * @param targetType must not be {@literal null}.
+	 * @param methodParameter must not be {@literal null}.
 	 * @return
 	 */
-	private static boolean processingRequired(@Nullable Object source, Class<?> targetType) {
+	private static boolean processingRequired(@Nullable Object source, MethodParameter methodParameter) {
+
+		Class<?> targetType = methodParameter.getParameterType();
+
+		if (source != null && ReactiveWrappers.KOTLIN_COROUTINES_PRESENT
+				&& KotlinDetector.isSuspendingFunction(methodParameter.getMethod())) {
+
+			// Spring's AOP invoker handles Publisher to Flow conversion, so we have to exempt these from post-processing.
+			if (FLOW_TYPE != null && FLOW_TYPE.isAssignableFrom(targetType)) {
+				return false;
+			}
+		}
 
 		return !targetType.isInstance(source) //
 				|| source == null //
@@ -253,19 +278,19 @@ class QueryExecutionResultHandler {
 		private final TypeDescriptor typeDescriptor;
 		private final @Nullable TypeDescriptor nestedTypeDescriptor;
 
-		private ReturnTypeDescriptor(Method method) {
-			this.methodParameter = new MethodParameter(method, -1);
+		private ReturnTypeDescriptor(MethodParameter methodParameter) {
+			this.methodParameter = methodParameter;
 			this.typeDescriptor = TypeDescriptor.nested(this.methodParameter, 0);
 			this.nestedTypeDescriptor = TypeDescriptor.nested(this.methodParameter, 1);
 		}
 
 		/**
-		 * Create a {@link ReturnTypeDescriptor} from a {@link Method}.
+		 * Create a {@link ReturnTypeDescriptor} from a {@link MethodParameter}.
 		 *
 		 * @param method
 		 * @return
 		 */
-		public static ReturnTypeDescriptor of(Method method) {
+		public static ReturnTypeDescriptor of(MethodParameter method) {
 			return new ReturnTypeDescriptor(method);
 		}
 

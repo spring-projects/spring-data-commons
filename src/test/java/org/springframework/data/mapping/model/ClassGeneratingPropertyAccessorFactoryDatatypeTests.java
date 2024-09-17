@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2023 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,10 +68,10 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 		parameters.addAll(create(types, "primitiveBooleanArray", new boolean[] { true, false }));
 		parameters.addAll(create(types, "boxedBoolean", Boolean.valueOf(true)));
 		parameters.addAll(create(types, "boxedBooleanArray", new Boolean[] { Boolean.valueOf(true) }));
-		parameters.addAll(create(types, "primitiveFloat", Float.valueOf(1f)));
-		parameters.addAll(create(types, "primitiveFloatArray", new float[] { 1f, 2f }));
-		parameters.addAll(create(types, "boxedFloat", Float.valueOf(1f)));
-		parameters.addAll(create(types, "boxedFloatArray", new Float[] { Float.valueOf(1f) }));
+		parameters.addAll(create(types, "primitiveFloat", Float.valueOf(1.0f)));
+		parameters.addAll(create(types, "primitiveFloatArray", new float[] { 1.0f, 2f }));
+		parameters.addAll(create(types, "boxedFloat", Float.valueOf(1.0f)));
+		parameters.addAll(create(types, "boxedFloatArray", new Float[] { Float.valueOf(1.0f) }));
 		parameters.addAll(create(types, "primitiveDouble", Double.valueOf(1d)));
 		parameters.addAll(create(types, "primitiveDoubleArray", new double[] { 1d, 2d }));
 		parameters.addAll(create(types, "boxedDouble", Double.valueOf(1d)));
@@ -509,7 +509,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 
 	// DATACMNS-916
 	@AccessType(Type.FIELD)
-	private final static class PrivateFinalFieldAccess {
+	private static final class PrivateFinalFieldAccess {
 
 		int primitiveInteger;
 		int[] primitiveIntegerArray;
@@ -558,7 +558,7 @@ public class ClassGeneratingPropertyAccessorFactoryDatatypeTests {
 
 	// DATACMNS-916
 	@AccessType(Type.PROPERTY)
-	private final static class PrivateFinalPropertyAccess {
+	private static final class PrivateFinalPropertyAccess {
 
 		int primitiveInteger;
 		int[] primitiveIntegerArray;

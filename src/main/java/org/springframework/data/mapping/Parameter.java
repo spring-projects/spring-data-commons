@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 the original author or authors.
+ * Copyright 2021-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -31,17 +32,18 @@ import org.springframework.util.StringUtils;
  *
  * @param <T> the type of the parameter
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class Parameter<T, P extends PersistentProperty<P>> {
 
 	private final @Nullable String name;
 	private final TypeInformation<T> type;
 	private final MergedAnnotations annotations;
-	private final String key;
+	private final @Nullable String expression;
 	private final @Nullable PersistentEntity<T, P> entity;
 
 	private final Lazy<Boolean> enclosingClassCache;
-	private final Lazy<Boolean> hasSpelExpression;
+	private final Lazy<Boolean> hasExpression;
 
 	/**
 	 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
@@ -62,7 +64,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		this.name = name;
 		this.type = type;
 		this.annotations = MergedAnnotations.from(annotations);
-		this.key = getValue(this.annotations);
+		this.expression = getValue(this.annotations);
 		this.entity = entity;
 
 		this.enclosingClassCache = Lazy.of(() -> {
@@ -72,10 +74,10 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 			}
 
 			Class<T> owningType = entity.getType();
-			return owningType.isMemberClass() && type.getType().equals(owningType.getEnclosingClass());
+			return ClassUtils.isInnerClass(owningType) && type.getType().equals(owningType.getEnclosingClass());
 		});
 
-		this.hasSpelExpression = Lazy.of(() -> StringUtils.hasText(getSpelExpression()));
+		this.hasExpression = Lazy.of(() -> StringUtils.hasText(getValueExpression()));
 	}
 
 	@Nullable
@@ -126,21 +128,62 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Returns the key to be used when looking up a source data structure to populate the actual parameter value.
+	 * Returns the expression to be used when looking up a source data structure to populate the actual parameter value.
 	 *
-	 * @return
+	 * @return the expression to be used when looking up a source data structure.
+	 * @deprecated since 3.3, use {@link #getValueExpression()} instead.
 	 */
+	@Nullable
 	public String getSpelExpression() {
-		return key;
+		return getValueExpression();
+	}
+
+	/**
+	 * Returns the expression to be used when looking up a source data structure to populate the actual parameter value.
+	 *
+	 * @return the expression to be used when looking up a source data structure.
+	 * @since 3.3
+	 */
+	@Nullable
+	public String getValueExpression() {
+		return expression;
+	}
+
+	/**
+	 * Returns the required expression to be used when looking up a source data structure to populate the actual parameter
+	 * value or throws {@link IllegalStateException} if there's no expression.
+	 *
+	 * @return the expression to be used when looking up a source data structure.
+	 * @since 3.3
+	 */
+	public String getRequiredValueExpression() {
+
+		if (!hasValueExpression()) {
+			throw new IllegalStateException("No expression associated with this parameter");
+		}
+
+		return getValueExpression();
 	}
 
 	/**
 	 * Returns whether the constructor parameter is equipped with a SpEL expression.
 	 *
-	 * @return
+	 * @return {@literal true}} if the parameter is equipped with a SpEL expression.
+	 * @deprecated since 3.3, use {@link #hasValueExpression()} instead.
 	 */
+	@Deprecated(since = "3.3")
 	public boolean hasSpelExpression() {
-		return this.hasSpelExpression.get();
+		return hasValueExpression();
+	}
+
+	/**
+	 * Returns whether the constructor parameter is equipped with a value expression.
+	 *
+	 * @return {@literal true}} if the parameter is equipped with a value expression.
+	 * @since 3.3
+	 */
+	public boolean hasValueExpression() {
+		return this.hasExpression.get();
 	}
 
 	@Override
@@ -154,15 +197,13 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 			return false;
 		}
 
-		return Objects.equals(this.name, that.name)
-				&& Objects.equals(this.type, that.type)
-				&& Objects.equals(this.key, that.key)
-				&& Objects.equals(this.entity, that.entity);
+		return Objects.equals(this.name, that.name) && Objects.equals(this.type, that.type)
+				&& Objects.equals(this.expression, that.expression) && Objects.equals(this.entity, that.entity);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, type, key, entity);
+		return Objects.hash(name, type, expression, entity);
 	}
 
 	/**
@@ -181,6 +222,15 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		return property.equals(referencedProperty);
 	}
 
+	/**
+	 * Returns whether this parameter is a candidate for the enclosing class by checking the parameter type against
+	 * {@link Class#getEnclosingClass()} and whether the defining class is an inner non-static one.
+	 * <p>
+	 * Note that for a proper check the parameter position must be compared to ensure that only the first parameter (at
+	 * index {@code 0}/zero) qualifies as enclosing class instance parameter.
+	 *
+	 * @return {@literal true} if this parameter is a candidate for the enclosing class instance.
+	 */
 	boolean isEnclosingClassParameter() {
 		return enclosingClassCache.get();
 	}

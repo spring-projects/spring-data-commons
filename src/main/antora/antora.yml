@@ -1,0 +1,17 @@
+name: data-commons
+version: true
+title: Spring Data Commons
+nav:
+  - modules/ROOT/nav.adoc
+ext:
+  collector:
+    - run:
+        command: ./mvnw validate process-resources -am -Pantora-process-resources
+        local: true
+      scan:
+        dir: target/classes/antora-resources/
+    - run:
+        command: ./mvnw package -Pdistribute
+        local: true
+      scan:
+        dir: target/antora

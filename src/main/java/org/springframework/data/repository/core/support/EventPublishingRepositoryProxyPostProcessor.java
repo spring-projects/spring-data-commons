@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2023 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -54,7 +55,15 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 	private final ApplicationEventPublisher publisher;
 
+	/**
+	 * Creates a new {@link EventPublishingRepositoryProxyPostProcessor} for the given {@link ApplicationEventPublisher}.
+	 *
+	 * @param publisher must not be {@literal null}.
+	 */
 	public EventPublishingRepositoryProxyPostProcessor(ApplicationEventPublisher publisher) {
+
+		Assert.notNull(publisher, "Object must not be null");
+
 		this.publisher = publisher;
 	}
 
@@ -103,9 +112,9 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 				return result;
 			}
 
-			Object[] arguments = invocation.getArguments();
+			Iterable<?> arguments = asIterable(invocation.getArguments()[0], invocation.getMethod());
 
-			eventMethod.publishEventsFrom(arguments[0], publisher);
+			eventMethod.publishEventsFrom(arguments, publisher);
 
 			return result;
 		}
@@ -136,6 +145,9 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		private static Map<Class<?>, EventPublishingMethod> cache = new ConcurrentReferenceHashMap<>();
 		private static @SuppressWarnings("null") EventPublishingMethod NONE = new EventPublishingMethod(Object.class, null,
 				null);
+		private static String ILLEGAL_MODIFCATION = "Aggregate's events were modified during event publication. "
+				+ "Make sure event listeners obtain a fresh instance of the aggregate before adding further events. "
+				+ "Additional events found: %s.";
 
 		private final Class<?> type;
 		private final Method publishingMethod;
@@ -177,23 +189,34 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		/**
 		 * Publishes all events in the given aggregate root using the given {@link ApplicationEventPublisher}.
 		 *
-		 * @param object can be {@literal null}.
+		 * @param aggregates can be {@literal null}.
 		 * @param publisher must not be {@literal null}.
 		 */
-		public void publishEventsFrom(@Nullable Object object, ApplicationEventPublisher publisher) {
+		public void publishEventsFrom(@Nullable Iterable<?> aggregates, ApplicationEventPublisher publisher) {
 
-			if (object == null) {
+			if (aggregates == null) {
 				return;
 			}
 
-			for (Object aggregateRoot : asCollection(object)) {
+			for (Object aggregateRoot : aggregates) {
 
 				if (!type.isInstance(aggregateRoot)) {
 					continue;
 				}
 
-				for (Object event : asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot))) {
+				var events = asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot));
+
+				for (Object event : events) {
 					publisher.publishEvent(event);
+				}
+
+				var postPublication = asCollection(ReflectionUtils.invokeMethod(publishingMethod, aggregateRoot));
+
+				if (events.size() != postPublication.size()) {
+
+					postPublication.removeAll(events);
+
+					throw new IllegalStateException(ILLEGAL_MODIFCATION.formatted(postPublication));
 				}
 
 				if (clearingMethod != null) {
@@ -261,25 +284,41 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			return method;
 		}
 
-		/**
-		 * Returns the given source object as collection, i.e. collections are returned as is, objects are turned into a
-		 * one-element collection, {@literal null} will become an empty collection.
-		 *
-		 * @param source can be {@literal null}.
-		 * @return
-		 */
-		@SuppressWarnings("unchecked")
-		private static Collection<Object> asCollection(@Nullable Object source) {
+	}
 
-			if (source == null) {
-				return Collections.emptyList();
-			}
+	/**
+	 * Returns the given source object as collection, i.e. collections are returned as is, objects are turned into a
+	 * one-element collection, {@literal null} will become an empty collection.
+	 *
+	 * @param source can be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	@SuppressWarnings("unchecked")
+	private static Collection<Object> asCollection(@Nullable Object source) {
 
-			if (Collection.class.isInstance(source)) {
-				return (Collection<Object>) source;
-			}
-
-			return Collections.singletonList(source);
+		if (source == null) {
+			return Collections.emptyList();
 		}
+
+		if (Collection.class.isInstance(source)) {
+			return new ArrayList<>((Collection<Object>) source);
+		}
+
+		return Collections.singletonList(source);
+	}
+
+	/**
+	 * Returns the given source object as {@link Iterable}.
+	 *
+	 * @param source can be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	@Nullable
+	@SuppressWarnings("unchecked")
+	private static Iterable<Object> asIterable(@Nullable Object source, @Nullable Method method) {
+
+		return method != null && method.getName().startsWith("saveAll")
+				? (Iterable<Object>) source
+				: asCollection(source);
 	}
 }

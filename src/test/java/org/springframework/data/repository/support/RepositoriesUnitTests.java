@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ import org.springframework.util.ClassUtils;
  * @author Thomas Darimont
  * @author Jan Zeppenfeld
  * @author Alessandro Nistico
+ * @author Mark Paluch
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -92,9 +93,17 @@ class RepositoriesUnitTests {
 		assertThat(repositories.hasRepositoryFor(Address.class)).isTrue();
 	}
 
+	@Test // GH-3091
+	void reportsOffendingTypeName() {
+		assertThatIllegalArgumentException().isThrownBy(() -> new CustomRepositoryMetadata(String.class))
+				.withMessageContaining("java.lang.String");
+	}
+
 	@Test
 	void doesNotFindInformationForNonManagedDomainClass() {
+
 		var repositories = new Repositories(context);
+
 		assertThat(repositories.hasRepositoryFor(String.class)).isFalse();
 		assertThat(repositories.getRepositoryFor(String.class)).isNotPresent();
 	}
@@ -221,13 +230,13 @@ class RepositoriesUnitTests {
 		assertRepositoryAvailableFor(repositories, Child.class, ChildRepository.class);
 	}
 
-	private void assertRepositoryAvailableFor(Repositories repositories, Class<?> domainTypem,
+	private void assertRepositoryAvailableFor(Repositories repositories, Class<?> domainType,
 			Class<?> repositoryInterface) {
 
-		assertThat(repositories.hasRepositoryFor(domainTypem)).isTrue();
-		assertThat(repositories.getRepositoryFor(domainTypem))
+		assertThat(repositories.hasRepositoryFor(domainType)).isTrue();
+		assertThat(repositories.getRepositoryFor(domainType))
 				.hasValueSatisfying(it -> assertThat(it).isInstanceOf(repositoryInterface));
-		assertThat(repositories.getRepositoryInformationFor(domainTypem))
+		assertThat(repositories.getRepositoryInformationFor(domainType))
 				.hasValueSatisfying(it -> assertThat(it.getRepositoryInterface()).isEqualTo(repositoryInterface));
 	}
 

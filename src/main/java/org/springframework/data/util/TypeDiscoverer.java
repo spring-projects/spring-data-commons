@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private final Map<Constructor<?>, List<TypeInformation<?>>> constructorParameters = new ConcurrentHashMap<>();
 	private final Lazy<List<TypeInformation<?>>> typeArguments;
 
+	private final Lazy<List<TypeInformation<?>>> resolvedGenerics;
+
 	protected TypeDiscoverer(ResolvableType type) {
 
 		Assert.notNull(type, "Type must not be null");
@@ -68,9 +70,13 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		this.componentType = Lazy.of(this::doGetComponentType);
 		this.valueType = Lazy.of(this::doGetMapValueType);
 		this.typeArguments = Lazy.of(this::doGetTypeArguments);
+		this.resolvedGenerics = Lazy.of(() -> Arrays.stream(resolvableType.getGenerics()) //
+				.map(TypeInformation::of) // use TypeInformation comparison to remove any attachments to variableResolver
+																	// holding the type source
+				.collect(Collectors.toList()));
 	}
 
-	static TypeDiscoverer<?> td(ResolvableType type) {
+	static TypeDiscoverer<?> ofCached(ResolvableType type) {
 
 		Assert.notNull(type, "Type must not be null");
 
@@ -325,15 +331,13 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			return false;
 		}
 
-		var collect1 = Arrays.stream(resolvableType.getGenerics()) //
-				.map(ResolvableType::toClass) //
-				.collect(Collectors.toList());
+		// in case types cannot be resolved resort to toString checking to avoid infinite recursion caused by raw types and
+		// self-referencing generics
+		if (that.resolvableType.hasUnresolvableGenerics() || this.resolvableType.hasUnresolvableGenerics()) {
+			return ObjectUtils.nullSafeEquals(that.resolvableType.toString(), this.resolvableType.toString());
+		}
 
-		var collect2 = Arrays.stream(that.resolvableType.getGenerics()) //
-				.map(ResolvableType::toClass) //
-				.collect(Collectors.toList());
-
-		return ObjectUtils.nullSafeEquals(collect1, collect2);
+		return ObjectUtils.nullSafeEquals(resolvedGenerics.get(), that.resolvedGenerics.get());
 	}
 
 	@Override
@@ -374,8 +378,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		var field = ReflectionUtils.findField(rawType, fieldname);
 
 		return field != null ? Optional.of(TypeInformation.of(ResolvableType.forField(field, resolvableType)))
-				: Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname)).map(it -> from(it, rawType))
-						.map(TypeInformation::of);
+				: Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname))
+						.filter(it -> it.getName().equals(fieldname)).map(it -> from(it, rawType)).map(TypeInformation::of);
 	}
 
 	private ResolvableType from(PropertyDescriptor descriptor, Class<?> rawType) {

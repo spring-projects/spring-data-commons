@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 package org.springframework.data.repository.query;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.springframework.data.repository.query.SpelQueryContext.SpelExtractor;
 import org.springframework.data.spel.ExpressionDependencies;
@@ -39,7 +38,7 @@ import org.springframework.util.Assert;
  */
 public class SpelEvaluator {
 
-	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
+	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
 	private final QueryMethodEvaluationContextProvider evaluationContextProvider;
 	private final Parameters<?, ?> parameters;
@@ -62,11 +61,12 @@ public class SpelEvaluator {
 
 		Assert.notNull(values, "Values must not be null.");
 
+		Map<String, String> parameterMap = extractor.getParameterMap();
+		Map<String, Object> results = new LinkedHashMap<>(parameterMap.size());
 
-		return extractor.getParameters().collect(Collectors.toMap(//
-				Entry::getKey, //
-				it -> getSpElValue(it.getValue(), values) //
-		));
+		parameterMap.forEach((parameter, expression) -> results.put(parameter, getSpElValue(expression, values)));
+
+		return results;
 	}
 
 	/**

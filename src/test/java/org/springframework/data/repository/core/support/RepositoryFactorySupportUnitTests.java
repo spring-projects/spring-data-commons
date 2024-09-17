@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
@@ -117,7 +119,7 @@ class RepositoryFactorySupportUnitTests {
 		factory.getRepository(ObjectRepository.class);
 
 		verify(listener, times(1)).onCreation(any(MyRepositoryQuery.class));
-		verify(otherListener, times(2)).onCreation(any(RepositoryQuery.class));
+		verify(otherListener, times(3)).onCreation(any(RepositoryQuery.class));
 	}
 
 	@Test // DATACMNS-1538
@@ -154,8 +156,7 @@ class RepositoryFactorySupportUnitTests {
 	@Test // DATACMNS-102
 	void invokesCustomMethodCompositionMethodIfItRedeclaresACRUDOne() {
 
-		var repository = factory.getRepository(ObjectRepository.class,
-				RepositoryFragments.just(customImplementation));
+		var repository = factory.getRepository(ObjectRepository.class, RepositoryFragments.just(customImplementation));
 		repository.findById(1);
 
 		verify(customImplementation, times(1)).findById(1);
@@ -247,6 +248,50 @@ class RepositoryFactorySupportUnitTests {
 		assertThat(repositoryMethodInvocation.getResult().getError()).isInstanceOf(IllegalStateException.class);
 	}
 
+	@Test // GH-3090
+	void capturesRepositoryMetadata() {
+
+		record Metadata(RepositoryMethodContext context, MethodInvocation methodInvocation) {
+		}
+
+		when(factory.queryOne.execute(any(Object[].class)))
+				.then(invocation -> new Metadata(RepositoryMethodContext.currentMethod(),
+						ExposeInvocationInterceptor.currentInvocation()));
+
+		factory.setExposeMetadata(true);
+
+		var repository = factory.getRepository(ObjectRepository.class);
+		var metadataByLastname = repository.findMetadataByLastname();
+
+		assertThat(metadataByLastname).isInstanceOf(Metadata.class);
+
+		Metadata metadata = (Metadata) metadataByLastname;
+		assertThat(metadata.context().getMethod().getName()).isEqualTo("findMetadataByLastname");
+		assertThat(metadata.context().getRepository().getDomainType()).isEqualTo(Object.class);
+		assertThat(metadata.methodInvocation().getMethod().getName()).isEqualTo("findMetadataByLastname");
+	}
+
+	@Test // GH-3090
+	void capturesRepositoryMetadataWithMetadataAccess() {
+
+		record Metadata(RepositoryMethodContext context, MethodInvocation methodInvocation) {
+		}
+
+		when(factory.queryOne.execute(any(Object[].class)))
+				.then(invocation -> new Metadata(RepositoryMethodContext.currentMethod(),
+						ExposeInvocationInterceptor.currentInvocation()));
+
+		var repository = factory.getRepository(ObjectRepository.class, new RepositoryMetadataAccess() {});
+		var metadataByLastname = repository.findMetadataByLastname();
+
+		assertThat(metadataByLastname).isInstanceOf(Metadata.class);
+
+		Metadata metadata = (Metadata) metadataByLastname;
+		assertThat(metadata.context().getMethod().getName()).isEqualTo("findMetadataByLastname");
+		assertThat(metadata.context().getRepository().getDomainType()).isEqualTo(Object.class);
+		assertThat(metadata.methodInvocation().getMethod().getName()).isEqualTo("findMetadataByLastname");
+	}
+
 	@Test // DATACMNS-509, DATACMNS-1764
 	void convertsWithSameElementType() {
 
@@ -283,8 +328,8 @@ class RepositoryFactorySupportUnitTests {
 
 		assertThatThrownBy( //
 				() -> factory.addRepositoryProxyPostProcessor(null)) //
-						.isInstanceOf(IllegalArgumentException.class) //
-						.hasMessageContaining(RepositoryProxyPostProcessor.class.getSimpleName());
+				.isInstanceOf(IllegalArgumentException.class) //
+				.hasMessageContaining(RepositoryProxyPostProcessor.class.getSimpleName());
 	}
 
 	@Test // DATACMNS-715, SPR-13109
@@ -334,9 +379,9 @@ class RepositoryFactorySupportUnitTests {
 
 		assertThatThrownBy( //
 				() -> factory.getTargetRepositoryViaReflection(information, entityInformation, "Foo")) //
-						.isInstanceOf(IllegalStateException.class) //
-						.hasMessageContaining(entityInformation.getClass().getName()) //
-						.hasMessageContaining(String.class.getName());
+				.isInstanceOf(IllegalStateException.class) //
+				.hasMessageContaining(entityInformation.getClass().getName()) //
+				.hasMessageContaining(String.class.getName());
 	}
 
 	@Test
@@ -357,8 +402,8 @@ class RepositoryFactorySupportUnitTests {
 
 		assertThatThrownBy( //
 				() -> repository.findById("")) //
-						.isInstanceOf(EmptyResultDataAccessException.class) //
-						.hasMessageContaining("Result must not be null");
+				.isInstanceOf(EmptyResultDataAccessException.class) //
+				.hasMessageContaining("Result must not be null");
 
 		assertThat(repository.findByUsername("")).isNull();
 	}
@@ -370,8 +415,8 @@ class RepositoryFactorySupportUnitTests {
 
 		assertThatThrownBy( //
 				() -> repository.findByClass(null)) //
-						.isInstanceOf(IllegalArgumentException.class) //
-						.hasMessageContaining("must not be null");
+				.isInstanceOf(IllegalArgumentException.class) //
+				.hasMessageContaining("must not be null");
 	}
 
 	@Test // DATACMNS-1154
@@ -391,8 +436,8 @@ class RepositoryFactorySupportUnitTests {
 
 		assertThatThrownBy( //
 				() -> repository.findById(null)) //
-						.isInstanceOf(IllegalArgumentException.class) //
-						.hasMessageContaining("must not be null"); //
+				.isInstanceOf(IllegalArgumentException.class) //
+				.hasMessageContaining("must not be null"); //
 	}
 
 	@Test // DATACMNS-1154
@@ -508,6 +553,8 @@ class RepositoryFactorySupportUnitTests {
 
 		@Nullable
 		Object save(Object entity);
+
+		Object findMetadataByLastname();
 
 		static String staticMethod() {
 			return "OK";

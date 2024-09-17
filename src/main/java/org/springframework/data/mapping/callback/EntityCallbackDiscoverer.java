@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 the original author or authors.
+ * Copyright 2019-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
@@ -37,7 +38,6 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.comparator.Comparators;
 
@@ -53,7 +53,7 @@ class EntityCallbackDiscoverer {
 
 	private final CallbackRetriever defaultRetriever = new CallbackRetriever();
 	private final Map<CallbackCacheKey, CallbackRetriever> retrieverCache = new ConcurrentHashMap<>(64);
-	private final Map<Class<?>, ResolvableType> entityTypeCache = new ConcurrentReferenceHashMap<>(64);
+	private final Map<Class<?>, ResolvableType> entityTypeCache = new ConcurrentHashMap<>(64);
 
 	@Nullable private ClassLoader beanClassLoader;
 
@@ -331,7 +331,7 @@ class EntityCallbackDiscoverer {
 	 *
 	 * @author Oliver Drotbohm
 	 */
-	private record EntityCallbackAdapter<T> (EntityCallback<T> delegate,
+	private record EntityCallbackAdapter<T>(EntityCallback<T> delegate,
 			ResolvableType type) implements EntityCallback<T> {
 
 		boolean supports(ResolvableType callbackType, ResolvableType entityType) {
@@ -342,17 +342,52 @@ class EntityCallbackDiscoverer {
 	/**
 	 * Cache key for {@link EntityCallback}, based on event type and source type.
 	 */
-	private record CallbackCacheKey(ResolvableType callbackType,
-			@Nullable Class<?> entityType) implements Comparable<CallbackCacheKey> {
+	private static final class CallbackCacheKey implements Comparable<CallbackCacheKey> {
 
 		private static final Comparator<CallbackCacheKey> COMPARATOR = Comparators.<CallbackCacheKey> nullsHigh() //
 				.thenComparing(it -> it.callbackType.toString()) //
 				.thenComparing(it -> it.entityType.getName());
 
+		private final ResolvableType callbackType;
+		private final Class<?> entityType;
+
+		private CallbackCacheKey(ResolvableType callbackType, Class<?> entityType) {
+
+			this.callbackType = callbackType;
+			this.entityType = entityType;
+		}
+
 		@Override
-		public int compareTo(CallbackCacheKey other) {
+		public int compareTo(@Nullable CallbackCacheKey other) {
 			return COMPARATOR.compare(this, other);
 		}
-	}
 
+		@Override
+		public boolean equals(@Nullable Object obj) {
+
+			if (obj == this) {
+				return true;
+			}
+
+			if (!(obj instanceof CallbackCacheKey that)) {
+				return false;
+			}
+
+			return Objects.equals(this.callbackType, that.callbackType)
+					&& Objects.equals(this.entityType, that.entityType);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(callbackType, entityType);
+		}
+
+		@Override
+		public String toString() {
+
+			return "CallbackCacheKey[" +
+					"callbackType=" + callbackType + ", " +
+					"entityType=" + entityType + ']';
+		}
+	}
 }

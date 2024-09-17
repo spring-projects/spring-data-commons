@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@ import org.springframework.context.expression.MapAccessor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.ParserContext;
 import org.springframework.expression.common.TemplateParserContext;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -71,7 +71,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	 * @param targetInterface must not be {@literal null}.
 	 */
 	public SpelEvaluatingMethodInterceptor(MethodInterceptor delegate, Object target, @Nullable BeanFactory beanFactory,
-			SpelExpressionParser parser, Class<?> targetInterface) {
+			ExpressionParser parser, Class<?> targetInterface) {
 
 		Assert.notNull(delegate, "Delegate MethodInterceptor must not be null");
 		Assert.notNull(target, "Target object must not be null");
@@ -105,11 +105,12 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 	 * @return
 	 */
 	private static Map<Integer, Expression> potentiallyCreateExpressionsForMethodsOnTargetInterface(
-			SpelExpressionParser parser, Class<?> targetInterface) {
+			ExpressionParser parser, Class<?> targetInterface) {
 
-		Map<Integer, Expression> expressions = new HashMap<>();
+		Method[] methods = targetInterface.getMethods();
+		Map<Integer, Expression> expressions = new HashMap<>(methods.length, 1.0f);
 
-		for (Method method : targetInterface.getMethods()) {
+		for (Method method : methods) {
 
 			Value value = AnnotationUtils.findAnnotation(method, Value.class);
 			if (value == null) {

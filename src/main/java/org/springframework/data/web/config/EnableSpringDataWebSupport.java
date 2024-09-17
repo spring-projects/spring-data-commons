@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.querydsl.QuerydslUtils;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -42,7 +47,7 @@ import org.springframework.util.ClassUtils;
  * by Spring Data repositories as controller method arguments bound with
  * {@link org.springframework.web.bind.annotation.PathVariable} or
  * {@link org.springframework.web.bind.annotation.RequestParam}.</li>
- * <li>{@link PageableHandlerMethodArgumentResolver} - to allow injection of
+ * <li>{@link org.springframework.data.web.PageableHandlerMethodArgumentResolver} - to allow injection of
  * {@link org.springframework.data.domain.Pageable} instances into controller methods automatically created from request
  * parameters.</li>
  * <li>{@link org.springframework.data.web.SortHandlerMethodArgumentResolver} - to allow injection of
@@ -52,7 +57,7 @@ import org.springframework.util.ClassUtils;
  * If Spring HATEOAS is present on the classpath we will register the following beans:
  * <ul>
  * <li>{@link org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver} - instead of
- * {@link PageableHandlerMethodArgumentResolver}</li>
+ * {@link org.springframework.data.web.PageableHandlerMethodArgumentResolver}</li>
  * <li>{@link org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver} - instead of
  * {@link org.springframework.data.web.SortHandlerMethodArgumentResolver}</li>
  * <li>{@link org.springframework.data.web.PagedResourcesAssembler} - for injection into web components</li>
@@ -64,13 +69,46 @@ import org.springframework.util.ClassUtils;
  * @see SpringDataWebConfiguration
  * @see HateoasAwareSpringDataWebConfiguration
  * @author Oliver Gierke
+ * @author Yanming Zhou
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
 @Inherited
-@Import({ EnableSpringDataWebSupport.SpringDataWebConfigurationImportSelector.class,
-		EnableSpringDataWebSupport.QuerydslActivator.class })
+@Import({
+		EnableSpringDataWebSupport.SpringDataWebConfigurationImportSelector.class,
+		EnableSpringDataWebSupport.QuerydslActivator.class,
+		EnableSpringDataWebSupport.SpringDataWebSettingsRegistar.class
+})
 public @interface EnableSpringDataWebSupport {
+
+	/**
+	 * Configures how to render {@link org.springframework.data.domain.PageImpl} instances. Defaults to
+	 * {@link PageSerializationMode#DIRECT} for backward compatibility reasons. Prefer explicitly setting this to
+	 * {@link PageSerializationMode#VIA_DTO}, or manually convert {@link org.springframework.data.domain.PageImpl}
+	 * instances before handing them out of a controller method, either by manually calling {@code new PagedModel<>(page)}
+	 * or using Spring HATEOAS {@link org.springframework.hateoas.PagedModel} abstraction.
+	 *
+	 * @return will never be {@literal null}.
+	 * @since 3.3
+	 */
+	PageSerializationMode pageSerializationMode() default PageSerializationMode.DIRECT;
+
+	enum PageSerializationMode {
+
+		/**
+		 * {@link org.springframework.data.domain.PageImpl} instances will be rendered as is (discouraged, as there's no
+		 * guarantee on the stability of the serialization result as we might need to change the type's API for unrelated
+		 * reasons).
+		 */
+		DIRECT,
+
+		/**
+		 * Causes {@link org.springframework.data.domain.PageImpl} instances to be wrapped into
+		 * {@link org.springframework.data.web.PagedModel} instances before rendering them as JSON to make sure the
+		 * representation stays stable even if {@link org.springframework.data.domain.PageImpl} is changed.
+		 */
+		VIA_DTO;
+	}
 
 	/**
 	 * Import selector to import the appropriate configuration class depending on whether Spring HATEOAS is present on the
@@ -125,6 +163,48 @@ public @interface EnableSpringDataWebSupport {
 		public String[] selectImports(AnnotationMetadata importingClassMetadata) {
 			return QuerydslUtils.QUERY_DSL_PRESENT ? new String[] { QuerydslWebConfiguration.class.getName() }
 					: new String[0];
+		}
+	}
+
+	/**
+	 * Registers a bean definition for {@link SpringDataWebSettings} carrying the configuration values of
+	 * {@link EnableSpringDataWebSupport}.
+	 *
+	 * @author Oliver Drotbohm
+	 * @author Yanming Zhou
+	 * @soundtrack Norah Jones - Chasing Pirates
+	 * @since 3.3
+	 */
+	static class SpringDataWebSettingsRegistar implements ImportBeanDefinitionRegistrar {
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry, org.springframework.beans.factory.support.BeanNameGenerator)
+		 */
+		@Override
+		public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry,
+				BeanNameGenerator importBeanNameGenerator) {
+
+			Map<String, Object> attributes = importingClassMetadata
+					.getAnnotationAttributes(EnableSpringDataWebSupport.class.getName());
+
+			if (attributes == null) {
+				return;
+			}
+
+			Object pageSerializationMode = attributes.get("pageSerializationMode");
+
+			if (pageSerializationMode == PageSerializationMode.DIRECT) {
+				return;
+			}
+
+			AbstractBeanDefinition definition = BeanDefinitionBuilder.rootBeanDefinition(SpringDataWebSettings.class)
+					.addConstructorArgValue(pageSerializationMode)
+					.getBeanDefinition();
+
+			String beanName = importBeanNameGenerator.generateBeanName(definition, registry);
+
+			registry.registerBeanDefinition(beanName, definition);
 		}
 	}
 }

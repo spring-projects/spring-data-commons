@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.KotlinDetector;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -74,7 +74,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 					return;
 				}
 
-				if (KotlinReflectionUtils.isDataClass(property.getOwner().getType())) {
+				if (KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isDataClass(property.getOwner().getType())) {
 
 					this.bean = (T) KotlinCopyUtil.setProperty(property, bean, value);
 					return;
@@ -154,8 +154,6 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 	 */
 	static class KotlinCopyUtil {
 
-		private static final Map<Class<?>, KCallable<?>> copyMethodCache = new ConcurrentReferenceHashMap<>();
-
 		/**
 		 * Set a single property by calling {@code copy(…)} on a Kotlin data class. Copying creates a new instance that
 		 * holds all values of the original instance and the newly set {@link PersistentProperty} value.
@@ -165,11 +163,11 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 		static <T> Object setProperty(PersistentProperty<?> property, T bean, @Nullable Object value) {
 
 			Class<?> type = property.getOwner().getType();
-			KCallable<?> copy = copyMethodCache.computeIfAbsent(type, it -> getCopyMethod(it, property));
+			KCallable<?> copy = getCopyMethod(type, property);
 
 			if (copy == null) {
-				throw new UnsupportedOperationException(String.format(
-						"Kotlin class %s has no .copy(…) method for property %s", type.getName(), property.getName()));
+				throw new UnsupportedOperationException(String.format("Kotlin class %s has no .copy(…) method for property %s",
+						type.getName(), property.getName()));
 			}
 
 			return copy.callBy(getCallArgs(copy, property, bean, value));
@@ -179,7 +177,6 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 				T bean, @Nullable Object value) {
 
 			Map<KParameter, Object> args = new LinkedHashMap<>(2, 1);
-
 			List<KParameter> parameters = callable.getParameters();
 
 			for (KParameter parameter : parameters) {
@@ -190,7 +187,8 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 				if (parameter.getKind() == Kind.VALUE && parameter.getName() != null
 						&& parameter.getName().equals(property.getName())) {
-					args.put(parameter, value);
+
+					args.put(parameter, KotlinValueUtils.getCopyValueHierarchy(parameter).wrap(value));
 				}
 			}
 			return args;

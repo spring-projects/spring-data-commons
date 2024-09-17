@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,16 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
+import example.SampleInterface;
+
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTests.SampleInterface;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 /**
  * Unit tests for {@link ProxyingHandlerMethodArgumentResolver}.
@@ -31,7 +35,7 @@ import org.springframework.data.web.ProjectingJackson2HttpMessageConverterUnitTe
  * @soundtrack Karlijn Langendijk & Sönke Meinen - Englishman In New York (Sting,
  *             https://www.youtube.com/watch?v=O7LZsqrnaaA)
  */
-public class ProxyingHandlerMethodArgumentResolverUnitTests {
+class ProxyingHandlerMethodArgumentResolverUnitTests {
 
 	ProxyingHandlerMethodArgumentResolver resolver = new ProxyingHandlerMethodArgumentResolver(
 			() -> new DefaultConversionService(), true);
@@ -39,8 +43,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void supportAnnotatedInterface() throws Exception {
 
-		var method = Controller.class.getMethod("with", AnnotatedInterface.class);
-		var parameter = new MethodParameter(method, 0);
+		var parameter = getParameter("with", AnnotatedInterface.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 	}
@@ -48,8 +51,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void supportsUnannotatedInterfaceFromUserPackage() throws Exception {
 
-		var method = Controller.class.getMethod("with", SampleInterface.class);
-		var parameter = new MethodParameter(method, 0);
+		var parameter = getParameter("with", SampleInterface.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 	}
@@ -57,8 +59,7 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void doesNotSupportUnannotatedInterfaceFromSpringNamespace() throws Exception {
 
-		var method = Controller.class.getMethod("with", UnannotatedInterface.class);
-		var parameter = new MethodParameter(method, 0);
+		var parameter = getParameter("with", UnannotatedInterface.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
 	}
@@ -66,10 +67,31 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 	@Test // DATACMNS-776
 	void doesNotSupportCoreJavaType() throws Exception {
 
-		var method = Controller.class.getMethod("with", List.class);
-		var parameter = new MethodParameter(method, 0);
+		var parameter = getParameter("with", List.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
+	}
+
+	@Test // GH-2937
+	void doesNotSupportForeignSpringAnnotations() throws Exception {
+
+		var parameter = getParameter("withForeignAnnotation", SampleInterface.class);
+
+		assertThat(resolver.supportsParameter(parameter)).isFalse();
+	}
+
+	@Test // GH-2937
+	void doesSupportAtModelAttribute() throws Exception {
+
+		var parameter = getParameter("withModelAttribute", SampleInterface.class);
+
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
+	}
+
+	private static MethodParameter getParameter(String methodName, Class<?> parameterType) {
+
+		var method = ReflectionUtils.findMethod(Controller.class, methodName, parameterType);
+		return new MethodParameter(method, 0);
 	}
 
 	@ProjectedPayload
@@ -86,5 +108,9 @@ public class ProxyingHandlerMethodArgumentResolverUnitTests {
 		void with(SampleInterface param);
 
 		void with(List<Object> param);
+
+		void withForeignAnnotation(@Autowired SampleInterface param);
+
+		void withModelAttribute(@ModelAttribute SampleInterface param);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,7 +30,6 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -66,8 +66,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionalProxy;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -84,7 +82,7 @@ import org.springframework.util.ObjectUtils;
  */
 public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, BeanFactoryAware {
 
-	final static GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
+	static final GenericConversionService CONVERSION_SERVICE = new DefaultConversionService();
 	private static final Log logger = LogFactory.getLog(RepositoryFactorySupport.class);
 
 	static {
@@ -96,6 +94,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	private final List<RepositoryProxyPostProcessor> postProcessors;
 
 	private Optional<Class<?>> repositoryBaseClass;
+	private boolean exposeMetadata;
 	private @Nullable QueryLookupStrategy.Key queryLookupStrategyKey;
 	private List<QueryCreationListener<?>> queryPostProcessors;
 	private List<RepositoryMethodInvocationListener> methodInvocationListeners;
@@ -110,7 +109,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	@SuppressWarnings("null")
 	public RepositoryFactorySupport() {
 
-		this.repositoryInformationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
+		this.repositoryInformationCache = new HashMap<>(16);
 		this.postProcessors = new ArrayList<>();
 
 		this.repositoryBaseClass = Optional.empty();
@@ -121,6 +120,26 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		this.queryPostProcessors.add(collectingListener);
 		this.methodInvocationListeners = new ArrayList<>();
 		this.projectionFactory = createProjectionFactory();
+	}
+
+	/**
+	 * Set whether the repository method metadata should be exposed by the repository factory as a ThreadLocal for
+	 * retrieval via the {@code RepositoryMethodContext} class. This is useful if an advised object needs to obtain
+	 * repository information.
+	 * <p>
+	 * Default is {@literal "false"}, in order to avoid unnecessary extra interception. This means that no guarantees are
+	 * provided that {@code RepositoryMethodContext} access will work consistently within any method of the advised
+	 * object.
+	 * <p>
+	 * Repository method metadata is also exposed if implementations within the {@link RepositoryFragments repository
+	 * composition} implement {@link RepositoryMetadataAccess}.
+	 *
+	 * @since 3.4
+	 * @see RepositoryMethodContext
+	 * @see RepositoryMetadataAccess
+	 */
+	public void setExposeMetadata(boolean exposeMetadata) {
+		this.exposeMetadata = exposeMetadata;
 	}
 
 	/**
@@ -329,10 +348,19 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		result.setInterfaces(repositoryInterface, Repository.class, TransactionalProxy.class);
 
 		if (MethodInvocationValidator.supports(repositoryInterface)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace(LogMessage.format("Register MethodInvocationValidator for %s…", repositoryInterface.getName()));
+			}
 			result.addAdvice(new MethodInvocationValidator());
 		}
 
-		result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
+		if (this.exposeMetadata || shouldExposeMetadata(fragments)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace(LogMessage.format("Register ExposeMetadataInterceptor for %s…", repositoryInterface.getName()));
+			}
+			result.addAdvice(new ExposeMetadataInterceptor(metadata));
+			result.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
+		}
 
 		if (!postProcessors.isEmpty()) {
 			StartupStep repositoryPostprocessorsStep = onEvent(applicationStartup, "spring.data.repository.postprocessors",
@@ -349,6 +377,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 		}
 
 		if (DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(repositoryInterface)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace(LogMessage.format("Register DefaultMethodInvokingMethodInterceptor for %s…", repositoryInterface.getName()));
+			}
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
@@ -366,8 +397,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		if (logger.isDebugEnabled()) {
 			logger
-					.debug(LogMessage.format("Finished creation of repository instance for %s.",
-				repositoryInterface.getName()));
+					.debug(LogMessage.format("Finished creation of repository instance for %s.", repositoryInterface.getName()));
 		}
 
 		return repository;
@@ -442,12 +472,15 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, composition);
 
-		return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
+		synchronized (repositoryInformationCache) {
 
-			Class<?> baseClass = repositoryBaseClass.orElse(getRepositoryBaseClass(metadata));
+			return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
 
-			return new DefaultRepositoryInformation(metadata, baseClass, composition);
-		});
+				Class<?> baseClass = repositoryBaseClass.orElse(getRepositoryBaseClass(metadata));
+
+				return new DefaultRepositoryInformation(metadata, baseClass, composition);
+			});
+		}
 	}
 
 	protected List<QueryMethod> getQueryMethods() {
@@ -599,6 +632,23 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	}
 
 	/**
+	 * Checks if at least one {@link RepositoryFragment} indicates need to access to {@link RepositoryMetadata} by being
+	 * flagged with {@link RepositoryMetadataAccess}.
+	 *
+	 * @param fragments
+	 * @return {@literal true} if access to metadata is required.
+	 */
+	private static boolean shouldExposeMetadata(RepositoryFragments fragments) {
+
+		for (RepositoryFragment<?> fragment : fragments) {
+			if (fragment.getImplementation().filter(RepositoryMetadataAccess.class::isInstance).isPresent()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Method interceptor that calls methods on the {@link RepositoryComposition}.
 	 *
 	 * @author Mark Paluch
@@ -632,6 +682,33 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			throw new IllegalStateException("Should not occur");
 		}
+	}
+
+	/**
+	 * Interceptor for repository proxies when the repository needs exposing metadata.
+	 */
+	private static class ExposeMetadataInterceptor implements MethodInterceptor, Serializable {
+
+		private final RepositoryMetadata repositoryMetadata;
+
+		public ExposeMetadataInterceptor(RepositoryMetadata repositoryMetadata) {
+			this.repositoryMetadata = repositoryMetadata;
+		}
+
+		@Nullable
+		@Override
+		public Object invoke(MethodInvocation invocation) throws Throwable {
+
+			RepositoryMethodContext oldMetadata = null;
+			try {
+				oldMetadata = RepositoryMethodContext
+						.setCurrentMetadata(new DefaultRepositoryMethodContext(repositoryMetadata, invocation.getMethod()));
+				return invocation.proceed();
+			} finally {
+				RepositoryMethodContext.setCurrentMetadata(oldMetadata);
+			}
+		}
+
 	}
 
 	/**
@@ -727,7 +804,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 	 */
 	static class RepositoryValidator {
 
-		static Map<Class<?>, String> WELL_KNOWN_EXECUTORS = new HashMap<>();
+		static Map<Class<?>, String> WELL_KNOWN_EXECUTORS = new HashMap<>(4, 1.0f);
 
 		static {
 
@@ -788,11 +865,9 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 				}
 
 				if (!containsFragmentImplementation(composition, executorInterface)) {
-					throw new UnsupportedFragmentException(
-							String.format("Repository %s implements %s but %s does not support %s",
-									ClassUtils.getQualifiedName(repositoryInterface), ClassUtils.getQualifiedName(executorInterface),
-									ClassUtils.getShortName(source), entry.getValue()),
-							repositoryInterface, executorInterface);
+					throw new UnsupportedFragmentException(String.format("Repository %s implements %s but %s does not support %s",
+							ClassUtils.getQualifiedName(repositoryInterface), ClassUtils.getQualifiedName(executorInterface),
+							ClassUtils.getShortName(source), entry.getValue()), repositoryInterface, executorInterface);
 				}
 			}
 		}

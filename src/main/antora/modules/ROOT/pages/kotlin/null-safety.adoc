@@ -1,0 +1,22 @@
+[[kotlin.null-safety]]
+= Null Safety
+
+One of Kotlin's key features is https://kotlinlang.org/docs/null-safety.html[null safety], which cleanly deals with `null` values at compile time.
+This makes applications safer through nullability declarations and the expression of "`value or no value`" semantics without paying the cost of wrappers, such as `Optional`.
+(Kotlin allows using functional constructs with nullable values. See this https://www.baeldung.com/kotlin/null-safety[comprehensive guide to Kotlin null safety].)
+
+Although Java does not let you express null safety in its type system, Spring Data API is annotated with https://jcp.org/en/jsr/detail?id=305[JSR-305] tooling friendly annotations declared in the `org.springframework.lang` package.
+By default, types from Java APIs used in Kotlin are recognized as https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[platform types], for which null checks are relaxed.
+https://kotlinlang.org/docs/reference/java-interop.html#jsr-305-support[Kotlin support for JSR-305 annotations] and Spring nullability annotations provide null safety for the whole Spring Data API to Kotlin developers, with the advantage of dealing with `null` related issues at compile time.
+
+See xref:repositories/null-handling.adoc[Null Handling of Repository Methods] how null safety applies to Spring Data Repositories.
+
+[TIP]
+====
+You can configure JSR-305 checks by adding the `-Xjsr305` compiler flag with the following options: `-Xjsr305={strict|warn|ignore}`.
+
+For Kotlin versions 1.1+, the default behavior is the same as `-Xjsr305=warn`.
+The `strict` value is required take Spring Data API null-safety into account. Kotlin types inferred from Spring API but should be used with the knowledge that Spring API nullability declaration could evolve, even between minor releases and that more checks may be added in the future.
+====
+
+NOTE: Generic type arguments, varargs, and array elements nullability are not supported yet, but should be in an upcoming release.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
@@ -70,6 +71,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	private final Method setter;
 	private final Field field;
 	private final Method wither;
+	private final Lazy<Boolean> readable;
 	private final boolean immutable;
 
 	public AbstractPersistentProperty(Property property, PersistentEntity<?, P> owner,
@@ -103,11 +105,27 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.field = property.getField().orElse(null);
 		this.wither = property.getWither().orElse(null);
 
-		if (setter == null && (field == null || Modifier.isFinal(field.getModifiers()))) {
-			this.immutable = true;
-		} else {
-			this.immutable = false;
-		}
+		this.immutable = setter == null && (field == null || Modifier.isFinal(field.getModifiers()));
+		this.readable = Lazy.of(() -> {
+
+			if (setter != null) {
+				return true;
+			}
+
+			if (wither != null) {
+				return true;
+			}
+
+			if (KotlinReflectionUtils.isDataClass(owner.getType()) && KotlinCopyMethod.hasKotlinCopyMethodFor(this)) {
+				return true;
+			}
+
+			if (field != null && !Modifier.isFinal(field.getModifiers())) {
+				return true;
+			}
+
+			return false;
+		});
 	}
 
 	protected abstract Association<P> createAssociation();
@@ -139,15 +157,6 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	@Override
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypeInformation() {
-
-		if (isMap() || isCollectionLike()) {
-			return entityTypeInformation.get();
-		}
-
-		if (!isEntity()) {
-			return Collections.emptySet();
-		}
-
 		return entityTypeInformation.get();
 	}
 
@@ -170,6 +179,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	}
 
 	@Nullable
+	@Override
 	public Field getField() {
 		return this.field;
 	}
@@ -188,6 +198,11 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	@Override
 	public boolean isWritable() {
 		return !isTransient();
+	}
+
+	@Override
+	public boolean isReadable() {
+		return !isTransient() && readable.get();
 	}
 
 	@Override
@@ -268,6 +283,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		return getActualTypeInformation().getType();
 	}
 
+	@Override
 	public boolean usePropertyAccess() {
 		return usePropertyAccess.get();
 	}
@@ -313,10 +329,8 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 		Set<TypeInformation<?>> result = detectEntityTypes(typeToStartWith);
 
-		return result.stream()
-				.filter(it -> !simpleTypes.isSimpleType(it.getType()))
-				.filter(it -> !it.getType().equals(ASSOCIATION_TYPE))
-				.collect(Collectors.toSet());
+		return result.stream().filter(it -> !simpleTypes.isSimpleType(it.getType()))
+				.filter(it -> !it.getType().equals(ASSOCIATION_TYPE)).collect(Collectors.toSet());
 	}
 
 	private Set<TypeInformation<?>> detectEntityTypes(@Nullable TypeInformation<?> source) {

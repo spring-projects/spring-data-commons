@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,11 @@ import org.springframework.util.ObjectUtils;
  */
 public final class KeysetScrollPosition implements ScrollPosition {
 
-	private static final KeysetScrollPosition INITIAL = new KeysetScrollPosition(Collections.emptyMap(),
+	private static final KeysetScrollPosition EMPTY_FORWARD = new KeysetScrollPosition(Collections.emptyMap(),
 			Direction.FORWARD);
+
+	private static final KeysetScrollPosition EMPTY_BACKWARD = new KeysetScrollPosition(Collections.emptyMap(),
+			Direction.BACKWARD);
 
 	private final Map<String, Object> keys;
 	private final Direction direction;
@@ -55,7 +58,7 @@ public final class KeysetScrollPosition implements ScrollPosition {
 	 * @return will never be {@literal null}.
 	 */
 	static KeysetScrollPosition initial() {
-		return INITIAL;
+		return EMPTY_FORWARD;
 	}
 
 	/**
@@ -70,8 +73,7 @@ public final class KeysetScrollPosition implements ScrollPosition {
 		Assert.notNull(keys, "Keys must not be null");
 		Assert.notNull(direction, "Direction must not be null");
 
-		return keys.isEmpty()
-				? initial()
+		return keys.isEmpty() ? (direction == Direction.FORWARD ? EMPTY_FORWARD : EMPTY_BACKWARD)
 				: new KeysetScrollPosition(Collections.unmodifiableMap(new LinkedHashMap<>(keys)), direction);
 	}
 

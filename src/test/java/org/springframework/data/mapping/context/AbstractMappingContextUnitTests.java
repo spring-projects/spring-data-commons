@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,7 @@ import static org.mockito.Mockito.*;
 import groovy.lang.MetaClass;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -46,9 +39,12 @@ import org.springframework.data.mapping.ShadowedPropertyType;
 import org.springframework.data.mapping.ShadowedPropertyTypeWithCtor;
 import org.springframework.data.mapping.ShadowingPropertyType;
 import org.springframework.data.mapping.ShadowingPropertyTypeWithCtor;
+import org.springframework.data.mapping.model.AbstractPersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.mapping.model.DataClassWithLazy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.StreamUtils;
+import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -185,6 +181,16 @@ class AbstractMappingContextUnitTests {
 		assertThat(context.getPersistentEntity(SimpleDataClass.class)).isNotNull();
 	}
 
+	@Test // GH-3112
+	void shouldIgnoreLazyFieldsForDataClasses() {
+
+		BasicPersistentEntity<Object, SamplePersistentProperty> entity = context
+				.getRequiredPersistentEntity(DataClassWithLazy.class);
+
+		List<String> propertyNames = Streamable.of(entity).map(AbstractPersistentProperty::getName).toList();
+		assertThat(propertyNames).containsOnly("amount", "currency");
+	}
+
 	@Test // DATACMNS-1171
 	void shouldNotCreateEntityForSyntheticKotlinClass() {
 		assertThat(context.getPersistentEntity(TypeCreatingSyntheticClass.class)).isNotNull();
@@ -283,6 +289,20 @@ class AbstractMappingContextUnitTests {
 
 		assertThat(context.getPersistentEntities()).map(it -> (Class) it.getType()).contains(Base.class)
 				.doesNotContain(List.class, ArrayList.class);
+	}
+
+	@Test // GH-2390
+	void doesNotCreatePropertiesForMapAndCollectionTypes() {
+
+		assertThat(context.getPersistentEntity(HashSet.class)).isEmpty();
+		assertThat(context.getPersistentEntity(HashMap.class)).isEmpty();
+	}
+
+	@Test // GH-2390
+	void createsPropertiesForStreamableAndIterableTypes() {
+
+		assertThat(context.getPersistentEntity(MyStreamable.class)).hasSize(1);
+		assertThat(context.getPersistentEntity(MyIterable.class)).hasSize(1);
 	}
 
 	@Test // GH-2390
@@ -531,6 +551,30 @@ class AbstractMappingContextUnitTests {
 	}
 
 	static abstract class Base$$SpringProxy$873fa2e extends Base implements SpringProxy, Advised {
+
+	}
+
+	static class MyIterable implements Iterable<StreamComponent> {
+
+		String name;
+
+		@Override
+		public Iterator<StreamComponent> iterator() {
+			return Collections.emptyIterator();
+		}
+	}
+
+	static class MyStreamable implements Streamable<StreamComponent> {
+
+		String name;
+
+		@Override
+		public Iterator<StreamComponent> iterator() {
+			return Collections.emptyIterator();
+		}
+	}
+
+	record StreamComponent(String name) {
 
 	}
 

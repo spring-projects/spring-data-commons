@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.springframework.data.repository.Repository;
@@ -108,7 +109,7 @@ public abstract class ClassUtils {
 	 * @deprecated Use {@link #getNumberOfOccurrences(Method, Class)}.
 	 */
 	@Deprecated
-	public static int getNumberOfOccurences(@NonNull Method method, @NonNull Class<?> type) {
+	public static int getNumberOfOccurences(Method method, Class<?> type) {
 		return getNumberOfOccurrences(method, type);
 	}
 
@@ -174,6 +175,17 @@ public abstract class ClassUtils {
 	 */
 	public static boolean hasParameterOfType(Method method, Class<?> type) {
 		return Arrays.asList(method.getParameterTypes()).contains(type);
+	}
+
+	/**
+	 * Returns whether the given {@link Method} has a parameter that is assignable to the given type.
+	 *
+	 * @param method
+	 * @param type
+	 * @return
+	 */
+	public static boolean hasParameterAssignableToType(Method method, Class<?> type) {
+		return List.of(method.getParameterTypes()).stream().anyMatch(type::isAssignableFrom);
 	}
 
 	/**

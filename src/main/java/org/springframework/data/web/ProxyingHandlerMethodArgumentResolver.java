@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 the original author or authors.
+ * Copyright 2015-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.ModelAttributeMethodProcessor;
@@ -87,13 +89,23 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		}
 
 		// Annotated parameter
-		if (parameter.getParameterAnnotation(ProjectedPayload.class) != null) {
+		if (parameter.getParameterAnnotation(ProjectedPayload.class) != null
+				|| parameter.getParameterAnnotation(ModelAttribute.class) != null) {
 			return true;
 		}
 
 		// Annotated type
 		if (AnnotatedElementUtils.findMergedAnnotation(type, ProjectedPayload.class) != null) {
 			return true;
+		}
+
+		// Exclude parameters annotated with Spring annotation
+		if (Arrays.stream(parameter.getParameterAnnotations())
+				.map(Annotation::annotationType)
+				.map(Class::getPackageName)
+				.anyMatch(it -> it.startsWith("org.springframework"))) {
+
+			return false;
 		}
 
 		// Fallback for only user defined interfaces

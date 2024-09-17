@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.data.annotation.Immutable;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.domain.Persistable;
+import org.springframework.data.expression.ValueEvaluationContext;
 import org.springframework.data.mapping.*;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExpressionDependencies;
@@ -44,8 +47,6 @@ import org.springframework.expression.EvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
@@ -79,6 +80,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	private @Nullable P versionProperty;
 	private PersistentPropertyAccessorFactory propertyAccessorFactory;
 	private EvaluationContextProvider evaluationContextProvider = EvaluationContextProvider.DEFAULT;
+	private @Nullable Environment environment = null;
 
 	private final Lazy<Alias> typeAlias;
 	private final Lazy<IsNewStrategy> isNewStrategy;
@@ -113,10 +115,10 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		this.creator = InstanceCreatorMetadataDiscoverer.discover(this);
 		this.associations = comparator == null ? new HashSet<>() : new TreeSet<>(new AssociationComparator<>(comparator));
 
-		this.propertyCache = new HashMap<>(16, 1f);
-		this.annotationCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
+		this.propertyCache = new HashMap<>(16, 1.0f);
+		this.annotationCache = new ConcurrentHashMap<>(16);
 		this.propertyAnnotationCache = CollectionUtils
-				.toMultiValueMap(new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK));
+				.toMultiValueMap(new ConcurrentHashMap<>(16));
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 		this.isNewStrategy = Lazy.of(() -> Persistable.class.isAssignableFrom(information.getType()) //
@@ -146,36 +148,44 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return creator != null && creator.isCreatorParameter(property);
 	}
 
+	@Override
 	public boolean isIdProperty(PersistentProperty<?> property) {
 		return idProperty != null && idProperty.equals(property);
 	}
 
+	@Override
 	public boolean isVersionProperty(PersistentProperty<?> property) {
 		return versionProperty != null && versionProperty.equals(property);
 	}
 
+	@Override
 	public String getName() {
 		return getType().getName();
 	}
 
+	@Override
 	@Nullable
 	public P getIdProperty() {
 		return idProperty;
 	}
 
+	@Override
 	@Nullable
 	public P getVersionProperty() {
 		return versionProperty;
 	}
 
+	@Override
 	public boolean hasIdProperty() {
 		return idProperty != null;
 	}
 
+	@Override
 	public boolean hasVersionProperty() {
 		return versionProperty != null;
 	}
 
+	@Override
 	public void addPersistentProperty(P property) {
 
 		Assert.notNull(property, "Property must not be null");
@@ -205,10 +215,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			if (versionProperty != null) {
 
 				throw new MappingException(
-						String.format(
-								"Attempt to add version property %s but already have property %s registered "
-										+ "as version; Check your mapping configuration",
-								property.getField(), versionProperty.getField()));
+						String.format("Attempt to add version property %s but already have property %s registered "
+								+ "as version; Check your mapping configuration", property.getField(), versionProperty.getField()));
 			}
 
 			this.versionProperty = property;
@@ -218,6 +226,15 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	@Override
 	public void setEvaluationContextProvider(EvaluationContextProvider provider) {
 		this.evaluationContextProvider = provider;
+	}
+
+	/**
+	 * @param environment the {@code Environment} that this component runs in.
+	 * @since 3.3
+	 */
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
 	}
 
 	/**
@@ -243,6 +260,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		return property;
 	}
 
+	@Override
 	public void addAssociation(Association<P> association) {
 
 		Assert.notNull(association, "Association must not be null");
@@ -278,18 +296,22 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 				.filter(it -> it.isAnnotationPresent(annotationType)).collect(Collectors.toList());
 	}
 
+	@Override
 	public Class<T> getType() {
 		return information.getType();
 	}
 
+	@Override
 	public Alias getTypeAlias() {
 		return typeAlias.get();
 	}
 
+	@Override
 	public TypeInformation<T> getTypeInformation() {
 		return information;
 	}
 
+	@Override
 	public void doWithProperties(PropertyHandler<P> handler) {
 
 		Assert.notNull(handler, "PropertyHandler must not be null");
@@ -309,6 +331,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
+	@Override
 	public void doWithAssociations(AssociationHandler<P> handler) {
 
 		Assert.notNull(handler, "Handler must not be null");
@@ -318,6 +341,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 		}
 	}
 
+	@Override
 	public void doWithAssociations(SimpleAssociationHandler handler) {
 
 		Assert.notNull(handler, "Handler must not be null");
@@ -345,6 +369,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 				it -> Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(getType(), it)));
 	}
 
+	@Override
 	public void verify() {
 
 		if (comparator != null) {
@@ -444,6 +469,29 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	}
 
 	/**
+	 * Obtain a {@link ValueEvaluationContext} for a {@code rootObject}.
+	 *
+	 * @param rootObject must not be {@literal null}.
+	 * @return the evaluation context including all potential extensions.
+	 * @since 3.3
+	 */
+	protected ValueEvaluationContext getValueEvaluationContext(Object rootObject) {
+		return ValueEvaluationContext.of(this.environment, getEvaluationContext(rootObject));
+	}
+
+	/**
+	 * Obtain a {@link ValueEvaluationContext} for a {@code rootObject} given {@link ExpressionDependencies}.
+	 *
+	 * @param rootObject must not be {@literal null}.
+	 * @param dependencies must not be {@literal null}.
+	 * @return the evaluation context with extensions loaded that satisfy {@link ExpressionDependencies}.
+	 * @since 3.3
+	 */
+	protected ValueEvaluationContext getValueEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+		return ValueEvaluationContext.of(this.environment, getEvaluationContext(rootObject, dependencies));
+	}
+
+	/**
 	 * Returns the default {@link IsNewStrategy} to be used. Will be a {@link PersistentEntityIsNewStrategy} by default.
 	 * Note, that this strategy only gets used if the entity doesn't implement {@link Persistable} as this indicates the
 	 * user wants to be in control over whether an entity is new or not.
@@ -518,6 +566,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 			this.delegate = delegate;
 		}
 
+		@Override
 		public int compare(@Nullable Association<P> left, @Nullable Association<P> right) {
 
 			if (left == null) {

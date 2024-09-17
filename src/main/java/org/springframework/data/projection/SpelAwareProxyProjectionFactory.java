@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 the original author or authors.
+ * Copyright 2015-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.util.AnnotationDetectionMethodCallback;
+import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -46,9 +47,28 @@ import org.springframework.util.ReflectionUtils;
 public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory implements BeanFactoryAware {
 
 	private final Map<Class<?>, Boolean> typeCache = new ConcurrentHashMap<>();
-	private final SpelExpressionParser parser = new SpelExpressionParser();
+	private final ExpressionParser parser;
 
 	private @Nullable BeanFactory beanFactory;
+
+	/**
+	 * Create a new {@link SpelAwareProxyProjectionFactory}.
+	 */
+	public SpelAwareProxyProjectionFactory() {
+		this(new SpelExpressionParser());
+	}
+
+	/**
+	 * Create a new {@link SpelAwareProxyProjectionFactory} for a given {@link ExpressionParser}.
+	 *
+	 * @param parser the parser to use.
+	 * @since 3.3
+	 */
+	public SpelAwareProxyProjectionFactory(ExpressionParser parser) {
+
+		Assert.notNull(parser, "ExpressionParser must not be null");
+		this.parser = parser;
+	}
 
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {

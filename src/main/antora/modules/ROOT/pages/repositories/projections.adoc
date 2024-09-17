@@ -1,0 +1,13 @@
+ifndef::projection-collection[]
+:projection-collection: Collection
+endif::[]
+
+[[projections]]
+= Projections
+
+include::projections-intro.adoc[]
+
+include::projections-interface.adoc[leveloffset=1]
+
+include::projections-class.adoc[leveloffset=1]
+

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.springframework.data.repository.query;
 
 import java.util.Iterator;
 
+import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
@@ -111,13 +113,20 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	@Override
 	public Pageable getPageable() {
 
-		if (!parameters.hasPageableParameter()) {
-			return Pageable.unpaged();
+		if (parameters.hasPageableParameter()) {
+
+			Pageable pageable = (Pageable) values[parameters.getPageableIndex()];
+			return pageable == null ? Pageable.unpaged() : pageable;
 		}
 
-		Pageable pageable = (Pageable) values[parameters.getPageableIndex()];
+		Limit limit = parameters.hasLimitParameter() ? getLimit() : Limit.unlimited();
+		Sort sort = parameters.hasSortParameter() ? getSort() : Sort.unsorted();
 
-		return pageable == null ? Pageable.unpaged() : pageable;
+		if (limit.isUnlimited()) {
+			return Pageable.unpaged(sort);
+		}
+
+		return PageRequest.of(0, limit.max(), sort);
 	}
 
 	@Override
@@ -134,6 +143,24 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 		}
 
 		return Sort.unsorted();
+	}
+
+	@Override
+	public Limit getLimit() {
+
+		if (parameters.hasLimitParameter()) {
+
+			Limit limit = (Limit) values[parameters.getLimitIndex()];
+			return limit == null ? Limit.unlimited() : limit;
+		}
+
+		if (parameters.hasPageableParameter()) {
+
+			Pageable pageable = (Pageable) values[parameters.getPageableIndex()];
+			return pageable.toLimit();
+		}
+
+		return Limit.unlimited();
 	}
 
 	/**

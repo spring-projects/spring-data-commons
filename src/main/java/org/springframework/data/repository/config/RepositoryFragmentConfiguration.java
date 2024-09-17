@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.data.config.ConfigurationUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -33,7 +34,7 @@ import org.springframework.util.ObjectUtils;
  */
 public final class RepositoryFragmentConfiguration {
 
-	private final String interfaceName;
+	private final Optional<String> interfaceName;
 	private final String className;
 	private final Optional<AbstractBeanDefinition> beanDefinition;
 	private final String beanName;
@@ -42,10 +43,10 @@ public final class RepositoryFragmentConfiguration {
 	 * Creates a {@link RepositoryFragmentConfiguration} given {@code interfaceName} and {@code className} of the
 	 * implementation.
 	 *
-	 * @param interfaceName must not be {@literal null} or empty.
+	 * @param interfaceName
 	 * @param className must not be {@literal null} or empty.
 	 */
-	public RepositoryFragmentConfiguration(String interfaceName, String className) {
+	public RepositoryFragmentConfiguration(@Nullable String interfaceName, String className) {
 		this(interfaceName, className, Optional.empty(), generateBeanName(className));
 	}
 
@@ -53,33 +54,32 @@ public final class RepositoryFragmentConfiguration {
 	 * Creates a {@link RepositoryFragmentConfiguration} given {@code interfaceName} and {@link AbstractBeanDefinition} of
 	 * the implementation.
 	 *
-	 * @param interfaceName must not be {@literal null} or empty.
+	 * @param interfaceName
 	 * @param beanDefinition must not be {@literal null}.
 	 */
-	public RepositoryFragmentConfiguration(String interfaceName, AbstractBeanDefinition beanDefinition) {
+	public RepositoryFragmentConfiguration(@Nullable String interfaceName, AbstractBeanDefinition beanDefinition) {
 
-		Assert.hasText(interfaceName, "Interface name must not be null or empty");
 		Assert.notNull(beanDefinition, "Bean definition must not be null");
 
-		this.interfaceName = interfaceName;
+		this.interfaceName = Optional.ofNullable(interfaceName);
 		this.className = ConfigurationUtils.getRequiredBeanClassName(beanDefinition);
 		this.beanDefinition = Optional.of(beanDefinition);
 		this.beanName = generateBeanName();
 	}
 
-	RepositoryFragmentConfiguration(String interfaceName, AbstractBeanDefinition beanDefinition, String beanName) {
+	RepositoryFragmentConfiguration(@Nullable String interfaceName, AbstractBeanDefinition beanDefinition,
+			String beanName) {
 		this(interfaceName, ConfigurationUtils.getRequiredBeanClassName(beanDefinition), Optional.of(beanDefinition),
 				beanName);
 	}
 
-	private RepositoryFragmentConfiguration(String interfaceName, String className,
+	private RepositoryFragmentConfiguration(@Nullable String interfaceName, String className,
 			Optional<AbstractBeanDefinition> beanDefinition, String beanName) {
 
-		Assert.hasText(interfaceName, "Interface name must not be null or empty");
 		Assert.notNull(beanDefinition, "Bean definition must not be null");
 		Assert.notNull(beanName, "Bean name must not be null");
 
-		this.interfaceName = interfaceName;
+		this.interfaceName = Optional.ofNullable(interfaceName);
 		this.className = className;
 		this.beanDefinition = beanDefinition;
 		this.beanName = beanName;
@@ -107,8 +107,9 @@ public final class RepositoryFragmentConfiguration {
 		return getImplementationBeanName() + "Fragment";
 	}
 
+	@Nullable
 	public String getInterfaceName() {
-		return this.interfaceName;
+		return this.interfaceName.orElse(null);
 	}
 
 	public String getClassName() {

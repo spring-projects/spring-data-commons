@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 the original author or authors.
+ * Copyright 2020-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package org.springframework.data.repository.core.support;
 
-import kotlin.coroutines.Continuation;
+import kotlin.Unit;
 import kotlin.reflect.KFunction;
-import kotlinx.coroutines.reactive.AwaitKt;
+import kotlinx.coroutines.flow.Flow;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.reactivestreams.Publisher;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult;
@@ -56,25 +57,63 @@ abstract class RepositoryMethodInvoker {
 	private final Class<?> returnedType;
 	private final Invokable invokable;
 	private final boolean suspendedDeclaredMethod;
-	private final boolean returnsReactiveType;
 
+	@SuppressWarnings("ReactiveStreamsUnusedPublisher")
 	protected RepositoryMethodInvoker(Method method, Invokable invokable) {
 
 		this.method = method;
-		this.invokable = invokable;
 
 		if (KotlinDetector.isKotlinReflectPresent()) {
 
 			this.suspendedDeclaredMethod = KotlinReflectionUtils.isSuspend(method);
 			this.returnedType = this.suspendedDeclaredMethod ? KotlinReflectionUtils.getReturnType(method)
 					: method.getReturnType();
+
+			// special case for most query methods: These can return Flux but we don't want to fail later on if the method
+			// is void.
+			if (suspendedDeclaredMethod) {
+
+				this.invokable = args -> {
+
+					Object result = invokable.invoke(args);
+
+					if (returnedType == Unit.class) {
+
+						if (result instanceof Mono<?> m) {
+							return m.then();
+						}
+
+						Flux<?> flux = result instanceof Flux<?> f ? f : ReactiveWrapperConverters.toWrapper(result, Flux.class);
+						return flux.then();
+					}
+
+					if (returnedType != Flow.class) {
+
+						if (result instanceof Mono<?> m) {
+							return m;
+						}
+
+						Flux<?> flux = result instanceof Flux<?> f ? f : ReactiveWrapperConverters.toWrapper(result, Flux.class);
+
+						if (Collection.class.isAssignableFrom(returnedType)) {
+							return flux.collectList();
+						}
+
+						return flux.singleOrEmpty();
+					}
+
+					return result;
+				};
+			} else {
+				this.invokable = invokable;
+			}
+
 		} else {
 
 			this.suspendedDeclaredMethod = false;
 			this.returnedType = method.getReturnType();
+			this.invokable = invokable;
 		}
-
-		this.returnsReactiveType = ReactiveWrappers.supports(returnedType);
 	}
 
 	static RepositoryQueryMethodInvoker forRepositoryQuery(Method declaredMethod, RepositoryQuery query) {
@@ -116,12 +155,7 @@ abstract class RepositoryMethodInvoker {
 	@Nullable
 	public Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, Object[] args)
 			throws Exception {
-		return shouldAdaptReactiveToSuspended() ? doInvokeReactiveToSuspended(repositoryInterface, multicaster, args)
-				: doInvoke(repositoryInterface, multicaster, args);
-	}
-
-	protected boolean shouldAdaptReactiveToSuspended() {
-		return suspendedDeclaredMethod;
+		return doInvoke(repositoryInterface, multicaster, args);
 	}
 
 	@Nullable
@@ -153,46 +187,6 @@ abstract class RepositoryMethodInvoker {
 		}
 	}
 
-	@Nullable
-	@SuppressWarnings({ "unchecked", "ConstantConditions" })
-	private Object doInvokeReactiveToSuspended(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
-			Object[] args) throws Exception {
-
-		/*
-		 * Kotlin suspended functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
-		 * We're invoking a method without Continuation as we expect the method to return any sort of reactive type,
-		 * therefore we need to strip the Continuation parameter.
-		 */
-		Continuation<Object> continuation = (Continuation) args[args.length - 1];
-		args[args.length - 1] = null;
-
-		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
-				.captureInvocationOn(repositoryInterface);
-		try {
-
-			Publisher<?> result = new ReactiveInvocationListenerDecorator().decorate(repositoryInterface, multicaster, args,
-					invokable.invoke(args));
-
-			if (returnsReactiveType) {
-				return ReactiveWrapperConverters.toWrapper(result, returnedType);
-			}
-
-			if (Collection.class.isAssignableFrom(returnedType)) {
-				result = (Publisher<?>) collectToList(result);
-			}
-
-			return AwaitKt.awaitFirstOrNull(result, continuation);
-		} catch (Exception e) {
-			multicaster.notifyListeners(method, args, computeInvocationResult(invocationResultCaptor.error(e)));
-			throw e;
-		}
-	}
-
-	// to avoid NoClassDefFoundError: org/reactivestreams/Publisher when loading this class ¯\_(ツ)_/¯
-	private static Object collectToList(Object result) {
-		return Flux.from((Publisher<?>) result).collectList();
-	}
-
 	private RepositoryMethodInvocation computeInvocationResult(RepositoryMethodInvocationCaptor captured) {
 		return new RepositoryMethodInvocation(captured.getRepositoryInterface(), method, captured.getCapturedResult(),
 				captured.getDuration());
@@ -201,7 +195,7 @@ abstract class RepositoryMethodInvoker {
 	interface Invokable {
 
 		@Nullable
-		Object invoke(Object[] args) throws ReflectiveOperationException;
+		Object invoke(Object[] args) throws Exception;
 	}
 
 	/**
@@ -261,8 +255,6 @@ abstract class RepositoryMethodInvoker {
 	 */
 	private static class RepositoryFragmentMethodInvoker extends RepositoryMethodInvoker {
 
-		private final CoroutineAdapterInformation adapterInformation;
-
 		public RepositoryFragmentMethodInvoker(Method declaredMethod, Object instance, Method baseClassMethod) {
 			this(CoroutineAdapterInformation.create(declaredMethod, baseClassMethod), declaredMethod, instance,
 					baseClassMethod);
@@ -271,28 +263,24 @@ abstract class RepositoryMethodInvoker {
 		public RepositoryFragmentMethodInvoker(CoroutineAdapterInformation adapterInformation, Method declaredMethod,
 				Object instance, Method baseClassMethod) {
 			super(declaredMethod, args -> {
-
-				if (adapterInformation.isAdapterMethod()) {
-
-					/*
-					 * Kotlin suspended functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
-					 * We're invoking a method without Continuation as we expect the method to return any sort of reactive type,
-					 * therefore we need to strip the Continuation parameter.
-					 */
-					Object[] invocationArguments = new Object[args.length - 1];
-					System.arraycopy(args, 0, invocationArguments, 0, invocationArguments.length);
-
-					return baseClassMethod.invoke(instance, invocationArguments);
+				try {
+					if (adapterInformation.shouldAdaptReactiveToSuspended()) {
+						/*
+						 * Kotlin suspended functions are invoked with a synthetic Continuation parameter that keeps track of the Coroutine context.
+						 * We're invoking a method without Continuation as we expect the method to return any sort of reactive type,
+						 * therefore we need to strip the Continuation parameter.
+						 */
+						Object[] invocationArguments = new Object[args.length - 1];
+						System.arraycopy(args, 0, invocationArguments, 0, invocationArguments.length);
+						return AopUtils.invokeJoinpointUsingReflection(instance, baseClassMethod, invocationArguments);
+					}
+					return AopUtils.invokeJoinpointUsingReflection(instance, baseClassMethod, args);
+				} catch (Exception e) {
+					throw e;
+				} catch (Throwable e) {
+					throw new RuntimeException(e);
 				}
-
-				return baseClassMethod.invoke(instance, args);
 			});
-			this.adapterInformation = adapterInformation;
-		}
-
-		@Override
-		protected boolean shouldAdaptReactiveToSuspended() {
-			return adapterInformation.shouldAdaptReactiveToSuspended();
 		}
 
 		/**

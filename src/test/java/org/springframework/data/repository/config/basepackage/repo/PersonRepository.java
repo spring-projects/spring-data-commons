@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ package org.springframework.data.repository.config.basepackage.repo;
 
 import org.springframework.data.mapping.Person;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.config.spifragment.SpiFragment;
 
 /**
  * @author Mark Paluch
  */
-public interface PersonRepository extends Repository<Person, String>, Fragment {}
+public interface PersonRepository extends Repository<Person, String>, Fragment, SpiFragment {}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
@@ -85,6 +86,12 @@ public class PartTree implements Streamable<OrPart> {
 
 		Assert.notNull(source, "Source must not be null");
 		Assert.notNull(domainClass, "Domain class must not be null");
+
+		// Kotlin name mangling, @JvmName cannot be used with interfaces
+		int dash = source.indexOf('-');
+		if (dash > -1) {
+			source = source.substring(0, dash);
+		}
 
 		Matcher matcher = PREFIX_TEMPLATE.matcher(source);
 
@@ -167,6 +174,16 @@ public class PartTree implements Streamable<OrPart> {
 	@Nullable
 	public Integer getMaxResults() {
 		return subject.getMaxResults().orElse(null);
+	}
+
+	/**
+	 * Return the number of maximal results to return or {@link Limit#unlimited()} if not restricted.
+	 *
+	 * @return {@literal null} if not restricted.
+	 * @since 3.2
+	 */
+	public Limit getResultLimit() {
+		return subject.getMaxResults().map(Limit::of).orElse(Limit.unlimited());
 	}
 
 	/**

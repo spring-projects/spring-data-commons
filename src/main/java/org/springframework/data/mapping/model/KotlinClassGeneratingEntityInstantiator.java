@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,14 @@
  */
 package org.springframework.data.mapping.model;
 
-import kotlin.reflect.KFunction;
-import kotlin.reflect.KParameter;
-import kotlin.reflect.jvm.ReflectJvmMapping;
-
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.IntStream;
 
 import org.springframework.data.mapping.InstanceCreatorMetadata;
-import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.util.KotlinReflectionUtils;
-import org.springframework.data.util.ReflectionUtils;
-import org.springframework.lang.Nullable;
 
 /**
  * Kotlin-specific extension to {@link ClassGeneratingEntityInstantiator} that adapts Kotlin constructors with
@@ -52,100 +43,19 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		if (KotlinReflectionUtils.isSupportedKotlinClass(entity.getType())
 				&& creator instanceof PreferredConstructor<?, ?> constructor) {
 
-			PreferredConstructor<?, ? extends PersistentProperty<?>> defaultConstructor = new DefaultingKotlinConstructorResolver(
-					entity)
-					.getDefaultConstructor();
+			PreferredConstructor<?, ? extends PersistentProperty<?>> kotlinJvmConstructor = KotlinInstantiationDelegate
+					.resolveKotlinJvmConstructor(constructor);
 
-			if (defaultConstructor != null) {
+			if (kotlinJvmConstructor != null) {
 
-				ObjectInstantiator instantiator = createObjectInstantiator(entity, defaultConstructor);
+				ObjectInstantiator instantiator = createObjectInstantiator(entity, kotlinJvmConstructor);
 
-				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, constructor);
+				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, constructor,
+						kotlinJvmConstructor.getConstructor());
 			}
 		}
 
 		return super.doCreateEntityInstantiator(entity);
-	}
-
-	/**
-	 * Resolves a {@link PreferredConstructor} to a synthetic Kotlin constructor accepting the same user-space parameters
-	 * suffixed by Kotlin-specifics required for defaulting and the {@code kotlin.jvm.internal.DefaultConstructorMarker}.
-	 *
-	 * @since 2.0
-	 * @author Mark Paluch
-	 */
-	static class DefaultingKotlinConstructorResolver {
-
-		private final @Nullable PreferredConstructor<?, ?> defaultConstructor;
-
-		@SuppressWarnings("unchecked")
-		DefaultingKotlinConstructorResolver(PersistentEntity<?, ?> entity) {
-
-			Constructor<?> hit = resolveDefaultConstructor(entity);
-			InstanceCreatorMetadata<? extends PersistentProperty<?>> creator = entity.getInstanceCreatorMetadata();
-
-			if ((hit != null) && creator instanceof PreferredConstructor<?, ?> persistenceConstructor) {
-				this.defaultConstructor = new PreferredConstructor<>(hit,
-						persistenceConstructor.getParameters().toArray(new Parameter[0]));
-			} else {
-				this.defaultConstructor = null;
-			}
-		}
-
-		@Nullable
-		private static Constructor<?> resolveDefaultConstructor(PersistentEntity<?, ?> entity) {
-
-			if (!(entity.getInstanceCreatorMetadata() instanceof PreferredConstructor<?, ?> persistenceConstructor)) {
-				return null;
-			}
-
-			Constructor<?> hit = null;
-			Constructor<?> constructor = persistenceConstructor.getConstructor();
-
-			for (Constructor<?> candidate : entity.getType().getDeclaredConstructors()) {
-
-				// use only synthetic constructors
-				if (!candidate.isSynthetic()) {
-					continue;
-				}
-
-				// candidates must contain at least two additional parameters (int, DefaultConstructorMarker).
-				// Number of defaulting masks derives from the original constructor arg count
-				int syntheticParameters = KotlinDefaultMask.getMaskCount(constructor.getParameterCount())
-						+ /* DefaultConstructorMarker */ 1;
-
-				if ((constructor.getParameterCount() + syntheticParameters) != candidate.getParameterCount()) {
-					continue;
-				}
-
-				java.lang.reflect.Parameter[] constructorParameters = constructor.getParameters();
-				java.lang.reflect.Parameter[] candidateParameters = candidate.getParameters();
-
-				if (!candidateParameters[candidateParameters.length - 1].getType().getName()
-						.equals("kotlin.jvm.internal.DefaultConstructorMarker")) {
-					continue;
-				}
-
-				if (parametersMatch(constructorParameters, candidateParameters)) {
-					hit = candidate;
-					break;
-				}
-			}
-
-			return hit;
-		}
-
-		private static boolean parametersMatch(java.lang.reflect.Parameter[] constructorParameters,
-				java.lang.reflect.Parameter[] candidateParameters) {
-
-			return IntStream.range(0, constructorParameters.length)
-					.allMatch(i -> constructorParameters[i].getType().equals(candidateParameters[i].getType()));
-		}
-
-		@Nullable
-		PreferredConstructor<?, ?> getDefaultConstructor() {
-			return defaultConstructor;
-		}
 	}
 
 	/**
@@ -169,23 +79,13 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 	static class DefaultingKotlinClassInstantiatorAdapter implements EntityInstantiator {
 
 		private final ObjectInstantiator instantiator;
-		private final KFunction<?> constructor;
-		private final List<KParameter> kParameters;
-		private final Constructor<?> synthetic;
+		private final KotlinInstantiationDelegate delegate;
 
-		DefaultingKotlinClassInstantiatorAdapter(ObjectInstantiator instantiator, PreferredConstructor<?, ?> constructor) {
-
-			KFunction<?> kotlinConstructor = ReflectJvmMapping.getKotlinFunction(constructor.getConstructor());
-
-			if (kotlinConstructor == null) {
-				throw new IllegalArgumentException(
-						"No corresponding Kotlin constructor found for " + constructor.getConstructor());
-			}
+		DefaultingKotlinClassInstantiatorAdapter(ObjectInstantiator instantiator,
+				PreferredConstructor<?, ?> defaultConstructor, Constructor<?> constructorToInvoke) {
 
 			this.instantiator = instantiator;
-			this.constructor = kotlinConstructor;
-			this.kParameters = kotlinConstructor.getParameters();
-			this.synthetic = constructor.getConstructor();
+			this.delegate = new KotlinInstantiationDelegate(defaultConstructor, constructorToInvoke);
 		}
 
 		@Override
@@ -193,7 +93,8 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 				ParameterValueProvider<P> provider) {
 
-			Object[] params = extractInvocationArguments(entity.getInstanceCreatorMetadata(), provider);
+			Object[] params = allocateArguments(delegate.getRequiredParameterCount());
+			delegate.extractInvocationArguments(params, entity.getInstanceCreatorMetadata(), provider);
 
 			try {
 				return (T) instantiator.newInstance(params);
@@ -202,52 +103,5 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 			}
 		}
 
-		private <P extends PersistentProperty<P>, T> Object[] extractInvocationArguments(
-				@Nullable InstanceCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
-
-			if (entityCreator == null) {
-				throw new IllegalArgumentException("EntityCreator must not be null");
-			}
-
-			Object[] params = allocateArguments(synthetic.getParameterCount()
-					+ KotlinDefaultMask.getMaskCount(synthetic.getParameterCount()) + /* DefaultConstructorMarker */1);
-			int userParameterCount = kParameters.size();
-
-			List<Parameter<Object, P>> parameters = entityCreator.getParameters();
-
-			// Prepare user-space arguments
-			for (int i = 0; i < userParameterCount; i++) {
-
-				Parameter<Object, P> parameter = parameters.get(i);
-				params[i] = provider.getParameterValue(parameter);
-			}
-
-			KotlinDefaultMask defaultMask = KotlinDefaultMask.from(constructor, it -> {
-
-				int index = kParameters.indexOf(it);
-
-				Parameter<Object, P> parameter = parameters.get(index);
-				Class<Object> type = parameter.getType().getType();
-
-				if (it.isOptional() && (params[index] == null)) {
-					if (type.isPrimitive()) {
-
-						// apply primitive defaulting to prevent NPE on primitive downcast
-						params[index] = ReflectionUtils.getPrimitiveDefault(type);
-					}
-					return false;
-				}
-
-				return true;
-			});
-
-			int[] defaulting = defaultMask.getDefaulting();
-			// append nullability masks to creation arguments
-			for (int i = 0; i < defaulting.length; i++) {
-				params[userParameterCount + i] = defaulting[i];
-			}
-
-			return params;
-		}
 	}
 }

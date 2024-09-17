@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,11 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
 		// Is not equal to instance with another sort
 		assertNotEqualsAndHashcode(request, PageRequest.of(1, 10, Direction.ASC, "foo"));
+
+		// Equaliity for unpaged
+		assertEqualsAndHashcode(Pageable.unpaged(), Pageable.unpaged(Sort.unsorted()));
+
+		assertNotEqualsAndHashcode(Pageable.unpaged(), Pageable.unpaged(Sort.by("foo")));
 	}
 
 	@Test // DATACMNS-1581
@@ -65,13 +70,5 @@ class PageRequestUnitTests extends AbstractPageRequestUnitTests {
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> PageRequest.of(0, 10, null));
-	}
-
-	@Test // GH-2151
-	void createsOffsetScrollPosition() {
-
-		PageRequest request = PageRequest.of(1, 10);
-
-		assertThat(request.toScrollPosition()).isEqualTo(ScrollPosition.offset(10));
 	}
 }

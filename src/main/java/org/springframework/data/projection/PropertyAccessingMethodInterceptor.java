@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Christoph Strobl
  * @since 1.10
  */
 class PropertyAccessingMethodInterceptor implements MethodInterceptor {
@@ -54,12 +55,11 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 	@Override
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
-		Method method = invocation.getMethod();
-
-		if (ReflectionUtils.isObjectMethod(method)) {
+		if (ReflectionUtils.isObjectMethod(invocation.getMethod())) {
 			return invocation.proceed();
 		}
 
+		Method method = lookupTargetMethod(invocation, target.getWrappedClass());
 		PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method);
 
 		if (descriptor == null) {
@@ -80,5 +80,13 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 
 	private static boolean isSetterMethod(Method method, PropertyDescriptor descriptor) {
 		return method.equals(descriptor.getWriteMethod());
+	}
+
+	private static Method lookupTargetMethod(MethodInvocation invocation, Class<?> targetType) {
+
+		Method method = BeanUtils.findMethod(targetType, invocation.getMethod().getName(),
+			invocation.getMethod().getParameterTypes());
+
+		return method != null ? method : invocation.getMethod();
 	}
 }

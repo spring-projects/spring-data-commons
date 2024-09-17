@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 the original author or authors.
+ * Copyright 2021-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.function.Predicate;
 
+import org.springframework.core.KotlinDetector;
 import org.springframework.util.Assert;
 
 /**
@@ -45,7 +46,7 @@ public interface Predicates {
 	Predicate<Member> IS_PUBLIC = member -> Modifier.isPublic(member.getModifiers());
 	Predicate<Member> IS_SYNTHETIC = Member::isSynthetic;
 
-	Predicate<Class<?>> IS_KOTLIN = KotlinReflectionUtils::isSupportedKotlinClass;
+	Predicate<Class<?>> IS_KOTLIN =  KotlinDetector.isKotlinPresent() ? KotlinReflectionUtils::isSupportedKotlinClass : type -> false;
 	Predicate<Member> IS_STATIC = member -> Modifier.isStatic(member.getModifiers());
 
 	Predicate<Method> IS_BRIDGE_METHOD = Method::isBridge;

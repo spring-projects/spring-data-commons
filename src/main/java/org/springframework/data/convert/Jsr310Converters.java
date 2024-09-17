@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -37,7 +38,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 
 /**
- * Helper class to register JSR-310 specific {@link Converter} implementations in case the we're running on Java 8.
+ * Helper class to register JSR-310 specific {@link Converter} implementations.
  *
  * @author Oliver Gierke
  * @author Barak Schoster
@@ -51,9 +52,9 @@ public abstract class Jsr310Converters {
 			Instant.class, ZoneId.class, Duration.class, Period.class);
 
 	/**
-	 * Returns the converters to be registered. Will only return converters in case we're running on Java 8.
+	 * Returns the converters to be registered.
 	 *
-	 * @return
+	 * @return the converters to be registered.
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
 
@@ -82,8 +83,15 @@ public abstract class Jsr310Converters {
 	}
 
 	public static boolean supports(Class<?> type) {
-
 		return CLASSES.contains(type);
+	}
+
+	/**
+	 * @return the collection of supported temporal classes.
+	 * @since 3.2
+	 */
+	public static Collection<Class<?>> getSupportedClasses() {
+		return Collections.unmodifiableList(CLASSES);
 	}
 
 	@ReadingConverter

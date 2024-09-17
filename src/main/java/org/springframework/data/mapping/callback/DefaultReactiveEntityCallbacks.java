@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 the original author or authors.
+ * Copyright 2019-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import org.apache.commons.logging.Log;
@@ -28,7 +29,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -41,7 +41,7 @@ import org.springframework.util.ReflectionUtils;
  */
 class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 
-	private final Map<Class<?>, Method> callbackMethodCache = new ConcurrentReferenceHashMap<>(64);
+	private final Map<Class<?>, Method> callbackMethodCache = new ConcurrentHashMap<>(64);
 	private final ReactiveEntityCallbackInvoker callbackInvoker = new DefaultReactiveEntityCallbackInvoker();
 	private final EntityCallbackDiscoverer callbackDiscoverer;
 
@@ -63,14 +63,12 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> Mono<T> callback(Class<? extends EntityCallback> callbackType, T entity, Object... args) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Class<T> entityType = (Class<T>) (entity != null
-				? ClassUtils.getUserClass(entity.getClass())
-				: callbackDiscoverer.resolveDeclaredEntityType(callbackType).getRawClass());
+		Class<T> entityType = (Class<T>) ClassUtils.getUserClass(entity.getClass());
 
 		Method callbackMethod = callbackMethodCache.computeIfAbsent(callbackType, it -> {
 

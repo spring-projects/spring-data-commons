@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Konstantin Ignatyev
  */
 public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
@@ -56,7 +57,8 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 	public AbstractRepositoryMetadata(Class<?> repositoryInterface) {
 
 		Assert.notNull(repositoryInterface, "Given type must not be null");
-		Assert.isTrue(repositoryInterface.isInterface(), "Given type must be an interface");
+		Assert.isTrue(repositoryInterface.isInterface(),
+				() -> String.format("Given type %s must be an interface", repositoryInterface.getName()));
 
 		this.repositoryInterface = repositoryInterface;
 		this.typeInformation = TypeInformation.of(repositoryInterface);
@@ -96,12 +98,13 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		return returnType;
 	}
 
+	@Override
 	public Class<?> getReturnedDomainClass(Method method) {
 
 		TypeInformation<?> returnType = getReturnType(method);
+		returnType = ReactiveWrapperConverters.unwrapWrapperTypes(returnType);
 
-		return QueryExecutionConverters.unwrapWrapperTypes(ReactiveWrapperConverters.unwrapWrapperTypes(returnType))
-				.getType();
+		return QueryExecutionConverters.unwrapWrapperTypes(returnType, getDomainTypeInformation()).getType();
 	}
 
 	public Class<?> getRepositoryInterface() {

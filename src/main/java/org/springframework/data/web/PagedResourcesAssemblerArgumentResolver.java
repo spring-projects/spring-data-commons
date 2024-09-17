@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * {@link HandlerMethodArgumentResolver} to allow injection of {@link PagedResourcesAssembler} into Spring MVC
  * controller methods.
  *
- * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Christoph Strobl
  * @author Johannes Englmeier
+ * @since 1.6
  */
 public class PagedResourcesAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 

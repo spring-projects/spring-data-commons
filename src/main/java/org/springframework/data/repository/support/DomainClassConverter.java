@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,6 +91,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		return repositories.get().hasRepositoryFor(targetType.getType()) ? toEntityConverter : toIdConverter;
 	}
 
+	@Override
 	public void setApplicationContext(ApplicationContext context) {
 
 		this.repositories = Lazy.of(() -> {

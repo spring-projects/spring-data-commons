@@ -1,0 +1,246 @@
+[[valueexpressions.fundamentals]]
+= Value Expressions Fundamentals
+
+Value Expressions are a combination of {spring-framework-docs}/core/expressions.html[Spring Expression Language (SpEL)] and {spring-framework-docs}/core/beans/environment.html#beans-placeholder-resolution-in-statements[Property Placeholder Resolution].
+They combine powerful evaluation of programmatic expressions with the simplicity to resort to property-placeholder resolution to obtain values from the `Environment` such as configuration properties.
+
+Expressions are expected to be defined by a trusted input such as an annotation value and not to be determined from user input.
+
+The following code demonstrates how to use expressions in the context of annotations.
+
+.Annotation Usage
+====
+[source,java]
+----
+@Document("orders-#{tenantService.getOrderCollection()}-${tenant-config.suffix}")
+class Order {
+  // …
+}
+----
+====
+
+Value Expressions can be defined from a sole SpEL Expression, a Property Placeholder or a composite expression mixing various expressions including literals.
+
+.Expression Examples
+====
+[source]
+----
+#{tenantService.getOrderCollection()}                          <1>
+#{(1+1) + '-hello-world'}                                      <2>
+${tenant-config.suffix}                                        <3>
+orders-${tenant-config.suffix}                                 <4>
+#{tenantService.getOrderCollection()}-${tenant-config.suffix}  <5>
+----
+
+<1> Value Expression using a single SpEL Expression.
+<2> Value Expression using a static SpEL Expression evaluating to `2-hello-world`.
+<3> Value Expression using a single Property Placeholder.
+<4> Composite expression comprised of the literal `orders-` and the Property Placeholder `${tenant-config.suffix}`.
+<5> Composite expression using SpEL, Property Placeholders and literals.
+====
+
+NOTE: Using value expressions introduces a lot of flexibility to your code.
+Doing so requires evaluation of the expression on each usage and, therefore, value expression evaluation has an impact on the performance profile.
+
+[[valueexpressions.api]]
+== Parsing and Evaluation
+
+Value Expressions are parsed by the `ValueExpressionParser` API.
+Instances of `ValueExpression` are thread-safe and can be cached for later use to avoid repeated parsing.
+
+The following example shows the Value Expression API usage:
+
+.Parsing and Evaluation
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
+----
+ValueParserConfiguration configuration = SpelExpressionParser::new;
+ValueEvaluationContext context = ValueEvaluationContext.of(environment, evaluationContext);
+
+ValueExpressionParser parser = ValueExpressionParser.create(configuration);
+ValueExpression expression = parser.parse("Hello, World");
+Object result = expression.evaluate(context);
+----
+
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+val configuration = ValueParserConfiguration { SpelExpressionParser() }
+val context = ValueEvaluationContext.of(environment, evaluationContext)
+
+val parser = ValueExpressionParser.create(configuration)
+val expression: ValueExpression = parser.parse("Hello, World")
+val result: Any = expression.evaluate(context)
+----
+======
+
+[[valueexpressions.spel]]
+== SpEL Expressions
+
+{spring-framework-docs}/core/expressions.html[SpEL Expressions] follow the Template style where the expression is expected to be enclosed within the `#{…}` format.
+Expressions are evaluated using an `EvaluationContext` that is provided by `EvaluationContextProvider`.
+The context itself is a powerful `StandardEvaluationContext` allowing a wide range of operations, access to static types and context extensions.
+
+NOTE: Make sure to parse and evaluate only expressions from trusted sources such as annotations.
+Accepting user-provided expressions can create an entry path to exploit the application context and your system resulting in a potential security vulnerability.
+
+=== Extending the Evaluation Context
+
+`EvaluationContextProvider` and its reactive variant `ReactiveEvaluationContextProvider` provide access to an `EvaluationContext`.
+`ExtensionAwareEvaluationContextProvider` and its reactive variant `ReactiveExtensionAwareEvaluationContextProvider` are default implementations that determine context extensions from an application context, specifically `ListableBeanFactory`.
+
+Extensions implement either `EvaluationContextExtension` or `ReactiveEvaluationContextExtension` to provide extension support to hydrate `EvaluationContext`.
+That are a root object, properties and functions (top-level methods).
+
+The following example shows a context extension that provides a root object, properties, functions and an aliased function.
+
+.Implementing a `EvaluationContextExtension`
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
+----
+@Component
+public class MyExtension implements EvaluationContextExtension {
+
+    @Override
+    public String getExtensionId() {
+        return "my-extension";
+    }
+
+    @Override
+    public Object getRootObject() {
+        return new CustomExtensionRootObject();
+    }
+
+    @Override
+    public Map<String, Object> getProperties() {
+
+        Map<String, Object> properties = new HashMap<>();
+
+        properties.put("key", "Hello");
+
+        return properties;
+    }
+
+    @Override
+    public Map<String, Function> getFunctions() {
+
+        Map<String, Function> functions = new HashMap<>();
+
+        try {
+            functions.put("aliasedMethod", new Function(getClass().getMethod("extensionMethod")));
+            return functions;
+        } catch (Exception o_O) {
+            throw new RuntimeException(o_O);
+        }
+    }
+
+    public static String extensionMethod() {
+        return "Hello World";
+    }
+
+    public static int add(int i1, int i2) {
+        return i1 + i2;
+    }
+
+}
+
+public class CustomExtensionRootObject {
+
+	public boolean rootObjectInstanceMethod() {
+		return true;
+	}
+
+}
+----
+
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+@Component
+class MyExtension : EvaluationContextExtension {
+
+    override fun getExtensionId(): String {
+        return "my-extension"
+    }
+
+    override fun getRootObject(): Any? {
+        return CustomExtensionRootObject()
+    }
+
+    override fun getProperties(): Map<String, Any> {
+        val properties: MutableMap<String, Any> = HashMap()
+
+        properties["key"] = "Hello"
+
+        return properties
+    }
+
+    override fun getFunctions(): Map<String, Function> {
+        val functions: MutableMap<String, Function> = HashMap()
+
+        try {
+            functions["aliasedMethod"] = Function(javaClass.getMethod("extensionMethod"))
+            return functions
+        } catch (o_O: Exception) {
+            throw RuntimeException(o_O)
+        }
+    }
+
+    companion object {
+        fun extensionMethod(): String {
+            return "Hello World"
+        }
+
+        fun add(i1: Int, i2: Int): Int {
+            return i1 + i2
+        }
+    }
+}
+
+class CustomExtensionRootObject {
+	fun rootObjectInstanceMethod(): Boolean {
+		return true
+	}
+}
+----
+======
+
+Once the above shown extension is registered, you can use its exported methods, properties and root object to evaluate SpEL expressions:
+
+.Expression Evaluation Examples
+====
+[source]
+----
+#{add(1, 2)}                                             <1>
+#{extensionMethod()}                                     <2>
+#{aliasedMethod()}                                       <3>
+#{key}                                                   <4>
+#{rootObjectInstanceMethod()}                            <5>
+----
+
+<1> Invoke the method `add` declared by `MyExtension` resulting in `3` as the method adds both numeric parameters and returns the sum.
+<2> Invoke the method `extensionMethod` declared by `MyExtension` resulting in `Hello World`.
+<3> Invoke the method `aliasedMethod`.
+The method is exposed as function and redirects into the method `extensionMethod` declared by `MyExtension` resulting in `Hello World`.
+<4> Evaluate the `key` property resulting in `Hello`.
+<5> Invoke the method `rootObjectInstanceMethod` on the root object instance `CustomExtensionRootObject`.
+====
+
+You can find real-life context extensions at https://github.com/spring-projects/spring-security/blob/main/data/src/main/java/org/springframework/security/data/repository/query/SecurityEvaluationContextExtension.java[`SecurityEvaluationContextExtension`].
+
+[[valueexpressions.property-placeholders]]
+== Property Placeholders
+
+Property placeholders following the form `${…}` refer to properties provided typically by a `PropertySource` through `Environment`.
+Properties are useful to resolve against system properties, application configuration files, environment configuration or property sources contributed by secret management systems.
+You can find more details on the property placeholders in {spring-framework-docs}/core/beans/annotation-config/value-annotations.html#page-title[Spring Framework's documentation on `@Value` usage].
+
+

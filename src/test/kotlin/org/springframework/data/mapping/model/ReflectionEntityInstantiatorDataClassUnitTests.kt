@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 the original author or authors.
+ * Copyright 2021-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
+import kotlin.reflect.KClass
 
 /**
  * Unit tests for [ReflectionEntityInstantiator] creating instances using Kotlin data classes.
@@ -36,17 +37,9 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 	@Test // DATACMNS-1126
 	fun `should create instance`() {
 
-		val entity = mockk<PersistentEntity<Contact, SamplePersistentProperty>>()
-		val constructor =
-			PreferredConstructorDiscoverer.discover<Contact, SamplePersistentProperty>(
-				Contact::class.java
-			)
-
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", "White")
-		every { entity.instanceCreatorMetadata } returns constructor
 
-		val instance: Contact =
-			ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider)
+		val instance: Contact = construct(Contact::class)
 
 		assertThat(instance.firstname).isEqualTo("Walter")
 		assertThat(instance.lastname).isEqualTo("White")
@@ -55,21 +48,37 @@ class ReflectionEntityInstantiatorDataClassUnitTests {
 	@Test // DATACMNS-1126
 	fun `should create instance and fill in defaults`() {
 
-		val entity =
-			mockk<PersistentEntity<ContactWithDefaulting, SamplePersistentProperty>>()
-		val constructor =
-			PreferredConstructorDiscoverer.discover<ContactWithDefaulting, SamplePersistentProperty>(
-				ContactWithDefaulting::class.java
-			)
-
 		every { provider.getParameterValue<String>(any()) }.returnsMany("Walter", null)
-		every { entity.instanceCreatorMetadata } returns constructor
 
-		val instance: ContactWithDefaulting =
-			ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider)
+		val instance: ContactWithDefaulting = construct(ContactWithDefaulting::class)
 
 		assertThat(instance.firstname).isEqualTo("Walter")
 		assertThat(instance.lastname).isEqualTo("White")
+	}
+
+	@Test // GH-1947
+	fun `should instantiate type with value class defaulting`() {
+
+		every { provider.getParameterValue<Int>(any()) }.returns(1)
+
+		val instance = construct(WithDefaultPrimitiveValue::class)
+
+		assertThat(instance.pvd.id).isEqualTo(1)
+	}
+
+	private fun <T : Any> construct(typeToCreate: KClass<T>): T {
+
+		val entity = mockk<PersistentEntity<T, SamplePersistentProperty>>()
+		val constructor =
+			PreferredConstructorDiscoverer.discover<T, SamplePersistentProperty>(
+				typeToCreate.java
+			)
+
+		every { entity.instanceCreatorMetadata } returns constructor
+		every { entity.type } returns constructor!!.constructor.declaringClass
+		every { entity.typeInformation } returns mockk()
+
+		return ReflectionEntityInstantiator.INSTANCE.createInstance(entity, provider)
 	}
 
 	data class Contact(val firstname: String, val lastname: String)

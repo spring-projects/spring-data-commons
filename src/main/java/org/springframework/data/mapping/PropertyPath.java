@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 the original author or authors.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final Pattern SPLITTER_FOR_QUOTED = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", "\\."));
 	private static final Pattern NESTED_PROPERTY_PATTERN = Pattern.compile("\\p{Lu}[\\p{Ll}\\p{Nd}]*$");
-	private static final Map<Key, PropertyPath> cache = new ConcurrentReferenceHashMap<>();
+	private static final Map<Property, PropertyPath> cache = new ConcurrentReferenceHashMap<>();
 
 	private final TypeInformation<?> owningType;
 	private final String name;
@@ -83,19 +83,31 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		Assert.notNull(owningType, "Owning type must not be null");
 		Assert.notNull(base, "Previously found properties must not be null");
 
-		String propertyName = Introspector.decapitalize(name);
-		TypeInformation<?> propertyType = owningType.getProperty(propertyName);
+		String decapitalized = Introspector.decapitalize(name);
+		Property property = lookupProperty(owningType, decapitalized);
 
-		if (propertyType == null) {
-			throw new PropertyReferenceException(propertyName, owningType, base);
+		if (property == null) {
+			property = lookupProperty(owningType, StringUtils.uncapitalize(name));
+		}
+
+		if (property == null) {
+			throw new PropertyReferenceException(decapitalized, owningType, base);
 		}
 
 		this.owningType = owningType;
-		this.typeInformation = propertyType;
-		this.isCollection = propertyType.isCollectionLike();
-		this.name = propertyName;
-		this.actualTypeInformation = propertyType.getActualType() == null ? propertyType
-				: propertyType.getRequiredActualType();
+		this.name = property.path;
+		this.typeInformation = property.type;
+		this.isCollection = this.typeInformation.isCollectionLike();
+		this.actualTypeInformation = this.typeInformation.getActualType() == null ? this.typeInformation
+				: this.typeInformation.getRequiredActualType();
+	}
+
+	@Nullable
+	private static Property lookupProperty(TypeInformation<?> owningType, String name) {
+
+		TypeInformation<?> propertyType = owningType.getProperty(name);
+
+		return propertyType != null ? new Property(propertyType, name) : null;
 	}
 
 	/**
@@ -108,7 +120,13 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns the name of the {@link PropertyPath}.
+	 * Returns the first part of the {@link PropertyPath}. For example:
+	 *
+	 * <pre class="code">
+	 * PropertyPath.from("a.b.c", Some.class).getSegment();
+	 * </pre>
+	 *
+	 * results in {@code a}.
 	 *
 	 * @return the name will never be {@literal null}.
 	 */
@@ -142,10 +160,10 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns the type of the property will return the plain resolved type for simple properties, the component type for
-	 * any {@link Iterable} or the value type of a {@link java.util.Map} if the property is one.
+	 * Returns the actual type of the property. Will return the plain resolved type for simple properties, the component
+	 * type for any {@link Iterable} or the value type of a {@link java.util.Map}.
 	 *
-	 * @return
+	 * @return the actual type of the property.
 	 */
 	public Class<?> getType() {
 		return this.actualTypeInformation.getType();
@@ -156,7 +174,13 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns the next nested {@link PropertyPath}.
+	 * Returns the {@link PropertyPath} path that results from removing the first element of the current one. For example:
+	 *
+	 * <pre class="code">
+	 * PropertyPath.from("a.b.c", Some.class).next().toDotPath();
+	 * </pre>
+	 *
+	 * results in the output: {@code b.c}
 	 *
 	 * @return the next nested {@link PropertyPath} or {@literal null} if no nested {@link PropertyPath} available.
 	 * @see #hasNext()
@@ -179,7 +203,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	/**
 	 * Returns the {@link PropertyPath} in dot notation.
 	 *
-	 * @return
+	 * @return the {@link PropertyPath} in dot notation.
 	 */
 	public String toDotPath() {
 
@@ -193,7 +217,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	/**
 	 * Returns whether the {@link PropertyPath} is actually a collection.
 	 *
-	 * @return
+	 * @return {@literal true} whether the {@link PropertyPath} is actually a collection.
 	 */
 	public boolean isCollection() {
 		return isCollection;
@@ -214,16 +238,36 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return PropertyPath.from(lookup, owningType);
 	}
 
+	/**
+	 * Returns an {@link Iterator<PropertyPath>} that iterates over all the partial property paths with the same leaf type
+	 * but decreasing length. For example:
+	 *
+	 * <pre class="code">
+	 * PropertyPath propertyPath = PropertyPath.from("a.b.c", Some.class);
+	 * propertyPath.forEach(p -> p.toDotPath());
+	 * </pre>
+	 *
+	 * results in the dot paths: *
+	 *
+	 * <pre class="code">
+	 * a.b.c
+	 * b.c
+	 * c
+	 * </pre>
+	 */
+	@Override
 	public Iterator<PropertyPath> iterator() {
 
 		return new Iterator<PropertyPath>() {
 
 			private @Nullable PropertyPath current = PropertyPath.this;
 
+			@Override
 			public boolean hasNext() {
 				return current != null;
 			}
 
+			@Override
 			@Nullable
 			public PropertyPath next() {
 
@@ -235,10 +279,6 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 				this.current = result.next();
 				return result;
-			}
-
-			public void remove() {
-				throw new UnsupportedOperationException();
 			}
 		};
 	}
@@ -258,11 +298,9 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			return false;
 		}
 
-		return Objects.equals(this.owningType, that.owningType)
-				&& Objects.equals(this.name, that.name)
+		return Objects.equals(this.owningType, that.owningType) && Objects.equals(this.name, that.name)
 				&& Objects.equals(this.typeInformation, that.typeInformation)
-				&& Objects.equals(this.actualTypeInformation, that.actualTypeInformation)
-				&& Objects.equals(next, that.next);
+				&& Objects.equals(this.actualTypeInformation, that.actualTypeInformation) && Objects.equals(next, that.next);
 	}
 
 	@Override
@@ -273,7 +311,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	/**
 	 * Returns the next {@link PropertyPath}.
 	 *
-	 * @return
+	 * @return the next {@link PropertyPath}.
 	 * @throws IllegalStateException it there's no next one.
 	 */
 	private PropertyPath requiredNext() {
@@ -289,11 +327,18 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and type.
+	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}. <br />
+	 * Uses {@link #SPLITTER} by default and {@link #SPLITTER_FOR_QUOTED} for {@link Pattern#quote(String) quoted}
+	 * literals.
+	 * <p>
+	 * Separate parts of the path may be separated by {@code "."} or by {@code "_"} or by camel case. When the match to
+	 * properties is ambiguous longer property names are preferred. So for "userAddressCity" the interpretation
+	 * "userAddress.city" is preferred over "user.address.city".
+	 * </p>
 	 *
-	 * @param source
-	 * @param type
-	 * @return
+	 * @param source a String denoting the property path, must not be {@literal null}.
+	 * @param type the owning type of the property path, must not be {@literal null}.
+	 * @return a new {@link PropertyPath} guaranteed to be not {@literal null}.
 	 */
 	public static PropertyPath from(String source, Class<?> type) {
 		return from(source, TypeInformation.of(type));
@@ -303,17 +348,22 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}. <br />
 	 * Uses {@link #SPLITTER} by default and {@link #SPLITTER_FOR_QUOTED} for {@link Pattern#quote(String) quoted}
 	 * literals.
+	 * <p>
+	 * Separate parts of the path may be separated by {@code "."} or by {@code "_"} or by camel case. When the match to
+	 * properties is ambiguous longer property names are preferred. So for "userAddressCity" the interpretation
+	 * "userAddress.city" is preferred over "user.address.city".
+	 * </p>
 	 *
-	 * @param source must not be {@literal null}.
-	 * @param type
-	 * @return
+	 * @param source a String denoting the property path, must not be {@literal null}.
+	 * @param type the owning type of the property path, must not be {@literal null}.
+	 * @return a new {@link PropertyPath} guaranteed to be not {@literal null}.
 	 */
 	public static PropertyPath from(String source, TypeInformation<?> type) {
 
 		Assert.hasText(source, "Source must not be null or empty");
 		Assert.notNull(type, "TypeInformation must not be null or empty");
 
-		return cache.computeIfAbsent(new Key(type, source), it -> {
+		return cache.computeIfAbsent(new Property(type, source), it -> {
 
 			List<String> iteratorSource = new ArrayList<>();
 
@@ -449,5 +499,42 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
 	}
 
-	private record Key(TypeInformation<?> type, String path) {};
+	private static final class Property {
+
+		private final TypeInformation<?> type;
+		private final String path;
+
+		private Property(TypeInformation<?> type, String path) {
+			this.type = type;
+			this.path = path;
+		}
+
+		@Override
+		public boolean equals(@Nullable Object obj) {
+
+			if (obj == this) {
+				return true;
+			}
+
+			if (!(obj instanceof Property that)) {
+				return false;
+			}
+
+			return Objects.equals(this.type, that.type) &&
+					Objects.equals(this.path, that.path);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(type, path);
+		}
+
+		@Override
+		public String toString() {
+
+			return "Key[" +
+					"type=" + type + ", " +
+					"path=" + path + ']';
+		}
+	}
 }

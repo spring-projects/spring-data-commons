@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,12 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * methods. Request properties to be parsed can be configured. Default configuration uses request parameters beginning
  * with {@link #DEFAULT_PAGE_PARAMETER}{@link #DEFAULT_QUALIFIER_DELIMITER}.
  *
- * @since 1.6
  * @author Oliver Gierke
  * @author Nick Williams
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Yanming Zhou
+ * @since 1.6
  */
 public class PageableHandlerMethodArgumentResolver extends PageableHandlerMethodArgumentResolverSupport
 		implements PageableArgumentResolver {
@@ -82,10 +83,12 @@ public class PageableHandlerMethodArgumentResolver extends PageableHandlerMethod
 		Sort sort = sortResolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
 		Pageable pageable = getPageable(methodParameter, page, pageSize);
 
-		if (sort.isSorted()) {
-			return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+		if (!sort.isSorted()) {
+			return pageable;
 		}
 
-		return pageable;
+		return pageable.isPaged()
+				? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort)
+				: Pageable.unpaged(sort);
 	}
 }

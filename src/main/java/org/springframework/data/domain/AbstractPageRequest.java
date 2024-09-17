@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,55 +24,62 @@ import java.io.Serializable;
  * @author Oliver Gierke
  * @author Alex Bondarev
  * @author Johannes Englmeier
+ * @author Thach Le
  */
 public abstract class AbstractPageRequest implements Pageable, Serializable {
 
 	private static final long serialVersionUID = 1232825578694716871L;
 
-	private final int page;
-	private final int size;
+	private final int pageNumber;
+	private final int pageSize;
 
 	/**
-	 * Creates a new {@link AbstractPageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return
-	 * the first page.
+	 * Creates a new {@link AbstractPageRequest}. Pages are zero indexed, thus providing 0 for {@code pageNumber} will
+	 * return the first pageNumber.
 	 *
-	 * @param page must not be less than zero.
-	 * @param size must not be less than one.
+	 * @param pageNumber zero-based page number, must not be negative.
+	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 */
-	public AbstractPageRequest(int page, int size) {
+	public AbstractPageRequest(int pageNumber, int pageSize) {
 
-		if (page < 0) {
+		if (pageNumber < 0) {
 			throw new IllegalArgumentException("Page index must not be less than zero");
 		}
 
-		if (size < 1) {
+		if (pageSize < 1) {
 			throw new IllegalArgumentException("Page size must not be less than one");
 		}
 
-		this.page = page;
-		this.size = size;
+		this.pageNumber = pageNumber;
+		this.pageSize = pageSize;
 	}
 
+	@Override
 	public int getPageSize() {
-		return size;
+		return pageSize;
 	}
 
+	@Override
 	public int getPageNumber() {
-		return page;
+		return pageNumber;
 	}
 
+	@Override
 	public long getOffset() {
-		return (long) page * (long) size;
+		return (long) pageNumber * (long) pageSize;
 	}
 
+	@Override
 	public boolean hasPrevious() {
-		return page > 0;
+		return pageNumber > 0;
 	}
 
+	@Override
 	public Pageable previousOrFirst() {
 		return hasPrevious() ? previous() : first();
 	}
 
+	@Override
 	public abstract Pageable next();
 
 	/**
@@ -82,6 +89,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	 */
 	public abstract Pageable previous();
 
+	@Override
 	public abstract Pageable first();
 
 	@Override
@@ -90,8 +98,8 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		final int prime = 31;
 		int result = 1;
 
-		result = prime * result + page;
-		result = prime * result + size;
+		result = prime * result + pageNumber;
+		result = prime * result + pageSize;
 
 		return result;
 	}
@@ -108,6 +116,6 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 		}
 
 		AbstractPageRequest other = (AbstractPageRequest) obj;
-		return this.page == other.page && this.size == other.size;
+		return pageNumber == other.pageNumber && pageSize == other.pageSize;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,11 @@ import org.springframework.util.StringUtils;
  * configured. Default configuration uses request parameters beginning with
  * {@link #DEFAULT_PAGE_PARAMETER}{@link #DEFAULT_QUALIFIER_DELIMITER}.
  *
- * @since 2.2
- * @see PageableHandlerMethodArgumentResolver
- * @see ReactivePageableHandlerMethodArgumentResolver
  * @author Mark Paluch
  * @author Vedran Pavic
+ * @see ReactivePageableHandlerMethodArgumentResolver
+ * @see PageableHandlerMethodArgumentResolver
+ * @since 2.2
  */
 public abstract class PageableHandlerMethodArgumentResolverSupport {
 

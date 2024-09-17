@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model
 
+import org.jmolecules.ddd.types.AggregateRoot
+import org.jmolecules.ddd.types.Identifier
 import org.springframework.data.annotation.Id
 import java.time.LocalDateTime
 
@@ -27,6 +29,26 @@ data class ExtendedDataClassKt(val id: Long, val name: String) {
 	fun copy(name: String, id: Long): ExtendedDataClassKt {
 		throw UnsupportedOperationException("Wrong copy method")
 	}
+}
+
+data class DataClassWithLazy(
+	val amount: Int,
+	val currency: String,
+) {
+	val foo by lazy { 123 }
+}
+
+data class DataClassWithAssociation(
+	val assoc: org.jmolecules.ddd.types.Association<DataClassAggregate, DataClassId>
+)
+
+data class DataClassId(val id: String) : Identifier {
+
+}
+
+data class DataClassAggregate(val identifier: DataClassId) :
+	AggregateRoot<DataClassAggregate, DataClassId> {
+	override fun getId() = this.identifier
 }
 
 data class SingleSettableProperty constructor(val id: Double = Math.random()) {

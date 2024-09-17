@@ -1,4 +1,4 @@
-= Spring Data Commons image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-commons%2F&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-commons/] https://gitter.im/spring-projects/spring-data[image:https://badges.gitter.im/spring-projects/spring-data.svg[Gitter]]
+= Spring Data Commons image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-commons%2F&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-commons/] https://gitter.im/spring-projects/spring-data[image:https://badges.gitter.im/spring-projects/spring-data.svg[Gitter]] image:https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Develocity", link="https://ge.spring.io/scans?search.rootProjectNames=Spring Data Core"]
 
 https://projects.spring.io/spring-data/[Spring Data Commons] is part of the umbrella Spring Data project that provides shared infrastructure across the Spring Data projects. It contains technology neutral repository interfaces as well as a metadata model for persisting Java classes.
 
@@ -42,9 +42,9 @@ If you'd rather like the latest snapshots of the upcoming major version, use our
 </dependency>
 
 <repository>
-  <id>spring-libs-snapshot</id>
+  <id>spring-snapshot</id>
   <name>Spring Snapshot Repository</name>
-  <url>https://repo.spring.io/libs-snapshot</url>
+  <url>https://repo.spring.io/snapshot</url>
 </repository>
 ----
 

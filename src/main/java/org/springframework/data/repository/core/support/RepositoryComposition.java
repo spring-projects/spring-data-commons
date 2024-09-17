@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -101,7 +100,7 @@ public class RepositoryComposition {
 	private static final RepositoryComposition EMPTY = new RepositoryComposition(null, RepositoryFragments.empty(),
 			MethodLookups.direct(), PASSTHRU_ARG_CONVERTER);
 
-	private final Map<Method, Method> methodCache = new ConcurrentReferenceHashMap<>();
+	private final Map<Method, Method> methodCache = new ConcurrentHashMap<>();
 	private final RepositoryFragments fragments;
 	private final MethodLookup methodLookup;
 	private final BiFunction<Method, Object[], Object[]> argumentConverter;
@@ -365,7 +364,7 @@ public class RepositoryComposition {
 
 		static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
 
-		private final Map<Method, RepositoryFragment<?>> fragmentCache = new ConcurrentReferenceHashMap<>();
+		private final Map<Method, RepositoryFragment<?>> fragmentCache = new ConcurrentHashMap<>();
 		private final Map<Method, RepositoryMethodInvoker> invocationMetadataCache = new ConcurrentHashMap<>();
 		private final List<RepositoryFragment<?>> fragments;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 
 		PreferredConstructor<Foo, P> constructor = PreferredConstructorDiscoverer.discover(Foo.class);
 
+		doReturn(Foo.class).when(entity).getType();
 		doReturn(constructor).when(entity).getInstanceCreatorMetadata();
 
 		var instance = INSTANCE.createInstance(entity, provider);
@@ -78,7 +79,6 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 	}
 
 	@Test // DATACMNS-300
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void throwsExceptionOnBeanInstantiationException() {
 
 		doReturn(PersistentEntity.class).when(entity).getType();

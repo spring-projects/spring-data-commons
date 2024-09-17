@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.web.server.ServerWebExchange;
  *
  * @since 2.2
  * @author Mark Paluch
+ * @author Yanming Zhou
  */
 public class ReactivePageableHandlerMethodArgumentResolver extends PageableHandlerMethodArgumentResolverSupport
 		implements SyncHandlerMethodArgumentResolver {
@@ -75,9 +76,14 @@ public class ReactivePageableHandlerMethodArgumentResolver extends PageableHandl
 		String pageSize = queryParams.getFirst(getParameterNameToUse(getSizeParameterName(), parameter));
 
 		Sort sort = sortResolver.resolveArgumentValue(parameter, bindingContext, exchange);
-
 		Pageable pageable = getPageable(parameter, page, pageSize);
 
-		return sort.isSorted() ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort) : pageable;
+		if (!sort.isSorted()) {
+			return pageable;
+		}
+
+		return pageable.isPaged()
+				? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort)
+				: Pageable.unpaged(sort);
 	}
 }

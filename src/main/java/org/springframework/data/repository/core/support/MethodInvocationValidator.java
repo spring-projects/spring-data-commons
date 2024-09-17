@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package org.springframework.data.repository.core.support;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -48,7 +50,7 @@ import org.springframework.util.ObjectUtils;
 public class MethodInvocationValidator implements MethodInterceptor {
 
 	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
-	private final Map<Method, Nullability> nullabilityCache = new ConcurrentReferenceHashMap<>(16, ReferenceType.WEAK);
+	private final Map<Method, Nullability> nullabilityCache = new ConcurrentHashMap<>(16);
 
 	/**
 	 * Returns {@literal true} if the {@code repositoryInterface} is supported by this interceptor.
@@ -58,7 +60,7 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	 */
 	public static boolean supports(Class<?> repositoryInterface) {
 
-		return KotlinReflectionUtils.isSupportedKotlinClass(repositoryInterface)
+		return KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(repositoryInterface)
 				|| NullableUtils.isNonNull(repositoryInterface, ElementType.METHOD)
 				|| NullableUtils.isNonNull(repositoryInterface, ElementType.PARAMETER);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 the original author or authors.
+ * Copyright 2022-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,14 @@ import org.springframework.util.ObjectUtils;
 public class SimplePropertyValueConverterRegistry<P extends PersistentProperty<P>>
 		implements ValueConverterRegistry<P> {
 
-	private final Map<Key, PropertyValueConverter<?, ?, ? extends ValueConversionContext<P>>> converterRegistrationMap = new LinkedHashMap<>();
+	private final Map<Key, PropertyValueConverter<?, ?, ? extends ValueConversionContext<P>>> converterRegistrationMap;
 
-	public SimplePropertyValueConverterRegistry() {}
+	public SimplePropertyValueConverterRegistry() {
+		this.converterRegistrationMap = new LinkedHashMap<>();
+	}
 
 	SimplePropertyValueConverterRegistry(SimplePropertyValueConverterRegistry<P> source) {
-		this.converterRegistrationMap.putAll(source.converterRegistrationMap);
+		this.converterRegistrationMap = new LinkedHashMap<>(source.converterRegistrationMap);
 	}
 
 	@Override

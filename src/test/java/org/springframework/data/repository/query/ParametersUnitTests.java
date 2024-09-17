@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 the original author or authors.
+ * Copyright 2008-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,22 @@ import static org.assertj.core.api.Assertions.*;
 import io.reactivex.rxjava3.core.Single;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
+
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Window;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -41,11 +47,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 class ParametersUnitTests {
 
 	private Method valid;
+	private RepositoryMetadata metadata;
 
 	@BeforeEach
 	void setUp() throws SecurityException, NoSuchMethodException {
 
 		valid = SampleDao.class.getMethod("valid", String.class);
+		metadata = new DefaultRepositoryMetadata(SampleDao.class);
 	}
 
 	@Test
@@ -54,14 +62,14 @@ class ParametersUnitTests {
 		var validWithPageable = SampleDao.class.getMethod("validWithPageable", String.class, Pageable.class);
 		var validWithSort = SampleDao.class.getMethod("validWithSort", String.class, Sort.class);
 
-		new DefaultParameters(valid);
-		new DefaultParameters(validWithPageable);
-		new DefaultParameters(validWithSort);
+		new DefaultParameters(ParametersSource.of(valid));
+		new DefaultParameters(ParametersSource.of(validWithPageable));
+		new DefaultParameters(ParametersSource.of(validWithSort));
 	}
 
 	@Test
 	void rejectsNullMethod() {
-		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultParameters(null));
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultParameters((ParametersSource) null));
 	}
 
 	@Test
@@ -85,12 +93,12 @@ class ParametersUnitTests {
 
 		var method = SampleDao.class.getMethod("validWithSortFirst", Sort.class, String.class);
 
-		Parameters<?, ?> parameters = new DefaultParameters(method);
+		Parameters<?, ?> parameters = new DefaultParameters(ParametersSource.of(method));
 		assertThat(parameters.getBindableParameter(0).getIndex()).isEqualTo(1);
 
 		method = SampleDao.class.getMethod("validWithSortInBetween", String.class, Sort.class, String.class);
 
-		parameters = new DefaultParameters(method);
+		parameters = new DefaultParameters(ParametersSource.of(method));
 
 		assertThat(parameters.getBindableParameter(0).getIndex()).isEqualTo(0);
 		assertThat(parameters.getBindableParameter(1).getIndex()).isEqualTo(2);
@@ -120,12 +128,13 @@ class ParametersUnitTests {
 		getParametersFor("validWithPageableFirst", Pageable.class, String.class);
 	}
 
-	@Test // DATACMNS-731
+	@Test // DATACMNS-731, GH-3124
 	void detectsExplicitlyNamedParameter() throws Exception {
 
 		var parameter = getParametersFor("valid", String.class).getBindableParameter(0);
 
-		assertThat(parameter.getName()).isNotNull();
+		assertThat(parameter.getName()).isNotEmpty();
+		assertThat(parameter.getRequiredName()).isNotNull();
 		assertThat(parameter.isExplicitlyNamed()).isTrue();
 	}
 
@@ -137,7 +146,7 @@ class ParametersUnitTests {
 		var methodParameter = ReflectionTestUtils.getField(parameter, "parameter");
 		ReflectionTestUtils.setField(methodParameter, "parameterName", "name");
 
-		assertThat(parameter.getName()).isNotNull();
+		assertThat(parameter.getName()).isNotEmpty();
 		assertThat(parameter.isExplicitlyNamed()).isFalse();
 	}
 
@@ -149,6 +158,16 @@ class ParametersUnitTests {
 		assertThat(parameters.getParameter(0).isDynamicProjectionParameter()).isTrue();
 		assertThat(parameters.getParameter(1).isDynamicProjectionParameter()).isFalse();
 		assertThat(parameters.getParameter(2).isDynamicProjectionParameter()).isFalse();
+	}
+
+	@Test // GH-3020
+	void detectsDynamicParametrizedProjectionParameter() throws Exception {
+
+		var method = ParametrizedRepository.class.getMethod("dynamicBind", Class.class);
+		var parameters = new DefaultParameters(
+				ParametersSource.of(new DefaultRepositoryMetadata(ParametrizedRepository.class), method));
+
+		assertThat(parameters.getParameter(0).isDynamicProjectionParameter()).isTrue();
 	}
 
 	@Test // DATACMNS-863
@@ -191,19 +210,39 @@ class ParametersUnitTests {
 		assertThat(parameters.hasScrollPositionParameter()).isTrue();
 	}
 
+	@Test // GH-2827
+	void acceptsLimitParameter() throws Exception {
+
+		var parameters = getParametersFor("withResultLimit", String.class, Limit.class);
+
+		assertThat(parameters.hasLimitParameter()).isTrue();
+		assertThat(parameters.getLimitIndex()).isOne();
+	}
+
+	@Test // GH-2995
+	void considersGenericType() throws Exception {
+
+		var method = TypedInterface.class.getMethod("foo", Object.class);
+
+		var parameters = new DefaultParameters(
+				ParametersSource.of(new DefaultRepositoryMetadata(TypedInterface.class), method));
+
+		assertThat(parameters.getParameter(0).getType()).isEqualTo(Long.class);
+	}
+
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
 		var method = SampleDao.class.getMethod(methodName, parameterTypes);
 
-		return new DefaultParameters(method);
+		return new DefaultParameters(ParametersSource.of(metadata, method));
 	}
 
 	static class User {
 
 	}
 
-	static interface SampleDao {
+	interface SampleDao extends Repository<User, String> {
 
 		User valid(@Param("username") String username);
 
@@ -232,7 +271,24 @@ class ParametersUnitTests {
 		Page<Object> customPageable(SomePageable pageable);
 
 		Window<Object> customScrollPosition(OffsetScrollPosition request);
+
+		List<User> withResultLimit(String criteria, Limit limit);
 	}
 
 	interface SomePageable extends Pageable {}
+
+	interface Intermediate<T, ID> extends Repository<T, ID> {
+		void foo(ID id);
+	}
+
+	interface TypedInterface extends Intermediate<User, Long> {}
+
+	interface GenericRepository<T, ID> extends Repository<T, ID> {
+		<P extends Projection<T>> Optional<P> dynamicBind(Class<P> type);
+	}
+
+	interface ParametrizedRepository extends GenericRepository<User, Long> {}
+
+	interface Projection<T> {}
+
 }

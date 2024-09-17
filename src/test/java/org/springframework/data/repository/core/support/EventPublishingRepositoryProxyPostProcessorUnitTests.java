@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2023 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.aopalliance.aop.Advice;
@@ -64,18 +66,13 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 	}
 
 	@Test // DATACMNS-928
-	void publishingEventsForNullIsNoOp() {
-		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(null, publisher);
-	}
-
-	@Test // DATACMNS-928
 	void exposesEventsExposedByEntityToPublisher() {
 
 		var first = new SomeEvent();
 		var second = new SomeEvent();
 		var entity = MultipleEvents.of(Arrays.asList(first, second));
 
-		EventPublishingMethod.of(MultipleEvents.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(MultipleEvents.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(publisher).publishEvent(eq(first));
 		verify(publisher).publishEvent(eq(second));
@@ -87,7 +84,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		var event = new SomeEvent();
 		var entity = OneEvent.of(event);
 
-		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(publisher, times(1)).publishEvent(event);
 	}
@@ -97,7 +94,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var entity = OneEvent.of(null);
 
-		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(OneEvent.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(publisher, times(0)).publishEvent(any());
 	}
@@ -189,7 +186,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var event = new SomeEvent();
 		var sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("saveAll", Iterable.class), List.of(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -203,7 +200,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var event = new SomeEvent();
 		var sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAll", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAll", Iterable.class), List.of(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -217,7 +214,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var event = new SomeEvent();
 		var sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("deleteInBatch", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteInBatch", Iterable.class), List.of(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -231,7 +228,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var event = new SomeEvent();
 		var sample = MultipleEvents.of(Collections.singletonList(event));
-		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAllInBatch", Iterable.class), sample);
+		mockInvocation(invocation, SampleRepository.class.getMethod("deleteAllInBatch", Iterable.class), List.of(sample));
 
 		EventPublishingMethodInterceptor//
 				.of(EventPublishingMethod.of(MultipleEvents.class), publisher)//
@@ -273,7 +270,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var entity = spy(EventsWithClearing.of(Collections.emptyList()));
 
-		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(entity, times(1)).clearDomainEvents();
 	}
@@ -283,7 +280,7 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 
 		var entity = spy(EventsWithClearing.of(Collections.singletonList(new SomeEvent())));
 
-		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(entity, publisher);
+		EventPublishingMethod.of(EventsWithClearing.class).publishEventsFrom(List.of(entity), publisher);
 
 		verify(entity, times(1)).clearDomainEvents();
 	}
@@ -326,6 +323,32 @@ class EventPublishingRepositoryProxyPostProcessorUnitTests {
 		EventPublishingMethodInterceptor.of(EventPublishingMethod.of(MultipleEvents.class), publisher).invoke(invocation);
 
 		verify(publisher, never()).publishEvent(any());
+	}
+
+	@Test // GH-3116
+	void rejectsEventAddedDuringProcessing() throws Throwable {
+
+		var originalEvent = new SomeEvent();
+		var eventToBeAdded = new SomeEvent();
+
+		var events = new ArrayList<Object>();
+		events.add(originalEvent);
+
+		var aggregate = MultipleEvents.of(events);
+
+		doAnswer(invocation -> {
+
+			events.add(eventToBeAdded);
+			return null;
+
+		}).when(publisher).publishEvent(any(Object.class));
+
+		var method = EventPublishingMethod.of(MultipleEvents.class);
+
+		assertThatIllegalStateException()
+				.isThrownBy(() -> method.publishEventsFrom(List.of(aggregate), publisher))
+				.withMessageContaining(eventToBeAdded.toString())
+				.withMessageNotContaining(originalEvent.toString());
 	}
 
 	private static void mockInvocation(MethodInvocation invocation, Method method, Object parameterAndReturnValue)

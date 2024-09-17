@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2023 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.aot.hint.annotation.Reflective;
+
 /**
  * {@link DomainEvents} can be used on methods of aggregate roots managed by Spring Data repositories to publish the
  * events returned by that method as Spring application events.
@@ -30,7 +32,7 @@ import java.lang.annotation.Target;
  * @since 1.13
  * @soundtrack Benny Greb - Soulfood (Moving Parts Live)
  */
+@Reflective
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-public @interface DomainEvents {
-}
+public @interface DomainEvents {}

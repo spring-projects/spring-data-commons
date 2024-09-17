@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 the original author or authors.
+ * Copyright 2022-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.aot;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -45,6 +46,16 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 		for (Class<?> type : types) {
 			assertThat(this.actual.getRuntimeHints()).describedAs("No reflection entry found for [%s]", type)
 					.matches(RuntimeHintsPredicates.reflection().onType(type));
+		}
+
+		return this;
+	}
+
+	public CodeContributionAssert contributesReflectionFor(Method... methods) {
+
+		for (Method method : methods) {
+			assertThat(this.actual.getRuntimeHints()).describedAs("No reflection entry found for [%s]", method)
+					.matches(RuntimeHintsPredicates.reflection().onMethod(method));
 		}
 
 		return this;

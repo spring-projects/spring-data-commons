@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 the original author or authors.
+ * Copyright 2022-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.convert.PropertyValueConverterFactories.ChainedPropertyValueConverterFactory;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -44,8 +43,7 @@ import org.springframework.util.Assert;
  */
 public class SimplePropertyValueConversions implements PropertyValueConversions, InitializingBean {
 
-	private static final String NO_CONVERTER_FACTORY_ERROR_MESSAGE =
-			"PropertyValueConverterFactory is not set; Make sure to either set the converter factory or call afterPropertiesSet() to initialize the object";
+	private static final String NO_CONVERTER_FACTORY_ERROR_MESSAGE = "PropertyValueConverterFactory is not set; Make sure to either set the converter factory or call afterPropertiesSet() to initialize the object";
 
 	private boolean converterCacheEnabled = true;
 
@@ -57,7 +55,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	 * Set the {@link PropertyValueConverterFactory} responsible for creating the actual {@link PropertyValueConverter}.
 	 *
 	 * @param converterFactory {@link PropertyValueConverterFactory} used to create the actual
-	 * {@link PropertyValueConverter}.
+	 *          {@link PropertyValueConverter}.
 	 * @see PropertyValueConverterFactory
 	 */
 	public void setConverterFactory(@Nullable PropertyValueConverterFactory converterFactory) {
@@ -76,7 +74,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 		return converterFactory;
 	}
 
-	private @NonNull PropertyValueConverterFactory requireConverterFactory() {
+	private PropertyValueConverterFactory requireConverterFactory() {
 
 		PropertyValueConverterFactory factory = getConverterFactory();
 
@@ -113,20 +111,20 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	/**
 	 * Configure whether to use converter the cache. Enabled by default.
 	 *
-	 * @param converterCacheEnabled set to {@literal true} to enable caching of
-	 * {@link PropertyValueConverter converter} instances.
+	 * @param converterCacheEnabled set to {@literal true} to enable caching of {@link PropertyValueConverter converter}
+	 *          instances.
 	 */
 	public void setConverterCacheEnabled(boolean converterCacheEnabled) {
 		this.converterCacheEnabled = converterCacheEnabled;
 	}
 
 	/**
-	 * Determines whether a {@link PropertyValueConverter} has been registered for
-	 * the given {@link PersistentProperty property}.
+	 * Determines whether a {@link PropertyValueConverter} has been registered for the given {@link PersistentProperty
+	 * property}.
 	 *
 	 * @param property {@link PersistentProperty} to evaluate.
-	 * @return {@literal true} if a {@link PropertyValueConverter} has been registered for
-	 * the given {@link PersistentProperty property}.
+	 * @return {@literal true} if a {@link PropertyValueConverter} has been registered for the given
+	 *         {@link PersistentProperty property}.
 	 * @see PersistentProperty
 	 */
 	@Override
@@ -134,7 +132,6 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 		return requireConverterFactory().getConverter(property) != null;
 	}
 
-	@NonNull
 	@Override
 	public <DV, SV, P extends PersistentProperty<P>, D extends ValueConversionContext<P>> PropertyValueConverter<DV, SV, D> getValueConverter(
 			P property) {
@@ -155,8 +152,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 
 		factoryList.add(resolveConverterFactory());
 
-		resolveConverterRegistryAsConverterFactory()
-				.ifPresent(factoryList::add);
+		resolveConverterRegistryAsConverterFactory().ifPresent(factoryList::add);
 
 		PropertyValueConverterFactory targetFactory = factoryList.size() > 1
 				? PropertyValueConverterFactory.chained(factoryList)
@@ -166,18 +162,16 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 				: targetFactory;
 	}
 
-	private @NonNull PropertyValueConverterFactory resolveConverterFactory() {
+	private PropertyValueConverterFactory resolveConverterFactory() {
 
 		PropertyValueConverterFactory converterFactory = getConverterFactory();
 
-		return converterFactory != null ? converterFactory
-				: PropertyValueConverterFactory.simple();
+		return converterFactory != null ? converterFactory : PropertyValueConverterFactory.simple();
 	}
 
 	private Optional<PropertyValueConverterFactory> resolveConverterRegistryAsConverterFactory() {
 
-		return Optional.ofNullable(getValueConverterRegistry())
-				.filter(it -> !it.isEmpty())
+		return Optional.ofNullable(getValueConverterRegistry()).filter(it -> !it.isEmpty())
 				.map(PropertyValueConverterFactory::configuredInstance);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,6 @@ public class FragmentMetadata {
 	 * Returns whether the given interface is a fragment candidate.
 	 *
 	 * @param interfaceName must not be {@literal null} or empty.
-	 * @param factory must not be {@literal null}.
 	 * @return
 	 */
 	private boolean isCandidate(String interfaceName) {
@@ -69,7 +68,6 @@ public class FragmentMetadata {
 
 		AnnotationMetadata metadata = getAnnotationMetadata(interfaceName);
 		return !metadata.hasAnnotation(NoRepositoryBean.class.getName());
-
 	}
 
 	private AnnotationMetadata getAnnotationMetadata(String className) {
