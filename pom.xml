@@ -344,6 +344,14 @@
 		</dependency>
 	</dependencies>
 
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub rodrigorodrigues Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/rodrigorodrigues/spring-data-commons</url>
+		</repository>
+	</distributionManagement>
+
 	<build>
 		<plugins>
 			<plugin>
