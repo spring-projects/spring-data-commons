@@ -29,6 +29,7 @@ import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.web.OffsetScrollPositionHandlerMethodArgumentResolver;
+import org.springframework.data.web.OptionalPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
@@ -94,6 +95,12 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
+	}
+
+	@Bean
+	public OptionalPageableHandlerMethodArgumentResolver optionalPageableResolver() {
+
+		return new OptionalPageableHandlerMethodArgumentResolver(pageableResolver.get());
 	}
 
 	@Bean

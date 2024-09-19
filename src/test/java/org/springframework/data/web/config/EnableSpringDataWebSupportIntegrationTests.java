@@ -150,7 +150,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);
 		var names = Arrays.asList(context.getBeanDefinitionNames());
 
-		assertThat(names).contains("pageableResolver", "sortResolver");
+		assertThat(names).contains("optionalPageableResolver", "pageableResolver", "sortResolver");
 
 		assertResolversRegistered(context, SortHandlerMethodArgumentResolver.class,
 				PageableHandlerMethodArgumentResolver.class);
