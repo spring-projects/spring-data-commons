@@ -15,7 +15,7 @@
  */
 package org.springframework.data.aot;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import org.assertj.core.api.AbstractAssert;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.JdkProxyHint;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 
 /**
@@ -46,6 +47,16 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 		for (Class<?> type : types) {
 			assertThat(this.actual.getRuntimeHints()).describedAs("No reflection entry found for [%s]", type)
 					.matches(RuntimeHintsPredicates.reflection().onType(type));
+		}
+
+		return this;
+	}
+
+	public CodeContributionAssert contributesReflectionFor(String... types) {
+
+		for (String type : types) {
+			assertThat(this.actual.getRuntimeHints()).describedAs("No reflection entry found for [%s]", type)
+					.matches(RuntimeHintsPredicates.reflection().onType(TypeReference.of(type)));
 		}
 
 		return this;
