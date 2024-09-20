@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -42,6 +43,8 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.data.aot.AotContext;
+import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.util.TypeContributor;
@@ -82,7 +85,8 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 		return isRepositoryBean(bean) ? newRepositoryRegistrationAotContribution(bean) : null;
 	}
 
-	protected void contribute(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
+	@Nullable
+	protected RepositoryContributor contribute(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
 
 		repositoryContext.getResolvedTypes().stream()
 				.filter(it -> !RepositoryRegistrationAotContribution.isJavaOrPrimitiveType(it))
@@ -91,6 +95,8 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 		repositoryContext.getResolvedAnnotations().stream()
 				.filter(RepositoryRegistrationAotProcessor::isSpringDataManagedAnnotation).map(MergedAnnotation::getType)
 				.forEach(it -> contributeType(it, generationContext));
+
+		return null;
 	}
 
 	/**
@@ -125,9 +131,15 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 		RepositoryRegistrationAotContribution contribution = RepositoryRegistrationAotContribution.fromProcessor(this)
 				.forBean(repositoryBean);
 
-		BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution = this::registerReflectiveForAggregateRoot;
+		//TODO: add the hook for customizing bean initialization code here!
 
-		return contribution.withModuleContribution(moduleContribution.andThen(this::contribute));
+		return contribution.withModuleContribution(new BiFunction<AotRepositoryContext, GenerationContext, RepositoryContributor>() {
+			@Override
+			public RepositoryContributor apply(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
+				registerReflectiveForAggregateRoot(repositoryContext, generationContext);
+				return contribute(repositoryContext, generationContext);
+			}
+		});
 	}
 
 	@Override
