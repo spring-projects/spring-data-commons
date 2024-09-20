@@ -18,6 +18,7 @@ package org.springframework.data.repository.config;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
+import org.springframework.core.SpringProperties;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.aot.AotContext;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -63,5 +64,4 @@ public interface AotRepositoryContext extends AotContext {
 	 * @return all {@link Class types} reachable from the repository.
 	 */
 	Set<Class<?>> getResolvedTypes();
-
 }
