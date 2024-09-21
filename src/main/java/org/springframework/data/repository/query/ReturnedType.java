@@ -29,6 +29,7 @@ import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
+import org.springframework.data.util.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -218,12 +219,14 @@ public abstract class ReturnedType {
 	 * A {@link ReturnedType} that's backed by an actual class.
 	 *
 	 * @author Oliver Gierke
+	 * @author Mikhail Polivakha
 	 * @since 1.12
 	 */
 	private static final class ReturnedClass extends ReturnedType {
 
 		private static final Set<Class<?>> VOID_TYPES = new HashSet<>(Arrays.asList(Void.class, void.class));
 
+		private final Lazy<Boolean> isDto;
 		private final Class<?> type;
 		private final List<String> inputProperties;
 
@@ -242,6 +245,15 @@ public abstract class ReturnedType {
 			Assert.isTrue(!returnedType.isInterface(), "Returned type must not be an interface");
 
 			this.type = returnedType;
+			this.isDto = Lazy.of(() ->
+				!Object.class.equals(type) && //
+				!type.isEnum() && //
+				!isDomainSubtype() && //
+				!isPrimitiveOrWrapper() && //
+				!Number.class.isAssignableFrom(type) && //
+				!VOID_TYPES.contains(type) && //
+				!type.getPackage().getName().startsWith("java.")
+			);
 			this.inputProperties = detectConstructorParameterNames(returnedType);
 		}
 
@@ -293,13 +305,7 @@ public abstract class ReturnedType {
 		}
 
 		private boolean isDto() {
-			return !Object.class.equals(type) && //
-					!type.isEnum() && //
-					!isDomainSubtype() && //
-					!isPrimitiveOrWrapper() && //
-					!Number.class.isAssignableFrom(type) && //
-					!VOID_TYPES.contains(type) && //
-					!type.getPackage().getName().startsWith("java.");
+			return isDto.get();
 		}
 
 		private boolean isDomainSubtype() {
