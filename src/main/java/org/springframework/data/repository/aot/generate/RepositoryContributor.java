@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -25,6 +27,8 @@ import org.springframework.javapoet.TypeSpec;
  * @author Christoph Strobl
  */
 public class RepositoryContributor implements AotCodeContributor {
+
+	private static final Log logger = LogFactory.getLog(RepositoryContributor.class);
 
 	private AotRepositoryContext repositoryContext;
 
@@ -44,11 +48,21 @@ public class RepositoryContributor implements AotCodeContributor {
 
 		JavaFile file = builder.javaFile();
 
-		System.out.printf("------ %s.%s ------\n", file.packageName, file.typeSpec.name);
-		System.out.println(file);
-		System.out.println("-------------------");
+		if (logger.isTraceEnabled()) {
+			logger.trace("""
+					------ AOT Generated Repository: %s.%s ------
+					%s
+					-------------------
+					""".formatted(file.packageName, file.typeSpec.name, file));
+		}
 
+
+		// generate the file itself
 		generationContext.getGeneratedFiles().addSourceFile(file);
+
+		// register it in spring.factories
+		String registration = "%s=%s.%s".formatted(repositoryInformation.getRepositoryInterface().getName(), file.packageName, file.typeSpec.name);
+		generationContext.getGeneratedFiles().addResourceFile("META-INF/spring.factories", registration);
 	}
 
 	/**

@@ -15,23 +15,14 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import example.UserRepository;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.aot.test.generate.TestGenerationContext;
-import org.springframework.core.test.tools.TestCompiler;
+import org.springframework.data.repository.CrudRepository;
 
 /**
+ * Dummy base class to simulate module specific repository implementation. <br>
+ * NOTE: needs to be {@literal public} to be referenced in generated sources.
+ * 
  * @author Christoph Strobl
  */
-// testclass needs to be public otherwise we cannot reference the repository within
-class RepositoryBuilderUnitTests {
+public abstract class DummyModuleDefaultRepositoryImplementation<T, ID> implements CrudRepository<T, ID> {
 
-	@Test
-	void compileInstance() {
-
-		// moved to contributor
-	}
 }
