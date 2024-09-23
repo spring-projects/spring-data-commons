@@ -139,9 +139,14 @@ public class AotRepositoryBuilder {
 		@Nullable
 		public String fieldNameOf(Class<?> type) {
 
-			// TODO: might be more than one match
-			return fields.entrySet().stream().filter(entry -> entry.getValue().name.equals(type.getName())).map(Entry::getKey)
-					.findFirst().orElse(null);
+			TypeName lookup = TypeName.get(type).withoutAnnotations();
+			for(Entry<String, FieldSpec> field : fields.entrySet()) {
+				if(field.getValue().type.withoutAnnotations().equals(lookup)) {
+					return field.getKey();
+				}
+			}
+
+			return null;
 		}
 
 		public ClassName getTargetTypeName() {
