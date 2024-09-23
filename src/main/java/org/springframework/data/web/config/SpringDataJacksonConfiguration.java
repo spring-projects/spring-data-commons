@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web.config;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -31,12 +32,14 @@ import org.springframework.util.ClassUtils;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializerBase;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
  * JavaConfig class to export Jackson specific configuration.
@@ -53,8 +56,12 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 	}
 
 	@Bean
-	public PageModule pageModule() {
-		return new PageModule(settings);
+	public PageModule pageModule(@Autowired(required = false) PageModuleCustomizer customizer) {
+		PageModule module = new PageModule(settings);
+		if(customizer != null) {
+			customizer.customize(module);
+		}
+		return module;
 	}
 
 	/**
@@ -79,6 +86,9 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			UNPAGED_TYPE = ClassUtils.resolveClassName(UNPAGED_TYPE_NAME, PageModule.class.getClassLoader());
 		}
 
+		private boolean oneIndexedParameters;
+		private PageModelConverter pageModelConverter;
+
 		/**
 		 * Creates a new {@link PageModule} for the given {@link SpringDataWebSettings}.
 		 *
@@ -92,8 +102,37 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 				setSerializerModifier(new WarningLoggingModifier());
 
 			} else {
-				setMixInAnnotation(PageImpl.class, WrappingMixing.class);
+				pageModelConverter = new PageModelConverter();
+				addSerializer(PageImpl.class, new JsonSerializer<>() {
+                    @Override
+                    public void serialize(PageImpl page, JsonGenerator gen, SerializerProvider providers) throws IOException {
+                        gen.writeObject(pageModelConverter.convert(page));
+                    }
+                });
 			}
+		}
+
+		/**
+		 * Configures whether to expose and assume 1-based page number indexes in the request parameters. Defaults to
+		 * {@literal false}, meaning a page number of 0 in the request equals the first page. If this is set to
+		 * {@literal true}, a page number of 1 in the request will be considered the first page.
+		 *
+		 * @param oneIndexedParameters the oneIndexedParameters to set
+		 */
+		public void setOneIndexedParameters(boolean oneIndexedParameters) {
+			this.oneIndexedParameters = oneIndexedParameters;
+			this.pageModelConverter.setOneIndexedParameters(oneIndexedParameters);
+		}
+
+		/**
+		 * Indicates whether to expose and assume 1-based page number indexes in the request parameters. Defaults to
+		 * {@literal false}, meaning a page number of 0 in the request equals the first page. If this is set to
+		 * {@literal true}, a page number of 1 in the request will be considered the first page.
+		 *
+		 * @return whether to assume 1-based page number indexes in the request parameters.
+		 */
+		public boolean isOneIndexedParameters() {
+			return oneIndexedParameters;
 		}
 
 		/**
@@ -116,15 +155,18 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			}
 		}
 
-		@JsonSerialize(converter = PageModelConverter.class)
-		abstract class WrappingMixing {}
-
 		static class PageModelConverter extends StdConverter<Page<?>, PagedModel<?>> {
+
+			public boolean oneIndexedParameters;
+
+			public void setOneIndexedParameters(boolean oneIndexedParameters) {
+				this.oneIndexedParameters = oneIndexedParameters;
+			}
 
 			@Nullable
 			@Override
 			public PagedModel<?> convert(@Nullable Page<?> value) {
-				return value == null ? null : new PagedModel<>(value);
+				return value == null ? null : new PagedModel<>(value, oneIndexedParameters);
 			}
 		}
 
