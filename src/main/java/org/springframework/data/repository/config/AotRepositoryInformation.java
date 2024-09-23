@@ -24,7 +24,9 @@ import java.util.function.Supplier;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryInformationSupport;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.util.Lazy;
 
 /**
  * {@link RepositoryInformation} based on {@link RepositoryMetadata} collected at build time.
@@ -35,6 +37,9 @@ import org.springframework.data.repository.core.support.RepositoryFragment;
 class AotRepositoryInformation extends RepositoryInformationSupport implements RepositoryInformation {
 
 	private final Supplier<Collection<RepositoryFragment<?>>> fragments;
+	private Lazy<RepositoryComposition> baseComposition = Lazy.of(() -> {
+		return RepositoryComposition.of(RepositoryFragment.structural(getRepositoryBaseClass()));
+	});
 
 	AotRepositoryInformation(Supplier<RepositoryMetadata> repositoryMetadata, Supplier<Class<?>> repositoryBaseClass,
 			Supplier<Collection<RepositoryFragment<?>>> fragments) {
@@ -60,12 +65,12 @@ class AotRepositoryInformation extends RepositoryInformationSupport implements R
 
 	@Override
 	public boolean isBaseClassMethod(Method method) {
-		return false;
+		return baseComposition.get().findMethod(method).isPresent();
 	}
 
 	@Override
 	public Method getTargetClassMethod(Method method) {
-		return method;
+		return baseComposition.get().findMethod(method).orElse(method);
 	}
 
 }

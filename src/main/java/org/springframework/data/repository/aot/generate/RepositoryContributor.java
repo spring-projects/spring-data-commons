@@ -18,6 +18,8 @@ package org.springframework.data.repository.aot.generate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.GenerationContext;
+import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.JavaFile;
@@ -39,6 +41,7 @@ public class RepositoryContributor implements AotCodeContributor {
 	@Override
 	public void contribute(GenerationContext generationContext) {
 
+		//TODO: do we need - generationContext.withName("spring-data");
 		RepositoryInformation repositoryInformation = repositoryContext.getRepositoryInformation();
 
 		AotRepositoryBuilder builder = AotRepositoryBuilder.forRepository(repositoryInformation);
@@ -47,21 +50,24 @@ public class RepositoryContributor implements AotCodeContributor {
 		builder.withDerivedMethodCustomizer(this::customizeDerivedMethod);
 
 		JavaFile file = builder.javaFile();
+		String typeName = "%s.%s".formatted(file.packageName, file.typeSpec.name);
 
 		if (logger.isTraceEnabled()) {
 			logger.trace("""
-					------ AOT Generated Repository: %s.%s ------
+					------ AOT Generated Repository: %s ------
 					%s
 					-------------------
-					""".formatted(file.packageName, file.typeSpec.name, file));
+					""".formatted(typeName, file));
 		}
-
 
 		// generate the file itself
 		generationContext.getGeneratedFiles().addSourceFile(file);
 
+		// generate native runtime hints - needed cause we're using the repository proxy
+		generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(typeName), MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+
 		// register it in spring.factories
-		String registration = "%s=%s.%s".formatted(repositoryInformation.getRepositoryInterface().getName(), file.packageName, file.typeSpec.name);
+		String registration = "%s=%s".formatted(repositoryInformation.getRepositoryInterface().getName(), typeName);
 		generationContext.getGeneratedFiles().addResourceFile("META-INF/spring.factories", registration);
 	}
 

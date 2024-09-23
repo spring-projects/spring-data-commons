@@ -45,7 +45,7 @@ public class AotRepositoryConstructorBuilder {
 		this.repositoryInformation = repositoryInformation;
 		this.metadata = metadata;
 		this.constructorArguments = new LinkedHashMap<>(3);
-		addParameter("delegate", getDefaultStoreRepositoryImplementationType(repositoryInformation));
+		// addParameter("delegate", getDefaultStoreRepositoryImplementationType(repositoryInformation));
 	}
 
 	public void addParameter(String parameterName, Class<?> type) {

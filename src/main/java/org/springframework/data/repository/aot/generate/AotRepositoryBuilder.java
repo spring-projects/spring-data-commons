@@ -15,6 +15,9 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.temporal.ChronoField;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,6 +25,8 @@ import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.ClassName;
@@ -30,6 +35,7 @@ import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -52,14 +58,28 @@ public class AotRepositoryBuilder {
 
 		this.repositoryInformation = repositoryInformation;
 		this.generationMetadata = new GenerationMetadata(className());
+		this.generationMetadata.addField(FieldSpec
+				.builder(TypeName.get(Log.class), "logger", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+				.initializer("$T.getLog($T.class)", TypeName.get(LogFactory.class), this.generationMetadata.getTargetTypeName())
+				.build());
+
 		this.customizer = (info, metadata, builder) -> {};
 	}
 
 	public JavaFile javaFile() {
 
+		YearMonth creationDate = YearMonth.now(ZoneId.of("UTC"));
+
 		// start creating the type
-		TypeSpec.Builder builder = TypeSpec.classBuilder(this.generationMetadata.getTargetTypeName())
-				.addModifiers(Modifier.PUBLIC);
+		TypeSpec.Builder builder = TypeSpec.classBuilder(this.generationMetadata.getTargetTypeName()) //
+				.addModifiers(Modifier.PUBLIC) //
+				.addAnnotation(Component.class) //
+				.addJavadoc("AOT generated repository implementation for {@link $T}.\n",
+						repositoryInformation.getRepositoryInterface()) //
+				.addJavadoc("\n") //
+				.addJavadoc("@since $L/$L\n", creationDate.get(ChronoField.YEAR), creationDate.get(ChronoField.MONTH_OF_YEAR)) //
+				.addJavadoc("@author $L", "Spring Data"); // TODO: does System.getProperty("user.name") make sense here?
+
 		// TODO: we do not need that here
 		// .addSuperinterface(repositoryInformation.getRepositoryInterface());
 
@@ -78,7 +98,8 @@ public class AotRepositoryBuilder {
 			derivedMethodBuilderCustomizer.accept(derivedMethodBuilder);
 			builder.addMethod(derivedMethodBuilder.buildMethod());
 		}, it -> {
-			return !repositoryInformation.isBaseClassMethod(it) && !repositoryInformation.isCustomMethod(it) && !it.isDefault();
+			return !repositoryInformation.isBaseClassMethod(it) && !repositoryInformation.isCustomMethod(it)
+					&& !it.isDefault();
 		});
 
 		// write fields at the end so we make sure to capture things added by methods
@@ -140,8 +161,8 @@ public class AotRepositoryBuilder {
 		public String fieldNameOf(Class<?> type) {
 
 			TypeName lookup = TypeName.get(type).withoutAnnotations();
-			for(Entry<String, FieldSpec> field : fields.entrySet()) {
-				if(field.getValue().type.withoutAnnotations().equals(lookup)) {
+			for (Entry<String, FieldSpec> field : fields.entrySet()) {
+				if (field.getValue().type.withoutAnnotations().equals(lookup)) {
 					return field.getKey();
 				}
 			}

@@ -18,47 +18,49 @@ package org.springframework.data.repository.aot.generate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import example.UserRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.core.test.tools.ResourceFile;
-import org.springframework.core.test.tools.ResourceFileAssert;
-import org.springframework.core.test.tools.ResourceFiles;
 import org.springframework.core.test.tools.TestCompiler;
+import org.springframework.data.aot.CodeContributionAssert;
 
 /**
  * @author Christoph Strobl
  */
 class RepositoryContributorUnitTests {
 
-    @Test
-    void testCompile() {
+	@Test
+	void testCompile() {
 
-        DummyModuleAotRepositoryContext aotContext = new DummyModuleAotRepositoryContext(UserRepository.class, null);
-        RepositoryContributor repositoryContributor = new RepositoryContributor(aotContext) {
+		DummyModuleAotRepositoryContext aotContext = new DummyModuleAotRepositoryContext(UserRepository.class, null);
+		RepositoryContributor repositoryContributor = new RepositoryContributor(aotContext) {
 
-            @Override
-            protected void customizeDerivedMethod(AotRepositoryMethodBuilder methodBuilder) {
-                methodBuilder.customize(((repositoryInformation, metadata, builder) -> {
-                    if (!metadata.returnsVoid()) {
-                        builder.addStatement("return null");
-                    }
-                }));
-            }
-        };
+			@Override
+			protected void customizeDerivedMethod(AotRepositoryMethodBuilder methodBuilder) {
+				methodBuilder.customize(((repositoryInformation, metadata, builder) -> {
+					if (!metadata.returnsVoid()) {
+						builder.addStatement("return null");
+					}
+				}));
+			}
+		};
 
-        TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
-        repositoryContributor.contribute(generationContext);
-        generationContext.writeGeneratedContent();
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		repositoryContributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
 
-        TestCompiler.forSystem().with(generationContext).compile(compiled -> {
-            assertThat(compiled.getAllCompiledClasses()).map(Class::getName).contains("example.UserRepositoryImpl__Aot");
+		String expectedTypeName = "example.UserRepositoryImpl__Aot";
 
-            ResourceFile springFactories = compiled.getResourceFiles().get("META-INF/spring.factories");
-            assertThat(springFactories).isNotNull();
-            springFactories.assertThat().contains("example.UserRepository=example.UserRepositoryImpl__Aot");
-        });
+		TestCompiler.forSystem().with(generationContext).compile(compiled -> {
+			assertThat(compiled.getAllCompiledClasses()).map(Class::getName).contains(expectedTypeName);
 
+			ResourceFile springFactories = compiled.getResourceFiles().get("META-INF/spring.factories");
+			assertThat(springFactories).isNotNull();
+			springFactories.assertThat().contains("example.UserRepository=%s".formatted(expectedTypeName));
+		});
 
-    }
+		new CodeContributionAssert(generationContext).contributesReflectionFor(expectedTypeName);
+	}
 
 }
