@@ -34,6 +34,7 @@ import org.springframework.util.ClassUtils;
  * @author Jens Schauder
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  */
 class RepositoryBeanNameGenerator {
 
@@ -70,8 +71,8 @@ class RepositoryBeanNameGenerator {
 	 */
 	public String generateBeanName(BeanDefinition definition) {
 
-		AnnotatedBeanDefinition beanDefinition = definition instanceof AnnotatedBeanDefinition //
-				? (AnnotatedBeanDefinition) definition //
+		AnnotatedBeanDefinition beanDefinition = definition instanceof AnnotatedBeanDefinition annotatedBeanDefinition //
+				? annotatedBeanDefinition //
 				: new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
 
 		return generator.generateBeanName(beanDefinition, registry);

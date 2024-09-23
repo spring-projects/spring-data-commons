@@ -53,6 +53,7 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Mikhael Sokolov
+ * @author Ngoc Nhan
  * @soundtrack Jeff Coffin - Fruitcake (The Inside Of The Outside)
  * @since 1.13
  */
@@ -97,7 +98,7 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 	@Override
 	public MethodInterceptor createMethodInterceptor(Object source, Class<?> targetType) {
 
-		DocumentContext context = InputStream.class.isInstance(source) ? this.context.parse((InputStream) source)
+		DocumentContext context = source instanceof InputStream inputStream ? this.context.parse(inputStream)
 				: this.context.parse(source);
 
 		return new InputMessageProjecting(context);
@@ -106,12 +107,12 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 	@Override
 	public boolean supports(Object source, Class<?> targetType) {
 
-		if (InputStream.class.isInstance(source) || JSONObject.class.isInstance(source)
-				|| JSONArray.class.isInstance(source)) {
+		if (source instanceof InputStream || source instanceof JSONObject
+				|| source instanceof JSONArray) {
 			return true;
 		}
 
-		return Map.class.isInstance(source) && hasJsonPathAnnotation(targetType);
+		return source instanceof Map && hasJsonPathAnnotation(targetType);
 	}
 
 	/**

@@ -40,6 +40,7 @@ import org.springframework.util.MultiValueMap;
  *
  * @author Thomas Darimont
  * @author Oliver Gierke
+ * @author Ngoc Nhan
  * @since 1.10
  */
 public interface StreamUtils {
@@ -141,8 +142,8 @@ public interface StreamUtils {
 			@SuppressWarnings("null")
 			public boolean tryAdvance(Consumer<? super T> action) {
 
-				Sink<L> leftSink = new Sink<L>();
-				Sink<R> rightSink = new Sink<R>();
+				Sink<L> leftSink = new Sink<>();
+				Sink<R> rightSink = new Sink<>();
 
 				boolean leftAdvance = lefts.tryAdvance(leftSink);
 

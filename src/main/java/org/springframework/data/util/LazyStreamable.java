@@ -23,6 +23,7 @@ import java.util.stream.Stream;
  * Lazy implementation of {@link Streamable} obtains a {@link Stream} from a given {@link Supplier}.
  *
  * @author Oliver Gierke
+ * @author Ngoc Nhan
  * @since 2.0
  */
 final class LazyStreamable<T> implements Streamable<T> {
@@ -34,7 +35,7 @@ final class LazyStreamable<T> implements Streamable<T> {
 	}
 
 	public static <T> LazyStreamable<T> of(Supplier<? extends Stream<T>> stream) {
-		return new LazyStreamable<T>(stream);
+		return new LazyStreamable<>(stream);
 	}
 
 	@Override

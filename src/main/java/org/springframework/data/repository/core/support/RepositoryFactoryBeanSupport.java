@@ -61,6 +61,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  */
 public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, S, ID>
 		implements InitializingBean, RepositoryFactoryInformation<S, ID>, FactoryBean<T>, BeanClassLoaderAware,
@@ -115,7 +116,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * <p>
 	 * Default is "false", in order to avoid unnecessary extra interception. This means that no guarantees are provided
 	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
-	 * 
+	 *
 	 * @since 3.4.0
 	 */
 	public void setExposeMetadata(boolean exposeMetadata) {
@@ -210,9 +211,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		this.beanFactory = beanFactory;
 
-		if (!this.evaluationContextProvider.isPresent() && ListableBeanFactory.class.isInstance(beanFactory)) {
-			this.evaluationContextProvider = createDefaultQueryMethodEvaluationContextProvider(
-					(ListableBeanFactory) beanFactory);
+		if (this.evaluationContextProvider.isEmpty() && beanFactory instanceof ListableBeanFactory listableBeanFactory) {
+			this.evaluationContextProvider = createDefaultQueryMethodEvaluationContextProvider(listableBeanFactory);
 		}
 	}
 

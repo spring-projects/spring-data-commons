@@ -39,6 +39,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Ngoc Nhan
  * @since 2.4
  */
 public class ExpressionDependencies implements Streamable<ExpressionDependencies.ExpressionDependency> {
@@ -102,7 +103,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 	 * @return a set of {@link ExpressionDependencies}.
 	 */
 	public static ExpressionDependencies discover(Expression expression) {
-		return expression instanceof SpelExpression ? discover(((SpelExpression) expression).getAST(), true) : none();
+		return expression instanceof SpelExpression spelExpression ? discover(spelExpression.getAST(), true) : none();
 	}
 
 	/**
@@ -129,13 +130,13 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 	private static void collectDependencies(SpelNode node, int compoundPosition,
 			Consumer<ExpressionDependency> dependencies) {
 
-		if (node instanceof MethodReference) {
-			dependencies.accept(ExpressionDependency.forMethod(((MethodReference) node).getName()).nest(compoundPosition));
+		if (node instanceof MethodReference methodReference) {
+			dependencies.accept(ExpressionDependency.forMethod(methodReference.getName()).nest(compoundPosition));
 		}
 
-		if (node instanceof PropertyOrFieldReference) {
+		if (node instanceof PropertyOrFieldReference propertyOrFieldReference) {
 			dependencies.accept(
-					ExpressionDependency.forPropertyOrField(((PropertyOrFieldReference) node).getName()).nest(compoundPosition));
+					ExpressionDependency.forPropertyOrField(propertyOrFieldReference.getName()).nest(compoundPosition));
 		}
 
 		for (int i = 0; i < node.getChildCount(); i++) {

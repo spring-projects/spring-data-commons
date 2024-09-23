@@ -53,6 +53,7 @@ import com.google.common.base.Optional;
  * @author Christoph Strobl
  * @author Maciek Opała
  * @author Jens Schauder
+ * @author Ngoc Nhan
  * @since 2.4
  */
 public abstract class NullableWrapperConverters {
@@ -64,9 +65,9 @@ public abstract class NullableWrapperConverters {
 	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Option",
 			NullableWrapperConverters.class.getClassLoader());
 
-	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<WrapperType>();
-	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>();
-	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<Converter<Object, Object>>();
+	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<>();
+	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<>();
+	private static final Set<Converter<Object, Object>> UNWRAPPERS = new HashSet<>();
 	private static final Map<Class<?>, Boolean> supportsCache = new ConcurrentReferenceHashMap<>();
 
 	static {

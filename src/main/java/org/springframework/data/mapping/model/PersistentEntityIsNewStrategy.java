@@ -29,6 +29,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  * @soundtrack Scary Pockets - Crash Into Me (Dave Matthews Band Cover feat. Julia Nunes) -
  *             https://www.youtube.com/watch?v=syGlBNVGEqU
  */
@@ -100,8 +101,8 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 			return false;
 		}
 
-		if (value instanceof Number) {
-			return ((Number) value).longValue() == 0;
+		if (value instanceof Number number) {
+			return number.longValue() == 0;
 		}
 
 		throw new IllegalArgumentException(

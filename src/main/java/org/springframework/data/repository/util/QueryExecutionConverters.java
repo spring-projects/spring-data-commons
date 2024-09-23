@@ -71,6 +71,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Christoph Strobl
  * @author Maciek Opała
  * @author Jens Schauder
+ * @author Ngoc Nhan
  * @since 1.8
  * @see NullableWrapperConverters
  */
@@ -80,7 +81,7 @@ public abstract class QueryExecutionConverters {
 			QueryExecutionConverters.class.getClassLoader());
 
 	private static final Set<WrapperType> WRAPPER_TYPES = new HashSet<>(10, 1.0f);
-	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<WrapperType>(10, 1.0f);
+	private static final Set<WrapperType> UNWRAPPER_TYPES = new HashSet<>(10, 1.0f);
 	private static final Set<Function<Object, Object>> UNWRAPPERS = new HashSet<>();
 	private static final Set<Class<?>> ALLOWED_PAGEABLE_TYPES = new HashSet<>();
 	private static final Map<Class<?>, ExecutionAdapter> EXECUTION_ADAPTER = new HashMap<>(3, 1.0f);

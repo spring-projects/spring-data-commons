@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * instances.
  *
  * @author Mark Paluch
+ * @author Ngoc Nhan
  * @since 2.4
  */
 public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
@@ -73,8 +74,8 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 
 		EvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues);
 
-		if (evaluationContext instanceof StandardEvaluationContext) {
-			((StandardEvaluationContext) evaluationContext).setVariables(
+		if (evaluationContext instanceof StandardEvaluationContext standardEvaluationContext) {
+			standardEvaluationContext.setVariables(
 					ExtensionAwareQueryMethodEvaluationContextProvider.collectVariables(parameters, parameterValues));
 		}
 
@@ -87,8 +88,8 @@ public class ReactiveExtensionAwareQueryMethodEvaluationContextProvider
 
 		EvaluationContext evaluationContext = delegate.getEvaluationContext(parameterValues, dependencies);
 
-		if (evaluationContext instanceof StandardEvaluationContext) {
-			((StandardEvaluationContext) evaluationContext).setVariables(
+		if (evaluationContext instanceof StandardEvaluationContext standardEvaluationContext) {
+			standardEvaluationContext.setVariables(
 					ExtensionAwareQueryMethodEvaluationContextProvider.collectVariables(parameters, parameterValues));
 		}
 

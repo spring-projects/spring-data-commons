@@ -42,6 +42,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Thomas Darimont
  * @author Mark Paluch
  * @author Jens Schauder
+ * @author Ngoc Nhan
  * @since 1.10
  */
 public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory implements BeanFactoryAware {
@@ -108,7 +109,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 
 		Assert.notNull(type, "Type must not be null");
 
-		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
+		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class);
 		ReflectionUtils.doWithMethods(type, callback);
 
 		return callback.hasFoundAnnotation();

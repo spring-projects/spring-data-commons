@@ -123,7 +123,7 @@ public class RepositoryConfigurationDelegate {
 			return environment;
 		}
 
-		return resourceLoader instanceof EnvironmentCapable ? ((EnvironmentCapable) resourceLoader).getEnvironment()
+		return resourceLoader instanceof EnvironmentCapable environmentCapable ? environmentCapable.getEnvironment()
 				: new StandardEnvironment();
 	}
 
@@ -248,11 +248,10 @@ public class RepositoryConfigurationDelegate {
 	private static void potentiallyLazifyRepositories(Map<String, RepositoryConfiguration<?>> configurations,
 			BeanDefinitionRegistry registry, BootstrapMode mode) {
 
-		if (!DefaultListableBeanFactory.class.isInstance(registry) || BootstrapMode.DEFAULT.equals(mode)) {
+		if (!(registry instanceof DefaultListableBeanFactory beanFactory) || BootstrapMode.DEFAULT.equals(mode)) {
 			return;
 		}
 
-		DefaultListableBeanFactory beanFactory = DefaultListableBeanFactory.class.cast(registry);
 		AutowireCandidateResolver resolver = beanFactory.getAutowireCandidateResolver();
 
 		if (!Arrays.asList(ContextAnnotationAutowireCandidateResolver.class, LazyRepositoryInjectionPointResolver.class)
@@ -263,8 +262,8 @@ public class RepositoryConfigurationDelegate {
 			return;
 		}
 
-		AutowireCandidateResolver newResolver = LazyRepositoryInjectionPointResolver.class.isInstance(resolver) //
-				? LazyRepositoryInjectionPointResolver.class.cast(resolver).withAdditionalConfigurations(configurations) //
+		AutowireCandidateResolver newResolver = resolver instanceof LazyRepositoryInjectionPointResolver lazyRepositoryInjectionPointResolver //
+				? lazyRepositoryInjectionPointResolver.withAdditionalConfigurations(configurations) //
 				: new LazyRepositoryInjectionPointResolver(configurations);
 
 		beanFactory.setAutowireCandidateResolver(newResolver);
@@ -300,12 +299,12 @@ public class RepositoryConfigurationDelegate {
 
 	private static ApplicationStartup getStartup(BeanDefinitionRegistry registry) {
 
-		if (registry instanceof ConfigurableBeanFactory) {
-			return ((ConfigurableBeanFactory) registry).getApplicationStartup();
+		if (registry instanceof ConfigurableBeanFactory configurableBeanFactory) {
+			return configurableBeanFactory.getApplicationStartup();
 		}
 
-		if (registry instanceof GenericApplicationContext) {
-			return ((GenericApplicationContext) registry).getDefaultListableBeanFactory().getApplicationStartup();
+		if (registry instanceof GenericApplicationContext genericApplicationContext) {
+			return genericApplicationContext.getDefaultListableBeanFactory().getApplicationStartup();
 		}
 
 		return ApplicationStartup.DEFAULT;

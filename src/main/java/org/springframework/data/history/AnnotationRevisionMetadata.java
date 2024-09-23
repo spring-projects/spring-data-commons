@@ -37,6 +37,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Jens Schauder
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  */
 public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implements RevisionMetadata<N> {
 
@@ -120,20 +121,20 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 
 	private static Instant convertToInstant(Object timestamp) {
 
-		if (timestamp instanceof Instant) {
-			return (Instant) timestamp;
+		if (timestamp instanceof Instant instant) {
+			return instant;
 		}
 
-		if (timestamp instanceof LocalDateTime) {
-			return ((LocalDateTime) timestamp).atZone(ZoneOffset.systemDefault()).toInstant();
+		if (timestamp instanceof LocalDateTime localDateTime) {
+			return localDateTime.atZone(ZoneOffset.systemDefault()).toInstant();
 		}
 
-		if (timestamp instanceof Long) {
-			return Instant.ofEpochMilli((Long) timestamp);
+		if (timestamp instanceof Long milli) {
+			return Instant.ofEpochMilli(milli);
 		}
 
-		if (timestamp instanceof Date) {
-			return ((Date) timestamp).toInstant();
+		if (timestamp instanceof Date date) {
+			return date.toInstant();
 		}
 
 		throw new IllegalArgumentException(String.format("Can't convert %s to Instant", timestamp));

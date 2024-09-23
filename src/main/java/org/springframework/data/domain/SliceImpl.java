@@ -25,6 +25,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Oliver Gierke
  * @author Keegan Witt
+ * @author Ngoc Nhan
  * @since 1.8
  */
 public class SliceImpl<T> extends Chunk<T> {
@@ -74,7 +75,7 @@ public class SliceImpl<T> extends Chunk<T> {
 		String contentType = "UNKNOWN";
 		List<T> content = getContent();
 
-		if (content.size() > 0) {
+		if (!content.isEmpty()) {
 			contentType = content.get(0).getClass().getName();
 		}
 

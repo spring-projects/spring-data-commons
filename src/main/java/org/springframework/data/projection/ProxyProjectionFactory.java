@@ -46,6 +46,7 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Jens Schauder
+ * @author Ngoc Nhan
  * @see SpelAwareProxyProjectionFactory
  * @since 1.10
  */
@@ -261,7 +262,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 
 		@Override
 		public boolean supports(Object source, Class<?> targetType) {
-			return Map.class.isInstance(source);
+			return source instanceof Map;
 		}
 	}
 

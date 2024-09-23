@@ -50,6 +50,7 @@ import org.springframework.util.ConcurrentLruCache;
  * @author Christoph Strobl
  * @author Alessandro Nistico
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  */
 public class Repositories implements Iterable<Class<?>> {
 
@@ -115,12 +116,12 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Optional<ConfigurableListableBeanFactory> beanFactory = Optional.of(factory).map(it -> {
 
-			if (it instanceof ConfigurableListableBeanFactory) {
-				return (ConfigurableListableBeanFactory) it;
+			if (it instanceof ConfigurableListableBeanFactory configurableListableBeanFactory) {
+				return configurableListableBeanFactory;
 			}
 
-			if (it instanceof ConfigurableApplicationContext) {
-				return ((ConfigurableApplicationContext) it).getBeanFactory();
+			if (it instanceof ConfigurableApplicationContext configurableApplicationContext) {
+				return configurableApplicationContext.getBeanFactory();
 			}
 
 			return null;

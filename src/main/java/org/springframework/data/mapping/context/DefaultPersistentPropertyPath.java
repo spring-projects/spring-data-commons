@@ -33,6 +33,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Ngoc Nhan
  */
 class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements PersistentPropertyPath<P> {
 
@@ -135,7 +136,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	@Override
 	public P getLeafProperty() {
 
-		Assert.state(properties.size() > 0, "Empty PersistentPropertyPath should not exist");
+		Assert.state(!properties.isEmpty(), "Empty PersistentPropertyPath should not exist");
 
 		return properties.get(properties.size() - 1);
 	}
@@ -143,7 +144,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	@Override
 	public P getBaseProperty() {
 
-		Assert.state(properties.size() > 0, "Empty PersistentPropertyPath should not exist");
+		Assert.state(!properties.isEmpty(), "Empty PersistentPropertyPath should not exist");
 
 		return properties.get(0);
 	}
@@ -208,9 +209,8 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	 */
 	public boolean containsPropertyOfType(@Nullable TypeInformation<?> type) {
 
-		return type == null //
-				? false //
-				: properties.stream() //
+		return type != null //
+				&& properties.stream() //
 						.anyMatch(property -> type.equals(property.getTypeInformation().getActualType()));
 	}
 

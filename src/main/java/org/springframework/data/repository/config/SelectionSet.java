@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
  * @author Jens Schauder
  * @author Oliver Gierke
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  * @since 2.0
  */
 class SelectionSet<T> {
@@ -49,7 +50,7 @@ class SelectionSet<T> {
 	}
 
 	public static <T> SelectionSet<T> of(Collection<T> collection, Function<Collection<T>, Optional<T>> fallback) {
-		return new SelectionSet<T>(collection, fallback);
+		return new SelectionSet<>(collection, fallback);
 	}
 
 	/**

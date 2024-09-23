@@ -38,6 +38,7 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Ngoc Nhan
  */
 public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware {
 
@@ -199,8 +200,8 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		for (TypeInformationMapper mapper : mappers) {
-			if (mapper instanceof BeanClassLoaderAware) {
-				((BeanClassLoaderAware) mapper).setBeanClassLoader(classLoader);
+			if (mapper instanceof BeanClassLoaderAware beanClassLoaderAware) {
+				beanClassLoaderAware.setBeanClassLoader(classLoader);
 			}
 		}
 	}

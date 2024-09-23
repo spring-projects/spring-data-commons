@@ -48,6 +48,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Christoph Strobl
  * @author Yuki Yoshida
  * @author Réda Housni Alaoui
+ * @author Ngoc Nhan
  * @since 1.13
  * @soundtrack Henrik Freischlader Trio - Master Plan (Openness)
  */
@@ -300,8 +301,8 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			return Collections.emptyList();
 		}
 
-		if (Collection.class.isInstance(source)) {
-			return new ArrayList<>((Collection<Object>) source);
+		if (source instanceof Collection<?> collection) {
+			return new ArrayList<>(collection);
 		}
 
 		return Collections.singletonList(source);

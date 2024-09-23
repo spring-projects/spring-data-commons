@@ -31,6 +31,7 @@ import org.springframework.util.MultiValueMap;
  * A {@link Collector} for building a {@link MultiValueMap} from a {@link java.util.stream.Stream}.
  *
  * @author Jens Schauder
+ * @author Ngoc Nhan
  * @since 2.0
  */
 class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueMap<K, V>, MultiValueMap<K, V>> {
@@ -44,7 +45,7 @@ class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueMap<K, V
 	}
 
 	static <T, K, V> MultiValueMapCollector<T, K, V> of(Function<T, K> keyFunction, Function<T, V> valueFunction) {
-		return new MultiValueMapCollector<T, K, V>(keyFunction, valueFunction);
+		return new MultiValueMapCollector<>(keyFunction, valueFunction);
 	}
 
 	@Override

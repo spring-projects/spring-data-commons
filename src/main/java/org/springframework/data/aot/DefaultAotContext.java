@@ -32,6 +32,7 @@ import org.springframework.util.ClassUtils;
  * Default {@link AotContext} implementation.
  *
  * @author Mark Paluch
+ * @author Ngoc Nhan
  * @since 3.0
  */
 class DefaultAotContext implements AotContext {
@@ -39,7 +40,7 @@ class DefaultAotContext implements AotContext {
 	private final ConfigurableListableBeanFactory factory;
 
 	public DefaultAotContext(BeanFactory beanFactory) {
-		factory = beanFactory instanceof ConfigurableListableBeanFactory ? (ConfigurableListableBeanFactory) beanFactory
+		factory = beanFactory instanceof ConfigurableListableBeanFactory configurableListableBeanFactory ? configurableListableBeanFactory
 				: new DefaultListableBeanFactory(beanFactory);
 	}
 

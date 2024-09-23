@@ -40,6 +40,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  * @soundtrack Apparat With Soap & Skin - Goodbye (Dark Theme Song - https://www.youtube.com/watch?v=66VnOdk6oto)
  */
 @Configuration(proxyBeanMethods = false)
@@ -103,11 +104,10 @@ public class ProjectingArgumentResolverRegistrar {
 		@Override
 		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
-			if (!RequestMappingHandlerAdapter.class.isInstance(bean)) {
+			if (!(bean instanceof RequestMappingHandlerAdapter adapter)) {
 				return bean;
 			}
 
-			RequestMappingHandlerAdapter adapter = (RequestMappingHandlerAdapter) bean;
 			List<HandlerMethodArgumentResolver> currentResolvers = adapter.getArgumentResolvers();
 
 			if (currentResolvers == null) {
@@ -115,7 +115,7 @@ public class ProjectingArgumentResolverRegistrar {
 						String.format("No HandlerMethodArgumentResolvers found in RequestMappingHandlerAdapter %s", beanName));
 			}
 
-			List<HandlerMethodArgumentResolver> newResolvers = new ArrayList<HandlerMethodArgumentResolver>(
+			List<HandlerMethodArgumentResolver> newResolvers = new ArrayList<>(
 					currentResolvers.size() + 1);
 			newResolvers.add(resolver);
 			newResolvers.addAll(currentResolvers);

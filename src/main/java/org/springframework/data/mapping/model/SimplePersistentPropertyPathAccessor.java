@@ -46,6 +46,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  * @since 2.3
  * @soundtrack Ron Spielman - Nineth Song (Tip of My Tongue)
  */
@@ -167,7 +168,7 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 					.map(it -> setValue(it, leafProperty, value)) //
 					.collect(Collectors.toCollection(() -> CollectionFactory.createApproximateCollection(source, source.size())));
 
-		} else if (Map.class.isInstance(parent)) {
+		} else if (parent instanceof Map) {
 
 			Map<Object, Object> source = getTypedProperty(parentProperty, Map.class);
 

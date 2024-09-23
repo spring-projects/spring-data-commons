@@ -44,6 +44,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Johannes Englmeier
  * @author Jan Kurella
+ * @author Ngoc Nhan
  */
 public class Sort implements Streamable<org.springframework.data.domain.Sort.Order>, Serializable {
 
@@ -204,7 +205,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		Assert.notNull(sort, "Sort must not be null");
 
-		List<Order> these = new ArrayList<Order>(this.toList());
+		List<Order> these = new ArrayList<>(this.toList());
 
 		for (Order order : sort) {
 			these.add(order);

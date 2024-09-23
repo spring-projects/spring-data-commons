@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Mariusz Mączkowski
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  */
 public class PropertyPath implements Streamable<PropertyPath> {
 
@@ -377,7 +378,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			Iterator<String> parts = iteratorSource.iterator();
 
 			PropertyPath result = null;
-			Stack<PropertyPath> current = new Stack<PropertyPath>();
+			Stack<PropertyPath> current = new Stack<>();
 
 			while (parts.hasNext()) {
 				if (result == null) {

@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Ngoc Nhan
  */
 public abstract class ClassUtils {
 
@@ -196,8 +197,8 @@ public abstract class ClassUtils {
 	 */
 	public static void unwrapReflectionException(Exception ex) throws Throwable {
 
-		if (ex instanceof InvocationTargetException) {
-			throw ((InvocationTargetException) ex).getTargetException();
+		if (ex instanceof InvocationTargetException invocationTargetException) {
+			throw invocationTargetException.getTargetException();
 		}
 
 		throw ex;

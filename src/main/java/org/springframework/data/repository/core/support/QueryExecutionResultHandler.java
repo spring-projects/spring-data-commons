@@ -41,6 +41,7 @@ import org.springframework.lang.Nullable;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Jens Schauder
+ * @author Ngoc Nhan
  */
 class QueryExecutionResultHandler {
 
@@ -239,8 +240,8 @@ class QueryExecutionResultHandler {
 			return null;
 		}
 
-		return Optional.class.isInstance(source) //
-				? Optional.class.cast(source).orElse(null) //
+		return source instanceof Optional<?> optional //
+				? optional.orElse(null) //
 				: source;
 	}
 
@@ -266,7 +267,7 @@ class QueryExecutionResultHandler {
 
 		return !targetType.isInstance(source) //
 				|| source == null //
-				|| Collection.class.isInstance(source);
+				|| source instanceof Collection;
 	}
 
 	/**

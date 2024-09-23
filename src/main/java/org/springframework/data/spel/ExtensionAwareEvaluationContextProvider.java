@@ -60,6 +60,7 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Ngoc Nhan
  * @since 2.1
  */
 public class ExtensionAwareEvaluationContextProvider implements EvaluationContextProvider {
@@ -235,8 +236,8 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		@Override
 		public TypedValue read(EvaluationContext context, @Nullable Object target, String name) {
 
-			if (target instanceof EvaluationContextExtensionAdapter) {
-				return lookupPropertyFrom((EvaluationContextExtensionAdapter) target, name);
+			if (target instanceof EvaluationContextExtensionAdapter evaluationContextExtensionAdapter) {
+				return lookupPropertyFrom(evaluationContextExtensionAdapter, name);
 			}
 
 			if (adapterMap.containsKey(name)) {
@@ -254,8 +255,8 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		public MethodExecutor resolve(EvaluationContext context, @Nullable Object target, final String name,
 				List<TypeDescriptor> argumentTypes) {
 
-			if (target instanceof EvaluationContextExtensionAdapter) {
-				return getMethodExecutor((EvaluationContextExtensionAdapter) target, name, argumentTypes).orElse(null);
+			if (target instanceof EvaluationContextExtensionAdapter evaluationContextExtensionAdapter) {
+				return getMethodExecutor(evaluationContextExtensionAdapter, name, argumentTypes).orElse(null);
 			}
 
 			return adapters.stream()//

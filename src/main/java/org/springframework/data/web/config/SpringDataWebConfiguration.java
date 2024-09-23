@@ -57,6 +57,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Mark Paluch
  * @author Greg Turnquist
  * @author Yanming Zhou
+ * @author Ngoc Nhan
  */
 @Configuration(proxyBeanMethods = false)
 public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLoaderAware {
@@ -131,7 +132,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 			return;
 		}
 
-		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<FormattingConversionService>(
+		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<>(
 				conversionService);
 		converter.setApplicationContext(context);
 	}
