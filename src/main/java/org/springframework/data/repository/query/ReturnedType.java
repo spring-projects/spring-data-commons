@@ -143,6 +143,7 @@ public abstract class ReturnedType {
 
 		private final ProjectionInformation information;
 		private final Class<?> domainType;
+		private final List<String> inputProperties;
 
 		/**
 		 * Creates a new {@link ReturnedInterface} from the given {@link ProjectionInformation} and domain type.
@@ -158,6 +159,20 @@ public abstract class ReturnedType {
 
 			this.information = information;
 			this.domainType = domainType;
+			this.inputProperties = detectInputProperties(information);
+		}
+
+		private static List<String> detectInputProperties(ProjectionInformation information) {
+
+			List<String> properties = new ArrayList<>();
+
+			for (PropertyDescriptor descriptor : information.getInputProperties()) {
+				if (!properties.contains(descriptor.getName())) {
+					properties.add(descriptor.getName());
+				}
+			}
+
+			return Collections.unmodifiableList(properties);
 		}
 
 		@Override
@@ -165,6 +180,7 @@ public abstract class ReturnedType {
 			return information.getType();
 		}
 
+		@Override
 		public boolean needsCustomConstruction() {
 			return isProjecting() && information.isClosed();
 		}
@@ -182,16 +198,7 @@ public abstract class ReturnedType {
 
 		@Override
 		public List<String> getInputProperties() {
-
-			List<String> properties = new ArrayList<>();
-
-			for (PropertyDescriptor descriptor : information.getInputProperties()) {
-				if (!properties.contains(descriptor.getName())) {
-					properties.add(descriptor.getName());
-				}
-			}
-
-			return properties;
+			return inputProperties;
 		}
 	}
 
@@ -231,6 +238,7 @@ public abstract class ReturnedType {
 			return type;
 		}
 
+		@Override
 		@NonNull
 		public Class<?> getTypeToRead() {
 			return type;
@@ -241,6 +249,7 @@ public abstract class ReturnedType {
 			return isDto();
 		}
 
+		@Override
 		public boolean needsCustomConstruction() {
 			return isDto() && !inputProperties.isEmpty();
 		}
@@ -268,7 +277,7 @@ public abstract class ReturnedType {
 				properties.add(parameter.getName());
 			}
 
-			return properties;
+			return Collections.unmodifiableList(properties);
 		}
 
 		private boolean isDto() {
