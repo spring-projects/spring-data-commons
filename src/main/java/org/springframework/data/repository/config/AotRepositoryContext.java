@@ -33,8 +33,6 @@ import org.springframework.data.repository.core.RepositoryInformation;
  */
 public interface AotRepositoryContext extends AotContext {
 
-	String GENERATED_REPOSITORIES_ENABLED = "spring.aot.repositories.enabled";
-
 	/**
 	 * @return the {@link String bean name} of the repository / factory bean.
 	 */
@@ -66,8 +64,4 @@ public interface AotRepositoryContext extends AotContext {
 	 * @return all {@link Class types} reachable from the repository.
 	 */
 	Set<Class<?>> getResolvedTypes();
-
-	default boolean aotGeneratedRepositoriesEnabled() {
-		return SpringProperties.getFlag(GENERATED_REPOSITORIES_ENABLED);
-	}
 }
