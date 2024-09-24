@@ -57,12 +57,13 @@ public abstract class ReturnedType {
 	/**
 	 * Creates a new {@link ReturnedType} for the given returned type, domain type and {@link ProjectionFactory}.
 	 *
-	 * @param returnedType must not be {@literal null}.
-	 * @param domainType must not be {@literal null}.
+	 * @param returnedType return type for the query result, must not be {@literal null}.
+	 * @param domainType domain type for the query context, must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
-	 * @return
+	 * @return the ReturnedType for the given returned type, domain type and {@link ProjectionFactory}.
+	 * @since 3.3.5
 	 */
-	static ReturnedType of(Class<?> returnedType, Class<?> domainType, ProjectionFactory factory) {
+	public static ReturnedType of(Class<?> returnedType, Class<?> domainType, ProjectionFactory factory) {
 
 		Assert.notNull(returnedType, "Returned type must not be null");
 		Assert.notNull(domainType, "Domain type must not be null");
