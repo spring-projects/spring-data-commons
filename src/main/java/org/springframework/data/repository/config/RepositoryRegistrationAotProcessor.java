@@ -126,6 +126,7 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 				.forBean(repositoryBean);
 
 		BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution = this::registerReflectiveForAggregateRoot;
+		//TODO: add the hook for customizing bean initialization code here!
 
 		return contribution.withModuleContribution(moduleContribution.andThen(this::contribute));
 	}
