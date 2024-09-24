@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.type.AnnotationMetadata;
@@ -53,6 +54,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 	private final Class<?> projectionType;
 	private final List<PropertyDescriptor> properties;
+	private final List<PropertyDescriptor> inputProperties;
 
 	/**
 	 * Creates a new {@link DefaultProjectionInformation} for the given type.
@@ -65,6 +67,10 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 		this.projectionType = type;
 		this.properties = new PropertyDescriptorSource(type).getDescriptors();
+		this.inputProperties = properties.stream()//
+				.filter(this::isInputProperty)//
+				.distinct()//
+				.toList();
 	}
 
 	@Override
@@ -72,12 +78,9 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		return projectionType;
 	}
 
+	@Override
 	public List<PropertyDescriptor> getInputProperties() {
-
-		return properties.stream()//
-				.filter(this::isInputProperty)//
-				.distinct()//
-				.collect(Collectors.toList());
+		return inputProperties;
 	}
 
 	@Override
