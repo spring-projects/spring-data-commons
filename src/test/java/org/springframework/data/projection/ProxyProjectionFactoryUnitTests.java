@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.TargetClassAware;
 import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -135,6 +136,19 @@ class ProxyProjectionFactoryUnitTests {
 		var result = projectionInformation.getInputProperties();
 
 		assertThat(result).hasSize(6);
+		assertThat(projectionInformation.hasInputProperties()).isTrue();
+		assertThat(projectionInformation.isClosed()).isTrue();
+	}
+
+	@Test // DATACMNS-630
+	void identifiersOpenProjectionCorrectly() {
+
+		var projectionInformation = factory.getProjectionInformation(OpenProjection.class);
+		var result = projectionInformation.getInputProperties();
+
+		assertThat(result).isEmpty();
+		assertThat(projectionInformation.hasInputProperties()).isFalse();
+		assertThat(projectionInformation.isClosed()).isFalse();
 	}
 
 	@Test // DATACMNS-655, GH-2831
@@ -355,6 +369,12 @@ class ProxyProjectionFactoryUnitTests {
 		byte[] getPicture();
 
 		Map<String, Object> getData();
+	}
+
+	interface OpenProjection {
+
+		@Value("#{@greetingsFrom.groot(target.firstname)}")
+		String hello();
 	}
 
 	interface CustomerExcerptWithDefaultMethod extends CustomerExcerpt {
