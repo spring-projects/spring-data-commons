@@ -33,6 +33,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ObjectUtils;
 
@@ -130,8 +131,20 @@ public abstract class ReturnedType {
 	 * Returns the properties required to be used to populate the result.
 	 *
 	 * @return
+	 * @see ProjectionInformation#getInputProperties()
 	 */
 	public abstract List<String> getInputProperties();
+
+	/**
+	 * Returns whether the returned type has input properties.
+	 *
+	 * @return
+	 * @since 3.3.5
+	 * @see ProjectionInformation#hasInputProperties()
+	 */
+	public boolean hasInputProperties() {
+		return !CollectionUtils.isEmpty(getInputProperties());
+	}
 
 	/**
 	 * A {@link ReturnedType} that's backed by an interface.

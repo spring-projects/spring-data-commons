@@ -85,7 +85,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 	@Override
 	public boolean isClosed() {
-		return this.properties.equals(getInputProperties());
+		return hasInputProperties() && this.properties.equals(getInputProperties());
 	}
 
 	/**
