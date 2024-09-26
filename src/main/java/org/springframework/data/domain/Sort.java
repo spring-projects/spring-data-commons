@@ -204,7 +204,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 		Assert.notNull(sort, "Sort must not be null");
 
-		List<Order> these = new ArrayList<Order>(this.toList());
+		List<Order> these = new ArrayList<>(this.toList());
 
 		for (Order order : sort) {
 			these.add(order);

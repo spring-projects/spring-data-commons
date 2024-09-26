@@ -39,6 +39,7 @@ public class UnmarshallingResourceReader implements ResourceReader {
 		this.unmarshaller = unmarshaller;
 	}
 
+	@Override
 	public Object readFrom(Resource resource, @Nullable ClassLoader classLoader) throws IOException {
 
 		Assert.notNull(resource, "Resource must not be null");

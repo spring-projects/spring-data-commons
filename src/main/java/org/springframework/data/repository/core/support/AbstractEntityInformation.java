@@ -39,6 +39,7 @@ public abstract class AbstractEntityInformation<T, ID> implements EntityInformat
 		this.domainClass = domainClass;
 	}
 
+	@Override
 	public boolean isNew(T entity) {
 
 		ID id = getId(entity);
@@ -48,13 +49,14 @@ public abstract class AbstractEntityInformation<T, ID> implements EntityInformat
 			return id == null;
 		}
 
-		if (id instanceof Number) {
-			return ((Number) id).longValue() == 0L;
+		if (id instanceof Number n) {
+			return n.longValue() == 0L;
 		}
 
 		throw new IllegalArgumentException(String.format("Unsupported primitive id type %s", idType));
 	}
 
+	@Override
 	public Class<T> getJavaType() {
 		return this.domainClass;
 	}

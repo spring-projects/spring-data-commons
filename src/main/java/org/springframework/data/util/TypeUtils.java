@@ -224,6 +224,7 @@ public class TypeUtils {
 			this.type = type;
 		}
 
+		@Override
 		public Class<?> getType() {
 			return type;
 		}

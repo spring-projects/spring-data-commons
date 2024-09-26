@@ -33,10 +33,12 @@ public class DummyEntityInformation<T> extends AbstractEntityInformation<T, Seri
 		super(domainClass);
 	}
 
+	@Override
 	public Serializable getId(Object entity) {
 		return entity == null ? null : entity.toString();
 	}
 
+	@Override
 	public Class<Serializable> getIdType() {
 		return Serializable.class;
 	}

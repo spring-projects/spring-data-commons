@@ -135,7 +135,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	@Override
 	public P getLeafProperty() {
 
-		Assert.state(properties.size() > 0, "Empty PersistentPropertyPath should not exist");
+		Assert.state(!properties.isEmpty(), "Empty PersistentPropertyPath should not exist");
 
 		return properties.get(properties.size() - 1);
 	}
@@ -143,7 +143,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	@Override
 	public P getBaseProperty() {
 
-		Assert.state(properties.size() > 0, "Empty PersistentPropertyPath should not exist");
+		Assert.state(!properties.isEmpty(), "Empty PersistentPropertyPath should not exist");
 
 		return properties.get(0);
 	}
@@ -208,10 +208,17 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	 */
 	public boolean containsPropertyOfType(@Nullable TypeInformation<?> type) {
 
-		return type == null //
-				? false //
-				: properties.stream() //
-						.anyMatch(property -> type.equals(property.getTypeInformation().getActualType()));
+		if (type == null) {
+			return false;
+		}
+
+		for (P property : properties) {
+			if (type.equals(property.getTypeInformation().getActualType())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override

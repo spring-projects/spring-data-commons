@@ -58,6 +58,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 		}
 	}
 
+	@Override
 	public Alias createAliasFor(TypeInformation<?> type) {
 
 		return typeMap.computeIfAbsent(type.getRawTypeInformation(), key -> {

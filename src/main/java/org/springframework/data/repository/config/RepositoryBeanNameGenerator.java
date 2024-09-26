@@ -70,8 +70,8 @@ class RepositoryBeanNameGenerator {
 	 */
 	public String generateBeanName(BeanDefinition definition) {
 
-		AnnotatedBeanDefinition beanDefinition = definition instanceof AnnotatedBeanDefinition //
-				? (AnnotatedBeanDefinition) definition //
+		AnnotatedBeanDefinition beanDefinition = definition instanceof AnnotatedBeanDefinition abd //
+				? abd //
 				: new AnnotatedGenericBeanDefinition(getRepositoryInterfaceFrom(definition));
 
 		return generator.generateBeanName(beanDefinition, registry);

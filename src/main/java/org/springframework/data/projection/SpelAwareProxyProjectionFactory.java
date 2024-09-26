@@ -108,7 +108,7 @@ public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory impl
 
 		Assert.notNull(type, "Type must not be null");
 
-		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
+		AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<>(Value.class);
 		ReflectionUtils.doWithMethods(type, callback);
 
 		return callback.hasFoundAnnotation();

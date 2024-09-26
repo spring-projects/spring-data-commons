@@ -186,6 +186,7 @@ public class CdiRepositoryContext {
 			return Streamable.empty();
 		}
 
+		@Override
 		public MetadataReaderFactory getMetadataReaderFactory() {
 			return this.metadataReaderFactory;
 		}

@@ -56,6 +56,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 		this.bean = bean;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public void setProperty(PersistentProperty<?> property, @Nullable Object value) {
 
@@ -103,6 +104,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 		}
 	}
 
+	@Override
 	@Nullable
 	public Object getProperty(PersistentProperty<?> property) {
 		return getProperty(property, property.getType());
@@ -143,6 +145,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 		}
 	}
 
+	@Override
 	public T getBean() {
 		return bean;
 	}

@@ -137,14 +137,17 @@ class ChainedTransactionManagerTests {
 
 		private boolean synchronizationActive;
 
+		@Override
 		public void initSynchronization() {
 			synchronizationActive = true;
 		}
 
+		@Override
 		public boolean isSynchronizationActive() {
 			return synchronizationActive;
 		}
 
+		@Override
 		public void clearSynchronization() {
 			synchronizationActive = false;
 		}

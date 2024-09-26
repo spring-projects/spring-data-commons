@@ -97,6 +97,7 @@ public class PageRequest extends AbstractPageRequest {
 		return PageRequest.of(0, pageSize);
 	}
 
+	@Override
 	public Sort getSort() {
 		return sort;
 	}

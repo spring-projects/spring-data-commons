@@ -310,7 +310,7 @@ class EntityCallbackDiscoverer {
 
 			for (var beanName : bf.getBeanNamesForType(EntityCallback.class)) {
 
-				EntityCallback<?> bean = EntityCallback.class.cast(bf.getBean(beanName));
+				EntityCallback<?> bean = (EntityCallback) bf.getBean(beanName);
 
 				ResolvableType type = ResolvableType.forClass(EntityCallback.class, bean.getClass());
 				ResolvableType entityType = type.getGeneric(0);

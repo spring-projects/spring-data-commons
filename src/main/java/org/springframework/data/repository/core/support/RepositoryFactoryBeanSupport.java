@@ -115,7 +115,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * <p>
 	 * Default is "false", in order to avoid unnecessary extra interception. This means that no guarantees are provided
 	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
-	 * 
+	 *
 	 * @since 3.4.0
 	 */
 	public void setExposeMetadata(boolean exposeMetadata) {
@@ -210,7 +210,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		this.beanFactory = beanFactory;
 
-		if (!this.evaluationContextProvider.isPresent() && ListableBeanFactory.class.isInstance(beanFactory)) {
+		if (!this.evaluationContextProvider.isPresent() && beanFactory instanceof ListableBeanFactory) {
 			this.evaluationContextProvider = createDefaultQueryMethodEvaluationContextProvider(
 					(ListableBeanFactory) beanFactory);
 		}
@@ -233,11 +233,13 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.publisher = publisher;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
 		return (EntityInformation<S, ID>) factory.getEntityInformation(repositoryMetadata.getDomainType());
 	}
 
+	@Override
 	public RepositoryInformation getRepositoryInformation() {
 
 		RepositoryFragments fragments = customImplementation.map(RepositoryFragments::just)//
@@ -246,12 +248,14 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		return factory.getRepositoryInformation(repositoryMetadata, fragments);
 	}
 
+	@Override
 	public PersistentEntity<?, ?> getPersistentEntity() {
 
 		return mappingContext.orElseThrow(() -> new IllegalStateException("No MappingContext available"))
 				.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
 	}
 
+	@Override
 	public List<QueryMethod> getQueryMethods() {
 		return factory.getQueryMethods();
 	}

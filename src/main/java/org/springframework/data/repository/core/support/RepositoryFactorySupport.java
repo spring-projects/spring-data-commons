@@ -318,7 +318,7 @@ public abstract class RepositoryFactorySupport implements BeanClassLoaderAware, 
 
 			for (RepositoryFragment<?> fragment : composition.getFragments()) {
 
-				if (fragmentsTag.length() > 0) {
+				if (!fragmentsTag.isEmpty()) {
 					fragmentsTag.append(";");
 				}
 

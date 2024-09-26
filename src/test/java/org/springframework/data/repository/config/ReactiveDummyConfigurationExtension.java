@@ -24,6 +24,7 @@ import org.springframework.data.repository.core.support.ReactiveDummyRepositoryF
  */
 class ReactiveDummyConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
+	@Override
 	public String getRepositoryFactoryBeanClassName() {
 		return ReactiveDummyRepositoryFactoryBean.class.getName();
 	}

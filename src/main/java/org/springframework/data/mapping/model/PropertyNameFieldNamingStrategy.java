@@ -27,6 +27,7 @@ public enum PropertyNameFieldNamingStrategy implements FieldNamingStrategy {
 
 	INSTANCE;
 
+	@Override
 	public String getFieldName(PersistentProperty<?> property) {
 		return property.getName();
 	}

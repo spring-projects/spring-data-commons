@@ -90,18 +90,22 @@ class AuditingBeanDefinitionRegistrarSupportUnitTests {
 		protected AuditingConfiguration getConfiguration(AnnotationMetadata annotationMetadata) {
 
 			return new AuditingConfiguration() {
+				@Override
 				public String getAuditorAwareRef() {
 					return "auditor";
 				}
 
+				@Override
 				public boolean isSetDates() {
 					return true;
 				}
 
+				@Override
 				public String getDateTimeProviderRef() {
 					return "dateTimeProvider";
 				}
 
+				@Override
 				public boolean isModifyOnCreate() {
 					return true;
 				}

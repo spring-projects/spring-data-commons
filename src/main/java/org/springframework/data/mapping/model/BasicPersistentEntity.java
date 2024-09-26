@@ -431,7 +431,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		Iterator<P> iterator = properties.iterator();
 
-		return new Iterator<P>() {
+		return new Iterator<>() {
 
 			@Override
 			public boolean hasNext() {

@@ -203,6 +203,7 @@ public interface RepositoryFragment<T> {
 			this.implementation = implementation;
 		}
 
+		@Override
 		public Class<?> getSignatureContributor() {
 
 			if (interfaceClass != null) {

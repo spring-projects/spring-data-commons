@@ -81,6 +81,7 @@ public class SimplePropertyValueConverterRegistry<P extends PersistentProperty<P
 		return converterRegistrationMap.size();
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return converterRegistrationMap.isEmpty();
 	}
