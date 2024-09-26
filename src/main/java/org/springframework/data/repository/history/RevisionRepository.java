@@ -16,6 +16,7 @@
 package org.springframework.data.repository.history;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ import org.springframework.data.repository.Repository;
  *
  * @author Oliver Gierke
  * @author Philipp Huegelmeyer
+ * @author Miguel Ángel Ruiz
  */
 @NoRepositoryBean
 public interface RevisionRepository<T, ID, N extends Number & Comparable<N>> extends Repository<T, ID> {
@@ -51,6 +53,15 @@ public interface RevisionRepository<T, ID, N extends Number & Comparable<N>> ext
 	Revisions<N, T> findRevisions(ID id);
 
 	/**
+	 * Returns all {@link Revisions} of an entity with the given id and filtered by the changed field of the entity.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param changedFields must not be {@literal null}.
+	 * @return
+	 */
+	Revisions<N, T> findRevisions(ID id, Set<String> changedFields);
+
+	/**
 	 * Returns a {@link Page} of revisions for the entity with the given id. Note, that it's not guaranteed that
 	 * implementations have to support sorting by all properties.
 	 *
@@ -61,6 +72,19 @@ public interface RevisionRepository<T, ID, N extends Number & Comparable<N>> ext
 	 * @return
 	 */
 	Page<Revision<N, T>> findRevisions(ID id, Pageable pageable);
+
+	/**
+	 * Returns a {@link Page} of revisions for the entity with the given id and filtered by the changed field of
+	 * the entity. Note, that it's not guaranteed that implementations have to support sorting by all properties.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param changedFields must not be {@literal null}.
+	 * @param pageable the pageable to request a paged result, can be {@link Pageable#unpaged()}, must not be
+	 *          {@literal null}.
+	 * @see RevisionSort
+	 * @return
+	 */
+	Page<Revision<N, T>> findRevisions(ID id, Set<String> changedFields, Pageable pageable);
 
 	/**
 	 * Returns the entity with the given ID in the given revision number.
