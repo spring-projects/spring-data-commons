@@ -23,6 +23,7 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
  */
 class DummyConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
+	@Override
 	public String getRepositoryFactoryBeanClassName() {
 		return DummyRepositoryFactoryBean.class.getName();
 	}

@@ -66,6 +66,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		this.enableDefaultTransactions = enableDefaultTransaction;
 	}
 
+	@Override
 	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 
 		TransactionInterceptor transactionInterceptor = new TransactionInterceptor();

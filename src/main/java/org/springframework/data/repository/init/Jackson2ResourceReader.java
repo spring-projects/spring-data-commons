@@ -78,6 +78,7 @@ public class Jackson2ResourceReader implements ResourceReader {
 		this.typeKey = typeKey == null ? DEFAULT_TYPE_KEY : typeKey;
 	}
 
+	@Override
 	public Object readFrom(Resource resource, @Nullable ClassLoader classLoader) throws Exception {
 
 		Assert.notNull(resource, "Resource must not be null");

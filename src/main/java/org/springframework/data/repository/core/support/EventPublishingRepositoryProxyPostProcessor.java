@@ -238,7 +238,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		private static <T extends Annotation> AnnotationDetectionMethodCallback<T> getDetector(Class<?> type,
 				Class<T> annotation) {
 
-			AnnotationDetectionMethodCallback<T> callback = new AnnotationDetectionMethodCallback<T>(annotation);
+			AnnotationDetectionMethodCallback<T> callback = new AnnotationDetectionMethodCallback<>(annotation);
 			ReflectionUtils.doWithMethods(type, callback);
 
 			return callback;
@@ -300,7 +300,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 			return Collections.emptyList();
 		}
 
-		if (Collection.class.isInstance(source)) {
+		if (source instanceof Collection) {
 			return new ArrayList<>((Collection<Object>) source);
 		}
 

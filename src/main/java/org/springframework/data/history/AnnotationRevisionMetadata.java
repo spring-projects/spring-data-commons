@@ -84,18 +84,22 @@ public class AnnotationRevisionMetadata<N extends Number & Comparable<N>> implem
 		this.revisionType = revisionType;
 	}
 
+	@Override
 	public Optional<N> getRevisionNumber() {
 		return revisionNumber.get();
 	}
 
+	@Override
 	public Optional<Instant> getRevisionInstant() {
 		return revisionDate.get().map(AnnotationRevisionMetadata::convertToInstant);
 	}
 
+	@Override
 	public RevisionType getRevisionType() {
 		return revisionType;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T getDelegate() {
 		return (T) entity;

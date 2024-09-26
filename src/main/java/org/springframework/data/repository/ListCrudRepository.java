@@ -42,6 +42,7 @@ public interface ListCrudRepository<T, ID> extends CrudRepository<T, ID> {
 	 *           attribute with a different value from that found in the persistence store. Also thrown if at least one
 	 *           entity is assumed to be present but does not exist in the database.
 	 */
+	@Override
 	<S extends T> List<S> saveAll(Iterable<S> entities);
 
 	/**
@@ -49,6 +50,7 @@ public interface ListCrudRepository<T, ID> extends CrudRepository<T, ID> {
 	 *
 	 * @return all entities
 	 */
+	@Override
 	List<T> findAll();
 
 	/**
@@ -63,6 +65,7 @@ public interface ListCrudRepository<T, ID> extends CrudRepository<T, ID> {
 	 *         {@literal ids}.
 	 * @throws IllegalArgumentException in case the given {@link Iterable ids} or one of its items is {@literal null}.
 	 */
+	@Override
 	List<T> findAllById(Iterable<ID> ids);
 
 }

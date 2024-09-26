@@ -278,6 +278,7 @@ public abstract class ReactiveWrapperConverters {
 			return Flux.class;
 		}
 
+		@Override
 		public Flux<?> map(Object wrapper, Function<Object, Object> function) {
 			return ((Flux<?>) wrapper).map(function);
 		}
@@ -297,6 +298,7 @@ public abstract class ReactiveWrapperConverters {
 			return Flow.class;
 		}
 
+		@Override
 		public Flow<?> map(Object wrapper, Function<Object, Object> function) {
 			return FlowKt.map((Flow<?>) wrapper, (o, continuation) -> function.apply(o));
 		}

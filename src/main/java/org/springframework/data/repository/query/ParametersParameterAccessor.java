@@ -168,6 +168,7 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 *
 	 * @return
 	 */
+	@Override
 	@Nullable
 	public Class<?> findDynamicProjection() {
 

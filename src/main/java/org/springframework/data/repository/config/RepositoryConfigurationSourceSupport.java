@@ -149,6 +149,7 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 			return source.generateBeanName(definition);
 		}
 
+		@Override
 		public MetadataReaderFactory getMetadataReaderFactory() {
 			return this.metadataReaderFactory;
 		}

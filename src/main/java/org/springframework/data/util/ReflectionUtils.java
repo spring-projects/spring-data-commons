@@ -125,6 +125,7 @@ public final class ReflectionUtils {
 			return AnnotationUtils.getAnnotation(field, annotationType) != null;
 		}
 
+		@Override
 		public String getDescription() {
 			return String.format("Annotation filter for %s", annotationType.getName());
 		}
@@ -146,6 +147,7 @@ public final class ReflectionUtils {
 				return filter.matches(field);
 			}
 
+			@Override
 			public String getDescription() {
 				return String.format("FieldFilter %s", filter.toString());
 			}

@@ -44,6 +44,7 @@ public class ConfigWithCustomRepositoryBaseClass {
 			return this.delegate.save(entity);
 		}
 
+		@Override
 		public <S extends T> Iterable<S> saveAll(Iterable<S> entities) {
 			return this.delegate.saveAll(entities);
 		}
@@ -52,38 +53,47 @@ public class ConfigWithCustomRepositoryBaseClass {
 			return this.delegate.findById(id);
 		}
 
+		@Override
 		public boolean existsById(ID id) {
 			return this.delegate.existsById(id);
 		}
 
+		@Override
 		public Iterable<T> findAll() {
 			return this.delegate.findAll();
 		}
 
+		@Override
 		public Iterable<T> findAllById(Iterable<ID> ids) {
 			return this.delegate.findAllById(ids);
 		}
 
+		@Override
 		public long count() {
 			return this.delegate.count();
 		}
 
+		@Override
 		public void deleteById(ID id) {
 			this.delegate.deleteById(id);
 		}
 
+		@Override
 		public void delete(T entity) {
 			this.delegate.delete(entity);
 		}
 
+		@Override
 		public void deleteAllById(Iterable<? extends ID> ids) {
 			this.delegate.deleteAllById(ids);
 		}
 
+		@Override
 		public void deleteAll(Iterable<? extends T> entities) {
 			this.delegate.deleteAll(entities);
 		}
 
+		@Override
 		public void deleteAll() {
 			this.delegate.deleteAll();
 		}

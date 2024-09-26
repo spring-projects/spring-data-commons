@@ -264,7 +264,7 @@ public class Property {
 
 	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
 
-		AtomicReference<Method> resultHolder = new AtomicReference<Method>();
+		AtomicReference<Method> resultHolder = new AtomicReference<>();
 		String methodName = String.format("with%s", StringUtils.capitalize(propertyName));
 
 		ReflectionUtils.doWithMethods(owner.getType(), it -> {

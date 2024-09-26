@@ -261,7 +261,7 @@ class ProxyProjectionFactory implements ProjectionFactory, BeanClassLoaderAware 
 
 		@Override
 		public boolean supports(Object source, Class<?> targetType) {
-			return Map.class.isInstance(source);
+			return source instanceof Map;
 		}
 	}
 

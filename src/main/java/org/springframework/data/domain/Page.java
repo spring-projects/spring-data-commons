@@ -69,5 +69,6 @@ public interface Page<T> extends Slice<T> {
 	 * @return a new {@link Page} with the content of the current one mapped by the given {@link Function}.
 	 * @since 1.10
 	 */
+	@Override
 	<U> Page<U> map(Function<? super T, ? extends U> converter);
 }

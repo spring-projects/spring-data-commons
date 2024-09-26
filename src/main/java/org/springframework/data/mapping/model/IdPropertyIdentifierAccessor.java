@@ -54,6 +54,7 @@ public class IdPropertyIdentifierAccessor extends TargetAwareIdentifierAccessor 
 		this.accessor = entity.getPropertyAccessor(target);
 	}
 
+	@Override
 	@Nullable
 	public Object getIdentifier() {
 		return accessor.getProperty(idProperty);

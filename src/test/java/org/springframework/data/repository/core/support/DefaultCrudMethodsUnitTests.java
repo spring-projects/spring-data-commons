@@ -238,10 +238,12 @@ class DefaultCrudMethodsUnitTests {
 	// DATACMNS-393
 	interface RepositoryWithAllCrudMethodOverloaded extends CrudRepository<Domain, Long> {
 
+		@Override
 		List<Domain> findAll();
 
 		<S extends Domain> S save(S entity);
 
+		@Override
 		void deleteById(Long id);
 
 		Optional<Domain> findById(Long id);
@@ -262,6 +264,7 @@ class DefaultCrudMethodsUnitTests {
 	// DATACMNS-539
 	interface RepositoryWithDeleteMethodForEntityOverloaded extends CrudRepository<Domain, Long> {
 
+		@Override
 		void delete(Domain entity);
 	}
 }

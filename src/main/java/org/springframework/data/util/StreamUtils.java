@@ -135,14 +135,14 @@ public interface StreamUtils {
 		int characteristics = lefts.characteristics() & rights.characteristics();
 		boolean parallel = left.isParallel() || right.isParallel();
 
-		return StreamSupport.stream(new AbstractSpliterator<T>(size, characteristics) {
+		return StreamSupport.stream(new AbstractSpliterator<>(size, characteristics) {
 
 			@Override
 			@SuppressWarnings("null")
 			public boolean tryAdvance(Consumer<? super T> action) {
 
-				Sink<L> leftSink = new Sink<L>();
-				Sink<R> rightSink = new Sink<R>();
+				Sink<L> leftSink = new Sink<>();
+				Sink<R> rightSink = new Sink<>();
 
 				boolean leftAdvance = lefts.tryAdvance(leftSink);
 

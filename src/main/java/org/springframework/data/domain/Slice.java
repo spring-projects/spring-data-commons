@@ -136,6 +136,7 @@ public interface Slice<T> extends Streamable<T> {
 	 * @return a new {@link Slice} with the content of the current one mapped by the given {@link Converter}.
 	 * @since 1.10
 	 */
+	@Override
 	<U> Slice<U> map(Function<? super T, ? extends U> converter);
 
 	/**

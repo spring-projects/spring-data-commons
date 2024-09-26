@@ -123,7 +123,7 @@ public class RepositoryConfigurationDelegate {
 			return environment;
 		}
 
-		return resourceLoader instanceof EnvironmentCapable ? ((EnvironmentCapable) resourceLoader).getEnvironment()
+		return resourceLoader instanceof EnvironmentCapable capable ? capable.getEnvironment()
 				: new StandardEnvironment();
 	}
 

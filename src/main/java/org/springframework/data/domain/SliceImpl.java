@@ -15,6 +15,7 @@
  */
 package org.springframework.data.domain;
 
+import java.io.Serial;
 import java.util.List;
 import java.util.function.Function;
 
@@ -29,6 +30,7 @@ import org.springframework.lang.Nullable;
  */
 public class SliceImpl<T> extends Chunk<T> {
 
+	@Serial
 	private static final long serialVersionUID = 867755909294344406L;
 
 	private final boolean hasNext;
@@ -59,6 +61,7 @@ public class SliceImpl<T> extends Chunk<T> {
 		this(content, Pageable.unpaged(), false);
 	}
 
+	@Override
 	public boolean hasNext() {
 		return hasNext;
 	}
@@ -74,7 +77,7 @@ public class SliceImpl<T> extends Chunk<T> {
 		String contentType = "UNKNOWN";
 		List<T> content = getContent();
 
-		if (content.size() > 0) {
+		if (!content.isEmpty()) {
 			contentType = content.get(0).getClass().getName();
 		}
 

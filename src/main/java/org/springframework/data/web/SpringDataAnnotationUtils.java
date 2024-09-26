@@ -173,8 +173,8 @@ abstract class SpringDataAnnotationUtils {
 	private static Qualifier findAnnotation(Annotation[] annotations) {
 
 		for (Annotation annotation : annotations) {
-			if (annotation instanceof Qualifier) {
-				return (Qualifier) annotation;
+			if (annotation instanceof Qualifier q) {
+				return q;
 			}
 		}
 

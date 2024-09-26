@@ -103,6 +103,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 		this.publisher = publisher;
 	}
 
+	@Override
 	public void populate(Repositories repositories) {
 
 		Assert.notNull(repositories, "Repositories must not be null");
