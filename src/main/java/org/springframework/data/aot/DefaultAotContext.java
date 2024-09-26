@@ -39,7 +39,7 @@ class DefaultAotContext implements AotContext {
 	private final ConfigurableListableBeanFactory factory;
 
 	public DefaultAotContext(BeanFactory beanFactory) {
-		factory = beanFactory instanceof ConfigurableListableBeanFactory ? (ConfigurableListableBeanFactory) beanFactory
+		factory = beanFactory instanceof ConfigurableListableBeanFactory cbf ? cbf
 				: new DefaultListableBeanFactory(beanFactory);
 	}
 

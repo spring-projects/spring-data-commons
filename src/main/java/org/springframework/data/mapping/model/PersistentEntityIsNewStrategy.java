@@ -100,8 +100,8 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 			return false;
 		}
 
-		if (value instanceof Number) {
-			return ((Number) value).longValue() == 0;
+		if (value instanceof Number n) {
+			return n.longValue() == 0;
 		}
 
 		throw new IllegalArgumentException(

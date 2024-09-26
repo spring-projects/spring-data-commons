@@ -72,6 +72,7 @@ public interface Window<T> extends Streamable<T> {
 	 *
 	 * @return {@code true} if this window contains no elements
 	 */
+	@Override
 	boolean isEmpty();
 
 	/**
@@ -149,6 +150,7 @@ public interface Window<T> extends Streamable<T> {
 	 * @param converter must not be {@literal null}.
 	 * @return a new {@link Window} with the content of the current one mapped by the given {@code converter}.
 	 */
+	@Override
 	<U> Window<U> map(Function<? super T, ? extends U> converter);
 
 }

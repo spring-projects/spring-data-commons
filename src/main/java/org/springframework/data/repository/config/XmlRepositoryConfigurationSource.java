@@ -85,11 +85,13 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		this.excludeFilters = parser.parseTypeFilters(element, Type.EXCLUDE);
 	}
 
+	@Override
 	@Nullable
 	public Object getSource() {
 		return context.extractSource(element);
 	}
 
+	@Override
 	public Streamable<String> getBasePackages() {
 
 		String attribute = element.getAttribute(BASE_PACKAGE);
@@ -97,10 +99,12 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return Streamable.of(StringUtils.delimitedListToStringArray(attribute, ",", " "));
 	}
 
+	@Override
 	public Optional<Object> getQueryLookupStrategyKey() {
 		return getNullDefaultedAttribute(element, QUERY_LOOKUP_STRATEGY).map(Key::create);
 	}
 
+	@Override
 	public Optional<String> getNamedQueryLocation() {
 		return getNullDefaultedAttribute(element, NAMED_QUERIES_LOCATION);
 	}
@@ -124,6 +128,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return includeFilters;
 	}
 
+	@Override
 	public Optional<String> getRepositoryImplementationPostfix() {
 		return getNullDefaultedAttribute(element, REPOSITORY_IMPL_POSTFIX);
 	}

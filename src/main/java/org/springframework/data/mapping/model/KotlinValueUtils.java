@@ -435,7 +435,7 @@ class KotlinValueUtils {
 			ValueBoxing hierarchy = this;
 			while (hierarchy != null) {
 
-				if (sb.length() != 0) {
+				if (!sb.isEmpty()) {
 					sb.append(" -> ");
 				}
 

@@ -129,6 +129,7 @@ class QuerydslBindingsFactoryUnitTests {
 
 	static class SpecificBinding implements QuerydslBinderCustomizer<QUser> {
 
+		@Override
 		public void customize(QuerydslBindings bindings, QUser user) {
 
 			bindings.bind(user.firstname).firstOptional((path, value) -> value.map(it -> path.eq(it.toUpperCase())));

@@ -61,6 +61,7 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	 * @param domainClass
 	 * @return
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> EntityPath<T> createPath(Class<T> domainClass) {
 

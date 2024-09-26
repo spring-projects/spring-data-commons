@@ -41,6 +41,7 @@ public class HashMapChangeSet implements ChangeSet {
 		this(new HashMap<>());
 	}
 
+	@Override
 	public void set(String key, Object o) {
 		values.put(key, o);
 	}
@@ -49,15 +50,18 @@ public class HashMapChangeSet implements ChangeSet {
 		return "HashMapChangeSet: values=[" + values + "]";
 	}
 
+	@Override
 	public Map<String, Object> getValues() {
 		return Collections.unmodifiableMap(values);
 	}
 
+	@Override
 	@Nullable
 	public Object removeProperty(String k) {
 		return this.values.remove(k);
 	}
 
+	@Override
 	@Nullable
 	public <T> T get(String key, Class<T> requiredClass, ConversionService conversionService) {
 

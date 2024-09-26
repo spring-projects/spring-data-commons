@@ -44,7 +44,7 @@ class MultiValueMapCollector<T, K, V> implements Collector<T, MultiValueMap<K, V
 	}
 
 	static <T, K, V> MultiValueMapCollector<T, K, V> of(Function<T, K> keyFunction, Function<T, V> valueFunction) {
-		return new MultiValueMapCollector<T, K, V>(keyFunction, valueFunction);
+		return new MultiValueMapCollector<>(keyFunction, valueFunction);
 	}
 
 	@Override

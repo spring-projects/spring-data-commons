@@ -94,10 +94,12 @@ class DefaultRepositoryConfigurationUnitTests {
 			this.modulePrefix = modulePrefix;
 		}
 
+		@Override
 		public String getRepositoryFactoryBeanClassName() {
 			return this.repositoryFactoryBeanClassName;
 		}
 
+		@Override
 		public String getModulePrefix() {
 			return this.modulePrefix;
 		}

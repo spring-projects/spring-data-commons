@@ -38,7 +38,7 @@ class MultiTransactionStatus implements TransactionStatus {
 
 	private final PlatformTransactionManager mainTransactionManager;
 	private final Map<PlatformTransactionManager, TransactionStatus> transactionStatuses = Collections
-			.synchronizedMap(new HashMap<PlatformTransactionManager, TransactionStatus>());
+			.synchronizedMap(new HashMap<>());
 
 	private boolean newSynchonization;
 

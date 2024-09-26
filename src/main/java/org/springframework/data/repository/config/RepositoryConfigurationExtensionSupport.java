@@ -69,6 +69,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		return getRepositoryConfigurations(configSource, loader, false);
 	}
 
+	@Override
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader, boolean strictMatchesOnly) {
 
@@ -101,10 +102,12 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 		return result;
 	}
 
+	@Override
 	public String getDefaultNamedQueryLocation() {
 		return String.format("classpath*:META-INF/%s-named-queries.properties", getModuleIdentifier());
 	}
 
+	@Override
 	public void registerBeansForRoot(BeanDefinitionRegistry registry,
 			RepositoryConfigurationSource configurationSource) {}
 
@@ -119,10 +122,13 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	@Deprecated
 	protected abstract String getModulePrefix();
 
+	@Override
 	public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {}
 
+	@Override
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {}
 
+	@Override
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {}
 
 	/**

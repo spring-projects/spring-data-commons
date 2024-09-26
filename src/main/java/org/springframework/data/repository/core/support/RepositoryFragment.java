@@ -192,6 +192,7 @@ public interface RepositoryFragment<T> {
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
+		@Override
 		public Class<?> getSignatureContributor() {
 			return interfaceClass.orElseGet(() -> {
 

@@ -324,6 +324,7 @@ class RepositoryConfigurationDelegateUnitTests {
 
 	static class DummyConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
+		@Override
 		public String getRepositoryFactoryBeanClassName() {
 			return DummyRepositoryFactoryBean.class.getName();
 		}

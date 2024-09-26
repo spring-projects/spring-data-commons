@@ -47,6 +47,7 @@ public class PersistenceExceptionTranslationRepositoryProxyPostProcessor impleme
 		this.interceptor.afterPropertiesSet();
 	}
 
+	@Override
 	public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
 		factory.addAdvice(interceptor);
 	}

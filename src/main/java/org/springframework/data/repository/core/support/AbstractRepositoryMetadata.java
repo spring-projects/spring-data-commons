@@ -107,6 +107,7 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 		return QueryExecutionConverters.unwrapWrapperTypes(returnType, getDomainTypeInformation()).getType();
 	}
 
+	@Override
 	public Class<?> getRepositoryInterface() {
 		return this.repositoryInterface;
 	}

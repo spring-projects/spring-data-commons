@@ -246,7 +246,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 	@Override
 	public Iterator<PropertyPath> iterator() {
 
-		return new Iterator<PropertyPath>() {
+		return new Iterator<>() {
 
 			private @Nullable PropertyPath current = PropertyPath.this;
 
@@ -365,7 +365,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 			Iterator<String> parts = iteratorSource.iterator();
 
 			PropertyPath result = null;
-			Stack<PropertyPath> current = new Stack<PropertyPath>();
+			Stack<PropertyPath> current = new Stack<>();
 
 			while (parts.hasNext()) {
 				if (result == null) {

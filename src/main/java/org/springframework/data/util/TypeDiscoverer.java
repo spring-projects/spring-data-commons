@@ -152,7 +152,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		List<TypeInformation<?>> arguments = getTypeArguments();
 
-		if (arguments.size() > 0) {
+		if (!arguments.isEmpty()) {
 			return arguments.get(0);
 		}
 

@@ -47,6 +47,7 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 
 	private static final Object[] EMPTY_ARGS = new Object[0];
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {

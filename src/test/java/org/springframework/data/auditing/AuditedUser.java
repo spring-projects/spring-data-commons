@@ -44,34 +44,42 @@ class AuditedUser implements Auditable<AuditedUser, Long, LocalDateTime> {
 		return id == null;
 	}
 
+	@Override
 	public Optional<AuditedUser> getCreatedBy() {
 		return Optional.ofNullable(createdBy);
 	}
 
+	@Override
 	public void setCreatedBy(AuditedUser createdBy) {
 		this.createdBy = createdBy;
 	}
 
+	@Override
 	public Optional<LocalDateTime> getCreatedDate() {
 		return Optional.ofNullable(createdDate);
 	}
 
+	@Override
 	public void setCreatedDate(LocalDateTime creationDate) {
 		this.createdDate = creationDate;
 	}
 
+	@Override
 	public Optional<AuditedUser> getLastModifiedBy() {
 		return Optional.ofNullable(modifiedBy);
 	}
 
+	@Override
 	public void setLastModifiedBy(AuditedUser lastModifiedBy) {
 		this.modifiedBy = lastModifiedBy;
 	}
 
+	@Override
 	public Optional<LocalDateTime> getLastModifiedDate() {
 		return Optional.ofNullable(modifiedDate);
 	}
 
+	@Override
 	public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
 		this.modifiedDate = lastModifiedDate;
 	}

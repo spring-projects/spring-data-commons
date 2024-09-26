@@ -186,7 +186,7 @@ public class AccessOptions {
 			Assert.isTrue(type.isAssignableFrom(property.getType()), () -> String
 					.format("Cannot register a property handler for %s on a property of type %s", type, property.getType()));
 
-			Function<Object, T> caster = (Function<Object, T>) it -> type.cast(it);
+			Function<Object, T> caster = type::cast;
 
 			return registerHandler(property, caster.andThen(handler));
 		}
