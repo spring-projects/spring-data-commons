@@ -69,6 +69,27 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 		Collection<KCallable<?>> members = kotlinClass.getMembers();
 		Map<String, PropertyDescriptor> descriptors = new LinkedHashMap<>(members.size(), 1.f);
 
+		collectKotlinProperties(beanClass, members, descriptors);
+		collectBasicJavaProperties(beanClass, descriptors);
+
+		PropertyDescriptor[] propertyDescriptors = descriptors.values().toArray(new PropertyDescriptor[0]);
+
+		return new SimpleBeanInfo() {
+			@Override
+			public BeanDescriptor getBeanDescriptor() {
+				return new BeanDescriptor(beanClass);
+			}
+
+			@Override
+			public PropertyDescriptor[] getPropertyDescriptors() {
+				return propertyDescriptors;
+			}
+		};
+	}
+
+	private static void collectKotlinProperties(Class<?> beanClass, Collection<KCallable<?>> members,
+			Map<String, PropertyDescriptor> descriptors) throws IntrospectionException {
+
 		for (KCallable<?> member : members) {
 
 			if (member instanceof KProperty<?> property) {
@@ -100,6 +121,10 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 				descriptors.put(property.getName(), new PropertyDescriptor(property.getName(), getter, setter));
 			}
 		}
+	}
+
+	private static void collectBasicJavaProperties(Class<?> beanClass, Map<String, PropertyDescriptor> descriptors)
+			throws IntrospectionException {
 
 		Class<?> javaClass = beanClass;
 		do {
@@ -123,20 +148,6 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 				descriptors.put(descriptor.getName(), descriptor);
 			}
 		}
-
-		PropertyDescriptor[] propertyDescriptors = descriptors.values().toArray(new PropertyDescriptor[0]);
-
-		return new SimpleBeanInfo() {
-			@Override
-			public BeanDescriptor getBeanDescriptor() {
-				return new BeanDescriptor(beanClass);
-			}
-
-			@Override
-			public PropertyDescriptor[] getPropertyDescriptors() {
-				return propertyDescriptors;
-			}
-		};
 	}
 
 	@Nullable
