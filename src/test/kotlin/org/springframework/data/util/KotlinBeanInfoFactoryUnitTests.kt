@@ -130,6 +130,13 @@ class KotlinBeanInfoFactoryUnitTests {
 		)
 	}
 
+	@Test // GH-3167
+	internal fun supportsPropertiesWithDifferentAccessorTypes() {
+
+		val pds = BeanUtils.getPropertyDescriptors(User::class.java)
+		assertThat(pds).isNotEmpty
+	}
+
 	data class SimpleDataClass(val id: String, var name: String)
 
 	@JvmInline
@@ -188,5 +195,9 @@ class KotlinBeanInfoFactoryUnitTests {
 		override fun getName(): String {
 			return super.getName()
 		}
+	}
+
+	class User : AbstractAuditable() {
+		var name: String? = null
 	}
 }
