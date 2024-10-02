@@ -62,4 +62,15 @@ public interface ValueExpression {
 	@Nullable
 	Object evaluate(ValueEvaluationContext context) throws EvaluationException;
 
+	/**
+	 * Return the most general type that the expression would use as return type for the given context.
+	 *
+	 * @param context the context in which to evaluate the expression.
+	 * @return the most general type of value.
+	 * @throws EvaluationException if there is a problem determining the type
+	 * @since 3.4
+	 */
+	@Nullable
+	Class<?> getValueType(ValueEvaluationContext context) throws EvaluationException;
+
 }

@@ -38,7 +38,7 @@ record PlaceholderExpression(String expression) implements ValueExpression {
 	}
 
 	@Override
-	public Object evaluate(ValueEvaluationContext context) {
+	public String evaluate(ValueEvaluationContext context) {
 
 		Environment environment = context.getEnvironment();
 		if (environment != null) {
@@ -49,6 +49,11 @@ record PlaceholderExpression(String expression) implements ValueExpression {
 			}
 		}
 		return expression;
+	}
+
+	@Override
+	public Class<?> getValueType(ValueEvaluationContext context) {
+		return String.class;
 	}
 
 }

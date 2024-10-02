@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Map;
 
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +39,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
  */
 public class ValueEvaluationUnitTests {
 
+	private ValueExpressionParser parser = ValueExpressionParser.create();
 	private ValueEvaluationContext evaluationContext;
 
 	@BeforeEach
@@ -46,6 +48,10 @@ public class ValueEvaluationUnitTests {
 		MapPropertySource propertySource = new MapPropertySource("map", Map.of("env.key.one", "value", "env.key.two", 42L));
 		StandardEnvironment environment = new StandardEnvironment();
 		environment.getPropertySources().addFirst(propertySource);
+
+		record MyRecord(String foo, @org.springframework.lang.Nullable String bar) {
+
+		}
 
 		this.evaluationContext = new ValueEvaluationContext() {
 			@Override
@@ -57,6 +63,8 @@ public class ValueEvaluationUnitTests {
 			public EvaluationContext getEvaluationContext() {
 				StandardEvaluationContext context = new StandardEvaluationContext();
 				context.setVariable("contextVar", "contextVal");
+				context.setVariable("nullVar", null);
+				context.setVariable("someRecord", new MyRecord("foo", null));
 
 				return context;
 			}
@@ -80,6 +88,20 @@ public class ValueEvaluationUnitTests {
 
 		assertThatExceptionOfType(EvaluationException.class).isThrownBy(() -> eval("${env.does.not.exist}-"))
 				.withMessageContaining("Could not resolve placeholder 'env.does.not.exist'");
+	}
+
+	@Test // GH-3169
+	void shouldReturnValueType() {
+
+		assertThat(getValueType("foo")).isEqualTo(String.class);
+		assertThat(getValueType("${env.key.one}")).isEqualTo(String.class);
+		assertThat(getValueType("#{'foo'}")).isEqualTo(String.class);
+		assertThat(getValueType("#{1+1}")).isEqualTo(Integer.class);
+		assertThat(getValueType("#{null}")).isNull();
+		assertThat(getValueType("#{#contextVar}")).isEqualTo(String.class);
+		assertThat(getValueType("#{#nullVar}")).isNull();
+		assertThat(getValueType("#{#someRecord.foo}")).isEqualTo(String.class);
+		assertThat(getValueType("#{#someRecord.bar}")).isEqualTo(String.class);
 	}
 
 	@Test // GH-2369
@@ -128,10 +150,14 @@ public class ValueEvaluationUnitTests {
 		assertThat(eval("#{(1+1) + \"-foo'}\" + '-bar}'}")).isEqualTo("2-foo'}-bar}");
 	}
 
+	@SuppressWarnings("DataFlowIssue")
 	private String eval(String expressionString) {
-
-		ValueExpressionParser parser = ValueExpressionParser.create();
 		return (String) parser.parse(expressionString).evaluate(evaluationContext);
+	}
+
+	@Nullable
+	private Class<?> getValueType(String expressionString) {
+		return parser.parse(expressionString).getValueType(evaluationContext);
 	}
 
 }
