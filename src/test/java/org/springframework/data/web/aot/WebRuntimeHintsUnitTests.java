@@ -15,11 +15,11 @@
  */
 package org.springframework.data.web.aot;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aot.hint.ReflectionHints;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
@@ -46,7 +46,7 @@ class WebRuntimeHintsUnitTests {
 				RuntimeHintsPredicates.reflection().onType(TypeReference.of("org.springframework.data.domain.Unpaged")));
 	}
 
-	@Test // GH-3033
+	@Test // GH-3033, GH-3171
 	@ClassPathExclusions(packages = { "com.fasterxml.jackson.databind" })
 	void shouldRegisterRuntimeHintWithTypeNameWhenJacksonNotPresent() {
 
@@ -56,6 +56,7 @@ class WebRuntimeHintsUnitTests {
 
 		new WebRuntimeHints().registerHints(runtimeHints, this.getClass().getClassLoader());
 
-		assertThat(runtimeHints.reflection().typeHints()).isEmpty();
+		assertThat(runtimeHints).matches(RuntimeHintsPredicates.reflection()
+				.onType(TypeReference.of("org.springframework.data.web.config.SpringDataWebSettings")));
 	}
 }
