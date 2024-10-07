@@ -171,7 +171,7 @@ class Products implements Streamable<Product> {         <2>
 
   public MonetaryAmount getTotal() {                    <3>
     return streamable.stream()
-      .map(Priced::getPrice)
+      .map(Product::getPrice)
       .reduce(Money.of(0), MonetaryAmount::add);
   }
 
