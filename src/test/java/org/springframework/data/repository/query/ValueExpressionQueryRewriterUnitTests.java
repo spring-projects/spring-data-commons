@@ -74,7 +74,6 @@ class ValueExpressionQueryRewriterUnitTests {
 						Tuple.tuple("EPP2", "${three}"), //
 						Tuple.tuple("EPP3", "${four}") //
 				);
-
 	}
 
 	@Test // GH-3049
@@ -113,17 +112,20 @@ class ValueExpressionQueryRewriterUnitTests {
 	@Test // GH-3049
 	void shouldEvaluateExpression() throws Exception {
 
-		ValueExpressionQueryRewriter rewriter = ValueExpressionQueryRewriter.of(PARSER, PARAMETER_NAME_SOURCE,
-				REPLACEMENT_SOURCE);
 		StandardEnvironment environment = new StandardEnvironment();
 		environment.getPropertySources().addFirst(new MapPropertySource("synthetic", Map.of("foo", "world")));
 
-		QueryMethodValueEvaluationContextAccessor factory = new QueryMethodValueEvaluationContextAccessor(environment,
+		QueryMethodValueEvaluationContextAccessor contextAccessor = new QueryMethodValueEvaluationContextAccessor(
+				environment,
 				EvaluationContextProvider.DEFAULT);
+
+		ValueExpressionDelegate delegate = new ValueExpressionDelegate(contextAccessor, PARSER);
+		ValueExpressionQueryRewriter.EvaluatingValueExpressionQueryRewriter rewriter = ValueExpressionQueryRewriter
+				.of(delegate, PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
 
 		Method method = ValueExpressionQueryRewriterUnitTests.MyRepository.class.getDeclaredMethod("simpleExpression",
 				String.class);
-		var extractor = rewriter.withEvaluationContextAccessor(factory).parse("SELECT :#{#value}, :${foo}",
+		var extractor = rewriter.parse("SELECT :#{#value}, :${foo}",
 				new DefaultParameters(ParametersSource.of(method)));
 
 		assertThat(extractor.getQueryString()).isEqualTo("SELECT :EPP0, :EPP1");

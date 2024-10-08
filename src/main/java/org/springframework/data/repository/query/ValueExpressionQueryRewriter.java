@@ -98,19 +98,37 @@ public class ValueExpressionQueryRewriter {
 	}
 
 	/**
-	 * Creates a new {@link ValueExpressionQueryRewriter} using the given {@link ValueExpressionParser} and rewrite
-	 * functions.
+	 * Creates a new ValueExpressionQueryRewriter using the given {@link ValueExpressionParser} and rewrite functions.
 	 *
 	 * @param expressionParser the expression parser to use.
 	 * @param parameterNameSource function to generate parameter names. Typically, a function of the form
 	 *          {@code (index, expression) -> "__some_placeholder_" + index}.
 	 * @param replacementSource function to generate replacements. Typically, a concatenation of the prefix and the
 	 *          parameter name such as {@code String::concat}.
-	 * @return
+	 * @return a ValueExpressionQueryRewriter instance to rewrite queries and extract parsed {@link ValueExpression}s.
 	 */
 	public static ValueExpressionQueryRewriter of(ValueExpressionParser expressionParser,
 			BiFunction<Integer, String, String> parameterNameSource, BiFunction<String, String, String> replacementSource) {
 		return new ValueExpressionQueryRewriter(expressionParser, parameterNameSource, replacementSource);
+	}
+
+	/**
+	 * Creates a new EvaluatingValueExpressionQueryRewriter using the given {@link ValueExpressionDelegate} and rewrite
+	 * functions.
+	 *
+	 * @param delegate the ValueExpressionDelegate to use for parsing and to obtain EvaluationContextAccessor from.
+	 * @param parameterNameSource function to generate parameter names. Typically, a function of the form
+	 *          {@code (index, expression) -> "__some_placeholder_" + index}.
+	 * @param replacementSource function to generate replacements. Typically, a concatenation of the prefix and the
+	 *          parameter name such as {@code String::concat}.
+	 * @return a EvaluatingValueExpressionQueryRewriter instance to rewrite queries and extract parsed
+	 *         {@link ValueExpression}s.
+	 * @since 3.4
+	 */
+	public static EvaluatingValueExpressionQueryRewriter of(ValueExpressionDelegate delegate,
+			BiFunction<Integer, String, String> parameterNameSource, BiFunction<String, String, String> replacementSource) {
+		return of((ValueExpressionParser) delegate, parameterNameSource, replacementSource)
+				.withEvaluationContextAccessor(delegate.getEvaluationContextAccessor());
 	}
 
 	/**
@@ -137,15 +155,15 @@ public class ValueExpressionQueryRewriter {
 	 * Creates a {@link EvaluatingValueExpressionQueryRewriter} from the current one and the given
 	 * {@link QueryMethodValueEvaluationContextAccessor}.
 	 *
-	 * @param factory must not be {@literal null}.
-	 * @return
+	 * @param accessor must not be {@literal null}.
+	 * @return EvaluatingValueExpressionQueryRewriter instance to rewrite and evaluate Value Expressions.
 	 */
 	public EvaluatingValueExpressionQueryRewriter withEvaluationContextAccessor(
-			QueryMethodValueEvaluationContextAccessor factory) {
+			QueryMethodValueEvaluationContextAccessor accessor) {
 
-		Assert.notNull(factory, "QueryMethodValueEvaluationContextAccessor must not be null");
+		Assert.notNull(accessor, "QueryMethodValueEvaluationContextAccessor must not be null");
 
-		return new EvaluatingValueExpressionQueryRewriter(expressionParser, factory, parameterNameSource,
+		return new EvaluatingValueExpressionQueryRewriter(expressionParser, accessor, parameterNameSource,
 				replacementSource);
 	}
 

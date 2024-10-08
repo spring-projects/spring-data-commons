@@ -64,6 +64,14 @@ public class ValueExpressionDelegate implements ValueExpressionParser {
 				ValueExpressionParser.create());
 	}
 
+	public ValueExpressionParser getValueExpressionParser() {
+		return valueExpressionParser;
+	}
+
+	public QueryMethodValueEvaluationContextAccessor getEvaluationContextAccessor() {
+		return contextAccessor;
+	}
+
 	/**
 	 * Creates a {@link ValueEvaluationContextProvider} for query method {@link Parameters} for later creation of a
 	 * {@link ValueEvaluationContext} based on the actual method parameter values. The resulting
@@ -74,10 +82,6 @@ public class ValueExpressionDelegate implements ValueExpressionParser {
 	 */
 	public ValueEvaluationContextProvider createValueContextProvider(Parameters<?, ?> parameters) {
 		return contextAccessor.create(parameters);
-	}
-
-	public ValueExpressionParser getValueExpressionParser() {
-		return valueExpressionParser;
 	}
 
 	@Override
