@@ -72,17 +72,17 @@ public class ValueExpressionQueryRewriter {
 	private final ValueExpressionParser expressionParser;
 
 	/**
-	 * A function from the index of a Value expression in a query and the actual SpEL expression to the parameter name to
-	 * be used in place of the SpEL expression. A typical implementation is expected to look like
-	 * <code>(index, spel) -> "__some_placeholder_" + index</code>
+	 * A function from the index of a Value expression in a query and the actual Value Expression to the parameter name to
+	 * be used in place of the Value Expression. A typical implementation is expected to look like
+	 * <code>(index, expression) -> "__some_placeholder_" + index</code>
 	 */
 	private final BiFunction<Integer, String, String> parameterNameSource;
 
 	/**
-	 * A function from a prefix used to demarcate a SpEL expression in a query and a parameter name as returned from
-	 * {@link #parameterNameSource} to a {@literal String} to be used as a replacement of the SpEL in the query. The
-	 * returned value should normally be interpretable as a bind parameter by the underlying persistence mechanism. A
-	 * typical implementation is expected to look like <code>(prefix, name) -> prefix + name</code> or
+	 * A function from a prefix used to demarcate a Value Expression in a query and a parameter name as returned from
+	 * {@link #parameterNameSource} to a {@literal String} to be used as a replacement of the Value Expressions in the
+	 * query. The returned value should normally be interpretable as a bind parameter by the underlying persistence
+	 * mechanism. A typical implementation is expected to look like <code>(prefix, name) -> prefix + name</code> or
 	 * <code>(prefix, name) -> "{" + name + "}"</code>
 	 */
 	private final BiFunction<String, String, String> replacementSource;
@@ -116,9 +116,9 @@ public class ValueExpressionQueryRewriter {
 	 * with prefix being the character ':' or '?'. Parsing honors quoted {@literal String}s enclosed in single or double
 	 * quotation marks.
 	 *
-	 * @param query a query containing SpEL expressions in the format described above. Must not be {@literal null}.
-	 * @return A {@link ParsedQuery} which makes the query with SpEL expressions replaced by bind parameters and a map
-	 *         from bind parameter to SpEL expression available. Guaranteed to be not {@literal null}.
+	 * @param query a query containing Value Expressions in the format described above. Must not be {@literal null}.
+	 * @return A {@link ParsedQuery} which makes the query with Value Expressions replaced by bind parameters and a map
+	 *         from bind parameter to Value Expression available. Guaranteed to be not {@literal null}.
 	 */
 	public ParsedQuery parse(String query) {
 		return new ParsedQuery(expressionParser, query);
@@ -168,7 +168,7 @@ public class ValueExpressionQueryRewriter {
 		}
 
 		/**
-		 * Parses the query for SpEL expressions using the pattern:
+		 * Parses the query for Value Expressions using the pattern:
 		 *
 		 * <pre>
 		 * &lt;prefix&gt;#{&lt;spel&gt;}
@@ -257,7 +257,7 @@ public class ValueExpressionQueryRewriter {
 		}
 
 		/**
-		 * The query with all the SpEL expressions replaced with bind parameters.
+		 * The query with all the Value Expressions replaced with bind parameters.
 		 *
 		 * @return Guaranteed to be not {@literal null}.
 		 */
@@ -289,11 +289,20 @@ public class ValueExpressionQueryRewriter {
 		}
 
 		/**
-		 * A {@literal Map} from parameter name to SpEL expression.
+		 * Returns whether the query contains Value Expressions.
+		 *
+		 * @return {@literal true} if the query contains Value Expressions.
+		 */
+		public boolean hasParameterBindings() {
+			return !expressions.isEmpty();
+		}
+
+		/**
+		 * A {@literal Map} from parameter name to Value Expression.
 		 *
 		 * @return Guaranteed to be not {@literal null}.
 		 */
-		Map<String, ValueExpression> getParameterMap() {
+		public Map<String, ValueExpression> getParameterMap() {
 			return expressions;
 		}
 
@@ -403,7 +412,7 @@ public class ValueExpressionQueryRewriter {
 		}
 
 		/**
-		 * Returns the query string produced by the intermediate SpEL expression collection step.
+		 * Returns the query string produced by the intermediate Value Expression collection step.
 		 *
 		 * @return
 		 */
