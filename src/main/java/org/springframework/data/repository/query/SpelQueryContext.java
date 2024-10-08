@@ -58,7 +58,7 @@ import org.springframework.util.Assert;
  * @author Gerrit Meier
  * @author Mark Paluch
  * @since 2.1
- * @deprecated since 3.3, use {@link ValueExpressionQueryRewriter.QueryExpressionEvaluator} instead.
+ * @deprecated since 3.3, use {@link ValueExpressionQueryRewriter} instead.
  */
 @Deprecated(since = "3.3")
 public class SpelQueryContext {

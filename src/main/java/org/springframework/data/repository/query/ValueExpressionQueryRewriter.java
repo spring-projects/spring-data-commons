@@ -41,22 +41,20 @@ import org.springframework.util.Assert;
  * with bind variables.
  * <p>
  * Result of the parse process is a {@link ParsedQuery} which provides the transformed query string. Alternatively and
- * preferred one may provide a {@link QueryMethodEvaluationContextProvider} via
+ * preferred one may provide a {@link QueryMethodValueEvaluationContextAccessor} via
  * {@link #withEvaluationContextAccessor(QueryMethodValueEvaluationContextAccessor)} which will yield the more powerful
  * {@link EvaluatingValueExpressionQueryRewriter}.
  * <p>
  * Typical usage looks like
  *
- * <pre>
- * <code>
-     ExpressionQueryRewriter.ParsedQuery parsed = ExpressionQueryRewriter
-         .of(valueExpressionParser, (counter, expression) -> String.format("__$synthetic$__%d", counter), String::concat)
-         .withEvaluationContextProvider(evaluationContextProviderFactory);
-
-     ExpressionQueryRewriter.QueryExpressionEvaluator evaluator = queryContext.parse(query, queryMethod.getParameters());
-
-     evaluator.evaluate(objects).forEach(parameterMap::addValue);
- * </code>
+ * <pre class="code">
+ * ValueExpressionQueryRewriter.EvaluatingValueExpressionQueryRewriter rewriter = ValueExpressionQueryRewriter
+ * 		.of(valueExpressionParser, (counter, expression) -> String.format("__$synthetic$__%d", counter), String::concat)
+ * 		.withEvaluationContextAccessor(evaluationContextProviderFactory);
+ *
+ * ValueExpressionQueryRewriter.QueryExpressionEvaluator evaluator = rewriter.parse(query, queryMethod.getParameters());
+ *
+ * evaluator.evaluate(objects).forEach(parameterMap::addValue);
  * </pre>
  *
  * @author Jens Schauder
@@ -74,7 +72,7 @@ public class ValueExpressionQueryRewriter {
 	/**
 	 * A function from the index of a Value expression in a query and the actual Value Expression to the parameter name to
 	 * be used in place of the Value Expression. A typical implementation is expected to look like
-	 * <code>(index, expression) -> "__some_placeholder_" + index</code>
+	 * {@code (index, expression) -> "__some_placeholder_" + index}.
 	 */
 	private final BiFunction<Integer, String, String> parameterNameSource;
 
@@ -82,8 +80,8 @@ public class ValueExpressionQueryRewriter {
 	 * A function from a prefix used to demarcate a Value Expression in a query and a parameter name as returned from
 	 * {@link #parameterNameSource} to a {@literal String} to be used as a replacement of the Value Expressions in the
 	 * query. The returned value should normally be interpretable as a bind parameter by the underlying persistence
-	 * mechanism. A typical implementation is expected to look like <code>(prefix, name) -> prefix + name</code> or
-	 * <code>(prefix, name) -> "{" + name + "}"</code>
+	 * mechanism. A typical implementation is expected to look like {@code (prefix, name) -> prefix + name} or
+	 * {@code (prefix, name) -> "{" + name + "}"}.
 	 */
 	private final BiFunction<String, String, String> replacementSource;
 
@@ -99,6 +97,17 @@ public class ValueExpressionQueryRewriter {
 		this.expressionParser = expressionParser;
 	}
 
+	/**
+	 * Creates a new {@link ValueExpressionQueryRewriter} using the given {@link ValueExpressionParser} and rewrite
+	 * functions.
+	 *
+	 * @param expressionParser the expression parser to use.
+	 * @param parameterNameSource function to generate parameter names. Typically, a function of the form
+	 *          {@code (index, expression) -> "__some_placeholder_" + index}.
+	 * @param replacementSource function to generate replacements. Typically, a concatenation of the prefix and the
+	 *          parameter name such as {@code String::concat}.
+	 * @return
+	 */
 	public static ValueExpressionQueryRewriter of(ValueExpressionParser expressionParser,
 			BiFunction<Integer, String, String> parameterNameSource, BiFunction<String, String, String> replacementSource) {
 		return new ValueExpressionQueryRewriter(expressionParser, parameterNameSource, replacementSource);
