@@ -18,7 +18,7 @@ If you are using a reactive store you might choose `ReactiveCrudRepository`, or 
 
 If you are using Kotlin you might pick `CoroutineCrudRepository` which utilizes Kotlin's coroutines.
 
-Additional you can extend `PagingAndSortingRepository`, `ReactiveSortingRepository`, `RxJava3SortingRepository`, or `CoroutineSortingRepository` if you need methods that allow to specify a `Sort` abstraction or in the first case a `Pageable` abstraction.
+Additionally you can extend `PagingAndSortingRepository`, `ReactiveSortingRepository`, `RxJava3SortingRepository`, or `CoroutineSortingRepository` if you need methods that allow to specify a `Sort` abstraction or in the first case a `Pageable` abstraction.
 Note that the various sorting repositories no longer extended their respective CRUD repository as they did in Spring Data Versions pre 3.0.
 Therefore, you need to extend both interfaces if you want functionality of both.
 
