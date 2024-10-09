@@ -37,6 +37,11 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 The methods declared in this interface are commonly referred to as CRUD methods.
 `ListCrudRepository` offers equivalent methods, but they return `List` where the `CrudRepository` methods return an `Iterable`.
 
+[IMPORTANT]
+====
+The repository interface implies a few reserved methods like `findById(ID identifier)` that always target the domain types identifier property regardless of its property name. Read more about this in "`xref:repositories/query-methods-details.adoc#repositories.query-methods.reserved-methods[Defining Query Methods]`".
+====
+
 NOTE: We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`.
 Those interfaces extend `CrudRepository` and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces such as `CrudRepository`.
 
