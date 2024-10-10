@@ -87,35 +87,45 @@ Whether ignoring cases is supported may vary by store, so consult the relevant s
 To create a query method that supports dynamic sorting, see "`xref:repositories/query-methods-details.adoc#repositories.special-parameters[Paging, Iterating Large Results, Sorting & Limiting]`".
 
 [[repositories.query-methods.reserved-methods]]
-== Reserved Methods
+== Reserved Method Names
 
-While repository methods typically bind to properties by name, there are a few exceptions to this rule when it comes to certain method names targeting the _identifier_ property. Those _reserved methods_ like `CrudRepository#findById` or just `findById` are targeting the _identifier_ property independent of the actual property name used in the declared method. +
-Consider the following domain type holding a property `pk` marked as the identifier via `@Id` and a property called `id`. In this case you need to pay close attention to the naming of your lookup methods as they may collide with predefined signatures.
+While derived repository methods bind to properties by name, there are a few exceptions to this rule when it comes to certain method names inherited from the base repository targeting the _identifier_ property.
+Those _reserved methods_ like `CrudRepository#findById` (or just `findById`) are targeting the _identifier_ property regardless of the actual property name used in the declared method.
+
+Consider the following domain type holding a property `pk` marked as the identifier via `@Id` and a property called `id`.
+In this case you need to pay close attention to the naming of your lookup methods as they may collide with predefined signatures:
 
 ====
 [source,java]
 ----
-public class User {
-  @Id
-  Long pk; <1>
-  Long id; <2>
-  // ...
+class User {
+  @Id Long pk;                          <1>
+
+  Long id;                              <2>
+
+  // …
 }
 
-public interface UserRepository extends Repository<User, Long> {
-  Optional<User> findById(Long id); <3>
-  Optional<User> findByPk(Long pk); <4>
+interface UserRepository extends Repository<User, Long> {
+
+  Optional<User> findById(Long id);     <3>
+
+  Optional<User> findByPk(Long pk);     <4>
+
   Optional<User> findUserById(Long id); <5>
 }
 ----
-<1> The identifier property / primary key.
-<2> A property called id, but not the identifying one.
-<3> Targets the `User#pk` property (the one marked with `@Id` which is considered to be the identifier) instead of `User#id` as the property name would suggest because it is one of the _reserved methods_.
-<4> Targets the `User#pk` property by name.
-<5> Targets the `User#id` property by using the descriptive token between `find` and `by` to avoid collisions with _reserved methods_.
+
+<1> The identifier property (primary key).
+<2> A property named `id`, but not the identifier.
+<3> Targets the `pk` property (the one marked with `@Id` which is considered to be the identifier) as it refers to a `CrudRepository` base repository method.
+Therefore, it is not a derived query using of `id` as the property name would suggest because it is one of the _reserved methods_.
+<4> Targets the `pk` property by name as it is a derived query.
+<5> Targets the `id` property by using the descriptive token between `find` and `by` to avoid collisions with _reserved methods_.
 ====
 
-This special behaviour not only targets lookup methods but also applies to the `exits` and `delete` ones. Please refer to the "`xref:repositories/query-keywords-reference.adoc#appendix.query.method.reserved[Repository query keywords]`" for the list of methods.
+This special behaviour not only targets lookup methods but also applies to the `exits` and `delete` ones.
+Please refer to the "`xref:repositories/query-keywords-reference.adoc#appendix.query.method.reserved[Repository query keywords]`" for the list of methods.
 
 [[repositories.query-methods.query-property-expressions]]
 == Property Expressions
