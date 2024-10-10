@@ -4,6 +4,18 @@
 The central interface in the Spring Data repository abstraction is `Repository`.
 It takes the domain class to manage as well as the identifier type of the domain class as type arguments.
 This interface acts primarily as a marker interface to capture the types to work with and to help you to discover interfaces that extend this one.
+
+[TIP]
+====
+Spring Data considers domain types to be entities, more specifically aggregates.
+So you will see the term "entity" used throughout the documentation that can be interchanged with the term "domain type" or "aggregate".
+
+As you might have noticed in the introduction it already hinted towards domain-driven concepts.
+We consider domain objects in the sense of DDD.
+Domain objects have identifiers (otherwise these would be identity-less value objects), and we somehow need to refer to identifiers when working with certain patterns to access data.
+Referring to identifiers will become more meaningful as we talk about repositories and query methods.
+====
+
 The {spring-data-commons-javadoc-base}/org/springframework/data/repository/CrudRepository.html[`CrudRepository`] and {spring-data-commons-javadoc-base}/org/springframework/data/repository/ListCrudRepository.html[`ListCrudRepository`] interfaces provide sophisticated CRUD functionality for the entity class that is being managed.
 
 [[repositories.repository]]
@@ -36,6 +48,15 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 
 The methods declared in this interface are commonly referred to as CRUD methods.
 `ListCrudRepository` offers equivalent methods, but they return `List` where the `CrudRepository` methods return an `Iterable`.
+
+[IMPORTANT]
+====
+The repository interface implies a few reserved methods like `findById(ID identifier)` that target the domain type identifier property regardless of its property name.
+Read more about this in "`xref:repositories/query-methods-details.adoc#repositories.query-methods.reserved-methods[Defining Query Methods]`".
+
+You can annotate your query method with `@Query` to provide a custom query if a property named `Id` doesn't refer to the identifier.
+Following that path can easily lead to confusion and is discouraged as you will quickly hit type limits if the `ID` type and the type of your `Id` property deviate.
+====
 
 NOTE: We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`.
 Those interfaces extend `CrudRepository` and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces such as `CrudRepository`.

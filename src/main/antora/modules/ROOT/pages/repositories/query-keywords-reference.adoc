@@ -21,6 +21,22 @@ Consult the store-specific documentation for the exact list of supported keyword
 |`…Distinct…`| Use a distinct query to return only unique results. Consult the store-specific documentation whether that feature is supported. This keyword can occur in any place of the subject between `find` (and the other keywords) and `by`.
 |===============
 
+[[appendix.query.method.reserved]]
+== Reserved methods
+
+The following table lists reserved methods that use predefined functionality (as defined in `CrudRepository`).
+These methods are directly invoked on the backing (store-specific) implementation of the repository proxy.
+See also "`xref:repositories/query-methods-details.adoc#repositories.query-methods.reserved-methods[Defining Query Methods]`".
+
+.Reserved methods
+|===============
+|`deleteAllById(Iterable<ID> identifiers)`
+|`deleteById(ID identifier)`
+|`existsById(ID identifier)`
+|`findAllById(Iterable<ID> identifiers)`
+|`findById(ID identifier)`
+|===============
+
 [[appendix.query.method.predicate]]
 == Supported query method predicate keywords and modifiers
 
