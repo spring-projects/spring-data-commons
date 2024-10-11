@@ -25,6 +25,9 @@ They provide a tooling-friendly approach and opt-in `null` checks during runtime
 
 Spring annotations are meta-annotated with https://jcp.org/en/jsr/detail?id=305[JSR 305] annotations (a dormant but widely used JSR).
 JSR 305 meta-annotations let tooling vendors (such as https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html[IDEA], https://help.eclipse.org/latest/index.jsp?topic=/org.eclipse.jdt.doc.user/tasks/task-using_external_null_annotations.htm[Eclipse], and link:https://kotlinlang.org/docs/reference/java-interop.html#null-safety-and-platform-types[Kotlin]) provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
+
+NOTE: Spring Data can evaluate link:https://jspecify.dev/[JSpecify] annotations to determine nullability rules.0 JSpecify is still in development and might experience slight changes.
+
 To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on the package level by using Spring’s `@NonNullApi` in `package-info.java`, as shown in the following example:
 
 .Declaring Non-nullability in `package-info.java`
