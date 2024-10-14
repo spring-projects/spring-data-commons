@@ -31,12 +31,15 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.log.LogMessage;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.RepositoryMethodContext;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
+import org.springframework.data.repository.core.support.DefaultRepositoryMethodContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -109,7 +112,13 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 
 	@Override
 	public void registerBeansForRoot(BeanDefinitionRegistry registry,
-			RepositoryConfigurationSource configurationSource) {}
+			RepositoryConfigurationSource configurationSource) {
+
+		// A proxy RepositoryMethodContext for dependency injection
+		registerIfNotAlreadyRegistered(
+				() -> new RootBeanDefinition(RepositoryMethodContext.class, DefaultRepositoryMethodContext::getInjectionProxy),
+				registry, "repositoryMethodContextFactory", configurationSource);
+	}
 
 	/**
 	 * Returns the prefix of the module to be used to create the default location for Spring Data named queries.
