@@ -17,18 +17,22 @@ package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
 
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.RepositoryMethodContext;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * Class containing value objects providing information about the current repository method invocation.
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Oliver Drotbohm
  * @since 3.4.0
  */
-class DefaultRepositoryMethodContext implements RepositoryMethodContext {
+public class DefaultRepositoryMethodContext implements RepositoryMethodContext {
 
 	/**
 	 * ThreadLocal holder for repository method associated with this thread. Will contain {@code null} unless the
@@ -46,8 +50,33 @@ class DefaultRepositoryMethodContext implements RepositoryMethodContext {
 		this.method = method;
 	}
 
+	/**
+	 * Creates a new {@link RepositoryMethodContext} for the given {@link Method}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	public static RepositoryMethodContext forMethod(Method method) {
+
+		Assert.notNull(method, "Method must not be null!");
+
+		return new DefaultRepositoryMethodContext(AbstractRepositoryMetadata.getMetadata(method.getDeclaringClass()),
+				method);
+	}
+
+	/**
+	 * Creates a proxy {@link RepositoryMethodContext} instance suitable for dependency injection.
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	public static RepositoryMethodContext getInjectionProxy() {
+
+		return ProxyFactory.getProxy(RepositoryMethodContext.class,
+				new DynamicLookupTargetSource<>(RepositoryMethodContext.class, () -> getInstance()));
+	}
+
 	@Nullable
-	static RepositoryMethodContext getMetadata() {
+	static RepositoryMethodContext getInstance() {
 		return currentMethod.get();
 	}
 
@@ -55,6 +84,7 @@ class DefaultRepositoryMethodContext implements RepositoryMethodContext {
 	static RepositoryMethodContext setMetadata(@Nullable RepositoryMethodContext metadata) {
 
 		RepositoryMethodContext old = currentMethod.get();
+
 		if (metadata != null) {
 			currentMethod.set(metadata);
 		} else {
@@ -65,7 +95,7 @@ class DefaultRepositoryMethodContext implements RepositoryMethodContext {
 	}
 
 	@Override
-	public RepositoryMetadata getRepository() {
+	public RepositoryMetadata getMetadata() {
 		return repositoryMetadata;
 	}
 
@@ -73,5 +103,4 @@ class DefaultRepositoryMethodContext implements RepositoryMethodContext {
 	public Method getMethod() {
 		return method;
 	}
-
 }

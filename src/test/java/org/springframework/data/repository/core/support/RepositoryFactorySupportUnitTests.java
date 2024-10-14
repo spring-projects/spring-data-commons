@@ -251,11 +251,10 @@ class RepositoryFactorySupportUnitTests {
 	@Test // GH-3090
 	void capturesRepositoryMetadata() {
 
-		record Metadata(RepositoryMethodContext context, MethodInvocation methodInvocation) {
-		}
+		record Metadata(RepositoryMethodContext context, MethodInvocation methodInvocation) {}
 
 		when(factory.queryOne.execute(any(Object[].class)))
-				.then(invocation -> new Metadata(RepositoryMethodContext.currentMethod(),
+				.then(invocation -> new Metadata(DefaultRepositoryMethodContext.getInstance(),
 						ExposeInvocationInterceptor.currentInvocation()));
 
 		factory.setExposeMetadata(true);
@@ -267,7 +266,7 @@ class RepositoryFactorySupportUnitTests {
 
 		Metadata metadata = (Metadata) metadataByLastname;
 		assertThat(metadata.context().getMethod().getName()).isEqualTo("findMetadataByLastname");
-		assertThat(metadata.context().getRepository().getDomainType()).isEqualTo(Object.class);
+		assertThat(metadata.context().getMetadata().getDomainType()).isEqualTo(Object.class);
 		assertThat(metadata.methodInvocation().getMethod().getName()).isEqualTo("findMetadataByLastname");
 	}
 

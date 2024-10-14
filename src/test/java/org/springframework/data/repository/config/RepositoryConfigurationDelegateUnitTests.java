@@ -28,7 +28,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -275,6 +274,24 @@ class RepositoryConfigurationDelegateUnitTests {
 		assertThat(it.getGenerics()).hasSize(2);
 		assertThat(it.getGeneric(0).resolve()).isEqualTo(MyAnnotatedRepository.class);
 		assertThat(it.getGeneric(1).resolve()).isEqualTo(Person.class);
+	}
+
+	@Test // GH-3175
+	void registersRepositoryMethodContextForInjection() {
+
+		var environment = new StandardEnvironment();
+		var context = new GenericApplicationContext();
+		context.registerBean("fragment", MyFragmentImpl.class);
+
+		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
+				context.getDefaultListableBeanFactory(), new AnnotationBeanNameGenerator());
+
+		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
+
+		delegate.registerRepositoriesIn(context, extension);
+
+		assertThat(context.containsBeanDefinition("repositoryMethodContextFactory")).isTrue();
 	}
 
 	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
