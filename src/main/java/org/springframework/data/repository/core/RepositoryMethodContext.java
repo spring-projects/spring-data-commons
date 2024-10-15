@@ -20,9 +20,9 @@ import java.lang.reflect.Method;
 /**
  * Interface containing methods and value objects to obtain information about the current repository method invocation.
  * <p>
- * The {@link #currentMethod()} method is usable if the repository factory is configured to expose the current
- * repository method metadata (not the default). It returns the invoked repository method. Target objects or advice can
- * use this to make advised calls.
+ * The {@link #getMetadata()} method is usable if the repository factory is configured to expose the current repository
+ * method metadata (not the default). It returns the invoked repository method. Target objects or advice can use this to
+ * make advised calls.
  * <p>
  * Spring Data's framework does not expose method metadata by default, as there is a performance cost in doing so.
  * <p>
@@ -50,7 +50,7 @@ public interface RepositoryMethodContext {
 	 * The method object represents the method as being invoked on the repository interface. It doesn't match the backing
 	 * repository implementation in case the method invocation is delegated to an implementation method.
 	 *
-	 * @return the current method, will never be {@literal null}..
+	 * @return the current method, will never be {@literal null}.
 	 */
 	Method getMethod();
 }

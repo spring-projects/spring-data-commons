@@ -57,6 +57,7 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.RepositoryMethodContext;
+import org.springframework.data.repository.core.RepositoryMethodContextHolder;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.DefaultRepositoryInvocationMulticaster;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
@@ -776,13 +777,13 @@ public abstract class RepositoryFactorySupport
 
 			try {
 
-				oldMetadata = DefaultRepositoryMethodContext
-						.setMetadata(new DefaultRepositoryMethodContext(repositoryMetadata, invocation.getMethod()));
+				oldMetadata = RepositoryMethodContextHolder
+						.setContext(new DefaultRepositoryMethodContext(repositoryMetadata, invocation.getMethod()));
 
 				return invocation.proceed();
 
 			} finally {
-				DefaultRepositoryMethodContext.setMetadata(oldMetadata);
+				RepositoryMethodContextHolder.setContext(oldMetadata);
 			}
 		}
 	}
