@@ -17,11 +17,8 @@ package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
 
-import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.core.NamedThreadLocal;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.RepositoryMethodContext;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -33,13 +30,6 @@ import org.springframework.util.Assert;
  * @since 3.4.0
  */
 public class DefaultRepositoryMethodContext implements RepositoryMethodContext {
-
-	/**
-	 * ThreadLocal holder for repository method associated with this thread. Will contain {@code null} unless the
-	 * "exposeMetadata" property on the controlling repository factory configuration has been set to "true".
-	 */
-	private static final ThreadLocal<RepositoryMethodContext> currentMethod = new NamedThreadLocal<>(
-			"Current Repository Method");
 
 	private final RepositoryMetadata repositoryMetadata;
 	private final Method method;
@@ -62,36 +52,6 @@ public class DefaultRepositoryMethodContext implements RepositoryMethodContext {
 
 		return new DefaultRepositoryMethodContext(AbstractRepositoryMetadata.getMetadata(method.getDeclaringClass()),
 				method);
-	}
-
-	/**
-	 * Creates a proxy {@link RepositoryMethodContext} instance suitable for dependency injection.
-	 *
-	 * @return will never be {@literal null}.
-	 */
-	public static RepositoryMethodContext getInjectionProxy() {
-
-		return ProxyFactory.getProxy(RepositoryMethodContext.class,
-				new DynamicLookupTargetSource<>(RepositoryMethodContext.class, () -> getInstance()));
-	}
-
-	@Nullable
-	static RepositoryMethodContext getInstance() {
-		return currentMethod.get();
-	}
-
-	@Nullable
-	static RepositoryMethodContext setMetadata(@Nullable RepositoryMethodContext metadata) {
-
-		RepositoryMethodContext old = currentMethod.get();
-
-		if (metadata != null) {
-			currentMethod.set(metadata);
-		} else {
-			currentMethod.remove();
-		}
-
-		return old;
 	}
 
 	@Override

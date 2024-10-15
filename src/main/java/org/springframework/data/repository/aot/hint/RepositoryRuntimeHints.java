@@ -18,11 +18,14 @@ package org.springframework.data.repository.aot.hint;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.springframework.aop.SpringProxy;
+import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.DecoratingProxy;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.data.domain.Example;
 import org.springframework.data.mapping.context.MappingContext;
@@ -99,5 +102,13 @@ class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
 		// annotated queries
 		hints.proxies().registerJdkProxy( //
 				TypeReference.of("org.springframework.data.annotation.QueryAnnotation"));
+
+		registerSpringProxy(TypeReference.of("org.springframework.data.repository.core.RepositoryMethodContext"), hints);
+	}
+
+	private static void registerSpringProxy(TypeReference type, RuntimeHints runtimeHints) {
+
+		runtimeHints.proxies().registerJdkProxy(type, TypeReference.of(SpringProxy.class),
+			TypeReference.of(Advised.class), TypeReference.of(DecoratingProxy.class));
 	}
 }
