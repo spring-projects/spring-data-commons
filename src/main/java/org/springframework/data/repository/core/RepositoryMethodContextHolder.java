@@ -19,74 +19,68 @@ import org.springframework.core.NamedThreadLocal;
 import org.springframework.lang.Nullable;
 
 /**
+ * Associates a given {@link RepositoryMethodContext} with the current execution thread.
+ * <p>
+ * This class provides a series of static methods that interact with a thread-local storage of
+ * {@link RepositoryMethodContext}. The purpose of the class is to provide a convenient way to be used for an
+ * application.
+ *
  * @author Christoph Strobl
- * @since 3.4.0
+ * @author Mark Paluch
+ * @since 3.4
+ * @see RepositoryMethodContext
  */
 public class RepositoryMethodContextHolder {
 
-	private static ContextProvider contextSupplier;
+	/**
+	 * ThreadLocal holder for repository method associated with this thread. Will contain {@code null} unless the
+	 * "exposeMetadata" property on the controlling repository factory configuration has been set to {@code true}.
+	 */
+	private static final ThreadLocal<RepositoryMethodContext> currentMethod = new NamedThreadLocal<>(
+			"Current Repository Method");
 
-	static {
-		contextSupplier = new ThreadLocalContextProvider();
-	}
-
+	/**
+	 * Make the given repository method metadata available via the {@link #getContext()} method.
+	 * <p>
+	 * Note that the caller should be careful to keep the old value as appropriate.
+	 *
+	 * @param context the metadata to expose (or {@code null} to reset it)
+	 * @return the old metadata, which may be {@code null} if none was bound
+	 * @see #getContext()
+	 */
 	@Nullable
 	public static RepositoryMethodContext setContext(@Nullable RepositoryMethodContext context) {
-		return contextSupplier.set(context);
-	}
 
-	@Nullable
-	public static RepositoryMethodContext current() {
-		return contextSupplier.get();
-	}
-
-	public static void clearContext() {
-		contextSupplier.clear();
-	}
-
-	interface ContextProvider {
-
-		@Nullable
-		RepositoryMethodContext get();
-
-		@Nullable
-		RepositoryMethodContext set(@Nullable RepositoryMethodContext context);
-
-		void clear();
-	}
-
-	static class ThreadLocalContextProvider implements ContextProvider {
-
-		/**
-		 * ThreadLocal holder for repository method associated with this thread. Will contain {@code null} unless the
-		 * "exposeMetadata" property on the controlling repository factory configuration has been set to "true".
-		 */
-		private static final ThreadLocal<RepositoryMethodContext> currentMethod = new NamedThreadLocal<>(
-				"Current Repository Method");
-
-		@Override
-		@Nullable
-		public RepositoryMethodContext get() {
-			return currentMethod.get();
-		}
-
-		public void clear() {
+		RepositoryMethodContext old = currentMethod.get();
+		if (context != null) {
+			currentMethod.set(context);
+		} else {
 			currentMethod.remove();
 		}
 
-		@Override
-		@Nullable
-		public RepositoryMethodContext set(@Nullable RepositoryMethodContext context) {
+		return old;
+	}
 
-			RepositoryMethodContext old = currentMethod.get();
+	/**
+	 * Try to return the current repository method metadata. This method is usable only if the calling method has been
+	 * invoked via a repository method, and the repository factory has been set to expose metadata. Otherwise, this method
+	 * will throw an IllegalStateException.
+	 *
+	 * @return the current repository method metadata (never returns {@code null})
+	 * @throws IllegalStateException if the repository method metadata cannot be found, because the method was invoked
+	 *           outside a repository method invocation context, or because the repository has not been configured to
+	 *           expose its metadata.
+	 */
+	public static RepositoryMethodContext getContext() {
 
-			if (context != null) {
-				currentMethod.set(context);
-			} else {
-				currentMethod.remove();
-			}
+		RepositoryMethodContext metadata = currentMethod.get();
 
-			return old;
+		if (metadata == null) {
+			throw new IllegalStateException(
+					"Cannot find current repository method: Set 'exposeMetadata' property on RepositoryFactorySupport to 'true' to make it available, and "
+							+ "ensure that RepositoryMethodContext.getContext() is invoked in the same thread as the repository invocation.");
 		}
+
+		return metadata;
 	}
 }

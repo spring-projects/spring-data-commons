@@ -121,7 +121,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * Default is "false", in order to avoid unnecessary extra interception. This means that no guarantees are provided
 	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
 	 *
-	 * @since 3.4.0
+	 * @since 3.4
 	 */
 	public void setExposeMetadata(boolean exposeMetadata) {
 		this.exposeMetadata = exposeMetadata;

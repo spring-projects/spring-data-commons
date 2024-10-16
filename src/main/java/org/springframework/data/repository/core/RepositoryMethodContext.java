@@ -33,9 +33,23 @@ import java.lang.reflect.Method;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Oliver Drotbohm
- * @since 3.4.0
+ * @since 3.4
  */
 public interface RepositoryMethodContext {
+
+	/**
+	 * Try to return the current repository method metadata. This method is usable only if the calling method has been
+	 * invoked via a repository method, and the repository factory has been set to expose metadata. Otherwise, this method
+	 * will throw an IllegalStateException.
+	 *
+	 * @return the current repository method metadata (never returns {@code null})
+	 * @throws IllegalStateException if the repository method metadata cannot be found, because the method was invoked
+	 *           outside a repository method invocation context, or because the repository has not been configured to
+	 *           expose its metadata.
+	 */
+	static RepositoryMethodContext getContext() throws IllegalStateException {
+		return RepositoryMethodContextHolder.getContext();
+	}
 
 	/**
 	 * Returns the metadata for the repository.
