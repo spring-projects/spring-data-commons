@@ -27,7 +27,7 @@ package org.springframework.data.repository.core.support;
  *
  * @author Mark Paluch
  * @since 3.4
- * @see RepositoryMethodContext
+ * @see org.springframework.data.repository.core.RepositoryMethodContext
  */
 public interface RepositoryMetadataAccess {
 

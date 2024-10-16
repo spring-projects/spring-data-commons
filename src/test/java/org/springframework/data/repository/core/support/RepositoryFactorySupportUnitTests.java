@@ -256,7 +256,7 @@ class RepositoryFactorySupportUnitTests {
 		record Metadata(RepositoryMethodContext context, MethodInvocation methodInvocation) {}
 
 		when(factory.queryOne.execute(any(Object[].class)))
-				.then(invocation -> new Metadata(RepositoryMethodContextHolder.current(),
+				.then(invocation -> new Metadata(RepositoryMethodContextHolder.getContext(),
 						ExposeInvocationInterceptor.currentInvocation()));
 
 		factory.setExposeMetadata(true);
@@ -279,7 +279,7 @@ class RepositoryFactorySupportUnitTests {
 		}
 
 		when(factory.queryOne.execute(any(Object[].class)))
-				.then(invocation -> new Metadata(RepositoryMethodContextHolder.current(),
+				.then(invocation -> new Metadata(RepositoryMethodContextHolder.getContext(),
 						ExposeInvocationInterceptor.currentInvocation()));
 
 		var repository = factory.getRepository(ObjectRepository.class, new RepositoryMetadataAccess() {});

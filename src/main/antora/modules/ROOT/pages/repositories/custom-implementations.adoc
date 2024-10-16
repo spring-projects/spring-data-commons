@@ -271,7 +271,7 @@ package com.acme.search;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Limit;
-import org.springframework.data.repository.core.support.RepositoryMethodContext;
+import org.springframework.data.repository.core.RepositoryMethodContext;
 
 class DefaultSearchExtension<T> implements SearchExtension<T> {
 
@@ -282,7 +282,7 @@ class DefaultSearchExtension<T> implements SearchExtension<T> {
     }
 
     public List<T> search(String text, Limit limit) {
-        return search(RepositoryMethodContext.currentMethod(), text, limit);
+        return search(RepositoryMethodContext.getContext(), text, limit);
     }
 
     List<T> search(RepositoryMethodContext metadata, String text, Limit limit) {
@@ -297,12 +297,12 @@ class DefaultSearchExtension<T> implements SearchExtension<T> {
 }
 ----
 
-In the example above `RepositoryMethodContext.currentMethod()` is used to retrieve metadata for the actual method invocation.
+In the example above `RepositoryMethodContext.getContext()` is used to retrieve metadata for the actual method invocation.
 `RepositoryMethodContext` exposes information attached to the repository such as the domain type.
 In this case we use the repository domain type to identify the name of the index to be searched.
 
 Exposing invocation metadata is costly, hence it is disabled by default.
-To access `RepositoryMethodContext.currentMethod()` you need to advise the repository factory responsible for creating the actual repository to expose method metadata.
+To access `RepositoryMethodContext.getContext()` you need to advise the repository factory responsible for creating the actual repository to expose method metadata.
 
 .Expose Repository Metadata
 [tabs]
@@ -319,7 +319,7 @@ package com.acme.search;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.repository.core.support.RepositoryMetadataAccess;
-import org.springframework.data.repository.core.support.RepositoryMethodContext;
+import org.springframework.data.repository.core.RepositoryMethodContext;
 
 class DefaultSearchExtension<T> implements SearchExtension<T>, RepositoryMetadataAccess {
 

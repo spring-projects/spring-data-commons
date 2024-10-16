@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Oliver Drotbohm
- * @since 3.4.0
+ * @since 3.4
  */
 public class DefaultRepositoryMethodContext implements RepositoryMethodContext {
 
