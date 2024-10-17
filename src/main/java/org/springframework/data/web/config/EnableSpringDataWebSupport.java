@@ -77,7 +77,7 @@ import org.springframework.util.ClassUtils;
 @Import({
 		EnableSpringDataWebSupport.SpringDataWebConfigurationImportSelector.class,
 		EnableSpringDataWebSupport.QuerydslActivator.class,
-		EnableSpringDataWebSupport.SpringDataWebSettingsRegistar.class
+		EnableSpringDataWebSupport.SpringDataWebSettingsRegistrar.class
 })
 public @interface EnableSpringDataWebSupport {
 
@@ -175,7 +175,7 @@ public @interface EnableSpringDataWebSupport {
 	 * @soundtrack Norah Jones - Chasing Pirates
 	 * @since 3.3
 	 */
-	static class SpringDataWebSettingsRegistar implements ImportBeanDefinitionRegistrar {
+	static class SpringDataWebSettingsRegistrar implements ImportBeanDefinitionRegistrar {
 
 		/*
 		 * (non-Javadoc)
