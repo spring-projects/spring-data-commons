@@ -119,7 +119,7 @@ public @interface EnableSpringDataWebSupport {
 	 * @author Oliver Gierke
 	 * @author Jens Schauder
 	 */
-	static class SpringDataWebConfigurationImportSelector implements ImportSelector, ResourceLoaderAware {
+	class SpringDataWebConfigurationImportSelector implements ImportSelector, ResourceLoaderAware {
 
 		private Optional<ClassLoader> resourceLoader = Optional.empty();
 
@@ -157,7 +157,7 @@ public @interface EnableSpringDataWebSupport {
 	 * @soundtrack Anika Nilles - Chary Life
 	 * @since 1.11
 	 */
-	static class QuerydslActivator implements ImportSelector {
+	class QuerydslActivator implements ImportSelector {
 
 		@Override
 		public String[] selectImports(AnnotationMetadata importingClassMetadata) {
@@ -175,7 +175,7 @@ public @interface EnableSpringDataWebSupport {
 	 * @soundtrack Norah Jones - Chasing Pirates
 	 * @since 3.3
 	 */
-	static class SpringDataWebSettingsRegistrar implements ImportBeanDefinitionRegistrar {
+	class SpringDataWebSettingsRegistrar implements ImportBeanDefinitionRegistrar {
 
 		/*
 		 * (non-Javadoc)
