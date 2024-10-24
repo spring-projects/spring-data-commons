@@ -21,6 +21,7 @@ package org.springframework.data.repository
  * @param id the entity id.
  * @return the entity with the given id or `null` if none found
  * @author Sebastien Deleuze
+ * @author Oscar Hernandez
  * @since 2.1.4
  */
 fun <T, ID: Any> CrudRepository<T, ID>.findByIdOrNull(id: ID): T? = findById(id).orElse(null)
