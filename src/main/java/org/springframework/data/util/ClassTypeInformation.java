@@ -31,14 +31,18 @@ import org.springframework.util.ConcurrentLruCache;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @deprecated since 3.0 to go package protected at some point. Refer to {@link TypeInformation} only.
  */
 @Deprecated(since = "3.0", forRemoval = true)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
-	private static final ConcurrentLruCache<ResolvableType, ClassTypeInformation<?>> cache = new ConcurrentLruCache<>(64,
+	private static final ConcurrentLruCache<ResolvableType, ClassTypeInformation<?>> cache = new ConcurrentLruCache<>(128,
 			ClassTypeInformation::new);
+
+	private static final ConcurrentLruCache<Class<?>, ResolvableType> resolvableTypeCache = new ConcurrentLruCache<>(128,
+			ResolvableType::forClass);
 
 	public static final ClassTypeInformation<Collection> COLLECTION;
 	public static final ClassTypeInformation<List> LIST;
@@ -48,11 +52,11 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	static {
 
-		OBJECT = (ClassTypeInformation<Object>) cache.get(ResolvableType.forClass(Object.class));
-		COLLECTION = (ClassTypeInformation<Collection>) cache.get(ResolvableType.forClass(Collection.class));
-		LIST = (ClassTypeInformation<List>) cache.get(ResolvableType.forClass(List.class));
-		SET = (ClassTypeInformation<Set>) cache.get(ResolvableType.forClass(Set.class));
-		MAP = (ClassTypeInformation<Map>) cache.get(ResolvableType.forClass(Map.class));
+		OBJECT = from(Object.class);
+		COLLECTION = from(Collection.class);
+		LIST = from(List.class);
+		SET = from(Set.class);
+		MAP = from(Map.class);
 	}
 
 	private final Class<S> type;
@@ -70,7 +74,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 */
 	@Deprecated
 	public static <S> ClassTypeInformation<S> from(Class<S> type) {
-		return from(ResolvableType.forClass(type));
+		return from(resolvableTypeCache.get(type));
 	}
 
 	static <S> ClassTypeInformation<S> from(ResolvableType type) {
