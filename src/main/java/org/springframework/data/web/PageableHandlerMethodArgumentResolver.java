@@ -26,8 +26,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
  * Extracts paging information from web requests and thus allows injecting {@link Pageable} instances into controller
- * methods. Request properties to be parsed can be configured. Default configuration uses request parameters beginning
- * with {@link #DEFAULT_PAGE_PARAMETER}{@link #DEFAULT_QUALIFIER_DELIMITER}.
+ * methods. Request properties to be parsed can be configured.
  *
  * @author Oliver Gierke
  * @author Nick Williams
