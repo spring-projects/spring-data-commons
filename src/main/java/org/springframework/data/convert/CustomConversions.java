@@ -16,23 +16,14 @@
 package org.springframework.data.convert;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.Converter;
@@ -119,7 +110,7 @@ public class CustomConversions {
 	private final Function<ConvertiblePair, Class<?>> getRawWriteTarget = convertiblePair -> getCustomTarget(
 			convertiblePair.getSourceType(), null, writingPairs);
 
-	@Nullable private final PropertyValueConversions propertyValueConversions;
+	private final @Nullable PropertyValueConversions propertyValueConversions;
 
 	/**
 	 * @param converterConfiguration the {@link ConverterConfiguration} to apply.
@@ -506,7 +497,7 @@ public class CustomConversions {
 	 */
 	static class ConversionTargetsCache {
 
-		private final Map<Class<?>, TargetTypes> customReadTargetTypes = new ConcurrentHashMap<>();
+		private Map<Class<?>, TargetTypes> customReadTargetTypes = new HashMap<>();
 
 		/**
 		 * Get or compute a target type given its {@code sourceType}. Returns a cached {@link Optional} if the value
@@ -536,7 +527,15 @@ public class CustomConversions {
 		public Class<?> computeIfAbsent(Class<?> sourceType, Class<?> targetType,
 				Function<ConvertiblePair, Class<?>> mappingFunction) {
 
-			TargetTypes targetTypes = customReadTargetTypes.computeIfAbsent(sourceType, TargetTypes::new);
+			TargetTypes targetTypes = customReadTargetTypes.get(sourceType);
+
+			if (targetTypes == null) {
+
+				Map<Class<?>, TargetTypes> customReadTargetTypes = new HashMap<>(this.customReadTargetTypes);
+				targetTypes = new TargetTypes(sourceType);
+				customReadTargetTypes.put(sourceType, targetTypes);
+				this.customReadTargetTypes = customReadTargetTypes;
+			}
 
 			return targetTypes.computeIfAbsent(targetType, mappingFunction);
 		}
@@ -555,7 +554,7 @@ public class CustomConversions {
 	static class TargetTypes {
 
 		private final Class<?> sourceType;
-		private final Map<Class<?>, Class<?>> conversionTargets = new ConcurrentHashMap<>();
+		private Map<Class<?>, Class<?>> conversionTargets = new HashMap<>();
 
 		TargetTypes(Class<?> sourceType) {
 			this.sourceType = sourceType;
@@ -576,8 +575,12 @@ public class CustomConversions {
 			Class<?> optionalTarget = conversionTargets.get(targetType);
 
 			if (optionalTarget == null) {
+
 				optionalTarget = mappingFunction.apply(new ConvertiblePair(sourceType, targetType));
+
+				Map<Class<?>, Class<?>> conversionTargets = new HashMap<>(this.conversionTargets);
 				conversionTargets.put(targetType, optionalTarget == null ? Void.class : optionalTarget);
+				this.conversionTargets = conversionTargets;
 			}
 
 			return Void.class.equals(optionalTarget) ? null : optionalTarget;
@@ -585,8 +588,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Value class tying together a {@link ConverterRegistration} and its {@link ConverterOrigin origin} to allow fine
-	 * grained registration based on store supported types.
+	 * Value class tying together a {@link ConverterRegistration} and its {@link ConverterOrigin origin} to allow
+	 * fine-grained registration based on store supported types.
 	 *
 	 * @since 2.3
 	 * @author Christoph Strobl

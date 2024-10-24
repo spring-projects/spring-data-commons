@@ -17,9 +17,9 @@ package org.springframework.data.mapping;
 
 import java.lang.reflect.Executable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.util.Assert;
 
@@ -35,7 +35,7 @@ class InstanceCreatorMetadataSupport<T, P extends PersistentProperty<P>> impleme
 
 	private final Executable executable;
 	private final List<Parameter<Object, P>> parameters;
-	private final Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new ConcurrentHashMap<>();
+	private Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new HashMap<>();
 
 	/**
 	 * Creates a new {@link InstanceCreatorMetadataSupport} from the given {@link Executable} and {@link Parameter}s.
@@ -96,7 +96,9 @@ class InstanceCreatorMetadataSupport<T, P extends PersistentProperty<P>> impleme
 
 		boolean result = doGetIsCreatorParameter(property);
 
+		Map<PersistentProperty<?>, Boolean> isPropertyParameterCache = new HashMap<>(this.isPropertyParameterCache);
 		isPropertyParameterCache.put(property, result);
+		this.isPropertyParameterCache = isPropertyParameterCache;
 
 		return result;
 	}

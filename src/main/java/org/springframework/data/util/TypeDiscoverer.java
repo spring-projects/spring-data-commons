@@ -55,6 +55,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private final ResolvableType resolvableType;
 	private final Map<String, Optional<TypeInformation<?>>> fields = new ConcurrentHashMap<>();
+	private final Lazy<Boolean> isMap = Lazy.of(() -> CustomCollections.isMap(getType()));
+	private final Lazy<Boolean> isCollectionLike = Lazy.of(() -> {
+
+		Class<S> type = getType();
+
+		return type.isArray() //
+				|| Iterable.class.equals(type) //
+				|| Collection.class.isAssignableFrom(type) //
+				|| Streamable.class.isAssignableFrom(type) || CustomCollections.isCollection(type);
+	});
 	private final Lazy<TypeInformation<?>> componentType;
 	private final Lazy<TypeInformation<?>> valueType;
 	private final Map<Constructor<?>, List<TypeInformation<?>>> constructorParameters = new ConcurrentHashMap<>();
@@ -125,10 +135,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Class<S> type = getType();
 
-		return type.isArray() //
-				|| Iterable.class.equals(type) //
-				|| Collection.class.isAssignableFrom(type) //
-				|| Streamable.class.isAssignableFrom(type) || CustomCollections.isCollection(type);
+		return isCollectionLike.get();
 	}
 
 	@Nullable
@@ -169,7 +176,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	@Override
 	public boolean isMap() {
-		return CustomCollections.isMap(getType());
+		return isMap.get();
 	}
 
 	@Nullable
