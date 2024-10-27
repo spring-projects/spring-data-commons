@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link PropertyValueConversions} implementation allowing a {@link PropertyValueConverterFactory} creating
- * {@link PropertyValueConverter converters} to be chosen. Activating {@link #setConverterCacheEnabled(boolean) cahing}
+ * {@link PropertyValueConverter converters} to be chosen. Activating {@link #setConverterCacheEnabled(boolean) caching}
  * allows converters to be reused.
  * <p>
  * Providing a {@link SimplePropertyValueConverterRegistry} adds path configured converter instances.
