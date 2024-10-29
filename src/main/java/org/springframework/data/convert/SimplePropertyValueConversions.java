@@ -53,7 +53,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 
 	private @Nullable ValueConverterRegistry<?> valueConverterRegistry;
 
-	private Map<PersistentProperty<?>, PropertyValueConverter<?, ?, ?>> converterCache = new HashMap<>();
+	private volatile Map<PersistentProperty<?>, PropertyValueConverter<?, ?, ?>> converterCache = new HashMap<>();
 
 	@SuppressWarnings("rawtypes")
 	enum NoOpConverter implements PropertyValueConverter {
@@ -171,17 +171,21 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 
 		if (converter == null) {
 
-			converter = requireConverterFactory().getConverter(property);
+			synchronized (this) {
 
-			Map<PersistentProperty<?>, PropertyValueConverter<?, ?, ?>> converterCache = new HashMap<>(this.converterCache);
+				PropertyValueConverter<?, ?, ?> fromCache = converterCache.get(property);
+				if (fromCache != null) {
+					converter = fromCache;
+				} else {
 
-			if (converter == null) {
-				converterCache.put(property, NoOpConverter.INSTANCE);
-			} else {
-				converterCache.put(property, converter);
+					converter = requireConverterFactory().getConverter(property);
+
+					Map<PersistentProperty<?>, PropertyValueConverter<?, ?, ?>> converterCache = new HashMap<>(
+							this.converterCache);
+					converterCache.put(property, converter != null ? converter : NoOpConverter.INSTANCE);
+					this.converterCache = converterCache;
+				}
 			}
-
-			this.converterCache = converterCache;
 		}
 
 		if (converter == NoOpConverter.INSTANCE) {

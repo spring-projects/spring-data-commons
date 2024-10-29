@@ -497,7 +497,7 @@ public class CustomConversions {
 	 */
 	static class ConversionTargetsCache {
 
-		private Map<Class<?>, TargetTypes> customReadTargetTypes = new HashMap<>();
+		private volatile Map<Class<?>, TargetTypes> customReadTargetTypes = new HashMap<>();
 
 		/**
 		 * Get or compute a target type given its {@code sourceType}. Returns a cached {@link Optional} if the value
@@ -531,10 +531,19 @@ public class CustomConversions {
 
 			if (targetTypes == null) {
 
-				Map<Class<?>, TargetTypes> customReadTargetTypes = new HashMap<>(this.customReadTargetTypes);
-				targetTypes = new TargetTypes(sourceType);
-				customReadTargetTypes.put(sourceType, targetTypes);
-				this.customReadTargetTypes = customReadTargetTypes;
+				synchronized (this) {
+
+					TargetTypes customReadTarget = customReadTargetTypes.get(sourceType);
+					if (customReadTarget != null) {
+						targetTypes = customReadTarget;
+					} else {
+
+						Map<Class<?>, TargetTypes> customReadTargetTypes = new HashMap<>(this.customReadTargetTypes);
+						targetTypes = new TargetTypes(sourceType);
+						customReadTargetTypes.put(sourceType, targetTypes);
+						this.customReadTargetTypes = customReadTargetTypes;
+					}
+				}
 			}
 
 			return targetTypes.computeIfAbsent(targetType, mappingFunction);
@@ -554,7 +563,7 @@ public class CustomConversions {
 	static class TargetTypes {
 
 		private final Class<?> sourceType;
-		private Map<Class<?>, Class<?>> conversionTargets = new HashMap<>();
+		private volatile Map<Class<?>, Class<?>> conversionTargets = new HashMap<>();
 
 		TargetTypes(Class<?> sourceType) {
 			this.sourceType = sourceType;
@@ -576,11 +585,19 @@ public class CustomConversions {
 
 			if (optionalTarget == null) {
 
-				optionalTarget = mappingFunction.apply(new ConvertiblePair(sourceType, targetType));
+				synchronized (this) {
 
-				Map<Class<?>, Class<?>> conversionTargets = new HashMap<>(this.conversionTargets);
-				conversionTargets.put(targetType, optionalTarget == null ? Void.class : optionalTarget);
-				this.conversionTargets = conversionTargets;
+					Class<?> conversionTarget = conversionTargets.get(targetType);
+					if (conversionTarget != null) {
+						optionalTarget = conversionTarget;
+					} else {
+
+						optionalTarget = mappingFunction.apply(new ConvertiblePair(sourceType, targetType));
+						Map<Class<?>, Class<?>> conversionTargets = new HashMap<>(this.conversionTargets);
+						conversionTargets.put(targetType, optionalTarget == null ? Void.class : optionalTarget);
+						this.conversionTargets = conversionTargets;
+					}
+				}
 			}
 
 			return Void.class.equals(optionalTarget) ? null : optionalTarget;
