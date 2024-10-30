@@ -36,6 +36,7 @@ import com.google.common.base.Optional;
  * @author Mark Paluch
  * @author Maciek Opała
  */
+@SuppressWarnings("removal")
 class NullableWrapperConvertersUnitTests {
 
 	DefaultConversionService conversionService;

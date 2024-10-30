@@ -606,6 +606,7 @@ class RepositoryFactorySupportUnitTests {
 
 	}
 
+	@SuppressWarnings("removal")
 	interface ConvertingRepository extends Repository<Object, Long> {
 
 		Set<String> convertListToStringSet();

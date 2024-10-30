@@ -57,6 +57,7 @@ import com.google.common.base.Optional;
  * @author Maciek Opała
  * @author Johannes Englmeier
  */
+@SuppressWarnings("removal")
 class QueryExecutionConvertersUnitTests {
 
 	DefaultConversionService conversionService;

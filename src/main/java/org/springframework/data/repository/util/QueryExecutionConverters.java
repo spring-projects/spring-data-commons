@@ -74,6 +74,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @since 1.8
  * @see NullableWrapperConverters
  */
+@SuppressWarnings("removal")
 public abstract class QueryExecutionConverters {
 
 	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Try",
@@ -361,7 +362,8 @@ public abstract class QueryExecutionConverters {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@Deprecated(since = "3.0")
+	@Deprecated(since = "3.0", forRemoval = true)
+	@SuppressWarnings("removal")
 	private static class NullableWrapperToFutureConverter extends AbstractWrapperTypeConverter {
 
 		/**
