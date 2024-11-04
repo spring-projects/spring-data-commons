@@ -15,8 +15,11 @@
  */
 package org.springframework.data.geo;
 
+import java.io.Serial;
+
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Represents a geospatial box value
@@ -28,7 +31,7 @@ import org.springframework.util.Assert;
  */
 public class Box implements Shape {
 
-	private static final long serialVersionUID = 8198095179084040711L;
+	private static final @Serial long serialVersionUID = 8198095179084040711L;
 
 	private final Point first;
 	private final Point second;
@@ -66,7 +69,7 @@ public class Box implements Shape {
 	/**
 	 * Returns the first {@link Point} making up the {@link Box}.
 	 *
-	 * @return
+	 * @return the first {@link Point} making up the {@link Box}.
 	 */
 	public Point getFirst() {
 		return first;
@@ -75,26 +78,15 @@ public class Box implements Shape {
 	/**
 	 * Returns the second {@link Point} making up the {@link Box}.
 	 *
-	 * @return
+	 * @return the second {@link Point} making up the {@link Box}.
 	 */
 	public Point getSecond() {
 		return second;
 	}
 
 	@Override
-	public String toString() {
-		return String.format("Box [%s, %s]", first, second);
-	}
-
-	@Override
 	public int hashCode() {
-
-		int result = 31;
-
-		result += 17 * first.hashCode();
-		result += 17 * second.hashCode();
-
-		return result;
+		return ObjectUtils.nullSafeHash(first, second);
 	}
 
 	@Override
@@ -109,5 +101,10 @@ public class Box implements Shape {
 		}
 
 		return this.first.equals(that.first) && this.second.equals(that.second);
+	}
+
+	@Override
+	public String toString() {
+		return String.format("Box [%s, %s]", first, second);
 	}
 }

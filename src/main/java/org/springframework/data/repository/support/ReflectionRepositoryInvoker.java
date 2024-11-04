@@ -31,6 +31,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -194,6 +195,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	}
 
 	@Nullable
+	@Contract("null, _ -> null")
 	private Object convert(@Nullable Object value, MethodParameter parameter) {
 
 		if (value == null) {

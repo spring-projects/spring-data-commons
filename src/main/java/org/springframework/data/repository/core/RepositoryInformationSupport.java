@@ -162,7 +162,7 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 		return metadata.get();
 	}
 
-	private final DefaultQueryMethods calculateQueryMethods() {
+	private DefaultQueryMethods calculateQueryMethods() {
 
 		Class<?> repositoryInterface = getRepositoryInterface();
 
@@ -172,7 +172,7 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 				.toList()), calculateHasCustomMethod(repositoryInterface));
 	}
 
-	private final boolean calculateHasCustomMethod(Class<?> repositoryInterface) {
+	private boolean calculateHasCustomMethod(Class<?> repositoryInterface) {
 
 		// No detection required if no typing interface was configured
 		if (isGenericRepositoryInterface(repositoryInterface)) {

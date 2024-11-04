@@ -179,7 +179,7 @@ abstract class BytecodeUtil {
 	 * Returns the signature type for a {@link Class} including primitives.
 	 *
 	 * @param type must not be {@literal null}
-	 * @return
+	 * @return bytecode type name in the form of {@literal Ljava/lang/Object;}.
 	 */
 	static String signatureTypeName(Class<?> type) {
 

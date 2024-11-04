@@ -51,6 +51,7 @@ public class NamedQueriesBeanDefinitionParser implements BeanDefinitionParser {
 		this.defaultLocation = defaultLocation;
 	}
 
+	@Override
 	@NonNull
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
 

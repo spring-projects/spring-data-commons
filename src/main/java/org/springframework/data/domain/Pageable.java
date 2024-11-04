@@ -17,6 +17,8 @@ package org.springframework.data.domain;
 
 import java.util.Optional;
 
+import org.springframework.lang.CheckReturnValue;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 /**
@@ -30,8 +32,6 @@ public interface Pageable {
 
 	/**
 	 * Returns a {@link Pageable} instance representing no pagination setup.
-	 *
-	 * @return
 	 */
 	static Pageable unpaged() {
 		return unpaged(Sort.unsorted());
@@ -41,7 +41,8 @@ public interface Pageable {
 	 * Returns a {@link Pageable} instance representing no pagination setup having a defined result {@link Sort order}.
 	 *
 	 * @param sort must not be {@literal null}, use {@link Sort#unsorted()} if needed.
-	 * @return never {@literal null}.
+	 * @return an unpaged {@link Pageable} instance representing no pagination setup considering the given {@link Sort}
+	 *         order.
 	 * @since 3.2
 	 */
 	static Pageable unpaged(Sort sort) {
@@ -62,7 +63,7 @@ public interface Pageable {
 	/**
 	 * Returns whether the current {@link Pageable} contains pagination information.
 	 *
-	 * @return
+	 * @return {@literal true} if the current {@link Pageable} contains pagination information.
 	 */
 	default boolean isPaged() {
 		return true;
@@ -71,7 +72,7 @@ public interface Pageable {
 	/**
 	 * Returns whether the current {@link Pageable} does not contain pagination information.
 	 *
-	 * @return
+	 * @return {@literal true} if the current {@link Pageable} does not contain pagination information.
 	 */
 	default boolean isUnpaged() {
 		return !isPaged();
@@ -107,7 +108,7 @@ public interface Pageable {
 	/**
 	 * Returns the sorting parameters.
 	 *
-	 * @return
+	 * @return the sorting order.
 	 */
 	Sort getSort();
 
@@ -115,7 +116,7 @@ public interface Pageable {
 	 * Returns the current {@link Sort} or the given one if the current one is unsorted.
 	 *
 	 * @param sort must not be {@literal null}.
-	 * @return
+	 * @return the current {@link Sort} or the {@code sort} one if the current one is unsorted.
 	 */
 	default Sort getSortOr(Sort sort) {
 
@@ -127,47 +128,55 @@ public interface Pageable {
 	/**
 	 * Returns the {@link Pageable} requesting the next {@link Page}.
 	 *
-	 * @return
+	 * @return the {@link Pageable} requesting the next {@link Page}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	Pageable next();
 
 	/**
 	 * Returns the previous {@link Pageable} or the first {@link Pageable} if the current one already is the first one.
 	 *
-	 * @return
+	 * @return the previous {@link Pageable} or the first {@link Pageable} if the current one already is the first one.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	Pageable previousOrFirst();
 
 	/**
 	 * Returns the {@link Pageable} requesting the first page.
 	 *
-	 * @return
+	 * @return the {@link Pageable} requesting the first page.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	Pageable first();
 
 	/**
 	 * Creates a new {@link Pageable} with {@code pageNumber} applied.
 	 *
-	 * @param pageNumber
+	 * @param pageNumber the page numbe, zero-based.
 	 * @return a new {@link PageRequest} or throws {@link UnsupportedOperationException} if the object is
 	 *         {@link #isUnpaged()} and the {@code pageNumber} is not zero.
 	 * @since 2.5
 	 * @throws UnsupportedOperationException if the object is {@link #isUnpaged()}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	Pageable withPage(int pageNumber);
 
 	/**
 	 * Returns whether there's a previous {@link Pageable} we can access from the current one. Will return
 	 * {@literal false} in case the current {@link Pageable} already refers to the first page.
 	 *
-	 * @return
+	 * @return {@literal true} if there's a previous {@link Pageable} we can access from the current one.
 	 */
 	boolean hasPrevious();
 
 	/**
 	 * Returns an {@link Optional} so that it can easily be mapped on.
 	 *
-	 * @return
+	 * @return an {@link Optional} so that it can easily be mapped on.
 	 */
 	default Optional<Pageable> toOptional() {
 		return isUnpaged() ? Optional.empty() : Optional.of(this);
@@ -177,7 +186,7 @@ public interface Pageable {
 	 * Returns an {@link Limit} from this pageable if the page request {@link #isPaged() is paged} or
 	 * {@link Limit#unlimited()} otherwise.
 	 *
-	 * @return
+	 * @return a {@link Limit} object based on the current page size.
 	 * @since 3.2
 	 */
 	default Limit toLimit() {
@@ -193,7 +202,7 @@ public interface Pageable {
 	 * Returns an {@link OffsetScrollPosition} from this pageable if the page request {@link #isPaged() is paged}.
 	 * <p>
 	 * Given the exclusive nature of scrolling the {@link ScrollPosition} for {@code Page(0, 10)} translates an
-	 * {@link ScrollPosition#isInitial() initial} position, where as {@code Page(1, 10)} will point to the last element of
+	 * {@link ScrollPosition#isInitial() initial} position, whereas {@code Page(1, 10)} will point to the last element of
 	 * {@code Page(0,10)} resulting in {@link ScrollPosition#offset(long) ScrollPosition(9)}.
 	 *
 	 * @return new instance of {@link OffsetScrollPosition}.

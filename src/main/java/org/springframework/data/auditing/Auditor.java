@@ -28,7 +28,7 @@ import org.springframework.util.ObjectUtils;
  */
 class Auditor<T> {
 
-	private static final Auditor NONE = new Auditor(null) {
+	private static final Auditor<Object> NONE = new Auditor<>(null) {
 
 		@Override
 		public boolean isPresent() {
@@ -59,6 +59,7 @@ class Auditor<T> {
 	 * @param <T>
 	 * @return {@link Auditor#none()} if the given {@literal source} is {@literal null}. }
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <T> Auditor<T> of(@Nullable T source) {
 
 		if (source instanceof Auditor) {
@@ -77,7 +78,7 @@ class Auditor<T> {
 	 * @param <T>
 	 * @return {@link Auditor#none()} if the given {@literal source} is {@literal null}. }
 	 */
-	public static <T> Auditor<T> ofOptional(@Nullable Optional<T> source) {
+	public static <T> Auditor<T> ofOptional(Optional<T> source) {
 		return Auditor.of(source.orElse(null));
 	}
 
@@ -87,8 +88,9 @@ class Auditor<T> {
 	 * @param <T>
 	 * @return never {@literal null}.
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T> Auditor<T> none() {
-		return NONE;
+		return (Auditor<T>) NONE;
 	}
 
 	/**

@@ -15,10 +15,13 @@
  */
 package org.springframework.data.geo;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Range.Bound;
+import org.springframework.lang.CheckReturnValue;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -32,7 +35,7 @@ import org.springframework.util.ObjectUtils;
  */
 public final class Distance implements Serializable, Comparable<Distance> {
 
-	private static final long serialVersionUID = 2460886201934027744L;
+	private static final @Serial long serialVersionUID = 2460886201934027744L;
 
 	/**
 	 * The distance value in the current {@link Metric}.
@@ -47,7 +50,7 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	/**
 	 * Creates a new {@link Distance} with a neutral metric. This means the provided value needs to be in normalized form.
 	 *
-	 * @param value
+	 * @param value distance value.
 	 */
 	public Distance(double value) {
 		this(value, Metrics.NEUTRAL);
@@ -81,11 +84,11 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	/**
 	 * Creates a new {@link Range} by creating minimum and maximum {@link Distance} from the given values.
 	 *
-	 * @param minValue
+	 * @param minValue minimum value.
 	 * @param minMetric can be {@literal null}.
-	 * @param maxValue
+	 * @param maxValue maximum value.
 	 * @param maxMetric can be {@literal null}.
-	 * @return
+	 * @return the {@link Range} between the given values.
 	 */
 	public static Range<Distance> between(double minValue, Metric minMetric, double maxValue, Metric maxMetric) {
 		return between(new Distance(minValue, minMetric), new Distance(maxValue, maxMetric));
@@ -94,7 +97,7 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	/**
 	 * Returns the normalized value regarding the underlying {@link Metric}.
 	 *
-	 * @return
+	 * @return the normalized value.
 	 */
 	public double getNormalizedValue() {
 		return value / metric.getMultiplier();
@@ -115,8 +118,10 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	 * current one.
 	 *
 	 * @param other must not be {@literal null}.
-	 * @return
+	 * @return sum of this and the other distance.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public Distance add(Distance other) {
 
 		Assert.notNull(other, "Distance to add must not be null");
@@ -131,8 +136,9 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	 *
 	 * @param other must not be {@literal null}.
 	 * @param metric must not be {@literal null}.
-	 * @return
+	 * @return sum of this and the other distance.
 	 */
+	@Contract("_, _ -> new")
 	public Distance add(Distance other, Metric metric) {
 
 		Assert.notNull(other, "Distance to must not be null");
@@ -149,8 +155,10 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	 * same normalized value as the original instance.
 	 *
 	 * @param metric must not be {@literal null}.
-	 * @return
+	 * @return the converted {@link Distance}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public Distance in(Metric metric) {
 
 		Assert.notNull(metric, "Metric must not be null");
@@ -170,19 +178,6 @@ public final class Distance implements Serializable, Comparable<Distance> {
 		return difference == 0 ? 0 : difference > 0 ? 1 : -1;
 	}
 
-	@Override
-	public String toString() {
-
-		StringBuilder builder = new StringBuilder();
-		builder.append(value);
-
-		if (metric != Metrics.NEUTRAL) {
-			builder.append(" ").append(metric.toString());
-		}
-
-		return builder.toString();
-	}
-
 	public double getValue() {
 		return this.value;
 	}
@@ -192,7 +187,7 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;
@@ -205,16 +200,25 @@ public final class Distance implements Serializable, Comparable<Distance> {
 		if (value != distance.value) {
 			return false;
 		}
+
 		return ObjectUtils.nullSafeEquals(metric, distance.metric);
 	}
 
 	@Override
 	public int hashCode() {
-		int result;
-		long temp;
-		temp = Double.doubleToLongBits(value);
-		result = (int) (temp ^ (temp >>> 32));
-		result = 31 * result + ObjectUtils.nullSafeHashCode(metric);
-		return result;
+		return ObjectUtils.nullSafeHash(value, metric);
+	}
+
+	@Override
+	public String toString() {
+
+		StringBuilder builder = new StringBuilder();
+		builder.append(value);
+
+		if (metric != Metrics.NEUTRAL) {
+			builder.append(" ").append(metric.toString());
+		}
+
+		return builder.toString();
 	}
 }

@@ -29,6 +29,7 @@ import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueH
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.data.domain.ManagedTypes;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -44,10 +45,11 @@ import org.springframework.util.ObjectUtils;
  */
 public class ManagedTypesBeanFactoryInitializationAotProcessor implements BeanFactoryInitializationAotProcessor {
 
-	private static final Log logger = LogFactory.getLog(BeanFactoryInitializationAotProcessor.class);
+	private static final Log logger = LogFactory.getLog(ManagedTypesBeanFactoryInitializationAotProcessor.class);
 
-	@Nullable
 	@Override
+	@Nullable
+	@Contract("_ -> null")
 	public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
 
 		processManagedTypes(beanFactory);
@@ -71,9 +73,9 @@ public class ManagedTypesBeanFactoryInitializationAotProcessor implements BeanFa
 
 		if (hasConstructorArguments(beanDefinition)) {
 
-			ValueHolder argumentValue = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, null, null, null);
+			ValueHolder holder = beanDefinition.getConstructorArgumentValues().getArgumentValue(0, null, null, null);
 
-			if (argumentValue.getValue()instanceof Supplier supplier) {
+			if (holder != null && holder.getValue() instanceof Supplier<?> supplier) {
 
 				if (logger.isDebugEnabled()) {
 					logger.info(String.format("Replacing ManagedType bean definition %s.", beanName));

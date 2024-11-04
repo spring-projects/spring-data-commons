@@ -35,6 +35,8 @@ import org.springframework.data.repository.core.support.RepositoryInvocationMult
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.CheckReturnValue;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -126,7 +128,7 @@ public class RepositoryComposition {
 
 	/**
 	 * Create an {@link RepositoryComposition} using the provided {@link RepositoryMetadata} to set {@link MethodLookup
-	 * method lookups} depending in the repository type (reactive/imperative).
+	 * method lookups} depending on the repository type (reactive/imperative).
 	 *
 	 * @return an empty {@link RepositoryComposition}.
 	 * @since 2.4
@@ -195,6 +197,8 @@ public class RepositoryComposition {
 	 * @param fragment must not be {@literal null}.
 	 * @return the new {@link RepositoryComposition}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public RepositoryComposition append(RepositoryFragment<?> fragment) {
 		return new RepositoryComposition(metadata, fragments.append(fragment), methodLookup, argumentConverter);
 	}
@@ -207,6 +211,8 @@ public class RepositoryComposition {
 	 * @param fragments must not be {@literal null}.
 	 * @return the new {@link RepositoryComposition}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public RepositoryComposition append(RepositoryFragments fragments) {
 		return new RepositoryComposition(metadata, this.fragments.append(fragments), methodLookup, argumentConverter);
 	}
@@ -217,6 +223,8 @@ public class RepositoryComposition {
 	 * @param argumentConverter must not be {@literal null}.
 	 * @return the new {@link RepositoryComposition}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public RepositoryComposition withArgumentConverter(BiFunction<Method, Object[], Object[]> argumentConverter) {
 		return new RepositoryComposition(metadata, fragments, methodLookup, argumentConverter);
 	}
@@ -227,6 +235,8 @@ public class RepositoryComposition {
 	 * @param methodLookup must not be {@literal null}.
 	 * @return the new {@link RepositoryComposition}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public RepositoryComposition withMethodLookup(MethodLookup methodLookup) {
 		return new RepositoryComposition(metadata, fragments, methodLookup, argumentConverter);
 	}
@@ -238,6 +248,8 @@ public class RepositoryComposition {
 	 * @return new instance of {@link RepositoryComposition}.
 	 * @since 2.4
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public RepositoryComposition withMetadata(RepositoryMetadata metadata) {
 		return new RepositoryComposition(metadata, fragments, methodLookup, argumentConverter);
 	}
@@ -253,24 +265,16 @@ public class RepositoryComposition {
 
 	/**
 	 * Invoke a method on the repository by routing the invocation to the appropriate {@link RepositoryFragment}.
-	 *
-	 * @param method
-	 * @param args
-	 * @return
-	 * @throws Throwable
 	 */
+	@Nullable
 	public Object invoke(Method method, Object... args) throws Throwable {
 		return invoke(NoOpRepositoryInvocationMulticaster.INSTANCE, method, args);
 	}
 
 	/**
 	 * Invoke a method on the repository by routing the invocation to the appropriate {@link RepositoryFragment}.
-	 *
-	 * @param method
-	 * @param args
-	 * @return
-	 * @throws Throwable
 	 */
+	@Nullable
 	Object invoke(RepositoryInvocationMulticaster listener, Method method, Object[] args) throws Throwable {
 
 		Method methodToCall = getMethod(method);
@@ -289,7 +293,6 @@ public class RepositoryComposition {
 	 * Find the implementation method for the given {@link Method} invoked on the composite interface.
 	 *
 	 * @param method must not be {@literal null}.
-	 * @return
 	 */
 	public Optional<Method> findMethod(Method method) {
 		return Optional.ofNullable(getMethod(method));
@@ -299,7 +302,6 @@ public class RepositoryComposition {
 	 * Find the implementation method for the given {@link Method} invoked on the composite interface.
 	 *
 	 * @param method must not be {@literal null}.
-	 * @return
 	 * @since 2.2
 	 */
 	@Nullable
@@ -323,6 +325,20 @@ public class RepositoryComposition {
 				}));
 	}
 
+	public RepositoryFragments getFragments() {
+		return this.fragments;
+	}
+
+	public MethodLookup getMethodLookup() {
+		return this.methodLookup;
+	}
+
+	/**
+	 * Value object representing an ordered list of {@link RepositoryFragment fragments}.
+	 *
+	 * @author Mark Paluch
+	 * @author Christoph Strobl
+	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -342,25 +358,11 @@ public class RepositoryComposition {
 		return ObjectUtils.nullSafeHashCode(fragments);
 	}
 
-	public RepositoryFragments getFragments() {
-		return this.fragments;
-	}
-
-	public MethodLookup getMethodLookup() {
-		return this.methodLookup;
-	}
-
 	public BiFunction<Method, Object[], Object[]> getArgumentConverter() {
 		return this.argumentConverter;
 	}
-
-	/**
-	 * Value object representing an ordered list of {@link RepositoryFragment fragments}.
-	 *
-	 * @author Mark Paluch
-	 * @author Christoph Strobl
-	 */
 	public static class RepositoryFragments implements Streamable<RepositoryFragment<?>> {
+
 
 		static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
 
@@ -431,6 +433,8 @@ public class RepositoryComposition {
 		 * @return the new {@link RepositoryFragments} containing all existing fragments and the given
 		 *         {@link RepositoryFragment} as last element.
 		 */
+		@Contract("_ -> new")
+		@CheckReturnValue
 		public RepositoryFragments append(RepositoryFragment<?> fragment) {
 
 			Assert.notNull(fragment, "RepositoryFragment must not be null");
@@ -445,6 +449,8 @@ public class RepositoryComposition {
 		 * @return the new {@link RepositoryFragments} containing all existing fragments and the given
 		 *         {@link RepositoryFragments} as last elements.
 		 */
+		@Contract("_ -> new")
+		@CheckReturnValue
 		public RepositoryFragments append(RepositoryFragments fragments) {
 
 			Assert.notNull(fragments, "RepositoryFragments must not be null");
@@ -470,11 +476,6 @@ public class RepositoryComposition {
 
 		/**
 		 * Invoke {@link Method} by resolving the fragment that implements a suitable method.
-		 *
-		 * @param invokedMethod invoked method as per invocation on the interface.
-		 * @param methodToCall backend method that is backing the call.
-		 * @return
-		 * @throws Throwable
 		 */
 		@Nullable
 		public Object invoke(Method invokedMethod, Method methodToCall, Object[] args) throws Throwable {
@@ -483,14 +484,6 @@ public class RepositoryComposition {
 
 		/**
 		 * Invoke {@link Method} by resolving the fragment that implements a suitable method.
-		 *
-		 * @param repositoryInterface
-		 * @param listener
-		 * @param invokedMethod invoked method as per invocation on the interface.
-		 * @param methodToCall backend method that is backing the call.
-		 * @param args
-		 * @return
-		 * @throws Throwable
 		 */
 		@Nullable
 		Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster listener, Method invokedMethod,
@@ -499,7 +492,7 @@ public class RepositoryComposition {
 			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
 			Optional<?> optional = fragment.getImplementation();
 
-			if (!optional.isPresent()) {
+			if (optional.isEmpty()) {
 				throw new IllegalArgumentException(String.format("No implementation found for method %s", methodToCall));
 			}
 
@@ -584,10 +577,7 @@ public class RepositoryComposition {
 
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(fragmentCache);
-			result = (31 * result) + ObjectUtils.nullSafeHashCode(invocationMetadataCache);
-			result = (31 * result) + ObjectUtils.nullSafeHashCode(fragments);
-			return result;
+			return ObjectUtils.nullSafeHash(fragmentCache, invocationMetadataCache, fragmentCache);
 		}
 
 	}

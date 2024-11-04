@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -53,6 +54,7 @@ import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.io.support.SpringFactoriesLoader;
+import org.springframework.lang.Contract;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -199,9 +201,9 @@ public class CustomCollections {
 
 	private static class SearchableTypes {
 
-		private static final BiPredicate<Class<?>, Class<?>> EQUALS = (left, right) -> left.equals(right);
-		private static final BiPredicate<Class<?>, Class<?>> IS_ASSIGNABLE = (left, right) -> left.isAssignableFrom(right);
-		private static final Function<Class<?>, Boolean> IS_NOT_NULL = it -> it != null;
+		private static final BiPredicate<Class<?>, Class<?>> EQUALS = Object::equals;
+		private static final BiPredicate<Class<?>, Class<?>> IS_ASSIGNABLE = Class::isAssignableFrom;
+		private static final Function<Class<?>, Boolean> IS_NOT_NULL = Objects::nonNull;
 
 		private final Collection<Class<?>> types;
 
@@ -246,7 +248,7 @@ public class CustomCollections {
 
 			Supplier<String> message = () -> String.format("Type %s not contained in candidates %s", type, types);
 
-			return isOneOf(type, (l, r) -> l.isAssignableFrom(r), rejectNull(message));
+			return isOneOf(type, Class::isAssignableFrom, rejectNull(message));
 		}
 
 		/**
@@ -354,6 +356,7 @@ public class CustomCollections {
 			}
 
 			@Nullable
+			@Contract("null -> null; !null -> !null")
 			@Override
 			public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -506,6 +509,7 @@ public class CustomCollections {
 			}
 
 			@Nullable
+			@Contract("null -> null; !null -> !null")
 			@Override
 			public Object convert(@Nullable Object source) {
 
@@ -580,6 +584,7 @@ public class CustomCollections {
 			}
 
 			@Nullable
+			@Contract("null -> null; !null -> !null")
 			@Override
 			public Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {
 

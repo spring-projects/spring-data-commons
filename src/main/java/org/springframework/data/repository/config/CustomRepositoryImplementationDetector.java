@@ -135,7 +135,7 @@ public class CustomRepositoryImplementationDetector {
 		provider.setMetadataReaderFactory(config.getMetadataReaderFactory());
 		provider.addIncludeFilter((reader, factory) -> true);
 
-		config.getExcludeFilters().forEach(it -> provider.addExcludeFilter(it));
+		config.getExcludeFilters().forEach(provider::addExcludeFilter);
 
 		return config.getBasePackages().stream()//
 				.flatMap(it -> provider.findCandidateComponents(it).stream())//
