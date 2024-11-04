@@ -15,6 +15,7 @@
  */
 package org.springframework.data.mapping;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,7 +38,7 @@ import org.springframework.util.StringUtils;
  */
 public class PropertyReferenceException extends RuntimeException {
 
-	private static final long serialVersionUID = -5254424051438976570L;
+	private static final @Serial long serialVersionUID = -5254424051438976570L;
 
 	static final String ERROR_TEMPLATE = "No property '%s' found for type '%s'";
 	static final String HINTS_TEMPLATE = "Did you mean %s";

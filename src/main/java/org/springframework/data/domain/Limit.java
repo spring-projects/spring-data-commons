@@ -113,7 +113,7 @@ public sealed interface Limit permits Limited, Unlimited {
 
 		@Override
 		public int hashCode() {
-			return max ^ max >>> 32;
+			return max;
 		}
 	}
 

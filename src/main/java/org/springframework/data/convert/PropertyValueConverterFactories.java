@@ -27,6 +27,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -175,6 +176,7 @@ final class PropertyValueConverterFactories {
 	 * @author Christoph Strobl
 	 * @since 2.7
 	 */
+	@SuppressWarnings("OptionalAssignedToNull")
 	static class CachingPropertyValueConverterFactory implements PropertyValueConverterFactory {
 
 		private final PropertyValueConverterFactory delegate;
@@ -225,6 +227,8 @@ final class PropertyValueConverterFactories {
 				return typeCache.get(type);
 			}
 
+			@Nullable
+			@Contract("_, null -> null;_, !null -> !null")
 			<S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> cache(PersistentProperty<?> property,
 					@Nullable PropertyValueConverter<S, T, C> converter) {
 
@@ -241,6 +245,8 @@ final class PropertyValueConverterFactories {
 				return converter;
 			}
 
+			@Nullable
+			@Contract("_, null -> null;_, !null -> !null")
 			<S, T, C extends ValueConversionContext<?>> PropertyValueConverter<S, T, C> cache(Class<?> type,
 					@Nullable PropertyValueConverter<S, T, C> converter) {
 

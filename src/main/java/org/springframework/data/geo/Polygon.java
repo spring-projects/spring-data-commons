@@ -15,6 +15,8 @@
  */
 package org.springframework.data.geo;
 
+
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -35,7 +38,7 @@ import org.springframework.util.StringUtils;
  */
 public class Polygon implements Iterable<Point>, Shape {
 
-	private static final long serialVersionUID = -2705040068154648988L;
+	private static final @Serial long serialVersionUID = -2705040068154648988L;
 
 	private final List<Point> points;
 
@@ -45,7 +48,7 @@ public class Polygon implements Iterable<Point>, Shape {
 	 * @param x must not be {@literal null}.
 	 * @param y must not be {@literal null}.
 	 * @param z must not be {@literal null}.
-	 * @param others
+	 * @param others other points.
 	 */
 	public Polygon(Point x, Point y, Point z, Point... others) {
 
@@ -91,12 +94,13 @@ public class Polygon implements Iterable<Point>, Shape {
 		return this.points;
 	}
 
+	@Override
 	public Iterator<Point> iterator() {
 		return this.points.iterator();
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.mapping;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import org.springframework.lang.Nullable;
@@ -41,9 +42,9 @@ public final class Alias {
 	@SuppressWarnings("null") //
 	public static final Alias NONE = new Alias(null);
 
-	private final Object value;
+	private final @Nullable Object value;
 
-	private Alias(Object value) {
+	private Alias(@Nullable Object value) {
 		this.value = value;
 	}
 
@@ -121,6 +122,14 @@ public final class Alias {
 	}
 
 	/**
+	 * @return {@literal true} if this {@link Alias} does not contain a value.
+	 * @since 4.0
+	 */
+	public boolean isEmpty() {
+		return value == null;
+	}
+
+	/**
 	 * Return the value typed to {@code type} if the value is present and assignable to {@code type}.
 	 *
 	 * @param type must not be {@literal null}.
@@ -135,13 +144,25 @@ public final class Alias {
 		return isPresent() && type.isInstance(value) ? (T) value : null;
 	}
 
-	@Override
-	public String toString() {
-		return isPresent() ? value.toString() : "NONE";
-	}
-
+	@Nullable
 	public Object getValue() {
 		return this.value;
+	}
+
+	/**
+	 * Retrieve the required value or throw {@link NoSuchElementException} if the value is {@link #isEmpty() absent}.
+	 *
+	 * @return the required value.
+	 */
+	public Object getRequiredValue() {
+
+		Object value = getValue();
+
+		if (value == null) {
+			throw new NoSuchElementException("No value present");
+		}
+
+		return value;
 	}
 
 	@Override
@@ -161,5 +182,10 @@ public final class Alias {
 	@Override
 	public int hashCode() {
 		return Objects.hashCode(value);
+	}
+
+	@Override
+	public String toString() {
+		return isPresent() ? value.toString() : "NONE";
 	}
 }

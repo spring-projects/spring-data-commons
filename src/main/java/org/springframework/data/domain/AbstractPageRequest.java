@@ -15,7 +15,10 @@
  */
 package org.springframework.data.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
+
+import org.springframework.util.ObjectUtils;
 
 /**
  * Abstract Java Bean implementation of {@code Pageable}.
@@ -28,7 +31,7 @@ import java.io.Serializable;
  */
 public abstract class AbstractPageRequest implements Pageable, Serializable {
 
-	private static final long serialVersionUID = 1232825578694716871L;
+	private static final @Serial long serialVersionUID = 1232825578694716871L;
 
 	private final int pageNumber;
 	private final int pageSize;
@@ -85,7 +88,7 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	/**
 	 * Returns the {@link Pageable} requesting the previous {@link Page}.
 	 *
-	 * @return
+	 * @return the previous {@link Pageable}
 	 */
 	public abstract Pageable previous();
 
@@ -93,29 +96,21 @@ public abstract class AbstractPageRequest implements Pageable, Serializable {
 	public abstract Pageable first();
 
 	@Override
-	public int hashCode() {
-
-		final int prime = 31;
-		int result = 1;
-
-		result = prime * result + pageNumber;
-		result = prime * result + pageSize;
-
-		return result;
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof AbstractPageRequest that)) {
+			return false;
+		}
+		if (pageNumber != that.pageNumber) {
+			return false;
+		}
+		return pageSize == that.pageSize;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-
-		if (obj == null || getClass() != obj.getClass()) {
-			return false;
-		}
-
-		AbstractPageRequest other = (AbstractPageRequest) obj;
-		return pageNumber == other.pageNumber && pageSize == other.pageSize;
+	public int hashCode() {
+		return ObjectUtils.nullSafeHash(pageNumber, pageSize);
 	}
 }

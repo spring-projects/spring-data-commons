@@ -24,5 +24,11 @@ package org.springframework.data.convert;
  */
 public interface EntityWriter<T, S> {
 
+	/**
+	 * Writes the given source object into a store specific sink.
+	 *
+	 * @param source the source to create an object of the given type from.
+	 * @param sink the sink to write into.
+	 */
 	void write(T source, S sink);
 }

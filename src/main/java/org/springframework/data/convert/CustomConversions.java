@@ -198,10 +198,6 @@ public class CustomConversions {
 	 * @param type {@link Class} to evaluate as a simple type, such as a primitive type.
 	 * @return a boolean value indicating whether the given, required {@link Class type} is simple.
 	 */
-	// TODO: Technically, an 'isXyz(..)' method (returning a boolean to answer a user's question should not throw an
-	// Exception).
-	// Rather, a null Class type argument should simply return false to indicate it is clearly not a "simple type".
-	// How much data store specific code relies on the existing behavior?
 	public boolean isSimpleType(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null");
@@ -229,6 +225,7 @@ public class CustomConversions {
 	 * @param candidate must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
 	 */
+	@SuppressWarnings("rawtypes")
 	private void registerConverterIn(Object candidate, ConverterRegistry conversionService) {
 
 		if (candidate instanceof Converter converter) {
@@ -669,7 +666,7 @@ public class CustomConversions {
 			return isConverterOfSource(ConverterOrigin.DEFAULT);
 		}
 
-		public ConverterRegistration getConverterRegistration() {
+		ConverterRegistration getConverterRegistration() {
 			return delegate;
 		}
 
@@ -815,7 +812,7 @@ public class CustomConversions {
 		 * @param converter must not be {@literal null}.
 		 * @return
 		 */
-		public Streamable<ConverterRegistration> getRegistrationsFor(Object converter) {
+		Streamable<ConverterRegistration> getRegistrationsFor(Object converter) {
 
 			Assert.notNull(converter, "Converter must not be null");
 

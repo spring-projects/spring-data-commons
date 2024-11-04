@@ -104,9 +104,10 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 				.orElse(Auditor.none());
 	}
 
+	@Override
 	public void afterPropertiesSet() {
 
-		if (!auditorAware.isPresent()) {
+		if (auditorAware.isEmpty()) {
 			logger.debug("No AuditorAware set; Auditing will not be applied");
 		}
 	}

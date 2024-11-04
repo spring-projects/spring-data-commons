@@ -99,6 +99,7 @@ public class ResourceReaderRepositoryPopulator implements RepositoryPopulator, A
 		this.resources = Arrays.asList(resources);
 	}
 
+	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
 		this.publisher = publisher;
 	}

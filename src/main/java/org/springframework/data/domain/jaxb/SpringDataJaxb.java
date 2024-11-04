@@ -109,7 +109,7 @@ public abstract class SpringDataJaxb {
 	 * @param adapter must not be {@literal null}.
 	 * @return
 	 */
-	public static <T, S> List<T> unmarshal(Collection<S> source, XmlAdapter<S, T> adapter) {
+	public static <T, S> List<T> unmarshal(@Nullable Collection<S> source, XmlAdapter<S, T> adapter) {
 
 		Assert.notNull(adapter, "Adapter must not be null");
 

@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import kotlin.reflect.KFunction;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
+import java.io.Serial;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ import org.springframework.util.ObjectUtils;
  */
 public class MappingInstantiationException extends RuntimeException {
 
-	private static final long serialVersionUID = 822211065035487628L;
+	private static final @Serial long serialVersionUID = 822211065035487628L;
 	private static final String TEXT_TEMPLATE = "Failed to instantiate %s using constructor %s with arguments %s";
 
 	private final Class<?> entityType;

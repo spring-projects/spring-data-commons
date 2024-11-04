@@ -141,7 +141,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * already set.
 	 *
 	 * @param applicationContext the ApplicationContext object to be used by this object.
-	 * @throws BeansException
+	 * @throws BeansException in case of initialization errors.
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -159,7 +159,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * @param beanFactory owning BeanFactory.
-	 * @throws BeansException
+	 * @throws BeansException in case of initialization errors.
 	 * @since 3.3
 	 */
 	@Override
@@ -565,9 +565,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Returns whether a {@link PersistentEntity} instance should be created for the given {@link TypeInformation}. By
-	 * default this will reject all types considered simple and non-supported Kotlin classes, but it might be necessary to
-	 * tweak that in case you have registered custom converters for top level types (which renders them to be considered
-	 * simple) but still need meta-information about them.
+	 * default, this will reject all types considered simple and non-supported Kotlin classes, but it might be necessary
+	 * to tweak that in case you have registered custom converters for top level types (which renders them to be
+	 * considered simple) but still need meta-information about them.
 	 *
 	 * @param type will never be {@literal null}.
 	 * @return
@@ -673,7 +673,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			});
 		}
 
-		protected boolean shouldSkipOverrideProperty(P property) {
+		private boolean shouldSkipOverrideProperty(P property) {
 
 			P existingProperty = entity.getPersistentProperty(property.getName());
 
@@ -758,7 +758,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 *
 	 * @author Oliver Gierke
 	 */
-	static enum PersistentPropertyFilter implements FieldFilter {
+	enum PersistentPropertyFilter implements FieldFilter {
 
 		INSTANCE;
 

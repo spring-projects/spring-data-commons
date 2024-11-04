@@ -67,6 +67,7 @@ public class SimplePropertyValueConverterRegistry<P extends PersistentProperty<P
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <S, T> PropertyValueConverter<S, T, ? extends ValueConversionContext<P>> getConverter(Class<?> type,
 			String path) {
 

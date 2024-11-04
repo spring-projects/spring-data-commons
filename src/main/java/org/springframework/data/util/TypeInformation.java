@@ -336,7 +336,7 @@ public interface TypeInformation<S> {
 
 	/**
 	 * Returns if the current {@link TypeInformation} can be safely assigned to the given one. Mimics semantics of
-	 * {@link Class#isAssignableFrom(Class)} but takes generics into account. Thus it will allow to detect that a
+	 * {@link Class#isAssignableFrom(Class)} but takes generics into account. Thus, it will allow to detect that a
 	 * {@code List<Long>} is assignable to {@code List<? extends Number>}.
 	 *
 	 * @param target
