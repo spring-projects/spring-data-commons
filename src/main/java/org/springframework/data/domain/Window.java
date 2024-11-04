@@ -66,9 +66,9 @@ public interface Window<T> extends Streamable<T> {
 	int size();
 
 	/**
-	 * Returns {@code true} if this window contains no elements.
+	 * Returns {@literal true} if this window contains no elements.
 	 *
-	 * @return {@code true} if this window contains no elements
+	 * @return {@literal true} if this window contains no elements
 	 */
 	@Override
 	boolean isEmpty();
@@ -100,7 +100,7 @@ public interface Window<T> extends Streamable<T> {
 	 * Returns whether the underlying scroll mechanism can provide a {@link ScrollPosition} at {@code index}.
 	 *
 	 * @param index the result index to check for a {@link ScrollPosition}.
-	 * @return {@code true} if a {@link ScrollPosition} can be created; {@code false} otherwise.
+	 * @return {@literal true} if a {@link ScrollPosition} can be created; {@literal false} otherwise.
 	 * @see #positionAt(int)
 	 */
 	default boolean hasPosition(int index) {

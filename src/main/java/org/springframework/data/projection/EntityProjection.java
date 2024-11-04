@@ -159,14 +159,14 @@ public class EntityProjection<M, D> implements Streamable<EntityProjection.Prope
 	}
 
 	/**
-	 * @return {@code true} if the {@link #getMappedType()} is a projection.
+	 * @return {@literal true} if the {@link #getMappedType()} is a projection.
 	 */
 	public boolean isProjection() {
 		return projection;
 	}
 
 	/**
-	 * @return {@code true} if the {@link #getMappedType()} is a closed projection.
+	 * @return {@literal true} if the {@link #getMappedType()} is a closed projection.
 	 */
 	public boolean isClosedProjection() {
 		return isProjection()

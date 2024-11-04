@@ -41,7 +41,7 @@ public interface PageableArgumentResolver extends HandlerMethodArgumentResolver 
 	 * Resolves a {@link Pageable} method parameter into an argument value from a given request.
 	 *
 	 * @param parameter the method parameter to resolve. This parameter must have previously been passed to
-	 *          {@link #supportsParameter} which must have returned {@code true}.
+	 *          {@link #supportsParameter} which must have returned {@literal true}.
 	 * @param mavContainer the ModelAndViewContainer for the current request
 	 * @param webRequest the current request
 	 * @param binderFactory a factory for creating {@link WebDataBinder} instances

@@ -96,7 +96,7 @@ class AuditingHandlerUnitTests {
 	}
 
 	/**
-	 * Checks that the advice does not set modification information on creation if the falg is set to {@code false}.
+	 * Checks that the advice does not set modification information on creation if the falg is set to {@literal false}.
 	 */
 	@Test
 	void honoursModifiedOnCreationFlag() {

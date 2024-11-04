@@ -52,8 +52,8 @@ public interface MethodLookup {
 
 	/**
 	 * Returns a composed {@link MethodLookup} that represents a concatenation of this predicate and another. When
-	 * evaluating the composed method lookup, if this lookup evaluates {@code true}, then the {@code other} method lookup
-	 * is not evaluated.
+	 * evaluating the composed method lookup, if this lookup evaluates {@literal true}, then the {@code other} method
+	 * lookup is not evaluated.
 	 *
 	 * @param other must not be {@literal null}.
 	 * @return the composed {@link MethodLookup}.

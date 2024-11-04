@@ -49,11 +49,6 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 
 	@Override
 	@Nullable
-	private static Object getTransientDefault(Class<?> parameterType) {
-		return parameterType.isPrimitive() ? ReflectionUtils.getPrimitiveDefault(parameterType) : null;
-	}
-
-	@Nullable
 	@SuppressWarnings("unchecked")
 	public <T> T getParameterValue(Parameter<T, P> parameter) {
 
@@ -81,4 +76,10 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 
 		return provider.getPropertyValue(property);
 	}
+
+	@Nullable
+	private static Object getTransientDefault(Class<?> parameterType) {
+		return parameterType.isPrimitive() ? ReflectionUtils.getPrimitiveDefault(parameterType) : null;
+	}
+
 }
