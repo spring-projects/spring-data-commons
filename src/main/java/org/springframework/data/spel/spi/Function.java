@@ -154,7 +154,7 @@ public class Function {
 	 * Checks if the encapsulated method has exactly the argument types as those passed as an argument.
 	 *
 	 * @param argumentTypes a list of {@link TypeDescriptor}s to compare with the argument types of the method
-	 * @return {@code true} if the types are equal, {@code false} otherwise.
+	 * @return {@literal true} if the types are equal, {@literal false} otherwise.
 	 */
 	public boolean supportsExact(List<TypeDescriptor> argumentTypes) {
 		return ParameterTypes.of(argumentTypes).exactlyMatchParametersOf(method);
@@ -164,7 +164,7 @@ public class Function {
 	 * Checks whether this {@code Function} has the same signature as another {@code Function}.
 	 *
 	 * @param other the {@code Function} to compare {@code this} with.
-	 * @return {@code true} if name and argument list are the same.
+	 * @return {@literal true} if name and argument list are the same.
 	 */
 	public boolean isSignatureEqual(Function other) {
 

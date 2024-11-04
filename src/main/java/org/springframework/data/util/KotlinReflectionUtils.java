@@ -136,7 +136,7 @@ public final class KotlinReflectionUtils {
 	 * Returns whether the given {@link KType} is a {@link KClass#isValue() value} class.
 	 *
 	 * @param type the kotlin type to inspect.
-	 * @return {@code true} the type is a value class.
+	 * @return {@literal true} the type is a value class.
 	 * @since 3.2
 	 */
 	public static boolean isValueClass(KType type) {
@@ -148,7 +148,7 @@ public final class KotlinReflectionUtils {
 	 * Returns whether the given class makes uses Kotlin {@link KClass#isValue() value} classes.
 	 *
 	 * @param type the kotlin type to inspect.
-	 * @return {@code true} when at least one property uses Kotlin value classes.
+	 * @return {@literal true} when at least one property uses Kotlin value classes.
 	 * @since 3.2
 	 */
 	public static boolean hasValueClassProperty(Class<?> type) {

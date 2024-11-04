@@ -202,7 +202,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * Returns whether the property is transient.
 	 *
 	 * @param property name of the property.
-	 * @return {@code true} if the property is transient. Applies only for existing properties. {@code false} if the
+	 * @return {@literal true} if the property is transient. Applies only for existing properties. {@literal false} if the
 	 *         property does not exist or is not transient.
 	 * @since 3.3
 	 */
