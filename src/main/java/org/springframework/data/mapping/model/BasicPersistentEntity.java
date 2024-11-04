@@ -117,8 +117,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 		this.propertyCache = new HashMap<>(16, 1.0f);
 		this.annotationCache = new ConcurrentHashMap<>(16);
-		this.propertyAnnotationCache = CollectionUtils
-				.toMultiValueMap(new ConcurrentHashMap<>(16));
+		this.propertyAnnotationCache = CollectionUtils.toMultiValueMap(new ConcurrentHashMap<>(16));
 		this.propertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 		this.typeAlias = Lazy.of(() -> getAliasFromAnnotation(getType()));
 		this.isNewStrategy = Lazy.of(() -> Persistable.class.isAssignableFrom(information.getType()) //
@@ -549,15 +548,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static final class AssociationComparator<P extends PersistentProperty<P>>
-			implements Comparator<Association<P>>, Serializable {
-
-		private static final long serialVersionUID = 4508054194886854513L;
-		private final Comparator<P> delegate;
-
-		AssociationComparator(Comparator<P> delegate) {
-			this.delegate = delegate;
-		}
+	private record AssociationComparator<P extends PersistentProperty<P>>(
+			Comparator<P> delegate) implements Comparator<Association<P>>, Serializable {
 
 		@Override
 		public int compare(@Nullable Association<P> left, @Nullable Association<P> right) {

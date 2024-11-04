@@ -29,6 +29,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
+import org.springframework.lang.Contract;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -137,6 +138,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		}
 
 		@Nullable
+		@Contract("null -> null")
 		@Override
 		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -208,6 +210,7 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		}
 
 		@Nullable
+		@Contract("null -> null")
 		@Override
 		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 

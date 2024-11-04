@@ -814,7 +814,7 @@ public abstract class RepositoryFactorySupport
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(repositoryInterfaceName);
-			result = 31 * result + (int) (compositionHash ^ (compositionHash >>> 32));
+			result = 31 * result + Long.hashCode(compositionHash);
 			return result;
 		}
 

@@ -155,6 +155,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 * @return the expression to be used when looking up a source data structure.
 	 * @since 3.3
 	 */
+	@SuppressWarnings("DataFlowIssue")
 	public String getRequiredValueExpression() {
 
 		if (!hasValueExpression()) {

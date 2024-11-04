@@ -58,7 +58,7 @@ public final class Accessor {
 	/**
 	 * Returns whether the accessor is a getter.
 	 *
-	 * @return
+	 * @return {@literal true} if the accessor is a getter; {@literal false} otherwise.
 	 */
 	public boolean isGetter() {
 		return method.equals(descriptor.getReadMethod());
@@ -67,7 +67,7 @@ public final class Accessor {
 	/**
 	 * Returns whether the accessor is a setter.
 	 *
-	 * @return
+	 * @return {@literal true} if the accessor is a setter; {@literal false} otherwise.
 	 */
 	public boolean isSetter() {
 		return method.equals(descriptor.getWriteMethod());

@@ -156,6 +156,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return StringUtils.collectionToDelimitedString(qualifierNames, ":") + ":" + repositoryType.getName();
 	}
 
+	@Override
 	@SuppressWarnings("rawtypes")
 	public Set<Type> getTypes() {
 
@@ -201,6 +202,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		create(beanManager.createCreationalContext(this));
 	}
 
+	@Override
 	public final T create(@SuppressWarnings("null") CreationalContext<T> creationalContext) {
 
 		T repoInstance = this.repoInstance;
@@ -217,6 +219,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return repoInstance;
 	}
 
+	@Override
 	public void destroy(@SuppressWarnings("null") T instance,
 			@SuppressWarnings("null") CreationalContext<T> creationalContext) {
 
@@ -228,14 +231,17 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		creationalContext.release();
 	}
 
+	@Override
 	public Set<Annotation> getQualifiers() {
 		return qualifiers;
 	}
 
+	@Override
 	public String getName() {
 		return repositoryType.getName();
 	}
 
+	@Override
 	public Set<Class<? extends Annotation>> getStereotypes() {
 
 		return Arrays.stream(repositoryType.getAnnotations())//
@@ -244,10 +250,12 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 				.collect(Collectors.toSet());
 	}
 
+	@Override
 	public Class<?> getBeanClass() {
 		return repositoryType;
 	}
 
+	@Override
 	public boolean isAlternative() {
 		return isAnnotatedWith(repositoryType, Alternative.class);
 	}
@@ -256,14 +264,17 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		return false;
 	}
 
+	@Override
 	public Set<InjectionPoint> getInjectionPoints() {
 		return Collections.emptySet();
 	}
 
+	@Override
 	public Class<? extends Annotation> getScope() {
 		return ApplicationScoped.class;
 	}
 
+	@Override
 	public String getId() {
 		return passivationId;
 	}

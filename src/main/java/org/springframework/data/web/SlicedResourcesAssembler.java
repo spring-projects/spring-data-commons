@@ -58,7 +58,7 @@ public class SlicedResourcesAssembler<T>
 	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
 	private boolean forceFirstRel = false;
-	private @Nullable MethodParameter parameter;
+	private final @Nullable MethodParameter parameter;
 
 	/**
 	 * Creates a new {@link SlicedResourcesAssembler} using the given {@link PageableHandlerMethodArgumentResolver} and

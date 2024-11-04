@@ -29,7 +29,6 @@ interface EntityCallbackInvoker {
 	 * @param callback must not be {@literal null}.
 	 * @param entity must not be {@literal null}
 	 * @param callbackInvokerFunction must not be {@literal null}.
-	 * @param <T>
 	 * @return never {@literal null}.
 	 */
 	<T> Object invokeCallback(EntityCallback<T> callback, T entity,

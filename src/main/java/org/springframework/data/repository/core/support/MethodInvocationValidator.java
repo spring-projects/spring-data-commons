@@ -194,7 +194,9 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 		@Override
 		public int hashCode() {
+
 			int result = (nullableReturn ? 1 : 0);
+
 			result = (31 * result) + Arrays.hashCode(nullableParameters);
 			result = (31 * result) + Arrays.hashCode(methodParameters);
 			return result;

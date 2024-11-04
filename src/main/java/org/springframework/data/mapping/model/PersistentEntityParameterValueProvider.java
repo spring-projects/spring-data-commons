@@ -37,7 +37,7 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	private final @Nullable Object parent;
 
 	public PersistentEntityParameterValueProvider(PersistentEntity<?, P> entity, PropertyValueProvider<P> provider,
-			Object parent) {
+			@Nullable Object parent) {
 		this.entity = entity;
 		this.provider = provider;
 		this.parent = parent;

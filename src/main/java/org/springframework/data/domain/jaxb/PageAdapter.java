@@ -23,6 +23,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.PageDto;
 import org.springframework.hateoas.Link;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 
 /**
@@ -33,6 +34,7 @@ import org.springframework.lang.Nullable;
 public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 
 	@Nullable
+	@Contract("null -> null; !null -> !null")
 	@Override
 	public PageDto marshal(@Nullable Page<Object> source) {
 
@@ -48,6 +50,7 @@ public class PageAdapter extends XmlAdapter<PageDto, Page<Object>> {
 	}
 
 	@Nullable
+	@Contract("_ -> null")
 	@Override
 	public Page<Object> unmarshal(@Nullable PageDto v) {
 		return null;
