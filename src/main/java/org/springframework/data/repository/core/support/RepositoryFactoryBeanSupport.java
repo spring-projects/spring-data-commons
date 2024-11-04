@@ -280,11 +280,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	}
 
 	@Override
-	public boolean isSingleton() {
-		return true;
-	}
-
-	@Override
 	public void afterPropertiesSet() {
 
 		this.factory = createRepositoryFactory();

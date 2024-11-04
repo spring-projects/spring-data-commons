@@ -351,7 +351,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 *
 	 * @author Thomas Darimont
 	 */
-	private static enum EmptyRepositoryFactoryInformation implements RepositoryFactoryInformation<Object, Object> {
+	private enum EmptyRepositoryFactoryInformation implements RepositoryFactoryInformation<Object, Object> {
 
 		INSTANCE;
 

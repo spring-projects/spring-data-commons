@@ -31,6 +31,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Contract;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -162,6 +163,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	}
 
 	@Nullable
+	@Contract("null, _ -> null")
 	private Object getProjection(@Nullable Object result, Class<?> returnType) {
 		return (result == null) || ClassUtils.isAssignable(returnType, result.getClass()) ? result
 				: factory.createProjection(returnType, result);

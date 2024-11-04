@@ -15,12 +15,14 @@
  */
 package org.springframework.data.geo;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Locale;
 
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Represents a geospatial point value.
@@ -32,7 +34,7 @@ import org.springframework.util.Assert;
  */
 public class Point implements Serializable {
 
-	private static final long serialVersionUID = 3583151228933783558L;
+	private static final @Serial long serialVersionUID = 3583151228933783558L;
 
 	private final double x;
 	private final double y;
@@ -40,8 +42,8 @@ public class Point implements Serializable {
 	/**
 	 * Creates a {@link Point} from the given {@code x}, {@code y} coordinate.
 	 *
-	 * @param x
-	 * @param y
+	 * @param x x coordinate.
+	 * @param y y coordinate.
 	 */
 	@PersistenceCreator
 	public Point(double x, double y) {
@@ -65,7 +67,7 @@ public class Point implements Serializable {
 	/**
 	 * Returns the x-coordinate of the {@link Point}.
 	 *
-	 * @return
+	 * @return the x-coordinate of the {@link Point}.
 	 */
 	public double getX() {
 		return x;
@@ -74,7 +76,7 @@ public class Point implements Serializable {
 	/**
 	 * Returns the y-coordinate of the {@link Point}.
 	 *
-	 * @return
+	 * @return the y-coordinate of the {@link Point}.
 	 */
 	public double getY() {
 		return y;
@@ -82,16 +84,7 @@ public class Point implements Serializable {
 
 	@Override
 	public int hashCode() {
-
-		int result = 1;
-
-		long temp = Double.doubleToLongBits(x);
-		result = 31 * result + (int) (temp ^ temp >>> 32);
-
-		temp = Double.doubleToLongBits(y);
-		result = 31 * result + (int) (temp ^ temp >>> 32);
-
-		return result;
+		return ObjectUtils.nullSafeHash(x, y);
 	}
 
 	@Override

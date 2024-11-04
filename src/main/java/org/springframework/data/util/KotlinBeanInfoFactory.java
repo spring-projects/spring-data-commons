@@ -38,6 +38,7 @@ import org.springframework.beans.BeanInfoFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.Ordered;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -157,6 +158,7 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 	}
 
 	@Nullable
+	@Contract("_, null -> null, _, !null -> !null")
 	private static Method specialize(Class<?> beanClass, @Nullable Method method) {
 
 		if (method == null) {

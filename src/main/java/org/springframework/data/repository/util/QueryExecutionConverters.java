@@ -45,6 +45,7 @@ import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -210,6 +211,7 @@ public abstract class QueryExecutionConverters {
 	 * @return
 	 */
 	@Nullable
+	@Contract("null -> null")
 	public static Object unwrap(@Nullable Object source) {
 
 		source = NullableWrapperConverters.unwrap(source);
@@ -328,6 +330,7 @@ public abstract class QueryExecutionConverters {
 		}
 
 		@Nullable
+		@Contract("null -> null")
 		@Override
 		public final Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -470,7 +473,7 @@ public abstract class QueryExecutionConverters {
 					+ ")";
 		}
 
-		enum Cardinality {
+		public enum Cardinality {
 			NONE, SINGLE, MULTI;
 		}
 

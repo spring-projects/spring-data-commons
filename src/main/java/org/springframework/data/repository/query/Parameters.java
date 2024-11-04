@@ -368,7 +368,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	}
 
 	/**
-	 * Asserts that either all of the non special parameters ({@link Pageable}, {@link Sort}) are annotated with
+	 * Asserts that either all the non-special parameters ({@link Pageable}, {@link Sort}) are annotated with
 	 * {@link Param} or none of them is.
 	 */
 	private void assertEitherAllParamAnnotatedOrNone() {

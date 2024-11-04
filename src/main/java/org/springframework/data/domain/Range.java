@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -55,7 +56,7 @@ public final class Range<T> {
 	/**
 	 * Returns an unbounded {@link Range}.
 	 *
-	 * @return
+	 * @return an unbounded {@link Range}.
 	 * @since 2.0
 	 */
 	@SuppressWarnings("unchecked")
@@ -66,10 +67,10 @@ public final class Range<T> {
 	/**
 	 * Creates a new {@link Range} with inclusive bounds for both values.
 	 *
-	 * @param <T>
+	 * @param <T> the type of the range.
 	 * @param from must not be {@literal null}.
 	 * @param to must not be {@literal null}.
-	 * @return
+	 * @return a {@link Range} with the lower bound set inclusively and the upper bound inclusively.
 	 * @since 2.2
 	 */
 	public static <T> Range<T> closed(T from, T to) {
@@ -79,10 +80,10 @@ public final class Range<T> {
 	/**
 	 * Creates a new {@link Range} with exclusive bounds for both values.
 	 *
-	 * @param <T>
+	 * @param <T> the type of the range.
 	 * @param from must not be {@literal null}.
 	 * @param to must not be {@literal null}.
-	 * @return
+	 * @return a {@link Range} with the lower bound set exclusively and the upper bound exclusively.
 	 * @since 2.2
 	 */
 	public static <T> Range<T> open(T from, T to) {
@@ -92,10 +93,10 @@ public final class Range<T> {
 	/**
 	 * Creates a new left-open {@link Range}, i.e. left exclusive, right inclusive.
 	 *
-	 * @param <T>
+	 * @param <T> the type of the range.
 	 * @param from must not be {@literal null}.
 	 * @param to must not be {@literal null}.
-	 * @return
+	 * @return a {@link Range} with the lower bound set exclusively and the upper bound inclusively.
 	 * @since 2.2
 	 */
 	public static <T> Range<T> leftOpen(T from, T to) {
@@ -105,10 +106,10 @@ public final class Range<T> {
 	/**
 	 * Creates a new right-open {@link Range}, i.e. left inclusive, right exclusive.
 	 *
-	 * @param <T>
+	 * @param <T> the type of the range.
 	 * @param from must not be {@literal null}.
 	 * @param to must not be {@literal null}.
-	 * @return
+	 * @return a {@link Range} with the lower bound set inclusively and the upper bound exclusively.
 	 * @since 2.2
 	 */
 	public static <T> Range<T> rightOpen(T from, T to) {
@@ -119,9 +120,9 @@ public final class Range<T> {
 	 * Creates a left-unbounded {@link Range} (the left bound set to {@link Bound#unbounded()}) with the given right
 	 * bound.
 	 *
-	 * @param <T>
+	 * @param <T> the type of the range.
 	 * @param to the right {@link Bound}, must not be {@literal null}.
-	 * @return
+	 * @return a {@link Range} with the upper bound set to the given value and the lower side unbounded.
 	 * @since 2.2
 	 */
 	public static <T> Range<T> leftUnbounded(Bound<T> to) {
@@ -132,9 +133,9 @@ public final class Range<T> {
 	 * Creates a right-unbounded {@link Range} (the right bound set to {@link Bound#unbounded()}) with the given left
 	 * bound.
 	 *
-	 * @param <T>
+	 * @param <T> the type of the range.
 	 * @param from the left {@link Bound}, must not be {@literal null}.
-	 * @return
+	 * @return a {@link Range} with the lower bound set to the given value and the upper side unbounded.
 	 * @since 2.2
 	 */
 	public static <T> Range<T> rightUnbounded(Bound<T> from) {
@@ -145,7 +146,7 @@ public final class Range<T> {
 	 * Create a {@link RangeBuilder} given the lower {@link Bound}.
 	 *
 	 * @param lower must not be {@literal null}.
-	 * @return
+	 * @return a range builder to continue creating a {@link Range} from the lower bound.
 	 * @since 2.0
 	 */
 	public static <T> RangeBuilder<T> from(Bound<T> lower) {
@@ -170,9 +171,9 @@ public final class Range<T> {
 	/**
 	 * Creates a new Range with the given value as sole member.
 	 *
-	 * @param <T>
+	 * @param <T> the type of the range.>
 	 * @param value must not be {@literal null}.
-	 * @return
+	 * @return a range containing the given value.
 	 * @see Range#closed(Object, Object)
 	 */
 	public static <T> Range<T> just(T value) {
@@ -183,7 +184,7 @@ public final class Range<T> {
 	 * Returns whether the {@link Range} contains the given value.
 	 *
 	 * @param value must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the range contains the value; {@literal false} otherwise.
 	 */
 	@SuppressWarnings({ "unchecked" })
 	public boolean contains(Comparable<T> value) {
@@ -200,7 +201,7 @@ public final class Range<T> {
 	 * Returns whether the {@link Range} contains the given value.
 	 *
 	 * @param value must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the range contains the value; {@literal false} otherwise.
 	 * @since 3.0
 	 */
 	public boolean contains(T value, Comparator<T> comparator) {
@@ -224,7 +225,7 @@ public final class Range<T> {
 	 * @param mapper must not be {@literal null}. If the mapper returns {@code null}, then the corresponding boundary
 	 *          value represents an {@link Bound#unbounded()} boundary.
 	 * @return a new {@link Range} after applying the value to the mapper.
-	 * @param <R>
+	 * @param <R> target type of the mapping function.
 	 * @since 3.0
 	 */
 	public <R> Range<R> map(Function<? super T, ? extends R> mapper) {
@@ -248,7 +249,7 @@ public final class Range<T> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;
@@ -267,9 +268,7 @@ public final class Range<T> {
 
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(lowerBound);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(upperBound);
-		return result;
+		return ObjectUtils.nullSafeHash(lowerBound, upperBound);
 	}
 
 	/**
@@ -313,7 +312,6 @@ public final class Range<T> {
 		 * Creates a boundary including {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static <T> Bound<T> inclusive(T value) {
 
@@ -325,7 +323,6 @@ public final class Range<T> {
 		 * Creates a boundary including {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static Bound<Integer> inclusive(int value) {
 			return inclusive((Integer) value);
@@ -335,7 +332,6 @@ public final class Range<T> {
 		 * Creates a boundary including {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static Bound<Long> inclusive(long value) {
 			return inclusive((Long) value);
@@ -345,7 +341,6 @@ public final class Range<T> {
 		 * Creates a boundary including {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static Bound<Float> inclusive(float value) {
 			return inclusive((Float) value);
@@ -355,7 +350,6 @@ public final class Range<T> {
 		 * Creates a boundary including {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static Bound<Double> inclusive(double value) {
 			return inclusive((Double) value);
@@ -365,7 +359,6 @@ public final class Range<T> {
 		 * Creates a boundary excluding {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static <T> Bound<T> exclusive(T value) {
 
@@ -377,7 +370,6 @@ public final class Range<T> {
 		 * Creates a boundary excluding {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static Bound<Integer> exclusive(int value) {
 			return exclusive((Integer) value);
@@ -387,7 +379,6 @@ public final class Range<T> {
 		 * Creates a boundary excluding {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static Bound<Long> exclusive(long value) {
 			return exclusive((Long) value);
@@ -397,7 +388,6 @@ public final class Range<T> {
 		 * Creates a boundary excluding {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static Bound<Float> exclusive(float value) {
 			return exclusive((Float) value);
@@ -407,7 +397,6 @@ public final class Range<T> {
 		 * Creates a boundary excluding {@code value}.
 		 *
 		 * @param value must not be {@literal null}.
-		 * @return
 		 */
 		public static Bound<Double> exclusive(double value) {
 			return exclusive((Double) value);
@@ -429,50 +418,12 @@ public final class Range<T> {
 					.orElse("unbounded");
 		}
 
-		@Override
-		public String toString() {
-			return value.map(Object::toString).orElse("unbounded");
-		}
-
 		public Optional<T> getValue() {
 			return this.value;
 		}
 
 		public boolean isInclusive() {
 			return this.inclusive;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-
-			if (this == o) {
-				return true;
-			}
-
-			if (!(o instanceof Bound<?> bound)) {
-				return false;
-			}
-
-			if (!value.isPresent() && !bound.value.isPresent()) {
-				return true;
-			}
-
-			if (inclusive != bound.inclusive)
-				return false;
-
-			return ObjectUtils.nullSafeEquals(value, bound.value);
-		}
-
-		@Override
-		public int hashCode() {
-
-			if (!value.isPresent()) {
-				return ObjectUtils.nullSafeHashCode(value);
-			}
-
-			int result = ObjectUtils.nullSafeHashCode(value);
-			result = 31 * result + (inclusive ? 1 : 0);
-			return result;
 		}
 
 		/**
@@ -500,6 +451,44 @@ public final class Range<T> {
 			return unbounded();
 		}
 
+		@Override
+		public boolean equals(@Nullable Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof Bound<?> bound)) {
+				return false;
+			}
+
+			if (value.isEmpty() && bound.value.isEmpty()) {
+				return true;
+			}
+
+			if (inclusive != bound.inclusive)
+				return false;
+
+			return ObjectUtils.nullSafeEquals(value, bound.value);
+		}
+
+		@Override
+		public int hashCode() {
+
+			if (value.isEmpty()) {
+				return ObjectUtils.nullSafeHashCode(value);
+			}
+
+			int result = ObjectUtils.nullSafeHashCode(value);
+			result = 31 * result + (inclusive ? 1 : 0);
+			return result;
+		}
+
+		@Override
+		public String toString() {
+			return value.map(Object::toString).orElse("unbounded");
+		}
+
 	}
 
 	/**
@@ -521,7 +510,6 @@ public final class Range<T> {
 		 * Create a {@link Range} given the upper {@link Bound}.
 		 *
 		 * @param upper must not be {@literal null}.
-		 * @return
 		 */
 		public Range<T> to(Bound<T> upper) {
 

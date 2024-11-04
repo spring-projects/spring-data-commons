@@ -32,6 +32,7 @@ import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
+import org.springframework.lang.Contract;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -98,6 +99,7 @@ public abstract class ReturnedType {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
+	@Contract("null -> false")
 	public final boolean isInstance(@Nullable Object source) {
 		return getReturnedType().isInstance(source);
 	}
@@ -385,9 +387,11 @@ public abstract class ReturnedType {
 
 		@Override
 		public int hashCode() {
+
 			int result = ObjectUtils.nullSafeHashCode(returnedType);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(domainType);
 			result = 31 * result + projectionFactoryHashCode;
+
 			return result;
 		}
 

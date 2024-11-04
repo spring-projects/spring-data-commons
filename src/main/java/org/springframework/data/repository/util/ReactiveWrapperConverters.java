@@ -27,9 +27,9 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.ReactiveAdapter;
 import org.springframework.core.ReactiveAdapterRegistry;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalConverter;
 import org.springframework.core.convert.converter.Converter;
@@ -108,7 +108,7 @@ public abstract class ReactiveWrapperConverters {
 	 *
 	 * @param conversionService must not be {@literal null}.
 	 */
-	private static ConversionService registerConvertersIn(ConfigurableConversionService conversionService) {
+	private static void registerConvertersIn(ConfigurableConversionService conversionService) {
 
 		Assert.notNull(conversionService, "ConversionService must not be null");
 
@@ -125,8 +125,6 @@ public abstract class ReactiveWrapperConverters {
 				conversionService.addConverterFactory(ReactiveAdapterConverterFactory.INSTANCE);
 			}
 		}
-
-		return conversionService;
 	}
 
 	/**
@@ -168,8 +166,7 @@ public abstract class ReactiveWrapperConverters {
 	 * @param targetWrapperType must not be {@literal null}.
 	 * @return
 	 */
-	@Nullable
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "DataFlowIssue" })
 	public static <T> T toWrapper(Object reactiveObject, Class<? extends T> targetWrapperType) {
 
 		Assert.notNull(reactiveObject, "Reactive source object must not be null");

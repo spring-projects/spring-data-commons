@@ -140,7 +140,7 @@ public interface AotContext {
 	}
 
 	/**
-	 * Returns a {@link IntrospectedBeanDefinition} to obtain further detail about the underlying bean definition. A
+	 * Returns a {@link IntrospectedBeanDefinition} to obtain further detail about the underlying bean definition. An
 	 * introspected bean definition can also point to an absent bean definition.
 	 *
 	 * @param reference {@link BeanReference} to the managed bean.
@@ -151,7 +151,7 @@ public interface AotContext {
 	}
 
 	/**
-	 * Returns a {@link IntrospectedBeanDefinition} to obtain further detail about the underlying bean definition. A
+	 * Returns a {@link IntrospectedBeanDefinition} to obtain further detail about the underlying bean definition. An
 	 * introspected bean definition can also point to an absent bean definition.
 	 *
 	 * @param beanName {@link String} containing the {@literal name} of the bean to evaluate; must not be {@literal null}.
@@ -251,7 +251,6 @@ public interface AotContext {
 		 *           bean}.
 		 * @see BeanDefinition
 		 */
-
 		BeanDefinition getBeanDefinition() throws NoSuchBeanDefinitionException;
 
 		/**

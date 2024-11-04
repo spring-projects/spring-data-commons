@@ -151,11 +151,6 @@ public abstract class AuditingHandlerSupport {
 
 	/**
 	 * Sets modifying and creating auditor. Creating auditor is only set on new auditables.
-	 *
-	 * @param auditor
-	 * @param wrapper
-	 * @param isNew
-	 * @return
 	 */
 	private void touchAuditor(Auditor<?> auditor, AuditableBeanWrapper<?> wrapper, boolean isNew) {
 
@@ -176,10 +171,6 @@ public abstract class AuditingHandlerSupport {
 
 	/**
 	 * Touches the auditable regarding modification and creation date. Creation date is only set on new auditables.
-	 *
-	 * @param wrapper
-	 * @param isNew
-	 * @return
 	 */
 	private Optional<TemporalAccessor> touchDate(AuditableBeanWrapper<?> wrapper, boolean isNew) {
 

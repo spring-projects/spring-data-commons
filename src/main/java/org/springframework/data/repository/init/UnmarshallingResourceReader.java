@@ -32,9 +32,6 @@ public class UnmarshallingResourceReader implements ResourceReader {
 
 	private final Unmarshaller unmarshaller;
 
-	/**
-	 * @param unmarshaller
-	 */
 	public UnmarshallingResourceReader(Unmarshaller unmarshaller) {
 		this.unmarshaller = unmarshaller;
 	}

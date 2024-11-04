@@ -107,7 +107,7 @@ public final class ReflectionUtils {
 	 */
 	public static boolean isVoid(Class<?> type) {
 
-		if (type == Void.class || Void.TYPE == type) {
+		if (ClassUtils.isVoidType(type)) {
 			return true;
 		}
 
@@ -148,6 +148,7 @@ public final class ReflectionUtils {
 			this.annotationType = annotationType;
 		}
 
+		@Override
 		public boolean matches(Field field) {
 			return AnnotationUtils.getAnnotation(field, annotationType) != null;
 		}

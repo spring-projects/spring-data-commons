@@ -29,6 +29,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.convert.converter.GenericConverter;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -178,6 +179,7 @@ public abstract class NullableWrapperConverters {
 	 * @return
 	 */
 	@Nullable
+	@Contract("null -> null")
 	public static Object unwrap(@Nullable Object source) {
 
 		if (source == null || !supports(source.getClass())) {
