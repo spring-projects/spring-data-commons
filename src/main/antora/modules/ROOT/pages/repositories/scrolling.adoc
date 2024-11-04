@@ -30,6 +30,14 @@ Query execution treats the position parameter _exclusive_, results will start _a
 `ScrollPosition#offset()` and `ScrollPosition#keyset()` as special incarnations of a `ScrollPosition` indicating the start of a scroll operation.
 ====
 
+[NOTE]
+====
+The above example shows static sorting and limiting.
+You can define query methods alternatively that accept a `Sort` object define a more complex sorting order or sorting on a per-request basis.
+In a similar way, providing a `Limit` object allows you to define a dynamic limit on a per-request basis instead of applying a static limitation.
+Read more on dynamic sorting and limiting in the xref:repositories/query-methods-details.adoc#repositories.special-parameters[Query Methods Details].
+====
+
 `WindowIterator` provides a utility to simplify scrolling across ``Window``s by removing the need to check for the presence of a next `Window` and applying the `ScrollPosition`.
 
 [source,java]
