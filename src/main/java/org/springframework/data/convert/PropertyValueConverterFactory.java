@@ -60,7 +60,7 @@ public interface PropertyValueConverterFactory {
 			return null;
 		}
 
-		return getConverter((Class<PropertyValueConverter<DV, SV, P>>) accessor.getValueConverterType());
+		return getConverter((Class<PropertyValueConverter<DV, SV, P>>) accessor.getRequiredValueConverterType());
 	}
 
 	/**

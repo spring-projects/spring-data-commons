@@ -19,9 +19,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.function.BiFunction;
 
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
-
 /**
  * @author Christoph Strobl
  * @since 2.2
@@ -32,11 +29,9 @@ interface ReactiveEntityCallbackInvoker extends EntityCallbackInvoker {
 	 * @param callback must not be {@literal null}.
 	 * @param entity can be {@literal null}
 	 * @param callbackInvokerFunction must not be {@literal null}.
-	 * @param <T>
 	 * @return a {@link Mono} emitting the result of the invocation.
 	 */
-	@NonNull
 	@Override
-	<T> Mono<T> invokeCallback(EntityCallback<T> callback, @Nullable T entity,
+	<T> Mono<T> invokeCallback(EntityCallback<T> callback, T entity,
 			BiFunction<EntityCallback<T>, T, Object> callbackInvokerFunction);
 }

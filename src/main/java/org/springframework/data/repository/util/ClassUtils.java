@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 
 import org.springframework.data.repository.Repository;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.NonNull;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -77,14 +77,14 @@ public abstract class ClassUtils {
 	}
 
 	/**
-	 * Returns wthere the given type is the {@link Repository} interface.
+	 * Returns where the given type is the {@link Repository} interface.
 	 *
-	 * @param interfaze
+	 * @param ifc
 	 * @return
 	 */
-	public static boolean isGenericRepositoryInterface(Class<?> interfaze) {
-
-		return Repository.class.equals(interfaze);
+	@Contract("null -> false")
+	public static boolean isGenericRepositoryInterface(Class<?> ifc) {
+		return Repository.class.equals(ifc);
 	}
 
 	/**
@@ -93,6 +93,7 @@ public abstract class ClassUtils {
 	 * @param interfaceName
 	 * @return
 	 */
+	@Contract("null -> false")
 	public static boolean isGenericRepositoryInterface(@Nullable String interfaceName) {
 		return Repository.class.getName().equals(interfaceName);
 	}
@@ -114,7 +115,8 @@ public abstract class ClassUtils {
 	 *         {@link Method}.
 	 * @see java.lang.reflect.Method#getParameterTypes()
 	 */
-	public static int getNumberOfOccurrences(@NonNull Method method, @NonNull Class<?> parameterType) {
+	@Deprecated
+	public static int getNumberOfOccurrences(Method method, Class<?> parameterType) {
 		return org.springframework.data.util.ReflectionUtils.getParameterCount(method, parameterType::equals);
 	}
 
@@ -145,6 +147,7 @@ public abstract class ClassUtils {
 	 * @param types
 	 * @return
 	 */
+	@Contract("null, _ -> false")
 	public static boolean isOfType(@Nullable Object object, Collection<Class<?>> types) {
 
 		if (object == null) {

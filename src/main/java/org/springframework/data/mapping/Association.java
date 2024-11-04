@@ -32,8 +32,8 @@ public class Association<P extends PersistentProperty<P>> {
 	/**
 	 * Creates a new {@link Association} between the two given {@link PersistentProperty}s.
 	 *
-	 * @param inverse
-	 * @param obverse
+	 * @param inverse the inverse {@link PersistentProperty}.
+	 * @param obverse the obverse {@link PersistentProperty}. Can be {@literal null} if absent.
 	 */
 	public Association(P inverse, @Nullable P obverse) {
 		this.inverse = inverse;

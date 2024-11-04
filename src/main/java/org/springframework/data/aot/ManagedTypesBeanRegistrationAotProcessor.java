@@ -78,9 +78,9 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 		if (beanDefinition.hasConstructorArgumentValues()) {
 
 			ValueHolder indexedArgumentValue = beanDefinition.getConstructorArgumentValues().getIndexedArgumentValue(0, null);
-			Object value = indexedArgumentValue.getValue();
 
-			if (value instanceof Collection<?> values && values.stream().allMatch(it -> it instanceof Class)) {
+			if (indexedArgumentValue != null && indexedArgumentValue.getValue() instanceof Collection<?> values
+					&& values.stream().allMatch(it -> it instanceof Class)) {
 				return ManagedTypes.fromIterable((Collection<Class<?>>) values);
 			}
 		}
@@ -115,7 +115,6 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	 * @param managedTypes never {@literal null}.
 	 * @return new instance of {@link BeanRegistrationAotContribution} or {@literal null} if nothing to do.
 	 */
-	@Nullable
 	protected BeanRegistrationAotContribution contribute(AotContext aotContext, ManagedTypes managedTypes,
 			RegisteredBean registeredBean) {
 		return new ManagedTypesRegistrationAotContribution(managedTypes, registeredBean, this::contributeType);

@@ -27,12 +27,15 @@ import org.springframework.util.Assert;
  */
 class AnnotatedPropertyValueConverterAccessor {
 
+	private final String name;
 	private final ValueConverter annotation;
 
 	public AnnotatedPropertyValueConverterAccessor(PersistentProperty<?> property) {
 
 		Assert.notNull(property, "PersistentProperty must not be null");
-		annotation = property.findAnnotation(ValueConverter.class);
+
+		this.name = property.toString();
+		this.annotation = property.findAnnotation(ValueConverter.class);
 	}
 
 	/**
@@ -46,6 +49,28 @@ class AnnotatedPropertyValueConverterAccessor {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> getValueConverterType() {
 		return annotation != null ? (Class) annotation.value() : null;
+	}
+
+	/**
+	 * Obtain the required {@link PropertyValueConverter converter type} to be used for reading and writing property
+	 * values. Uses the {@link ValueConverter} annotation and extracts its {@link ValueConverter#value() value} attribute.
+	 * Throws {@link IllegalStateException} if no converter is defined.
+	 *
+	 * @return {@literal null} if none defined. Check {@link #hasValueConverter()} to check if the annotation is present
+	 *         at all.
+	 * @since 4.0
+	 * @throws IllegalStateException if no converter is defined.
+	 */
+	public Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> getRequiredValueConverterType()
+			throws IllegalStateException {
+
+		Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> converterType = getValueConverterType();
+
+		if (converterType == null) {
+			throw new IllegalStateException("No converter defined for property '" + name + "'");
+		}
+
+		return converterType;
 	}
 
 	/**

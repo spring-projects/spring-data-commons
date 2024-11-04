@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.annotation.Transient;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 /**
@@ -76,6 +77,7 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	 * @return the aggregate
 	 */
 	@SuppressWarnings("unchecked")
+	@Contract("_ -> this")
 	protected final A andEventsFrom(A aggregate) {
 
 		Assert.notNull(aggregate, "Aggregate must not be null");
@@ -86,15 +88,16 @@ public class AbstractAggregateRoot<A extends AbstractAggregateRoot<A>> {
 	}
 
 	/**
-	 * Adds the given event to the aggregate for later publication
-	 * when calling a Spring Data repository's save or delete method.
-	 * Does the same as {@link #registerEvent(Object)} but returns the aggregate instead of the event.
+	 * Adds the given event to the aggregate for later publication when calling a Spring Data repository's {@code save} or
+	 * {@code delete} method. Does the same as {@link #registerEvent(Object)} but returns the aggregate instead of the
+	 * event.
 	 *
 	 * @param event must not be {@literal null}.
 	 * @return the aggregate
 	 * @see #registerEvent(Object)
 	 */
 	@SuppressWarnings("unchecked")
+	@Contract("_ -> this")
 	protected final A andEvent(Object event) {
 
 		registerEvent(event);

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.geo;
 
+import java.io.Serial;
+
 import org.springframework.util.Assert;
 
 /**
@@ -26,7 +28,7 @@ import org.springframework.util.Assert;
  */
 public class CustomMetric implements Metric {
 
-	private static final long serialVersionUID = -2972074177454114228L;
+	private static final @Serial long serialVersionUID = -2972074177454114228L;
 
 	private final double multiplier;
 	private final String abbreviation;
@@ -34,7 +36,7 @@ public class CustomMetric implements Metric {
 	/**
 	 * Creates a custom {@link Metric} using the given multiplier.
 	 *
-	 * @param multiplier
+	 * @param multiplier metric multiplier.
 	 */
 	public CustomMetric(double multiplier) {
 
@@ -44,7 +46,7 @@ public class CustomMetric implements Metric {
 	/**
 	 * Creates a custom {@link Metric} using the given multiplier and abbreviation.
 	 *
-	 * @param multiplier
+	 * @param multiplier metric multiplier.
 	 * @param abbreviation must not be {@literal null}.
 	 */
 	public CustomMetric(double multiplier, String abbreviation) {

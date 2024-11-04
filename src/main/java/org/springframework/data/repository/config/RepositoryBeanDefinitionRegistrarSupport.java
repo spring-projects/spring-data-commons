@@ -27,7 +27,6 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -38,8 +37,8 @@ import org.springframework.util.Assert;
 public abstract class RepositoryBeanDefinitionRegistrarSupport
 		implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
-	private @SuppressWarnings("null") @NonNull ResourceLoader resourceLoader;
-	private @SuppressWarnings("null") @NonNull Environment environment;
+	private ResourceLoader resourceLoader;
+	private Environment environment;
 
 	@Override
 	public void setResourceLoader(ResourceLoader resourceLoader) {

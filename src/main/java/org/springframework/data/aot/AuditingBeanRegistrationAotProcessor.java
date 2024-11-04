@@ -39,7 +39,6 @@ import org.springframework.util.ClassUtils;
  */
 class AuditingBeanRegistrationAotProcessor implements BeanRegistrationAotProcessor {
 
-
 	@Nullable
 	@Override
 	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {

@@ -93,7 +93,7 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 	 *
 	 * @param method must not be {@literal null}.
 	 * @return the method handle.
-	 * @throws ReflectiveOperationException
+	 * @throws ReflectiveOperationException in case of an error during method handle lookup.
 	 */
 	private static MethodHandle lookup(Method method) throws ReflectiveOperationException {
 

@@ -26,6 +26,7 @@ import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
 import jakarta.enterprise.util.AnnotationLiteral;
 import jakarta.inject.Qualifier;
 
+import java.io.Serial;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -197,14 +198,14 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	@SuppressWarnings("all")
 	static class DefaultAnnotationLiteral extends AnnotationLiteral<Default> implements Default {
 
-		private static final long serialVersionUID = 511359421048623933L;
+		private static final @Serial long serialVersionUID = 511359421048623933L;
 		private static final DefaultAnnotationLiteral INSTANCE = new DefaultAnnotationLiteral();
 	}
 
 	@SuppressWarnings("all")
 	static class AnyAnnotationLiteral extends AnnotationLiteral<Any> implements Any {
 
-		private static final long serialVersionUID = 7261821376671361463L;
+		private static final @Serial long serialVersionUID = 7261821376671361463L;
 		private static final AnyAnnotationLiteral INSTANCE = new AnyAnnotationLiteral();
 	}
 

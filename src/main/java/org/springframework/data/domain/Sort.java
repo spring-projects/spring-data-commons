@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import org.springframework.data.util.MethodInvocationRecorder;
 import org.springframework.data.util.MethodInvocationRecorder.Recorded;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.CheckReturnValue;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -160,6 +162,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 *
 	 * @return a new {@link Sort} with the current setup but descending order direction.
 	 */
+	@Contract("-> new")
 	public Sort descending() {
 		return withDirection(Direction.DESC);
 	}
@@ -169,6 +172,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 *
 	 * @return a new {@link Sort} with the current setup but ascending order direction.
 	 */
+	@Contract("-> new")
 	public Sort ascending() {
 		return withDirection(Direction.ASC);
 	}
@@ -200,6 +204,8 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @return a new {@link Sort} consisting of the {@link Order}s of the current {@link Sort} combined with the given
 	 *         ones.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public Sort and(Sort sort) {
 
 		Assert.notNull(sort, "Sort must not be null");
@@ -220,6 +226,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @return a new {@link Sort} object with reversed sort orders applied.
 	 * @since 3.1
 	 */
+	@Contract("-> new")
 	public Sort reverse() {
 
 		List<Order> reversed = doReverse();
@@ -277,10 +284,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 	@Override
 	public int hashCode() {
-
-		int result = 17;
-		result = 31 * result + orders.hashCode();
-		return result;
+		return orders.hashCode();
 	}
 
 	@Override
@@ -381,14 +385,14 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		NATIVE,
 
 		/**
-		 * A hint to the used data store to order entries with null values before non null entries.
+		 * A hint to the used data store to order entries with null values before non-null entries.
 		 */
 		NULLS_FIRST,
 
 		/**
-		 * A hint to the used data store to order entries with null values after non null entries.
+		 * A hint to the used data store to order entries with null values after non-null entries.
 		 */
-		NULLS_LAST;
+		NULLS_LAST
 	}
 
 	/**
@@ -541,6 +545,8 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @param direction the new direction to use.
 		 * @return a new {@link Order} with the given {@link Direction} applied.
 		 */
+		@Contract("_ -> new")
+		@CheckReturnValue
 		public Order with(Direction direction) {
 			return new Order(direction, this.property, this.ignoreCase, this.nullHandling);
 		}
@@ -551,6 +557,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @return a reversed {@link Order} with the given {@link Direction} applied.
 		 * @since 3.1
 		 */
+		@Contract("-> new")
 		public Order reverse() {
 			return with(this.direction == Direction.ASC ? Direction.DESC : Direction.ASC);
 		}
@@ -562,6 +569,8 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @return a new {@link Order} with the {@code property} name applied.
 		 * @since 1.13
 		 */
+		@Contract("_ -> new")
+		@CheckReturnValue
 		public Order withProperty(String property) {
 			return new Order(this.direction, property, this.ignoreCase, this.nullHandling);
 		}
@@ -572,6 +581,8 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @param properties properties to sort by.
 		 * @return a new {@link Sort} instance for the given properties using {@link #getDirection()}.
 		 */
+		@Contract("_ -> new")
+		@CheckReturnValue
 		public Sort withProperties(String... properties) {
 			return Sort.by(this.direction, properties);
 		}
@@ -592,6 +603,8 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @return a new {@link Order} with the given {@link NullHandling} applied.
 		 * @since 1.8
 		 */
+		@Contract("_ -> new")
+		@CheckReturnValue
 		public Order with(NullHandling nullHandling) {
 			return new Order(direction, this.property, ignoreCase, nullHandling);
 		}
@@ -602,6 +615,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @return a new {@link Order} with {@link NullHandling#NULLS_FIRST} as null handling hint applied.
 		 * @since 1.8
 		 */
+		@Contract("-> new")
 		public Order nullsFirst() {
 			return with(NullHandling.NULLS_FIRST);
 		}
@@ -612,6 +626,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @return a new {@link Order} with {@link NullHandling#NULLS_LAST} as null handling hint applied.
 		 * @since 1.7
 		 */
+		@Contract("-> new")
 		public Order nullsLast() {
 			return with(NullHandling.NULLS_LAST);
 		}
@@ -622,6 +637,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @return a new {@link Order} with {@link NullHandling#NATIVE} as null handling hint applied.
 		 * @since 1.7
 		 */
+		@Contract("-> new")
 		public Order nullsNative() {
 			return with(NullHandling.NATIVE);
 		}
@@ -634,19 +650,6 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 */
 		public NullHandling getNullHandling() {
 			return nullHandling;
-		}
-
-		@Override
-		public int hashCode() {
-
-			int result = 17;
-
-			result = 31 * result + direction.hashCode();
-			result = 31 * result + property.hashCode();
-			result = 31 * result + (ignoreCase ? 1 : 0);
-			result = 31 * result + nullHandling.hashCode();
-
-			return result;
 		}
 
 		@Override
@@ -665,6 +668,11 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHash(direction, property, ignoreCase, nullHandling);
+		}
+
+		@Override
 		public String toString() {
 
 			String result = String.format("%s: %s", property, direction);
@@ -679,6 +687,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 
 			return result;
 		}
+
 	}
 
 	/**

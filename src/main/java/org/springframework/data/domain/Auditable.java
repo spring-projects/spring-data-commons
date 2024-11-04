@@ -18,6 +18,8 @@ package org.springframework.data.domain;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Interface for auditable entities. Allows storing and retrieving creation and modification information. The changing
  * instance (typically some user) is to be defined by a generics definition.
@@ -40,7 +42,7 @@ public interface Auditable<U, ID, T extends TemporalAccessor> extends Persistabl
 	 *
 	 * @param createdBy the creating entity to set
 	 */
-	void setCreatedBy(U createdBy);
+	void setCreatedBy(@Nullable U createdBy);
 
 	/**
 	 * Returns the creation date of the entity.
@@ -68,7 +70,7 @@ public interface Auditable<U, ID, T extends TemporalAccessor> extends Persistabl
 	 *
 	 * @param lastModifiedBy the last modifying entity to set
 	 */
-	void setLastModifiedBy(U lastModifiedBy);
+	void setLastModifiedBy(@Nullable U lastModifiedBy);
 
 	/**
 	 * Returns the date of the last modification.

@@ -132,7 +132,6 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	@Nullable
 	@Override
-	@SuppressWarnings("unchecked")
 	public PreferredConstructor<T, P> getPersistenceConstructor() {
 		return creator instanceof PreferredConstructor ? (PreferredConstructor<T, P>) creator : null;
 	}
@@ -556,15 +555,8 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static final class AssociationComparator<P extends PersistentProperty<P>>
-			implements Comparator<Association<P>>, Serializable {
-
-		private static final long serialVersionUID = 4508054194886854513L;
-		private final Comparator<P> delegate;
-
-		AssociationComparator(Comparator<P> delegate) {
-			this.delegate = delegate;
-		}
+	private record AssociationComparator<P extends PersistentProperty<P>>(
+			Comparator<P> delegate) implements Comparator<Association<P>>, Serializable {
 
 		@Override
 		public int compare(@Nullable Association<P> left, @Nullable Association<P> right) {

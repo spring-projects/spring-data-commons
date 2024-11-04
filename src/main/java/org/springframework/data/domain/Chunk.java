@@ -15,6 +15,7 @@
  */
 package org.springframework.data.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * A chunk of data restricted by the configured {@link Pageable}.
@@ -34,9 +36,9 @@ import org.springframework.util.Assert;
  */
 abstract class Chunk<T> implements Slice<T>, Serializable {
 
-	private static final long serialVersionUID = 867755909294344406L;
+	private static final @Serial long serialVersionUID = 867755909294344406L;
 
-	private final List<T> content = new ArrayList<>();
+	private final List<T> content;
 	private final Pageable pageable;
 
 	/**
@@ -50,7 +52,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 		Assert.notNull(content, "Content must not be null");
 		Assert.notNull(pageable, "Pageable must not be null");
 
-		this.content.addAll(content);
+		this.content = new ArrayList<>(content);
 		this.pageable = pageable;
 	}
 
@@ -114,6 +116,7 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 		return pageable.getSort();
 	}
 
+	@Override
 	public Iterator<T> iterator() {
 		return content.iterator();
 	}
@@ -128,34 +131,27 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 
 		Assert.notNull(converter, "Function must not be null");
 
-		return this.stream().map(converter::apply).collect(Collectors.toList());
+		return this.stream().map(converter).collect(Collectors.toList());
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object o) {
 
-		if (this == obj) {
+		if (this == o) {
 			return true;
 		}
-
-		if (!(obj instanceof Chunk<?> that)) {
+		if (!(o instanceof Chunk<?> chunk)) {
 			return false;
 		}
-
-		boolean contentEqual = this.content.equals(that.content);
-		boolean pageableEqual = this.pageable.equals(that.pageable);
-
-		return contentEqual && pageableEqual;
+		if (!ObjectUtils.nullSafeEquals(content, chunk.content)) {
+			return false;
+		}
+		return ObjectUtils.nullSafeEquals(pageable, chunk.pageable);
 	}
 
 	@Override
 	public int hashCode() {
-
-		int result = 17;
-
-		result += 31 * pageable.hashCode();
-		result += 31 * content.hashCode();
-
-		return result;
+		return ObjectUtils.nullSafeHash(content, pageable);
 	}
+
 }

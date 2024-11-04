@@ -98,7 +98,7 @@ public class HateoasPageableHandlerMethodArgumentResolver extends PageableHandle
 	}
 
 	@Override
-	public void enhance(UriComponentsBuilder builder, @Nullable MethodParameter parameter, Object value) {
+	public void enhance(UriComponentsBuilder builder, @Nullable MethodParameter parameter, @Nullable Object value) {
 
 		Assert.notNull(builder, "UriComponentsBuilder must not be null");
 

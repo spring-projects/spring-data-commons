@@ -123,6 +123,7 @@ public final class OffsetScrollPosition implements ScrollPosition {
 		return offset == -1;
 	}
 
+
 	@Override
 	public boolean equals(@Nullable Object o) {
 

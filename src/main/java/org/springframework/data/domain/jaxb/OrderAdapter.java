@@ -20,6 +20,7 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.OrderDto;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 
 /**
@@ -46,6 +47,7 @@ public class OrderAdapter extends XmlAdapter<OrderDto, Order> {
 	}
 
 	@Nullable
+	@Contract("null -> null")
 	@Override
 	public Order unmarshal(@Nullable OrderDto source) {
 

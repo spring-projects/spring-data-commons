@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.context;
 
+import java.io.Serial;
+
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -31,7 +33,7 @@ import org.springframework.util.Assert;
 public class MappingContextEvent<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> extends
 		ApplicationEvent {
 
-	private static final long serialVersionUID = 1336466833846092490L;
+	private static final @Serial long serialVersionUID = 1336466833846092490L;
 
 	private final MappingContext<?, ?> source;
 	private final E entity;

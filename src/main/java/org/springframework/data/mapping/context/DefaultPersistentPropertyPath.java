@@ -24,6 +24,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -56,7 +57,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	/**
 	 * Creates an empty {@link DefaultPersistentPropertyPath}.
 	 *
-	 * @return
+	 * @return an empty {@link DefaultPersistentPropertyPath}.
 	 */
 	static <T extends PersistentProperty<T>> DefaultPersistentPropertyPath<T> empty() {
 		return new DefaultPersistentPropertyPath<T>(Collections.emptyList());
@@ -206,6 +207,7 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
+	@Contract("null -> false")
 	public boolean containsPropertyOfType(@Nullable TypeInformation<?> type) {
 
 		if (type == null) {

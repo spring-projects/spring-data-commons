@@ -104,6 +104,7 @@ public class PartTree implements Streamable<OrPart> {
 		}
 	}
 
+	@Override
 	public Iterator<OrPart> iterator() {
 		return predicate.iterator();
 	}

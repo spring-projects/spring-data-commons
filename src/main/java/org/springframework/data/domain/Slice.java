@@ -54,35 +54,35 @@ public interface Slice<T> extends Streamable<T> {
 	/**
 	 * Returns the page content as {@link List}.
 	 *
-	 * @return
+	 * @return the page content as {@link List}.
 	 */
 	List<T> getContent();
 
 	/**
 	 * Returns whether the {@link Slice} has content at all.
 	 *
-	 * @return
+	 * @return {@literal true} if the {@link Slice} has content at all.
 	 */
 	boolean hasContent();
 
 	/**
 	 * Returns the sorting parameters for the {@link Slice}.
 	 *
-	 * @return
+	 * @return the sorting parameters for the {@link Slice}.
 	 */
 	Sort getSort();
 
 	/**
 	 * Returns whether the current {@link Slice} is the first one.
 	 *
-	 * @return
+	 * @return {@literal true} if the current {@link Slice} is the first one.
 	 */
 	boolean isFirst();
 
 	/**
 	 * Returns whether the current {@link Slice} is the last one.
 	 *
-	 * @return
+	 * @return {@literal true} if the current {@link Slice} is the last one.
 	 */
 	boolean isLast();
 
@@ -103,7 +103,7 @@ public interface Slice<T> extends Streamable<T> {
 	/**
 	 * Returns the {@link Pageable} that's been used to request the current {@link Slice}.
 	 *
-	 * @return
+	 * @return the {@link Pageable} that's been used to request the current {@link Slice}.
 	 * @since 2.0
 	 */
 	default Pageable getPageable() {
@@ -114,7 +114,7 @@ public interface Slice<T> extends Streamable<T> {
 	 * Returns the {@link Pageable} to request the next {@link Slice}. Can be {@link Pageable#unpaged()} in case the
 	 * current {@link Slice} is already the last one. Clients should check {@link #hasNext()} before calling this method.
 	 *
-	 * @return
+	 * @return the {@link Pageable} to request the next {@link Slice}.
 	 * @see #nextOrLastPageable()
 	 */
 	Pageable nextPageable();
@@ -124,10 +124,34 @@ public interface Slice<T> extends Streamable<T> {
 	 * current {@link Slice} is already the first one. Clients should check {@link #hasPrevious()} before calling this
 	 * method.
 	 *
-	 * @return
+	 * @return the {@link Pageable} to request the previous {@link Slice}.
 	 * @see #previousPageable()
 	 */
 	Pageable previousPageable();
+
+	/**
+	 * Returns the {@link Pageable} describing the next slice or the one describing the current slice in case it's the
+	 * last one.
+	 *
+	 * @return the {@link Pageable} describing the next slice or the one describing the current slice in case it's the
+	 *         last one
+	 * @since 2.2
+	 */
+	default Pageable nextOrLastPageable() {
+		return hasNext() ? nextPageable() : getPageable();
+	}
+
+	/**
+	 * Returns the {@link Pageable} describing the previous slice or the one describing the current slice in case it's the
+	 * first one.
+	 *
+	 * @return the {@link Pageable} describing the previous slice or the one describing the current slice in case it's the
+	 *         first one.
+	 * @since 2.2
+	 */
+	default Pageable previousOrFirstPageable() {
+		return hasPrevious() ? previousPageable() : getPageable();
+	}
 
 	/**
 	 * Returns a new {@link Slice} with the content of the current one mapped by the given {@link Converter}.
@@ -139,25 +163,4 @@ public interface Slice<T> extends Streamable<T> {
 	@Override
 	<U> Slice<U> map(Function<? super T, ? extends U> converter);
 
-	/**
-	 * Returns the {@link Pageable} describing the next slice or the one describing the current slice in case it's the
-	 * last one.
-	 *
-	 * @return
-	 * @since 2.2
-	 */
-	default Pageable nextOrLastPageable() {
-		return hasNext() ? nextPageable() : getPageable();
-	}
-
-	/**
-	 * Returns the {@link Pageable} describing the previous slice or the one describing the current slice in case it's the
-	 * first one.
-	 *
-	 * @return
-	 * @since 2.2
-	 */
-	default Pageable previousOrFirstPageable() {
-		return hasPrevious() ? previousPageable() : getPageable();
-	}
 }

@@ -65,7 +65,7 @@ public class MappingContextTypeInformationMapper implements TypeInformationMappe
 
 			PersistentEntity<?, ? extends PersistentProperty<?>> entity = mappingContext.getPersistentEntity(key);
 
-			if (entity == null || entity.getTypeAlias() == null) {
+			if (entity == null || entity.getTypeAlias().isEmpty()) {
 				return Alias.NONE;
 			}
 

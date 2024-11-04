@@ -115,7 +115,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		}
 
 		@Override
-		public Object setCreatedBy(Object value) {
+		public Object setCreatedBy(@Nullable Object value) {
 
 			auditable.setCreatedBy(value);
 			return value;
@@ -267,7 +267,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		}
 
 		@Override
-		public Object setCreatedBy(Object value) {
+		public Object setCreatedBy(@Nullable Object value) {
 			return setField(metadata.getCreatedByField(), value);
 		}
 
@@ -277,7 +277,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		}
 
 		@Override
-		public Object setLastModifiedBy(Object value) {
+		public Object setLastModifiedBy(@Nullable Object value) {
 			return setField(metadata.getLastModifiedByField(), value);
 		}
 
@@ -308,7 +308,8 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param field
 		 * @param value
 		 */
-		private <S> S setField(Optional<Field> field, S value) {
+		@Nullable
+		private <S> S setField(Optional<Field> field, @Nullable S value) {
 
 			field.ifPresent(it -> ReflectionUtils.setField(it, target, value));
 

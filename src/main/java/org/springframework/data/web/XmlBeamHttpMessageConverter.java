@@ -16,6 +16,7 @@
 package org.springframework.data.web;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,7 +58,7 @@ public class XmlBeamHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 
 		this(new XBProjector(new DefaultXMLFactoriesConfig() {
 
-			private static final long serialVersionUID = -1324345769124477493L;
+			private static final @Serial long serialVersionUID = -1324345769124477493L;
 
 			@Override
 			public DocumentBuilderFactory createDocumentBuilderFactory() {

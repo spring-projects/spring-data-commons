@@ -101,14 +101,8 @@ class KotlinInstantiationDelegate {
 
 	/**
 	 * Extract the actual construction arguments for a direct constructor call.
-	 *
-	 * @param params
-	 * @param entityCreator
-	 * @param provider
-	 * @return
-	 * @param <P>
 	 */
-	public <P extends PersistentProperty<P>> Object[] extractInvocationArguments(Object[] params,
+	public <P extends PersistentProperty<P>> void extractInvocationArguments(Object[] params,
 			@Nullable InstanceCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
 
 		if (entityCreator == null) {
@@ -155,8 +149,6 @@ class KotlinInstantiationDelegate {
 		for (int i = 0; i < defaulting.length; i++) {
 			params[userParameterCount + i] = defaulting[i];
 		}
-
-		return params;
 	}
 
 	/**
@@ -214,7 +206,7 @@ class KotlinInstantiationDelegate {
 				}
 			} else {
 
-				int optionalParameterCount = (int) kotlinFunction.getParameters().stream().filter(it -> it.isOptional())
+				int optionalParameterCount = (int) kotlinFunction.getParameters().stream().filter(KParameter::isOptional)
 						.count();
 				int syntheticParameters = KotlinDefaultMask.getExactMaskCount(optionalParameterCount);
 

@@ -141,8 +141,8 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 
 		Class<T> rawType = basicType.getType();
 
-		boolean isMoreConcreteCustomType = (rawType == null)
-				|| (rawType.isAssignableFrom(documentsTargetType) && !rawType.equals(documentsTargetType));
+		boolean isMoreConcreteCustomType = (rawType.isAssignableFrom(documentsTargetType)
+				&& !rawType.equals(documentsTargetType));
 
 		if (!isMoreConcreteCustomType) {
 			return basicType;
@@ -163,10 +163,9 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	@Nullable
 	private Class<?> getDefaultedTypeToBeUsed(S source) {
 
-		TypeInformation<?> documentsTargetTypeInformation = readType(source);
-		documentsTargetTypeInformation = documentsTargetTypeInformation == null ? getFallbackTypeFor(source)
-				: documentsTargetTypeInformation;
-		return documentsTargetTypeInformation == null ? null : documentsTargetTypeInformation.getType();
+		TypeInformation<?> type = readType(source);
+		type = type == null ? getFallbackTypeFor(source) : type;
+		return type == null ? null : type.getType();
 	}
 
 	/**
@@ -192,7 +191,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 
 		Alias alias = getAliasFor(info);
 		if (alias.isPresent()) {
-			accessor.writeTypeTo(sink, alias.getValue());
+			accessor.writeTypeTo(sink, alias.getRequiredValue());
 		}
 	}
 
