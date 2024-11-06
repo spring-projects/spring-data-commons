@@ -183,7 +183,7 @@ public abstract class RepositoryFactorySupport
 
 	@Override
 	public void setBeanClassLoader(@Nullable ClassLoader classLoader) {
-		this.classLoader = classLoader == null ? org.springframework.util.ClassUtils.getDefaultClassLoader() : classLoader;
+		this.classLoader = classLoader == null ? ClassUtils.getDefaultClassLoader() : classLoader;
 		this.projectionFactory = createProjectionFactory();
 	}
 
@@ -700,7 +700,7 @@ public abstract class RepositoryFactorySupport
 			try {
 				return composition.invoke(invocationMulticaster, method, arguments);
 			} catch (Exception e) {
-				org.springframework.data.repository.util.ClassUtils.unwrapReflectionException(e);
+				org.springframework.util.ReflectionUtils.handleReflectionException(e);
 			}
 
 			throw new IllegalStateException("Should not occur");
@@ -834,25 +834,24 @@ public abstract class RepositoryFactorySupport
 
 		static {
 
-			org.springframework.data.repository.util.ClassUtils.ifPresent(
-					"org.springframework.data.querydsl.QuerydslPredicateExecutor", RepositoryValidator.class.getClassLoader(),
-					it -> {
+			org.springframework.data.util.ClassUtils.ifPresent("org.springframework.data.querydsl.QuerydslPredicateExecutor",
+					RepositoryValidator.class.getClassLoader(), it -> {
 						WELL_KNOWN_EXECUTORS.put(it, "Querydsl");
 					});
 
-			org.springframework.data.repository.util.ClassUtils.ifPresent(
+			org.springframework.data.util.ClassUtils.ifPresent(
 					"org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor",
 					RepositoryValidator.class.getClassLoader(), it -> {
 						WELL_KNOWN_EXECUTORS.put(it, "Reactive Querydsl");
 					});
 
-			org.springframework.data.repository.util.ClassUtils.ifPresent(
+			org.springframework.data.util.ClassUtils.ifPresent(
 					"org.springframework.data.repository.query.QueryByExampleExecutor",
 					RepositoryValidator.class.getClassLoader(), it -> {
 						WELL_KNOWN_EXECUTORS.put(it, "Query by Example");
 					});
 
-			org.springframework.data.repository.util.ClassUtils.ifPresent(
+			org.springframework.data.util.ClassUtils.ifPresent(
 					"org.springframework.data.repository.query.ReactiveQueryByExampleExecutor",
 					RepositoryValidator.class.getClassLoader(), it -> {
 						WELL_KNOWN_EXECUTORS.put(it, "Reactive Query by Example");

@@ -139,7 +139,7 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 	private static ResolvableType getExtensionType(ExtensionIdAware extensionCandidate) {
 
 		return ResolvableType
-				.forMethodReturnType(ReflectionUtils.findRequiredMethod(extensionCandidate.getClass(), "getExtension"))
+				.forMethodReturnType(ReflectionUtils.getRequiredMethod(extensionCandidate.getClass(), "getExtension"))
 				.getGeneric(0);
 	}
 }

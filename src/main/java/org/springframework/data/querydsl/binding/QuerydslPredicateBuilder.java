@@ -219,7 +219,7 @@ public class QuerydslPredicateBuilder {
 
 		TypeDescriptor result = descriptor == null //
 				? TypeDescriptor
-						.nested(org.springframework.data.util.ReflectionUtils.findRequiredField(owningType, leafProperty), 0)
+						.nested(org.springframework.data.util.ReflectionUtils.getRequiredField(owningType, leafProperty), 0)
 				: TypeDescriptor
 						.nested(new Property(owningType, descriptor.getReadMethod(), descriptor.getWriteMethod(), leafProperty), 0);
 

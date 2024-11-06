@@ -19,11 +19,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
@@ -53,14 +55,60 @@ public final class ReflectionUtils {
 	}
 
 	/**
+	 * Returns whether the given {@link Method} has a parameter of the given type.
+	 *
+	 * @param method the method to check, must not be {@literal null}.
+	 * @param type parameter type to query for, must not be {@literal null}.
+	 * @return {@literal true} the given {@link Method} has a parameter of the given type.
+	 * @since 3.5
+	 */
+	public static boolean hasParameterOfType(Method method, Class<?> type) {
+		return Arrays.asList(method.getParameterTypes()).contains(type);
+	}
+
+	/**
+	 * Returns whether the given {@link Method} has a parameter that is assignable to the given type.
+	 *
+	 * @param method the method to check, must not be {@literal null}.
+	 * @param type parameter type to query for, must not be {@literal null}.
+	 * @return {@literal true} the given {@link Method} has a parameter that is assignable to the given type.
+	 * @since 3.5
+	 */
+	public static boolean hasParameterAssignableToType(Method method, Class<?> type) {
+
+		for (Class<?> parameterType : method.getParameterTypes()) {
+			if (type.isAssignableFrom(parameterType)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the number of matching parameters {@link Method} for {@link Predicate}.
+	 *
+	 * @param method {@link Method} to evaluate.
+	 * @param predicate the predicate matching {@link Method}
+	 * @return the resulting number of matching parameters.
+	 * @see java.lang.reflect.Method#getParameterTypes()
+	 * @since 3.5
+	 */
+	public static int getParameterCount(Method method, Predicate<Class<?>> predicate) {
+		return (int) Arrays.stream(method.getParameterTypes()).filter(predicate).count();
+	}
+
+	/**
 	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
 	 * class cannot be loaded or instantiated.
 	 *
 	 * @param classname the fully qualified class name to create an instance for.
 	 * @param defaultInstance the instance to fall back to in case the given class cannot be loaded or instantiated.
 	 * @return
+	 * @deprecated since 3.5 as it is not used within the framework anymore.
 	 */
 	@SuppressWarnings("unchecked")
+	@Deprecated(since = "3.5", forRemoval = true)
 	public static <T> T createInstanceIfPresent(String classname, T defaultInstance) {
 
 		try {
@@ -106,6 +154,7 @@ public final class ReflectionUtils {
 		 * @return
 		 */
 		String getDescription();
+
 	}
 
 	/**
@@ -129,6 +178,7 @@ public final class ReflectionUtils {
 		public String getDescription() {
 			return String.format("Annotation filter for %s", annotationType.getName());
 		}
+
 	}
 
 	/**
@@ -151,6 +201,7 @@ public final class ReflectionUtils {
 			public String getDescription() {
 				return String.format("FieldFilter %s", filter.toString());
 			}
+
 		}, false);
 	}
 
@@ -200,7 +251,7 @@ public final class ReflectionUtils {
 					return field;
 				}
 
-				if (foundField != null && enforceUniqueness) {
+				if (foundField != null) {
 					throw new IllegalStateException(filter.getDescription());
 				}
 
@@ -218,10 +269,25 @@ public final class ReflectionUtils {
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param name must not be {@literal null} or empty.
-	 * @return
+	 * @return the required field.
+	 * @throws IllegalArgumentException in case the field can't be found.
+	 * @deprecated use {@link #getRequiredField(Class, String)} instead.
+	 */
+	@Deprecated(since = "3.5", forRemoval = true)
+	public static Field findRequiredField(Class<?> type, String name) {
+		return getRequiredField(type, name);
+	}
+
+	/**
+	 * Obtains the required field of the given name on the given type or throws {@link IllegalArgumentException} if the
+	 * found could not be found.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @param name must not be {@literal null} or empty.
+	 * @return the required field.
 	 * @throws IllegalArgumentException in case the field can't be found.
 	 */
-	public static Field findRequiredField(Class<?> type, String name) {
+	public static Field getRequiredField(Class<?> type, String name) {
 
 		Field result = org.springframework.util.ReflectionUtils.findField(type, name);
 
@@ -251,7 +317,9 @@ public final class ReflectionUtils {
 	 * @param type must not be {@literal null}.
 	 * @param constructorArguments must not be {@literal null}.
 	 * @return a {@link Constructor} that is compatible with the given arguments.
+	 * @deprecated since 3.5, return type will change to nullable instead of Optional.
 	 */
+	@Deprecated
 	public static Optional<Constructor<?>> findConstructor(Class<?> type, Object... constructorArguments) {
 
 		Assert.notNull(type, "Target type must not be null");
@@ -271,8 +339,25 @@ public final class ReflectionUtils {
 	 * @param parameterTypes must not be {@literal null}.
 	 * @return the method object.
 	 * @throws IllegalArgumentException in case the method cannot be resolved.
+	 * @deprecated since 3.5, use {@link #getRequiredMethod(Class, String, Class[])} instead.
 	 */
+	@Deprecated
 	public static Method findRequiredMethod(Class<?> type, String name, Class<?>... parameterTypes) {
+		return getRequiredMethod(type, name, parameterTypes);
+	}
+
+	/**
+	 * Returns the method with the given name of the given class and parameter types. Prefers regular methods over
+	 * {@link Method#isBridge() bridge} and {@link Method#isSynthetic() synthetic} ones.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @param name must not be {@literal null}.
+	 * @param parameterTypes must not be {@literal null}.
+	 * @return the method object.
+	 * @throws IllegalArgumentException in case the method cannot be resolved.
+	 * @since 3.5
+	 */
+	public static Method getRequiredMethod(Class<?> type, String name, Class<?>... parameterTypes) {
 
 		Assert.notNull(type, "Class must not be null");
 		Assert.notNull(name, "Method name must not be null");
@@ -313,7 +398,7 @@ public final class ReflectionUtils {
 	 * Returns a {@link Stream} of the return and parameters types of the given {@link Method}.
 	 *
 	 * @param method must not be {@literal null}.
-	 * @return
+	 * @return stream of return and parameter types.
 	 * @since 2.0
 	 */
 	public static Stream<Class<?>> returnTypeAndParameters(Method method) {
@@ -332,25 +417,51 @@ public final class ReflectionUtils {
 	 * @param type must not be {@literal null}.
 	 * @param name must not be {@literal null} or empty.
 	 * @param parameterTypes must not be {@literal null}.
-	 * @return
+	 * @return the optional Method.
 	 * @since 2.0
 	 */
+	@Deprecated(since = "3.5", forRemoval = true)
 	public static Optional<Method> getMethod(Class<?> type, String name, ResolvableType... parameterTypes) {
+		return Optional.ofNullable(findMethod(type, name, parameterTypes));
+	}
+
+	/**
+	 * Returns the {@link Method} with the given name and parameters declared on the given type, if available.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @param name must not be {@literal null} or empty.
+	 * @param parameterTypes must not be {@literal null}.
+	 * @return the required method.
+	 * @since 3.5
+	 */
+	@Nullable
+	public static Method findMethod(Class<?> type, String name, ResolvableType... parameterTypes) {
 
 		Assert.notNull(type, "Type must not be null");
 		Assert.hasText(name, "Name must not be null or empty");
 		Assert.notNull(parameterTypes, "Parameter types must not be null");
 
-		List<Class<?>> collect = Arrays.stream(parameterTypes)//
-				.map(ResolvableType::getRawClass)//
-				.collect(Collectors.toList());
+		List<Class<?>> collect = parameterTypes.length == 0 ? Collections.emptyList()
+				: new ArrayList<>(parameterTypes.length);
+		for (ResolvableType parameterType : parameterTypes) {
+			Class<?> rawClass = parameterType.getRawClass();
+			collect.add(rawClass);
+		}
 
-		Method method = org.springframework.util.ReflectionUtils.findMethod(type, name,
-				collect.toArray(new Class<?>[collect.size()]));
+		Method method = org.springframework.util.ReflectionUtils.findMethod(type, name, collect.toArray(new Class<?>[0]));
 
-		return Optional.ofNullable(method)//
-				.filter(it -> IntStream.range(0, it.getParameterCount())//
-						.allMatch(index -> ResolvableType.forMethodParameter(it, index).equals(parameterTypes[index])));
+		if (method != null) {
+
+			for (int i = 0; i < parameterTypes.length; i++) {
+				if (!ResolvableType.forMethodParameter(method, i).equals(parameterTypes[i])) {
+					return null;
+				}
+			}
+
+			return method;
+		}
+
+		return null;
 	}
 
 	private static boolean argumentsMatch(Class<?>[] parameterTypes, Object[] arguments) {
@@ -455,12 +566,9 @@ public final class ReflectionUtils {
 	 * @since 2.5
 	 */
 	@Nullable
+	@Deprecated(since = "3.5", forRemoval = true)
 	public static Class<?> loadIfPresent(String name, ClassLoader classLoader) {
-
-		try {
-			return ClassUtils.forName(name, classLoader);
-		} catch (Exception o_O) {
-			return null;
-		}
+		return org.springframework.data.util.ClassUtils.loadIfPresent(name, classLoader);
 	}
+
 }

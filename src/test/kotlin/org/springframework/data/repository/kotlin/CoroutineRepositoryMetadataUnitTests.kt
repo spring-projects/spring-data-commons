@@ -34,7 +34,12 @@ class CoroutineRepositoryMetadataUnitTests {
 	fun shouldDetermineCorrectResultType() {
 
 		val metadata = DefaultRepositoryMetadata(MyCoRepository::class.java)
-		val method = ReflectionUtils.findRequiredMethod(MyCoRepository::class.java, "findOne", String::class.java, Continuation::class.java);
+		val method = ReflectionUtils.getRequiredMethod(
+			MyCoRepository::class.java,
+			"findOne",
+			String::class.java,
+			Continuation::class.java
+		);
 
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User::class.java)
 	}
@@ -43,7 +48,12 @@ class CoroutineRepositoryMetadataUnitTests {
 	fun shouldDetermineCorrectOptionalResultType() {
 
 		val metadata = DefaultRepositoryMetadata(MyCoRepository::class.java)
-		val method = ReflectionUtils.findRequiredMethod(MyCoRepository::class.java, "findOneOptional", String::class.java, Continuation::class.java);
+		val method = ReflectionUtils.getRequiredMethod(
+			MyCoRepository::class.java,
+			"findOneOptional",
+			String::class.java,
+			Continuation::class.java
+		);
 
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User::class.java)
 	}
@@ -52,7 +62,11 @@ class CoroutineRepositoryMetadataUnitTests {
 	fun shouldDetermineCorrectFlowResultType() {
 
 		val metadata = DefaultRepositoryMetadata(MyCoRepository::class.java)
-		val method = ReflectionUtils.findRequiredMethod(MyCoRepository::class.java, "findMultiple", String::class.java);
+		val method = ReflectionUtils.getRequiredMethod(
+			MyCoRepository::class.java,
+			"findMultiple",
+			String::class.java
+		);
 
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User::class.java)
 	}
@@ -61,7 +75,12 @@ class CoroutineRepositoryMetadataUnitTests {
 	fun shouldDetermineCorrectSuspendedFlowResultType() {
 
 		val metadata = DefaultRepositoryMetadata(MyCoRepository::class.java)
-		val method = ReflectionUtils.findRequiredMethod(MyCoRepository::class.java, "findMultipleSuspended", String::class.java, Continuation::class.java);
+		val method = ReflectionUtils.getRequiredMethod(
+			MyCoRepository::class.java,
+			"findMultipleSuspended",
+			String::class.java,
+			Continuation::class.java
+		);
 
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User::class.java)
 	}

@@ -74,7 +74,7 @@ class EvaluationContextExtensionInformation {
 
 		Assert.notNull(type, "Extension type must not be null");
 
-		Class<?> rootObjectType = org.springframework.data.util.ReflectionUtils.findRequiredMethod(type, "getRootObject")
+		Class<?> rootObjectType = org.springframework.data.util.ReflectionUtils.getRequiredMethod(type, "getRootObject")
 				.getReturnType();
 
 		this.rootObjectInformation = Optional

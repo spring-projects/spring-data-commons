@@ -33,8 +33,8 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.RepositoryDefinition;
-import org.springframework.data.repository.util.ClassUtils;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -103,7 +103,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	@Override
 	protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 
-		boolean isNonRepositoryInterface = !ClassUtils.isGenericRepositoryInterface(beanDefinition.getBeanClassName());
+		boolean isNonRepositoryInterface = !isGenericRepositoryInterface(beanDefinition.getBeanClassName());
 		boolean isTopLevelType = !beanDefinition.getMetadata().hasEnclosingClass();
 		boolean isConsiderNestedRepositories = isConsiderNestedRepositoryInterfaces();
 
@@ -151,6 +151,13 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	}
 
 	/**
+	 * Returns whether the given type name is a {@link Repository} interface name.
+	 */
+	private static boolean isGenericRepositoryInterface(@Nullable String interfaceName) {
+		return Repository.class.getName().equals(interfaceName);
+	}
+
+	/**
 	 * {@link org.springframework.core.type.filter.TypeFilter} that only matches interfaces. Thus setting this up makes
 	 * only sense providing an interface type as {@code targetType}.
 	 *
@@ -180,21 +187,19 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static class AllTypeFilter implements TypeFilter {
-
-		private final List<TypeFilter> delegates;
+	private record AllTypeFilter(List<TypeFilter> delegates) implements TypeFilter {
 
 		/**
 		 * Creates a new {@link AllTypeFilter} to match if all the given delegates match.
 		 *
 		 * @param delegates must not be {@literal null}.
 		 */
-		public AllTypeFilter(List<TypeFilter> delegates) {
+		private AllTypeFilter {
 
 			Assert.notNull(delegates, "TypeFilter deleages must not be null");
-			this.delegates = delegates;
 		}
 
+		@Override
 		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
 				throws IOException {
 

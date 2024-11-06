@@ -19,7 +19,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.springframework.data.repository.Repository;
@@ -36,7 +35,9 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @deprecated since 3.5, use {@link org.springframework.data.util.ClassUtils} instead.
  */
+@Deprecated(since = "3.5", forRemoval = true)
 public abstract class ClassUtils {
 
 	/**
@@ -72,16 +73,7 @@ public abstract class ClassUtils {
 	 *           definition for a superclass or interface implemented by the class to be checked here)
 	 */
 	public static void ifPresent(String className, @Nullable ClassLoader classLoader, Consumer<Class<?>> action) {
-
-		try {
-			Class<?> theClass = org.springframework.util.ClassUtils.forName(className, classLoader);
-			action.accept(theClass);
-		} catch (IllegalAccessError err) {
-			throw new IllegalStateException(
-					"Readability mismatch in inheritance hierarchy of class [" + className + "]: " + err.getMessage(), err);
-		} catch (Throwable ex) {
-			// Typically ClassNotFoundException or NoClassDefFoundError...
-		}
+		org.springframework.data.util.ClassUtils.ifPresent(className, classLoader, action);
 	}
 
 	/**
@@ -108,7 +100,6 @@ public abstract class ClassUtils {
 	/**
 	 * @deprecated Use {@link #getNumberOfOccurrences(Method, Class)}.
 	 */
-	@Deprecated
 	public static int getNumberOfOccurences(Method method, Class<?> type) {
 		return getNumberOfOccurrences(method, type);
 	}
@@ -124,10 +115,7 @@ public abstract class ClassUtils {
 	 * @see java.lang.reflect.Method#getParameterTypes()
 	 */
 	public static int getNumberOfOccurrences(@NonNull Method method, @NonNull Class<?> parameterType) {
-
-		return (int) Arrays.stream(method.getParameterTypes())
-				.filter(parameterType::equals)
-				.count();
+		return org.springframework.data.util.ReflectionUtils.getParameterCount(method, parameterType::equals);
 	}
 
 	/**
@@ -174,7 +162,7 @@ public abstract class ClassUtils {
 	 * @return
 	 */
 	public static boolean hasParameterOfType(Method method, Class<?> type) {
-		return Arrays.asList(method.getParameterTypes()).contains(type);
+		return org.springframework.data.util.ReflectionUtils.hasParameterOfType(method, type);
 	}
 
 	/**
@@ -185,7 +173,7 @@ public abstract class ClassUtils {
 	 * @return
 	 */
 	public static boolean hasParameterAssignableToType(Method method, Class<?> type) {
-		return List.of(method.getParameterTypes()).stream().anyMatch(type::isAssignableFrom);
+		return org.springframework.data.util.ReflectionUtils.hasParameterOfType(method, type);
 	}
 
 	/**
@@ -196,8 +184,8 @@ public abstract class ClassUtils {
 	 */
 	public static void unwrapReflectionException(Exception ex) throws Throwable {
 
-		if (ex instanceof InvocationTargetException) {
-			throw ((InvocationTargetException) ex).getTargetException();
+		if (ex instanceof InvocationTargetException ite) {
+			ReflectionUtils.handleInvocationTargetException(ite);
 		}
 
 		throw ex;

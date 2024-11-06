@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
@@ -51,10 +52,9 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
-import org.springframework.data.util.ReflectionUtils;
+import org.springframework.data.util.ClassUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StopWatch;
 
 /**
@@ -123,8 +123,7 @@ public class RepositoryConfigurationDelegate {
 			return environment;
 		}
 
-		return resourceLoader instanceof EnvironmentCapable capable ? capable.getEnvironment()
-				: new StandardEnvironment();
+		return resourceLoader instanceof EnvironmentCapable capable ? capable.getEnvironment() : new StandardEnvironment();
 	}
 
 	/**
@@ -321,19 +320,19 @@ public class RepositoryConfigurationDelegate {
 	private ResolvableType getRepositoryFactoryBeanType(RepositoryConfiguration<?> configuration) {
 
 		String interfaceName = configuration.getRepositoryInterface();
-		ClassLoader classLoader = resourceLoader.getClassLoader() == null ? ClassUtils.getDefaultClassLoader()
+		ClassLoader classLoader = resourceLoader.getClassLoader() == null
+				? org.springframework.util.ClassUtils.getDefaultClassLoader()
 				: resourceLoader.getClassLoader();
 
 		classLoader = classLoader != null ? classLoader : getClass().getClassLoader();
 
-		Class<?> repositoryInterface = ReflectionUtils.loadIfPresent(interfaceName, classLoader);
+		Class<?> repositoryInterface = ClassUtils.loadIfPresent(interfaceName, classLoader);
 
 		if (repositoryInterface == null) {
 			return null;
 		}
 
-		Class<?> factoryBean = ReflectionUtils.loadIfPresent(configuration.getRepositoryFactoryBeanClassName(),
-				classLoader);
+		Class<?> factoryBean = ClassUtils.loadIfPresent(configuration.getRepositoryFactoryBeanClassName(), classLoader);
 
 		if (factoryBean == null) {
 			return null;

@@ -41,7 +41,7 @@ public abstract class BeanLookup {
 	 * beans of the given type are available in the given {@link BeanFactory}.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @param beanFactory the {@link BeanFactory} to lookup the bean from.
+	 * @param beanFactory the {@link BeanFactory} to look up the bean from.
 	 * @return a {@link Lazy} for the unique bean of the given type or the instance provided by the fallback in case no
 	 *         bean of the given type can be found.
 	 */
