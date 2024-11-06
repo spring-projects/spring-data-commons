@@ -100,11 +100,12 @@ class EvaluationContextExtensionInformation {
 	public RootObjectInformation getRootObjectInformation(@Nullable Object target) {
 
 		if (target != null) {
-			return new RootObjectInformation(target.getClass());
-		}
 
-		if (rootObjectInformation != null) {
-			return rootObjectInformation;
+			if (rootObjectInformation != null) {
+				return rootObjectInformation;
+			}
+
+			return new RootObjectInformation(target.getClass());
 		}
 
 		return RootObjectInformation.NONE;
@@ -141,15 +142,11 @@ class EvaluationContextExtensionInformation {
 
 		/**
 		 * The statically defined properties of the extension type.
-		 *
-		 * @return the properties will never be {@literal null}.
 		 */
 		private final Map<String, Object> properties;
 
 		/**
 		 * The statically exposed functions of the extension type.
-		 *
-		 * @return the functions will never be {@literal null}.
 		 */
 		private final MultiValueMap<String, Function> functions;
 
@@ -224,7 +221,7 @@ class EvaluationContextExtensionInformation {
 				}
 
 				boolean methodStatic = Modifier.isStatic(method.getModifiers());
-				boolean staticMatch = staticOnly ? methodStatic : !methodStatic;
+				boolean staticMatch = staticOnly == methodStatic;
 
 				return Modifier.isPublic(method.getModifiers()) && staticMatch;
 			}
@@ -233,11 +230,13 @@ class EvaluationContextExtensionInformation {
 			public boolean matches(Field field) {
 
 				boolean fieldStatic = Modifier.isStatic(field.getModifiers());
-				boolean staticMatch = staticOnly ? fieldStatic : !fieldStatic;
+				boolean staticMatch = staticOnly == fieldStatic;
 
 				return Modifier.isPublic(field.getModifiers()) && staticMatch;
 			}
+
 		}
+
 	}
 
 	/**
@@ -316,9 +315,7 @@ class EvaluationContextExtensionInformation {
 
 			Map<String, Object> properties = new HashMap<>();
 
-			accessors.forEach((key, value) -> {
-				properties.put(key, new Function(value, target));
-			});
+			accessors.forEach((key, value) -> properties.put(key, new Function(value, target)));
 
 			for (Field field : fields) {
 				properties.put(field.getName(), ReflectionUtils.getField(field, target));
@@ -361,6 +358,7 @@ class EvaluationContextExtensionInformation {
 
 			return false;
 		}
+
 	}
 
 	private static Map<String, Object> discoverDeclaredProperties(Class<?> type) {
@@ -401,5 +399,7 @@ class EvaluationContextExtensionInformation {
 		public Stream<Method> stream() {
 			return methods.stream();
 		}
+
 	}
+
 }
