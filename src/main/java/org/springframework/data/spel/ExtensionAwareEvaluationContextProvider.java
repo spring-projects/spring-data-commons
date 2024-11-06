@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -35,7 +34,6 @@ import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ExtensionIdAware;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Predicates;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
@@ -255,12 +253,17 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 				List<TypeDescriptor> argumentTypes) {
 
 			if (target instanceof EvaluationContextExtensionAdapter) {
-				return getMethodExecutor((EvaluationContextExtensionAdapter) target, name, argumentTypes).orElse(null);
+				return getMethodExecutor((EvaluationContextExtensionAdapter) target, name, argumentTypes);
 			}
 
-			return adapters.stream()//
-					.flatMap(it -> Optionals.toStream(getMethodExecutor(it, name, argumentTypes)))//
-					.findFirst().orElse(null);
+			for (EvaluationContextExtensionAdapter adapter : adapters) {
+				MethodExecutor methodExecutor = getMethodExecutor(adapter, name, argumentTypes);
+				if (methodExecutor != null) {
+					return methodExecutor;
+				}
+			}
+
+			return null;
 		}
 
 		@Override
@@ -287,9 +290,13 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		 * @param argumentTypes the types of the arguments that the function must accept.
 		 * @return a matching {@link MethodExecutor}
 		 */
-		private Optional<MethodExecutor> getMethodExecutor(EvaluationContextExtensionAdapter adapter, String name,
+		@Nullable
+		private MethodExecutor getMethodExecutor(EvaluationContextExtensionAdapter adapter, String name,
 				List<TypeDescriptor> argumentTypes) {
-			return adapter.getFunctions().get(name, argumentTypes).map(FunctionMethodExecutor::new);
+
+			Function function = adapter.getFunctions().get(name, argumentTypes);
+
+			return function != null ? new FunctionMethodExecutor(function) : null;
 		}
 
 		/**
@@ -371,7 +378,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			Assert.notNull(extension, "Extension must not be null");
 			Assert.notNull(information, "Extension information must not be null");
 
-			Optional<Object> target = Optional.ofNullable(extension.getRootObject());
+			Object target = extension.getRootObject();
 			EvaluationContextExtensionInformation.ExtensionTypeInformation extensionTypeInformation = information
 					.getExtensionTypeInformation();
 			EvaluationContextExtensionInformation.RootObjectInformation rootObjectInformation = information

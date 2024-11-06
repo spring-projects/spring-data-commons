@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -37,6 +36,7 @@ import org.springframework.data.spel.ExpressionDependencies.ExpressionDependency
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
@@ -63,7 +63,7 @@ import org.springframework.util.ReflectionUtils.MethodFilter;
 class EvaluationContextExtensionInformation {
 
 	private final ExtensionTypeInformation extensionTypeInformation;
-	private final Optional<RootObjectInformation> rootObjectInformation;
+	private final @Nullable RootObjectInformation rootObjectInformation;
 
 	/**
 	 * Creates a new {@link EvaluationContextExtension} for the given extension type.
@@ -77,8 +77,7 @@ class EvaluationContextExtensionInformation {
 		Class<?> rootObjectType = org.springframework.data.util.ReflectionUtils.getRequiredMethod(type, "getRootObject")
 				.getReturnType();
 
-		this.rootObjectInformation = Optional
-				.ofNullable(Object.class.equals(rootObjectType) ? null : new RootObjectInformation(rootObjectType));
+		this.rootObjectInformation = Object.class.equals(rootObjectType) ? null : new RootObjectInformation(rootObjectType);
 		this.extensionTypeInformation = new ExtensionTypeInformation(type);
 	}
 
@@ -98,10 +97,17 @@ class EvaluationContextExtensionInformation {
 	 * @param target
 	 * @return
 	 */
-	public RootObjectInformation getRootObjectInformation(Optional<Object> target) {
+	public RootObjectInformation getRootObjectInformation(@Nullable Object target) {
 
-		return target.map(it -> rootObjectInformation.orElseGet(() -> new RootObjectInformation(it.getClass())))
-				.orElse(RootObjectInformation.NONE);
+		if (target != null) {
+			return new RootObjectInformation(target.getClass());
+		}
+
+		if (rootObjectInformation != null) {
+			return rootObjectInformation;
+		}
+
+		return RootObjectInformation.NONE;
 	}
 
 	/**
@@ -114,11 +120,11 @@ class EvaluationContextExtensionInformation {
 	public boolean provides(ExpressionDependency dependency) {
 
 		// We don't know, extension declares Object getRootObject
-		if (!rootObjectInformation.isPresent()) {
+		if (rootObjectInformation == null) {
 			return true;
 		}
 
-		if (rootObjectInformation.filter(it -> it.provides(dependency)).isPresent()) {
+		if (rootObjectInformation.provides(dependency)) {
 			return true;
 		}
 
@@ -287,11 +293,12 @@ class EvaluationContextExtensionInformation {
 		 * @param target can be {@literal null}.
 		 * @return the methods
 		 */
-		MultiValueMap<String, Function> getFunctions(Optional<Object> target) {
-			return target.map(this::getFunctions).orElseGet(LinkedMultiValueMap::new);
-		}
+		MultiValueMap<String, Function> getFunctions(@Nullable Object target) {
 
-		private MultiValueMap<String, Function> getFunctions(Object target) {
+			if (target == null) {
+				return new LinkedMultiValueMap<>();
+			}
+
 			return methods.stream().collect(toMultiMap(Method::getName, m -> new Function(m, target)));
 		}
 
@@ -301,19 +308,23 @@ class EvaluationContextExtensionInformation {
 		 *
 		 * @return the properties
 		 */
-		Map<String, Object> getProperties(Optional<Object> target) {
+		Map<String, Object> getProperties(@Nullable Object target) {
 
-			return target.map(it -> {
+			if (target == null) {
+				return Collections.emptyMap();
+			}
 
-				Map<String, Object> properties = new HashMap<>();
+			Map<String, Object> properties = new HashMap<>();
 
-				accessors.entrySet().stream()
-						.forEach(method -> properties.put(method.getKey(), new Function(method.getValue(), it)));
-				fields.stream().forEach(field -> properties.put(field.getName(), ReflectionUtils.getField(field, it)));
+			accessors.forEach((key, value) -> {
+				properties.put(key, new Function(value, target));
+			});
 
-				return Collections.unmodifiableMap(properties);
+			for (Field field : fields) {
+				properties.put(field.getName(), ReflectionUtils.getField(field, target));
+			}
 
-			}).orElseGet(Collections::emptyMap);
+			return Collections.unmodifiableMap(properties);
 		}
 
 		/**

@@ -15,22 +15,21 @@
  */
 package org.springframework.data.spel;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.spel.spi.Function;
+import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 /**
- * {@link MultiValueMap} like data structure to keep lists of
- * {@link org.springframework.data.repository.query.spi.Function}s indexed by name and argument list length, where the
- * value lists are actually unique with respect to the signature.
+ * {@link MultiValueMap} like data structure to keep lists of {@link org.springframework.data.spel.spi.Function}s
+ * indexed by name and argument list length, where the value lists are actually unique with respect to the signature.
  *
  * @author Jens Schauder
  * @author Oliver Gierke
@@ -43,31 +42,31 @@ class Functions {
 
 	private final MultiValueMap<String, Function> functions = new LinkedMultiValueMap<>();
 
-	void addAll(Map<String, Function> newFunctions) {
+	public void addAll(Map<String, Function> newFunctions) {
 
 		newFunctions.forEach((n, f) -> {
 
 			List<Function> currentElements = get(n);
 
-			if (!contains(currentElements, f)) {
+			if (doesNotContain(currentElements, f)) {
 				functions.add(n, f);
 			}
 		});
 	}
 
-	void addAll(MultiValueMap<String, Function> newFunctions) {
+	public void addAll(MultiValueMap<String, Function> newFunctions) {
 
 		newFunctions.forEach((k, list) -> {
 
 			List<Function> currentElements = get(k);
 
 			list.stream() //
-					.filter(f -> !contains(currentElements, f)) //
+					.filter(f -> doesNotContain(currentElements, f)) //
 					.forEach(f -> functions.add(k, f));
 		});
 	}
 
-	List<Function> get(String name) {
+	public List<Function> get(String name) {
 		return functions.getOrDefault(name, Collections.emptyList());
 	}
 
@@ -78,40 +77,53 @@ class Functions {
 	 *
 	 * @param name the name of the method
 	 * @param argumentTypes types of arguments that the method must be able to accept
-	 * @return a {@code Function} if a unique on gets found. {@code Optional.empty} if none matches. Throws
+	 * @return a {@code Function} if a unique on gets found. {@literal null} if none matches. Throws
 	 *         {@link IllegalStateException} if multiple functions match the parameters.
 	 */
-	Optional<Function> get(String name, List<TypeDescriptor> argumentTypes) {
+	@Nullable
+	public Function get(String name, List<TypeDescriptor> argumentTypes) {
 
-		Stream<Function> candidates = get(name).stream() //
-				.filter(f -> f.supports(argumentTypes));
+		List<Function> candidates = new ArrayList<>();
 
-		List<Function> collect = candidates.collect(Collectors.toList());
+		for (Function candidate : get(name)) {
+			if (candidate.supports(argumentTypes)) {
+				candidates.add(candidate);
+			}
+		}
 
-		return bestMatch(collect, argumentTypes);
+		return bestMatch(candidates, argumentTypes);
 	}
 
-	private static boolean contains(List<Function> elements, Function f) {
-		return elements.stream().anyMatch(f::isSignatureEqual);
+	private static boolean doesNotContain(List<Function> elements, Function f) {
+
+		for (Function element : elements) {
+			if (f.isSignatureEqual(element)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
-	private static Optional<Function> bestMatch(List<Function> candidates, List<TypeDescriptor> argumentTypes) {
+	@Nullable
+	private static Function bestMatch(List<Function> candidates, List<TypeDescriptor> argumentTypes) {
 
 		if (candidates.isEmpty()) {
-			return Optional.empty();
+			return null;
 		}
 
 		if (candidates.size() == 1) {
-			return Optional.of(candidates.get(0));
+			return candidates.get(0);
 		}
 
-		Optional<Function> exactMatch = candidates.stream().filter(f -> f.supportsExact(argumentTypes)).findFirst();
 
-		if (!exactMatch.isPresent()) {
-			throw new IllegalStateException(createErrorMessage(candidates, argumentTypes));
+		for (Function candidate : candidates) {
+			if (candidate.supportsExact(argumentTypes)) {
+				return candidate;
+			}
 		}
 
-		return exactMatch;
+		throw new IllegalStateException(createErrorMessage(candidates, argumentTypes));
 	}
 
 	private static String createErrorMessage(List<Function> candidates, List<TypeDescriptor> argumentTypes) {
