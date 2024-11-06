@@ -154,18 +154,18 @@ public abstract class AuditingHandlerSupport {
 	 */
 	private void touchAuditor(Auditor<?> auditor, AuditableBeanWrapper<?> wrapper, boolean isNew) {
 
-		if(!auditor.isPresent()) {
+		if (auditor.isEmpty()) {
 			return;
 		}
 
 		Assert.notNull(wrapper, "AuditableBeanWrapper must not be null");
 
 		if (isNew) {
-			wrapper.setCreatedBy(auditor.getValue());
+			wrapper.setCreatedBy(auditor.getRequiredValue());
 		}
 
 		if (!isNew || modifyOnCreation) {
-			wrapper.setLastModifiedBy(auditor.getValue());
+			wrapper.setLastModifiedBy(auditor.getRequiredValue());
 		}
 	}
 

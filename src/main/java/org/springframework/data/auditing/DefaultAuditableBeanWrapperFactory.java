@@ -124,30 +124,26 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Override
 		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
 
-			auditable.setCreatedDate(getAsTemporalAccessor(Optional.of(value), type).orElseThrow(IllegalStateException::new));
-
+			auditable.setCreatedDate(getAsTemporalAccessor(value, type));
 			return value;
 		}
 
 		@Override
-		public Object setLastModifiedBy(Object value) {
+		public Object setLastModifiedBy(@Nullable Object value) {
 
 			auditable.setLastModifiedBy(value);
-
 			return value;
 		}
 
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
-			return getAsTemporalAccessor(auditable.getLastModifiedDate(), TemporalAccessor.class);
+			return auditable.getLastModifiedDate().map(it -> getAsTemporalAccessor(it, TemporalAccessor.class));
 		}
 
 		@Override
 		public TemporalAccessor setLastModifiedDate(TemporalAccessor value) {
 
-			auditable
-					.setLastModifiedDate(getAsTemporalAccessor(Optional.of(value), type).orElseThrow(IllegalStateException::new));
-
+			auditable.setLastModifiedDate(getAsTemporalAccessor(value, type));
 			return value;
 		}
 
@@ -214,23 +210,19 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
-		protected <S extends TemporalAccessor> Optional<S> getAsTemporalAccessor(Optional<?> source,
-				Class<? extends S> target) {
+		protected <S extends TemporalAccessor> S getAsTemporalAccessor(@Nullable Object source, Class<? extends S> target) {
 
-			return source.map(it -> {
+			if (target.isInstance(source)) {
+				return (S) source;
+			}
 
-				if (target.isInstance(it)) {
-					return (S) it;
-				}
+			Class<?> typeToConvertTo = Stream.of(target, Instant.class)//
+					.filter(target::isAssignableFrom)//
+					.filter(type -> conversionService.canConvert(source.getClass(), type))//
+					.findFirst() //
+					.orElseThrow(() -> rejectUnsupportedType(source.getClass(), target));
 
-				Class<?> typeToConvertTo = Stream.of(target, Instant.class)//
-						.filter(target::isAssignableFrom)//
-						.filter(type -> conversionService.canConvert(it.getClass(), type))//
-						.findFirst() //
-						.orElseThrow(() -> rejectUnsupportedType(it.getClass(), target));
-
-				return (S) conversionService.convert(it, typeToConvertTo);
-			});
+			return (S) conversionService.convert(source, typeToConvertTo);
 		}
 	}
 
@@ -284,12 +276,14 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Override
 		public Optional<TemporalAccessor> getLastModifiedDate() {
 
-			return getAsTemporalAccessor(metadata.getLastModifiedDateField().map(field -> {
+			Field field = metadata.getLastModifiedDateField();
 
-				Object value = org.springframework.util.ReflectionUtils.getField(field, target);
-				return value instanceof Optional ? ((Optional<?>) value).orElse(null) : value;
+			if (field == null) {
+				return Optional.empty();
+			}
 
-			}), TemporalAccessor.class);
+			return Optional.ofNullable(getAsTemporalAccessor(org.springframework.util.ReflectionUtils.getField(field, target),
+					TemporalAccessor.class));
 		}
 
 		@Override
@@ -309,9 +303,11 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param value
 		 */
 		@Nullable
-		private <S> S setField(Optional<Field> field, @Nullable S value) {
+		private <S> S setField(@Nullable Field field, @Nullable S value) {
 
-			field.ifPresent(it -> ReflectionUtils.setField(it, target, value));
+			if (field != null) {
+				ReflectionUtils.setField(field, target, value);
+			}
 
 			return value;
 		}
@@ -322,9 +318,11 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		 * @param field
 		 * @param value
 		 */
-		private TemporalAccessor setDateField(Optional<Field> field, TemporalAccessor value) {
+		private TemporalAccessor setDateField(@Nullable Field field, TemporalAccessor value) {
 
-			field.ifPresent(it -> ReflectionUtils.setField(it, target, getDateValueToSet(value, it.getType(), it)));
+			if (field != null) {
+				ReflectionUtils.setField(field, target, getDateValueToSet(value, field.getType(), field));
+			}
 
 			return value;
 		}

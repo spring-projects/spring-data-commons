@@ -43,11 +43,14 @@ class Auditor<T> {
 	}
 
 	/**
-	 * @return
+	 * Return an {@link Auditor} that is not present.
+	 *
+	 * @param <T>
+	 * @return never {@literal null}.
 	 */
-	@Nullable
-	public T getValue() {
-		return value;
+	@SuppressWarnings("unchecked")
+	public static <T> Auditor<T> none() {
+		return (Auditor<T>) NONE;
 	}
 
 	/**
@@ -78,19 +81,35 @@ class Auditor<T> {
 	 * @param <T>
 	 * @return {@link Auditor#none()} if the given {@literal source} is {@literal null}. }
 	 */
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static <T> Auditor<T> ofOptional(Optional<T> source) {
 		return Auditor.of(source.orElse(null));
 	}
 
 	/**
-	 * Return an {@link Auditor} that is not present.
-	 *
-	 * @param <T>
-	 * @return never {@literal null}.
+	 * @return the auditor value.
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T> Auditor<T> none() {
-		return (Auditor<T>) NONE;
+	@Nullable
+	public T getValue() {
+		return value;
+	}
+
+	/**
+	 * Returns the auditor value or throws an {@link java.util.NoSuchElementException} if the value is {@literal null}.
+	 *
+	 * @return the auditor value.
+	 * @since 4.0
+	 */
+	@Nullable
+	public T getRequiredValue() {
+
+		T value = getValue();
+
+		if (value == null) {
+			throw new java.util.NoSuchElementException("No value present");
+		}
+
+		return value;
 	}
 
 	/**
@@ -98,6 +117,14 @@ class Auditor<T> {
 	 */
 	public boolean isPresent() {
 		return getValue() != null;
+	}
+
+	/**
+	 * @return {@literal true} if there is no auditor present (i.e. {@link #getValue()} returns {@literal null}).
+	 * @since 4.0
+	 */
+	public boolean isEmpty() {
+		return getValue() == null;
 	}
 
 	@Override

@@ -43,10 +43,10 @@ class AnnotationAuditingMetadataUnitTests {
 		var metadata = AnnotationAuditingMetadata.getMetadata(AnnotatedUser.class);
 
 		assertThat(metadata).isNotNull();
-		assertThat(metadata.getCreatedByField()).hasValue(createdByField);
-		assertThat(metadata.getCreatedDateField()).hasValue(createdDateField);
-		assertThat(metadata.getLastModifiedByField()).hasValue(lastModifiedByField);
-		assertThat(metadata.getLastModifiedDateField()).hasValue(lastModifiedDateField);
+		assertThat(metadata.getCreatedByField()).isEqualTo(createdByField);
+		assertThat(metadata.getCreatedDateField()).isEqualTo(createdDateField);
+		assertThat(metadata.getLastModifiedByField()).isEqualTo(lastModifiedByField);
+		assertThat(metadata.getLastModifiedDateField()).isEqualTo(lastModifiedDateField);
 	}
 
 	@Test

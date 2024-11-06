@@ -215,7 +215,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			Optional<Object> firstValue = metadata.lastModifiedDatePaths.getFirst() //
 					.map(accessor::getProperty);
 
-			return getAsTemporalAccessor(firstValue, TemporalAccessor.class);
+			return firstValue.map(it -> getAsTemporalAccessor(it, TemporalAccessor.class));
 		}
 
 		@Override

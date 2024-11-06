@@ -21,16 +21,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.convert.Jsr310Converters;
-import org.springframework.data.util.Optionals;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.ReflectionUtils.AnnotationFieldFilter;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -68,10 +67,10 @@ final class AnnotationAuditingMetadata {
 		SUPPORTED_DATE_TYPES = Collections.unmodifiableList(types);
 	}
 
-	private final Optional<Field> createdByField;
-	private final Optional<Field> createdDateField;
-	private final Optional<Field> lastModifiedByField;
-	private final Optional<Field> lastModifiedDateField;
+	private final @Nullable Field createdByField;
+	private final @Nullable Field createdDateField;
+	private final @Nullable Field lastModifiedByField;
+	private final @Nullable Field lastModifiedDateField;
 
 	/**
 	 * Creates a new {@link AnnotationAuditingMetadata} instance for the given type.
@@ -82,10 +81,10 @@ final class AnnotationAuditingMetadata {
 
 		Assert.notNull(type, "Given type must not be null");
 
-		this.createdByField = Optional.ofNullable(ReflectionUtils.findField(type, CREATED_BY_FILTER));
-		this.createdDateField = Optional.ofNullable(ReflectionUtils.findField(type, CREATED_DATE_FILTER));
-		this.lastModifiedByField = Optional.ofNullable(ReflectionUtils.findField(type, LAST_MODIFIED_BY_FILTER));
-		this.lastModifiedDateField = Optional.ofNullable(ReflectionUtils.findField(type, LAST_MODIFIED_DATE_FILTER));
+		this.createdByField = ReflectionUtils.findField(type, CREATED_BY_FILTER);
+		this.createdDateField = ReflectionUtils.findField(type, CREATED_DATE_FILTER);
+		this.lastModifiedByField = ReflectionUtils.findField(type, LAST_MODIFIED_BY_FILTER);
+		this.lastModifiedDateField = ReflectionUtils.findField(type, LAST_MODIFIED_DATE_FILTER);
 
 		assertValidDateFieldType(createdDateField);
 		assertValidDateFieldType(lastModifiedDateField);
@@ -93,18 +92,18 @@ final class AnnotationAuditingMetadata {
 
 	/**
 	 * Checks whether the given field has a type that is a supported date type.
-	 *
-	 * @param field
 	 */
-	private void assertValidDateFieldType(Optional<Field> field) {
+	private void assertValidDateFieldType(@Nullable Field field) {
 
-		field.ifPresent(it -> {
+		if (field == null) {
+			return;
+		}
 
-			if (SUPPORTED_DATE_TYPES.contains(it.getType().getName())) {
-				return;
-			}
+		if (SUPPORTED_DATE_TYPES.contains(field.getType().getName())) {
+			return;
+		}
 
-			Class<?> type = it.getType();
+		Class<?> type = field.getType();
 
 			if (TemporalAccessor.class.isAssignableFrom(type)) {
 				return;
@@ -113,7 +112,6 @@ final class AnnotationAuditingMetadata {
 			throw new IllegalStateException(String.format(
 					"Found created/modified date field with type %s but only %s as well as java.time types are supported", type,
 					SUPPORTED_DATE_TYPES));
-		});
 	}
 
 	/**
@@ -129,34 +127,38 @@ final class AnnotationAuditingMetadata {
 	 * Returns whether the {@link Class} represented in this instance is auditable or not.
 	 */
 	public boolean isAuditable() {
-		return Optionals.isAnyPresent(createdByField, createdDateField, lastModifiedByField, lastModifiedDateField);
+		return createdByField != null || createdDateField != null || lastModifiedByField != null
+				|| lastModifiedDateField != null;
 	}
 
 	/**
 	 * Return the field annotated by {@link CreatedBy}.
 	 */
-	public Optional<Field> getCreatedByField() {
+	@Nullable
+	public Field getCreatedByField() {
 		return createdByField;
 	}
 
 	/**
 	 * Return the field annotated by {@link CreatedDate}.
 	 */
-	public Optional<Field> getCreatedDateField() {
+	@Nullable
+	public Field getCreatedDateField() {
 		return createdDateField;
 	}
 
 	/**
 	 * Return the field annotated by {@link LastModifiedBy}.
 	 */
-	public Optional<Field> getLastModifiedByField() {
+	@Nullable
+	public Field getLastModifiedByField() {
 		return lastModifiedByField;
 	}
 
 	/**
 	 * Return the field annotated by {@link LastModifiedDate}.
 	 */
-	public Optional<Field> getLastModifiedDateField() {
+	public @Nullable Field getLastModifiedDateField() {
 		return lastModifiedDateField;
 	}
 }
